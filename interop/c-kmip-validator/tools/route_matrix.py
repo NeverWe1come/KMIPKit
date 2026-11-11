@@ -71,6 +71,97 @@ def catalog_enum_value(catalog: dict, enum_name: str, value_name: str,
     return int(matches[0]['wire_value'], 16)
 
 
+def catalog_enum_values(catalog: dict, enum_name: str, protocol_version: str) -> list[int]:
+    parent_id = f'KMIPKIT-ELEM-ENUMERATION-{enum_name.upper().replace(" ", "-")}'
+    return sorted(int(target['wire_value'], 16) for target in catalog['normative_targets']
+                  if target['kind'] == 'enumeration_value'
+                  and parent_id in target.get('parent_element_ids', [])
+                  and protocol_version in target['protocol_versions']
+                  and re.fullmatch(r'[0-9a-fA-F]{8}', target.get('wire_value', '')))
+
+
+def _type_codes(encoding: str) -> list[int]:
+    """Read only TTLV types explicitly named in a catalog encoding declaration."""
+    name = _name(encoding)
+    candidates = (
+        ('structure', 1), ('biginteger', 4), ('longinteger', 3),
+        ('datetimeextended', 11), ('enumeration', 5), ('boolean', 6),
+        ('textstring', 7), ('bytestring', 8), ('datetime', 9),
+        ('interval', 10), ('integer', 2),
+    )
+    values = []
+    for token, code in candidates:
+        if token in name and code not in values:
+            values.append(code)
+    return values
+
+
+def _fixture_value(target: dict, tag: int, kind: int, catalog: dict,
+                   protocol_version: str) -> tuple[int, int, object]:
+    if kind == 1:
+        value = []
+    elif kind in (2, 3, 4, 5, 6, 9, 10, 11):
+        size = 8 if kind in (3, 4, 6, 9, 11) else 4
+        number = 0
+        if kind == 5:
+            enum_name = target.get('field_name', target['name'])
+            values = catalog_enum_values(catalog, enum_name, protocol_version)
+            number = values[0] if values else 0
+        value = number.to_bytes(size, 'big')
+    elif kind == 7:
+        value = b'fixture'
+    elif kind == 8:
+        value = bytes.fromhex('010203')
+    else:
+        raise ValueError('fixture_unsupported_ttlv_type')
+    return tag, kind, value
+
+
+def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
+                          protocol_version: str) -> list[tuple] | None:
+    """Build item trees only where the pinned catalog identifies tag and type."""
+    if target['kind'] == 'tag' and target.get('allocation') in {'reserved', 'unused'}:
+        return None
+    scalar = scalar_fixture(target, tags, catalog, protocol_version)
+    if scalar is not None:
+        return [scalar]
+
+    target_kind = target['kind']
+
+    field_name = target.get('field_name', target['name'])
+    normalized_tags = {_name(name): value for name, value in tags.items()}
+    tag = normalized_tags.get(_name(field_name))
+    if target_kind == 'credential':
+        tag = normalized_tags.get('credential')
+        if target['name'] in {'Device', 'Attestation', 'Username and Password'}:
+            credential_value = catalog_enum_value(catalog, 'Credential Type', target['name'], protocol_version)
+            credential_type_tag = normalized_tags.get('credentialtype')
+            if credential_value is None or credential_type_tag is None or tag is None:
+                return None
+            return [(tag, 1, [(credential_type_tag, 5, credential_value.to_bytes(4, 'big'))])]
+    if tag is None:
+        return None
+
+    encodings = []
+    direct_encoding = target.get('value_type') if target_kind == 'operation_payload_value_variant' else target.get('source_encoding')
+    if direct_encoding:
+        encodings.extend(_type_codes(direct_encoding))
+    elif target_kind in {'operation_payload_field', 'message_field'}:
+        for candidate in catalog['normative_targets']:
+            candidate_name = candidate.get('field_name', candidate['name'])
+            candidate_tag = normalized_tags.get(_name(candidate_name))
+            encoding = candidate.get('value_type') if candidate['kind'] == 'operation_payload_value_variant' else candidate.get('source_encoding')
+            if candidate_tag == tag and encoding and protocol_version in candidate['protocol_versions']:
+                encodings.extend(_type_codes(encoding))
+    elif target_kind == 'attribute_structure':
+        encodings.append(1)
+
+    encodings = list(dict.fromkeys(encodings))
+    if not encodings:
+        return None
+    return [_fixture_value(target, tag, kind, catalog, protocol_version) for kind in encodings]
+
+
 def scalar_fixture(target: dict, tags: dict[str, int], catalog: dict | None = None,
                    protocol_version: str | None = None) -> tuple[int, int, bytes] | None:
     """Use each exact normative enum/flag/tag; never substitute an operation probe."""
@@ -276,7 +367,7 @@ def run(output: Path, binary: Path | None = None) -> int:
     cases = {case['case_id']: case for case in catalog['test_cases']}
     tags = {target['name']: int(target['wire_value'], 16) for target in targets.values() if target['kind'] == 'tag'}
     events, pending = [], []
-    from route_ttlv import TreeAbi
+    from route_ttlv import TreeAbi, digest, encode
     tree_abi = TreeAbi(library)
     boundaries = json.loads((ROOT / 'interop/shared/vectors/ttlv-boundaries.json').read_text())
     boundary_vectors = {int(vector['type_code'], 16): vector for vector in boundaries['vectors']}
@@ -287,6 +378,7 @@ def run(output: Path, binary: Path | None = None) -> int:
     from route_attributes import AttributeCases
     attribute_cases = AttributeCases(library, catalog)
     attribute_cache = {}
+    generic_cache = {}
     for index, cell in enumerate(iter_cells(catalog, manifest, languages=('c',))):
         target = targets[cell['target_id']]
         fixture = scalar_fixture(target, tags, catalog, cell['protocol_version'])
@@ -355,6 +447,30 @@ def run(output: Path, binary: Path | None = None) -> int:
                 event.update(status='failed', failure_code='installed_abi_call_failed',
                              invocation_id=f'c-abi-{index}', invocation_count=1)
                 events.append(event)
+        elif (cell['transport'] is None and cell['public_api_symbol'] in LOCAL_SYMBOLS
+                and target['kind'] != 'data_type'):
+            generic_key = (cell['case_id'], cell['target_id'], cell['protocol_version'])
+            if generic_key not in generic_cache:
+                trees = generic_tree_fixtures(target, catalog, tags, cell['protocol_version'])
+                if trees:
+                    try:
+                        generic_cache[generic_key] = [tree_abi.roundtrip(encode(tree)) for tree in trees]
+                    except ValueError:
+                        if cell['public_api_symbol'] in tree_abi.called:
+                            raise
+                        generic_cache[generic_key] = None
+                else:
+                    generic_cache[generic_key] = None
+            results = generic_cache[generic_key]
+            if results and all(cell['public_api_symbol'] in result['invoked_symbols'] for result in results):
+                tree_hash = digest([result['normalized_tree'] for result in results])
+                event = cell_fields(cell)
+                event.update(status='passed', invocation_count=1, invocation_id=f'c-generic-{index}')
+                event['response_tree_sha256' if cell['action'] == 'decode' else 'request_tree_sha256'] = tree_hash
+                events.append(event)
+                branch_evidence.append({**cell_fields(cell), 'sample_count': len(results), 'tree_sha256': tree_hash})
+                continue
+            pending.append(pending_cell(cell, pending_reason(cell)))
         else:
             pending.append(pending_cell(cell, pending_reason(cell)))
     output.parent.mkdir(parents=True, exist_ok=True)
