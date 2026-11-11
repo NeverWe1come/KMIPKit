@@ -220,6 +220,17 @@ class RouteMatrixTests(unittest.TestCase):
         result = executor.execute(target, '2.1')
         self.assertTrue(result['invoked_symbols'])
 
+    def test_vendor_attribute_uses_attribute_container_and_required_members(self):
+        executor = self.attribute_executor()
+        target = next(target for target in executor.catalog['normative_targets']
+                      if target['target_id'] == 'KMIPKIT-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE')
+        trees = executor.fixtures(target, '2.1')
+        self.assertIsNotNone(trees)
+        self.assertEqual(len(trees), 1)
+        self.assertEqual(trees[0][0], 0x420008)
+        self.assertEqual([child[0] for child in trees[0][2]], [0x420059, 0x42000A, 0x42000B])
+        self.assertEqual([child[2] for child in trees[0][2]], [b'fixture_vendor', b'fixture_attribute', b'fixture-value'])
+
 
 if __name__ == '__main__':
     unittest.main()
