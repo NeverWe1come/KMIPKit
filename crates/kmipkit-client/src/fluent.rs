@@ -414,6 +414,40 @@ struct CryptoRequestFields {
     authenticated_encryption_additional_data: Option<SecretBytes>,
 }
 
+trait CryptoFieldsOwner {
+    fn crypto_fields_mut(&mut self) -> &mut CryptoRequestFields;
+}
+
+fn set_crypto_field<B, V>(mut builder: B, value: V, setter: fn(&mut CryptoRequestFields, V)) -> B
+where
+    B: CryptoFieldsOwner,
+{
+    setter(builder.crypto_fields_mut(), value);
+    builder
+}
+
+impl CryptoRequestFields {
+    fn set_data(&mut self, value: OperationData) {
+        self.data = Some(value);
+    }
+
+    fn set_cryptographic_parameters(&mut self, value: Structure) {
+        self.cryptographic_parameters = Some(value);
+    }
+
+    fn set_iv_counter_nonce(&mut self, value: Vec<u8>) {
+        self.iv_counter_nonce = Some(SecretBytes::new(value));
+    }
+
+    fn set_correlation_value(&mut self, value: Vec<u8>) {
+        self.correlation_value = Some(SecretBytes::new(value));
+    }
+
+    fn set_authenticated_encryption_additional_data(&mut self, value: Vec<u8>) {
+        self.authenticated_encryption_additional_data = Some(SecretBytes::new(value));
+    }
+}
+
 struct CipherRequestAdapter<R> {
     new: fn(Option<UniqueIdentifier>, Option<OperationData>) -> R,
     with_cryptographic_parameters: fn(R, Structure) -> R,
@@ -487,44 +521,42 @@ impl<'a> EncryptBuilder<'a> {
 
     /// Moves plaintext bytes into the request's zeroizing secret owner.
     #[must_use]
-    pub fn data(mut self, value: Vec<u8>) -> Self {
-        self.fields.data = Some(OperationData::ByteString(SecretBytes::new(value)));
-        self
+    pub fn data(self, value: Vec<u8>) -> Self {
+        self.data_value(OperationData::ByteString(SecretBytes::new(value)))
     }
 
     /// Sets an explicitly typed non-byte Data value for expert KMIP use.
     #[must_use]
-    pub fn data_value(mut self, value: OperationData) -> Self {
-        self.fields.data = Some(value);
-        self
+    pub fn data_value(self, value: OperationData) -> Self {
+        set_crypto_field(self, value, CryptoRequestFields::set_data)
     }
 
     /// Sets validated Cryptographic Parameters chosen by the caller.
     #[must_use]
-    pub fn cryptographic_parameters(mut self, value: CryptographicParameters) -> Self {
-        self.fields.cryptographic_parameters = Some(value.into_ttlv());
-        self
+    pub fn cryptographic_parameters(self, value: CryptographicParameters) -> Self {
+        self.cryptographic_parameters_structure(value.into_ttlv())
     }
 
     /// Sets an expert ordered Cryptographic Parameters Structure.
     #[must_use]
-    pub fn cryptographic_parameters_structure(mut self, value: Structure) -> Self {
-        self.fields.cryptographic_parameters = Some(value);
-        self
+    pub fn cryptographic_parameters_structure(self, value: Structure) -> Self {
+        set_crypto_field(
+            self,
+            value,
+            CryptoRequestFields::set_cryptographic_parameters,
+        )
     }
 
     /// Sets the caller-selected IV, counter, or nonce bytes.
     #[must_use]
-    pub fn iv_counter_nonce(mut self, value: Vec<u8>) -> Self {
-        self.fields.iv_counter_nonce = Some(SecretBytes::new(value));
-        self
+    pub fn iv_counter_nonce(self, value: Vec<u8>) -> Self {
+        set_crypto_field(self, value, CryptoRequestFields::set_iv_counter_nonce)
     }
 
     /// Sets the multipart correlation value.
     #[must_use]
-    pub fn correlation_value(mut self, value: Vec<u8>) -> Self {
-        self.fields.correlation_value = Some(SecretBytes::new(value));
-        self
+    pub fn correlation_value(self, value: Vec<u8>) -> Self {
+        set_crypto_field(self, value, CryptoRequestFields::set_correlation_value)
     }
 
     /// Sets the caller-controlled multipart Init Indicator.
@@ -543,9 +575,12 @@ impl<'a> EncryptBuilder<'a> {
 
     /// Sets caller-supplied authenticated-encryption additional data.
     #[must_use]
-    pub fn authenticated_encryption_additional_data(mut self, value: Vec<u8>) -> Self {
-        self.fields.authenticated_encryption_additional_data = Some(SecretBytes::new(value));
-        self
+    pub fn authenticated_encryption_additional_data(self, value: Vec<u8>) -> Self {
+        set_crypto_field(
+            self,
+            value,
+            CryptoRequestFields::set_authenticated_encryption_additional_data,
+        )
     }
 
     /// Sets exchange-local transport options.
@@ -653,9 +688,8 @@ impl<'a> DecryptBuilder<'a> {
 
     /// Sets an explicitly typed non-byte Data value for expert KMIP use.
     #[must_use]
-    pub fn data_value(mut self, value: OperationData) -> Self {
-        self.fields.data = Some(value);
-        self
+    pub fn data_value(self, value: OperationData) -> Self {
+        set_crypto_field(self, value, CryptoRequestFields::set_data)
     }
 
     /// Sets validated Cryptographic Parameters chosen by the caller.
@@ -666,23 +700,24 @@ impl<'a> DecryptBuilder<'a> {
 
     /// Sets an expert ordered Cryptographic Parameters Structure.
     #[must_use]
-    pub fn cryptographic_parameters_structure(mut self, value: Structure) -> Self {
-        self.fields.cryptographic_parameters = Some(value);
-        self
+    pub fn cryptographic_parameters_structure(self, value: Structure) -> Self {
+        set_crypto_field(
+            self,
+            value,
+            CryptoRequestFields::set_cryptographic_parameters,
+        )
     }
 
     /// Sets the caller-selected IV, counter, or nonce bytes.
     #[must_use]
-    pub fn iv_counter_nonce(mut self, value: Vec<u8>) -> Self {
-        self.fields.iv_counter_nonce = Some(SecretBytes::new(value));
-        self
+    pub fn iv_counter_nonce(self, value: Vec<u8>) -> Self {
+        set_crypto_field(self, value, CryptoRequestFields::set_iv_counter_nonce)
     }
 
     /// Sets the multipart correlation value.
     #[must_use]
-    pub fn correlation_value(mut self, value: Vec<u8>) -> Self {
-        self.fields.correlation_value = Some(SecretBytes::new(value));
-        self
+    pub fn correlation_value(self, value: Vec<u8>) -> Self {
+        set_crypto_field(self, value, CryptoRequestFields::set_correlation_value)
     }
 
     /// Sets the caller-controlled multipart Init Indicator.
@@ -701,9 +736,12 @@ impl<'a> DecryptBuilder<'a> {
 
     /// Sets caller-supplied authenticated-encryption additional data.
     #[must_use]
-    pub fn authenticated_encryption_additional_data(mut self, value: Vec<u8>) -> Self {
-        self.fields.authenticated_encryption_additional_data = Some(SecretBytes::new(value));
-        self
+    pub fn authenticated_encryption_additional_data(self, value: Vec<u8>) -> Self {
+        set_crypto_field(
+            self,
+            value,
+            CryptoRequestFields::set_authenticated_encryption_additional_data,
+        )
     }
 
     /// Sets caller-supplied authenticated-encryption tag bytes.
@@ -1345,6 +1383,24 @@ pub struct HashBuilder<'a> {
     fields: CryptoRequestFields,
 }
 
+impl CryptoFieldsOwner for EncryptBuilder<'_> {
+    fn crypto_fields_mut(&mut self) -> &mut CryptoRequestFields {
+        &mut self.fields
+    }
+}
+
+impl CryptoFieldsOwner for DecryptBuilder<'_> {
+    fn crypto_fields_mut(&mut self) -> &mut CryptoRequestFields {
+        &mut self.fields
+    }
+}
+
+impl CryptoFieldsOwner for HashBuilder<'_> {
+    fn crypto_fields_mut(&mut self) -> &mut CryptoRequestFields {
+        &mut self.fields
+    }
+}
+
 impl<'a> HashBuilder<'a> {
     fn new(client: &'a mut Client) -> Self {
         Self {
@@ -1361,9 +1417,12 @@ impl<'a> HashBuilder<'a> {
 
     /// Sets an expert ordered Cryptographic Parameters Structure.
     #[must_use]
-    pub fn cryptographic_parameters_structure(mut self, value: Structure) -> Self {
-        self.fields.cryptographic_parameters = Some(value);
-        self
+    pub fn cryptographic_parameters_structure(self, value: Structure) -> Self {
+        set_crypto_field(
+            self,
+            value,
+            CryptoRequestFields::set_cryptographic_parameters,
+        )
     }
 
     /// Moves message bytes into the request's zeroizing secret owner.
@@ -1374,16 +1433,14 @@ impl<'a> HashBuilder<'a> {
 
     /// Sets an explicitly typed non-byte Data value for expert KMIP use.
     #[must_use]
-    pub fn data_value(mut self, value: OperationData) -> Self {
-        self.fields.data = Some(value);
-        self
+    pub fn data_value(self, value: OperationData) -> Self {
+        set_crypto_field(self, value, CryptoRequestFields::set_data)
     }
 
     /// Sets the multipart correlation value.
     #[must_use]
-    pub fn correlation_value(mut self, value: Vec<u8>) -> Self {
-        self.fields.correlation_value = Some(SecretBytes::new(value));
-        self
+    pub fn correlation_value(self, value: Vec<u8>) -> Self {
+        set_crypto_field(self, value, CryptoRequestFields::set_correlation_value)
     }
 
     /// Sets the caller-controlled multipart Init Indicator.

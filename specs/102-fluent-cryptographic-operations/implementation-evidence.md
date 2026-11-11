@@ -108,3 +108,9 @@
   `cargo test -p kmipkit-client --all-features --locked` all passed. This
   includes the 879 client unit tests, integration tests, and doctests. The
   exact-head Sonar result will be recorded after the update is pushed.
+- The first Sonar-driven refactor reduced duplicated lines from 154 to 118 but
+  remained above the 3% gate. The additional setter refactor centralizes data,
+  parameters, IV, correlation, and AAD mutation through one private helper;
+  explicit adapters remain macro-free to satisfy the production AST audit.
+  Formatting, Clippy, and the full client package test suite passed again. The
+  updated exact-head Sonar measurement is pending publication.
