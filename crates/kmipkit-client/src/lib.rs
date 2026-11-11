@@ -379,9 +379,11 @@ pub use execute::{
 };
 pub use fluent::{
     ActivateBuilder, ArchiveBuilder, CreateKeyPairBuilder, CreateSplitKeyBuilder,
-    CreateSymmetricKeyBuilder, CryptographicUsageMask, DestroyBuilder, FluentAttributePosition,
-    FluentBuildError, GetBuilder, LocateBuilder, RecertifyBuilder, RecoverBuilder, RegisterBuilder,
-    RekeyBuilder, RekeyKeyPairBuilder, RequestBuilder, RevokeBuilder,
+    CreateSymmetricKeyBuilder, CryptographicUsageMask, DecryptBuilder, DestroyBuilder,
+    EncryptBuilder, FluentAttributePosition, FluentBuildError, GetBuilder, HashBuilder,
+    LocateBuilder, MacBuilder, MacVerifyBuilder, RecertifyBuilder, RecoverBuilder, RegisterBuilder,
+    RekeyBuilder, RekeyKeyPairBuilder, RequestBuilder, RevokeBuilder, SignBuilder,
+    SignatureVerifyBuilder,
 };
 pub use kmipkit_protocol::{
     ProfileObjectState, ProfileTransport, ProfileValidationContext, ProfileValidationError,
