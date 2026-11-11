@@ -225,7 +225,7 @@ class ModelCases:
             return 'p_source', name, 8, b'\x01\x02\x03'
         return None
 
-    def _execute_cryptographic_enum(self, target: dict, protocol_version: str) -> dict | None:
+    def _execute_cryptographic_parameters(self, target: dict, protocol_version: str) -> dict | None:
         selected = self._crypto_target_field(target, protocol_version)
         if selected is None:
             return None
@@ -449,7 +449,7 @@ class ModelCases:
             selected = self._crypto_target_field(target, protocol_version)
             if selected is not None:
                 self.abi.called.clear()
-                return self._execute_cryptographic_enum(target, protocol_version)
+                return self._execute_cryptographic_parameters(target, protocol_version)
         parents = set(target.get('parent_element_ids', []))
         if target.get('target_id') == KEY_VALUE_STRUCTURE or KEY_VALUE_STRUCTURE in parents:
             self.abi.called.clear()
