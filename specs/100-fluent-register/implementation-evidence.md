@@ -3,13 +3,13 @@
 ## Branch and dependency
 
 - Branch: `feature/KMIPKIT-0100-fluent-register`.
-- Base: PR #181 published head `f27e24a2d3e8f494f500ef791492dd784b2df410`.
+- Base: PR #181 head `d1eaf235a6aa39fa5db4a53e0562f1bdddf5afe6` after rebase.
 - Scope: Rust fluent Register builder only; C, Java, and Python parity is
   recorded as pending in the public API manifest.
 
 ## Red
 
-- Commit `2030c11a4` adds the approved feature specification, traceability,
+- Commit `55fb03b3c` adds the approved feature specification, traceability,
   plan, and focused Register tests before production code.
 - `cargo test -p kmipkit-client --all-features fluent_register_tests -- --nocapture`
   failed as expected because `RequestBuilder::register`, `RegisterBuilder`,
@@ -57,7 +57,7 @@
 
 ## Commit record
 
-- Red: `2030c11a4` (`test: specify fluent register builder`).
-- Green: `9b5ac1728` (`feat: add fluent register builder`).
-- Refactor: the documentation, manifest, and evidence commit containing this
-  record.
+- Red: `55fb03b3c` (`test: specify fluent register builder`).
+- Green: `3a8d32d7a` (`feat: add fluent register builder`).
+- Refactor: `6e66f14b1` (`docs: record fluent register API evidence`); this
+  follow-up records the rebased commit identities and dependency head.

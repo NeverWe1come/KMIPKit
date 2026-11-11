@@ -1,8 +1,8 @@
 # Feature Specification: Fluent Register Object (KMIPKIT-0100)
 
-**Branch**: `feature/KMIPKIT-0100-fluent-register`  
-**Base**: KMIPKIT-0099 fluent Create Split Key, PR #181  
-**Status**: Approved in scope by the maintainer's direct 2026-11-11 authorization of the complete KMIPKIT-0093 plan.  
+**Branch**: `feature/KMIPKIT-0100-fluent-register`
+**Base**: KMIPKIT-0099 fluent Create Split Key, PR #181 at `d1eaf235a6aa39fa5db4a53e0562f1bdddf5afe6`
+**Status**: Approved in scope by the maintainer's direct 2026-11-11 authorization of the complete KMIPKIT-0093 plan.
 **Owner**: KMIPKIT-0093-FR-004, FR-005, FR-006, FR-007, FR-008, FR-010
 
 ## Purpose
