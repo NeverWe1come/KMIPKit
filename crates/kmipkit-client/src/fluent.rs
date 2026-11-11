@@ -8,10 +8,12 @@ use kmipkit_protocol::attribute::typed;
 use kmipkit_protocol::{
     ActivateRequest, ArchiveRequest, Attribute, AttributeDefinition, AttributeSet,
     AttributeSetError, CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest,
-    CryptographicAlgorithm, DestroyRequest, GetRequest, LocateRequest, ManagedObject,
-    ObjectGroupMember, ObjectType, OpaqueObjectContext, RecertifyRequest, RecoverRequest,
-    RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest,
-    SecretBytes, SplitKeyMethod, StorageStatusMask, UniqueIdentifier, ValidateKmipRequest,
+    CryptographicAlgorithm, CryptographicParameters, DecryptRequest, DestroyRequest,
+    EncryptRequest, GetRequest, HashRequest, LocateRequest, MacRequest, MacVerifyRequest,
+    ManagedObject, ObjectGroupMember, ObjectType, OpaqueObjectContext, OperationData,
+    RecertifyRequest, RecoverRequest, RegisterRequest, RekeyKeyPairRequest, RekeyRequest,
+    RevocationReason, RevokeRequest, SecretBytes, SignRequest, SignatureVerifyRequest,
+    SplitKeyMethod, StorageStatusMask, UniqueIdentifier, ValidateKmipRequest,
 };
 use kmipkit_transport::{RequestDeliveryState, RequestOptions};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
@@ -97,6 +99,8 @@ pub enum FluentBuildError {
     MissingCreateSplitKeyParts,
     /// Create Split Key is missing Split Key Threshold.
     MissingCreateSplitKeyThreshold,
+    /// Hash is missing its caller-selected Cryptographic Parameters.
+    MissingHashCryptographicParameters,
     /// Register is missing its object.
     MissingRegisterObject,
     /// Register's object or context is invalid.
@@ -138,6 +142,9 @@ impl fmt::Display for FluentBuildError {
             Self::MissingCreateSplitKeyMethod => "Create Split Key requires Split Key Method",
             Self::MissingCreateSplitKeyParts => "Create Split Key requires Split Key Parts",
             Self::MissingCreateSplitKeyThreshold => "Create Split Key requires Split Key Threshold",
+            Self::MissingHashCryptographicParameters => {
+                "Hash requires caller-selected Cryptographic Parameters"
+            }
             Self::MissingRegisterObject => "Register requires an object",
             Self::InvalidRegisterObject => "Register object or context is invalid",
             Self::InvalidAttributeValue => "fluent Object Attribute value is invalid",
@@ -272,6 +279,1146 @@ impl<'a> RequestBuilder<'a> {
     #[must_use]
     pub fn recertify(self) -> RecertifyBuilder<'a> {
         RecertifyBuilder::new(self.client)
+    }
+
+    /// Begins constructing an Encrypt request with caller-supplied data.
+    #[must_use]
+    pub fn encrypt(self) -> EncryptBuilder<'a> {
+        EncryptBuilder::new(self.client)
+    }
+
+    /// Begins constructing a Decrypt request with caller-supplied data.
+    #[must_use]
+    pub fn decrypt(self) -> DecryptBuilder<'a> {
+        DecryptBuilder::new(self.client)
+    }
+
+    /// Begins constructing a Sign request.
+    #[must_use]
+    pub fn sign(self) -> SignBuilder<'a> {
+        SignBuilder::new(self.client)
+    }
+
+    /// Begins constructing a Signature Verify request.
+    #[must_use]
+    pub fn signature_verify(self) -> SignatureVerifyBuilder<'a> {
+        SignatureVerifyBuilder::new(self.client)
+    }
+
+    /// Begins constructing a MAC request.
+    #[must_use]
+    pub fn mac(self) -> MacBuilder<'a> {
+        MacBuilder::new(self.client)
+    }
+
+    /// Begins constructing a MAC Verify request.
+    #[must_use]
+    pub fn mac_verify(self) -> MacVerifyBuilder<'a> {
+        MacVerifyBuilder::new(self.client)
+    }
+
+    /// Begins constructing a Hash request with explicit Cryptographic Parameters.
+    #[must_use]
+    pub fn hash(self) -> HashBuilder<'a> {
+        HashBuilder::new(self.client)
+    }
+}
+
+struct CryptoBuilderExecution<'a> {
+    client: &'a mut Client,
+    options: Option<RequestOptions>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl<'a> CryptoBuilderExecution<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            client,
+            options: None,
+            asynchronous_indicator: None,
+        }
+    }
+
+    fn with_options(mut self, options: RequestOptions) -> Self {
+        self.options = Some(options);
+        self
+    }
+
+    const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.asynchronous_indicator = Some(value);
+        self
+    }
+
+    fn run(
+        self,
+        request: ClientRequest,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        execute_fluent_request(
+            self.client,
+            request,
+            self.asynchronous_indicator,
+            self.options,
+            limits,
+        )
+    }
+}
+
+/// A fluent builder for a typed KMIP Encrypt request.
+pub struct EncryptBuilder<'a> {
+    execution: CryptoBuilderExecution<'a>,
+    unique_identifier: Option<UniqueIdentifier>,
+    data: Option<OperationData>,
+    cryptographic_parameters: Option<Structure>,
+    iv_counter_nonce: Option<SecretBytes>,
+    correlation_value: Option<SecretBytes>,
+    init_indicator: Option<bool>,
+    final_indicator: Option<bool>,
+    authenticated_encryption_additional_data: Option<SecretBytes>,
+}
+
+impl<'a> EncryptBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            execution: CryptoBuilderExecution::new(client),
+            unique_identifier: None,
+            data: None,
+            cryptographic_parameters: None,
+            iv_counter_nonce: None,
+            correlation_value: None,
+            init_indicator: None,
+            final_indicator: None,
+            authenticated_encryption_additional_data: None,
+        }
+    }
+
+    /// Sets the optional key identifier without converting its representation.
+    #[must_use]
+    pub fn unique_identifier(mut self, value: UniqueIdentifier) -> Self {
+        self.unique_identifier = Some(value);
+        self
+    }
+
+    /// Moves plaintext bytes into the request's zeroizing secret owner.
+    #[must_use]
+    pub fn data(mut self, value: Vec<u8>) -> Self {
+        self.data = Some(OperationData::ByteString(SecretBytes::new(value)));
+        self
+    }
+
+    /// Sets an explicitly typed non-byte Data value for expert KMIP use.
+    #[must_use]
+    pub fn data_value(mut self, value: OperationData) -> Self {
+        self.data = Some(value);
+        self
+    }
+
+    /// Sets validated Cryptographic Parameters chosen by the caller.
+    #[must_use]
+    pub fn cryptographic_parameters(mut self, value: CryptographicParameters) -> Self {
+        self.cryptographic_parameters = Some(value.into_ttlv());
+        self
+    }
+
+    /// Sets an expert ordered Cryptographic Parameters Structure.
+    #[must_use]
+    pub fn cryptographic_parameters_structure(mut self, value: Structure) -> Self {
+        self.cryptographic_parameters = Some(value);
+        self
+    }
+
+    /// Sets the caller-selected IV, counter, or nonce bytes.
+    #[must_use]
+    pub fn iv_counter_nonce(mut self, value: Vec<u8>) -> Self {
+        self.iv_counter_nonce = Some(SecretBytes::new(value));
+        self
+    }
+
+    /// Sets the multipart correlation value.
+    #[must_use]
+    pub fn correlation_value(mut self, value: Vec<u8>) -> Self {
+        self.correlation_value = Some(SecretBytes::new(value));
+        self
+    }
+
+    /// Sets the caller-controlled multipart Init Indicator.
+    #[must_use]
+    pub const fn init_indicator(mut self, value: bool) -> Self {
+        self.init_indicator = Some(value);
+        self
+    }
+
+    /// Sets the caller-controlled multipart Final Indicator.
+    #[must_use]
+    pub const fn final_indicator(mut self, value: bool) -> Self {
+        self.final_indicator = Some(value);
+        self
+    }
+
+    /// Sets caller-supplied authenticated-encryption additional data.
+    #[must_use]
+    pub fn authenticated_encryption_additional_data(mut self, value: Vec<u8>) -> Self {
+        self.authenticated_encryption_additional_data = Some(SecretBytes::new(value));
+        self
+    }
+
+    /// Sets exchange-local transport options.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.execution = self.execution.with_options(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.execution = self.execution.with_asynchronous_indicator(value);
+        self
+    }
+
+    fn into_request_and_execution(
+        self,
+    ) -> Result<(EncryptRequest, CryptoBuilderExecution<'a>), FluentBuildError> {
+        let Self {
+            execution,
+            unique_identifier,
+            data,
+            cryptographic_parameters,
+            iv_counter_nonce,
+            correlation_value,
+            init_indicator,
+            final_indicator,
+            authenticated_encryption_additional_data,
+        } = self;
+        let mut request = EncryptRequest::new(unique_identifier, data);
+        if let Some(value) = cryptographic_parameters {
+            request = request.with_cryptographic_parameters(value);
+        }
+        if let Some(value) = iv_counter_nonce {
+            request = request.with_iv_counter_nonce(value);
+        }
+        if let Some(value) = correlation_value {
+            request = request.with_correlation_value(value);
+        }
+        if let Some(value) = init_indicator {
+            request = request.with_init_indicator(value);
+        }
+        if let Some(value) = final_indicator {
+            request = request.with_final_indicator(value);
+        }
+        if let Some(value) = authenticated_encryption_additional_data {
+            request = request.with_authenticated_encryption_additional_data(value);
+        }
+        validate_fluent_request(&request)?;
+        Ok((request, execution))
+    }
+
+    /// Builds the existing typed Encrypt request without sending it.
+    ///
+    /// # Errors
+    /// Returns an error if required fields are missing or the request is invalid.
+    pub fn build(self) -> Result<EncryptRequest, FluentBuildError> {
+        self.into_request_and_execution()
+            .map(|(request, _)| request)
+    }
+
+    /// Converts the typed Encrypt request to a batch item.
+    ///
+    /// # Errors
+    /// Returns an error if required fields are missing or the request is invalid.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build()
+            .map(|request| ClientBatchItem::new(ClientRequest::Encrypt(request)))
+    }
+
+    /// Executes one typed Encrypt exchange without retrying it.
+    ///
+    /// # Errors
+    /// Returns a validation, transport, or protocol error without retrying the exchange.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let (request, execution) = self
+            .into_request_and_execution()
+            .map_err(fluent_client_validation_error)?;
+        execution.run(ClientRequest::Encrypt(request), limits)
+    }
+}
+
+/// A fluent builder for a typed KMIP Decrypt request.
+pub struct DecryptBuilder<'a> {
+    execution: CryptoBuilderExecution<'a>,
+    unique_identifier: Option<UniqueIdentifier>,
+    data: Option<OperationData>,
+    cryptographic_parameters: Option<Structure>,
+    iv_counter_nonce: Option<SecretBytes>,
+    correlation_value: Option<SecretBytes>,
+    init_indicator: Option<bool>,
+    final_indicator: Option<bool>,
+    authenticated_encryption_additional_data: Option<SecretBytes>,
+    authenticated_encryption_tag: Option<SecretBytes>,
+}
+
+impl<'a> DecryptBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            execution: CryptoBuilderExecution::new(client),
+            unique_identifier: None,
+            data: None,
+            cryptographic_parameters: None,
+            iv_counter_nonce: None,
+            correlation_value: None,
+            init_indicator: None,
+            final_indicator: None,
+            authenticated_encryption_additional_data: None,
+            authenticated_encryption_tag: None,
+        }
+    }
+
+    /// Sets the optional key identifier without converting its representation.
+    #[must_use]
+    pub fn unique_identifier(mut self, value: UniqueIdentifier) -> Self {
+        self.unique_identifier = Some(value);
+        self
+    }
+
+    /// Moves ciphertext bytes into the request's zeroizing secret owner.
+    #[must_use]
+    pub fn data(mut self, value: Vec<u8>) -> Self {
+        self.data = Some(OperationData::ByteString(SecretBytes::new(value)));
+        self
+    }
+
+    /// Sets an explicitly typed non-byte Data value for expert KMIP use.
+    #[must_use]
+    pub fn data_value(mut self, value: OperationData) -> Self {
+        self.data = Some(value);
+        self
+    }
+
+    /// Sets validated Cryptographic Parameters chosen by the caller.
+    #[must_use]
+    pub fn cryptographic_parameters(mut self, value: CryptographicParameters) -> Self {
+        self.cryptographic_parameters = Some(value.into_ttlv());
+        self
+    }
+
+    /// Sets an expert ordered Cryptographic Parameters Structure.
+    #[must_use]
+    pub fn cryptographic_parameters_structure(mut self, value: Structure) -> Self {
+        self.cryptographic_parameters = Some(value);
+        self
+    }
+
+    /// Sets the caller-selected IV, counter, or nonce bytes.
+    #[must_use]
+    pub fn iv_counter_nonce(mut self, value: Vec<u8>) -> Self {
+        self.iv_counter_nonce = Some(SecretBytes::new(value));
+        self
+    }
+
+    /// Sets the multipart correlation value.
+    #[must_use]
+    pub fn correlation_value(mut self, value: Vec<u8>) -> Self {
+        self.correlation_value = Some(SecretBytes::new(value));
+        self
+    }
+
+    /// Sets the caller-controlled multipart Init Indicator.
+    #[must_use]
+    pub const fn init_indicator(mut self, value: bool) -> Self {
+        self.init_indicator = Some(value);
+        self
+    }
+
+    /// Sets the caller-controlled multipart Final Indicator.
+    #[must_use]
+    pub const fn final_indicator(mut self, value: bool) -> Self {
+        self.final_indicator = Some(value);
+        self
+    }
+
+    /// Sets caller-supplied authenticated-encryption additional data.
+    #[must_use]
+    pub fn authenticated_encryption_additional_data(mut self, value: Vec<u8>) -> Self {
+        self.authenticated_encryption_additional_data = Some(SecretBytes::new(value));
+        self
+    }
+
+    /// Sets caller-supplied authenticated-encryption tag bytes.
+    #[must_use]
+    pub fn authenticated_encryption_tag(mut self, value: Vec<u8>) -> Self {
+        self.authenticated_encryption_tag = Some(SecretBytes::new(value));
+        self
+    }
+
+    /// Sets exchange-local transport options.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.execution = self.execution.with_options(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.execution = self.execution.with_asynchronous_indicator(value);
+        self
+    }
+
+    fn into_request_and_execution(
+        self,
+    ) -> Result<(DecryptRequest, CryptoBuilderExecution<'a>), FluentBuildError> {
+        let Self {
+            execution,
+            unique_identifier,
+            data,
+            cryptographic_parameters,
+            iv_counter_nonce,
+            correlation_value,
+            init_indicator,
+            final_indicator,
+            authenticated_encryption_additional_data,
+            authenticated_encryption_tag,
+        } = self;
+        let mut request = DecryptRequest::new(unique_identifier, data);
+        if let Some(value) = cryptographic_parameters {
+            request = request.with_cryptographic_parameters(value);
+        }
+        if let Some(value) = iv_counter_nonce {
+            request = request.with_iv_counter_nonce(value);
+        }
+        if let Some(value) = correlation_value {
+            request = request.with_correlation_value(value);
+        }
+        if let Some(value) = init_indicator {
+            request = request.with_init_indicator(value);
+        }
+        if let Some(value) = final_indicator {
+            request = request.with_final_indicator(value);
+        }
+        if let Some(value) = authenticated_encryption_additional_data {
+            request = request.with_authenticated_encryption_additional_data(value);
+        }
+        if let Some(value) = authenticated_encryption_tag {
+            request = request.with_authenticated_encryption_tag(value);
+        }
+        validate_fluent_request(&request)?;
+        Ok((request, execution))
+    }
+
+    /// Builds the existing typed Decrypt request without sending it.
+    ///
+    /// # Errors
+    /// Returns an error if required fields are missing or the request is invalid.
+    pub fn build(self) -> Result<DecryptRequest, FluentBuildError> {
+        self.into_request_and_execution()
+            .map(|(request, _)| request)
+    }
+
+    /// Converts the typed Decrypt request to a batch item.
+    ///
+    /// # Errors
+    /// Returns an error if required fields are missing or the request is invalid.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build()
+            .map(|request| ClientBatchItem::new(ClientRequest::Decrypt(request)))
+    }
+
+    /// Executes one typed Decrypt exchange without retrying it.
+    ///
+    /// # Errors
+    /// Returns a validation, transport, or protocol error without retrying the exchange.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let (request, execution) = self
+            .into_request_and_execution()
+            .map_err(fluent_client_validation_error)?;
+        execution.run(ClientRequest::Decrypt(request), limits)
+    }
+}
+
+/// A fluent builder for a typed KMIP Sign request.
+pub struct SignBuilder<'a> {
+    execution: CryptoBuilderExecution<'a>,
+    request: SignRequest,
+}
+
+impl<'a> SignBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            execution: CryptoBuilderExecution::new(client),
+            request: SignRequest::new(),
+        }
+    }
+
+    /// Sets the optional signing key identifier.
+    #[must_use]
+    pub fn unique_identifier(mut self, value: UniqueIdentifier) -> Self {
+        self.request = self.request.with_unique_identifier(value);
+        self
+    }
+
+    /// Sets caller-selected typed Cryptographic Parameters.
+    #[must_use]
+    pub fn cryptographic_parameters(mut self, value: CryptographicParameters) -> Self {
+        self.request = self
+            .request
+            .with_cryptographic_parameters(value.into_ttlv());
+        self
+    }
+
+    /// Sets an expert ordered Cryptographic Parameters Structure.
+    #[must_use]
+    pub fn cryptographic_parameters_structure(mut self, value: Structure) -> Self {
+        self.request = self.request.with_cryptographic_parameters(value);
+        self
+    }
+
+    /// Moves message bytes into the request's zeroizing secret owner.
+    #[must_use]
+    pub fn data(mut self, value: Vec<u8>) -> Self {
+        self.request = self
+            .request
+            .with_data(OperationData::ByteString(SecretBytes::new(value)));
+        self
+    }
+
+    /// Sets an explicitly typed non-byte Data value for expert KMIP use.
+    #[must_use]
+    pub fn data_value(mut self, value: OperationData) -> Self {
+        self.request = self.request.with_data(value);
+        self
+    }
+
+    /// Moves caller-supplied precomputed digest bytes into zeroizing storage.
+    #[must_use]
+    pub fn digested_data(mut self, value: Vec<u8>) -> Self {
+        self.request = self.request.with_digested_data(SecretBytes::new(value));
+        self
+    }
+
+    /// Sets the multipart correlation value.
+    #[must_use]
+    pub fn correlation_value(mut self, value: Vec<u8>) -> Self {
+        self.request = self.request.with_correlation_value(SecretBytes::new(value));
+        self
+    }
+
+    /// Sets the caller-controlled multipart Init Indicator.
+    #[must_use]
+    pub fn init_indicator(mut self, value: bool) -> Self {
+        self.request = self.request.with_init_indicator(value);
+        self
+    }
+
+    /// Sets the caller-controlled multipart Final Indicator.
+    #[must_use]
+    pub fn final_indicator(mut self, value: bool) -> Self {
+        self.request = self.request.with_final_indicator(value);
+        self
+    }
+
+    /// Sets exchange-local transport options.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.execution = self.execution.with_options(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.execution = self.execution.with_asynchronous_indicator(value);
+        self
+    }
+
+    fn into_request_and_execution(
+        self,
+    ) -> Result<(SignRequest, CryptoBuilderExecution<'a>), FluentBuildError> {
+        validate_fluent_request(&self.request)?;
+        Ok((self.request, self.execution))
+    }
+
+    /// Builds the existing typed Sign request without sending it.
+    ///
+    /// # Errors
+    /// Returns an error if required fields are missing or the request is invalid.
+    pub fn build(self) -> Result<SignRequest, FluentBuildError> {
+        self.into_request_and_execution()
+            .map(|(request, _)| request)
+    }
+
+    /// Converts the typed Sign request to a batch item.
+    ///
+    /// # Errors
+    /// Returns an error if required fields are missing or the request is invalid.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build()
+            .map(|request| ClientBatchItem::new(ClientRequest::Sign(request)))
+    }
+
+    /// Executes one typed Sign exchange without retrying it.
+    ///
+    /// # Errors
+    /// Returns a validation, transport, or protocol error without retrying the exchange.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let (request, execution) = self
+            .into_request_and_execution()
+            .map_err(fluent_client_validation_error)?;
+        execution.run(ClientRequest::Sign(request), limits)
+    }
+}
+
+/// A fluent builder for a typed KMIP Signature Verify request.
+pub struct SignatureVerifyBuilder<'a> {
+    execution: CryptoBuilderExecution<'a>,
+    request: SignatureVerifyRequest,
+}
+
+impl<'a> SignatureVerifyBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            execution: CryptoBuilderExecution::new(client),
+            request: SignatureVerifyRequest::new(),
+        }
+    }
+
+    /// Sets the optional verification key identifier.
+    #[must_use]
+    pub fn unique_identifier(mut self, value: UniqueIdentifier) -> Self {
+        self.request = self.request.with_unique_identifier(value);
+        self
+    }
+
+    /// Sets caller-selected typed Cryptographic Parameters.
+    #[must_use]
+    pub fn cryptographic_parameters(mut self, value: CryptographicParameters) -> Self {
+        self.request = self
+            .request
+            .with_cryptographic_parameters(value.into_ttlv());
+        self
+    }
+
+    /// Sets an expert ordered Cryptographic Parameters Structure.
+    #[must_use]
+    pub fn cryptographic_parameters_structure(mut self, value: Structure) -> Self {
+        self.request = self.request.with_cryptographic_parameters(value);
+        self
+    }
+
+    /// Moves message bytes into the request's zeroizing secret owner.
+    #[must_use]
+    pub fn data(mut self, value: Vec<u8>) -> Self {
+        self.request = self
+            .request
+            .with_data(OperationData::ByteString(SecretBytes::new(value)));
+        self
+    }
+
+    /// Sets an explicitly typed non-byte Data value for expert KMIP use.
+    #[must_use]
+    pub fn data_value(mut self, value: OperationData) -> Self {
+        self.request = self.request.with_data(value);
+        self
+    }
+
+    /// Moves caller-supplied precomputed digest bytes into zeroizing storage.
+    #[must_use]
+    pub fn digested_data(mut self, value: Vec<u8>) -> Self {
+        self.request = self.request.with_digested_data(SecretBytes::new(value));
+        self
+    }
+
+    /// Moves signature bytes into the request's zeroizing secret owner.
+    #[must_use]
+    pub fn signature_data(mut self, value: Vec<u8>) -> Self {
+        self.request = self.request.with_signature_data(SecretBytes::new(value));
+        self
+    }
+
+    /// Sets the multipart correlation value.
+    #[must_use]
+    pub fn correlation_value(mut self, value: Vec<u8>) -> Self {
+        self.request = self.request.with_correlation_value(SecretBytes::new(value));
+        self
+    }
+
+    /// Sets the caller-controlled multipart Init Indicator.
+    #[must_use]
+    pub fn init_indicator(mut self, value: bool) -> Self {
+        self.request = self.request.with_init_indicator(value);
+        self
+    }
+
+    /// Sets the caller-controlled multipart Final Indicator.
+    #[must_use]
+    pub fn final_indicator(mut self, value: bool) -> Self {
+        self.request = self.request.with_final_indicator(value);
+        self
+    }
+
+    /// Sets exchange-local transport options.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.execution = self.execution.with_options(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.execution = self.execution.with_asynchronous_indicator(value);
+        self
+    }
+
+    fn into_request_and_execution(
+        self,
+    ) -> Result<(SignatureVerifyRequest, CryptoBuilderExecution<'a>), FluentBuildError> {
+        validate_fluent_request(&self.request)?;
+        Ok((self.request, self.execution))
+    }
+
+    /// Builds the existing typed Signature Verify request without sending it.
+    ///
+    /// # Errors
+    /// Returns an error if required fields are missing or the request is invalid.
+    pub fn build(self) -> Result<SignatureVerifyRequest, FluentBuildError> {
+        self.into_request_and_execution()
+            .map(|(request, _)| request)
+    }
+
+    /// Converts the typed Signature Verify request to a batch item.
+    ///
+    /// # Errors
+    /// Returns an error if required fields are missing or the request is invalid.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build()
+            .map(|request| ClientBatchItem::new(ClientRequest::SignatureVerify(request)))
+    }
+
+    /// Executes one typed Signature Verify exchange without retrying it.
+    ///
+    /// # Errors
+    /// Returns a validation, transport, or protocol error without retrying the exchange.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let (request, execution) = self
+            .into_request_and_execution()
+            .map_err(fluent_client_validation_error)?;
+        execution.run(ClientRequest::SignatureVerify(request), limits)
+    }
+}
+
+/// A fluent builder for a typed KMIP MAC request.
+pub struct MacBuilder<'a> {
+    execution: CryptoBuilderExecution<'a>,
+    request: MacRequest,
+}
+
+impl<'a> MacBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            execution: CryptoBuilderExecution::new(client),
+            request: MacRequest::new(),
+        }
+    }
+
+    /// Sets the optional MAC key identifier.
+    #[must_use]
+    pub fn unique_identifier(mut self, value: UniqueIdentifier) -> Self {
+        self.request = self.request.with_unique_identifier(value);
+        self
+    }
+
+    /// Sets caller-selected typed Cryptographic Parameters.
+    #[must_use]
+    pub fn cryptographic_parameters(mut self, value: CryptographicParameters) -> Self {
+        self.request = self
+            .request
+            .with_cryptographic_parameters(value.into_ttlv());
+        self
+    }
+
+    /// Sets an expert ordered Cryptographic Parameters Structure.
+    #[must_use]
+    pub fn cryptographic_parameters_structure(mut self, value: Structure) -> Self {
+        self.request = self.request.with_cryptographic_parameters(value);
+        self
+    }
+
+    /// Moves message bytes into the request's zeroizing secret owner.
+    #[must_use]
+    pub fn data(mut self, value: Vec<u8>) -> Self {
+        self.request = self
+            .request
+            .with_data(OperationData::ByteString(SecretBytes::new(value)));
+        self
+    }
+
+    /// Sets an explicitly typed non-byte Data value for expert KMIP use.
+    #[must_use]
+    pub fn data_value(mut self, value: OperationData) -> Self {
+        self.request = self.request.with_data(value);
+        self
+    }
+
+    /// Sets the multipart correlation value.
+    #[must_use]
+    pub fn correlation_value(mut self, value: Vec<u8>) -> Self {
+        self.request = self.request.with_correlation_value(SecretBytes::new(value));
+        self
+    }
+
+    /// Sets the caller-controlled multipart Init Indicator.
+    #[must_use]
+    pub fn init_indicator(mut self, value: bool) -> Self {
+        self.request = self.request.with_init_indicator(value);
+        self
+    }
+
+    /// Sets the caller-controlled multipart Final Indicator.
+    #[must_use]
+    pub fn final_indicator(mut self, value: bool) -> Self {
+        self.request = self.request.with_final_indicator(value);
+        self
+    }
+
+    /// Sets exchange-local transport options.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.execution = self.execution.with_options(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.execution = self.execution.with_asynchronous_indicator(value);
+        self
+    }
+
+    fn into_request_and_execution(
+        self,
+    ) -> Result<(MacRequest, CryptoBuilderExecution<'a>), FluentBuildError> {
+        validate_fluent_request(&self.request)?;
+        Ok((self.request, self.execution))
+    }
+
+    /// Builds the existing typed MAC request without sending it.
+    ///
+    /// # Errors
+    /// Returns an error if required fields are missing or the request is invalid.
+    pub fn build(self) -> Result<MacRequest, FluentBuildError> {
+        self.into_request_and_execution()
+            .map(|(request, _)| request)
+    }
+
+    /// Converts the typed MAC request to a batch item.
+    ///
+    /// # Errors
+    /// Returns an error if required fields are missing or the request is invalid.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build()
+            .map(|request| ClientBatchItem::new(ClientRequest::Mac(request)))
+    }
+
+    /// Executes one typed MAC exchange without retrying it.
+    ///
+    /// # Errors
+    /// Returns a validation, transport, or protocol error without retrying the exchange.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let (request, execution) = self
+            .into_request_and_execution()
+            .map_err(fluent_client_validation_error)?;
+        execution.run(ClientRequest::Mac(request), limits)
+    }
+}
+
+/// A fluent builder for a typed KMIP MAC Verify request.
+pub struct MacVerifyBuilder<'a> {
+    execution: CryptoBuilderExecution<'a>,
+    request: MacVerifyRequest,
+}
+
+impl<'a> MacVerifyBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            execution: CryptoBuilderExecution::new(client),
+            request: MacVerifyRequest::new(),
+        }
+    }
+
+    /// Sets the optional MAC verification key identifier.
+    #[must_use]
+    pub fn unique_identifier(mut self, value: UniqueIdentifier) -> Self {
+        self.request = self.request.with_unique_identifier(value);
+        self
+    }
+
+    /// Sets caller-selected typed Cryptographic Parameters.
+    #[must_use]
+    pub fn cryptographic_parameters(mut self, value: CryptographicParameters) -> Self {
+        self.request = self
+            .request
+            .with_cryptographic_parameters(value.into_ttlv());
+        self
+    }
+
+    /// Sets an expert ordered Cryptographic Parameters Structure.
+    #[must_use]
+    pub fn cryptographic_parameters_structure(mut self, value: Structure) -> Self {
+        self.request = self.request.with_cryptographic_parameters(value);
+        self
+    }
+
+    /// Moves message bytes into the request's zeroizing secret owner.
+    #[must_use]
+    pub fn data(mut self, value: Vec<u8>) -> Self {
+        self.request = self
+            .request
+            .with_data(OperationData::ByteString(SecretBytes::new(value)));
+        self
+    }
+
+    /// Sets an explicitly typed non-byte Data value for expert KMIP use.
+    #[must_use]
+    pub fn data_value(mut self, value: OperationData) -> Self {
+        self.request = self.request.with_data(value);
+        self
+    }
+
+    /// Moves expected MAC bytes into the request's zeroizing secret owner.
+    #[must_use]
+    pub fn mac_data(mut self, value: Vec<u8>) -> Self {
+        self.request = self.request.with_mac_data(SecretBytes::new(value));
+        self
+    }
+
+    /// Sets the multipart correlation value.
+    #[must_use]
+    pub fn correlation_value(mut self, value: Vec<u8>) -> Self {
+        self.request = self.request.with_correlation_value(SecretBytes::new(value));
+        self
+    }
+
+    /// Sets the caller-controlled multipart Init Indicator.
+    #[must_use]
+    pub fn init_indicator(mut self, value: bool) -> Self {
+        self.request = self.request.with_init_indicator(value);
+        self
+    }
+
+    /// Sets the caller-controlled multipart Final Indicator.
+    #[must_use]
+    pub fn final_indicator(mut self, value: bool) -> Self {
+        self.request = self.request.with_final_indicator(value);
+        self
+    }
+
+    /// Sets exchange-local transport options.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.execution = self.execution.with_options(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.execution = self.execution.with_asynchronous_indicator(value);
+        self
+    }
+
+    fn into_request_and_execution(
+        self,
+    ) -> Result<(MacVerifyRequest, CryptoBuilderExecution<'a>), FluentBuildError> {
+        validate_fluent_request(&self.request)?;
+        Ok((self.request, self.execution))
+    }
+
+    /// Builds the existing typed MAC Verify request without sending it.
+    ///
+    /// # Errors
+    /// Returns an error if required fields are missing or the request is invalid.
+    pub fn build(self) -> Result<MacVerifyRequest, FluentBuildError> {
+        self.into_request_and_execution()
+            .map(|(request, _)| request)
+    }
+
+    /// Converts the typed MAC Verify request to a batch item.
+    ///
+    /// # Errors
+    /// Returns an error if required fields are missing or the request is invalid.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build()
+            .map(|request| ClientBatchItem::new(ClientRequest::MacVerify(request)))
+    }
+
+    /// Executes one typed MAC Verify exchange without retrying it.
+    ///
+    /// # Errors
+    /// Returns a validation, transport, or protocol error without retrying the exchange.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let (request, execution) = self
+            .into_request_and_execution()
+            .map_err(fluent_client_validation_error)?;
+        execution.run(ClientRequest::MacVerify(request), limits)
+    }
+}
+
+/// A fluent builder for a typed KMIP Hash request.
+pub struct HashBuilder<'a> {
+    execution: CryptoBuilderExecution<'a>,
+    cryptographic_parameters: Option<Structure>,
+    data: Option<OperationData>,
+    correlation_value: Option<SecretBytes>,
+    init_indicator: Option<bool>,
+    final_indicator: Option<bool>,
+}
+
+impl<'a> HashBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            execution: CryptoBuilderExecution::new(client),
+            cryptographic_parameters: None,
+            data: None,
+            correlation_value: None,
+            init_indicator: None,
+            final_indicator: None,
+        }
+    }
+
+    /// Sets caller-selected typed Cryptographic Parameters.
+    #[must_use]
+    pub fn cryptographic_parameters(mut self, value: CryptographicParameters) -> Self {
+        self.cryptographic_parameters = Some(value.into_ttlv());
+        self
+    }
+
+    /// Sets an expert ordered Cryptographic Parameters Structure.
+    #[must_use]
+    pub fn cryptographic_parameters_structure(mut self, value: Structure) -> Self {
+        self.cryptographic_parameters = Some(value);
+        self
+    }
+
+    /// Moves message bytes into the request's zeroizing secret owner.
+    #[must_use]
+    pub fn data(mut self, value: Vec<u8>) -> Self {
+        self.data = Some(OperationData::ByteString(SecretBytes::new(value)));
+        self
+    }
+
+    /// Sets an explicitly typed non-byte Data value for expert KMIP use.
+    #[must_use]
+    pub fn data_value(mut self, value: OperationData) -> Self {
+        self.data = Some(value);
+        self
+    }
+
+    /// Sets the multipart correlation value.
+    #[must_use]
+    pub fn correlation_value(mut self, value: Vec<u8>) -> Self {
+        self.correlation_value = Some(SecretBytes::new(value));
+        self
+    }
+
+    /// Sets the caller-controlled multipart Init Indicator.
+    #[must_use]
+    pub const fn init_indicator(mut self, value: bool) -> Self {
+        self.init_indicator = Some(value);
+        self
+    }
+
+    /// Sets the caller-controlled multipart Final Indicator.
+    #[must_use]
+    pub const fn final_indicator(mut self, value: bool) -> Self {
+        self.final_indicator = Some(value);
+        self
+    }
+
+    /// Sets exchange-local transport options.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.execution = self.execution.with_options(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.execution = self.execution.with_asynchronous_indicator(value);
+        self
+    }
+
+    fn into_request_and_execution(
+        self,
+    ) -> Result<(HashRequest, CryptoBuilderExecution<'a>), FluentBuildError> {
+        let Some(parameters) = self.cryptographic_parameters else {
+            return Err(FluentBuildError::MissingHashCryptographicParameters);
+        };
+        let mut request = HashRequest::new(parameters);
+        if let Some(value) = self.data {
+            request = request.with_data(value);
+        }
+        if let Some(value) = self.correlation_value {
+            request = request.with_correlation_value(value);
+        }
+        if let Some(value) = self.init_indicator {
+            request = request.with_init_indicator(value);
+        }
+        if let Some(value) = self.final_indicator {
+            request = request.with_final_indicator(value);
+        }
+        validate_fluent_request(&request)?;
+        Ok((request, self.execution))
+    }
+
+    /// Builds the existing typed Hash request without sending it.
+    ///
+    /// # Errors
+    /// Returns an error if required fields are missing or the request is invalid.
+    pub fn build(self) -> Result<HashRequest, FluentBuildError> {
+        self.into_request_and_execution()
+            .map(|(request, _)| request)
+    }
+
+    /// Converts the typed Hash request to a batch item.
+    ///
+    /// # Errors
+    /// Returns an error if required fields are missing or the request is invalid.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build()
+            .map(|request| ClientBatchItem::new(ClientRequest::Hash(request)))
+    }
+
+    /// Executes one typed Hash exchange without retrying it.
+    ///
+    /// # Errors
+    /// Returns a validation, transport, or protocol error without retrying the exchange.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let (request, execution) = self
+            .into_request_and_execution()
+            .map_err(fluent_client_validation_error)?;
+        execution.run(ClientRequest::Hash(request), limits)
     }
 }
 

@@ -1034,10 +1034,10 @@ impl BoundaryAudit {
             is_exact_fluent_catalogued_attribute(fluent_root_scope, impl_type, signature);
         let fluent_explicit_attribute_item =
             is_exact_fluent_explicit_attribute_item(fluent_root_scope, impl_type, signature);
-        let fluent_operation_ttlv_value =
-            is_exact_fluent_operation_ttlv_value(fluent_root_scope, impl_type, signature);
-        let fluent_builder_explicit_value =
-            is_exact_fluent_builder_explicit_value(fluent_root_scope, impl_type, signature);
+        let fluent_explicit_value =
+            is_exact_fluent_operation_ttlv_value(fluent_root_scope, impl_type, signature)
+                || is_exact_fluent_builder_explicit_value(fluent_root_scope, impl_type, signature)
+                || is_exact_fluent_crypto_secret_input(fluent_root_scope, impl_type, signature);
         let s2c_root_scope = self.is_source_root(Path::new("server_to_client.rs"));
         let server_request_dispatcher =
             is_exact_server_request_dispatch(s2c_root_scope, impl_type, signature);
@@ -1046,7 +1046,7 @@ impl BoundaryAudit {
             || async_outcome_callback
             || error_validation_source
             || fluent_catalogued_attribute
-            || fluent_operation_ttlv_value;
+            || fluent_explicit_value;
         if has_public_type_or_const_generics(signature) && !approved_generic_signature {
             finder
                 .violations
@@ -1072,8 +1072,7 @@ impl BoundaryAudit {
                             || signature.ident == "vendor_attribute" && index == 3
                             || signature.ident == "attribute_at" && index == 2
                             || signature.ident == "object_item" && index == 2)
-                    || fluent_builder_explicit_value && index == 1
-                    || fluent_operation_ttlv_value && index == 1
+                    || fluent_explicit_value && index == 1
                 {
                     continue;
                 }
@@ -2477,6 +2476,18 @@ fn is_exact_fluent_operation_ttlv_value(
             "common_protection_storage_masks"
             | "private_protection_storage_masks"
             | "public_protection_storage_masks",
+        )
+        | (
+            Some(
+                "EncryptBuilder"
+                | "DecryptBuilder"
+                | "SignBuilder"
+                | "SignatureVerifyBuilder"
+                | "MacBuilder"
+                | "MacVerifyBuilder"
+                | "HashBuilder",
+            ),
+            "cryptographic_parameters_structure",
         ) => "Structure",
         _ => return false,
     };
@@ -2502,6 +2513,81 @@ fn is_exact_fluent_operation_ttlv_value(
             Some(syn::FnArg::Typed(argument))
                 if argument.attrs.is_empty() && is_plain_type_path(&argument.ty, expected_argument)
         )
+}
+
+fn is_exact_fluent_crypto_secret_input(
+    fluent_root_scope: bool,
+    impl_type: Option<&str>,
+    signature: &syn::Signature,
+) -> bool {
+    let method = signature.ident.to_string();
+    let supported_method = matches!(
+        (impl_type, method.as_str()),
+        (
+            Some("EncryptBuilder"),
+            "data"
+                | "iv_counter_nonce"
+                | "correlation_value"
+                | "authenticated_encryption_additional_data"
+        ) | (
+            Some("DecryptBuilder"),
+            "data"
+                | "iv_counter_nonce"
+                | "correlation_value"
+                | "authenticated_encryption_additional_data"
+                | "authenticated_encryption_tag"
+        ) | (
+            Some("SignBuilder"),
+            "data" | "digested_data" | "correlation_value"
+        ) | (
+            Some("SignatureVerifyBuilder"),
+            "data" | "digested_data" | "signature_data" | "correlation_value"
+        ) | (
+            Some("MacBuilder" | "HashBuilder"),
+            "data" | "correlation_value"
+        ) | (
+            Some("MacVerifyBuilder"),
+            "data" | "mac_data" | "correlation_value"
+        )
+    );
+    if !fluent_root_scope
+        || !supported_method
+        || !signature.generics.params.is_empty()
+        || signature.generics.where_clause.is_some()
+        || signature.asyncness.is_some()
+        || signature.constness.is_some()
+        || signature.unsafety.is_some()
+        || signature.abi.is_some()
+        || signature.variadic.is_some()
+        || signature.inputs.len() != 2
+        || !matches!(&signature.output, syn::ReturnType::Type(_, output) if is_plain_type_path(output, "Self"))
+        || !matches!(
+            signature.inputs.first(),
+            Some(syn::FnArg::Receiver(receiver))
+                if receiver.reference.is_none()
+                    && receiver.colon_token.is_none()
+                    && receiver.attrs.is_empty()
+        )
+    {
+        return false;
+    }
+    let Some(syn::FnArg::Typed(argument)) = signature.inputs.get(1) else {
+        return false;
+    };
+    if !argument.attrs.is_empty() {
+        return false;
+    }
+    matches!(argument.ty.as_ref(), Type::Path(path)
+        if path.qself.is_none()
+            && path.path.leading_colon.is_none()
+            && path.path.segments.len() == 1
+            && path.path.segments[0].ident == "Vec"
+            && matches!(&path.path.segments[0].arguments,
+                syn::PathArguments::AngleBracketed(arguments)
+                    if arguments.args.len() == 1
+                        && matches!(arguments.args.first(),
+                            Some(syn::GenericArgument::Type(ty))
+                                if is_plain_type_path(ty, "u8"))))
 }
 
 fn is_plain_reference_to_str(ty: &Type) -> bool {
@@ -2646,6 +2732,34 @@ fn fluent_operation_ttlv_inputs_are_exact_and_method_scoped() {
             "RecertifyBuilder",
             "fn protection_storage_masks(self, value: Structure) -> Self",
         ),
+        (
+            "EncryptBuilder",
+            "fn cryptographic_parameters_structure(self, value: Structure) -> Self",
+        ),
+        (
+            "DecryptBuilder",
+            "fn cryptographic_parameters_structure(self, value: Structure) -> Self",
+        ),
+        (
+            "SignBuilder",
+            "fn cryptographic_parameters_structure(self, value: Structure) -> Self",
+        ),
+        (
+            "SignatureVerifyBuilder",
+            "fn cryptographic_parameters_structure(self, value: Structure) -> Self",
+        ),
+        (
+            "MacBuilder",
+            "fn cryptographic_parameters_structure(self, value: Structure) -> Self",
+        ),
+        (
+            "MacVerifyBuilder",
+            "fn cryptographic_parameters_structure(self, value: Structure) -> Self",
+        ),
+        (
+            "HashBuilder",
+            "fn cryptographic_parameters_structure(self, value: Structure) -> Self",
+        ),
     ] {
         let signature = syn::parse_str::<syn::Signature>(signature).unwrap();
         assert!(is_exact_fluent_operation_ttlv_value(
@@ -2682,6 +2796,57 @@ fn fluent_operation_ttlv_inputs_are_exact_and_method_scoped() {
     ] {
         let signature = syn::parse_str::<syn::Signature>(signature).unwrap();
         assert!(!is_exact_fluent_operation_ttlv_value(
+            true,
+            Some(impl_type),
+            &signature
+        ));
+    }
+}
+
+#[test]
+fn fluent_crypto_secret_inputs_are_exact_and_method_scoped() {
+    for (impl_type, method) in [
+        ("EncryptBuilder", "data"),
+        ("EncryptBuilder", "iv_counter_nonce"),
+        ("EncryptBuilder", "correlation_value"),
+        ("EncryptBuilder", "authenticated_encryption_additional_data"),
+        ("DecryptBuilder", "authenticated_encryption_tag"),
+        ("SignBuilder", "digested_data"),
+        ("SignatureVerifyBuilder", "signature_data"),
+        ("MacVerifyBuilder", "mac_data"),
+        ("HashBuilder", "data"),
+    ] {
+        let signature =
+            syn::parse_str::<syn::Signature>(&format!("fn {method}(self, value: Vec<u8>) -> Self"))
+                .unwrap();
+        assert!(is_exact_fluent_crypto_secret_input(
+            true,
+            Some(impl_type),
+            &signature
+        ));
+        assert!(!is_exact_fluent_crypto_secret_input(
+            false,
+            Some(impl_type),
+            &signature
+        ));
+        assert!(!is_exact_fluent_crypto_secret_input(
+            true,
+            Some("OtherBuilder"),
+            &signature
+        ));
+    }
+
+    for (impl_type, signature) in [
+        ("EncryptBuilder", "fn data(self, value: Vec<u16>) -> Self"),
+        ("SignBuilder", "fn data<T>(self, value: Vec<u8>) -> Self"),
+        ("HashBuilder", "fn arbitrary(self, value: Vec<u8>) -> Self"),
+        (
+            "DecryptBuilder",
+            "fn authenticated_encryption_tag(self, value: Structure) -> Self",
+        ),
+    ] {
+        let signature = syn::parse_str::<syn::Signature>(signature).unwrap();
+        assert!(!is_exact_fluent_crypto_secret_input(
             true,
             Some(impl_type),
             &signature
