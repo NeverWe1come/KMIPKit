@@ -566,10 +566,10 @@ fn key_pair_validation_is_local_non_consuming_and_matches_construction() {
     }
 }
 
-fn ordered_prebuilt_attributes(first_tag: u32) -> AttributeSet {
+fn ordered_prebuilt_attributes(tags: [u32; 2]) -> AttributeSet {
     AttributeSet::try_new([
-        test_item(first_tag, Value::boolean(true)),
-        test_item(first_tag + 1, Value::boolean(false)),
+        test_item(tags[0], Value::boolean(true)),
+        test_item(tags[1], Value::boolean(false)),
     ])
     .unwrap()
 }
@@ -578,15 +578,33 @@ fn ordered_prebuilt_attributes(first_tag: u32) -> AttributeSet {
 fn key_pair_prebuilt_sets_preserve_group_internal_and_repeated_call_order() {
     let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
     let builder = grouped_key_pair(&mut client)
-        .common_attributes(ordered_prebuilt_attributes(0x0054_0001))
-        .private_key_attributes(ordered_prebuilt_attributes(0x0054_0011))
-        .public_key_attributes(ordered_prebuilt_attributes(0x0054_0021))
+        .common_attributes(ordered_prebuilt_attributes([
+            typed::Fresh::TAG,
+            typed::KeyValuePresent::TAG,
+        ]))
+        .private_key_attributes(ordered_prebuilt_attributes([
+            typed::QuantumSafe::TAG,
+            typed::RotateAutomatic::TAG,
+        ]))
+        .public_key_attributes(ordered_prebuilt_attributes([
+            typed::KeyValuePresent::TAG,
+            typed::Fresh::TAG,
+        ]))
         .common_attribute(Attribute::<typed::AlwaysSensitive>::new(true).unwrap())
         .private_attribute(Attribute::<typed::NeverExtractable>::new(true).unwrap())
         .public_attribute(Attribute::<typed::NeverExtractable>::new(false).unwrap())
-        .common_attributes(ordered_prebuilt_attributes(0x0054_0003))
-        .private_key_attributes(ordered_prebuilt_attributes(0x0054_0013))
-        .public_key_attributes(ordered_prebuilt_attributes(0x0054_0023));
+        .common_attributes(ordered_prebuilt_attributes([
+            typed::QuantumSafe::TAG,
+            typed::RotateAutomatic::TAG,
+        ]))
+        .private_key_attributes(ordered_prebuilt_attributes([
+            typed::Fresh::TAG,
+            typed::KeyValuePresent::TAG,
+        ]))
+        .public_key_attributes(ordered_prebuilt_attributes([
+            typed::RotateAutomatic::TAG,
+            typed::QuantumSafe::TAG,
+        ]));
     assert_eq!(builder.validate(), Ok(()));
     let payload = builder.build().unwrap().into_ttlv_payload().unwrap();
     let groups = payload_groups(&payload);
@@ -601,7 +619,7 @@ fn key_pair_prebuilt_sets_preserve_group_internal_and_repeated_call_order() {
             PUBLIC_KEY_ATTRIBUTES
         ]
     );
-    for (group, prefix, first_tag, interleaved) in [
+    for (group, prefix, set_tags, interleaved) in [
         (
             groups[0],
             vec![
@@ -609,7 +627,12 @@ fn key_pair_prebuilt_sets_preserve_group_internal_and_repeated_call_order() {
                 typed::CryptographicLength::TAG,
                 typed::Sensitive::TAG,
             ],
-            0x0054_0001,
+            [
+                typed::Fresh::TAG,
+                typed::KeyValuePresent::TAG,
+                typed::QuantumSafe::TAG,
+                typed::RotateAutomatic::TAG,
+            ],
             typed::AlwaysSensitive::TAG,
         ),
         (
@@ -619,7 +642,12 @@ fn key_pair_prebuilt_sets_preserve_group_internal_and_repeated_call_order() {
                 typed::Name::TAG,
                 typed::Extractable::TAG,
             ],
-            0x0054_0011,
+            [
+                typed::QuantumSafe::TAG,
+                typed::RotateAutomatic::TAG,
+                typed::Fresh::TAG,
+                typed::KeyValuePresent::TAG,
+            ],
             typed::NeverExtractable::TAG,
         ),
         (
@@ -629,17 +657,22 @@ fn key_pair_prebuilt_sets_preserve_group_internal_and_repeated_call_order() {
                 typed::Name::TAG,
                 typed::Extractable::TAG,
             ],
-            0x0054_0021,
+            [
+                typed::KeyValuePresent::TAG,
+                typed::Fresh::TAG,
+                typed::RotateAutomatic::TAG,
+                typed::QuantumSafe::TAG,
+            ],
             typed::NeverExtractable::TAG,
         ),
     ] {
         let mut expected = prefix;
         expected.extend([
-            first_tag,
-            first_tag + 1,
+            set_tags[0],
+            set_tags[1],
             interleaved,
-            first_tag + 2,
-            first_tag + 3,
+            set_tags[2],
+            set_tags[3],
         ]);
         assert_eq!(attribute_tags(group), expected);
         let items = group.as_structure().unwrap().children();
@@ -720,4 +753,43 @@ fn key_pair_prebuilt_conflicting_algorithms_use_the_existing_request_validator()
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert_eq!(transport.borrow().exchange_count(), 0);
     assert!(!format!("{error:?} {error}").contains(PRIVATE_SENTINEL));
+}
+
+fn assert_key_pair_prebuilt_message_extensions_are_rejected(group: u32) {
+    for tag in [0x0054_0000, 0x0054_8000, 0x0054_FFFF] {
+        let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+        let attributes = AttributeSet::try_new([test_item(tag, Value::boolean(true))]).unwrap();
+        let builder = grouped_key_pair(&mut client);
+        let builder = match group {
+            COMMON_ATTRIBUTES => builder.common_attributes(attributes),
+            PRIVATE_KEY_ATTRIBUTES => builder.private_key_attributes(attributes),
+            _ => builder.public_key_attributes(attributes),
+        };
+        assert_eq!(
+            builder.validate(),
+            Err(FluentBuildError::MessageExtensionTagNotObjectAttribute)
+        );
+        assert_eq!(
+            builder.build_request().unwrap_err(),
+            FluentBuildError::MessageExtensionTagNotObjectAttribute
+        );
+        let error = builder.execute(&CodecLimits::defaults()).unwrap_err();
+        assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+        assert_eq!(transport.borrow().exchange_count(), 0);
+    }
+}
+
+#[test]
+fn key_pair_prebuilt_common_attributes_reject_message_extensions_before_transport() {
+    assert_key_pair_prebuilt_message_extensions_are_rejected(COMMON_ATTRIBUTES);
+}
+
+#[test]
+fn key_pair_prebuilt_private_attributes_reject_message_extensions_before_transport() {
+    assert_key_pair_prebuilt_message_extensions_are_rejected(PRIVATE_KEY_ATTRIBUTES);
+}
+
+#[test]
+fn key_pair_prebuilt_public_attributes_reject_message_extensions_before_transport() {
+    assert_key_pair_prebuilt_message_extensions_are_rejected(PUBLIC_KEY_ATTRIBUTES);
 }
