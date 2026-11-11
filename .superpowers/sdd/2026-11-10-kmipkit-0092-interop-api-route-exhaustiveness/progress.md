@@ -169,3 +169,31 @@ branches, and the common CI therefore reports a planned matrix only.
   focused regression and generated-manifest check pass after this refactor.
 - This corrects matrix applicability; it does not mark any language matrix
   complete. T006/T007 and all vendor interoperability runs remain open.
+
+## 2026-11-11 raw scalar route applicability correction
+
+- Rust matrix evidence showed `ObjectType::from_raw` claimed unrelated
+  object structures and structure members because the route inventory expanded
+  every matching parent subtree. The same subtree expansion affected other
+  public `from_raw` wrappers, attaching structure tags and members to APIs that
+  only accept a scalar raw value.
+- The inventory now binds scalar wrappers to only their own enumeration or
+  bitmask values. It keeps explicit family mappings for `RevocationReason` and
+  the protocol-version message fields, whose normative names do not match the
+  Rust type name. The manifest remains at 1,479 routes.
+- Red: `edc84f536` adds regressions for exact `ObjectType` family membership
+  and preserving `ProtocolVersion` / `RevocationReason` families. Before the
+  fix, the ObjectType test failed with unrelated object and structure targets;
+  the second test failed because the two valid routes disappeared under the
+  first narrow mapping attempt.
+- Green: `564c0b216` scopes the target associations and regenerates the
+  manifest. Both focused regressions pass, and
+  `python3 -B interop/shared/tools/route_capabilities.py --check` passes.
+- Refactor: `40b2eef24` names the family aliases and protocol-version prefix;
+  both focused regressions and the generated-manifest check remain green.
+- Full shared suite:
+  `python3 -B -m unittest discover -s interop/shared/tests -p 'test_*.py' -v`
+  passed 141 tests in 215.609 seconds. `git diff --check` passed.
+- This reduces false applicability only. Rust/C/Java/Python must rerun their
+  matrices against this manifest; all language matrices and vendor KMS runs
+  remain incomplete, so the PR stays WIP.
