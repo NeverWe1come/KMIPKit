@@ -73,3 +73,17 @@ will be added here as each Red, Green, and Refactor commit is produced.
   Cryptographic Parameters, wrong-operation setters, null pointers, invalid
   multipart flags, and invalid asynchronous indicators while preserving output
   handles.
+
+## Refactor
+
+- The first strict Clippy run found `build_request` exceeded the repository's
+  100-line limit. The request-part preparation, seven operation-specific typed
+  constructors, and common request validation are now separate helpers. Clippy
+  then identified two unused receivers and duplicate fixture match arms; those
+  were converted to associated functions and merged. The final command
+  `cargo clippy -p kmipkit-ffi --all-targets --all-features -- -D warnings`
+  passes. The first full FFI suite also found the static panic-boundary audit
+  did not scan the new submodule. The audit now includes it, and exported C
+  wrappers enter `ffi_entrypoint` directly before calling internal helpers.
+  `cargo test -p kmipkit-ffi --features coverage-c-consumer --locked` passes:
+  471 unit tests, 55 C API coverage tests, and the 56-operation parity test.
