@@ -228,8 +228,12 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertIsNotNone(trees)
         self.assertEqual(len(trees), 1)
         self.assertEqual(trees[0][0], 0x420008)
-        self.assertEqual([child[0] for child in trees[0][2]], [0x420059, 0x42000A, 0x42000B])
+        self.assertEqual([child[0] for child in trees[0][2]], [0x42009D, 0x42000A, 0x42000B])
         self.assertEqual([child[2] for child in trees[0][2]], [b'fixture_vendor', b'fixture_attribute', b'fixture-value'])
+        result = executor.execute(target, '2.1')
+        self.assertTrue({'kmipkit_typed_attribute_from_item', 'kmipkit_attribute_set_create',
+                         'kmipkit_ttlv_decode'} <= result['invoked_symbols'])
+        self.assertEqual(result['negative_checks'], 5)
 
 
 if __name__ == '__main__':
