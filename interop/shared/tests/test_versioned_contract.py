@@ -265,6 +265,7 @@ class VersionedContractTests(unittest.TestCase):
 
     def test_workflow_runs_the_contract_checks_for_this_feature_branch(self) -> None:
         workflow = (ROOT / ".github/workflows/interop-common.yml").read_text(encoding="utf-8")
+        self.assertIn("fetch-depth: 0", workflow)
         self.assertIn("feature/KMIPKIT-0088-interop-contract-matrix", workflow)
         self.assertIn("specs/088-interop-contract-version-matrix/**", workflow)
         self.assertIn("feature/KMIPKIT-0092-interop-api-route-exhaustiveness", workflow)
