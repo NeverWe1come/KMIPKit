@@ -3,7 +3,7 @@
 ## Branch and dependency
 
 - Branch: `feature/KMIPKIT-0102-fluent-cryptographic-operations`.
-- Base: PR #184 at `3d9a53139` (unmerged; exact-head CI is running).
+- Base: PR #184 at `5d9c22369` (unmerged; exact-head CI is running).
 - Scope: Rust fluent builders for Encrypt, Decrypt, Sign, Signature Verify,
   MAC, MAC Verify, and Hash.
 
