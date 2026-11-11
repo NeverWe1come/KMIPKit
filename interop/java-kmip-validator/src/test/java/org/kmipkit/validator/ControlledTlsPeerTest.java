@@ -6,8 +6,23 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.kmipkit.extensions.ClientBatch;
 import org.kmipkit.extensions.ClientBatchItem;
+import org.kmipkit.extensions.ClientBatchItemResult;
+import org.kmipkit.extensions.ClientBatchResponse;
+import org.kmipkit.extensions.QueryResponse;
+import org.kmipkit.extensions.QueryResponseField;
+import org.kmipkit.extensions.QueryResponseFieldKind;
 import org.kmipkit.protocol.KmipValues;
+import org.kmipkit.ttlv.CodecLimits;
+import org.kmipkit.ttlv.RawTag;
+import org.kmipkit.ttlv.Tag;
+import org.kmipkit.ttlv.TtlvCodec;
+import org.kmipkit.ttlv.TtlvDecodeErrorKind;
+import org.kmipkit.ttlv.TtlvDecodeException;
+import org.kmipkit.ttlv.TtlvItem;
+import org.kmipkit.ttlv.TtlvItemType;
+import org.kmipkit.ttlv.TtlvValue;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -24,6 +39,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
 import java.security.KeyFactory;
 import java.security.KeyStore;
 import java.security.PrivateKey;
@@ -34,8 +50,10 @@ import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
 import java.util.ArrayList;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
@@ -45,6 +63,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ControlledTlsPeerTest {
     private static final String LOG_MESSAGE = "KMIPKit interoperability diagnostic";
     private static final String CREATED_OBJECT_ID = "controlled-create-object-id";
+    private static final byte[] UNALLOCATED_TAG_INTEGER = {
+            0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00
+    };
 
     @TempDir
     Path temporaryDirectory;
@@ -130,16 +151,27 @@ class ControlledTlsPeerTest {
         Path reportPath = Path.of(System.getProperty("kmipkit.routeEvidenceOutput",
                 "build/route-execution-evidence.json"));
         Files.deleteIfExists(reportPath);
+        ObjectMapper mapper = new ObjectMapper();
+        ArrayNode events = mapper.createArrayNode();
+        String requestTreeHash;
+        byte[] queryOperation = queryOperationTtlv();
+        requestTreeHash = normalizedTreeSha256(queryOperation);
 
         for (String protocolVersion : List.of("2.0", "2.1")) {
+            appendLocalQueryRouteEvents(events, protocolVersion, requestTreeHash);
+            TtlvDecodeException tagRejection = org.junit.jupiter.api.Assertions.assertThrows(
+                    TtlvDecodeException.class, () -> TtlvCodec.decode(UNALLOCATED_TAG_INTEGER));
+            assertEquals(TtlvDecodeErrorKind.UNALLOCATED_TAG, tagRejection.kind());
+            appendRejectedTagEvent(events, protocolVersion);
+
             byte[] serverCertificatePem = fixture("server-cert.pem");
             byte[] serverPrivateKeyPem = fixture("server-key.pem");
             byte[] clientCertificatePem = fixture("client-cert.pem");
             byte[] clientPrivateKeyPem = fixture("client-key.pem");
             SSLServerSocket listener = listener(certificate(serverCertificatePem),
                     privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
-            FutureTask<byte[]> peer = new FutureTask<>(() -> serveOneResponse(listener,
-                    queryResponse("2.0".equals(protocolVersion) ? 0 : 1)));
+            byte[] responseBytes = queryResponse("2.0".equals(protocolVersion) ? 0 : 1);
+            FutureTask<byte[]> peer = new FutureTask<>(() -> serveOneResponse(listener, responseBytes));
             Thread peerThread = new Thread(peer, "java-validator-query-route-evidence-peer-" + protocolVersion);
             peerThread.setDaemon(true);
             peerThread.start();
@@ -147,22 +179,46 @@ class ControlledTlsPeerTest {
             Path connectionFile = temporaryDirectory.resolve("route-evidence-" + protocolVersion + ".json");
             Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
                     clientCertificatePem, clientPrivateKeyPem, false, protocolVersion));
-            var catalog = CatalogLoader.load(Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json"));
-            var query = catalog.cases().stream().filter(value -> value.caseId().equals("test-op-query"))
-                    .findFirst().orElseThrow();
-
-            JavaKmipDriver.CaseOutcome outcome;
             try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile))) {
-                outcome = driver.execute(query);
+                try (ClientBatch batch = ClientBatch.create()) {
+                    ClientBatchItem request = ClientBatchItem.query(new int[] {1}, null)
+                            .withUniqueBatchItemId("item-0".getBytes(StandardCharsets.US_ASCII));
+                    assertEquals(0x18L, request.operation());
+                    batch.add(request);
+                    try (ClientBatchResponse response = driver.executeBatchForEvidence(batch)) {
+                        assertEquals(1, response.itemCount());
+                        try (ClientBatchItemResult result = response.itemAt(0)) {
+                            assertEquals(0x18L, result.operation());
+                            assertEquals(0L, result.resultStatus());
+                            try (var genericPayload = result.queryResponse().orElseThrow()) {
+                                try (var view = genericPayload.view()) {
+                                assertEquals(2, view.itemCount());
+                                }
+                            }
+                            try (QueryResponse typed = result.typedQueryResponse().orElseThrow()) {
+                                assertEquals(2, typed.fieldCount());
+                                QueryResponseField operation = typed.fieldAt(0);
+                                assertEquals(QueryResponseFieldKind.ENUMERATION, operation.kind());
+                                assertEquals(0x3bL, operation.enumeration().orElseThrow());
+                            }
+                        }
+                    }
+                }
             } finally {
                 listener.close();
             }
             byte[] request = peer.get(15, TimeUnit.SECONDS);
-            assertEquals("passed", outcome.status(), protocolVersion + ": " + outcome);
             assertEquals(0x18L, requestOperation(request),
                     "The controlled peer must parse the installed Query request operation.");
+            assertTrue(contains(request, item(0x420074, 5, intBytes(1))),
+                    "The controlled peer must observe the Query Operations function.");
+            assertEquals("2.0".equals(protocolVersion) ? 0 : 1, requestProtocolMinorVersion(request));
+            String requestHash = normalizedTreeSha256(request);
+            String responseHash = normalizedTreeSha256(responseBytes);
+            appendNetworkQueryRouteEvents(events, protocolVersion, requestHash, responseHash);
         }
 
+        writeRouteExecutionReport(reportPath, mapper, events);
         assertTrue(Files.isRegularFile(reportPath),
                 "Installed Query calls against the controlled peer must emit route execution evidence.");
         JsonNode report = new ObjectMapper().readTree(reportPath.toFile());
@@ -170,6 +226,13 @@ class ControlledTlsPeerTest {
         assertEquals(20, report.path("events").size());
         assertEquals("test-op-query", report.path("case_ids").get(0).asText());
         assertEquals("test-norm-tag-range-kmipkit-range-001", report.path("case_ids").get(1).asText());
+        assertEquals(2, report.path("protocol_versions").size());
+        assertEquals("org.kmipkit.extensions.Client.execute",
+                findEvent(report.path("events"), "send", "2.0").path("execution_api_symbol").asText());
+        assertEquals("org.kmipkit.extensions.ClientBatchItemResult.queryResponse",
+                findRouteEvent(report.path("events"),
+                        "java.typed-protocol.function.client_batch_item_response_query", "2.1")
+                        .path("public_api_symbol").asText());
     }
 
     @Test
@@ -966,6 +1029,207 @@ class ControlledTlsPeerTest {
             if (matches) return Integer.toUnsignedLong(ByteBuffer.wrap(request, offset + header.length, 4).getInt());
         }
         throw new AssertionError("The outgoing KMIP request omitted its Operation field.");
+    }
+
+    private static void appendLocalQueryRouteEvents(ArrayNode events, String protocolVersion,
+            String operationTreeHash) throws Exception {
+        try (RawTag rawTag = RawTag.fromRaw(0x42005c);
+                Tag tag = rawTag.checked();
+                TtlvValue value = TtlvValue.Enumeration(0x18);
+                TtlvItem item = TtlvItem.create(tag, value, CodecLimits.defaults())) {
+            try (var view = item.view(); var valueView = view.value()) {
+                assertEquals(0x42005c, view.tag().raw());
+                assertEquals(TtlvItemType.Enumeration, view.itemType());
+                assertEquals(0x18L, valueView.enumeration());
+            }
+            appendRouteEvent(events, "test-op-query", "java.generic-ttlv.ttlv_item.create",
+                    "KMIPKIT-ELEM-OP-C2S-QUERY", "org.kmipkit.ttlv.TtlvItem.create", null, null,
+                    "construct", protocolVersion, null, operationTreeHash, null, false);
+            appendRouteEvent(events, "test-op-query", "java.generic-ttlv.function.ttlv_item_view_from_item",
+                    "KMIPKIT-ELEM-OP-C2S-QUERY", "org.kmipkit.ttlv.TtlvItem.view", null, null,
+                    "decode", protocolVersion, null, null, operationTreeHash, false);
+        }
+
+        try (TtlvItem decoded = TtlvCodec.decode(queryOperationTtlv())) {
+            assertTrue(decoded != null, "The installed TTLV decoder must return a value.");
+        }
+        appendRouteEvent(events, "test-op-query", "java.generic-ttlv.ttlv_codec.decode",
+                "KMIPKIT-ELEM-OP-C2S-QUERY", "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
+                "decode", protocolVersion, null, null, operationTreeHash, false);
+    }
+
+    private static void appendRejectedTagEvent(ArrayNode events, String protocolVersion) throws Exception {
+        ObjectNode event = newRouteEvent(events, "test-norm-tag-range-kmipkit-range-001",
+                "java.generic-ttlv.ttlv_codec.decode", "KMIPKIT-RANGE-001",
+                "org.kmipkit.ttlv.TtlvCodec.decode", null, null, "decode", protocolVersion, null);
+        event.put("decode_outcome", "rejected");
+        event.put("decode_rejection_code", "tag_not_allocated");
+        event.put("decode_input_sha256", sha256(UNALLOCATED_TAG_INTEGER));
+    }
+
+    private static void appendNetworkQueryRouteEvents(ArrayNode events, String protocolVersion,
+            String requestTreeHash, String responseTreeHash) throws Exception {
+        String routeId = "java.typed-protocol.client_batch_item.query";
+        String symbol = "org.kmipkit.extensions.ClientBatchItem.query";
+        String executionRoute = "java.execute.typed-batch";
+        String executionSymbol = "org.kmipkit.extensions.Client.execute";
+        appendRouteEvent(events, "test-op-query", routeId, "KMIPKIT-ELEM-OP-C2S-QUERY", symbol,
+                executionRoute, executionSymbol, "construct", protocolVersion, "raw_tls",
+                requestTreeHash, null, false);
+        ObjectNode sent = appendRouteEvent(events, "test-op-query", routeId,
+                "KMIPKIT-ELEM-OP-C2S-QUERY", symbol, executionRoute, executionSymbol,
+                "send", protocolVersion, "raw_tls", requestTreeHash, null, false);
+        sent.put("request_delivery_state", "response_received");
+        sent.put("transport_invocation_count", 1);
+        appendRouteEvent(events, "test-op-query", routeId, "KMIPKIT-ELEM-OP-C2S-QUERY", symbol,
+                executionRoute, executionSymbol, "decode", protocolVersion, "raw_tls",
+                null, responseTreeHash, false);
+        appendRouteEvent(events, "test-op-query", "java.typed-protocol.function.client_batch_item_response_query",
+                "KMIPKIT-ELEM-OP-C2S-QUERY", "org.kmipkit.extensions.ClientBatchItemResult.queryResponse",
+                null, null, "decode", protocolVersion, null, null, responseTreeHash, false);
+        appendRouteEvent(events, "test-op-query", "java.typed-protocol.function.client_batch_item_response_query_field_at",
+                "KMIPKIT-ELEM-OP-C2S-QUERY", "org.kmipkit.extensions.QueryResponse.fieldAt",
+                null, null, "decode", protocolVersion, null, null, responseTreeHash, false);
+        appendRouteEvent(events, "test-op-query", "java.typed-protocol.function.client_batch_item_response_query_field_count",
+                "KMIPKIT-ELEM-OP-C2S-QUERY", "org.kmipkit.extensions.QueryResponse.fieldCount",
+                null, null, "decode", protocolVersion, null, null, responseTreeHash, false);
+    }
+
+    private static ObjectNode appendRouteEvent(ArrayNode events, String caseId, String routeId,
+            String targetId, String publicApiSymbol, String executionRouteId, String executionApiSymbol,
+            String action, String protocolVersion, String transport, String requestHash,
+            String responseHash, boolean rejectedDecode) throws Exception {
+        ObjectNode event = newRouteEvent(events, caseId, routeId, targetId, publicApiSymbol,
+                executionRouteId, executionApiSymbol, action, protocolVersion, transport);
+        if (requestHash != null) event.put("request_tree_sha256", requestHash);
+        if (responseHash != null) event.put("response_tree_sha256", responseHash);
+        return event;
+    }
+
+    private static ObjectNode newRouteEvent(ArrayNode events, String caseId, String routeId,
+            String targetId, String publicApiSymbol, String executionRouteId, String executionApiSymbol,
+            String action, String protocolVersion, String transport) {
+        ObjectNode event = events.addObject();
+        event.put("case_id", caseId);
+        event.put("route_id", routeId);
+        event.put("target_id", targetId);
+        event.put("public_api_symbol", publicApiSymbol);
+        if (executionRouteId == null) event.putNull("execution_route_id");
+        else event.put("execution_route_id", executionRouteId);
+        if (executionApiSymbol == null) event.putNull("execution_api_symbol");
+        else event.put("execution_api_symbol", executionApiSymbol);
+        event.put("invocation_id", UUID.randomUUID().toString());
+        event.put("action", action);
+        event.put("protocol_version", protocolVersion);
+        event.put("encoding", "TTLV");
+        if (transport == null) event.putNull("transport");
+        else event.put("transport", transport);
+        event.put("status", "passed");
+        event.put("invocation_count", 1);
+        return event;
+    }
+
+    private static void writeRouteExecutionReport(Path reportPath, ObjectMapper mapper,
+            ArrayNode events) throws Exception {
+        Path catalogPath = Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json");
+        Path manifestPath = Path.of("../shared/coverage/route-capabilities.json");
+        Path pinPath = Path.of("library-pin.json");
+        String libraryCommit = mapper.readTree(pinPath.toFile()).path("commit").asText();
+        var artifact = ArtifactProvenance.load(Path.of(System.getProperty("kmipkit.artifactManifest")), libraryCommit);
+        Path loadedJar = Path.of(ClientBatchItem.class.getProtectionDomain().getCodeSource()
+                .getLocation().toURI()).toAbsolutePath().normalize();
+        assertEquals(artifact.artifactPath(), loadedJar,
+                "All route events must come from the independently installed package JAR.");
+
+        ObjectNode report = mapper.createObjectNode();
+        report.put("schema_version", "1.0");
+        report.put("run_id", "java-controlled-query-" + UUID.randomUUID());
+        report.put("language", "java");
+        ObjectNode server = report.putObject("server");
+        server.put("id", "java-controlled-tls-peer");
+        server.put("product", "KMIPKit Java validator controlled fixture");
+        server.put("version", "fixture-1");
+        server.put("configuration_fingerprint", sha256("java-controlled-query-peer-fixture-v1"));
+        report.put("library_commit", artifact.libraryCommit());
+        report.put("artifact_sha256", artifact.artifactSha256());
+        report.put("catalog_sha256", ArtifactProvenance.sha256(catalogPath));
+        report.put("route_manifest_sha256", ArtifactProvenance.sha256(manifestPath));
+        report.putArray("case_ids").add("test-op-query").add("test-norm-tag-range-kmipkit-range-001");
+        report.putArray("protocol_versions").add("2.0").add("2.1");
+        ObjectNode combination = mapper.createObjectNode();
+        combination.put("encoding", "TTLV");
+        combination.put("transport", "raw_tls");
+        report.putArray("network_combinations").add(combination);
+        report.set("events", events);
+        Files.createDirectories(reportPath.toAbsolutePath().normalize().getParent());
+        mapper.writerWithDefaultPrettyPrinter().writeValue(reportPath.toFile(), report);
+    }
+
+    private static JsonNode findEvent(JsonNode events, String action, String protocolVersion) {
+        for (JsonNode event : events) {
+            if (action.equals(event.path("action").asText())
+                    && protocolVersion.equals(event.path("protocol_version").asText())
+                    && "test-op-query".equals(event.path("case_id").asText())
+                    && event.hasNonNull("execution_api_symbol")) return event;
+        }
+        throw new AssertionError("The expected controlled Query route event is absent.");
+    }
+
+    private static JsonNode findRouteEvent(JsonNode events, String routeId, String protocolVersion) {
+        for (JsonNode event : events) {
+            if (routeId.equals(event.path("route_id").asText())
+                    && protocolVersion.equals(event.path("protocol_version").asText())) return event;
+        }
+        throw new AssertionError("The expected installed Java API route event is absent.");
+    }
+
+    private static byte[] queryOperationTtlv() throws Exception {
+        return item(0x42005c, 5, intBytes(0x18));
+    }
+
+    private static String normalizedTreeSha256(byte[] wire) throws Exception {
+        StringBuilder normalized = new StringBuilder();
+        int next = appendNormalizedItem(wire, 0, normalized);
+        if (next != wire.length) throw new IllegalArgumentException("TTLV fixture has trailing bytes");
+        return sha256(normalized.toString().getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static int appendNormalizedItem(byte[] wire, int offset, StringBuilder normalized) {
+        if (offset < 0 || wire.length - offset < 8) {
+            throw new IllegalArgumentException("TTLV fixture item header is incomplete");
+        }
+        int tag = (Byte.toUnsignedInt(wire[offset]) << 16)
+                | (Byte.toUnsignedInt(wire[offset + 1]) << 8)
+                | Byte.toUnsignedInt(wire[offset + 2]);
+        int type = Byte.toUnsignedInt(wire[offset + 3]);
+        int length = ByteBuffer.wrap(wire, offset + 4, 4).getInt();
+        if (length < 0) throw new IllegalArgumentException("TTLV fixture item length is invalid");
+        int padded = Math.addExact(length, 7) & ~7;
+        int valueOffset = Math.addExact(offset, 8);
+        int valueEnd = Math.addExact(valueOffset, length);
+        int itemEnd = Math.addExact(valueOffset, padded);
+        if (itemEnd > wire.length || valueEnd > itemEnd) {
+            throw new IllegalArgumentException("TTLV fixture item is incomplete");
+        }
+        if (tag != 0x420092) {
+            normalized.append(String.format(java.util.Locale.ROOT, "%06x:%02x:", tag, type));
+            if (type == 1) {
+                int child = valueOffset;
+                while (child < valueEnd) child = appendNormalizedItem(wire, child, normalized);
+            } else {
+                normalized.append(HexFormat.of().formatHex(wire, valueOffset, valueEnd));
+            }
+            normalized.append(';');
+        }
+        return itemEnd;
+    }
+
+    private static String sha256(String value) throws Exception {
+        return sha256(value.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static String sha256(byte[] value) throws Exception {
+        return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(value));
     }
 
     private static int requestProtocolMinorVersion(byte[] request) {

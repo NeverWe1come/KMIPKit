@@ -79,11 +79,14 @@ manifest and uploads `route-capability-probe.json`. That report establishes
 package symbol and named-value availability only; it does not claim that every
 catalog route or interoperability case has executed successfully.
 
-The installed-consumer suite also records an exact local decoder invocation
-for the unused KMIP Tag range under both KMIP 2.0 and 2.1, checks the expected
-unallocated-tag rejection code, and validates those two route cells against
-the shared matrix. CI uploads `route-execution-evidence.json` together with
-the generated ledger and compares that ledger with the checked-in
-`route-evidence-ledger.json`. The ledger counts every remaining Java matrix
-cell and lists cases still pending a real recipe; a passing selected-scope
-check does not mark the full matrix complete.
+The installed-consumer suite records exact local TTLV construction, decoding,
+and view calls for the Query operation under KMIP 2.0 and 2.1, then exchanges
+typed Query requests and a checked Query response with the controlled TLS
+peer under both versions. It directly invokes the public Query response
+readers and verifies the returned field count, kind, and raw operation value.
+The same test records the expected unused-tag decoder rejection for both
+versions. CI validates these per-cell events against the shared matrix,
+uploads `route-execution-evidence.json` with the generated ledger, and compares
+that ledger with the checked-in `route-evidence-ledger.json`. Only these 20
+cells are executed; the ledger keeps every other Java matrix cell pending and
+does not imply vendor interoperability or full-matrix completion.
