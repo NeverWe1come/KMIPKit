@@ -6,10 +6,12 @@ use std::ops::BitOr;
 
 use kmipkit_protocol::attribute::typed;
 use kmipkit_protocol::{
-    Attribute, AttributeDefinition, AttributeSet, AttributeSetError, CreateKeyPairRequest,
-    CreateRequest, CreateSplitKeyRequest, CryptographicAlgorithm, DestroyRequest, GetRequest,
-    ManagedObject, ObjectType, OpaqueObjectContext, RegisterRequest, SplitKeyMethod,
-    UniqueIdentifier, ValidateKmipRequest,
+    ActivateRequest, ArchiveRequest, Attribute, AttributeDefinition, AttributeSet,
+    AttributeSetError, CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest,
+    CryptographicAlgorithm, DestroyRequest, GetRequest, LocateRequest, ManagedObject,
+    ObjectGroupMember, ObjectType, OpaqueObjectContext, RecertifyRequest, RecoverRequest,
+    RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest,
+    SecretBytes, SplitKeyMethod, StorageStatusMask, UniqueIdentifier, ValidateKmipRequest,
 };
 use kmipkit_transport::{RequestDeliveryState, RequestOptions};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
@@ -222,6 +224,54 @@ impl<'a> RequestBuilder<'a> {
             options: None,
             asynchronous_indicator: None,
         }
+    }
+
+    /// Begins an Activate request with its optional identifier omitted.
+    #[must_use]
+    pub fn activate(self) -> ActivateBuilder<'a> {
+        ActivateBuilder::new(self.client)
+    }
+
+    /// Begins an Archive request with its optional identifier omitted.
+    #[must_use]
+    pub fn archive(self) -> ArchiveBuilder<'a> {
+        ArchiveBuilder::new(self.client)
+    }
+
+    /// Begins a Recover request with its optional identifier omitted.
+    #[must_use]
+    pub fn recover(self) -> RecoverBuilder<'a> {
+        RecoverBuilder::new(self.client)
+    }
+
+    /// Begins constructing a Revoke request with an explicit reason.
+    #[must_use]
+    pub fn revoke(self, reason: RevocationReason) -> RevokeBuilder<'a> {
+        RevokeBuilder::new(self.client, reason)
+    }
+
+    /// Begins a Locate request with the caller's required Attributes criteria.
+    #[must_use]
+    pub fn locate(self, attributes: AttributeSet) -> LocateBuilder<'a> {
+        LocateBuilder::new(self.client, attributes)
+    }
+
+    /// Begins a Re-key request with its optional identifier omitted.
+    #[must_use]
+    pub fn rekey(self) -> RekeyBuilder<'a> {
+        RekeyBuilder::new(self.client)
+    }
+
+    /// Begins constructing a typed Re-key Key Pair request for a private key.
+    #[must_use]
+    pub fn rekey_key_pair(self) -> RekeyKeyPairBuilder<'a> {
+        RekeyKeyPairBuilder::new(self.client)
+    }
+
+    /// Begins constructing a typed Re-certify request.
+    #[must_use]
+    pub fn recertify(self) -> RecertifyBuilder<'a> {
+        RecertifyBuilder::new(self.client)
     }
 }
 
@@ -1491,6 +1541,534 @@ impl DestroyBuilder<'_> {
         )
     }
 }
+
+macro_rules! fluent_exchange_options {
+    ($builder:ident) => {
+        impl $builder<'_> {
+            /// Sets exchange-local options without changing client policy.
+            #[must_use]
+            pub fn with_options(mut self, options: RequestOptions) -> Self {
+                self.options = Some(options);
+                self
+            }
+
+            /// Sets the Request Header Asynchronous Indicator for this exchange.
+            #[must_use]
+            pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+                self.asynchronous_indicator = Some(value);
+                self
+            }
+        }
+    };
+}
+
+fn validate_fluent_request<R: ValidateKmipRequest>(request: &R) -> Result<(), FluentBuildError> {
+    if request.validate().is_valid() {
+        Ok(())
+    } else {
+        Err(FluentBuildError::InvalidRequest)
+    }
+}
+
+fn fluent_client_validation_error(error: FluentBuildError) -> ClientError {
+    ClientError::validation(
+        ClientCauseCategory::InvalidInput,
+        RequestDeliveryState::NotSent,
+        error,
+    )
+}
+
+fn execute_fluent_request(
+    client: &mut Client,
+    request: ClientRequest,
+    asynchronous_indicator: Option<u32>,
+    options: Option<RequestOptions>,
+    limits: &kmipkit_ttlv::codec::CodecLimits,
+) -> Result<ClientBatchItemResponse, ClientError> {
+    let options = options.unwrap_or_default();
+    client.execute_one_typed_request_with_async_indicator(
+        request,
+        asynchronous_indicator,
+        limits,
+        &options,
+    )
+}
+
+macro_rules! fluent_typed_request_methods {
+    ($builder:ident, $request:ty, $variant:ident) => {
+        impl $builder<'_> {
+            /// Validates the typed request without sending it.
+            pub fn validate(&self) -> Result<(), FluentBuildError> {
+                validate_fluent_request(&self.request)
+            }
+
+            /// Builds the existing typed request without sending it.
+            pub fn build_request(self) -> Result<$request, FluentBuildError> {
+                validate_fluent_request(&self.request)?;
+                Ok(self.request)
+            }
+
+            /// Converts this request to its typed batch item.
+            pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+                self.build_request()
+                    .map(|request| ClientBatchItem::new(ClientRequest::$variant(request)))
+            }
+
+            /// Executes exactly one typed request exchange.
+            pub fn execute(
+                self,
+                limits: &kmipkit_ttlv::codec::CodecLimits,
+            ) -> Result<ClientBatchItemResponse, ClientError> {
+                let Self {
+                    client,
+                    request,
+                    options,
+                    asynchronous_indicator,
+                } = self;
+                validate_fluent_request(&request).map_err(fluent_client_validation_error)?;
+                execute_fluent_request(
+                    client,
+                    ClientRequest::$variant(request),
+                    asynchronous_indicator,
+                    options,
+                    limits,
+                )
+            }
+        }
+    };
+}
+
+macro_rules! fluent_identifier_lifecycle_builder {
+    ($builder:ident, $request:ty, $variant:ident) => {
+        #[doc = concat!("A fluent builder for an existing typed ", stringify!($variant), " request.")]
+        pub struct $builder<'a> {
+            client: &'a mut Client,
+            request: $request,
+            options: Option<RequestOptions>,
+            asynchronous_indicator: Option<u32>,
+        }
+
+        impl<'a> $builder<'a> {
+            fn new(client: &'a mut Client) -> Self {
+                Self {
+                    client,
+                    request: <$request>::new(None),
+                    options: None,
+                    asynchronous_indicator: None,
+                }
+            }
+
+            /// Sets the optional Unique Identifier in the typed request.
+            #[must_use]
+            pub fn unique_identifier(mut self, value: UniqueIdentifier) -> Self {
+                self.request = <$request>::new(Some(value));
+                self
+            }
+        }
+
+        fluent_exchange_options!($builder);
+        fluent_typed_request_methods!($builder, $request, $variant);
+    };
+}
+
+fluent_identifier_lifecycle_builder!(ActivateBuilder, ActivateRequest, Activate);
+fluent_identifier_lifecycle_builder!(ArchiveBuilder, ArchiveRequest, Archive);
+fluent_identifier_lifecycle_builder!(RecoverBuilder, RecoverRequest, Recover);
+
+/// A fluent builder for an existing typed Revoke request.
+pub struct RevokeBuilder<'a> {
+    client: &'a mut Client,
+    request: RevokeRequest,
+    options: Option<RequestOptions>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl<'a> RevokeBuilder<'a> {
+    fn new(client: &'a mut Client, reason: RevocationReason) -> Self {
+        Self {
+            client,
+            request: RevokeRequest::new(reason),
+            options: None,
+            asynchronous_indicator: None,
+        }
+    }
+
+    /// Sets the optional Unique Identifier in the typed request.
+    #[must_use]
+    pub fn unique_identifier(mut self, value: UniqueIdentifier) -> Self {
+        self.request = self.request.with_unique_identifier(value);
+        self
+    }
+
+    /// Sets the optional audit Revocation Message.
+    #[must_use]
+    pub fn revocation_message(mut self, value: impl Into<String>) -> Self {
+        self.request = self.request.with_revocation_message(value.into());
+        self
+    }
+
+    /// Sets the optional compromise occurrence date in KMIP Date-Time seconds.
+    #[must_use]
+    pub fn compromise_occurrence_date(mut self, value: i64) -> Self {
+        self.request = self.request.with_compromise_occurrence_date(value);
+        self
+    }
+
+    /// Validates the typed Revoke request without sending it.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        validate_fluent_request(&self.request)
+    }
+
+    /// Builds the existing typed Revoke request without sending it.
+    pub fn build_request(self) -> Result<RevokeRequest, FluentBuildError> {
+        validate_fluent_request(&self.request)?;
+        Ok(self.request)
+    }
+
+    /// Converts this request to its typed batch item.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build_request()
+            .map(|request| ClientBatchItem::new(ClientRequest::Revoke(request)))
+    }
+
+    /// Executes exactly one typed Revoke exchange.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let Self {
+            client,
+            request,
+            options,
+            asynchronous_indicator,
+        } = self;
+        validate_fluent_request(&request).map_err(fluent_client_validation_error)?;
+        execute_fluent_request(
+            client,
+            ClientRequest::Revoke(request),
+            asynchronous_indicator,
+            options,
+            limits,
+        )
+    }
+}
+
+fluent_exchange_options!(RevokeBuilder);
+
+/// A fluent builder for an existing typed Locate request.
+pub struct LocateBuilder<'a> {
+    client: &'a mut Client,
+    request: LocateRequest,
+    options: Option<RequestOptions>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl<'a> LocateBuilder<'a> {
+    fn new(client: &'a mut Client, attributes: AttributeSet) -> Self {
+        Self {
+            client,
+            request: LocateRequest::new(attributes),
+            options: None,
+            asynchronous_indicator: None,
+        }
+    }
+
+    /// Sets the complete ordered Attributes filter set.
+    #[must_use]
+    pub fn attributes(mut self, attributes: AttributeSet) -> Self {
+        let maximum_items = self.request.maximum_items();
+        let offset_items = self.request.offset_items();
+        let storage_status_mask = self.request.storage_status_mask();
+        let object_group_member = self.request.object_group_member();
+
+        let mut request = LocateRequest::new(attributes);
+        if let Some(value) = maximum_items {
+            request = request.with_maximum_items(value);
+        }
+        if let Some(value) = offset_items {
+            request = request.with_offset_items(value);
+        }
+        if let Some(value) = storage_status_mask {
+            request = request.with_storage_status_mask(value);
+        }
+        if let Some(value) = object_group_member {
+            request = request.with_object_group_member(value);
+        }
+        self.request = request;
+        self
+    }
+
+    /// Limits the number of located objects returned by the server.
+    #[must_use]
+    pub fn maximum_items(mut self, value: i32) -> Self {
+        self.request = self.request.with_maximum_items(value);
+        self
+    }
+
+    /// Selects the zero-based server-side result offset.
+    #[must_use]
+    pub fn offset_items(mut self, value: i32) -> Self {
+        self.request = self.request.with_offset_items(value);
+        self
+    }
+
+    /// Sets the raw-preserving Storage Status Mask filter.
+    #[must_use]
+    pub fn storage_status_mask(mut self, value: StorageStatusMask) -> Self {
+        self.request = self.request.with_storage_status_mask(value);
+        self
+    }
+
+    /// Sets the raw-preserving Object Group Member filter.
+    #[must_use]
+    pub fn object_group_member(mut self, value: ObjectGroupMember) -> Self {
+        self.request = self.request.with_object_group_member(value);
+        self
+    }
+
+    /// Validates the typed Locate request without sending it.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        validate_fluent_request(&self.request)
+    }
+
+    /// Builds the existing typed Locate request without sending it.
+    pub fn build_request(self) -> Result<LocateRequest, FluentBuildError> {
+        validate_fluent_request(&self.request)?;
+        Ok(self.request)
+    }
+
+    /// Converts this request to its typed batch item.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build_request()
+            .map(|request| ClientBatchItem::new(ClientRequest::Locate(request)))
+    }
+
+    /// Executes exactly one typed Locate exchange.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let Self {
+            client,
+            request,
+            options,
+            asynchronous_indicator,
+        } = self;
+        validate_fluent_request(&request).map_err(fluent_client_validation_error)?;
+        execute_fluent_request(
+            client,
+            ClientRequest::Locate(request),
+            asynchronous_indicator,
+            options,
+            limits,
+        )
+    }
+}
+
+fluent_exchange_options!(LocateBuilder);
+
+/// A fluent builder for an existing typed Re-key request.
+pub struct RekeyBuilder<'a> {
+    client: &'a mut Client,
+    request: RekeyRequest,
+    options: Option<RequestOptions>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl<'a> RekeyBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            client,
+            request: RekeyRequest::new(),
+            options: None,
+            asynchronous_indicator: None,
+        }
+    }
+
+    /// Sets the optional source key identifier in the typed request.
+    #[must_use]
+    pub fn unique_identifier(mut self, value: UniqueIdentifier) -> Self {
+        self.request = std::mem::take(&mut self.request).with_unique_identifier(value);
+        self
+    }
+
+    /// Sets the server-side date difference for the replacement key.
+    #[must_use]
+    pub fn offset(mut self, value: u32) -> Self {
+        self.request = std::mem::take(&mut self.request).with_offset(value);
+        self
+    }
+
+    /// Sets the ordered generic Attributes Structure for the replacement key.
+    #[must_use]
+    pub fn attributes(mut self, value: Structure) -> Self {
+        self.request = std::mem::take(&mut self.request).with_attributes(value);
+        self
+    }
+
+    /// Sets the optional Protection Storage Masks Structure.
+    #[must_use]
+    pub fn protection_storage_masks(mut self, value: Structure) -> Self {
+        self.request = std::mem::take(&mut self.request).with_protection_storage_masks(value);
+        self
+    }
+}
+
+fluent_exchange_options!(RekeyBuilder);
+fluent_typed_request_methods!(RekeyBuilder, RekeyRequest, Rekey);
+
+/// A fluent builder for an existing typed Re-key Key Pair request.
+pub struct RekeyKeyPairBuilder<'a> {
+    client: &'a mut Client,
+    request: RekeyKeyPairRequest,
+    options: Option<RequestOptions>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl<'a> RekeyKeyPairBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            client,
+            request: RekeyKeyPairRequest::new(),
+            options: None,
+            asynchronous_indicator: None,
+        }
+    }
+
+    /// Sets the optional source Private Key identifier in the typed request.
+    #[must_use]
+    pub fn private_key_unique_identifier(mut self, value: UniqueIdentifier) -> Self {
+        self.request = std::mem::take(&mut self.request).with_private_key_unique_identifier(value);
+        self
+    }
+
+    /// Sets the server-side date difference for the replacement key pair.
+    #[must_use]
+    pub fn offset(mut self, value: u32) -> Self {
+        self.request = std::mem::take(&mut self.request).with_offset(value);
+        self
+    }
+
+    /// Sets the attributes shared by both replacement keys.
+    #[must_use]
+    pub fn common_attributes(mut self, value: AttributeSet) -> Self {
+        self.request = std::mem::take(&mut self.request).with_common_attributes(value);
+        self
+    }
+
+    /// Sets attributes for the replacement private key.
+    #[must_use]
+    pub fn private_key_attributes(mut self, value: AttributeSet) -> Self {
+        self.request = std::mem::take(&mut self.request).with_private_key_attributes(value);
+        self
+    }
+
+    /// Sets attributes for the replacement public key.
+    #[must_use]
+    pub fn public_key_attributes(mut self, value: AttributeSet) -> Self {
+        self.request = std::mem::take(&mut self.request).with_public_key_attributes(value);
+        self
+    }
+
+    /// Sets masks shared by both replacement keys.
+    #[must_use]
+    pub fn common_protection_storage_masks(mut self, value: Structure) -> Self {
+        self.request =
+            std::mem::take(&mut self.request).with_common_protection_storage_masks(value);
+        self
+    }
+
+    /// Sets masks for the replacement private key.
+    #[must_use]
+    pub fn private_protection_storage_masks(mut self, value: Structure) -> Self {
+        self.request =
+            std::mem::take(&mut self.request).with_private_protection_storage_masks(value);
+        self
+    }
+
+    /// Sets masks for the replacement public key.
+    #[must_use]
+    pub fn public_protection_storage_masks(mut self, value: Structure) -> Self {
+        self.request =
+            std::mem::take(&mut self.request).with_public_protection_storage_masks(value);
+        self
+    }
+}
+
+fluent_exchange_options!(RekeyKeyPairBuilder);
+fluent_typed_request_methods!(RekeyKeyPairBuilder, RekeyKeyPairRequest, RekeyKeyPair);
+
+/// A fluent builder for an existing typed Re-certify request.
+pub struct RecertifyBuilder<'a> {
+    client: &'a mut Client,
+    request: RecertifyRequest,
+    options: Option<RequestOptions>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl<'a> RecertifyBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            client,
+            request: RecertifyRequest::new(),
+            options: None,
+            asynchronous_indicator: None,
+        }
+    }
+
+    /// Selects the existing certificate to renew.
+    #[must_use]
+    pub fn unique_identifier(mut self, value: UniqueIdentifier) -> Self {
+        self.request = std::mem::take(&mut self.request).with_unique_identifier(value);
+        self
+    }
+
+    /// Selects a certificate request object by its Unique Identifier.
+    #[must_use]
+    pub fn certificate_request_unique_identifier(mut self, value: UniqueIdentifier) -> Self {
+        self.request =
+            std::mem::take(&mut self.request).with_certificate_request_unique_identifier(value);
+        self
+    }
+
+    /// Sets the raw KMIP Certificate Request Type enumeration value.
+    #[must_use]
+    pub fn certificate_request_type(mut self, value: u32) -> Self {
+        self.request = std::mem::take(&mut self.request).with_certificate_request_type(value);
+        self
+    }
+
+    /// Sets the secret Certificate Request Value with zeroizing ownership.
+    #[must_use]
+    pub fn certificate_request_value(mut self, value: SecretBytes) -> Self {
+        self.request = std::mem::take(&mut self.request).with_certificate_request_value(value);
+        self
+    }
+
+    /// Sets the server-side date difference for the replacement certificate.
+    #[must_use]
+    pub fn offset(mut self, value: u32) -> Self {
+        self.request = std::mem::take(&mut self.request).with_offset(value);
+        self
+    }
+
+    /// Sets the ordered generic Attributes Structure.
+    #[must_use]
+    pub fn attributes(mut self, value: Structure) -> Self {
+        self.request = std::mem::take(&mut self.request).with_attributes(value);
+        self
+    }
+
+    /// Sets the optional Protection Storage Masks Structure.
+    #[must_use]
+    pub fn protection_storage_masks(mut self, value: Structure) -> Self {
+        self.request = std::mem::take(&mut self.request).with_protection_storage_masks(value);
+        self
+    }
+}
+
+fluent_exchange_options!(RecertifyBuilder);
+fluent_typed_request_methods!(RecertifyBuilder, RecertifyRequest, Recertify);
 
 fn item(raw_tag: u32, value: Value) -> Result<Item, FluentBuildError> {
     let tag: Tag = RawTag::new(raw_tag)

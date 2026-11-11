@@ -374,9 +374,10 @@ pub use execute::{
     ResponseEncodingError,
 };
 pub use fluent::{
-    CreateKeyPairBuilder, CreateSplitKeyBuilder, CreateSymmetricKeyBuilder, CryptographicUsageMask,
-    DestroyBuilder, FluentAttributePosition, FluentBuildError, GetBuilder, RegisterBuilder,
-    RequestBuilder,
+    ActivateBuilder, ArchiveBuilder, CreateKeyPairBuilder, CreateSplitKeyBuilder,
+    CreateSymmetricKeyBuilder, CryptographicUsageMask, DestroyBuilder, FluentAttributePosition,
+    FluentBuildError, GetBuilder, LocateBuilder, RecertifyBuilder, RecoverBuilder, RegisterBuilder,
+    RekeyBuilder, RekeyKeyPairBuilder, RequestBuilder, RevokeBuilder,
 };
 pub use kmipkit_protocol::{
     ProfileObjectState, ProfileTransport, ProfileValidationContext, ProfileValidationError,
