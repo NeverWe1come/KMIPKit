@@ -147,8 +147,12 @@ def text_response(
 ) -> bytes:
     from kmipkit import protocol_values
 
-    status_name = protocol_values.ResultStatus.name(status)
-    reason_name = None if reason is None else protocol_values.ResultReason.name(reason)
+    status_name = "".join(protocol_values.ResultStatus.name(status).split())
+    reason_name = (
+        None
+        if reason is None
+        else "".join(protocol_values.ResultReason.name(reason).split())
+    )
     if encoding == "JSON":
         batch_item = [
             {"tag": "Operation", "type": "Enumeration", "value": operation},
