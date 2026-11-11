@@ -158,6 +158,25 @@ class MatrixContract(unittest.TestCase):
         self.assertEqual(process.returncode, 0, process.stderr)
         self.assertEqual(report['events'][0]['request_tree_sha256'], hashlib.sha256(b'[[4325419,1,[]]]').hexdigest())
 
+    def test_every_parameter_setter_projects_its_own_normative_field(self):
+        symbols = {route['public_api_symbol'] for route in ROUTES['routes']
+                   if route['language'] == 'rust' and route['public_api_symbol'].startswith('kmipkit_protocol::CryptographicParametersBuilder::with_')}
+        targets = {target['target_id']: target for target in CATALOG['normative_targets']}
+        selected = {}
+        for cell in iter_cells(CATALOG, ROUTES, languages=('rust',)):
+            if cell['public_api_symbol'] not in symbols or cell['public_api_symbol'] in selected:
+                continue
+            target = targets[cell['target_id']]
+            if target['kind'] == 'enumeration_value' and target.get('allocation') != 'assigned':
+                continue
+            if target['kind'] in ('enumeration_value', 'structure_member'):
+                selected[cell['public_api_symbol']] = cell
+        self.assertEqual(set(selected), symbols)
+        process, report = self.run_matrix(list(selected.values()))
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual(len(report['events']), len(symbols))
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
     def test_forged_symbol_is_rejected_without_false_positive(self):
         cell = self.cell('kmipkit_ttlv::Item::new')
         cell['public_api_symbol'] = 'kmipkit_ttlv::Value::boolean'
