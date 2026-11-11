@@ -211,6 +211,8 @@ _GENERIC_SYMBOLS = {
 
 def execute_cell(cell: dict, case: dict, target: dict) -> dict:
     if cell['transport'] is None:
+        if cell['public_api_symbol'] in _TYPED_ATTRIBUTE_SYMBOLS:
+            return _typed_attribute_cell(cell, case, target)
         return _generic_cell(cell, case, target)
     return _network_cell(cell, case, target)
 
@@ -529,3 +531,66 @@ def _not_sent_cell(cell: dict, case: dict) -> dict:
             raise ValueError('version-boundary request was not rejected before transport')
         return {'request_tree_sha256': digest(inputs), 'request_delivery_state': 'not_sent',
                 'transport_invocation_count': 0}
+
+
+_TYPED_ATTRIBUTE_SYMBOLS = {
+    'kmipkit.typed_attributes.TypedAttribute.create',
+    'kmipkit.typed_attributes.TypedAttribute.from_item',
+    'kmipkit.attribute_operations.AttributeSet.try_new',
+    'kmipkit.attribute_operations.AttributeSet.try_push',
+    'kmipkit.attribute_operations.AttributeSet.try_push_typed',
+}
+
+
+def _typed_attribute_cell(cell: dict, case: dict, target: dict) -> dict:
+    """Check exact direct-attribute identity, value copies and collection reads."""
+    from kmipkit import ttlv
+    from kmipkit.attribute_operations import AttributeSet
+    from kmipkit.typed_attributes import StandardAttribute, TypedAttribute
+
+    samples = _generic_samples(case, target, 'kmipkit.ttlv.ttlv_item_create')
+    attributes = {attribute.tag: attribute for attribute in StandardAttribute}
+    if not samples or any(tag not in attributes for tag, _, _ in samples):
+        raise RecipePending
+    observed = []
+    for tag, type_name, value in samples:
+        attribute = attributes[tag]
+        if case['requires'].get('target_kind') == 'tag':
+            # Tag allocation cases have no prescribed value. Use the installed
+            # attribute's exact catalogued scalar type instead of inventing one.
+            scalar = {'Integer': ('Integer', 0), 'Enumeration': ('Enumeration', 1),
+                      'DateTime': ('Date Time', 0), 'Interval': ('Interval', 0),
+                      'Boolean': ('Boolean', True), 'TextString': ('Text String', 'fixture'),
+                      'ByteString': ('Byte String', b''), 'UniqueIdentifier': ('Text String', 'fixture')}
+            if attribute.value_kind not in scalar:
+                raise RecipePending
+            type_name, value = scalar[attribute.value_kind]
+        with ExitStack() as owned:
+            original = owned.enter_context(PythonKmipDriver._item(tag, _TTLV_TYPE_KINDS[type_name], value))
+            expected = item_tree(original)
+            typed = owned.enter_context(TypedAttribute.from_item(attribute, original))
+            copied_value = owned.enter_context(typed.value)
+            created = owned.enter_context(TypedAttribute.create(attribute, copied_value))
+            if typed.attribute is not attribute or item_tree(typed) != expected or item_tree(created) != expected:
+                raise ValueError('typed attribute identity or value copy assertion failed')
+            populated = owned.enter_context(PythonKmipDriver._structure([original]))
+            constructed = owned.enter_context(AttributeSet.try_new(populated))
+            for collection, typed_append in ((constructed, None),
+                    (owned.enter_context(AttributeSet.try_new(owned.enter_context(ttlv.ttlv_structure_create()))), False),
+                    (owned.enter_context(AttributeSet.try_new(owned.enter_context(ttlv.ttlv_structure_create()))), True)):
+                if typed_append is False:
+                    collection.try_push(owned.enter_context(typed.as_item()))
+                elif typed_append is True:
+                    collection.try_push_typed(attribute, created)
+                if collection.typed_count(attribute) != 1:
+                    raise ValueError('attribute collection occurrence count assertion failed')
+                retrieved = owned.enter_context(collection.typed_at(attribute, 0))
+                if item_tree(retrieved) != expected:
+                    raise ValueError('attribute collection value assertion failed')
+            wire = encode_fixture(expected)
+            decoded = owned.enter_context(ttlv.ttlv_decode(wire))
+            if item_tree(decoded) != expected:
+                raise ValueError('typed attribute generic roundtrip assertion failed')
+            observed.append(expected)
+    tree_hash = digest(observed)
+    return {'request_tree_sha256': tree_hash, 'response_tree_sha256': tree_hash}
