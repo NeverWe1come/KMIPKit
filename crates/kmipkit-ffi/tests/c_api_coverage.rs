@@ -91,6 +91,7 @@ unsafe extern "C" {
         private_key_length: u64,
         trust_root: *const u8,
         trust_root_length: u64,
+        out_version_rejection_verified: *mut u8,
     ) -> i32;
     fn kmipkit_public_fluent_builder_probe() -> i32;
     fn kmipkit_public_fluent_validation_probe() -> i32;
@@ -160,13 +161,14 @@ fn public_c_fluent_crypto_executes_all_seven_operations_over_mutual_tls() {
             let mut tls = StreamOwned::new(connection, stream);
             let request = read_ttlv_frame(&mut tls)?;
             assert_fluent_crypto_request(&request, expected_operation);
-            tls.write_all(&fluent_crypto_failure_response(expected_operation))?;
+            tls.write_all(&fluent_crypto_response(expected_operation))?;
             tls.flush()?;
             let _ = tls.get_ref().shutdown(Shutdown::Both);
         }
         Ok(())
     });
 
+    let mut version_rejection_verified = 0_u8;
     // SAFETY: the PKI buffers remain live for this synchronous C call; the consumer owns and
     // releases its builder, client, codec, response, and configuration handles.
     let status = unsafe {
@@ -181,6 +183,7 @@ fn public_c_fluent_crypto_executes_all_seven_operations_over_mutual_tls() {
             pki.authority_certificate_der().as_ptr(),
             u64::try_from(pki.authority_certificate_der().len())
                 .expect("trust certificate length fits"),
+            &raw mut version_rejection_verified,
         )
     };
     let peer_result = peer.join().expect("the local TLS peer thread completes");
@@ -189,6 +192,10 @@ fn public_c_fluent_crypto_executes_all_seven_operations_over_mutual_tls() {
         "C executes all seven typed crypto operations; peer result: {peer_result:?}"
     );
     peer_result.expect("the TLS fixture received exactly one request for every operation");
+    assert_eq!(
+        version_rejection_verified, 1,
+        "unsupported protocol versions are rejected before transport"
+    );
 }
 
 #[test]
@@ -393,6 +400,27 @@ fn assert_fluent_crypto_request(encoded: &[u8], operation: u32) {
             .filter(|item| item.tag().raw() == 0x0042_000F)
             .collect::<Vec<_>>();
         assert_eq!(batch_items.len(), 1, "each execute sends one batch item");
+        if operation == 31 {
+            let request_header = message
+                .children()
+                .iter()
+                .find(|item| item.tag().raw() == 0x0042_0077)
+                .expect("Encrypt carries a Request Header");
+            request_header.with_value(|value| {
+                let ValueView::Structure(header) = value else {
+                    panic!("the Request Header is a structure");
+                };
+                assert!(
+                    header.children().iter().any(|item| {
+                        item.tag().raw() == 0x0042_0007
+                        && item.with_value(|value| {
+                            matches!(value, ValueView::Enumeration(actual) if *actual == 2)
+                        })
+                    }),
+                    "the KMIP Async Indicator is an Enumeration separate from timeouts"
+                );
+            });
+        }
         batch_items[0].with_value(|value| {
             let ValueView::Structure(batch_item) = value else {
                 panic!("the Batch Item is a structure");
@@ -407,7 +435,7 @@ fn assert_fluent_crypto_request(encoded: &[u8], operation: u32) {
     });
 }
 
-fn fluent_crypto_failure_response(operation: u32) -> Vec<u8> {
+fn fluent_crypto_response(operation: u32) -> Vec<u8> {
     let protocol_version = structure(
         0x0042_0069,
         [integer(0x0042_006A, 2), integer(0x0042_006B, 1)],
@@ -420,14 +448,26 @@ fn fluent_crypto_failure_response(operation: u32) -> Vec<u8> {
             integer(0x0042_000D, 1),
         ],
     );
-    let batch_item = structure(
-        0x0042_000F,
-        [
-            enumeration(0x0042_005C, operation),
-            enumeration(0x0042_007F, 1),
-            enumeration(0x0042_007E, 256),
-        ],
-    );
+    let (status, mut fields) = match operation {
+        31 => (
+            2,
+            vec![
+                ttlv_item(0x0042_0006, 0x08, b"pending-correlation"),
+                structure(0x0042_007C, []),
+            ],
+        ),
+        39 => (
+            0,
+            vec![structure(
+                0x0042_007C,
+                [ttlv_item(0x0042_00C2, 0x08, b"sha256-digest")],
+            )],
+        ),
+        _ => (1, vec![enumeration(0x0042_007E, 256)]),
+    };
+    fields.insert(0, enumeration(0x0042_007F, status));
+    fields.insert(0, enumeration(0x0042_005C, operation));
+    let batch_item = structure(0x0042_000F, fields);
     structure(0x0042_007B, [header, batch_item])
 }
 

@@ -20,11 +20,13 @@ will be added here as each Red, Green, and Refactor commit is produced.
   operation-specific constructors and common builder functions. No production
   ABI code existed at this point.
 
-- **Red (asynchronous indicator validation)**: the same focused command compiled
-  and ran the consumer, which failed with probe status 4 because
-  `kmipkit_crypto_operation_builder_set_asynchronous_indicator(..., 2)` returned
-  success. The Request Header asynchronous indicator is boolean; invalid values
-  must be rejected before any transport call.
+- **Red (asynchronous indicator validation)**: the first probe mistakenly used
+  raw value `2` as invalid and exposed an implementation guard that also
+  rejected the assigned `Optional` value. The corrected test uses raw value `0`
+  (outside the assigned and extension ranges); the focused command then failed
+  with probe status 4 because the setter accepted it. KMIP Asynchronous
+  Indicator is an Enumeration, not a boolean; the Green implementation must
+  accept the assigned Mandatory/Optional/Prohibited values and extension range.
 
 - **Red (TLS execution acceptance)**: `cargo test -p kmipkit-ffi --features
   coverage-c-consumer --test c_api_coverage
@@ -32,3 +34,35 @@ will be added here as each Red, Green, and Refactor commit is produced.
   failed at link time because the compiled C consumer did not yet provide
   `kmipkit_public_crypto_execute_tls_probe`. The test now defines the seven
   one-operation TLS exchanges and typed Failure metadata it requires.
+
+- **Red (configured protocol-version preflight)**: extended the TLS consumer to
+  execute an Encrypt builder using client configuration 99.99 before the seven
+  KMIP 2.1 exchanges, and require `KMIPKIT_ERROR_INVALID_INPUT` with no
+  additional connection. Before the fix, the peer received this extra Encrypt
+  exchange and then observed the next Encrypt where it expected Decrypt. The
+  failure traced to `kmipkit_client_create_mtls_v1`, which copied the wire
+  encoding but dropped the configured protocol version.
+
+## Green
+
+- **Asynchronous indicator validation**: the focused C-consumer command passes.
+  It rejects 0, accepts KMIP Mandatory/Optional/Prohibited values, and retains
+  an Enumeration extension value. The C setter therefore follows the existing
+  client validation contract instead of treating the field as a boolean.
+- **Seven operation TLS execution**: `cargo test -p kmipkit-ffi --features
+  coverage-c-consumer --test c_api_coverage
+  public_c_fluent_crypto_executes_all_seven_operations_over_mutual_tls --locked`
+  passes. The compiled C consumer executes one Encrypt, Decrypt, Sign,
+  Signature Verify, MAC, MAC Verify, and Hash request over separate controlled
+  TLS 1.3 mutual-TLS exchanges. The peer verifies one Batch Item per exchange
+  and the operation identity. The returned outcomes cover Pending (Encrypt),
+  Success (Hash), and Failure (the remaining operations); the C assertions
+  inspect result metadata and the Pending correlation bytes. Encrypt's optional
+  asynchronous request-header value and exchange-local options are set through
+  separate inputs. The Pending fixture includes the required correlation value
+  and response payload.
+- **Configured protocol-version preflight**: the same focused TLS command
+  passes after `kmipkit_client_create_mtls_v1` preserves the configured
+  protocol version. Version 99.99 returns `KMIPKIT_ERROR_INVALID_INPUT` before
+  opening a connection, and the fixture receives exactly the seven subsequent
+  KMIP 2.1 requests.
