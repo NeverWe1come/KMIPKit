@@ -21,13 +21,35 @@
 
 ## Green
 
-- Pending implementation.
+- Added the seven typed builders and `RequestBuilder` constructors. Builders
+  preserve the existing KMIP request types, accept typed or expert ordered
+  Cryptographic Parameters, validate before exchange, expose batch conversion,
+  and execute one exchange with the existing success/failure/pending response
+  model.
+- `cargo test -p kmipkit-client --all-features --locked`: passed, 864 unit
+  tests plus all package integration and documentation tests; three external
+  Cosmian tests are intentionally ignored without a local KMS.
+- `cargo clippy -p kmipkit-client --all-targets --all-features -- -D warnings`:
+  passed.
 
 ## Refactor
 
-- Pending implementation and public-source-boundary audit.
+- Extended the public-source boundary audit with exact method-scoped
+  exceptions for secret byte setters and explicit expert Cryptographic
+  Parameters structures. Negative checks reject other builders, method names,
+  byte types, and generic signatures.
+- Split operation-field preservation coverage by operation for focused test
+  failures.
+- `cargo test -p kmipkit-client --all-features --locked --lib
+  execute_boundary_tests`: passed, 45 checks.
+- `cargo fmt --all`: passed.
+- Public Rust export audit completed with `matchesManifest: true` after adding
+  the new declarations.
 
 ## Verification
 
-- Pending focused and full validation, generated API reconciliation, coverage,
-  and exact-head CI.
+- `python3 -m unittest tools.api_manifest.tests.test_0102_fluent_cryptographic_manifest`:
+  passed, 2 tests.
+- `python3 tools/api_manifest/generate.py --check`: passed; all 12 generated
+  outputs are current.
+- Full coverage and exact-head CI remain pending on the stacked draft PR.
