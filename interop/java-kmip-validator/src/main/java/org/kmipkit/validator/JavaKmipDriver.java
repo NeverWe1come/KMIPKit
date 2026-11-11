@@ -93,7 +93,7 @@ public final class JavaKmipDriver implements AutoCloseable {
                     long statusCode = result.resultStatus();
                     long reasonCode = result.resultReason().orElse(-1);
                     if (statusCode == 0) {
-                        if (!verifyTypedResponse(testCase.operation(), result)) {
+                        if (!verifyTypedResponse(testCase, result, fixtureIdentifier)) {
                             return CaseOutcome.failed("The typed response shape did not match the request.",
                                     elapsedMillis(start), statusCode, optionalCode(reasonCode));
                         }
@@ -392,7 +392,9 @@ public final class JavaKmipDriver implements AutoCloseable {
                 + "); remote diagnostic text was suppressed.", elapsedMillis(start));
     }
 
-    private boolean verifyTypedResponse(String operation, ClientBatchItemResult result) {
+    private boolean verifyTypedResponse(CatalogLoader.CatalogCase testCase, ClientBatchItemResult result,
+                                       UniqueIdentifier fixtureIdentifier) {
+        String operation = testCase.operation();
         return switch (operation) {
             case "Ping" -> result.pingResponse().orElse(false);
             case "Query" -> {
@@ -421,10 +423,47 @@ public final class JavaKmipDriver implements AutoCloseable {
                 payload.orElseThrow().close();
                 yield true;
             }
+            case "Get Attributes" -> verifyGetAttributesResponse(testCase, result, fixtureIdentifier);
             case "Discover Versions" -> JavaResponseChecks.advertisesRequestedVersion(
                     result.supportedVersions().orElse(List.of()), toProtocolVersion(connection.protocolVersion()));
             default -> verifyInstalledTypedResponse(operation, result);
         };
+    }
+
+    private static boolean verifyGetAttributesResponse(CatalogLoader.CatalogCase testCase,
+            ClientBatchItemResult result, UniqueIdentifier fixtureIdentifier) {
+        var payload = result.getAttributesResponse();
+        if (payload.isEmpty()) return false;
+        try (var response = payload.orElseThrow()) {
+            if (fixtureIdentifier != null && fixtureIdentifier.kind() == UniqueIdentifier.Kind.TEXT_STRING
+                    && !fixtureIdentifier.text().equals(response.uniqueIdentifier())) {
+                return false;
+            }
+            if (testCase.attributeTag() == 0) return true;
+            var attributes = response.attributes();
+            if (attributes.isEmpty()) return false;
+            try (var view = attributes.orElseThrow().view()) {
+                org.kmipkit.ttlv.TtlvItemType expectedType = expectedAttributeTtlvType(testCase);
+                for (long index = 0; index < view.itemCount(); index++) {
+                    try (var item = view.itemAt(index); var tag = item.tag()) {
+                        if (Integer.toUnsignedLong(tag.raw()) == testCase.attributeTag()) {
+                            return expectedType == null || item.itemType() == expectedType;
+                        }
+                    }
+                }
+                return false;
+            }
+        }
+    }
+
+    private static org.kmipkit.ttlv.TtlvItemType expectedAttributeTtlvType(
+            CatalogLoader.CatalogCase testCase) {
+        String valueType = testCase.requires().path("attribute_policy").path("value_type").asText("");
+        String normalized = valueType.replaceAll("[^A-Za-z]", "");
+        for (org.kmipkit.ttlv.TtlvItemType type : org.kmipkit.ttlv.TtlvItemType.values()) {
+            if (type.name().equalsIgnoreCase(normalized)) return type;
+        }
+        return null;
     }
 
     private static boolean verifyInstalledTypedResponse(String operation, ClientBatchItemResult result) {
