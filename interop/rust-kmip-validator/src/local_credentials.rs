@@ -196,6 +196,12 @@ pub(crate) fn fixture(target: &Json) -> Option<Result<Item>> {
     let name = target["name"].as_str()?;
     if target["kind"] == "tag" {
         return match target_id {
+            "KMIPKIT-ELEM-TAG-42000C" => {
+                Some(credential(1, None).and_then(|credential| node(0x0042_000c, vec![credential])))
+            }
+            "KMIPKIT-ELEM-TAG-420023" => Some(credential(1, None)),
+            "KMIPKIT-ELEM-TAG-420025" => Some(value(1, None)),
+            "KMIPKIT-ELEM-TAG-4200C8" => Some(nonce(None)),
             "KMIPKIT-ELEM-TAG-420092" => Some(item(0x0042_0092, Value::date_time_extended(1))),
             "KMIPKIT-ELEM-TAG-420149" => Some(ticket_item()),
             "KMIPKIT-ELEM-TAG-420156" => Some(text(0x0042_0156)),
