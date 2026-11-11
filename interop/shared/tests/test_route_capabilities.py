@@ -66,6 +66,20 @@ class RouteCapabilitiesTests(unittest.TestCase):
             self.assertNotIn('KMIPKIT-ELEM-ATTRIBUTE-DESCRIPTION', targets)
             self.assertNotIn('KMIPKIT-ELEM-TAG-4200FC', targets)
 
+    def test_attribute_container_routes_do_not_claim_managed_object_structures(self):
+        catalog = json.loads((SHARED / 'catalog/kmipkit-1.0-test-catalog.json').read_text())
+        targets = {target['target_id']: target for target in catalog['normative_targets']}
+        routes = [route for route in self.data['routes']
+                  if route['api_level'] == 'typed-protocol'
+                  and any(token in route['public_api_symbol'].casefold()
+                          for token in ('typedattribute', 'typed_attribute', 'attributeset', 'attribute_set'))]
+        self.assertTrue(routes)
+        for route in routes:
+            route_targets = [targets[target_id] for target_id in route['normative_target_ids']
+                             if target_id in targets]
+            self.assertFalse(any(target['kind'] in {'object_structure', 'operation_structure'}
+                                 for target in route_targets), route['public_api_symbol'])
+
     def test_checked_tag_constructor_exclusions_are_source_backed_and_narrow(self):
         expected = {
             'rust': {'rust.generic-ttlv.item.new', 'rust.generic-ttlv.model.kmipkit.ttlv.structure.try.push'},
@@ -84,6 +98,25 @@ class RouteCapabilitiesTests(unittest.TestCase):
                     'reason': 'This constructor takes an allocation-checked Tag; RawTag::try_checked rejects reserved and unused allocations before an Item can be constructed.',
                     'source_paths': [route['source_paths'][0], 'crates/kmipkit-ttlv/src/tag.rs'],
                 }], route['case_exclusions'])
+
+    def test_reserved_tag_item_view_exclusions_require_decoder_rejection_sources(self):
+        expected = {
+            'rust': ('rust.generic-ttlv.function.ttlv_item_view_from_item',
+                     'crates/kmipkit-ttlv/src/item.rs'),
+            'java': ('java.generic-ttlv.function.ttlv_item_view_from_item',
+                     'bindings/java/src/main/java/org/kmipkit/ttlv/TtlvItem.java'),
+            'python': ('python.generic-ttlv.function.ttlv_item_view_from_item',
+                        'bindings/python/src/kmipkit/ttlv.py'),
+        }
+        for language, (route_id, route_source) in expected.items():
+            route = next(route for route in self.data['routes'] if route['route_id'] == route_id)
+            self.assertEqual([{
+                'target_kinds': ['tag', 'tag_range'],
+                'allocations': ['reserved', 'unused'],
+                'reason': 'The TTLV decoder rejects reserved and unused allocations before it can return an Item; this accessor therefore has no valid Item input for the case.',
+                'source_paths': [route_source, 'crates/kmipkit-ttlv/src/codec/decoder.rs',
+                                 'crates/kmipkit-ttlv/src/tag.rs'],
+            }], route['case_exclusions'])
 
     def test_async_request_routes_use_the_exact_public_operation_executor(self):
         expected = {

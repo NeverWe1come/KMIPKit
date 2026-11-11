@@ -113,6 +113,21 @@ class CoverageMatrixTests(unittest.TestCase):
                                 and cell["action"] == "construct"
                                 for cell in language_cells))
 
+    def test_reserved_tag_decode_rejection_does_not_require_an_item_view(self):
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest)
+                 if cell["case_id"] == "test-norm-tag-tag-420009"]
+        item_view_routes = {
+            "rust": "rust.generic-ttlv.function.ttlv_item_view_from_item",
+            "java": "java.generic-ttlv.function.ttlv_item_view_from_item",
+            "python": "python.generic-ttlv.function.ttlv_item_view_from_item",
+        }
+        for language, route_id in item_view_routes.items():
+            language_cells = [cell for cell in cells if cell["language"] == language]
+            self.assertNotIn(route_id, {cell["route_id"] for cell in language_cells})
+            self.assertTrue(any(cell["action"] == "decode"
+                                and "decode" in cell["public_api_symbol"].casefold()
+                                for cell in language_cells))
+
     def test_missing_version_route_fails_even_if_the_case_has_another_version(self):
         case = {
             "case_id": "two-version-case",
