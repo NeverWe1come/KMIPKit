@@ -135,9 +135,42 @@ class ModelCases:
     def _execute_key_block(self, protocol_version: str) -> dict:
         return self._execute_key_block_tree(self._key_block_tree(protocol_version))
 
+    def _key_wrapping_data_tree(self, protocol_version: str) -> tuple:
+        unique_identifier = (self._tag('Unique Identifier'), 7, b'wrapped-key')
+        parameters = (self._tag('Cryptographic Parameters'), 1, [
+            self._enum_tree('Block Cipher Mode', 'Block Cipher Mode', 'CBC', protocol_version),
+        ])
+        encryption_info = (self._tag('Encryption Key Information'), 1, [
+            unique_identifier, parameters,
+        ])
+        mac_signature_info = (self._tag('MAC/Signature Key Information'), 1, [
+            unique_identifier, parameters,
+        ])
+        return (self._tag('Key Wrapping Data'), 1, [
+            self._enum_tree('Wrapping Method', 'Wrapping Method', 'Encrypt', protocol_version),
+            encryption_info,
+            mac_signature_info,
+            (self._tag('MAC/Signature'), 8, b'mac'),
+            (self._tag('IV/Counter/Nonce'), 8, b'iv'),
+            self._enum_tree('Encoding Option', 'Encoding Option', 'TTLV Encoding', protocol_version),
+        ])
+
     def _execute_key_block_target(self, target: dict, protocol_version: str) -> dict | None:
         kind = target.get('kind')
         name = target.get('name', '').rstrip(',')
+        wire_value = target.get('wire_value', '')
+        if kind == 'enumeration_value' and 'X' in wire_value.upper():
+            boundaries = (int(wire_value.replace('X', '0').replace('x', '0'), 16),
+                          int(wire_value.replace('X', 'F').replace('x', 'f'), 16))
+            samples = [self._execute_key_block_target(
+                {**target, 'wire_value': f'{value:08X}'}, protocol_version) for value in boundaries]
+            if any(sample is None for sample in samples):
+                return None
+            normalized_samples = [sample['normalized_tree'] for sample in samples]
+            symbols = set().union(*(sample['invoked_symbols'] for sample in samples))
+            return {'sample_count': sum(sample['sample_count'] for sample in samples),
+                    'normalized_tree': normalized_samples, 'tree_sha256': digest(normalized_samples),
+                    'invoked_symbols': symbols}
         key_format = self._enum_value('Key Format Type', 'Raw', protocol_version)
         fields = []
         expected_value = None
@@ -146,6 +179,12 @@ class ModelCases:
                 pass
             elif target.get('target_id') == KEY_VALUE_STRUCTURE:
                 fields.append(self._key_value_tree())
+            elif target.get('name') in {'Key Wrapping Data', 'Encryption Key Information',
+                                        'MAC/Signature Key Information'}:
+                fields.extend([
+                    (self._tag('Key Value'), 8, b'\xa1'),
+                    self._key_wrapping_data_tree(protocol_version),
+                ])
             else:
                 return None
         elif kind == 'enumeration_value':
@@ -155,8 +194,8 @@ class ModelCases:
                 if 'X' in wire_value.upper():
                     return None
                 expected_value = int(wire_value, 16)
-                fields.append(self._enum_tree('Cryptographic Algorithm', 'Cryptographic Algorithm',
-                                              target['name'], protocol_version))
+                fields.append((self._tag('Cryptographic Algorithm'), 5,
+                               expected_value.to_bytes(4, 'big')))
                 fields.append(self._integer_tree('Cryptographic Length', 128))
             elif 'KMIPKIT-ELEM-ENUMERATION-KEY-FORMAT-TYPE' in parents:
                 if 'X' in wire_value.upper():
@@ -168,8 +207,8 @@ class ModelCases:
                     return None
                 key_format = self._enum_value('Key Format Type', 'Transparent EC Public Key', protocol_version)
                 expected_value = int(wire_value, 16)
-                fields.append(self._enum_tree('Key Compression Type', 'Key Compression Type',
-                                              target['name'], protocol_version))
+                fields.append((self._tag('Key Compression Type'), 5,
+                               expected_value.to_bytes(4, 'big')))
             else:
                 return None
         elif kind in {'tag', 'structure_member', 'attribute'}:
@@ -188,6 +227,14 @@ class ModelCases:
                 expected_value = key_format
             elif name == 'Key Value':
                 fields.append(self._key_value_tree())
+            elif name in {'Key Wrapping Data', 'Encryption Key Information',
+                          'MAC/Signature Key Information', 'Unique Identifier',
+                          'Cryptographic Parameters', 'Wrapping Method', 'MAC/Signature',
+                          'IV/Counter/Nonce', 'Encoding Option'}:
+                fields.extend([
+                    (self._tag('Key Value'), 8, b'\xa1'),
+                    self._key_wrapping_data_tree(protocol_version),
+                ])
             elif name == 'Key Compression Type':
                 key_format = self._enum_value('Key Format Type', 'Transparent EC Public Key', protocol_version)
                 expected_value = self._enum_value(name, 'EC Public Key Type Uncompressed', protocol_version)
