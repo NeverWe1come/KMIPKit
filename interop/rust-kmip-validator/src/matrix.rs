@@ -840,12 +840,39 @@ mod tests {
             "../../shared/catalog/kmipkit-1.0-test-catalog.json"
         ))
         .unwrap();
-        let specification: Json = serde_json::from_str(include_str!(
-            "../../../specification/catalog/kmip-2.1.json"
-        ))
-        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
         let elements = specification["elements"].as_array().unwrap();
         for (target_id, symbol) in [
+            (
+                "KMIPKIT-ELEM-TAG-42000C",
+                "kmipkit_protocol::Authentication::new",
+            ),
+            (
+                "KMIPKIT-ELEM-TAG-42000C",
+                "kmipkit_protocol::Authentication::try_from_ttlv",
+            ),
+            (
+                "KMIPKIT-ELEM-TAG-420023",
+                "kmipkit_protocol::Credential::try_from_ttlv",
+            ),
+            (
+                "KMIPKIT-ELEM-TAG-420025",
+                "kmipkit_protocol::CredentialValue::try_from_ttlv",
+            ),
+            (
+                "KMIPKIT-ELEM-TAG-4200C8",
+                "kmipkit_protocol::Nonce::try_from_ttlv",
+            ),
+            (
+                "KMIPKIT-ELEM-TAG-4200C8",
+                "kmipkit_protocol::AttestationCredential::try_from_ttlv",
+            ),
+            (
+                "KMIPKIT-ELEM-TAG-4200C8",
+                "kmipkit_protocol::CredentialValue::try_from_ttlv",
+            ),
             (
                 "KMIPKIT-ELEM-TAG-420092",
                 "kmipkit_protocol::CredentialValue::try_from_ttlv",
@@ -883,7 +910,11 @@ mod tests {
                 .unwrap();
             let fixture = sample(target, elements).unwrap();
             let result = invoke(symbol, &fixture, target, elements).unwrap();
-            assert!(result.is_ok(), "{target_id} via {symbol}: {:?}", result.err());
+            assert!(
+                result.is_ok(),
+                "{target_id} via {symbol}: {:?}",
+                result.err()
+            );
             assert!(crate::local_wire::target_hash(&result.unwrap(), &fixture).is_ok());
         }
     }
