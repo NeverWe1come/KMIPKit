@@ -77,5 +77,42 @@
   Java 2,265, and Python 2,445 declarations matched; all three reports were
   complete with no issues.
 - PR #183 exact-head CI passed; its branch remains unmerged. Draft PR #184
-  remains `[WIP]` while its prior-head SonarCloud duplication failure is
-  rechecked on the repaired head.
+  remains `[WIP]` pending exact-head CI after these repairs.
+
+## Exact-head CI regression repair: Red
+
+- Head `1885a509e8ce6f3f52c935d2b1dcb8bb647ef134`, CI run
+  `43039339116`: the Script contracts job failed in
+  `test_t102_slice_and_manifest_snapshots_remain_consistent`, with
+  `15822 != 14208`. The approved KMIPKIT-0093 inventory reconciliation added
+  1,614 declarations and 3,467 exclusions without updating the shared live
+  manifest totals; historical Rust export report totals remain separate.
+- Local reproduction:
+  `python3 -B -m unittest tools.api_manifest.tests.test_t102_pkcs11_request_trait_exclusions.T102Pkcs11RequestTraitExclusionTests.test_t102_slice_and_manifest_snapshots_remain_consistent`
+  failed with the same assertion before repair.
+- The same run's Coverage gate rejected changed Rust coverage `162/329`,
+  below the required 90%. Existing tests predominantly exercised local
+  construction and Revoke execution, leaving other lifecycle exchanges and
+  several setters unexecuted. This repair adds behavioral tests without
+  changing coverage thresholds or excluding production lines.
+
+## Exact-head CI regression repair: Green
+
+- The lifecycle regression suite now exercises Pending for Activate, Archive,
+  Recover, Re-key, Re-key Key Pair, Re-certify, and Locate, asserting one
+  exchange, the Request Header asynchronous indicator, and the exact server
+  correlation value. Additional tests cover Locate filter replacement,
+  Re-key/Re-certify caller structures, and all three Re-key Key Pair mask
+  groups.
+- The live manifest snapshot now reflects the approved inventory baseline
+  (15,822 public declarations and 22,485 approved exclusions), while historical
+  Rust compiler report totals remain pinned separately. The Get response
+  contract explicitly records the two KMIPKIT-0093 blocked accessors as
+  blocked instead of treating them as absent.
+- Local changed-line coverage after the new behavioral tests is 325/329
+  executable Rust lines (98.78%), using the same base SHA as PR #184. The
+  focused client run passes all 22 lifecycle tests; nine manifest and snapshot
+  tests pass; `cargo fmt --all --check` and `git diff --check` pass.
+- Commit `1942d7f47` records the coverage and manifest regression repair. A new
+  exact-head CI run is required after publication; PR #184 remains `[WIP]` until
+  every required check passes.

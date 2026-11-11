@@ -193,8 +193,9 @@ PKCS11_REQUEST_SETTER_IDS = {
 # Snapshot includes final 0049 and exact 0050 constructor mappings.
 # The snapshot includes the approved KMIPKIT-0052 async typed-reader routes.
 # It also includes approved KMIPKIT-0099 Create Split Key and KMIPKIT-0100
-# Register declarations and KMIPKIT-0101 lifecycle declarations.
-OTHER_DECLARATIONS_SHA256 = "3634f2963b4512a7aa6079ae0e6201587354fd10bfc21ae2f8d0049145a0c14b"
+# Register declarations, lifecycle declarations, KMIPKIT-0102 crypto builders,
+# and the approved KMIPKIT-0093 inventory reconciliation.
+OTHER_DECLARATIONS_SHA256 = "1c89276245b2ce79cc4f196e4ed31d109b3dd9e83c1cdea237c4d6eb3e9d7286"
 OTHER_OPERATIONS_SHA256 = "2ea94003f2877d0e6d84271d67d9add6f48a5c5b7a837c48b22fe40f41022d39"
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(

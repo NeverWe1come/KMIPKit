@@ -95,6 +95,8 @@ RESPONSE_STATES = {
         "::result": "verified",
         "::try_from_response_item": "verified",
         "::unique_identifier": "verified",
+        "::key_block": "blocked",
+        "::managed_object": "blocked",
     },
     "LocateResponse": {
         "": "verified",

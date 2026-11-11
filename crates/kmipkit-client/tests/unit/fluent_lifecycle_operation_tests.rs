@@ -452,3 +452,240 @@ fn recertify_request_debug_redacts_certificate_request_material() {
     };
     assert!(!format!("{request:?}").contains(std::str::from_utf8(sentinel).unwrap()));
 }
+
+macro_rules! pending_lifecycle_exchange {
+    ($test:ident, $operation:expr, $client:ident, $builder:expr) => {
+        #[test]
+        fn $test() {
+            let response = asynchronous_response_bytes(
+                $operation,
+                OPERATION_PENDING,
+                None,
+                Some(PENDING_CORRELATION),
+                Some(test_structure([])),
+            );
+            let (mut $client, fake, captured) = client_for(ExchangeScript::Success {
+                response,
+                request_write_chunks: Vec::new(),
+            });
+            let builder = $builder
+                .with_options(
+                    RequestOptions::default().with_protocol_version(ProtocolVersion::V2_1),
+                )
+                .with_asynchronous_indicator(1);
+            builder.validate().expect("valid fields validate locally");
+            assert_eq!(fake.borrow().exchange_count(), 0);
+            let response = builder
+                .execute(&CodecLimits::defaults())
+                .expect("Pending is returned without an automatic follow-up");
+            let ClientBatchOutcome::Pending(pending) = response.outcome() else {
+                panic!("Pending remains visible");
+            };
+            assert_eq!(
+                pending.asynchronous_correlation_value(),
+                PENDING_CORRELATION
+            );
+            assert_eq!(fake.borrow().exchange_count(), 1);
+            let captured = captured.borrow();
+            let root = kmipkit_ttlv::codec::decode_with_limits(
+                captured.as_ref().unwrap(),
+                &CodecLimits::defaults(),
+            )
+            .expect("captured request decodes");
+            let message = kmipkit_protocol::RequestMessage::try_from_ttlv(
+                root.as_structure()
+                    .expect("request structure")
+                    .try_clone()
+                    .unwrap(),
+            )
+            .expect("valid request message");
+            assert_eq!(message.header().asynchronous_indicator(), Some(1));
+            assert_eq!(pending.operation().raw(), $operation);
+        }
+    };
+}
+
+pending_lifecycle_exchange!(
+    activate_pending_is_one_exchange,
+    0x12,
+    client,
+    client
+        .request()
+        .activate()
+        .unique_identifier(UniqueIdentifier::from("activate"))
+);
+pending_lifecycle_exchange!(
+    archive_pending_is_one_exchange,
+    0x15,
+    client,
+    client
+        .request()
+        .archive()
+        .unique_identifier(UniqueIdentifier::from("archive"))
+);
+pending_lifecycle_exchange!(
+    recover_pending_is_one_exchange,
+    0x16,
+    client,
+    client
+        .request()
+        .recover()
+        .unique_identifier(UniqueIdentifier::from("recover"))
+);
+pending_lifecycle_exchange!(
+    rekey_pending_is_one_exchange,
+    0x4,
+    client,
+    client
+        .request()
+        .rekey()
+        .unique_identifier(UniqueIdentifier::from("rekey"))
+);
+pending_lifecycle_exchange!(
+    rekey_pair_pending_is_one_exchange,
+    0x1D,
+    client,
+    client
+        .request()
+        .rekey_key_pair()
+        .private_key_unique_identifier(UniqueIdentifier::from("private"))
+);
+pending_lifecycle_exchange!(
+    recertify_pending_is_one_exchange,
+    0x7,
+    client,
+    client
+        .request()
+        .recertify()
+        .unique_identifier(UniqueIdentifier::from("certificate"))
+        .certificate_request_unique_identifier(UniqueIdentifier::from("csr"))
+);
+pending_lifecycle_exchange!(
+    locate_pending_is_one_exchange,
+    0x8,
+    client,
+    client
+        .request()
+        .locate(kmipkit_protocol::AttributeSet::new())
+);
+
+#[test]
+fn locate_attribute_replacement_preserves_existing_filters_and_empty_defaults() {
+    let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let request = client
+        .request()
+        .locate(kmipkit_protocol::AttributeSet::new())
+        .maximum_items(17)
+        .offset_items(2)
+        .storage_status_mask(kmipkit_protocol::StorageStatusMask::from_raw(5))
+        .object_group_member(kmipkit_protocol::ObjectGroupMember::from_raw(9))
+        .attributes(kmipkit_protocol::AttributeSet::new())
+        .build_request()
+        .expect("replacement attributes preserve valid filters");
+    assert_eq!(request.maximum_items(), Some(17));
+    assert_eq!(request.offset_items(), Some(2));
+    assert_eq!(
+        request
+            .storage_status_mask()
+            .map(kmipkit_protocol::StorageStatusMask::raw),
+        Some(5)
+    );
+    assert_eq!(
+        request
+            .object_group_member()
+            .map(kmipkit_protocol::ObjectGroupMember::raw),
+        Some(9)
+    );
+    let request = client
+        .request()
+        .locate(kmipkit_protocol::AttributeSet::new())
+        .attributes(kmipkit_protocol::AttributeSet::new())
+        .build_request()
+        .expect("replacing an empty filter does not invent options");
+    assert_eq!(request.maximum_items(), None);
+    assert_eq!(request.offset_items(), None);
+    assert_eq!(request.storage_status_mask(), None);
+    assert_eq!(request.object_group_member(), None);
+    assert_eq!(fake.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn replacement_builders_preserve_explicit_attribute_and_mask_payloads() {
+    for recertify in [false, true] {
+        let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
+        let attributes = test_structure([test_item(
+            0x0042_00FD,
+            Value::text_string("replacement".to_owned()),
+        )]);
+        let masks = test_structure([test_item(0x0042_015E, Value::integer(1))]);
+        let payload = if recertify {
+            client
+                .request()
+                .recertify()
+                .unique_identifier(UniqueIdentifier::from("certificate"))
+                .attributes(attributes)
+                .protection_storage_masks(masks)
+                .build_request()
+                .expect("explicit certificate fields validate")
+                .into_ttlv_payload()
+        } else {
+            client
+                .request()
+                .rekey()
+                .attributes(attributes)
+                .protection_storage_masks(masks)
+                .build_request()
+                .expect("explicit key fields validate")
+                .into_ttlv_payload()
+        }
+        .expect("replacement fields serialize");
+        let children = payload.view().children();
+        let attributes = children
+            .iter()
+            .find(|item| item.tag().raw() == 0x0042_0125)
+            .expect("Attributes remain in the payload")
+            .as_structure()
+            .expect("Attributes are a structure");
+        attributes.children()[0].with_value(|value| {
+            assert!(matches!(
+                value,
+                kmipkit_ttlv::ValueView::TextString("replacement")
+            ));
+        });
+        let masks = children
+            .iter()
+            .find(|item| item.tag().raw() == 0x0042_015F)
+            .expect("Protection Storage Masks remain in the payload")
+            .as_structure()
+            .expect("Masks are a structure");
+        masks.children()[0].with_value(|value| {
+            assert!(matches!(value, kmipkit_ttlv::ValueView::Integer(1)));
+        });
+        assert_eq!(fake.borrow().exchange_count(), 0);
+    }
+}
+
+#[test]
+fn rekey_key_pair_preserves_all_mask_groups_and_offset() {
+    let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let mask = |value| test_structure([test_item(0x0042_015E, Value::integer(value))]);
+    let payload = client
+        .request()
+        .rekey_key_pair()
+        .offset(60)
+        .common_protection_storage_masks(mask(1))
+        .private_protection_storage_masks(mask(2))
+        .public_protection_storage_masks(mask(4))
+        .build_request()
+        .expect("mask groups validate")
+        .into_ttlv_payload()
+        .expect("mask groups serialize");
+    let tags = payload
+        .view()
+        .children()
+        .iter()
+        .map(|item| item.tag().raw())
+        .collect::<Vec<_>>();
+    assert_eq!(tags, [0x0042_0058, 0x0042_0163, 0x0042_0164, 0x0042_0165]);
+    assert_eq!(fake.borrow().exchange_count(), 0);
+}
