@@ -7,7 +7,8 @@
   `86c9eb2a68d882dd1672402391c39ba918ba9c1f` after rebasing on the Java CI
   fixes and updated manifest snapshots.
 - Parent PR: #188, Java fluent cryptographic API.
-- PR: not opened yet.
+- PR: #190 (`[WIP] KMIPKIT-0105 Python fluent cryptographic API`), draft,
+  based on the KMIPKIT-0104 branch.
 
 ## Red
 
@@ -128,6 +129,12 @@ Pending full binding checks and exact-head CI.
 - Rust quality: `cargo fmt --all --check` and
   `cargo clippy --workspace --all-targets --all-features -- -D warnings`
   passed.
+- Traceability contracts: `python3 -B -m unittest
+  scripts.tests.test_requirement_traceability -v` — 2 passed; feature
+  traceability discovery — 31 passed.
+- Java/JNI integration build and fluent API shape: `mvn --batch-mode --file
+  bindings/java/pom.xml -Dtest=FluentCryptoApiShapeTest test` — 5 tests passed;
+  JNI and Java compilation succeeded.
 - Manifest generation: `python3 tools/api_manifest/generate.py --check` — all
   12 generated outputs current.
 - Binding export audit: `python3 tools/api_manifest/audit_binding_exports.py
