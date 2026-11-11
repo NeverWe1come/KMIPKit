@@ -83,7 +83,7 @@ def build_wheel(repository: Path, commit: str, wheelhouse: Path) -> Path:
 
 def install(wheel: Path) -> None:
     subprocess.run(
-        [sys.executable, "-m", "pip", "install", "--no-deps", str(wheel.resolve())],
+        [sys.executable, "-m", "pip", "install", "--no-deps", "--force-reinstall", str(wheel.resolve())],
         check=True,
     )
 
