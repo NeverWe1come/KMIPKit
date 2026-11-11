@@ -203,6 +203,44 @@ class ControlledTlsPeerTest {
     }
 
     @Test
+    void asynchronousCancelAndPollPreserveKmip20WithTheInstalledExecutors() throws Exception {
+        byte[] serverCertificatePem = fixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = fixture("server-key.pem");
+        byte[] clientCertificatePem = fixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = fixture("client-key.pem");
+        SSLServerSocket listener = listener(certificate(serverCertificatePem), privateKey(serverPrivateKeyPem),
+                certificate(clientCertificatePem));
+        var catalog = CatalogLoader.load(Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json"));
+        var operationCases = List.of("test-op-cancel", "test-op-poll").stream()
+                .map(caseId -> catalog.cases().stream().filter(testCase -> testCase.caseId().equals(caseId))
+                        .findFirst().orElseThrow())
+                .toList();
+        var peer = new FutureTask<List<byte[]>>(() -> serveAsynchronousResponses(listener, operationCases.size()));
+        Thread peerThread = new Thread(peer, "java-validator-controlled-kmip20-async-peer");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        Path connectionFile = temporaryDirectory.resolve("kmip20-async-connection.json");
+        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                clientCertificatePem, clientPrivateKeyPem, true, "2.0"));
+        byte[] correlation = {0x20, 0x20, 0x20, 0x30};
+        try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile))) {
+            for (var testCase : operationCases) {
+                var outcome = driver.executeAsynchronousRequest(testCase, correlation);
+                assertEquals("passed", outcome.status(), testCase.operation() + ": " + outcome);
+            }
+        } finally {
+            listener.close();
+        }
+
+        var requests = peer.get(20, TimeUnit.SECONDS);
+        assertEquals(List.of(0x19L, 0x1aL),
+                requests.stream().map(ControlledTlsPeerTest::requestOperation).toList());
+        assertTrue(requests.stream().allMatch(request -> requestProtocolMinorVersion(request) == 0),
+                "KMIP 2.0 asynchronous requests must retain the configured version on the wire.");
+    }
+
+    @Test
     void typedLogSendsTheRequiredMessageAndVerifiesAnEmptyResponsePayload() throws Exception {
         byte[] serverCertificatePem = fixture("server-cert.pem");
         byte[] serverPrivateKeyPem = fixture("server-key.pem");
