@@ -48,7 +48,8 @@ public final class Main {
                 default -> throw new IllegalArgumentException("Command must be plan, preflight, or run");
             };
         } catch (Exception exception) {
-            err.println("Command failed. Check the local configuration, artifact pin, and sanitized run report.");
+            err.println("Command failed (" + exception.getClass().getSimpleName()
+                    + "). Check the local configuration, artifact pin, and sanitized run report.");
             return 2;
         }
     }
@@ -60,7 +61,6 @@ public final class Main {
         List<CatalogLoader.CatalogCase> applicable = applicableCases(catalog, connection.protocolVersion());
         long local = applicable.stream().filter(testCase -> "local_model".equals(testCase.execution().mode())).count();
         long typed = "typed-protocol".equals(connection.apiLevel())
-                && !"2.0".equals(connection.protocolVersion())
                 ? countCases(applicable, JavaRouteInventory.Status.EXECUTABLE_TYPED) : 0;
         long recipePending = countCases(applicable, JavaRouteInventory.Status.TYPED_API_PENDING);
         long payloadOnly = countCases(applicable, JavaRouteInventory.Status.PAYLOAD_ONLY);
@@ -77,9 +77,6 @@ public final class Main {
         out.println("Payload-only and missing public routes: " + (payloadOnly + apiUnavailable));
         out.println("Server-initiated workflows without a Java listener: " + workflowUnavailable);
         out.println("Cases requiring explicit mutation opt-in: " + mutation);
-        if ("2.0".equals(connection.protocolVersion())) {
-            out.println("KMIP 2.0 live routes are blocked by the pinned artifact until protocol-version preservation is available.");
-        }
         out.println("Capability profiles are hypotheses and do not filter cases.");
         return 0;
     }
@@ -115,13 +112,13 @@ public final class Main {
                         && JavaRouteInventory.routeFor(testCase).status()
                                 == JavaRouteInventory.Status.EXECUTABLE_TYPED
                         && "typed-protocol".equals(connection.apiLevel())
-                        && !"2.0".equals(connection.protocolVersion())
                         && (!"mutating".equals(testCase.execution().mutation())
                                 || (connection.allowMutations() && enableMutations)));
         JavaKmipDriver driver = hasPotentialLiveRoute ? JavaKmipDriver.connect(connection) : null;
         try {
             for (CatalogLoader.CatalogCase testCase : applicable) {
-                JavaKmipDriver.CaseOutcome outcome = executeCase(testCase, connection, enableMutations, driver);
+                JavaKmipDriver.CaseOutcome outcome = executeCase(testCase, catalog.normativeTargets(),
+                        connection, enableMutations, driver);
                 evidence.add(new RunReport.CaseEvidence(testCase.caseId(), outcome.status(),
                         outcome.libraryCorrectness(), outcome.serverCompatibility(), outcome.parity(),
                         outcome.durationMs(), outcome.resultStatusCode(), outcome.resultReasonCode(),
@@ -148,25 +145,21 @@ public final class Main {
     }
 
     private static JavaKmipDriver.CaseOutcome executeCase(CatalogLoader.CatalogCase testCase,
-            ConnectionConfig connection, boolean enableMutations, JavaKmipDriver driver) {
+            Map<String, JsonNode> normativeTargets, ConnectionConfig connection,
+            boolean enableMutations, JavaKmipDriver driver) {
         long start = System.nanoTime();
         if ("not_applicable".equals(testCase.execution().status())) {
             return JavaKmipDriver.CaseOutcome.notRun("Catalog case is not applicable: "
                     + testCase.execution().notApplicableReason(), elapsedMillis(start));
         }
         if ("local_model".equals(testCase.execution().mode())) {
-            TtlvModelChecks.ModelCheck model = TtlvModelChecks.verifyLocalCase(testCase);
+            TtlvModelChecks.ModelCheck model = TtlvModelChecks.verifyLocalCase(testCase, normativeTargets);
             return model.passed()
                     ? JavaKmipDriver.CaseOutcome.localModelPassed(elapsedMillis(start))
                     : JavaKmipDriver.CaseOutcome.failed("Local TTLV model assertion failed.", elapsedMillis(start));
         }
         if (!"typed-protocol".equals(connection.apiLevel())) {
             return JavaKmipDriver.CaseOutcome.notRun("The selected Java API level has no server request route.",
-                    elapsedMillis(start));
-        }
-        if ("2.0".equals(connection.protocolVersion())) {
-            return JavaKmipDriver.CaseOutcome.notRun(
-                    "The pinned release artifact does not yet preserve Java KMIP 2.0 client configuration.",
                     elapsedMillis(start));
         }
         if (!hasTypedRoute(testCase)) {

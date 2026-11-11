@@ -8,7 +8,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /** Loads and validates the shared, versioned interoperability catalog. */
@@ -111,7 +113,18 @@ public final class CatalogLoader {
                     new Execution(mode, versions, steps, assertions, mutation, status, notApplicableReason)));
         }
 
-        return new Catalog(version, targetVersions, declaredTotal, cases);
+        Map<String, JsonNode> normativeTargets = new LinkedHashMap<>();
+        JsonNode targetsNode = root.path("normative_targets");
+        if (targetsNode.isArray()) {
+            for (int index = 0; index < targetsNode.size(); index++) {
+                JsonNode target = targetsNode.get(index);
+                String targetId = requiredText(target, "target_id", "normative_targets[" + index + "]");
+                require(normativeTargets.putIfAbsent(targetId, target.deepCopy()) == null,
+                        "Duplicate normative target ID: " + targetId);
+            }
+        }
+
+        return new Catalog(version, targetVersions, declaredTotal, cases, Map.copyOf(normativeTargets));
     }
 
     private static JsonNode objectField(JsonNode parent, String field, String location) {
@@ -163,7 +176,8 @@ public final class CatalogLoader {
         }
     }
 
-    public record Catalog(String version, List<String> targetVersions, int totalCases, List<CatalogCase> cases) { }
+    public record Catalog(String version, List<String> targetVersions, int totalCases, List<CatalogCase> cases,
+                          Map<String, JsonNode> normativeTargets) { }
     public record NormativeReference(String document, String section) { }
     public record IsolationRecipe(String uniqueNamePrefix, List<String> setupSteps, String targetStep,
                                  List<String> teardownSteps) { }

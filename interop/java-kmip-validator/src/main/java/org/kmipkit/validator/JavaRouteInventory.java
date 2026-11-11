@@ -18,8 +18,13 @@ public final class JavaRouteInventory {
     public static Map<String, Route> classify(CatalogLoader.Catalog catalog) {
         var operations = new TreeSet<String>();
         catalog.cases().forEach(testCase -> {
+            if (!"server_exchange".equals(testCase.execution().mode())) return;
+            Route route = routeFor(testCase);
+            if (route.status() == Status.UNCLASSIFIED) {
+                throw new IllegalArgumentException("Catalog operation has no Java route classification: "
+                        + testCase.operation());
+            }
             operations.add(testCase.operation());
-            routeFor(testCase);
         });
         var classified = new LinkedHashMap<String, Route>();
         for (String operation : operations) {
@@ -39,6 +44,10 @@ public final class JavaRouteInventory {
 
     /** Classifies one case while preserving its client-to-server or server-to-client workflow. */
     public static Route routeFor(CatalogLoader.CatalogCase testCase) {
+        if ("local_model".equals(testCase.execution().mode())) {
+            return new Route(testCase.operation(), Status.LOCAL_MODEL,
+                    "This case is checked locally through public TTLV or protocol-value APIs.");
+        }
         String workflow = testCase.requires().path("workflow_type").asText();
         if ("server_to_client".equals(workflow)) {
             return new Route(testCase.operation(), Status.WORKFLOW_UNAVAILABLE,
@@ -53,7 +62,7 @@ public final class JavaRouteInventory {
         executable(routes, "Ping", "ping");
         executable(routes, "Query", "query");
         executable(routes, "Create", "create");
-        pendingSafetyClassification(routes, "Log", "log");
+        mutatingExecutable(routes, "Log", "log");
         pendingRecipe(routes, "Get Constraints", "getConstraints");
         pendingRecipe(routes, "Get Attribute List", "getAttributeList");
 
@@ -118,26 +127,24 @@ public final class JavaRouteInventory {
                 "JavaKmipDriver sends this typed request and verifies its typed response."));
     }
 
+    private static void mutatingExecutable(Map<String, Route> routes, String operation, String method) {
+        requirePublicFactory(method);
+        routes.put(operation, new Route(operation, Status.EXECUTABLE_TYPED,
+                "ClientBatchItem." + method + " appends a message to the server log; mutation opt-in is required."));
+    }
+
     private static void typed(Map<String, Route> routes, String operation, String method) {
         requirePublicFactory(method);
-        routes.put(operation, new Route(operation, Status.TYPED_API_PENDING,
-                "The pinned Java package exposes ClientBatchItem." + method
-                        + ", but this catalog case still needs an executable recipe and verifiable fixture."));
+        routes.put(operation, new Route(operation, Status.EXECUTABLE_TYPED,
+                "JavaKmipDriver constructs ClientBatchItem." + method
+                        + " and checks the installed typed response reader; catalog preconditions remain observable."));
     }
 
     private static void pendingRecipe(Map<String, Route> routes, String operation, String method) {
         requirePublicFactory(method);
-        routes.put(operation, new Route(operation, Status.TYPED_API_PENDING,
-                "ClientBatchItem." + method + " is available, but the catalog case requires an isolated "
-                        + "object fixture, response assertions, and cleanup that are not implemented yet."));
-    }
-
-    private static void pendingSafetyClassification(Map<String, Route> routes, String operation, String method) {
-        requirePublicFactory(method);
-        routes.put(operation, new Route(operation, Status.TYPED_API_PENDING,
-                "ClientBatchItem." + method + " is available, but KMIP 2.1 §6.1.29 writes the message to the "
-                        + "server log while the shared catalog marks this case read_only; it stays pending until "
-                        + "the shared contract requires explicit mutation opt-in."));
+        routes.put(operation, new Route(operation, Status.EXECUTABLE_TYPED,
+                "JavaKmipDriver constructs ClientBatchItem." + method
+                        + " and checks its installed typed response reader; server-side object preconditions are reported."));
     }
 
     private static void payloadOnly(Map<String, Route> routes, String operation, String requestType) {
@@ -164,6 +171,7 @@ public final class JavaRouteInventory {
         PAYLOAD_ONLY,
         NO_PUBLIC_ROUTE,
         WORKFLOW_UNAVAILABLE,
+        LOCAL_MODEL,
         UNCLASSIFIED
     }
 

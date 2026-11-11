@@ -3,6 +3,7 @@ package org.kmipkit.validator;
 import org.kmipkit.credentials.Authentication;
 import org.kmipkit.credentials.Credential;
 import org.kmipkit.credentials.SecretText;
+import org.kmipkit.ClientOperationException;
 import org.kmipkit.extensions.Client;
 import org.kmipkit.extensions.ClientBatch;
 import org.kmipkit.extensions.ClientBatchItem;
@@ -31,6 +32,7 @@ import java.util.UUID;
 /** Executes the Java public typed client against a KMIP server without logging remote payloads. */
 public final class JavaKmipDriver implements AutoCloseable {
     private static final CodecLimits CODEC_LIMITS = CodecLimits.defaults();
+    private static final int SERVER_RESULT_ERROR_CATEGORY = 4;
     private final Client client;
     private final ConnectionConfig connection;
 
@@ -44,13 +46,13 @@ public final class JavaKmipDriver implements AutoCloseable {
         ClientExtensionRegistry registry = ClientExtensionRegistry.create(
                 List.of(), ExtensionRegistryLimits.defaults());
         ClientConfiguration baseConfiguration = ClientConfiguration.create(registry);
-        ClientConfiguration encodingConfiguration = baseConfiguration.withWireEncoding(
-                WireEncoding.valueOf(connection.encoding()));
-        ClientConfiguration protocolConfiguration = encodingConfiguration.withProtocolVersion(
+        ClientConfiguration protocolConfiguration = baseConfiguration.withProtocolVersion(
                 toProtocolVersion(connection.protocolVersion()));
+        ClientConfiguration encodingConfiguration = protocolConfiguration.withWireEncoding(
+                WireEncoding.valueOf(connection.encoding()));
         TransportConfiguration transport = buildTransport(connection);
-        try (registry; baseConfiguration; encodingConfiguration; protocolConfiguration; transport) {
-            return new JavaKmipDriver(Client.create(protocolConfiguration, transport), connection);
+        try (registry; baseConfiguration; protocolConfiguration; encodingConfiguration; transport) {
+            return new JavaKmipDriver(Client.create(encodingConfiguration, transport), connection);
         }
     }
 
@@ -60,7 +62,15 @@ public final class JavaKmipDriver implements AutoCloseable {
         if ("Create".equals(testCase.operation())) {
             return executeCreateWithCleanup(testCase, start);
         }
-        ClientBatchItem request = TypedRequestFactory.create(testCase.operation());
+        if (requiresSymmetricKeyFixture(testCase)) {
+            return executeWithSymmetricKeyFixture(testCase, start);
+        }
+        return executeTypedRequest(testCase, start, null);
+    }
+
+    private CaseOutcome executeTypedRequest(CatalogLoader.CatalogCase testCase, long start,
+                                           UniqueIdentifier fixtureIdentifier) {
+        ClientBatchItem request = TypedRequestFactory.create(testCase.operation(), fixtureIdentifier);
         if (request == null) {
             return CaseOutcome.notRun("No Java typed request route is implemented for this catalog operation.",
                     elapsedMillis(start));
@@ -104,9 +114,120 @@ public final class JavaKmipDriver implements AutoCloseable {
                 }
             }
         } catch (Exception exception) {
-            return CaseOutcome.failed("KMIP client exchange failed (" + exception.getClass().getSimpleName()
+            return exchangeFailure(exception, start);
+        }
+    }
+
+    private CaseOutcome executeWithSymmetricKeyFixture(CatalogLoader.CatalogCase testCase, long start) {
+        String objectName = testCase.isolationRecipe().uniqueNamePrefix() + "-" + UUID.randomUUID();
+        FixtureSetup setup = createSymmetricKeyFixture(objectName, start);
+        if (setup.identifier() == null) return setup.failure();
+
+        CaseOutcome target = executeTypedRequest(testCase, start, setup.identifier());
+        if ("Destroy".equals(testCase.operation()) && Long.valueOf(0).equals(target.resultStatusCode())) {
+            return target;
+        }
+        if ("Activate".equals(testCase.operation()) && Long.valueOf(0).equals(target.resultStatusCode())) {
+            CaseOutcome revoke = executeFixtureCleanup("Revoke", setup.identifier(), start);
+            if (!"passed".equals(revoke.status())) {
+                return CaseOutcome.failed("The operation completed, but fixture Revoke cleanup failed.",
+                        elapsedMillis(start), target.resultStatusCode(), target.resultReasonCode());
+            }
+        }
+        CaseOutcome cleanup = executeFixtureCleanup("Destroy", setup.identifier(), start);
+        if (!"passed".equals(cleanup.status())) {
+            return CaseOutcome.failed("The catalog operation ran, but its isolated Symmetric Key could not be destroyed.",
+                    elapsedMillis(start), target.resultStatusCode(), target.resultReasonCode());
+        }
+        return target;
+    }
+
+    private FixtureSetup createSymmetricKeyFixture(String objectName, long start) {
+        try (TtlvStructure attributes = createTestKeyAttributes(objectName);
+                ClientBatchItem request = ClientBatchItem.create(2, attributes, null)
+                        .withUniqueBatchItemId("item-0".getBytes(java.nio.charset.StandardCharsets.US_ASCII));
+                ClientBatch batch = ClientBatch.create()) {
+            long requestOperation = request.operation();
+            batch.add(request);
+            if (connection.usernamePassword() != null) {
+                batch.setAuthentication(usernamePasswordAuthentication(connection.usernamePassword()));
+            }
+            try (ClientBatchResponse response = client.execute(batch, CODEC_LIMITS)) {
+                if (response.itemCount() != 1) {
+                    return FixtureSetup.failed(CaseOutcome.failed(
+                            "Fixture Create response batch item count did not match the request.", elapsedMillis(start)));
+                }
+                try (ClientBatchItemResult result = response.itemAt(0)) {
+                    if (result.operation() != requestOperation) {
+                        return FixtureSetup.failed(CaseOutcome.failed(
+                                "Fixture Create response operation did not match the request.", elapsedMillis(start)));
+                    }
+                    long status = result.resultStatus();
+                    long reason = result.resultReason().orElse(-1);
+                    if (status != 0) return FixtureSetup.failed(nonSuccessOutcome(null, status, reason, start));
+                    var payload = result.createResponse();
+                    if (payload.isEmpty()) {
+                        return FixtureSetup.failed(CaseOutcome.failed(
+                                "Fixture Create success response omitted its typed payload.", elapsedMillis(start),
+                                status, optionalCode(reason)));
+                    }
+                    var created = payload.orElseThrow();
+                    if (created.objectType() != 2) {
+                        return FixtureSetup.failed(CaseOutcome.failed(
+                                "Fixture Create returned an object type other than Symmetric Key.", elapsedMillis(start),
+                                status, optionalCode(reason)));
+                    }
+                    return FixtureSetup.created(created.uniqueIdentifier());
+                }
+            }
+        } catch (Exception exception) {
+            return FixtureSetup.failed(exchangeFailure(exception, start));
+        }
+    }
+
+    private CaseOutcome executeFixtureCleanup(String operation, UniqueIdentifier identifier, long start) {
+        ClientBatchItem request = TypedRequestFactory.create(operation, identifier);
+        if (request == null) return CaseOutcome.failed("The installed package lacks fixture cleanup route " + operation + ".", elapsedMillis(start));
+        long requestOperation = request.operation();
+        try (request; ClientBatch batch = ClientBatch.create()) {
+            batch.add(request);
+            if (connection.usernamePassword() != null) {
+                batch.setAuthentication(usernamePasswordAuthentication(connection.usernamePassword()));
+            }
+            try (ClientBatchResponse response = client.execute(batch, CODEC_LIMITS)) {
+                if (response.itemCount() != 1) {
+                    return CaseOutcome.failed("Fixture cleanup response item count was invalid.", elapsedMillis(start));
+                }
+                try (ClientBatchItemResult result = response.itemAt(0)) {
+                    if (result.operation() != requestOperation || result.resultStatus() != 0) {
+                        return CaseOutcome.failed("Fixture cleanup operation returned a non-success KMIP result.",
+                                elapsedMillis(start), optionalCode(result.resultStatus()),
+                                optionalCode(result.resultReason().orElse(-1)));
+                    }
+                    if ("Destroy".equals(operation)) {
+                        var payload = result.destroyResponse();
+                        if (payload.isEmpty()) return CaseOutcome.failed(
+                                "Fixture Destroy success response omitted its typed payload.", elapsedMillis(start));
+                        var destroyed = payload.orElseThrow();
+                        boolean matches = sameIdentifier(identifier, destroyed.uniqueIdentifier());
+                        if (!matches) return CaseOutcome.failed(
+                                "Fixture Destroy response named a different object.", elapsedMillis(start));
+                    } else if (!verifyInstalledTypedResponse(operation, result)) {
+                        return CaseOutcome.failed("Fixture Revoke response shape was invalid.", elapsedMillis(start));
+                    }
+                    return CaseOutcome.passed(elapsedMillis(start), 0L,
+                            optionalCode(result.resultReason().orElse(-1)));
+                }
+            }
+        } catch (Exception exception) {
+            return CaseOutcome.failed("Fixture cleanup exchange failed (" + exception.getClass().getSimpleName()
                     + "); remote diagnostic text was suppressed.", elapsedMillis(start));
         }
+    }
+
+    private static boolean requiresSymmetricKeyFixture(CatalogLoader.CatalogCase testCase) {
+        return testCase.isolationRecipe().setupSteps().stream()
+                .anyMatch(step -> step.startsWith("Create unique SymmetricKey"));
     }
 
     private CaseOutcome executeCreateWithCleanup(CatalogLoader.CatalogCase testCase, long start) {
@@ -253,6 +374,17 @@ public final class JavaKmipDriver implements AutoCloseable {
     }
 
     private static CaseOutcome exchangeFailure(Exception exception, long start) {
+        if (exception instanceof ClientOperationException clientFailure
+                && clientFailure.categoryCode() == SERVER_RESULT_ERROR_CATEGORY) {
+            return CaseOutcome.failed("The KMIP server returned a failure, but the installed Java client does not "
+                    + "expose Result Status or Result Reason.", elapsedMillis(start));
+        }
+        if (exception instanceof ClientOperationException clientFailure) {
+            return CaseOutcome.failed("KMIP client exchange failed (sanitized status code "
+                    + clientFailure.statusCode() + ", category code " + clientFailure.categoryCode()
+                    + ", delivery state code " + clientFailure.deliveryStateCode()
+                    + "); remote diagnostic text was suppressed.", elapsedMillis(start));
+        }
         return CaseOutcome.failed("KMIP client exchange failed (" + exception.getClass().getSimpleName()
                 + "); remote diagnostic text was suppressed.", elapsedMillis(start));
     }
@@ -288,8 +420,23 @@ public final class JavaKmipDriver implements AutoCloseable {
             }
             case "Discover Versions" -> JavaResponseChecks.advertisesRequestedVersion(
                     result.supportedVersions().orElse(List.of()), toProtocolVersion(connection.protocolVersion()));
-            default -> false;
+            default -> verifyInstalledTypedResponse(operation, result);
         };
+    }
+
+    private static boolean verifyInstalledTypedResponse(String operation, ClientBatchItemResult result) {
+        try {
+            String accessor = TypedRequestFactory.responseAccessor(operation);
+            Object response = ClientBatchItemResult.class.getMethod(accessor).invoke(result);
+            Object payload = response instanceof java.util.Optional<?> optional
+                    ? optional.orElse(null) : response;
+            if (payload == null) return false;
+            if (payload instanceof Boolean value) return value;
+            if (payload instanceof AutoCloseable closeable) closeable.close();
+            return true;
+        } catch (Exception ignored) {
+            return false;
+        }
     }
 
     private static TransportConfiguration buildTransport(ConnectionConfig connection) {
@@ -353,6 +500,7 @@ public final class JavaKmipDriver implements AutoCloseable {
     }
 
     private static boolean expectedReason(CatalogLoader.CatalogCase testCase, long reason) {
+        if (testCase == null) return false;
         var reasons = testCase.requires().get("expected_result_reasons");
         if (reasons == null || !reasons.isArray()) return false;
         for (var expected : reasons) {
@@ -414,6 +562,22 @@ public final class JavaKmipDriver implements AutoCloseable {
         static CaseOutcome notRun(String diagnostic, double elapsed) {
             return new CaseOutcome("not_run", "not_checked", "unknown", "not_compared",
                     elapsed, null, null, diagnostic);
+        }
+    }
+
+    private record FixtureSetup(UniqueIdentifier identifier, CaseOutcome failure) {
+        private FixtureSetup {
+            if ((identifier == null) == (failure == null)) {
+                throw new IllegalArgumentException("A fixture setup must contain exactly one result.");
+            }
+        }
+
+        static FixtureSetup created(UniqueIdentifier identifier) {
+            return new FixtureSetup(identifier, null);
+        }
+
+        static FixtureSetup failed(CaseOutcome failure) {
+            return new FixtureSetup(null, failure);
         }
     }
 }
