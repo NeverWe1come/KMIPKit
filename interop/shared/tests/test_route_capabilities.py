@@ -96,6 +96,37 @@ class RouteCapabilitiesTests(unittest.TestCase):
         self.assertTrue(all(target['kind'] == 'tag_range' and target['target_id'] == 'KMIPKIT-RANGE-004'
                             for target in unknown_targets), unknown['normative_target_ids'])
 
+    def test_object_type_raw_value_route_only_claims_its_own_enum_family(self):
+        catalog = json.loads((SHARED / 'catalog/kmipkit-1.0-test-catalog.json').read_text())
+        targets = {target['target_id']: target for target in catalog['normative_targets']}
+        route = next(route for route in self.data['routes']
+                     if route['language'] == 'rust'
+                     and route['public_api_symbol'] == 'kmipkit_protocol::ObjectType::from_raw')
+        expected = {target['target_id'] for target in catalog['normative_targets']
+                    if target['kind'] == 'enumeration_value'
+                    and 'KMIPKIT-ELEM-ENUMERATION-OBJECT-TYPE' in target.get('parent_element_ids', [])}
+        self.assertEqual(expected, set(route['normative_target_ids']))
+        self.assertTrue(all(target_id in targets for target_id in route['normative_target_ids']))
+
+    def test_raw_value_routes_keep_nonstandard_normative_family_aliases(self):
+        catalog = json.loads((SHARED / 'catalog/kmipkit-1.0-test-catalog.json').read_text())
+        routes = {route['public_api_symbol']: route for route in self.data['routes']}
+        targets = {target['target_id']: target for target in catalog['normative_targets']}
+        revocation = routes['kmipkit_protocol::RevocationReason::from_raw']
+        expected_revocation = {target['target_id'] for target in catalog['normative_targets']
+                               if target['kind'] == 'enumeration_value'
+                               and 'KMIPKIT-ELEM-ENUMERATION-REVOCATION-REASON-CODE'
+                               in target.get('parent_element_ids', [])}
+        self.assertEqual(expected_revocation, set(revocation['normative_target_ids']))
+
+        protocol_version = routes['kmipkit_protocol::ProtocolVersion::from_raw']
+        protocol_fields = {target_id for target_id, target in targets.items()
+                           if target['kind'] == 'message_field'
+                           and target['name'].startswith('Protocol Version')}
+        self.assertTrue(protocol_fields <= set(protocol_version['normative_target_ids']))
+        self.assertFalse(any(targets[target_id]['kind'] in {'object_structure', 'structure_member'}
+                             for target_id in protocol_version['normative_target_ids']))
+
     def test_scalar_ttlv_converters_only_claim_targets_they_can_emit(self):
         routes = {route['public_api_symbol']: route for route in self.data['routes']}
         expected = {
