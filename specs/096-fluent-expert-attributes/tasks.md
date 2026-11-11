@@ -37,7 +37,7 @@
   Its exact-head hosted CI is still pending.
 - Java exposes `SymmetricKeyBuilder.attributeItemAt(int, TtlvItem)` and the
   focused `FluentFacadeShapeTest` passes, including negative and out-of-range
-  position rejection. Red evidence is commit `6f58e371e`; Green evidence is
-  being completed in the dependent Java delivery.
+  position rejection. Red, Green, and Refactor evidence are commits
+  `6f58e371e`, `14b338716`, and `ffc996f18` in the dependent Java delivery.
 - Python binding parity and cross-language response views remain outstanding;
   T006 stays open until those dependent deliveries pass exact-head CI.
