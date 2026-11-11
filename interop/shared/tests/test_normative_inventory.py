@@ -452,7 +452,8 @@ class NormativeInventoryTests(unittest.TestCase):
             "Date Time Extended": "8",
         }
         expected_branches = {"length_multiple_of_8", "exact_item_length_4", "exact_item_length_8",
-                             "invalid_item_length_rejected", "minimal_alignment_padding"}
+                             "invalid_item_length_rejected", "minimal_alignment_padding",
+                             "alternate_sign_extension_accepted"}
         targets = {target["name"]: target for target in self.targets if target["kind"] == "data_type"}
         self.assertEqual(set(allowed_lengths), set(targets))
         catalog_cases = {
@@ -489,7 +490,7 @@ class NormativeInventoryTests(unittest.TestCase):
             "Structure": {"empty_structure", "nested_integer", "ordered_children", "reversed_children", "non_multiple_of_8_length", "truncated_child"},
             "Integer": {"signed_minimum", "zero", "signed_maximum", "wrong_length_3"},
             "Long Integer": {"signed_minimum", "zero", "signed_maximum", "wrong_length_4"},
-            "Big Integer": {"positive_one", "negative_one", "positive_multiword", "negative_multiword", "non_multiple_length_4", "excessive_sign_extension"},
+            "Big Integer": {"positive_one", "negative_one", "positive_multiword", "negative_multiword", "non_multiple_length_4", "alternate_sign_extension"},
             "Enumeration": {"assigned_zero", "unknown_value_preserved", "extension_allocation", "wrong_length_3"},
             "Boolean": {"false", "true", "invalid_boolean_2", "wrong_length_4"},
             "Text String": {"empty", "single_ascii_and_padding", "seven_bytes", "eight_bytes", "nine_bytes", "multibyte_utf8", "invalid_utf8"},
@@ -516,6 +517,11 @@ class NormativeInventoryTests(unittest.TestCase):
                         self.assertEqual(0, len(raw) % 8)
                     else:
                         self.assertTrue(sample.get("error_class"))
+                if name == "Big Integer":
+                    alternate_sign_extension = next(
+                        sample for sample in vector["samples"] if sample["branch"] == "alternate_sign_extension"
+                    )
+                    self.assertTrue(alternate_sign_extension["valid"])
 
     def test_date_time_extended_precision_branch_is_pinned_to_oasis_definition(self) -> None:
         for version, table_number in (("2.0", "390"), ("2.1", "428")):
