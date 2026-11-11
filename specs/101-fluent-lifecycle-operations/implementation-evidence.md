@@ -116,3 +116,25 @@
 - Commit `1942d7f47` records the coverage and manifest regression repair. A new
   exact-head CI run is required after publication; PR #184 remains `[WIP]` until
   every required check passes.
+
+## Exact-head CI regression repair: Python contracts
+
+- PR #184 CI run `43053599704` exposed a stale API inventory expectation in
+  `test_t102_client_extension_registry_namespace`: the manifest already
+  contains `ClientConfiguration::with_kmip_version` as a KMIPKIT-0093 blocked
+  four-language candidate, but the expected child export set omitted it.
+- Red: `python3 -B -m unittest
+  tools.api_manifest.tests.test_t102_client_extension_registry_namespace`
+  failed because the observed child set contained that unlisted candidate.
+- Green: the inventory now includes the existing candidate and verifies its
+  blocked KMIPKIT-0093 status without treating it as a declared four-language
+  export. No production code or manifest entry changed.
+- The complete affected CI grouping passed:
+  `python3 -B -m unittest tools.api_manifest.tests.test_t102_certify_request_builder_mapping
+  tools.api_manifest.tests.test_t102_client_extension_registry_namespace
+  tools.api_manifest.tests.test_t102_recertify_rekey_key_pair_builder_mapping
+  tools.api_manifest.tests.test_log_parity_manifest
+  tools.api_manifest.tests.test_t102_response_parser_mapping
+  tools.api_manifest.tests.test_t102_profile_transport_parity
+  tools.api_manifest.tests.test_t102_profile_model_reexport_mapping -v`
+  (31 tests).
