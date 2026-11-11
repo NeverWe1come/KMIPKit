@@ -381,6 +381,14 @@ def verify_consumer_provenance(report, artifact_sha256, catalog_sha256):
         raise ValueError('consumer_artifact_provenance_mismatch')
 
 
+def case_for_controlled_exchange(case):
+    """Run opaque Query request constructors through the controlled peer."""
+    is_query_payload = case['case_id'].startswith('test-norm-payload-client-query-request-')
+    if is_query_payload and case.get('execution', {}).get('mode') == 'local_model':
+        return {**case, 'execution': {**case['execution'], 'mode': 'server_exchange'}}
+    return case
+
+
 def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0', '2.1'),
                           network_combinations=(('TTLV', 'raw_tls'), ('TTLV', 'https'),
                                                 ('JSON', 'raw_tls'), ('JSON', 'https'),
@@ -466,14 +474,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                             connection_path, catalog_path, result_path, trace_path = (directory / name for name in ('connection.json', 'catalog.json', 'result.json', 'calls.tsv'))
                             trace_path.unlink(missing_ok=True)
                             connection_path.write_text(json.dumps(config))
-                            peer_case = case
-                            if (case['case_id'].startswith('test-norm-payload-client-query-request-')
-                                    and case.get('execution', {}).get('mode') == 'local_model'):
-                                # The public C Query constructor is opaque outside
-                                # a client exchange; send the locally specified
-                                # request through this controlled peer to inspect it.
-                                peer_case = {**case, 'execution': {
-                                    **case['execution'], 'mode': 'server_exchange'}}
+                            peer_case = case_for_controlled_exchange(case)
                             catalog_path.write_text(json.dumps({**catalog, 'test_cases': [peer_case]}))
                             run = subprocess.run([str(binary.resolve()), 'run', '--connection', str(connection_path),
                                 '--catalog', str(catalog_path), '--allow-mutations', '--output', str(result_path)],
