@@ -272,6 +272,10 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual({'KMIPKIT-ELEM-OP-C2S-ACTIVATE',
                           'KMIPKIT-PAYLOAD-CLIENT-ACTIVATE-REQUEST-20-001'},
                          {event['target_id'] for event in report['events']})
+        operation_hash = self.runner.digest([[0x42005C, 5, 1]])
+        operation_events = [event for event in report['events']
+                            if event['target_id'] == 'KMIPKIT-ELEM-OP-C2S-ACTIVATE']
+        self.assertEqual({operation_hash}, {event['request_tree_sha256'] for event in operation_events})
 
     def test_ci_requires_shared_changes_and_matrix_completeness(self):
         workflow = (ROOT / '.github/workflows/interop-python.yml').read_text()
