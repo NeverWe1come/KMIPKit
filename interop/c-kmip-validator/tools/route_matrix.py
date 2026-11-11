@@ -27,6 +27,19 @@ ATTRIBUTE_ROUTE_TARGET_KINDS = frozenset({'attribute', 'tag', 'enumeration_value
 ATTRIBUTE_ROUTE_CASE_CATEGORIES = frozenset(
     {'attributes', 'managed_objects', 'enums_and_bitmasks', 'normative_inventory'}
 )
+TTLV_TYPE_PATTERNS = (
+    (r'\bstructure\b', 1),
+    (r'\bbig[\s-]*integer\b', 4),
+    (r'\blong[\s-]*integer\b', 3),
+    (r'\bdate[\s-]*time[\s-]*extended\b|\bdatetimeextended\b', 11),
+    (r'\benumeration\b', 5),
+    (r'\bboolean\b', 6),
+    (r'\btext[\s-]*string\b|\btextstring\b', 7),
+    (r'\bbyte[\s-]*string\b|\bbytestring\b', 8),
+    (r'\bdate[\s-]*time\b|\bdatetime\b', 9),
+    (r'\binterval\b', 10),
+    (r'(?<![\w-])integer\b', 2),
+)
 
 
 def pending_reason(cell: dict) -> str:
@@ -82,18 +95,17 @@ def catalog_enum_values(catalog: dict, enum_name: str, protocol_version: str) ->
 
 def _type_codes(encoding: str) -> list[int]:
     """Read only TTLV types explicitly named in a catalog encoding declaration."""
-    name = _name(encoding)
-    candidates = (
-        ('structure', 1), ('biginteger', 4), ('longinteger', 3),
-        ('datetimeextended', 11), ('enumeration', 5), ('boolean', 6),
-        ('textstring', 7), ('bytestring', 8), ('datetime', 9),
-        ('interval', 10), ('integer', 2),
-    )
-    values = []
-    for token, code in candidates:
-        if token in name and code not in values:
-            values.append(code)
-    return values
+    matches = []
+    for pattern, code in TTLV_TYPE_PATTERNS:
+        matches.extend((match.start(), match.end(), code)
+                       for match in re.finditer(pattern, encoding, flags=re.IGNORECASE))
+    selected = []
+    for start, end, code in sorted(matches, key=lambda item: (item[0], -(item[1] - item[0]))):
+        if any(start >= outer_start and end <= outer_end
+               for outer_start, outer_end, _ in selected):
+            continue
+        selected.append((start, end, code))
+    return [code for _, _, code in sorted(selected)]
 
 
 def _fixture_value(target: dict, tag: int, kind: int, catalog: dict,
