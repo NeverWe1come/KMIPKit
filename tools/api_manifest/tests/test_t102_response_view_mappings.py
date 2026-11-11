@@ -172,7 +172,8 @@ EXPECTED = (
 # The snapshot includes the approved KMIPKIT-0052 async typed-reader routes.
 # It also includes the approved KMIPKIT-0099 Create Split Key and KMIPKIT-0100
 # Register declarations and KMIPKIT-0101 lifecycle declarations.
-UNCHANGED_DECLARATIONS_SHA256 = "ea9a7e5fb7a32501f36dc2298168d14bf25514cd97a5c0b417065b16fbefc233"
+# Includes the approved KMIPKIT-0093 inventory reconciliation.
+UNCHANGED_DECLARATIONS_SHA256 = "5fca7622d2a4c011fcca1035d15a139adfeae4568ba5bd4101a36fda220ac996"
 UNCHANGED_OPERATIONS_SHA256 = "9ee0f7c51c05a8abd96af7f6d3017f3ffb780c4262f231eaf3cb8c01a38147c7"
 # T098's maintainer-approved reconciliation updates lifecycle approval evidence
 # and inherited requirement links outside the T102 declaration/operation rows.
