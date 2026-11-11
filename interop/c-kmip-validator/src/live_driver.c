@@ -1529,6 +1529,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     kmipkit_client_batch_item_response_t *revoke_response_item = NULL;
     kmipkit_client_batch_item_response_t *cleanup_response_item = NULL;
     kmipkit_ttlv_structure_t *response_attributes = NULL;
+    kmipkit_ttlv_structure_t *response_query_ttlv = NULL;
+    kmipkit_ttlv_structure_view_t *response_query_ttlv_view = NULL;
     kmipkit_unique_identifier_v1_t created_identifier = {
         .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
         .abi_version = 1
@@ -1934,6 +1936,28 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                 goto cleanup;
             }
         }
+        uint8_t query_ttlv_present = 0;
+        uint64_t query_ttlv_field_count = 0;
+        status = kmipkit_client_batch_item_response_query_ttlv(
+            response_item, &query_ttlv_present, &response_query_ttlv);
+        if (status == 0 && query_ttlv_present && response_query_ttlv) {
+            status = kmipkit_ttlv_structure_view(response_query_ttlv,
+                                                 &response_query_ttlv_view);
+        }
+        if (status == 0 && query_ttlv_present && response_query_ttlv_view) {
+            status = kmipkit_ttlv_structure_view_item_count(
+                response_query_ttlv_view, &query_ttlv_field_count);
+        }
+        if (status != 0 || !query_ttlv_present || !response_query_ttlv ||
+            !response_query_ttlv_view || query_ttlv_field_count != field_count) {
+            outcome.success = false;
+            outcome.library_failed = status != 0;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit Query response TTLV disagreed with its typed field count");
+            goto cleanup;
+        }
+        kmipkit_ttlv_structure_view_release(response_query_ttlv_view);
+        response_query_ttlv_view = NULL;
         if (!operation_field_found) {
             outcome.success = false;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
@@ -2063,6 +2087,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     }
 
 cleanup:
+    if (response_query_ttlv_view) kmipkit_ttlv_structure_view_release(response_query_ttlv_view);
+    if (response_query_ttlv) kmipkit_ttlv_structure_release(response_query_ttlv);
     if (response_attributes) kmipkit_ttlv_structure_release(response_attributes);
     if (setup_response_item) kmipkit_client_batch_item_response_release(setup_response_item);
     if (activate_response_item) kmipkit_client_batch_item_response_release(activate_response_item);
