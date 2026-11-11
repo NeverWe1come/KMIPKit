@@ -160,6 +160,13 @@ class ModelCases:
                 self._enum_tree('Secret Data Type', 'Secret Data Type', 'Password', protocol_version),
                 key_block_tree,
             ]),
+            'Split Key': ('kmipkit_split_key_from_fields', [
+                (self._tag('Split Key Parts'), 2, (2).to_bytes(4, 'big', signed=True)),
+                (self._tag('Key Part Identifier'), 2, (2).to_bytes(4, 'big', signed=True)),
+                (self._tag('Split Key Threshold'), 2, (1).to_bytes(4, 'big', signed=True)),
+                self._enum_tree('Split Key Method', 'Split Key Method', 'XOR', protocol_version),
+                key_block_tree,
+            ]),
         }
         recipe = recipes.get(name)
         if recipe is None:
@@ -217,7 +224,7 @@ class ModelCases:
                      and (item['target_id'] == target.get('target_id')
                           or item['target_id'] in parents)), None)
         if root is not None and root['name'] in {
-                'Certificate Request', 'PGP Key', 'Private Key', 'Public Key', 'Secret Data'}:
+                'Certificate Request', 'PGP Key', 'Private Key', 'Public Key', 'Secret Data', 'Split Key'}:
             self.abi.called.clear()
             result = self._execute_named_object(root, protocol_version)
             return result if self._supports_target(target, result) else None
