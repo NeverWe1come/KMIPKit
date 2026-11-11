@@ -56428,7 +56428,7 @@
         "assertions": [
           "response_matches_operation_contract"
         ],
-        "mutation": "read_only",
+        "mutation": "mutating",
         "status": "planned"
       }
     },

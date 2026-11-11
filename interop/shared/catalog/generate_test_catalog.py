@@ -275,7 +275,9 @@ def add_execution_contract(test_case: dict, elements: list[dict], indexes: dict[
         mode = "server_exchange"
         steps = ["execute_operation", "verify_response"]
         assertions = ["response_matches_operation_contract"]
-        mutation = "read_only"
+        # OASIS KMIP 2.0 §6.1.28 and KMIP 2.1 §6.1.29 append the supplied
+        # message to the server log, so execution requires explicit opt-in.
+        mutation = "mutating" if test_case.get("operation") == "Log" else "read_only"
 
     ref_versions = ("2.1",) if category == "version_boundaries" else versions
     test_case["normative_refs"] = [] if protocol_scenario else [
