@@ -11,9 +11,7 @@ use kmipkit_protocol::{
     SplitKeyMethod, UniqueIdentifier,
 };
 use kmipkit_test_support::ExchangeScript;
-use kmipkit_transport::{
-    RequestDeliveryState, RequestOptions, TimeoutLimit, WireEncoding,
-};
+use kmipkit_transport::{RequestDeliveryState, RequestOptions, TimeoutLimit, WireEncoding};
 use kmipkit_ttlv::codec::{CodecLimits, decode_with_limits};
 use kmipkit_ttlv::{Item, RawTag, Structure, Value};
 
@@ -421,6 +419,8 @@ fn split_key_builder_executes_one_typed_exchange_and_preserves_all_response_ids(
 
 #[test]
 fn split_key_builder_preserves_failure_and_pending_correlation_without_follow_up() {
+    const CORRELATION: &[u8] = &[0x00, 0xff, 0x80, 0x01, 0x00, 0x7f];
+
     let failure = response_bytes(1, &[], Some(2), Some("policy failure"), None);
     let (mut client, transport, _) = client_for(ExchangeScript::Success {
         response: failure,
@@ -433,11 +433,16 @@ fn split_key_builder_preserves_failure_and_pending_correlation_without_follow_up
         panic!("Failure is represented by the existing typed result");
     };
     assert_eq!(failed.result().status().raw(), 1);
-    assert_eq!(failed.result().reason().map(|reason| reason.raw()), Some(2));
-    assert!(failed.unique_identifiers().is_empty());
+    assert_eq!(
+        failed
+            .result()
+            .reason()
+            .map(kmipkit_protocol::ResultReason::raw),
+        Some(2)
+    );
+    assert_eq!(failed.unique_identifiers(), []);
     assert_eq!(transport.borrow().exchange_count(), 1);
 
-    const CORRELATION: &[u8] = &[0x00, 0xff, 0x80, 0x01, 0x00, 0x7f];
     let pending = response_bytes(2, &["pending-part"], None, None, Some(CORRELATION));
     let (mut client, transport, captured) = client_for(ExchangeScript::Success {
         response: pending,
