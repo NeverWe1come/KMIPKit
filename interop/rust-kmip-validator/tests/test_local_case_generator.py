@@ -32,7 +32,7 @@ class LocalCaseGeneratorTests(unittest.TestCase):
             if case["execution"]["mode"] == "local_model"
         }
         source = GENERATED.read_text(encoding="utf-8")
-        actual = set(re.findall(r'^\s*"([^"]+)"\s*=>', source, re.MULTILINE))
+        actual = set(re.findall(r'^\s*"(test-[^"]+)"\s*=>', source, re.MULTILINE))
 
         self.assertEqual(expected, actual)
         self.assertNotIn("super::generic_model_check()", source)

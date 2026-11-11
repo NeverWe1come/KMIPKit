@@ -85,6 +85,28 @@ def response(operation, minor=1, status=1, reason=5, payload=None, message=None)
     return ttlv(0x42007b, 1, [ttlv(0x42007a, 1, [ttlv(0x420069, 1, [ttlv(0x42006a, 2, 2), ttlv(0x42006b, 2, minor)]), ttlv(0x420092, 9, 1794268800), ttlv(0x42000d, 2, 1)]), ttlv(0x42000f, 1, fields)])
 
 
+def successful_batch(tree):
+    request_items = [value for tag, kind, value in tree[0][2] if tag == 0x42000f]
+    results = []
+    for request_item in request_items:
+        operation = find(request_item, 0x42005c)
+        fields = [ttlv(0x42005c, 5, operation)]
+        batch_id = find(request_item, 0x420093)
+        if batch_id is not None:
+            fields.append(ttlv(0x420093, 8, batch_id))
+        fields.append(ttlv(0x42007f, 5, 0))
+        fields.append(ttlv(0x42007c, 1, []))
+        results.append(ttlv(0x42000f, 1, fields))
+    major = find(tree, 0x42006a)
+    minor = find(tree, 0x42006b)
+    header = ttlv(0x42007a, 1, [
+        ttlv(0x420069, 1, [ttlv(0x42006a, 2, major), ttlv(0x42006b, 2, minor)]),
+        ttlv(0x420092, 9, 1794268800),
+        ttlv(0x42000d, 2, len(results)),
+    ])
+    return ttlv(0x42007b, 1, [header, *results])
+
+
 def receive(channel):
     header = b""
     while len(header) < 8:
@@ -262,9 +284,16 @@ class LiveContract(unittest.TestCase):
 
     def test_local_model_cases_do_not_claim_server_support(self):
         cases = [c for c in CATALOG["test_cases"] if c["execution"]["mode"] == "local_model"]
-        process, report = self.command(self.connection(), cases)
+        applicable = [c for c in cases if "2.1" in c["execution"]["protocol_versions"]]
+        with ControlledPeer(self.pki, successful_batch) as peer:
+            process, report = self.command(self.connection(peer.port, mutations=True), cases)
         self.assertEqual(process.returncode, 0, process.stderr)
-        self.assertEqual(report["summary"]["passed"], 67)
+        self.assertEqual(report["summary"]["total"], len(cases))
+        self.assertEqual(report["summary"]["passed"], len(applicable))
+        self.assertEqual([find(tree, 0x42000d) for tree in peer.request_trees], [2, 1])
+        single_header = peer.request_trees[-1]
+        self.assertIsNone(find(single_header, 0x42000E))
+        self.assertIsNone(find(single_header, 0x420010))
         self.assertTrue(all(c["server_compatibility"] == "unknown" for c in report["cases"]))
 
     def test_query_probes_profile_omissions_and_separates_rejections(self):
@@ -293,9 +322,10 @@ class LiveContract(unittest.TestCase):
             self.assertEqual(peer.operations, [0x18])
 
     def test_version_boundary_is_rejected_before_sending(self):
+        cases = [case for case in CATALOG["test_cases"] if case["case_id"].startswith("test-v20-reject-")]
         with ControlledPeer(self.pki, lambda tree: response(0x18)) as peer:
-            _, report = self.command(self.connection(peer.port, version="2.0"), self.rows("test-v20-reject-get-constraints", "test-v20-reject-set-constraints"))
-            self.assertEqual(report["summary"]["passed"], 2)
+            _, report = self.command(self.connection(peer.port, version="2.0"), cases)
+            self.assertEqual(report["summary"]["passed"], len(cases))
             self.assertEqual(peer.operations, [])
             self.assertTrue(all(c["server_compatibility"] == "unknown" for c in report["cases"]))
 
@@ -460,7 +490,7 @@ class LiveContract(unittest.TestCase):
                     self.assertEqual(result["server_compatibility"], "supported")
                     self.assertEqual(result["library_correctness"], "passed")
             self.assertGreater(len(peer.operations), len(cases))
-            self.assertEqual(report["summary"]["total"], 218)
+            self.assertEqual(report["summary"]["total"], len(CATALOG["test_cases"]))
             evidence = os.environ.get("KMIPKIT_EVIDENCE_DIR")
             if evidence:
                 output = Path(evidence)
