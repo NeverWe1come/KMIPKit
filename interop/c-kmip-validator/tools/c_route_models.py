@@ -148,6 +148,10 @@ class ModelCases:
     def _integer_tree(self, tag_name: str, value: int) -> tuple:
         return self._tag(tag_name), 2, value.to_bytes(4, 'big', signed=True)
 
+    def _enum_extension_tree(self, tag_name: str, family: str, protocol_version: str) -> tuple:
+        value = self._enum_extension_start(family, protocol_version)
+        return self._tag(tag_name), 5, value.to_bytes(4, 'big')
+
     def _key_block_tree(self, protocol_version: str, *, include_key_value: bool = False) -> tuple:
         key_format = self._enum_value('Key Format Type', 'Raw', protocol_version)
         fields = [(KEY_FORMAT_TYPE_TAG, 5, key_format.to_bytes(4, 'big'))]
@@ -172,8 +176,7 @@ class ModelCases:
             'Private Key': ('kmipkit_private_key_from_fields', [key_block_tree]),
             'Public Key': ('kmipkit_public_key_from_fields', [key_block_tree]),
             'Opaque Object': ('kmipkit_opaque_object_from_fields', [
-                (self._tag('Opaque Data Type'), 5,
-                 self._enum_extension_start('Opaque Data Type', protocol_version).to_bytes(4, 'big')),
+                self._enum_extension_tree('Opaque Data Type', 'Opaque Data Type', protocol_version),
                 (self._tag('Opaque Data Value'), 8, b'opaque'),
             ]),
             'Secret Data': ('kmipkit_secret_data_from_fields', [
