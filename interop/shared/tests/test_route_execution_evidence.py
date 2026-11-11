@@ -229,6 +229,24 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'wrong rejection code'):
             self.validate(wrong_classification)
 
+        unused_tag = copy.deepcopy(report)
+        unused_tag_id = 'KMIPKIT-RANGE-001'
+        self.catalog['test_cases'][0]['requires'].update({
+            'normative_target_id': unused_tag_id,
+            'target_kind': 'tag_range',
+            'allocation': 'unused',
+        })
+        for event in unused_tag['events']:
+            event['target_id'] = unused_tag_id
+        unused_tag['events'][-1]['decode_rejection_code'] = 'tag_not_allocated'
+        self.assertTrue(self.validate(unused_tag)['all_invocations_passed'])
+        self.catalog['test_cases'][0]['requires'] = {
+            'normative_target_id': 'KMIPKIT-ELEM-TAG-420009',
+            'target_kind': 'tag',
+            'allocation': 'reserved',
+            'wire_value': '420009',
+        }
+
         try:
             import jsonschema
         except ImportError:
