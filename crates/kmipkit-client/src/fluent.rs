@@ -337,22 +337,12 @@ impl<'a> CreateSymmetricKeyBuilder<'a> {
     /// typed request checks used for semantic attributes.
     #[must_use]
     pub fn attribute_at(mut self, position: FluentAttributePosition, item: Item) -> Self {
-        if self.attribute_error.is_some() {
-            return self;
-        }
-        let FluentAttributePosition::ObjectAttributes { index } = position;
-        if !self.accept_object_attribute_tag(&item) {
-            return self;
-        }
-        if self
-            .positioned_attributes
-            .iter()
-            .any(|(existing, _)| *existing == index)
-        {
-            self.attribute_error = Some(FluentBuildError::DuplicateAttributePosition);
-            return self;
-        }
-        self.positioned_attributes.push((index, item));
+        set_positioned_attribute(
+            &mut self.positioned_attributes,
+            &mut self.attribute_error,
+            position,
+            item,
+        );
         self
     }
 
@@ -364,42 +354,16 @@ impl<'a> CreateSymmetricKeyBuilder<'a> {
         attribute_name: &str,
         attribute_value: &Item,
     ) -> Self {
-        let value = match attribute_value.with_value(clone_value) {
-            Ok(value) => value,
+        if self.attribute_error.is_some() {
+            return self;
+        }
+        match make_vendor_attribute(vendor_identification, attribute_name, attribute_value) {
+            Ok(item) => self.add_attribute_item(item),
             Err(error) => {
                 self.attribute_error.get_or_insert(error);
-                return self;
-            }
-        };
-        let structure = (|| {
-            let mut fields = Structure::new();
-            fields
-                .try_push(item(
-                    VENDOR_IDENTIFICATION_TAG,
-                    Value::text_string(vendor_identification.to_owned()),
-                )?)
-                .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
-            fields
-                .try_push(item(
-                    ATTRIBUTE_NAME_TAG,
-                    Value::text_string(attribute_name.to_owned()),
-                )?)
-                .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
-            fields
-                .try_push(item(ATTRIBUTE_VALUE_TAG, value)?)
-                .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
-            item(VENDOR_ATTRIBUTE_TAG, Value::structure(fields))
-        })();
-        match structure {
-            Ok(item) => {
-                self.add_attribute_item(item);
-                self
-            }
-            Err(error) => {
-                self.attribute_error.get_or_insert(error);
-                self
             }
         }
+        self
     }
 
     /// Sets exchange-local options without changing client or batch policy.
@@ -529,35 +493,7 @@ impl<'a> CreateSymmetricKeyBuilder<'a> {
                 .map_err(|_| FluentBuildError::InvalidAttributeValue)?;
         }
 
-        if !self.positioned_attributes.is_empty() {
-            let final_len = attributes
-                .len()
-                .checked_add(self.positioned_attributes.len())
-                .ok_or(FluentBuildError::AttributePositionOutOfBounds)?;
-            let mut positioned = self.positioned_attributes.iter().collect::<Vec<_>>();
-            positioned.sort_by_key(|(index, _)| *index);
-            if positioned.iter().any(|(index, _)| *index >= final_len) {
-                return Err(FluentBuildError::AttributePositionOutOfBounds);
-            }
-
-            let mut ordered = attributes
-                .as_items()
-                .iter()
-                .map(Item::try_clone)
-                .collect::<Result<Vec<_>, _>>()
-                .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
-            for (index, item) in positioned {
-                let copy = item
-                    .try_clone()
-                    .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
-                if *index > ordered.len() {
-                    return Err(FluentBuildError::AttributePositionOutOfBounds);
-                }
-                ordered.insert(*index, copy);
-            }
-            attributes = AttributeSet::try_new(ordered)
-                .map_err(|_| FluentBuildError::InvalidAttributeValue)?;
-        }
+        let attributes = insert_positioned_attributes(attributes, &self.positioned_attributes)?;
 
         let request =
             CreateRequest::new(ObjectType::from_raw(SYMMETRIC_KEY_OBJECT_TYPE), attributes);
@@ -580,12 +516,11 @@ impl<'a> CreateSymmetricKeyBuilder<'a> {
     }
 
     fn accept_object_attribute_tag(&mut self, item: &Item) -> bool {
-        if (MESSAGE_EXTENSION_TAG_START..=MESSAGE_EXTENSION_TAG_END).contains(&item.tag().raw()) {
-            self.attribute_error = Some(FluentBuildError::MessageExtensionTagNotObjectAttribute);
-            false
-        } else {
-            true
+        if let Err(error) = validate_object_attribute_tag(item) {
+            self.attribute_error = Some(error);
+            return false;
         }
+        true
     }
 }
 
@@ -708,35 +643,11 @@ impl<'a> CreateSplitKeyBuilder<'a> {
         if self.attribute_error.is_some() {
             return self;
         }
-        let value = match attribute_value.with_value(clone_value) {
-            Ok(value) => value,
+        match make_vendor_attribute(vendor_identification, attribute_name, attribute_value) {
+            Ok(item) => self.add_attribute_item(item),
             Err(error) => {
                 self.attribute_error = Some(error);
-                return self;
             }
-        };
-        let vendor = (|| {
-            let mut fields = Structure::new();
-            fields
-                .try_push(item(
-                    VENDOR_IDENTIFICATION_TAG,
-                    Value::text_string(vendor_identification.to_owned()),
-                )?)
-                .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
-            fields
-                .try_push(item(
-                    ATTRIBUTE_NAME_TAG,
-                    Value::text_string(attribute_name.to_owned()),
-                )?)
-                .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
-            fields
-                .try_push(item(ATTRIBUTE_VALUE_TAG, value)?)
-                .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
-            item(VENDOR_ATTRIBUTE_TAG, Value::structure(fields))
-        })();
-        match vendor {
-            Ok(item) => self.add_attribute_item(item),
-            Err(error) => self.attribute_error = Some(error),
         }
         self
     }
@@ -744,22 +655,12 @@ impl<'a> CreateSplitKeyBuilder<'a> {
     /// Inserts an expert Item at a zero-based position in the final Object Attributes list.
     #[must_use]
     pub fn attribute_at(mut self, position: FluentAttributePosition, item: Item) -> Self {
-        if self.attribute_error.is_some() {
-            return self;
-        }
-        let FluentAttributePosition::ObjectAttributes { index } = position;
-        if !self.accept_object_attribute_tag(&item) {
-            return self;
-        }
-        if self
-            .positioned_attributes
-            .iter()
-            .any(|(existing, _)| *existing == index)
-        {
-            self.attribute_error = Some(FluentBuildError::DuplicateAttributePosition);
-            return self;
-        }
-        self.positioned_attributes.push((index, item));
+        set_positioned_attribute(
+            &mut self.positioned_attributes,
+            &mut self.attribute_error,
+            position,
+            item,
+        );
         self
     }
 
@@ -830,34 +731,7 @@ impl<'a> CreateSplitKeyBuilder<'a> {
                 )
                 .map_err(|_| FluentBuildError::InvalidAttributeValue)?;
         }
-        if !self.positioned_attributes.is_empty() {
-            let final_len = attributes
-                .len()
-                .checked_add(self.positioned_attributes.len())
-                .ok_or(FluentBuildError::AttributePositionOutOfBounds)?;
-            let mut positioned = self.positioned_attributes.iter().collect::<Vec<_>>();
-            positioned.sort_by_key(|(index, _)| *index);
-            if positioned.iter().any(|(index, _)| *index >= final_len) {
-                return Err(FluentBuildError::AttributePositionOutOfBounds);
-            }
-            let mut ordered = attributes
-                .as_items()
-                .iter()
-                .map(Item::try_clone)
-                .collect::<Result<Vec<_>, _>>()
-                .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
-            for (index, item) in positioned {
-                let copy = item
-                    .try_clone()
-                    .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
-                if *index > ordered.len() {
-                    return Err(FluentBuildError::AttributePositionOutOfBounds);
-                }
-                ordered.insert(*index, copy);
-            }
-            attributes = AttributeSet::try_new(ordered)
-                .map_err(|_| FluentBuildError::InvalidAttributeValue)?;
-        }
+        attributes = insert_positioned_attributes(attributes, &self.positioned_attributes)?;
 
         let mut request =
             CreateSplitKeyRequest::new(object_type, parts, threshold, method, attributes);
@@ -924,12 +798,11 @@ impl<'a> CreateSplitKeyBuilder<'a> {
     }
 
     fn accept_object_attribute_tag(&mut self, item: &Item) -> bool {
-        if (MESSAGE_EXTENSION_TAG_START..=MESSAGE_EXTENSION_TAG_END).contains(&item.tag().raw()) {
-            self.attribute_error = Some(FluentBuildError::MessageExtensionTagNotObjectAttribute);
-            false
-        } else {
-            true
+        if let Err(error) = validate_object_attribute_tag(item) {
+            self.attribute_error = Some(error);
+            return false;
         }
+        true
     }
 }
 
@@ -1217,12 +1090,11 @@ impl<'a> CreateKeyPairBuilder<'a> {
     }
 
     fn accept_object_attribute_tag(&mut self, item: &Item) -> bool {
-        if (MESSAGE_EXTENSION_TAG_START..=MESSAGE_EXTENSION_TAG_END).contains(&item.tag().raw()) {
-            self.attribute_error = Some(FluentBuildError::MessageExtensionTagNotObjectAttribute);
-            false
-        } else {
-            true
+        if let Err(error) = validate_object_attribute_tag(item) {
+            self.attribute_error.get_or_insert(error);
+            return false;
         }
+        true
     }
 }
 
@@ -1423,6 +1295,97 @@ fn clone_value(value: ValueView<'_>) -> Result<Value, FluentBuildError> {
         ValueView::DateTimeExtended(value) => Ok(Value::date_time_extended(*value)),
         _ => Err(FluentBuildError::InvalidTtlvValue),
     }
+}
+
+fn validate_object_attribute_tag(item: &Item) -> Result<(), FluentBuildError> {
+    if (MESSAGE_EXTENSION_TAG_START..=MESSAGE_EXTENSION_TAG_END).contains(&item.tag().raw()) {
+        Err(FluentBuildError::MessageExtensionTagNotObjectAttribute)
+    } else {
+        Ok(())
+    }
+}
+
+fn set_positioned_attribute(
+    positioned_attributes: &mut Vec<(usize, Item)>,
+    attribute_error: &mut Option<FluentBuildError>,
+    position: FluentAttributePosition,
+    item: Item,
+) {
+    if attribute_error.is_some() {
+        return;
+    }
+    let FluentAttributePosition::ObjectAttributes { index } = position;
+    if let Err(error) = validate_object_attribute_tag(&item) {
+        *attribute_error = Some(error);
+        return;
+    }
+    if positioned_attributes
+        .iter()
+        .any(|(existing, _)| *existing == index)
+    {
+        *attribute_error = Some(FluentBuildError::DuplicateAttributePosition);
+        return;
+    }
+    positioned_attributes.push((index, item));
+}
+
+fn insert_positioned_attributes(
+    attributes: AttributeSet,
+    positioned_attributes: &[(usize, Item)],
+) -> Result<AttributeSet, FluentBuildError> {
+    if positioned_attributes.is_empty() {
+        return Ok(attributes);
+    }
+    let final_len = attributes
+        .len()
+        .checked_add(positioned_attributes.len())
+        .ok_or(FluentBuildError::AttributePositionOutOfBounds)?;
+    let mut positioned = positioned_attributes.iter().collect::<Vec<_>>();
+    positioned.sort_by_key(|(index, _)| *index);
+    if positioned.iter().any(|(index, _)| *index >= final_len) {
+        return Err(FluentBuildError::AttributePositionOutOfBounds);
+    }
+    let mut ordered = attributes
+        .as_items()
+        .iter()
+        .map(Item::try_clone)
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
+    for (index, item) in positioned {
+        let copy = item
+            .try_clone()
+            .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
+        if *index > ordered.len() {
+            return Err(FluentBuildError::AttributePositionOutOfBounds);
+        }
+        ordered.insert(*index, copy);
+    }
+    AttributeSet::try_new(ordered).map_err(|_| FluentBuildError::InvalidAttributeValue)
+}
+
+fn make_vendor_attribute(
+    vendor_identification: &str,
+    attribute_name: &str,
+    attribute_value: &Item,
+) -> Result<Item, FluentBuildError> {
+    let value = attribute_value.with_value(clone_value)?;
+    let mut fields = Structure::new();
+    fields
+        .try_push(item(
+            VENDOR_IDENTIFICATION_TAG,
+            Value::text_string(vendor_identification.to_owned()),
+        )?)
+        .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
+    fields
+        .try_push(item(
+            ATTRIBUTE_NAME_TAG,
+            Value::text_string(attribute_name.to_owned()),
+        )?)
+        .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
+    fields
+        .try_push(item(ATTRIBUTE_VALUE_TAG, value)?)
+        .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
+    item(VENDOR_ATTRIBUTE_TAG, Value::structure(fields))
 }
 
 impl Client {
