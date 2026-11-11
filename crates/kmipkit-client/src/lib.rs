@@ -180,6 +180,10 @@ mod fluent_create_key_pair_tests;
 mod fluent_create_split_key_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/fluent_register_tests.rs"]
+mod fluent_register_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/create_key_pair_execution_tests.rs"]
 mod create_key_pair_execution_tests;
 
