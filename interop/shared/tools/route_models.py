@@ -24,7 +24,7 @@ def norm(value):
     return re.sub('[^a-z0-9]', '', value.lower()).replace('asynchronous', 'async')
 
 
-def snake_case(value):
+def _snake_case(value):
     return re.sub(r'(?<!^)(?=[A-Z])', '_', value).lower()
 
 
@@ -139,11 +139,15 @@ def credential_function_target_ids(function_id, targets):
     value_names = {norm(by_id[root]['name']) for root in roots
                    if root in by_id and root != _CREDENTIAL_OUTER_TARGET_ID}
     if stem == 'credential':
-        selected.update(target['target_id'] for target in targets
-            if target['kind'] == 'enumeration_value'
-            and _CREDENTIAL_TYPE_TARGET_ID in target.get('parent_element_ids', [])
-            and norm(target['name']) in value_names)
+        selected.update(_credential_type_value_target_ids(targets, value_names))
     return sorted(selected)
+
+
+def _credential_type_value_target_ids(targets, value_names):
+    return {target['target_id'] for target in targets
+        if target['kind'] == 'enumeration_value'
+        and _CREDENTIAL_TYPE_TARGET_ID in target.get('parent_element_ids', [])
+        and norm(target['name']) in value_names}
 
 
 def model_inventory(root, commit, source, api, targets):
@@ -242,7 +246,7 @@ def model_inventory(root, commit, source, api, targets):
             for target in targets)
         exact_targets = ['KMIPKIT-RANGE-004'] if owner == 'ManagedObject' and method == 'unknown' else None
         credential_targets = credential_function_target_ids(
-            f'{snake_case(owner)}_{method}', targets) \
+            f'{_snake_case(owner)}_{method}', targets) \
             if method in {'from_ttlv', 'into_ttlv', 'try_from_ttlv'} else None
         if credential_targets is not None:
             exact_targets = credential_targets
