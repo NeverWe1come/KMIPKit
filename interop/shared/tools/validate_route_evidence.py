@@ -677,12 +677,12 @@ def main() -> None:
                         help="write the deterministic full-matrix executed/pending ledger (requires --selected-scope)")
     args = parser.parse_args()
     root = args.root.resolve(strict=True)
+    allowed_file_roots = (root, Path(tempfile.gettempdir()))
     catalog_path = root / "interop/shared/catalog/kmipkit-1.0-test-catalog.json"
     manifest_path = root / "interop/shared/coverage/route-capabilities.json"
     catalog_bytes = catalog_path.read_bytes()
     manifest_bytes = manifest_path.read_bytes()
-    report_paths = [resolve_within(path, (root, Path(tempfile.gettempdir())), must_exist=True)
-                    for path in args.report]
+    report_paths = [resolve_within(path, allowed_file_roots, must_exist=True) for path in args.report]
     reports = [json.loads(path.read_text(encoding="utf-8")) for path in report_paths]  # NOSONAR: report paths are resolved under the repository or system temp directory
     catalog = json.loads(catalog_bytes)
     manifest = json.loads(manifest_bytes)
@@ -692,7 +692,7 @@ def main() -> None:
         if args.parity or len(reports) != 1 or len(args.artifact_sha256) != 1 or "=" in args.artifact_sha256[0]:
             parser.error("--selected-scope requires one report and one non-parity artifact digest")
         if args.ledger_output is not None:
-            ledger_path = resolve_within(args.ledger_output, (root, Path(tempfile.gettempdir())))
+            ledger_path = resolve_within(args.ledger_output, allowed_file_roots)
         else:
             ledger_path = None
         summary = validate_report(
@@ -705,7 +705,7 @@ def main() -> None:
                 route_manifest_sha256=route_sha, expected_artifact_sha256=args.artifact_sha256[0],
             )
             ledger_path = write_text_within(
-                ledger_path, (root, Path(tempfile.gettempdir())),
+                ledger_path, allowed_file_roots,
                 json.dumps(ledger, indent=2, sort_keys=True) + "\n", encoding="utf-8",
             )
             summary["ledger"] = {
