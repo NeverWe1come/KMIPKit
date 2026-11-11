@@ -292,6 +292,30 @@ fn recertify_requires_a_source_identifier_or_certificate_request_value() {
 }
 
 #[test]
+fn replacement_operation_aliases_keep_the_typed_builder_contract() {
+    let (mut rekey_client, _, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let rekey_builder: crate::RekeyBuilder<'_> = rekey_client.request().rekey();
+    let rekey_identifier = UniqueIdentifier::from("alias-rekey-id");
+    let rekey = rekey_builder
+        .unique_identifier(rekey_identifier.clone())
+        .offset(60)
+        .build_request()
+        .expect("the RekeyBuilder alias retains its concrete typed request");
+    assert_eq!(rekey.unique_identifier(), Some(&rekey_identifier));
+
+    let (mut recertify_client, _, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let recertify_builder: crate::RecertifyBuilder<'_> = recertify_client.request().recertify();
+    let certificate_id = UniqueIdentifier::from("alias-certificate-id");
+    let recertify = recertify_builder
+        .unique_identifier(certificate_id.clone())
+        .certificate_request_type(1)
+        .offset(120)
+        .build_request()
+        .expect("the RecertifyBuilder alias retains its operation-specific setters");
+    assert_eq!(recertify.unique_identifier(), Some(&certificate_id));
+}
+
+#[test]
 fn revoke_invalid_compromise_date_is_rejected_before_the_transport_exchange() {
     let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
     let error = client
