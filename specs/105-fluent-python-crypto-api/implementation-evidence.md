@@ -151,6 +151,9 @@ Pending full binding checks and exact-head CI.
 
 ## Rebase on the corrected Java and C heads
 
+- Final stack base: KMIPKIT-0104 Java head
+  `fec2849cc77e123023e913a6301544c1a45eecb4`, based on KMIPKIT-0103 C head
+  `861ce150fc0bed659ff603150e58d8db18bed1a9`.
 - Rebased the Python feature commits onto the corrected Java branch and
   reconciled the public API manifest without discarding the C and Java expert
   attribute declarations. The manifest now records 16,348 declarations and
@@ -169,3 +172,5 @@ Pending full binding checks and exact-head CI.
   outputs are current. The rebased command
   `python3 tools/api_manifest/audit_binding_exports.py --report
   target/0105-python-binding-exports.json --check` passed with no audit issues.
+- Re-ran the 21 manifest/T102 contracts and all 12 focused Python fluent crypto
+  tests after syncing the branch to the final Java base; both passed.
