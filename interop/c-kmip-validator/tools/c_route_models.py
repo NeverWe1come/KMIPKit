@@ -128,6 +128,11 @@ class ModelCases:
     def _object_type(self, name: str, protocol_version: str) -> int:
         return self._enum_value('Object Type', name, protocol_version)
 
+    def _enum_tree(self, tag_name: str, family: str, value_name: str,
+                   protocol_version: str) -> tuple:
+        value = self._enum_value(family, value_name, protocol_version)
+        return self._tag(tag_name), 5, value.to_bytes(4, 'big')
+
     def _key_block_tree(self, protocol_version: str, *, include_key_value: bool = False) -> tuple:
         key_format = self._enum_value('Key Format Type', 'Raw', protocol_version)
         fields = [(KEY_FORMAT_TYPE_TAG, 5, key_format.to_bytes(4, 'big'))]
@@ -141,8 +146,8 @@ class ModelCases:
         key_block_tree = self._key_block_tree(protocol_version, include_key_value=name == 'Secret Data')
         recipes = {
             'Certificate Request': ('kmipkit_certificate_request_from_fields', [
-                (self._tag('Certificate Request Type'), 5,
-                 self._enum_value('Certificate Request Type', 'PKCS#10', protocol_version).to_bytes(4, 'big')),
+                self._enum_tree('Certificate Request Type', 'Certificate Request Type',
+                                'PKCS#10', protocol_version),
                 (self._tag('Certificate Request Value'), 8, b'request'),
             ]),
             'PGP Key': ('kmipkit_pgp_key_from_fields', [
@@ -152,8 +157,7 @@ class ModelCases:
             'Private Key': ('kmipkit_private_key_from_fields', [key_block_tree]),
             'Public Key': ('kmipkit_public_key_from_fields', [key_block_tree]),
             'Secret Data': ('kmipkit_secret_data_from_fields', [
-                (self._tag('Secret Data Type'), 5,
-                 self._enum_value('Secret Data Type', 'Password', protocol_version).to_bytes(4, 'big')),
+                self._enum_tree('Secret Data Type', 'Secret Data Type', 'Password', protocol_version),
                 key_block_tree,
             ]),
         }
