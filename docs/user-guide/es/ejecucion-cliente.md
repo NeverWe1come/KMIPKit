@@ -162,13 +162,16 @@ elige por separado las máscaras de uso y los nombres de las claves privada y
 pública:
 
 ```rust,kmipkit-test
-use kmipkit_client::{Client, ClientError, CryptographicUsageMask};
+use kmipkit_client::{Client, ClientBatchItemResponse, ClientError, CryptographicUsageMask};
 use kmipkit_protocol::CryptographicAlgorithm;
 use kmipkit_protocol::named_values_generated::values::enumeration::cryptographic_algorithm;
 use kmipkit_ttlv::codec::CodecLimits;
 
 #[allow(dead_code)]
-fn create_signing_key_pair(client: &mut Client, limits: &CodecLimits) -> Result<(), ClientError> {
+fn create_signing_key_pair(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<ClientBatchItemResponse, ClientError> {
     let response = client.request().create_key_pair()
         .algorithm(CryptographicAlgorithm::from_raw(cryptographic_algorithm::RSA))
         .length(3072)
@@ -182,7 +185,7 @@ fn create_signing_key_pair(client: &mut Client, limits: &CodecLimits) -> Result<
         let public_id = pair.public_key_unique_identifier();
         let _ = (private_id, public_id);
     }
-    Ok(())
+    Ok(response)
 }
 
 fn main() {}
@@ -193,7 +196,10 @@ El servidor proporciona ambos Unique Identifiers; consulta
 `public_key_unique_identifier()` cuando el resultado esté completado. Failure
 y Pending conservan sus tipos de resultado existentes; los identificadores
 solo aparecen con Success y Pending conserva la correlación asíncrona.
-No hay Poll ni reintentos automáticos. El ejemplo ejecuta un intercambio tipado.
+No hay Poll ni reintentos automáticos. El ejemplo ejecuta un intercambio tipado
+y devuelve el `ClientBatchItemResponse` completo. El llamador puede consultar
+los identificadores de Success, el estado y motivo de Failure o la correlación
+de Pending; un `Result` correcto de Rust conserva el resultado KMIP recibido.
 
 `common_attribute`, `private_attribute` y `public_attribute` añaden valores
 `Attribute<D>` tipados a sus grupos separados. `build()` y `build_request()`

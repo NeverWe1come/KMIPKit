@@ -152,13 +152,16 @@ Create Key Pair request. Select the algorithm and length explicitly, then
 choose independent private/public usage masks and names:
 
 ```rust,kmipkit-test
-use kmipkit_client::{Client, ClientError, CryptographicUsageMask};
+use kmipkit_client::{Client, ClientBatchItemResponse, ClientError, CryptographicUsageMask};
 use kmipkit_protocol::CryptographicAlgorithm;
 use kmipkit_protocol::named_values_generated::values::enumeration::cryptographic_algorithm;
 use kmipkit_ttlv::codec::CodecLimits;
 
 #[allow(dead_code)]
-fn create_signing_key_pair(client: &mut Client, limits: &CodecLimits) -> Result<(), ClientError> {
+fn create_signing_key_pair(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<ClientBatchItemResponse, ClientError> {
     let response = client.request().create_key_pair()
         .algorithm(CryptographicAlgorithm::from_raw(cryptographic_algorithm::RSA))
         .length(3072)
@@ -172,7 +175,7 @@ fn create_signing_key_pair(client: &mut Client, limits: &CodecLimits) -> Result<
         let public_id = pair.public_key_unique_identifier();
         let _ = (private_id, public_id);
     }
-    Ok(())
+    Ok(response)
 }
 
 fn main() {}
@@ -183,7 +186,10 @@ The server supplies both Unique Identifiers; inspect the existing typed
 `public_key_unique_identifier()` accessors when the outcome is completed.
 Failure and Pending retain their existing outcome types; identifiers are
 success-only, and Pending preserves the asynchronous correlation value.
-There is no automatic Poll or retry. The example executes one typed exchange.
+There is no automatic Poll or retry. The example executes one typed exchange
+and returns the complete `ClientBatchItemResponse`. The caller can inspect
+Success identifiers, Failure status/reason, or Pending correlation; a successful
+Rust `Result` preserves whichever KMIP outcome the server returned.
 
 `common_attribute`, `private_attribute`, and `public_attribute` append typed
 `Attribute<D>` values to their separate groups. `build()` and
