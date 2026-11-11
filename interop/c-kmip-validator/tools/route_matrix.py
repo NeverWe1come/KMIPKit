@@ -58,6 +58,19 @@ def _name(value: str) -> str:
     return re.sub('[^a-z0-9]', '', value.lower())
 
 
+def catalog_enum_value(catalog: dict, enum_name: str, value_name: str,
+                      protocol_version: str | None) -> int | None:
+    parent_id = f'KMIPKIT-ELEM-ENUMERATION-{enum_name.upper().replace(" ", "-")}'
+    matches = [target for target in catalog['normative_targets']
+               if target['kind'] == 'enumeration_value'
+               and target['name'] == value_name
+               and parent_id in target.get('parent_element_ids', [])
+               and (protocol_version is None or protocol_version in target['protocol_versions'])]
+    if len(matches) != 1:
+        return None
+    return int(matches[0]['wire_value'], 16)
+
+
 def scalar_fixture(target: dict, tags: dict[str, int], catalog: dict | None = None,
                    protocol_version: str | None = None) -> tuple[int, int, bytes] | None:
     """Use each exact normative enum/flag/tag; never substitute an operation probe."""
@@ -66,17 +79,11 @@ def scalar_fixture(target: dict, tags: dict[str, int], catalog: dict | None = No
     if kind == 'tag':
         return int(target['wire_value'], 16), 2, (7).to_bytes(4, 'big')
     if kind == 'operation' and catalog is not None:
-        values = [candidate for candidate in catalog['normative_targets']
-                  if candidate['kind'] == 'enumeration_value'
-                  and _name(candidate['name']) == _name(target['name'])
-                  and 'KMIPKIT-ELEM-ENUMERATION-OPERATION' in candidate.get('parent_element_ids', [])
-                  and (protocol_version is None or protocol_version in candidate['protocol_versions'])]
-        if len(values) != 1:
-            return None
+        value = catalog_enum_value(catalog, 'Operation', target['name'], protocol_version)
         tag = normalized_tags.get('operation')
-        if tag is None:
+        if tag is None or value is None:
             return None
-        return tag, 5, int(values[0]['wire_value'], 16).to_bytes(4, 'big')
+        return tag, 5, value.to_bytes(4, 'big')
     if kind == 'object_type':
         tag = normalized_tags.get('objecttype')
         raw = target.get('wire_value', '')
