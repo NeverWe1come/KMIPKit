@@ -89,6 +89,32 @@ class CoverageMatrixTests(unittest.TestCase):
                          [item['target_id'] for item in obligations
                           if item['target_id'].startswith('KMIPKIT-ELEM-OP-')])
 
+    def test_local_enumeration_case_covers_its_values_without_query_network_cells(self):
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-enum-adjustment-type')
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest)
+                 if cell['case_id'] == case['case_id'] and cell['language'] == 'rust']
+        expected = {target['target_id'] for target in self.catalog['normative_targets']
+                    if target['kind'] == 'enumeration_value'
+                    and 'KMIPKIT-ELEM-ENUMERATION-ADJUSTMENT-TYPE'
+                    in target.get('parent_element_ids', [])}
+        self.assertTrue(expected <= {cell['target_id'] for cell in cells})
+        self.assertFalse(any(cell['mode'] == 'network' for cell in cells))
+        self.assertFalse(any(cell['public_api_symbol'] == 'kmipkit_client_batch_item_query'
+                             for cell in cells))
+
+    def test_local_bitmask_case_covers_its_bits_without_query_network_cells(self):
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-bitmask-cryptographic-usage-mask')
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest)
+                 if cell['case_id'] == case['case_id'] and cell['language'] == 'rust']
+        expected = {target['target_id'] for target in self.catalog['normative_targets']
+                    if target['kind'] == 'bitmask_value'
+                    and 'KMIPKIT-ELEM-BITMASK-CRYPTOGRAPHIC-USAGE-MASK'
+                    in target.get('parent_element_ids', [])}
+        self.assertTrue(expected <= {cell['target_id'] for cell in cells})
+        self.assertFalse(any(cell['mode'] == 'network' for cell in cells))
+
     def test_explicit_server_initiated_operation_target_is_not_overridden(self):
         operation_ids = _operation_ids(self.catalog)
         case = next(case for case in self.catalog['test_cases']
