@@ -210,6 +210,7 @@ class ControlledTlsPeerTest {
         ObjectMapper mapper = new ObjectMapper();
         ArrayNode events = mapper.createArrayNode();
         List<EnumerationFixture> enumerationFixtures = genericEnumerationFixtures();
+        List<BitmaskFixture> bitmaskFixtures = genericBitmaskFixtures();
         byte[] queryOperation = queryOperationTtlv();
         String requestTreeHash = normalizedTreeSha256(queryOperation);
 
@@ -218,6 +219,7 @@ class ControlledTlsPeerTest {
             appendTagRangeRouteEvents(events, protocolVersion);
             appendActivationDateLocalRouteEvents(events, protocolVersion);
             appendGenericEnumerationRouteEvents(events, enumerationFixtures, protocolVersion);
+            appendGenericBitmaskRouteEvents(events, bitmaskFixtures, protocolVersion);
 
             byte[] serverCertificatePem = fixture("server-cert.pem");
             byte[] serverPrivateKeyPem = fixture("server-key.pem");
@@ -284,7 +286,10 @@ class ControlledTlsPeerTest {
                 "A finite Profile Name range must remain pending until each named value is represented.");
         int enumerationEventCount = enumerationFixtures.stream()
                 .mapToInt(fixture -> fixture.protocolVersions().size() * 4).sum();
-        assertEquals(68 + enumerationEventCount, report.path("events").size());
+        int bitmaskEventCount = bitmaskFixtures.stream()
+                .mapToInt(fixture -> fixture.protocolVersions().size() * (4 + (fixture.attribute() == null ? 0 : 3)))
+                .sum();
+        assertEquals(68 + enumerationEventCount + bitmaskEventCount, report.path("events").size());
         long bitmaskEvents = 0;
         for (JsonNode event : report.path("events")) {
             if ("test-bitmask-cryptographic-usage-mask".equals(event.path("case_id").asText())) {
@@ -293,7 +298,8 @@ class ControlledTlsPeerTest {
         }
         assertEquals(350, bitmaskEvents,
                 "Every named Cryptographic Usage Mask bit needs all seven local routes in both versions.");
-        assertEquals(7 + enumerationFixtures.size(), report.path("case_ids").size());
+        long bitmaskCaseCount = bitmaskFixtures.stream().map(BitmaskFixture::caseId).distinct().count();
+        assertEquals(7 + enumerationFixtures.size() + bitmaskCaseCount, report.path("case_ids").size());
         assertEquals("test-op-query", report.path("case_ids").get(0).asText());
         for (int index = 1; index < 6; index++) {
             assertEquals("test-norm-tag-range-kmipkit-range-%03d".formatted(index),
@@ -1204,6 +1210,132 @@ class ControlledTlsPeerTest {
         }
     }
 
+    private static List<BitmaskFixture> genericBitmaskFixtures() throws Exception {
+        Path catalogPath = Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json");
+        JsonNode catalog = new ObjectMapper().readTree(catalogPath.toFile());
+        var fixtures = new ArrayList<BitmaskFixture>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String bitmaskName = testCase.path("requires").path("bitmask_type").asText();
+            if (bitmaskName.isEmpty()) continue;
+            String familyId = "KMIPKIT-ELEM-BITMASK-" + bitmaskName.toUpperCase(Locale.ROOT)
+                    .replaceAll("[^A-Z0-9]+", "-");
+            JsonNode tagTarget = null;
+            JsonNode attributeTarget = null;
+            for (JsonNode target : catalog.path("normative_targets")) {
+                if ("tag".equals(target.path("kind").asText())
+                        && normalizeTargetName(target.path("name").asText())
+                                .equals(normalizeTargetName(bitmaskName))) tagTarget = target;
+                if ("attribute".equals(target.path("kind").asText())
+                        && normalizeTargetName(target.path("name").asText())
+                                .equals(normalizeTargetName(bitmaskName))) attributeTarget = target;
+            }
+            if (tagTarget == null) continue;
+            int rawTag = parseWireTag(tagTarget.path("wire_value").asText());
+            StandardAttribute attribute = attributeTarget == null ? null : standardAttributeForTag(rawTag);
+            if (attributeTarget != null && attribute == null) {
+                throw new IllegalStateException("Catalog attribute has no installed StandardAttribute route: "
+                        + bitmaskName);
+            }
+            var versions = new ArrayList<String>();
+            for (JsonNode version : testCase.path("execution").path("protocol_versions")) {
+                versions.add(version.asText());
+            }
+            for (JsonNode target : catalog.path("normative_targets")) {
+                if (!"bitmask_value".equals(target.path("kind").asText())) continue;
+                boolean belongsToFamily = false;
+                for (JsonNode parent : target.path("parent_element_ids")) {
+                    if (familyId.equals(parent.asText())) belongsToFamily = true;
+                }
+                if (!belongsToFamily) continue;
+                String wireValue = target.path("wire_value").asText();
+                if (wireValue.contains("-")) continue;
+                long value = parseRepresentativeBitmaskValue(wireValue);
+                fixtures.add(new BitmaskFixture(testCase.path("case_id").asText(),
+                        target.path("target_id").asText(), rawTag, value,
+                        attribute, List.copyOf(versions)));
+            }
+        }
+        return List.copyOf(fixtures);
+    }
+
+    private static StandardAttribute standardAttributeForTag(int rawTag) {
+        for (StandardAttribute attribute : StandardAttribute.values()) {
+            if (attribute.tag() == rawTag) return attribute;
+        }
+        return null;
+    }
+
+    private static int parseWireTag(String wireValue) {
+        return Math.toIntExact(Long.parseUnsignedLong(wireValue.replaceFirst("^0[xX]", ""), 16));
+    }
+
+    private static long parseRepresentativeBitmaskValue(String wireValue) {
+        String digits = wireValue.replaceFirst("^0[xX]", "");
+        StringBuilder representative = new StringBuilder(digits.length());
+        boolean chosenExtensionBit = false;
+        for (char digit : digits.toCharArray()) {
+            if (digit == 'X' || digit == 'x') {
+                representative.append(chosenExtensionBit ? '0' : '8');
+                chosenExtensionBit = true;
+            } else {
+                representative.append(digit);
+            }
+        }
+        return Long.parseUnsignedLong(representative.toString(), 16);
+    }
+
+    private static void appendGenericBitmaskRouteEvents(ArrayNode events,
+            List<BitmaskFixture> fixtures, String protocolVersion) throws Exception {
+        for (BitmaskFixture fixture : fixtures) {
+            if (!fixture.protocolVersions().contains(protocolVersion)) continue;
+            int rawValue = (int) fixture.value();
+            byte[] wire = item(fixture.rawTag(), 2, intBytes(rawValue));
+            String treeHash = normalizedTreeSha256(wire);
+            try (TtlvValue value = TtlvValue.Integer(rawValue)) {
+                appendRouteEvent(events, fixture.caseId(),
+                        "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer",
+                        fixture.targetId(), "org.kmipkit.ttlv.TtlvValue.Integer", null, null,
+                        "construct", protocolVersion, null, treeHash, null);
+                appendLocalTtlvRoundtripEvents(events, fixture.caseId(), fixture.targetId(),
+                        fixture.rawTag(), TtlvItemType.Integer, value, wire,
+                        protocolVersion, rawValue);
+                appendTypedBitmaskRouteEvents(events, fixture, wire, protocolVersion, treeHash);
+            }
+        }
+    }
+
+    private static void appendTypedBitmaskRouteEvents(ArrayNode events, BitmaskFixture fixture,
+            byte[] wire, String protocolVersion, String treeHash) throws Exception {
+        if (fixture.attribute() == null) return;
+        try (TtlvValue value = TtlvValue.Integer((int) fixture.value());
+                TypedAttribute typed = TypedAttribute.create(fixture.attribute(), value);
+                TtlvItem item = typed.asItem();
+                TypedAttribute decoded = TypedAttribute.fromItem(fixture.attribute(), item)) {
+            try (var view = decoded.view(); var decodedValue = view.value()) {
+                assertEquals(fixture.rawTag(), view.tag().raw());
+                assertEquals((int) fixture.value(), decodedValue.integer());
+            }
+            appendRouteEvent(events, fixture.caseId(),
+                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                    fixture.targetId(), "org.kmipkit.ttlv.TypedAttribute.create", null, null,
+                    "construct", protocolVersion, null, treeHash, null);
+            appendRouteEvent(events, fixture.caseId(),
+                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+                    fixture.targetId(), "org.kmipkit.ttlv.TypedAttribute.fromItem", null, null,
+                    "construct", protocolVersion, null, treeHash, null);
+            try (TtlvStructure empty = TtlvStructure.create();
+                    TtlvStructure attributeItems = TtlvStructure.withItem(empty, item, CodecLimits.defaults());
+                    AttributeSet attributes = AttributeSet.tryNew(attributeItems)) {
+                assertEquals(1, attributes.len());
+                appendRouteEvent(events, fixture.caseId(),
+                        "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
+                        fixture.targetId(), "org.kmipkit.extensions.AttributeSet.tryNew", null, null,
+                        "construct", protocolVersion, null,
+                        normalizedTreeSha256(structure(0x420125, wire)), null);
+            }
+        }
+    }
+
     private static String normalizeTargetName(String value) {
         return value.replaceAll("[^A-Za-z0-9]", "").toUpperCase(Locale.ROOT);
     }
@@ -1287,6 +1419,7 @@ class ControlledTlsPeerTest {
             assertEquals(rawTag, view.tag().raw());
             assertEquals(expectedType, view.itemType());
             if (expectedType == TtlvItemType.DateTime) assertEquals(expectedValue, viewValue.dateTime());
+            else if (expectedType == TtlvItemType.Integer) assertEquals((int) expectedValue, viewValue.integer());
             else assertEquals(expectedValue, viewValue.enumeration());
         }
         appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_item.create", targetId,
@@ -1301,6 +1434,7 @@ class ControlledTlsPeerTest {
             assertEquals(rawTag, view.tag().raw());
             assertEquals(expectedType, view.itemType());
             if (expectedType == TtlvItemType.DateTime) assertEquals(expectedValue, decodedValue.dateTime());
+            else if (expectedType == TtlvItemType.Integer) assertEquals((int) expectedValue, decodedValue.integer());
             else assertEquals(expectedValue, decodedValue.enumeration());
         }
         appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_codec.decode", targetId,
@@ -1564,6 +1698,7 @@ class ControlledTlsPeerTest {
         TAG_RANGE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         caseIds.add("test-attr-activation-date");
         genericEnumerationFixtures().forEach(fixture -> caseIds.add(fixture.caseId()));
+        genericBitmaskFixtures().stream().map(BitmaskFixture::caseId).distinct().forEach(caseIds::add);
         report.putArray("protocol_versions").add("2.0").add("2.1");
         ObjectNode combination = mapper.createObjectNode();
         combination.put("encoding", "TTLV");
@@ -2072,6 +2207,9 @@ class ControlledTlsPeerTest {
 
     private record EnumerationFixture(String caseId, String targetId, int rawTag, long value,
             List<String> protocolVersions) {}
+
+    private record BitmaskFixture(String caseId, String targetId, int rawTag, long value,
+            StandardAttribute attribute, List<String> protocolVersions) {}
 
     private record MatrixPlan(List<Long> expectedOperations, List<byte[]> responses) {}
 }
