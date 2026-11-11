@@ -370,6 +370,17 @@ impl Attempt<'_> {
         let target_identifier = identifier.clone();
         let request = adapters::request(case, identifier.as_ref(), &self.name)?;
         let response = self.exchange(request)?;
+        if case.operation == "Hash" && response.status == 0 {
+            use sha2::Digest;
+            let expected = sha2::Sha256::digest([0x41; 16]);
+            if !response
+                .bytes
+                .as_ref()
+                .is_some_and(|bytes| bytes.with_bytes(|value| value == expected.as_slice()))
+            {
+                return Err(Failure::Assertion("hash did not match the fixture digest"));
+            }
+        }
         if case.operation == "Destroy" && response.status == 0 {
             self.owned
                 .retain(|id| Some(id) != target_identifier.as_ref());

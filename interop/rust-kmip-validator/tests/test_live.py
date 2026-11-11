@@ -22,6 +22,8 @@ import xml.etree.ElementTree as ET
 
 import jsonschema
 
+import controlled_wire
+
 from request_parity import RequestNormalizer, parity_signature, result_code
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -184,6 +186,7 @@ class ParityContract(unittest.TestCase):
 
 class ControlledPeer:
     def __init__(self, pki, responder):
+        self.encoding, self.transport = "TTLV", "raw_tls"
         self.listener = socket.socket()
         self.listener.bind(("127.0.0.1", 0))
         self.listener.listen()
@@ -215,10 +218,10 @@ class ControlledPeer:
                 self.connections += 1
                 with self.context.wrap_socket(raw, server_side=True) as channel:
                     channel.settimeout(5)
-                    data = receive(channel)
+                    data = controlled_wire.receive(channel, self.encoding, self.transport, receive)
                     if data is None:
                         continue
-                    tree = parse(data)
+                    tree = parse(data) if self.encoding == "TTLV" else controlled_wire.decode(data, self.encoding)
                     self.request_trees.append(self.normalizer.normalize(tree))
                     self.operations.extend(find(batch, 0x42005c) for tag, kind, batch in tree[0][2] if tag == 0x42000f)
                     reply = self.responder(tree)
@@ -226,7 +229,8 @@ class ControlledPeer:
                         parsed_reply = parse(reply)
                         self.normalizer.observe_response(parsed_reply)
                         self.response_trees.append(self.normalizer.normalize(parsed_reply))
-                        channel.sendall(reply)
+                        wire_reply = reply if self.encoding == "TTLV" else controlled_wire.encoded(parsed_reply, self.encoding)
+                        controlled_wire.send(channel, wire_reply, self.encoding, self.transport)
         except Exception as error:
             if not self.stop.is_set():
                 self.errors.append(type(error).__name__)
@@ -475,7 +479,7 @@ class LiveContract(unittest.TestCase):
                         payload = ([] if name == "Hash" else payload) + [ttlv(0x4200d6, 8, b"controlled-multipart")]
                     else:
                         value_tag = {"MAC": 0x4200c6, "Sign": 0x4200c3}.get(name, 0x4200c2)
-                        value = cipher if name == "Encrypt" else b"A" * 16
+                        value = cipher if name == "Encrypt" else hashlib.sha256(b"A" * 16).digest() if name == "Hash" else b"A" * 16
                         payload = ([] if name == "Hash" else payload) + [ttlv(value_tag, 8, value)]
                 elif name in ("MAC Verify", "Signature Verify"):
                     payload += [ttlv(0x42009b, 5, 1)]
