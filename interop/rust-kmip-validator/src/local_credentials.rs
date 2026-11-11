@@ -191,14 +191,16 @@ fn credential(kind: u32, target: Option<&Item>) -> Result<Item> {
     )
 }
 
+fn authentication() -> Result<Item> {
+    credential(1, None).and_then(|credential| node(0x0042_000c, vec![credential]))
+}
+
 pub(crate) fn fixture(target: &Json) -> Option<Result<Item>> {
     let target_id = target["target_id"].as_str()?;
     let name = target["name"].as_str()?;
     if target["kind"] == "tag" {
         return match target_id {
-            "KMIPKIT-ELEM-TAG-42000C" => {
-                Some(credential(1, None).and_then(|credential| node(0x0042_000c, vec![credential])))
-            }
+            "KMIPKIT-ELEM-TAG-42000C" => Some(authentication()),
             "KMIPKIT-ELEM-TAG-420023" => Some(credential(1, None)),
             "KMIPKIT-ELEM-TAG-420025" => Some(value(1, None)),
             "KMIPKIT-ELEM-TAG-4200C8" => Some(nonce(None)),
@@ -223,9 +225,7 @@ pub(crate) fn fixture(target: &Json) -> Option<Result<Item>> {
         "Nonce" => Some(nonce(None)),
         "Credential" => Some(credential(1, None)),
         "Credential Value" => Some(value(1, None)),
-        "Authentication" => {
-            Some(credential(1, None).and_then(|credential| node(0x0042_000c, vec![credential])))
-        }
+        "Authentication" => Some(authentication()),
         _ => None,
     }
 }
