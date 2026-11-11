@@ -391,6 +391,11 @@ fn typed_item_route(symbol: &str) -> bool {
 }
 
 fn sample_for_route(symbol: &str, target: &Json, elements: &[Json]) -> Result<Item> {
+    if symbol == "kmipkit_protocol::ManagedObject::try_from_item"
+        && target["kind"] == "object_structure"
+    {
+        return crate::fixtures::object(text(target, "name")?).map(|(_, item, _)| item);
+    }
     if !typed_item_route(symbol) {
         return sample(target, elements);
     }
@@ -443,6 +448,29 @@ fn sample_for_route(symbol: &str, target: &Json, elements: &[Json]) -> Result<It
 fn invoke(symbol: &str, sample: &Item, target: &Json, elements: &[Json]) -> Option<Result<Item>> {
     if let Some(result) = crate::local_credentials::invoke(symbol, sample, target, elements) {
         return Some(result);
+    }
+    if symbol == "kmipkit_protocol::ManagedObject::try_from_item" {
+        let name = target["name"].as_str()?;
+        let wire_value = elements
+            .iter()
+            .find(|element| {
+                element["kind"] == "object_type"
+                    && element["name"]
+                        .as_str()
+                        .is_some_and(|object_name| object_name.eq_ignore_ascii_case(name))
+            })?
+            .get("wire_value")?
+            .as_str()?;
+        let object_type = u32::from_str_radix(wire_value, 16).ok()?;
+        return Some((|| {
+            let item = sample.try_clone().map_err(|_| "local copy failed")?;
+            kmipkit::protocol::ManagedObject::try_from_item(
+                kmipkit::protocol::ObjectType::from_raw(object_type),
+                item,
+            )
+            .map(kmipkit::protocol::ManagedObject::into_item)
+            .map_err(|_| "managed object parser rejected")
+        })());
     }
     if symbol.starts_with("kmipkit_ttlv::Value::") {
         let expected = match sample.item_type() {
