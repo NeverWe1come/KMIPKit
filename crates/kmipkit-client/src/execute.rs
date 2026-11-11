@@ -4351,6 +4351,32 @@ impl fmt::Display for ResponseEncodingError {
 
 impl Error for ResponseEncodingError {}
 
+fn map_response_encoding_error(error: &private_wire_writer::EncodeError) -> ResponseEncodingError {
+    match error {
+        private_wire_writer::EncodeError::LimitExceeded => ResponseEncodingError::LimitExceeded,
+        private_wire_writer::EncodeError::AllocationFailed(_) => {
+            ResponseEncodingError::AllocationFailed
+        }
+        private_wire_writer::EncodeError::WireCodec(error) => match error.kind() {
+            crate::wire_codec_common::WireCodecErrorKind::LimitExceeded => {
+                ResponseEncodingError::LimitExceeded
+            }
+            crate::wire_codec_common::WireCodecErrorKind::AllocationFailed => {
+                ResponseEncodingError::AllocationFailed
+            }
+            crate::wire_codec_common::WireCodecErrorKind::InvalidDocument
+            | crate::wire_codec_common::WireCodecErrorKind::InvalidValue => {
+                ResponseEncodingError::EncodingFailed
+            }
+        },
+        _ => ResponseEncodingError::EncodingFailed,
+    }
+}
+
+#[cfg(test)]
+#[path = "../tests/unit/response_encoding_error_tests.rs"]
+mod response_encoding_error_tests;
+
 struct PendingClientBatchItemResponse {
     unique_batch_item_id: Option<Vec<u8>>,
     outcome: ClientBatchOutcome,
@@ -4411,29 +4437,8 @@ impl ClientBatchItemResponse {
             .map_err(|_| ResponseEncodingError::InvalidResponseTree)?;
         let item = Item::new(tag, Value::structure(tree))
             .map_err(|_| ResponseEncodingError::InvalidResponseTree)?;
-        private_wire_writer::render_for_inspection(&item, limits, encoding).map_err(|error| {
-            match error {
-                private_wire_writer::EncodeError::LimitExceeded => {
-                    ResponseEncodingError::LimitExceeded
-                }
-                private_wire_writer::EncodeError::AllocationFailed(_) => {
-                    ResponseEncodingError::AllocationFailed
-                }
-                private_wire_writer::EncodeError::WireCodec(error) => match error.kind() {
-                    crate::wire_codec_common::WireCodecErrorKind::LimitExceeded => {
-                        ResponseEncodingError::LimitExceeded
-                    }
-                    crate::wire_codec_common::WireCodecErrorKind::AllocationFailed => {
-                        ResponseEncodingError::AllocationFailed
-                    }
-                    crate::wire_codec_common::WireCodecErrorKind::InvalidDocument
-                    | crate::wire_codec_common::WireCodecErrorKind::InvalidValue => {
-                        ResponseEncodingError::EncodingFailed
-                    }
-                },
-                _ => ResponseEncodingError::EncodingFailed,
-            }
-        })
+        private_wire_writer::render_for_inspection(&item, limits, encoding)
+            .map_err(|error| map_response_encoding_error(&error))
     }
 
     /// Returns canonical uppercase TTLV hex for the complete retained response.

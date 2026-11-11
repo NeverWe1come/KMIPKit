@@ -177,6 +177,37 @@ fn response_item_renders_the_retained_full_message_in_all_three_encodings() {
     };
     assert_eq!(error, ResponseEncodingError::LimitExceeded);
     assert!(!error.to_string().contains("FixtureVendor"));
+
+    let Err(error) = item.ttlv_hex(&restrictive_limits) else {
+        panic!("small TTLV output limit must reject the retained response");
+    };
+    assert_eq!(error, ResponseEncodingError::LimitExceeded);
+}
+
+#[test]
+fn response_encoding_error_display_is_payload_free() {
+    let display_cases = [
+        (
+            ResponseEncodingError::InvalidResponseTree,
+            "retained response tree is invalid",
+        ),
+        (
+            ResponseEncodingError::LimitExceeded,
+            "response representation exceeds configured limits",
+        ),
+        (
+            ResponseEncodingError::AllocationFailed,
+            "unable to allocate response representation",
+        ),
+        (
+            ResponseEncodingError::EncodingFailed,
+            "retained response cannot be represented by this encoding",
+        ),
+    ];
+    for (error, message) in display_cases {
+        assert_eq!(error.to_string(), message);
+        assert!(!format!("{error:?} {error}").contains("FixtureVendor"));
+    }
 }
 
 #[test]
