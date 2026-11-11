@@ -496,7 +496,7 @@ def test_symmetric_builder_validates_catalogued_and_explicit_attributes() -> Non
             with fluent.SymmetricKeyBuilder() as builder:
                 builder.aes_256().usage_mask(12).name("expert-key")
                 builder.add_attribute(StandardAttribute.DESCRIPTION, description)
-                for tag_value, text in ((0x4200FE, b"expert"), (0x42005C, b"vendor-value")):
+                for tag_value, text in ((0x4200FD, b"expert"), (0x540001, b"vendor-value")):
                     raw = ttlv.raw_tag_from_raw(tag_value)
                     try:
                         tag = ttlv.raw_tag_try_checked(raw)
@@ -505,7 +505,7 @@ def test_symmetric_builder_validates_catalogued_and_explicit_attributes() -> Non
                             item = ttlv.ttlv_item_create(tag, value, limits)
                             try:
                                 builder.add_attribute_item(item)
-                                if tag_value == 0x42005C:
+                                if tag_value == 0x540001:
                                     builder.add_vendor_attribute("Vendor_Name.1", "region", item)
                             finally:
                                 item.close()
