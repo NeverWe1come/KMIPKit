@@ -114,6 +114,11 @@ public final class CryptographicParameters implements AutoCloseable {
         });
     }
 
+    /** Internal lifecycle bridge for KMIPKit's typed request builders. */
+    public NativeHandle nativeHandleOwner() {
+        return handle;
+    }
+
     private record Fields(boolean[] present, long[] values, byte[] pSource) {}
 
     @Override
