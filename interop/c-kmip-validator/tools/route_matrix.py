@@ -97,6 +97,20 @@ def catalog_enum_values(catalog: dict, enum_name: str, protocol_version: str) ->
                   and re.fullmatch(r'[0-9a-fA-F]{8}', target.get('wire_value', '')))
 
 
+def numeric_boundaries(value: str) -> tuple[int, int] | None:
+    endpoints = re.findall(r'[0-9A-Fa-fXx]+', value)
+    if not endpoints:
+        return None
+    lower_text, upper_text = endpoints[0], endpoints[-1]
+    if not re.fullmatch(r'[0-9A-Fa-fXx]{8}', lower_text) or not re.fullmatch(r'[0-9A-Fa-fXx]{8}', upper_text):
+        return None
+    lower = int(lower_text.replace('X', '0').replace('x', '0'), 16)
+    upper = int(upper_text.replace('X', 'F').replace('x', 'F'), 16)
+    if lower > upper:
+        return None
+    return lower, upper
+
+
 def _type_codes(encoding: str) -> list[int]:
     """Read only TTLV types explicitly named in a catalog encoding declaration."""
     matches = []
@@ -138,6 +152,15 @@ def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
     """Build item trees only where the pinned catalog identifies tag and type."""
     if target['kind'] == 'tag' and target.get('allocation') in {'reserved', 'unused'}:
         return None
+    if (target['kind'] in {'enumeration_value', 'bitmask_value', 'referenced_enum_value'}
+            and target.get('allocation') in {'extension', 'reserved'}):
+        boundaries = numeric_boundaries(target.get('wire_value', ''))
+        parent = target.get('parent_name') or target.get('parent_element_ids', [''])[0]
+        enum_name = re.sub(r'^KMIPKIT-ELEM-(?:ENUMERATION|BITMASK)-', '', parent)
+        tag = {_name(name): value for name, value in tags.items()}.get(_name(enum_name))
+        if boundaries is not None and tag is not None:
+            item_type = 2 if target['kind'] == 'bitmask_value' else 5
+            return [(tag, item_type, value.to_bytes(4, 'big')) for value in dict.fromkeys(boundaries)]
     scalar = scalar_fixture(target, tags, catalog, protocol_version)
     if scalar is not None:
         return [scalar]
