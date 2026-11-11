@@ -166,6 +166,18 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "constructed request tree differs from sent request"):
             self.validate(report)
 
+    def test_expected_not_sent_boundary_requires_zero_transport_calls_and_no_decode(self):
+        self.catalog["test_cases"][0]["requires"]["expected_status"] = "NotSent"
+        report = copy.deepcopy(self.report)
+        report["events"] = [event for event in report["events"] if event["action"] != "decode"]
+        send_event = next(event for event in report["events"] if event["action"] == "send")
+        send_event["request_delivery_state"] = "not_sent"
+        send_event["transport_invocation_count"] = 0
+        self.assertTrue(self.validate(report)["selected_scope_complete"])
+        send_event["transport_invocation_count"] = 1
+        with self.assertRaisesRegex(ValueError, "invoked the transport"):
+            self.validate(report)
+
     def test_network_events_must_name_the_real_separate_execution_entrypoint(self):
         report = copy.deepcopy(self.report)
         report["events"][3]["execution_api_symbol"] = "kmipkit_client_batch_item_create"
