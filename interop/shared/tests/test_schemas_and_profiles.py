@@ -96,8 +96,11 @@ class InteropSharedTests(unittest.TestCase):
         self.assertEqual(9, stats.get("managed_objects_covered"))
         self.assertEqual(63, stats.get("attributes_covered"))
         self.assertEqual(64, stats.get("enumerations_covered"))
-        self.assertEqual(1681, stats.get("normative_targets"))
-        self.assertGreaterEqual(stats.get("total_cases", 0), 200)
+        self.assertEqual(17, stats.get("batch_scenarios"))
+        self.assertEqual(17, stats.get("asynchronous_scenarios"))
+        self.assertEqual(3, stats.get("exhaustive_bitmask_families"))
+        self.assertEqual(2560, stats.get("normative_targets"))
+        self.assertEqual(2689, stats.get("total_cases"))
 
         categories = {tc.get("category") for tc in catalog.get("test_cases", [])}
         self.assertIn("protocol_and_session", categories)
