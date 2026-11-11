@@ -153,8 +153,6 @@ class ModelCases:
             self.abi.release('codec_limits', limits)
 
     def _crypto_enum_field(self, target: dict) -> tuple[str, str] | None:
-        if target.get('kind') != 'enumeration_value':
-            return None
         parents = set(target.get('parent_element_ids', []))
         fields = {
             'KMIPKIT-ELEM-ENUMERATION-BLOCK-CIPHER-MODE': ('block_cipher_mode', 'Block Cipher Mode'),
@@ -170,18 +168,89 @@ class ModelCases:
         matches = [value for parent, value in fields.items() if parent in parents]
         return matches[0] if len(matches) == 1 else None
 
-    def _execute_cryptographic_enum(self, target: dict, protocol_version: str) -> dict | None:
-        selected = self._crypto_enum_field(target)
-        if selected is None or 'X' in target.get('wire_value', '').upper():
+    def _crypto_target_field(self, target: dict, protocol_version: str) -> tuple[str, str, int, object] | None:
+        if target.get('kind') == 'enumeration_value':
+            selected = self._crypto_enum_field(target)
+            wire_value = target.get('wire_value', '')
+            if selected is None or 'X' in wire_value.upper():
+                return None
+            field_name, tag_name = selected
+            return field_name, tag_name, 5, int(wire_value, 16)
+
+        if target.get('kind') == 'attribute':
+            name = target.get('name')
+            if name == 'Cryptographic Parameters':
+                return ('block_cipher_mode', 'Block Cipher Mode', 5,
+                        self._enum_value('Block Cipher Mode', 'CBC', protocol_version))
+            if name == 'Cryptographic Algorithm':
+                return ('cryptographic_algorithm', name, 5,
+                        self._enum_value(name, 'AES', protocol_version))
+            if name == 'Digital Signature Algorithm':
+                return ('digital_signature_algorithm', name, 5,
+                        self._enum_value(name, 'ECDSA with SHA256', protocol_version))
             return None
-        field_name, tag_name = selected
-        value = int(target['wire_value'], 16)
+
+        if target.get('kind') not in {'tag', 'structure_member'}:
+            return None
+        name = target.get('name', '').rstrip(',')
+        if name == 'Cryptographic Parameters':
+            if target.get('kind') == 'tag':
+                return None
+            return ('block_cipher_mode', 'Block Cipher Mode', 5,
+                    self._enum_value('Block Cipher Mode', 'CBC', protocol_version))
+        enum_fields = {
+            'Block Cipher Mode': ('block_cipher_mode', 'CBC'),
+            'Padding Method': ('padding_method', 'None'),
+            'Hashing Algorithm': ('hashing_algorithm', 'SHA-256'),
+            'Key Role Type': ('key_role_type', 'DEK'),
+            'Digital Signature Algorithm': ('digital_signature_algorithm', 'ECDSA with SHA256'),
+            'Cryptographic Algorithm': ('cryptographic_algorithm', 'AES'),
+            'Mask Generator': ('mask_generator', 'MFG1'),
+            'Mask Generator Hashing Algorithm': ('mask_generator_hashing_algorithm', 'SHA-256'),
+        }
+        if name in enum_fields:
+            field_name, value_name = enum_fields[name]
+            family = 'Hashing Algorithm' if name == 'Mask Generator Hashing Algorithm' else name
+            return field_name, name, 5, self._enum_value(family, value_name, protocol_version)
+        if name == 'Random IV':
+            return 'random_iv', name, 6, 0
+        integer_fields = {
+            'IV Length': 12, 'Tag Length': 16, 'Fixed Field Length': 2,
+            'Invocation Field Length': 4, 'Counter Length': 32,
+            'Initial Counter Value': 1, 'Salt Length': 8, 'Trailer Field': 1,
+        }
+        if name in integer_fields:
+            return name.lower().replace(' ', '_'), name, 2, integer_fields[name]
+        if name == 'P Source':
+            return 'p_source', name, 8, b'\x01\x02\x03'
+        return None
+
+    def _execute_cryptographic_enum(self, target: dict, protocol_version: str) -> dict | None:
+        selected = self._crypto_target_field(target, protocol_version)
+        if selected is None:
+            return None
+        field_name, tag_name, item_type, value = selected
         fields = _CryptographicParametersFieldsV1()
         fields.struct_size = C.sizeof(fields)
         fields.abi_version = 1
         setattr(fields, field_name + '_present', 1)
-        setattr(fields, field_name, value)
-        expected = [(self._tag(tag_name), 5, value.to_bytes(4, 'big'))]
+        source_buffer = None
+        if field_name == 'p_source':
+            source_buffer = C.create_string_buffer(value)
+            fields.p_source = C.cast(source_buffer, C.POINTER(C.c_uint8))
+            fields.p_source_length = len(value)
+            value_bytes = value
+        else:
+            setattr(fields, field_name, value)
+            if item_type == 5:
+                value_bytes = int(value).to_bytes(4, 'big')
+            elif item_type == 6:
+                value_bytes = int(value).to_bytes(8, 'big')
+            elif item_type == 2:
+                value_bytes = int(value).to_bytes(4, 'big', signed=True)
+            else:
+                value_bytes = value
+        expected_by_field = {field_name: (self._tag(tag_name), item_type, value_bytes)}
         if field_name == 'block_cipher_mode':
             iv_required = {
                 self._enum_value('Block Cipher Mode', 'CTR', protocol_version),
@@ -191,11 +260,19 @@ class ModelCases:
             if value in iv_required:
                 fields.iv_length_present = 1
                 fields.iv_length = 12
-                expected.append((self._tag('IV Length'), 2, (12).to_bytes(4, 'big', signed=True)))
+                expected_by_field['iv_length'] = (
+                    self._tag('IV Length'), 2, (12).to_bytes(4, 'big', signed=True))
             if value == self._enum_value('Block Cipher Mode', 'GCM', protocol_version):
                 fields.tag_length_present = 1
                 fields.tag_length = 16
-                expected.append((self._tag('Tag Length'), 2, (16).to_bytes(4, 'big', signed=True)))
+                expected_by_field['tag_length'] = (
+                    self._tag('Tag Length'), 2, (16).to_bytes(4, 'big', signed=True))
+        order = ('block_cipher_mode', 'padding_method', 'hashing_algorithm', 'key_role_type',
+                 'digital_signature_algorithm', 'cryptographic_algorithm', 'random_iv', 'iv_length',
+                 'tag_length', 'fixed_field_length', 'invocation_field_length', 'counter_length',
+                 'initial_counter_value', 'salt_length', 'mask_generator',
+                 'mask_generator_hashing_algorithm', 'p_source', 'trailer_field')
+        expected = [expected_by_field[name] for name in order if name in expected_by_field]
         parameters, structure = C.c_void_p(), C.c_void_p()
         output = _CryptographicParametersFieldsV1()
         output.struct_size = C.sizeof(output)
@@ -210,15 +287,16 @@ class ModelCases:
                           [C.c_void_p, C.POINTER(_CryptographicParametersFieldsV1)])
             self.abi.call('kmipkit_cryptographic_parameters_read_fields_v1',
                           parameters, C.byref(output))
-            if (getattr(output, field_name + '_present') != 1 or
-                    getattr(output, field_name) != value):
-                raise ValueError('cryptographic_parameters_field_mismatch')
-            if (fields.iv_length_present and
-                    (output.iv_length_present != 1 or output.iv_length != fields.iv_length)):
-                raise ValueError('cryptographic_parameters_iv_length_mismatch')
-            if (fields.tag_length_present and
-                    (output.tag_length_present != 1 or output.tag_length != fields.tag_length)):
-                raise ValueError('cryptographic_parameters_tag_length_mismatch')
+            for name in expected_by_field:
+                if getattr(output, name + '_present') != 1:
+                    raise ValueError('cryptographic_parameters_field_presence_mismatch')
+                if name == 'p_source':
+                    if output.p_source_length != fields.p_source_length or not output.p_source:
+                        raise ValueError('cryptographic_parameters_p_source_mismatch')
+                    if C.string_at(output.p_source, output.p_source_length) != value:
+                        raise ValueError('cryptographic_parameters_p_source_mismatch')
+                elif getattr(output, name) != getattr(fields, name):
+                    raise ValueError('cryptographic_parameters_field_mismatch')
             self.abi.bind('kmipkit_cryptographic_parameters_into_ttlv',
                           [C.c_void_p, C.POINTER(C.c_void_p)])
             self.abi.call('kmipkit_cryptographic_parameters_into_ttlv',
@@ -367,8 +445,8 @@ class ModelCases:
         return contains_tag(result['normalized_tree'])
 
     def execute(self, target: dict, protocol_version: str) -> dict | None:
-        if target.get('kind') == 'enumeration_value':
-            selected = self._crypto_enum_field(target)
+        if target.get('kind') in {'enumeration_value', 'tag', 'structure_member', 'attribute'}:
+            selected = self._crypto_target_field(target, protocol_version)
             if selected is not None:
                 self.abi.called.clear()
                 return self._execute_cryptographic_enum(target, protocol_version)
