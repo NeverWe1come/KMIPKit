@@ -240,6 +240,58 @@ fn register_certificate(
 fn main() { let _example = register_certificate; }
 ```
 
+### Register fluido en Rust
+
+`client.request().register()` acepta un `ManagedObject` tipado y un
+`AttributeSet` ya construido. Reutiliza las reglas de validación de la petición
+procedimental y permite crear un elemento de lote o ejecutar un único
+intercambio:
+
+```rust,kmipkit-test
+use std::error::Error;
+
+use kmipkit_client::{Client, ClientBatchItemResponse, ClientBatchOutcome};
+use kmipkit_protocol::attribute::typed;
+use kmipkit_protocol::{Attribute, AttributeSet, Certificate, ManagedObject, ObjectType};
+use kmipkit_ttlv::codec::CodecLimits;
+
+fn register_certificate(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<ClientBatchItemResponse, Box<dyn Error>> {
+    let certificate = Certificate::try_new(1, vec![0x30, 0x00, 0x00])?;
+    let object = ManagedObject::try_from_item(ObjectType::from_raw(1), certificate.into_item())?;
+    let attributes = AttributeSet::try_new([
+        Attribute::<typed::CryptographicUsageMask>::new(3)?.into_item(),
+        Attribute::<typed::CertificateLength>::new(3)?.into_item(),
+        Attribute::<typed::CryptographicAlgorithm>::new(4)?.into_item(),
+        Attribute::<typed::CryptographicLength>::new(1024)?.into_item(),
+    ])?;
+
+    let result = client
+        .request()
+        .register()
+        .object(object)
+        .attributes(attributes)
+        .execute(limits)?;
+    if let ClientBatchOutcome::Register(response) = result.outcome() {
+        let _server_assigned_identifier = response.unique_identifier();
+    }
+    Ok(result)
+}
+
+fn main() { let _example = register_certificate; }
+```
+
+`object_item(ObjectType, Item)` es la ruta explícita para tipos de objeto
+genéricos o futuros. Los atributos se pueden añadir con marcadores tipados, un
+conjunto preconstruido, elementos TTLV explícitos o el constructor propio de
+Vendor Attribute. La selección de contexto de Opaque Object sigue siendo
+explícita. El builder delega la validación y el enrutamiento por versión al
+modelo tipado y al cliente actuales; no elige políticas de clave, no reintenta
+ni ejecuta Poll. Las fachadas de Register en C, Java y Python quedan pendientes
+de sus entregas de binding.
+
 ### Registrar un objeto opaco
 
 Un objeto opaco se envía como la `Structure` estándar de Opaque Object. Sus

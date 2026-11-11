@@ -262848,6 +262848,222 @@
       "exportName": "<kmipkit_client::fluent::CreateSplitKeyBuilder<'a> as core::convert::TryInto<U>>::try_into",
       "packageId": "rust-kmipkit-client",
       "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Split Key builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations."
+    },
+    {
+      "approvalSource": {
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities.",
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract.",
+      "exportName": "<kmipkit_client::RegisterBuilder<'a> as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations."
+    },
+    {
+      "approvalSource": {
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities.",
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract.",
+      "exportName": "<kmipkit_client::RegisterBuilder<'a> as core::borrow::Borrow<kmipkit_client::fluent::RegisterBuilder<'a>>>::borrow",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations."
+    },
+    {
+      "approvalSource": {
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities.",
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract.",
+      "exportName": "<kmipkit_client::RegisterBuilder<'a> as core::borrow::BorrowMut<kmipkit_client::fluent::RegisterBuilder<'a>>>::borrow_mut",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations."
+    },
+    {
+      "approvalSource": {
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities.",
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract.",
+      "exportName": "<kmipkit_client::RegisterBuilder<'a> as core::convert::From<kmipkit_client::fluent::RegisterBuilder<'a>>>::from",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations."
+    },
+    {
+      "approvalSource": {
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities.",
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract.",
+      "exportName": "<kmipkit_client::RegisterBuilder<'a> as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations."
+    },
+    {
+      "approvalSource": {
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities.",
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract.",
+      "exportName": "<kmipkit_client::RegisterBuilder<'a> as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations."
+    },
+    {
+      "approvalSource": {
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities.",
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract.",
+      "exportName": "<kmipkit_client::RegisterBuilder<'a> as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations."
+    },
+    {
+      "approvalSource": {
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities.",
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract.",
+      "exportName": "<kmipkit_client::RegisterBuilder<'a> as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations."
+    },
+    {
+      "approvalSource": {
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities.",
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract.",
+      "exportName": "<kmipkit_client::RegisterBuilder<'a> as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations."
+    },
+    {
+      "approvalSource": {
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities.",
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract.",
+      "exportName": "<kmipkit_client::fluent::RegisterBuilder<'a> as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations."
+    },
+    {
+      "approvalSource": {
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities.",
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract.",
+      "exportName": "<kmipkit_client::fluent::RegisterBuilder<'a> as core::borrow::Borrow<kmipkit_client::fluent::RegisterBuilder<'a>>>::borrow",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations."
+    },
+    {
+      "approvalSource": {
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities.",
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract.",
+      "exportName": "<kmipkit_client::fluent::RegisterBuilder<'a> as core::borrow::BorrowMut<kmipkit_client::fluent::RegisterBuilder<'a>>>::borrow_mut",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations."
+    },
+    {
+      "approvalSource": {
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities.",
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract.",
+      "exportName": "<kmipkit_client::fluent::RegisterBuilder<'a> as core::convert::From<kmipkit_client::fluent::RegisterBuilder<'a>>>::from",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations."
+    },
+    {
+      "approvalSource": {
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities.",
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract.",
+      "exportName": "<kmipkit_client::fluent::RegisterBuilder<'a> as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations."
+    },
+    {
+      "approvalSource": {
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities.",
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract.",
+      "exportName": "<kmipkit_client::fluent::RegisterBuilder<'a> as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations."
+    },
+    {
+      "approvalSource": {
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities.",
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract.",
+      "exportName": "<kmipkit_client::fluent::RegisterBuilder<'a> as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations."
+    },
+    {
+      "approvalSource": {
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities.",
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract.",
+      "exportName": "<kmipkit_client::fluent::RegisterBuilder<'a> as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations."
+    },
+    {
+      "approvalSource": {
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities.",
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract.",
+      "exportName": "<kmipkit_client::fluent::RegisterBuilder<'a> as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations."
     }
   ],
   "capabilities": [
