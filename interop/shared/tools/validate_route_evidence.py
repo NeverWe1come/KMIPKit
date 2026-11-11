@@ -10,7 +10,7 @@ import re
 import tempfile
 from collections import defaultdict
 
-from cli_paths import resolve_within, write_text_within
+from cli_paths import resolve_within
 from coverage_matrix import iter_cells
 
 
@@ -449,6 +449,15 @@ def build_evidence_ledger(report: dict, catalog: dict, manifest: dict, *, catalo
     }
 
 
+def write_selected_scope_ledger(ledger: dict) -> Path:
+    """Write the Java route ledger to its fixed, repository-owned build path."""
+    repository = Path(__file__).resolve(strict=True).parents[3]
+    output_path = repository / "interop/java-kmip-validator/build/route-evidence-ledger.json"
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(ledger, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return output_path
+
+
 def validate_collection(reports: list[dict], catalog: dict, manifest: dict, *,
                         catalog_sha256: str, route_manifest_sha256: str,
                         expected_artifact_sha256: str) -> dict:
@@ -673,8 +682,8 @@ def main() -> None:
                         help="validate all four full language matrices and compare normalized trees")
     parser.add_argument("--selected-scope", action="store_true",
                         help="validate one complete report scope and retain global pending cells separately")
-    parser.add_argument("--ledger-output", type=Path,
-                        help="write the deterministic full-matrix executed/pending ledger (requires --selected-scope)")
+    parser.add_argument("--write-ledger", action="store_true",
+                        help="write the deterministic ledger to the Java validator's fixed build path")
     args = parser.parse_args()
     root = args.root.resolve(strict=True)
     allowed_file_roots = (root, Path(tempfile.gettempdir()))
@@ -691,30 +700,23 @@ def main() -> None:
     if args.selected_scope:
         if args.parity or len(reports) != 1 or len(args.artifact_sha256) != 1 or "=" in args.artifact_sha256[0]:
             parser.error("--selected-scope requires one report and one non-parity artifact digest")
-        if args.ledger_output is not None:
-            ledger_path = resolve_within(args.ledger_output, allowed_file_roots)
-        else:
-            ledger_path = None
         summary = validate_report(
             reports[0], catalog, manifest, catalog_sha256=catalog_sha,
             route_manifest_sha256=route_sha, expected_artifact_sha256=args.artifact_sha256[0],
         )
-        if ledger_path is not None:
+        if args.write_ledger:
             ledger = build_evidence_ledger(
                 reports[0], catalog, manifest, catalog_sha256=catalog_sha,
                 route_manifest_sha256=route_sha, expected_artifact_sha256=args.artifact_sha256[0],
             )
-            ledger_path = write_text_within(
-                ledger_path, allowed_file_roots,
-                json.dumps(ledger, indent=2, sort_keys=True) + "\n", encoding="utf-8",
-            )
+            ledger_path = write_selected_scope_ledger(ledger)
             summary["ledger"] = {
                 "path": str(ledger_path), "planned_cells": ledger["planned_cells"],
                 "executed_cells": ledger["executed_cells"], "pending_cells": ledger["pending_cells"],
                 "complete_matrix": ledger["complete_matrix"],
             }
-    elif args.ledger_output is not None:
-        parser.error("--ledger-output requires --selected-scope")
+    elif args.write_ledger:
+        parser.error("--write-ledger requires --selected-scope")
     elif args.parity:
         artifacts = {}
         for value in args.artifact_sha256:

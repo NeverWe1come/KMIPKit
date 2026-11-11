@@ -139,7 +139,7 @@ jobs:
             --selected-scope \
             --report build/route-execution-evidence.json \
             --artifact-sha256 "$JAVA_ARTIFACT_SHA256" \
-            --ledger-output build/route-evidence-ledger.json
+            --write-ledger
           cmp route-evidence-ledger.json build/route-evidence-ledger.json
 
       - name: Upload Java route execution evidence and coverage ledger
