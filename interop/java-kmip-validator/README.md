@@ -42,28 +42,32 @@ or remote text. JSON, Markdown, and HTML reports distinguish KMIPKit
 correctness, observed server support, policy rejection, parity, and coverage
 that has not run.
 
-The current live executor sends typed requests for `Discover Versions`,
-`Ping`, `Query`, and `Create`. The Create recipe generates a unique named
-AES-256 Symmetric Key, verifies the typed response, and sends a separate
-`Destroy` exchange using the returned Unique Identifier. The CLI only sends
-this recipe when both mutation opt-ins are set. The controlled TLS test covers
-both exchanges. The installed Java API can also build and decode `Log`, and a
-controlled TLS test covers its request and response. The catalog currently
-classifies `Log` as read-only even though KMIP 2.1 §6.1.29 writes the message
-to the server log, so the live CLI keeps it pending until the shared contract
-requires mutation opt-in. Although the installed Java API also provides
-`Get Constraints` and `Get Attribute List` request constructors, their catalog
-cases require complete object setup, response assertions, and cleanup; they
-remain pending until those recipes are implemented. The route inventory checks
-every catalog operation against the installed Java API.
-Other public typed request constructors are reported as pending until their
-case has a complete fixture, request recipe, response assertion, and cleanup.
-Asynchronous request types that only build payloads and operations with no
-public client request route carry separate API limitation reasons. The
-validator also constructs and decodes generic TTLV values locally. It does not
+The live executor routes every catalog operation that has a public
+`ClientBatchItem` factory through the installed typed client for KMIP 2.0 and
+2.1, subject to each case's version and mutation requirements. It pairs
+successful responses with the public typed response reader and preserves
+numeric KMIP failure codes. `Log`, object lifecycle, attribute, session,
+cryptographic, and other catalog cases that require mutation or isolated setup
+remain protected by both mutation opt-ins. The Create recipe generates a
+unique named AES-256 Symmetric Key, verifies the typed response, and sends a
+separate `Destroy` exchange using the returned Unique Identifier.
+
+Controlled TLS tests invoke every installed public KMIP 2.x
+`ClientBatchItem` factory at both protocol versions and check the observed
+operation and rejection classification. They also run Query and Get through
+the validator CLI. The all-operation sweep returns `Operation Not Supported`,
+so it proves construction, TTLV framing, transport reach, and error-response
+handling. Successful operation-specific workflows, including seeded object
+preconditions, state verification and cleanup for every applicable catalog
+case, still require additional controlled response recipes. Those cases must
+not be reported as validated interoperability until those recipes and the
+full shared route matrix have passed.
+
+The validator constructs and decodes generic TTLV values locally. It does not
 send arbitrary generic TTLV requests, and the Java package has no distinct
-high-level API route. The KMIP 2.0 live route remains disabled while
-protocol-version preservation is outside the pinned release artifact.
+high-level API route. Asynchronous request types that only build payloads and
+operations with no public client request route carry separate API limitation
+reasons.
 
 CI builds the pinned JNI JAR and runs the validator against a local TLS 1.3
 mTLS peer with a controlled KMIP response. This verifies the external package
