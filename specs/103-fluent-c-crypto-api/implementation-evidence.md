@@ -8,8 +8,8 @@ will be added here as each Red, Green, and Refactor commit is produced.
 
 - Branch: `feature/KMIPKIT-0103-fluent-c-crypto-api`.
 - Parent: `feature/KMIPKIT-0102-fluent-crypto-operations` at
-  `8eff582f2`.
-- Merge commit `8aa03f5b6` synchronizes the latest 0102 head into this
+  `13363e5c8`.
+- Merge commit `d236bb824` synchronizes the latest 0102 head into this
   published branch without rewriting the C API commits.
 - Normative operation shapes are owned by the approved KMIPKIT-0102 spec.
 
@@ -25,6 +25,10 @@ will be added here as each Red, Green, and Refactor commit is produced.
   Python declarations.
 - After synchronizing the corrected 0101 inventory regression, its complete
   seven-module Python contract grouping passed all 31 tests on this branch.
+- After synchronizing the Sonar-driven cipher setter refactor, the C consumer
+  suite passed again (471 Rust unit tests, 55 compiled C API consumer tests,
+  the 56-operation parity consumer, and doc tests), as did `cargo clippy -p
+  kmipkit-ffi --all-targets --all-features --locked -- -D warnings`.
 
 ## Verification
 
