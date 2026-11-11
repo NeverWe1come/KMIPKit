@@ -148,3 +148,24 @@ Pending full binding checks and exact-head CI.
   the KMIPKIT-0105 declarations.
 - Rust FFI, C ABI, Java/JNI, full formatting/lint/security gates, coverage,
   and exact-head CI remain pending.
+
+## Rebase on the corrected Java and C heads
+
+- Rebased the Python feature commits onto the corrected Java branch and
+  reconciled the public API manifest without discarding the C and Java expert
+  attribute declarations. The manifest now records 16,348 declarations and
+  exact fluent DX mapping inventories of 256 Rust, 57 C, 164 Java, and 187
+  Python exports.
+- Marked the Rust and Java crypto declaration mappings ready alongside the
+  implemented Python facade, updated the capability inventory, and regenerated
+  the 12 public API outputs with `python3 tools/api_manifest/generate.py --write`.
+- Refreshed the T102 declaration fingerprints for the combined C, Java, and
+  Python crypto API inventory. The focused T102 plus KMIPKIT-0102/0105 manifest
+  suites pass: 21 tests.
+- Python 3.12.13 focused runtime command:
+  `target/python312-venv/bin/python -m pytest -q
+  bindings/python/tests/test_fluent_crypto.py` — 12 passed.
+- `python3 tools/api_manifest/generate.py --check` confirms all 12 generated
+  outputs are current. The rebased command
+  `python3 tools/api_manifest/audit_binding_exports.py --report
+  target/0105-python-binding-exports.json --check` passed with no audit issues.
