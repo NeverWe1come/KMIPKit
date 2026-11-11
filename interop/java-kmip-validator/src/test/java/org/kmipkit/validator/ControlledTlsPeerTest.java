@@ -512,7 +512,7 @@ class ControlledTlsPeerTest {
         Files.writeString(selectedCatalog, mapper.writeValueAsString(catalog));
 
         FutureTask<List<byte[]>> peer = new FutureTask<>(
-                () -> serveAttributeReadCases(listener, targetOperations));
+                () -> serveAttributeReadCases(listener, targetOperations, targetAttributeTags));
         Thread peerThread = new Thread(peer, "java-validator-attribute-read-peer");
         peerThread.setDaemon(true);
         peerThread.start();
@@ -542,6 +542,66 @@ class ControlledTlsPeerTest {
         assertEquals(2, report.path("summary").path("passed").asInt(), report.toString());
         assertEquals(0, report.path("summary").path("failed").asInt(), report.toString());
         assertEquals(0, exitCode, standardError.toString(StandardCharsets.UTF_8));
+    }
+
+    @Test
+    void cliRunRejectsGetAttributesSuccessWithoutRequestedAttribute() throws Exception {
+        byte[] serverCertificatePem = fixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = fixture("server-key.pem");
+        byte[] clientCertificatePem = fixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = fixture("client-key.pem");
+        SSLServerSocket listener = listener(certificate(serverCertificatePem), privateKey(serverPrivateKeyPem),
+                certificate(clientCertificatePem));
+        Path connectionFile = temporaryDirectory.resolve("attribute-mismatch-connection.json");
+        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                clientCertificatePem, clientPrivateKeyPem, true));
+
+        Path sourceCatalog = Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json");
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode catalog = (ObjectNode) mapper.readTree(sourceCatalog.toFile());
+        JsonNode selectedCase = null;
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            if ("test-attr-cryptographic-algorithm".equals(testCase.path("case_id").asText())) {
+                selectedCase = testCase;
+                break;
+            }
+        }
+        assertTrue(selectedCase != null, "The Cryptographic Algorithm attribute case must exist.");
+        ArrayNode selectedCases = mapper.createArrayNode().add(selectedCase);
+        catalog.set("test_cases", selectedCases);
+        ((ObjectNode) catalog.path("statistics")).put("total_cases", selectedCases.size());
+        Path selectedCatalog = temporaryDirectory.resolve("attribute-mismatch-catalog.json");
+        Files.writeString(selectedCatalog, mapper.writeValueAsString(catalog));
+
+        long requestedAttributeTag = 0x420028L;
+        long returnedAttributeTag = 0x420053L;
+        long operation;
+        try (ClientBatchItem request = TypedRequestFactory.create("Get Attributes", null, requestedAttributeTag)) {
+            operation = request.operation();
+        }
+        FutureTask<List<byte[]>> peer = new FutureTask<>(
+                () -> serveAttributeReadCases(listener, List.of(operation), List.of(requestedAttributeTag),
+                        List.of(returnedAttributeTag)));
+        Thread peerThread = new Thread(peer, "java-validator-attribute-mismatch-peer");
+        peerThread.setDaemon(true);
+        peerThread.start();
+        Path outputDirectory = temporaryDirectory.resolve("attribute-mismatch-run-report");
+        var standardError = new ByteArrayOutputStream();
+        int exitCode;
+        try {
+            exitCode = Main.execute(new String[] {"run", "--connection", connectionFile.toString(), "--catalog",
+                    selectedCatalog.toString(), "--output-dir", outputDirectory.toString(), "--enable-mutations"},
+                    new PrintStream(new ByteArrayOutputStream()), new PrintStream(standardError));
+        } finally {
+            listener.close();
+        }
+        List<byte[]> requests = peer.get(10, TimeUnit.SECONDS);
+        assertEquals(3, requests.size());
+        assertTrue(contains(requests.get(1), item(0x42013b, 5, intBytes(Math.toIntExact(requestedAttributeTag)))));
+        JsonNode report = mapper.readTree(outputDirectory.resolve("results.json").toFile());
+        assertEquals(1, report.path("summary").path("failed").asInt(), report.toString());
+        assertEquals(0, report.path("summary").path("passed").asInt(), report.toString());
+        assertEquals(1, exitCode, standardError.toString(StandardCharsets.UTF_8));
     }
 
     private String connectionJson(int port, byte[] serverCertificate, byte[] clientCertificate,
@@ -901,11 +961,19 @@ class ControlledTlsPeerTest {
     }
 
     private static List<byte[]> serveAttributeReadCases(SSLServerSocket listener,
-            List<Long> targetOperations) throws Exception {
+            List<Long> targetOperations, List<Long> targetAttributeTags) throws Exception {
+        return serveAttributeReadCases(listener, targetOperations, targetAttributeTags, targetAttributeTags);
+    }
+
+    private static List<byte[]> serveAttributeReadCases(SSLServerSocket listener,
+            List<Long> targetOperations, List<Long> targetAttributeTags, List<Long> responseAttributeTags)
+            throws Exception {
         var requests = new ArrayList<byte[]>();
-        for (long targetOperation : targetOperations) {
+        for (int index = 0; index < targetOperations.size(); index++) {
+            long targetOperation = targetOperations.get(index);
             byte[][] responses = {
-                    createResponse(), identifierResponse(targetOperation), destroyResponse()
+                    createResponse(), getAttributesResponse(targetOperation, responseAttributeTags.get(index)),
+                    destroyResponse()
             };
             for (byte[] response : responses) {
                 try (SSLSocket socket = (SSLSocket) listener.accept()) {
@@ -919,6 +987,31 @@ class ControlledTlsPeerTest {
             }
         }
         return List.copyOf(requests);
+    }
+
+    private static byte[] getAttributesResponse(long operation, long attributeTag) throws Exception {
+        byte[] value;
+        if (attributeTag == 0x420028L) {
+            value = item(0x420028, 5, intBytes(3));
+        } else if (attributeTag == 0x420053L) {
+            value = structure(0x420053,
+                    item(0x420055, 7, "kmipkit-validator-object".getBytes(StandardCharsets.UTF_8)),
+                    item(0x420054, 5, intBytes(1)));
+        } else {
+            throw new IllegalArgumentException("No controlled attribute fixture is defined.");
+        }
+        byte[] protocolVersion = structure(0x420069,
+                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(1)));
+        byte[] header = structure(0x42007a, protocolVersion,
+                item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(1)));
+        byte[] attributes = structure(0x420125, value);
+        byte[] payload = structure(0x42007c,
+                item(0x420094, 7, CREATED_OBJECT_ID.getBytes(StandardCharsets.UTF_8)), attributes);
+        byte[] responseItem = structure(0x42000f,
+                item(0x42005c, 5, intBytes(Math.toIntExact(operation))),
+                item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)),
+                item(0x42007f, 5, intBytes(0)), payload);
+        return structure(0x42007b, header, responseItem);
     }
 
     private static byte[] createResponse() throws Exception {
