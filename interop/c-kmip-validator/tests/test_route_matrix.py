@@ -402,6 +402,18 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(any(child[0] == 0x420046 for child in result['normalized_tree'][2]))
         self.assertIn('kmipkit_key_block_from_fields', result['invoked_symbols'])
 
+    def test_key_block_route_roundtrips_cryptographic_algorithm_extension_boundaries(self):
+        from artifact_support import INSTALL, ROOT
+        from c_route_models import ModelCases
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        target = next(item for item in catalog['normative_targets']
+                      if item['target_id'] == 'KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-EXTENSIONS-8XXXXXXX')
+        result = ModelCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog).execute(
+            target, '2.1', 'kmipkit_key_block_from_fields')
+        self.assertEqual(result['sample_count'], 2)
+        self.assertEqual([sample[2][1][2] for sample in result['normalized_tree']],
+                         ['80000000', '8fffffff'])
+
 
     def test_compiled_consumer_provenance_cannot_be_replaced_by_coordinator(self):
         import route_peer
