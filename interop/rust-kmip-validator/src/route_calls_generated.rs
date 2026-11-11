@@ -4,7 +4,7 @@ use kmipkit::protocol::{
     AttributeSet, CurrentAttribute, NewAttribute,
     attribute::{Attribute, typed},
 };
-use kmipkit::ttlv::{Item, ItemType, ValueView};
+use kmipkit::ttlv::{Item, ItemType, Value, ValueView};
 #[allow(clippy::too_many_lines)] // One explicit public call per installed typed attribute route.
 pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
     match symbol {
@@ -5142,6 +5142,402 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .try_clone()
                     .map_err(|_| "attribute copy failed")
             })())
+        }
+        "kmipkit_protocol::AdjustmentType::from_raw" => {
+            if !(matches!(
+                sample.item_type(),
+                ItemType::Integer | ItemType::Enumeration
+            )) {
+                return None;
+            }
+            Some({
+                let raw = sample.with_value(|value| match value {
+                    ValueView::Integer(v) => v.cast_unsigned(),
+                    ValueView::Enumeration(v) => *v,
+                    _ => 0,
+                });
+                let parsed = kmipkit::protocol::AdjustmentType::from_raw(raw);
+                let value = if sample.item_type() == ItemType::Integer {
+                    Value::integer(parsed.raw().cast_signed())
+                } else {
+                    Value::enumeration(parsed.raw())
+                };
+                crate::driver::item(sample.tag().raw(), value)
+            })
+        }
+        "kmipkit_protocol::CancellationResult::from_raw" => {
+            if !(matches!(
+                sample.item_type(),
+                ItemType::Integer | ItemType::Enumeration
+            )) {
+                return None;
+            }
+            Some({
+                let raw = sample.with_value(|value| match value {
+                    ValueView::Integer(v) => v.cast_unsigned(),
+                    ValueView::Enumeration(v) => *v,
+                    _ => 0,
+                });
+                let parsed = kmipkit::protocol::CancellationResult::from_raw(raw);
+                let value = if sample.item_type() == ItemType::Integer {
+                    Value::integer(parsed.raw().cast_signed())
+                } else {
+                    Value::enumeration(parsed.raw())
+                };
+                crate::driver::item(sample.tag().raw(), value)
+            })
+        }
+        "kmipkit_protocol::CredentialType::from_raw" => {
+            if !(matches!(
+                sample.item_type(),
+                ItemType::Integer | ItemType::Enumeration
+            )) {
+                return None;
+            }
+            Some({
+                let raw = sample.with_value(|value| match value {
+                    ValueView::Integer(v) => v.cast_unsigned(),
+                    ValueView::Enumeration(v) => *v,
+                    _ => 0,
+                });
+                let parsed = kmipkit::protocol::CredentialType::from_raw(raw);
+                let value = if sample.item_type() == ItemType::Integer {
+                    Value::integer(parsed.raw().cast_signed())
+                } else {
+                    Value::enumeration(parsed.raw())
+                };
+                crate::driver::item(sample.tag().raw(), value)
+            })
+        }
+        "kmipkit_protocol::DerivationMethod::from_raw" => {
+            if !(matches!(
+                sample.item_type(),
+                ItemType::Integer | ItemType::Enumeration
+            )) {
+                return None;
+            }
+            Some({
+                let raw = sample.with_value(|value| match value {
+                    ValueView::Integer(v) => v.cast_unsigned(),
+                    ValueView::Enumeration(v) => *v,
+                    _ => 0,
+                });
+                let parsed = kmipkit::protocol::DerivationMethod::from_raw(raw);
+                let value = if sample.item_type() == ItemType::Integer {
+                    Value::integer(parsed.raw().cast_signed())
+                } else {
+                    Value::enumeration(parsed.raw())
+                };
+                crate::driver::item(sample.tag().raw(), value)
+            })
+        }
+        "kmipkit_protocol::EndpointRole::from_raw" => {
+            if !(matches!(
+                sample.item_type(),
+                ItemType::Integer | ItemType::Enumeration
+            )) {
+                return None;
+            }
+            Some({
+                let raw = sample.with_value(|value| match value {
+                    ValueView::Integer(v) => v.cast_unsigned(),
+                    ValueView::Enumeration(v) => *v,
+                    _ => 0,
+                });
+                let parsed = kmipkit::protocol::EndpointRole::from_raw(raw);
+                let value = if sample.item_type() == ItemType::Integer {
+                    Value::integer(parsed.raw().cast_signed())
+                } else {
+                    Value::enumeration(parsed.raw())
+                };
+                crate::driver::item(sample.tag().raw(), value)
+            })
+        }
+        "kmipkit_protocol::KeyCompressionType::from_raw" => {
+            if !(matches!(
+                sample.item_type(),
+                ItemType::Integer | ItemType::Enumeration
+            )) {
+                return None;
+            }
+            Some({
+                let raw = sample.with_value(|value| match value {
+                    ValueView::Integer(v) => v.cast_unsigned(),
+                    ValueView::Enumeration(v) => *v,
+                    _ => 0,
+                });
+                let parsed = kmipkit::protocol::KeyCompressionType::from_raw(raw);
+                let value = if sample.item_type() == ItemType::Integer {
+                    Value::integer(parsed.raw().cast_signed())
+                } else {
+                    Value::enumeration(parsed.raw())
+                };
+                crate::driver::item(sample.tag().raw(), value)
+            })
+        }
+        "kmipkit_protocol::KeyFormatType::from_raw" => {
+            if !(matches!(
+                sample.item_type(),
+                ItemType::Integer | ItemType::Enumeration
+            )) {
+                return None;
+            }
+            Some({
+                let raw = sample.with_value(|value| match value {
+                    ValueView::Integer(v) => v.cast_unsigned(),
+                    ValueView::Enumeration(v) => *v,
+                    _ => 0,
+                });
+                let parsed = kmipkit::protocol::KeyFormatType::from_raw(raw);
+                let value = if sample.item_type() == ItemType::Integer {
+                    Value::integer(parsed.raw().cast_signed())
+                } else {
+                    Value::enumeration(parsed.raw())
+                };
+                crate::driver::item(sample.tag().raw(), value)
+            })
+        }
+        "kmipkit_protocol::KeyWrapType::from_raw" => {
+            if !(matches!(
+                sample.item_type(),
+                ItemType::Integer | ItemType::Enumeration
+            )) {
+                return None;
+            }
+            Some({
+                let raw = sample.with_value(|value| match value {
+                    ValueView::Integer(v) => v.cast_unsigned(),
+                    ValueView::Enumeration(v) => *v,
+                    _ => 0,
+                });
+                let parsed = kmipkit::protocol::KeyWrapType::from_raw(raw);
+                let value = if sample.item_type() == ItemType::Integer {
+                    Value::integer(parsed.raw().cast_signed())
+                } else {
+                    Value::enumeration(parsed.raw())
+                };
+                crate::driver::item(sample.tag().raw(), value)
+            })
+        }
+        "kmipkit_protocol::ObjectGroupMember::from_raw" => {
+            if !(matches!(
+                sample.item_type(),
+                ItemType::Integer | ItemType::Enumeration
+            )) {
+                return None;
+            }
+            Some({
+                let raw = sample.with_value(|value| match value {
+                    ValueView::Integer(v) => v.cast_unsigned(),
+                    ValueView::Enumeration(v) => *v,
+                    _ => 0,
+                });
+                let parsed = kmipkit::protocol::ObjectGroupMember::from_raw(raw);
+                let value = if sample.item_type() == ItemType::Integer {
+                    Value::integer(parsed.raw().cast_signed())
+                } else {
+                    Value::enumeration(parsed.raw())
+                };
+                crate::driver::item(sample.tag().raw(), value)
+            })
+        }
+        "kmipkit_protocol::ObjectType::from_raw" => {
+            if !(matches!(
+                sample.item_type(),
+                ItemType::Integer | ItemType::Enumeration
+            )) {
+                return None;
+            }
+            Some({
+                let raw = sample.with_value(|value| match value {
+                    ValueView::Integer(v) => v.cast_unsigned(),
+                    ValueView::Enumeration(v) => *v,
+                    _ => 0,
+                });
+                let parsed = kmipkit::protocol::ObjectType::from_raw(raw);
+                let value = if sample.item_type() == ItemType::Integer {
+                    Value::integer(parsed.raw().cast_signed())
+                } else {
+                    Value::enumeration(parsed.raw())
+                };
+                crate::driver::item(sample.tag().raw(), value)
+            })
+        }
+        "kmipkit_protocol::PutFunction::from_raw" => {
+            if !(matches!(
+                sample.item_type(),
+                ItemType::Integer | ItemType::Enumeration
+            )) {
+                return None;
+            }
+            Some({
+                let raw = sample.with_value(|value| match value {
+                    ValueView::Integer(v) => v.cast_unsigned(),
+                    ValueView::Enumeration(v) => *v,
+                    _ => 0,
+                });
+                let parsed = kmipkit::protocol::PutFunction::from_raw(raw);
+                let value = if sample.item_type() == ItemType::Integer {
+                    Value::integer(parsed.raw().cast_signed())
+                } else {
+                    Value::enumeration(parsed.raw())
+                };
+                crate::driver::item(sample.tag().raw(), value)
+            })
+        }
+        "kmipkit_protocol::QueryFunction::from_raw" => {
+            if !(matches!(
+                sample.item_type(),
+                ItemType::Integer | ItemType::Enumeration
+            )) {
+                return None;
+            }
+            Some({
+                let raw = sample.with_value(|value| match value {
+                    ValueView::Integer(v) => v.cast_unsigned(),
+                    ValueView::Enumeration(v) => *v,
+                    _ => 0,
+                });
+                let parsed = kmipkit::protocol::QueryFunction::from_raw(raw);
+                let value = if sample.item_type() == ItemType::Integer {
+                    Value::integer(parsed.raw().cast_signed())
+                } else {
+                    Value::enumeration(parsed.raw())
+                };
+                crate::driver::item(sample.tag().raw(), value)
+            })
+        }
+        "kmipkit_protocol::ResultReason::from_raw" => {
+            if !(matches!(
+                sample.item_type(),
+                ItemType::Integer | ItemType::Enumeration
+            )) {
+                return None;
+            }
+            Some({
+                let raw = sample.with_value(|value| match value {
+                    ValueView::Integer(v) => v.cast_unsigned(),
+                    ValueView::Enumeration(v) => *v,
+                    _ => 0,
+                });
+                let parsed = kmipkit::protocol::ResultReason::from_raw(raw);
+                let value = if sample.item_type() == ItemType::Integer {
+                    Value::integer(parsed.raw().cast_signed())
+                } else {
+                    Value::enumeration(parsed.raw())
+                };
+                crate::driver::item(sample.tag().raw(), value)
+            })
+        }
+        "kmipkit_protocol::ResultStatus::from_raw" => {
+            if !(matches!(
+                sample.item_type(),
+                ItemType::Integer | ItemType::Enumeration
+            )) {
+                return None;
+            }
+            Some({
+                let raw = sample.with_value(|value| match value {
+                    ValueView::Integer(v) => v.cast_unsigned(),
+                    ValueView::Enumeration(v) => *v,
+                    _ => 0,
+                });
+                let parsed = kmipkit::protocol::ResultStatus::from_raw(raw);
+                let value = if sample.item_type() == ItemType::Integer {
+                    Value::integer(parsed.raw().cast_signed())
+                } else {
+                    Value::enumeration(parsed.raw())
+                };
+                crate::driver::item(sample.tag().raw(), value)
+            })
+        }
+        "kmipkit_protocol::RevocationReason::from_raw" => {
+            if !(matches!(
+                sample.item_type(),
+                ItemType::Integer | ItemType::Enumeration
+            )) {
+                return None;
+            }
+            Some({
+                let raw = sample.with_value(|value| match value {
+                    ValueView::Integer(v) => v.cast_unsigned(),
+                    ValueView::Enumeration(v) => *v,
+                    _ => 0,
+                });
+                let parsed = kmipkit::protocol::RevocationReason::from_raw(raw);
+                let value = if sample.item_type() == ItemType::Integer {
+                    Value::integer(parsed.raw().cast_signed())
+                } else {
+                    Value::enumeration(parsed.raw())
+                };
+                crate::driver::item(sample.tag().raw(), value)
+            })
+        }
+        "kmipkit_protocol::SplitKeyMethod::from_raw" => {
+            if !(matches!(
+                sample.item_type(),
+                ItemType::Integer | ItemType::Enumeration
+            )) {
+                return None;
+            }
+            Some({
+                let raw = sample.with_value(|value| match value {
+                    ValueView::Integer(v) => v.cast_unsigned(),
+                    ValueView::Enumeration(v) => *v,
+                    _ => 0,
+                });
+                let parsed = kmipkit::protocol::SplitKeyMethod::from_raw(raw);
+                let value = if sample.item_type() == ItemType::Integer {
+                    Value::integer(parsed.raw().cast_signed())
+                } else {
+                    Value::enumeration(parsed.raw())
+                };
+                crate::driver::item(sample.tag().raw(), value)
+            })
+        }
+        "kmipkit_protocol::StorageStatusMask::from_raw" => {
+            if !(matches!(
+                sample.item_type(),
+                ItemType::Integer | ItemType::Enumeration
+            )) {
+                return None;
+            }
+            Some({
+                let raw = sample.with_value(|value| match value {
+                    ValueView::Integer(v) => v.cast_unsigned(),
+                    ValueView::Enumeration(v) => *v,
+                    _ => 0,
+                });
+                let parsed = kmipkit::protocol::StorageStatusMask::from_raw(raw);
+                let value = if sample.item_type() == ItemType::Integer {
+                    Value::integer(parsed.raw().cast_signed())
+                } else {
+                    Value::enumeration(parsed.raw())
+                };
+                crate::driver::item(sample.tag().raw(), value)
+            })
+        }
+        "kmipkit_protocol::TicketType::from_raw" => {
+            if !(matches!(
+                sample.item_type(),
+                ItemType::Integer | ItemType::Enumeration
+            )) {
+                return None;
+            }
+            Some({
+                let raw = sample.with_value(|value| match value {
+                    ValueView::Integer(v) => v.cast_unsigned(),
+                    ValueView::Enumeration(v) => *v,
+                    _ => 0,
+                });
+                let parsed = kmipkit::protocol::TicketType::from_raw(raw);
+                let value = if sample.item_type() == ItemType::Integer {
+                    Value::integer(parsed.raw().cast_signed())
+                } else {
+                    Value::enumeration(parsed.raw())
+                };
+                crate::driver::item(sample.tag().raw(), value)
+            })
         }
         _ => None,
     }

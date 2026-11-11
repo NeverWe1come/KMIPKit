@@ -18,7 +18,7 @@ fn text<'a>(value: &'a Json, field: &str) -> Result<&'a str> {
 fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
     let kind = text(target, "kind")?;
     let mut name = text(target, "name")?;
-    if ["enumeration_value", "bitmask_value"].contains(&kind)
+    if ["enumeration_value", "bitmask_value", "object_type"].contains(&kind)
         && let Some(parent) = target["parent_element_ids"]
             .as_array()
             .and_then(|v| v.first())
@@ -45,7 +45,7 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
         .as_str()
         .or_else(|| target["value_type"].as_str())
         .unwrap_or(name);
-    let value = if ["enumeration_value", "referenced_enum_value"].contains(&kind) {
+    let value = if ["enumeration_value", "referenced_enum_value", "object_type"].contains(&kind) {
         Value::enumeration(wire_value)
     } else if kind == "bitmask_value" {
         Value::integer(wire_value.cast_signed())
@@ -63,12 +63,20 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
             "Text String" | "Text String, Enumeration or Integer" => {
                 Value::text_string("KMIPKit".to_owned())
             }
+            "Structure" if kind == "data_type" => {
+                let mut structure = kmipkit::ttlv::Structure::new();
+                structure
+                    .try_push(crate::driver::item(0x0042_000d, Value::integer(1))?)
+                    .map_err(|_| "local structure rejected")?;
+                Value::structure(structure)
+            }
             _ => Value::structure(kmipkit::ttlv::Structure::new()),
         }
     };
     crate::driver::item(tag, value)
 }
 
+#[allow(clippy::too_many_lines)] // Explicit public route dispatch stays together for review.
 fn invoke(symbol: &str, sample: &Item) -> Option<Result<Item>> {
     if symbol.starts_with("kmipkit_ttlv::Value::") {
         let expected = match sample.item_type() {
@@ -93,6 +101,40 @@ fn invoke(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Item::new(sample.tag(), value).map_err(|_| "local value rejected")
             }),
         );
+    }
+    if [
+        "kmipkit_ttlv::RawTag::new",
+        "kmipkit_ttlv::RawTag::try_checked",
+    ]
+    .contains(&symbol)
+    {
+        return Some((|| {
+            let raw =
+                kmipkit::ttlv::RawTag::new(sample.tag().raw()).map_err(|_| "raw tag rejected")?;
+            let checked = raw.try_checked().map_err(|_| "checked tag rejected")?;
+            Item::new(checked, sample.with_value(value_to_owned)?)
+                .map_err(|_| "local item rejected")
+        })());
+    }
+    if [
+        "kmipkit_ttlv::Structure::new",
+        "kmipkit_ttlv::Structure::try_push",
+    ]
+    .contains(&symbol)
+    {
+        let children = sample.as_structure()?;
+        if symbol.ends_with("::try_push") && children.children().is_empty() {
+            return None;
+        }
+        return Some((|| {
+            let mut structure = kmipkit::ttlv::Structure::new();
+            for child in children.children() {
+                structure
+                    .try_push(child.try_clone().map_err(|_| "local copy failed")?)
+                    .map_err(|_| "structure insertion rejected")?;
+            }
+            crate::driver::item(sample.tag().raw(), Value::structure(structure))
+        })());
     }
     if let Some(result) = generated::execute(symbol, sample) {
         return Some(result);
