@@ -391,6 +391,26 @@ class RouteMatrixTests(unittest.TestCase):
         ]])
         self.assertIn('kmipkit_key_block_from_fields', result['invoked_symbols'])
 
+    def test_key_block_route_roundtrips_transparent_rsa_public_key_material(self):
+        from artifact_support import INSTALL, ROOT
+        from c_route_models import ModelCases
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        target = next(item for item in catalog['normative_targets']
+                      if item['target_id'] == 'KMIPKIT-ELEM-OBJECT-STRUCTURE-3-8-KEY-MATERIAL')
+        result = ModelCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog).execute(
+            target, '2.1', 'kmipkit_key_block_from_fields')
+        tags = {item['name']: int(item['wire_value'], 16) for item in catalog['normative_targets']
+                if item['kind'] == 'tag'}
+        self.assertIsNotNone(result)
+        self.assertEqual(result['normalized_tree'], [tags['Key Block'], 1, [
+            [tags['Key Format Type'], 5, '0000000b'],
+            [tags['Key Value'], 1, [[tags['Key Material'], 1, [
+                [tags['Modulus'], 4, '01'], [tags['Public Exponent'], 4, '010001'],
+            ]]]],
+        ]])
+        self.assertTrue({'kmipkit_key_block_from_fields', 'kmipkit_key_block_from_item'}
+                        .issubset(result['invoked_symbols']))
+
     def test_key_block_route_constructs_wrapping_information_and_key_value(self):
         from artifact_support import INSTALL, ROOT
         from c_route_models import ModelCases
