@@ -197,3 +197,28 @@ branches, and the common CI therefore reports a planned matrix only.
 - This reduces false applicability only. Rust/C/Java/Python must rerun their
   matrices against this manifest; all language matrices and vendor KMS runs
   remain incomplete, so the PR stays WIP.
+
+## 2026-11-11 credential and typed-attribute route applicability correction
+
+- Follow-up matrix evidence exposed two more false associations: credential
+  value serializers inherited the outer `Credential` container and sibling
+  fields, and `Attribute<Sensitive>` inherited the unrelated `Result Reason`
+  enumeration value with the same display name.
+- Added exact credential branch mapping and typed-attribute subtree mapping.
+  The generated route count remains 1,479; no public route was added or
+  removed. The manifest now assigns only targets reachable from the exact KMIP
+  credential or attribute shape.
+- Red: `219b839db` added two regressions. Both failed before implementation:
+  credential serializers included the outer container and siblings, and the
+  typed Sensitive attribute included the same-named reason enum.
+- Green: `420640bbe` scopes these routes and regenerates the manifest. Both
+  regressions pass. Full shared suite
+  `python3 -B -m unittest discover -s interop/shared/tests -p 'test_*.py' -v`
+  passed 143 tests. `route_capabilities.py --check` reports 1,479 routes.
+- Refactor: extracted credential target identifiers and converter suffixes,
+  and changed subtree expansion to a parent-index traversal. The focused
+  route-capability suite passed 44 tests after refactoring, and the generated
+  manifest check still reports 1,479 routes; `git diff --check` passed.
+- The language matrices must incorporate this manifest and rerun before their
+  status can be assessed. No vendor-server interoperability has been run; the
+  shared PR remains WIP.
