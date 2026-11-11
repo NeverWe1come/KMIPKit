@@ -85,6 +85,28 @@ class RouteCapabilitiesTests(unittest.TestCase):
                     'source_paths': [route['source_paths'][0], 'crates/kmipkit-ttlv/src/tag.rs'],
                 }], route['case_exclusions'])
 
+    def test_async_request_routes_use_the_exact_public_operation_executor(self):
+        expected = {
+            'rust': 'kmipkit_client::Client::execute_{operation}',
+            'c': 'kmipkit_client_execute_{operation}',
+            'java': 'org.kmipkit.extensions.Client.execute{operation_title}',
+            'python': 'kmipkit.client.Client.execute_{operation}',
+        }
+        operations = {
+            'cancel': 'cancel',
+            'poll': 'poll',
+            'process': 'process',
+            'queryasyncrequests': 'query_async_requests',
+        }
+        routes = {(route['language'], route['execution_route_id']): route
+                  for route in self.data['execution_routes']}
+        for language, template in expected.items():
+            for route_id, method_name in operations.items():
+                title = ''.join(part.title() for part in method_name.split('_'))
+                symbol = template.format(operation=method_name, operation_title=title)
+                route = routes[(language, f'{language}.execute.{route_id}')]
+                self.assertEqual(symbol, route['public_api_symbol'])
+
     def test_every_named_enum_and_mask_target_has_an_exact_public_value_symbol(self):
         catalog = json.loads((SHARED / 'catalog/kmipkit-1.0-test-catalog.json').read_text())
         target_ids = {t['target_id'] for t in catalog['normative_targets']
