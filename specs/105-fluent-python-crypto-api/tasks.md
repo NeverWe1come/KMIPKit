@@ -7,8 +7,8 @@
 
 ## Phase 2 — Shared FFI tests and ownership
 
-- [ ] T003 [US1] Add failing Python API-shape and operation identity tests in `bindings/python/tests/test_fluent_crypto.py`.
-- [ ] T004 [US1] Add failing tests for each operation's required and prohibited setters in `bindings/python/tests/test_fluent_crypto.py`.
+- [x] T003 [US1] Add failing Python API-shape and operation identity tests in `bindings/python/tests/test_fluent_crypto.py`.
+- [x] T004 [US1] Add failing tests for each operation's supported and prohibited setter surfaces in `bindings/python/tests/test_fluent_crypto.py`.
 - [ ] T005 [US2] Add failing native handle, byte staging, and closed-builder tests in `bindings/python/tests/test_fluent_crypto.py`.
 
 ## Phase 3 — Operation-specific request construction
