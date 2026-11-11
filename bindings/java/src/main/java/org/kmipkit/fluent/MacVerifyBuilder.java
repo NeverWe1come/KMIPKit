@@ -6,6 +6,6 @@ import org.kmipkit.client.KmipClient;
 public final class MacVerifyBuilder extends CryptoOperationBuilder<MacVerifyBuilder>
         implements MacVerifyInput<MacVerifyBuilder> {
     MacVerifyBuilder(KmipClient client) {
-        super(client, 5);
+        super(client, NATIVE_OPERATION_MAC_VERIFY);
     }
 }

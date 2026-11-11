@@ -6,6 +6,6 @@ import org.kmipkit.client.KmipClient;
 public final class EncryptBuilder extends CryptoOperationBuilder<EncryptBuilder>
         implements CipherInput<EncryptBuilder> {
     EncryptBuilder(KmipClient client) {
-        super(client, 0);
+        super(client, NATIVE_OPERATION_ENCRYPT);
     }
 }

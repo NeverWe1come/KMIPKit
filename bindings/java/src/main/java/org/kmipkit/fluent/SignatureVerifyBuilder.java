@@ -6,6 +6,6 @@ import org.kmipkit.client.KmipClient;
 public final class SignatureVerifyBuilder extends CryptoOperationBuilder<SignatureVerifyBuilder>
         implements SignatureVerifyInput<SignatureVerifyBuilder> {
     SignatureVerifyBuilder(KmipClient client) {
-        super(client, 3);
+        super(client, NATIVE_OPERATION_SIGNATURE_VERIFY);
     }
 }
