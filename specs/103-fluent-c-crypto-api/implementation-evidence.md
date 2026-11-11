@@ -19,3 +19,9 @@ will be added here as each Red, Green, and Refactor commit is produced.
   header does not yet declare `kmipkit_crypto_operation_builder_t` or the seven
   operation-specific constructors and common builder functions. No production
   ABI code existed at this point.
+
+- **Red (asynchronous indicator validation)**: the same focused command compiled
+  and ran the consumer, which failed with probe status 4 because
+  `kmipkit_crypto_operation_builder_set_asynchronous_indicator(..., 2)` returned
+  success. The Request Header asynchronous indicator is boolean; invalid values
+  must be rejected before any transport call.
