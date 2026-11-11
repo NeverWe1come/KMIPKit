@@ -134,8 +134,14 @@ def _generic_samples(case: dict, target: dict, symbol: str) -> list[tuple[int, s
         type_name = 'Integer' if kind == 'bitmask_value' else 'Enumeration'
         return [(tag, type_name, value if type_name == 'Enumeration' or value < 0x80000000
                  else value - 0x100000000) for value in raw_values]
+    if kind == 'tag' and requires.get('allocation') in ('assigned', 'extension'):
+        return [(raw, 'Integer', 0) for raw in PythonKmipDriver._wire_representatives(requires['wire_value'])]
+    if kind == 'tag_range' and requires.get('allocation') == 'extension':
+        import re
+        bounds = re.split(r'\s*[-–—]\s*', requires['wire_value'])
+        return [(int(bound.upper().replace('X', fill), 16), 'Integer', 0)
+                for bound, fill in zip(bounds, ('0', 'F'), strict=True)]
     if kind in ('tag', 'tag_range'):
-        # Raw/checked tag allocation and rejection is exercised separately.
         raise RecipePending
     if kind == 'data_type':
         type_names = {target['name']}
