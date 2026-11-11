@@ -1067,46 +1067,56 @@ class ControlledTlsPeerTest {
             byte[] wire = item(fixture.rawTag(), 5, intBytes(0));
             String treeHash = normalizedTreeSha256(wire);
             if ("extension".equals(fixture.allocation())) {
-                try (RawTag raw = RawTag.fromRaw(fixture.rawTag());
-                        Tag tag = raw.checked();
-                        TtlvValue value = TtlvValue.Enumeration(0);
-                        TtlvItem created = TtlvItem.create(tag, value, CodecLimits.defaults());
-                        var view = created.view();
-                        var viewValue = view.value()) {
-                    assertEquals(fixture.rawTag(), view.tag().raw());
-                    assertEquals(TtlvItemType.Enumeration, view.itemType());
-                    assertEquals(0L, viewValue.enumeration());
-                    appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_item.create",
-                            fixture.targetId(), "org.kmipkit.ttlv.TtlvItem.create", null, null,
-                            "construct", protocolVersion, null, treeHash, null);
-                    appendRouteEvent(events, fixture.caseId(),
-                            "java.generic-ttlv.function.ttlv_item_view_from_item", fixture.targetId(),
-                            "org.kmipkit.ttlv.TtlvItem.view", null, null,
-                            "decode", protocolVersion, null, null, treeHash);
-                }
-                try (TtlvItem decoded = TtlvCodec.decode(wire); var decodedView = decoded.view()) {
-                    assertEquals(fixture.rawTag(), decodedView.tag().raw());
-                    assertEquals(TtlvItemType.Enumeration, decodedView.itemType());
-                }
-                appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_codec.decode",
-                        fixture.targetId(), "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
-                        "decode", protocolVersion, null, null, treeHash);
+                appendAllocatedTagRangeEvents(events, fixture, protocolVersion, wire, treeHash);
             } else {
-                TtlvDecodeException rejection = assertThrows(
-                        TtlvDecodeException.class, () -> TtlvCodec.decode(wire));
-                int expectedKind = "reserved".equals(fixture.allocation())
-                        ? TtlvDecodeErrorKind.RESERVED_TAG : TtlvDecodeErrorKind.UNALLOCATED_TAG;
-                assertEquals(expectedKind, rejection.kind());
-                ObjectNode event = newRouteEvent(events, fixture.caseId(),
-                        "java.generic-ttlv.ttlv_codec.decode", fixture.targetId(),
-                        "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
-                        "decode", protocolVersion, null);
-                event.put("decode_outcome", "rejected");
-                event.put("decode_rejection_code", "reserved".equals(fixture.allocation())
-                        ? "tag_reserved" : "tag_not_allocated");
-                event.put("decode_input_sha256", sha256(wire));
+                appendRejectedTagRangeEvent(events, fixture, protocolVersion, wire);
             }
         }
+    }
+
+    private static void appendAllocatedTagRangeEvents(ArrayNode events, TagRangeFixture fixture,
+            String protocolVersion, byte[] wire, String treeHash) throws Exception {
+        try (RawTag raw = RawTag.fromRaw(fixture.rawTag());
+                Tag tag = raw.checked();
+                TtlvValue value = TtlvValue.Enumeration(0);
+                TtlvItem created = TtlvItem.create(tag, value, CodecLimits.defaults());
+                var view = created.view();
+                var viewValue = view.value()) {
+            assertEquals(fixture.rawTag(), view.tag().raw());
+            assertEquals(TtlvItemType.Enumeration, view.itemType());
+            assertEquals(0L, viewValue.enumeration());
+            appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_item.create",
+                    fixture.targetId(), "org.kmipkit.ttlv.TtlvItem.create", null, null,
+                    "construct", protocolVersion, null, treeHash, null);
+            appendRouteEvent(events, fixture.caseId(),
+                    "java.generic-ttlv.function.ttlv_item_view_from_item", fixture.targetId(),
+                    "org.kmipkit.ttlv.TtlvItem.view", null, null,
+                    "decode", protocolVersion, null, null, treeHash);
+        }
+        try (TtlvItem decoded = TtlvCodec.decode(wire); var decodedView = decoded.view()) {
+            assertEquals(fixture.rawTag(), decodedView.tag().raw());
+            assertEquals(TtlvItemType.Enumeration, decodedView.itemType());
+        }
+        appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_codec.decode",
+                fixture.targetId(), "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
+                "decode", protocolVersion, null, null, treeHash);
+    }
+
+    private static void appendRejectedTagRangeEvent(ArrayNode events, TagRangeFixture fixture,
+            String protocolVersion, byte[] wire) throws Exception {
+        TtlvDecodeException rejection = assertThrows(
+                TtlvDecodeException.class, () -> TtlvCodec.decode(wire));
+        int expectedKind = "reserved".equals(fixture.allocation())
+                ? TtlvDecodeErrorKind.RESERVED_TAG : TtlvDecodeErrorKind.UNALLOCATED_TAG;
+        assertEquals(expectedKind, rejection.kind());
+        ObjectNode event = newRouteEvent(events, fixture.caseId(),
+                "java.generic-ttlv.ttlv_codec.decode", fixture.targetId(),
+                "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
+                "decode", protocolVersion, null);
+        event.put("decode_outcome", "rejected");
+        event.put("decode_rejection_code", "reserved".equals(fixture.allocation())
+                ? "tag_reserved" : "tag_not_allocated");
+        event.put("decode_input_sha256", sha256(wire));
     }
 
     private static void appendNetworkQueryRouteEvents(ArrayNode events, String protocolVersion,
