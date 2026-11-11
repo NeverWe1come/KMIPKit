@@ -88,6 +88,14 @@ class CoverageMatrixTests(unittest.TestCase):
         item_indices = {cell.get("workflow_item_index") for cell in cells}
         self.assertEqual({0, 1}, item_indices)
 
+    def test_not_sent_version_boundary_has_no_response_decode_obligation(self):
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest)
+                 if cell["case_id"] == "test-v20-reject-ping"]
+        network_cells = [cell for cell in cells if cell["mode"] == "network"]
+        self.assertTrue(network_cells)
+        self.assertEqual({"construct", "send"}, {cell["action"] for cell in network_cells})
+        self.assertFalse(any("response" in cell["route_id"] for cell in cells))
+
     def test_missing_version_route_fails_even_if_the_case_has_another_version(self):
         case = {
             "case_id": "two-version-case",

@@ -33,6 +33,16 @@ def _event_outcome(record: dict) -> dict:
     return {field: value for field, value in record.items() if field != "invocation_id"}
 
 
+def _request_identity(record: dict) -> tuple:
+    """Identify a request across its construction and send action rows."""
+    return (
+        record["case_id"], record["route_id"], record["target_id"],
+        record.get("workflow_step_index"), record.get("workflow_operation"),
+        record.get("workflow_item_index"), record.get("execution_route_id"),
+        record["protocol_version"], record["encoding"], record["transport"],
+    )
+
+
 def _expected_batch_operations(case: dict) -> list[str] | None:
     scenario = case.get("requires", {}).get("protocol_scenario", {})
     if not isinstance(scenario, dict):
@@ -261,8 +271,28 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
             if not isinstance(wire_hash, str) or not re.fullmatch(r"[0-9a-f]{64}", wire_hash):
                 raise ValueError(f"deterministic wire bytes require a valid SHA-256: {key}")
         if event["action"] == "send":
-            _validate_batch_event(event, case_by_id[event["case_id"]], catalog, key)
+            case = case_by_id[event["case_id"]]
+            expected_status = str(case.get("requires", {}).get("expected_status", "")).casefold()
+            if expected_status.replace("_", "") == "notsent":
+                if event.get("request_delivery_state") != "not_sent":
+                    raise ValueError(f"version-boundary send did not prove the request remained unsent: {key}")
+                if event.get("transport_invocation_count") != 0:
+                    raise ValueError(f"version-boundary request invoked the transport: {key}")
+            elif event.get("request_delivery_state") == "not_sent":
+                raise ValueError(f"unexpected not-sent result for a network route cell: {key}")
+            _validate_batch_event(event, case, catalog, key)
         observed[key] = event
+
+    constructed = {
+        _request_identity(event): event["request_tree_sha256"]
+        for event in observed.values() if event["action"] == "construct" and event.get("status") == "passed"
+    }
+    for event in observed.values():
+        if event["action"] != "send" or event.get("status") != "passed":
+            continue
+        constructed_hash = constructed.get(_request_identity(event))
+        if constructed_hash is not None and constructed_hash != event.get("request_tree_sha256"):
+            raise ValueError(f"constructed request tree differs from sent request: {_request_identity(event)}")
 
     missing = sorted(set(expected) - set(observed))
     if missing:

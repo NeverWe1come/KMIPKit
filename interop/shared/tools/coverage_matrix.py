@@ -164,9 +164,13 @@ def _unavailable_for_case(manifest: dict, language: str, targets: set[str]) -> d
 def applicable_routes(case: dict, manifest: dict, language: str, operation_ids: dict[str, str]) -> list[dict]:
     targets = _case_targets(case, operation_ids)
     case_version = set(case["execution"]["protocol_versions"])
+    expected_status = str(case.get("requires", {}).get("expected_status", "")).casefold()
+    request_must_not_be_sent = expected_status.replace("_", "") == "notsent"
     candidates = []
     for route in manifest["routes"]:
         if route["language"] != language or case["category"] not in route["case_categories"]:
+            continue
+        if request_must_not_be_sent and route["mode"] == "local" and "response" in route["route_id"].casefold():
             continue
         if not case_version.intersection(route["protocol_versions"]):
             continue
@@ -244,7 +248,9 @@ def iter_cells(catalog: dict, manifest: dict, *, languages: tuple[str, ...] = LA
                                     raise ValueError(f"network construction route has an invalid action: {action}")
                                 yield {**base, "action": "construct", "execution_route_id": execution_route_id,
                                        "execution_api_symbol": execution["public_api_symbol"]}
-                            for action in ("send", "decode"):
+                            expected_status = str(case.get("requires", {}).get("expected_status", "")).casefold()
+                            actions = ("send",) if expected_status.replace("_", "") == "notsent" else ("send", "decode")
+                            for action in actions:
                                 yield {**base, "action": action, "execution_route_id": execution_route_id,
                                        "execution_api_symbol": execution["public_api_symbol"]}
 
