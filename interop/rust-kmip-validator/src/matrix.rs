@@ -832,4 +832,59 @@ mod tests {
             assert!(crate::local_wire::target_hash(&result, &fixture).is_ok());
         }
     }
+
+    /// OASIS KMIP 2.1 §9.11, Tables 411–416 and §7.39 define credential field shapes.
+    #[test]
+    fn credential_routes_preserve_the_target_field_in_a_valid_variant() {
+        let cases: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let specification: Json = serde_json::from_str(include_str!(
+            "../../../specification/catalog/kmip-2.1.json"
+        ))
+        .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        for (target_id, symbol) in [
+            (
+                "KMIPKIT-ELEM-TAG-420092",
+                "kmipkit_protocol::CredentialValue::try_from_ttlv",
+            ),
+            (
+                "KMIPKIT-ELEM-TAG-420092",
+                "kmipkit_protocol::HashedPasswordCredential::try_from_ttlv",
+            ),
+            (
+                "KMIPKIT-ELEM-TAG-420149",
+                "kmipkit_protocol::CredentialValue::try_from_ttlv",
+            ),
+            (
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-TICKET-TICKET",
+                "kmipkit_protocol::CredentialValue::try_from_ttlv",
+            ),
+            (
+                "KMIPKIT-ELEM-TAG-420156",
+                "kmipkit_protocol::CredentialValue::try_from_ttlv",
+            ),
+            (
+                "KMIPKIT-ELEM-TAG-420157",
+                "kmipkit_protocol::CredentialValue::try_from_ttlv",
+            ),
+            (
+                "KMIPKIT-ELEM-TAG-420157",
+                "kmipkit_protocol::HashedPasswordCredential::try_from_ttlv",
+            ),
+        ] {
+            let target = cases["normative_targets"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|target| target["target_id"] == target_id)
+                .unwrap();
+            let fixture = sample(target, elements).unwrap();
+            let result = invoke(symbol, &fixture, target, elements).unwrap();
+            assert!(result.is_ok(), "{target_id} via {symbol}: {:?}", result.err());
+            assert!(crate::local_wire::target_hash(&result.unwrap(), &fixture).is_ok());
+        }
+    }
 }
