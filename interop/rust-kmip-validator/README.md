@@ -137,3 +137,45 @@ suites, and fails below 90 percent. Only `local_cases_generated.rs` is excluded:
 it is a generated data-dispatch table verified by regeneration and every
 applicable local-model case. Handwritten-code coverage is measured from the
 current build rather than a fixed catalog count.
+
+## KMIPKIT-0092 public route matrix (WIP)
+
+The `matrix-local` command consumes the shared generator's Rust local JSONL
+rows. At build time the consumer hashes every canonical Rust row; a modified
+case, target, symbol, action, protocol version, encoding, transport, artifact
+commit, or execution route is rejected before a call can be recorded. Duplicate
+rows are rejected too. Artifact identity is compiled from the independently
+installed immutable release packages, whose bytes are checked by `build.rs`.
+
+Implemented model recipes invoke the exact public constructor or accessor
+named by the row. They frame TTLV through the public scoped value views, invoke
+the installed public decoder, re-encode, and compare complete values in memory.
+The package has no public generic encoder; consumer framing is not advertised
+as an additional library encoder route. Byte buffers are zeroizing and reports
+contain only redacted normalized-tree hashes, never raw bodies or values.
+Constructor output must also match its target fixture before it can pass.
+A recipe whose prerequisites cannot be constructed emits no invocation event.
+An unfinished recipe is pending coverage and cannot become an API limitation.
+
+The following command generates canonical local rows, runs the installed Rust
+consumer, validates its event schema, and applies the shared completeness gate:
+
+```sh
+interop/.local/rust-ci-venv/bin/python interop/rust-kmip-validator/tools/run_route_matrix.py
+```
+
+It writes `rust-local-route-evidence.json` and `matrix-summary.json` under
+`interop/rust-kmip-validator/results/routes/`. The gate currently fails:
+request-model, response-accessor, workflow-specific local fixtures, and network
+cell evidence are unfinished. A passing subset is never a full-matrix claim.
+The CI completeness gate deliberately preserves this failure while the PR is
+WIP. The separate live catalog fixture suite covers both API levels, both
+protocol versions and all six encoding/transport combinations, comparing
+normalized request and response trees; these are controlled fixtures and do
+not establish deployed vendor interoperability.
+
+Generated `route_calls_generated.rs` is rebuilt by
+`tools/generate_route_calls.py` from installed typed attribute metadata and the
+shared route manifest. Both generated dispatch tables are excluded from raw
+handwritten-source coverage; canonical route execution and freshness gates
+remain required for their behavior.

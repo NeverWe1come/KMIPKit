@@ -26,9 +26,10 @@ commands = [
     ["cargo", "+1.94", "build", "--locked", "--manifest-path", str(MANIFEST)],
     ["cargo", "+1.94", "test", "--locked", "--manifest-path", str(MANIFEST), "--all-features"],
     [sys.executable, "-m", "unittest", "discover", "-s", "interop/rust-kmip-validator/tests", "-p", "test_live.py", "-v"],
-    # This exhaustive generated lookup table is verified against every local
-    # catalog case and regeneration checks; it is excluded from handwritten-code coverage.
-    ["cargo", "+1.94", "llvm-cov", "report", "--manifest-path", str(MANIFEST), "--ignore-filename-regex", r"local_cases_generated\.rs", "--json", "--output-path", str(OUTPUT)],
+    [sys.executable, "-m", "unittest", "discover", "-s", "interop/rust-kmip-validator/tests", "-p", "test_matrix.py", "-v"],
+    # These exhaustive generated dispatch tables is verified against every local
+    # catalog case, actual matrix calls, and regeneration checks; it is excluded from handwritten-code coverage.
+    ["cargo", "+1.94", "llvm-cov", "report", "--manifest-path", str(MANIFEST), "--ignore-filename-regex", r"(?:local_cases|route_calls)_generated\.rs", "--json", "--output-path", str(OUTPUT)],
 ]
 for command in commands:
     subprocess.run(command, cwd=ROOT, env=env, check=True)

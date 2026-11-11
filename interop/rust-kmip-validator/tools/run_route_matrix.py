@@ -38,10 +38,12 @@ def main():
                 if cell['mode'] == 'local':
                     stream.write(json.dumps(cell, sort_keys=True, separators=(',', ':')) + '\n')
     evidence_path = args.output_dir / 'rust-local-route-evidence.json'
+    evidence_path.unlink(missing_ok=True)
     process = subprocess.run([str(args.validator), 'matrix-local', '--matrix', str(matrix),
                               '--output', str(evidence_path)], capture_output=True, text=True)
     summary = {'schema_valid': False, 'complete_matrix': False, 'invoked_local_cells': 0,
                'failed_local_cells': 0, 'gate_failure_code': 'runner_did_not_emit_evidence'}
+    summary['required_local_cells'] = sum(1 for line in matrix.read_text().splitlines() if line.strip())
     if evidence_path.exists():
         report = json.loads(evidence_path.read_bytes())
         schema = json.loads((ROOT / 'interop/shared/schemas/route-execution-evidence.schema.json').read_bytes())
@@ -60,8 +62,11 @@ def main():
                     expected_artifact_sha256=provenance['artifact_sha256'])
                 summary['complete_matrix'] = checked['complete_matrix'] and checked['all_invocations_passed']
                 summary['gate_failure_code'] = None if summary['complete_matrix'] else 'required_matrix_cells_failed'
-            except ValueError:
-                summary['gate_failure_code'] = 'missing_required_matrix_cells'
+            except ValueError as error:
+                summary['gate_failure_code'] = ('missing_required_matrix_cells'
+                    if str(error).startswith(('missing route execution cells:', 'route evidence collection misses full matrix cells:'))
+                    else 'route_evidence_contract_failed')
+    summary['pending_local_cells'] = max(0, summary['required_local_cells'] - summary['invoked_local_cells'])
     (args.output_dir / 'matrix-summary.json').write_text(json.dumps(summary, sort_keys=True, indent=2) + '\n')
     print(json.dumps(summary, sort_keys=True))
     return 0 if process.returncode == 0 and summary['complete_matrix'] else 1
