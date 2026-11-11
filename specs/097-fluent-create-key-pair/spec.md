@@ -78,3 +78,9 @@ protocol payload model, raw-message submission, a default algorithm/length,
 automatic polling/retry, or C/Java/Python methods. The underlying typed request
 continues to support server-selected fields for callers using the existing
 protocol API directly.
+
+Standard Rust trait implementations for the new builder are Rust language
+behavior, not separate cross-language KMIPKit product capabilities. Exact
+compiler-visible standard-trait paths may be recorded as approved exclusions
+under KMIPKIT-0097-FR-001 and FR-005; all explicit builder methods and new
+error variants remain public declarations with pending binding parity.
