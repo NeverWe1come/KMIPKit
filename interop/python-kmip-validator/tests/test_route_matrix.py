@@ -250,6 +250,20 @@ class RouteMatrixTests(unittest.TestCase):
                 pass
         self.assertNotIn('kmipkit.ttlv.ttlv_decode', trace.observed)
 
+    def test_discover_versions_checks_positive_native_response_and_public_field_read(self):
+        self.assertTrue(hasattr(self.runner, '_positive_fixture_cell'), 'a positive fixture runner is required')
+        catalog = copy.deepcopy(self.catalog)
+        catalog['test_cases'] = [case for case in catalog['test_cases'] if case['case_id'] == 'test-op-discover-versions']
+        symbols = {'kmipkit.extensions.client_batch_item_discover_versions',
+                   'kmipkit.client.BatchItemResult.supported_versions'}
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in manifest['routes'] if route['public_api_symbol'] in symbols]
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+        self.assertEqual(0, len(gaps), f'{len(gaps)} discovery cells lack positive checks')
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+        self.assertEqual(38, len(report['events']))
+        self.assertEqual(symbols, {event['public_api_symbol'] for event in report['events']})
+
     def test_decode_wire_digest_is_the_received_response(self):
         import hashlib
         from unittest.mock import patch
