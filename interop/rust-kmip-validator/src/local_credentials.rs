@@ -271,3 +271,23 @@ pub(crate) fn invoke(symbol: &str, sample: &Item, target_id: &str) -> Option<Res
     }
     None
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::local_wire::target_hash;
+
+    #[test]
+    fn credential_value_route_builds_the_branch_containing_its_target_tag() {
+        let sample = item(0x0042_0038, Value::enumeration(6)).unwrap();
+        let result = invoke(
+            "kmipkit_protocol::CredentialValue::into_ttlv",
+            &sample,
+            "KMIPKIT-ELEM-TAG-420038",
+        )
+        .unwrap()
+        .unwrap();
+
+        assert!(target_hash(&result, &sample).is_ok());
+    }
+}
