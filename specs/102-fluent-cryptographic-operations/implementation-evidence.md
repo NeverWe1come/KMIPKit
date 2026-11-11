@@ -114,3 +114,6 @@
   explicit adapters remain macro-free to satisfy the production AST audit.
   Formatting, Clippy, and the full client package test suite passed again. The
   updated exact-head Sonar measurement is pending publication.
+- Exact-head SonarCloud result for PR #185 at `13363e5c89bc8a7adb5a9a39f0e4fa188db8502e`: Quality Gate failed only `new_duplicated_lines_density` (7.4%, 176 duplicated lines of 2,388 new lines; threshold 3%). SonarCloud reported zero code-smell issues for this PR; the duplication gate was the sole failure.
+- Remediation keeps the public `EncryptBuilder` and `DecryptBuilder` structs and all method signatures concrete, while moving their shared request fields and assembly into private `CipherBuilderCore` helpers. The repository AST boundary test rejects public type aliases and opaque macros in production, so neither is used.
+- Local verification after the private-core refactor: `cargo fmt --all --check`, `git diff --check`, `cargo clippy -p kmipkit-client --all-targets --all-features --locked -- -D warnings`, `cargo test -p kmipkit-client --all-features --locked --quiet` (879 unit tests plus package integration and doctests; three external-KMS tests ignored), and the focused production source inventory boundary test all passed. The updated SonarCloud result will be recorded after pushing the remediation commit; PR #185 remains `[WIP]`.

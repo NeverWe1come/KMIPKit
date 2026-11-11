@@ -496,26 +496,136 @@ impl CryptoRequestFields {
     }
 }
 
+struct CipherBuilderCore {
+    unique_identifier: Option<UniqueIdentifier>,
+    fields: CryptoRequestFields,
+}
+
+impl CipherBuilderCore {
+    fn new() -> Self {
+        Self {
+            unique_identifier: None,
+            fields: CryptoRequestFields::default(),
+        }
+    }
+
+    fn set_data(&mut self, value: OperationData) {
+        self.fields.set_data(value);
+    }
+
+    fn set_parameters(&mut self, value: Structure) {
+        self.fields.set_cryptographic_parameters(value);
+    }
+
+    fn set_iv(&mut self, value: Vec<u8>) {
+        self.fields.set_iv_counter_nonce(value);
+    }
+
+    fn set_correlation(&mut self, value: Vec<u8>) {
+        self.fields.set_correlation_value(value);
+    }
+
+    const fn set_init_indicator(&mut self, value: bool) {
+        self.fields.init_indicator = Some(value);
+    }
+
+    const fn set_final_indicator(&mut self, value: bool) {
+        self.fields.final_indicator = Some(value);
+    }
+
+    fn set_aad(&mut self, value: Vec<u8>) {
+        self.fields
+            .set_authenticated_encryption_additional_data(value);
+    }
+
+    fn into_request<R>(self, adapter: &CipherRequestAdapter<R>) -> R {
+        self.fields
+            .into_cipher_request(self.unique_identifier, adapter)
+    }
+
+    fn set_encrypt_identifier(&mut self, value: UniqueIdentifier) {
+        self.unique_identifier = Some(value);
+    }
+
+    fn set_decrypt_identifier(&mut self, value: UniqueIdentifier) {
+        self.unique_identifier = Some(value);
+    }
+
+    fn set_encrypt_data(&mut self, value: OperationData) {
+        self.set_data(value);
+    }
+
+    fn set_decrypt_data(&mut self, value: OperationData) {
+        self.set_data(value);
+    }
+
+    fn set_encrypt_parameters(&mut self, value: Structure) {
+        self.set_parameters(value);
+    }
+
+    fn set_decrypt_parameters(&mut self, value: Structure) {
+        self.set_parameters(value);
+    }
+
+    fn set_encrypt_iv(&mut self, value: Vec<u8>) {
+        self.set_iv(value);
+    }
+
+    fn set_decrypt_iv(&mut self, value: Vec<u8>) {
+        self.set_iv(value);
+    }
+
+    fn set_encrypt_correlation(&mut self, value: Vec<u8>) {
+        self.set_correlation(value);
+    }
+
+    fn set_decrypt_correlation(&mut self, value: Vec<u8>) {
+        self.set_correlation(value);
+    }
+
+    const fn set_encrypt_init_indicator(&mut self, value: bool) {
+        self.set_init_indicator(value);
+    }
+
+    const fn set_decrypt_init_indicator(&mut self, value: bool) {
+        self.set_init_indicator(value);
+    }
+
+    const fn set_encrypt_final_indicator(&mut self, value: bool) {
+        self.set_final_indicator(value);
+    }
+
+    const fn set_decrypt_final_indicator(&mut self, value: bool) {
+        self.set_final_indicator(value);
+    }
+
+    fn set_encrypt_aad(&mut self, value: Vec<u8>) {
+        self.set_aad(value);
+    }
+
+    fn set_decrypt_aad(&mut self, value: Vec<u8>) {
+        self.set_aad(value);
+    }
+}
+
 /// A fluent builder for a typed KMIP Encrypt request.
 pub struct EncryptBuilder<'a> {
     execution: CryptoBuilderExecution<'a>,
-    unique_identifier: Option<UniqueIdentifier>,
-    fields: CryptoRequestFields,
+    core: CipherBuilderCore,
 }
 
 impl<'a> EncryptBuilder<'a> {
     fn new(client: &'a mut Client) -> Self {
         Self {
             execution: CryptoBuilderExecution::new(client),
-            unique_identifier: None,
-            fields: CryptoRequestFields::default(),
+            core: CipherBuilderCore::new(),
         }
     }
 
     /// Sets the optional key identifier without converting its representation.
     #[must_use]
     pub fn unique_identifier(mut self, value: UniqueIdentifier) -> Self {
-        self.unique_identifier = Some(value);
+        self.core.set_encrypt_identifier(value);
         self
     }
 
@@ -527,8 +637,9 @@ impl<'a> EncryptBuilder<'a> {
 
     /// Sets an explicitly typed non-byte Data value for expert KMIP use.
     #[must_use]
-    pub fn data_value(self, value: OperationData) -> Self {
-        set_crypto_field(self, value, CryptoRequestFields::set_data)
+    pub fn data_value(mut self, value: OperationData) -> Self {
+        self.core.set_encrypt_data(value);
+        self
     }
 
     /// Sets validated Cryptographic Parameters chosen by the caller.
@@ -539,48 +650,44 @@ impl<'a> EncryptBuilder<'a> {
 
     /// Sets an expert ordered Cryptographic Parameters Structure.
     #[must_use]
-    pub fn cryptographic_parameters_structure(self, value: Structure) -> Self {
-        set_crypto_field(
-            self,
-            value,
-            CryptoRequestFields::set_cryptographic_parameters,
-        )
+    pub fn cryptographic_parameters_structure(mut self, value: Structure) -> Self {
+        self.core.set_encrypt_parameters(value);
+        self
     }
 
     /// Sets the caller-selected IV, counter, or nonce bytes.
     #[must_use]
-    pub fn iv_counter_nonce(self, value: Vec<u8>) -> Self {
-        set_crypto_field(self, value, CryptoRequestFields::set_iv_counter_nonce)
+    pub fn iv_counter_nonce(mut self, value: Vec<u8>) -> Self {
+        self.core.set_encrypt_iv(value);
+        self
     }
 
     /// Sets the multipart correlation value.
     #[must_use]
-    pub fn correlation_value(self, value: Vec<u8>) -> Self {
-        set_crypto_field(self, value, CryptoRequestFields::set_correlation_value)
+    pub fn correlation_value(mut self, value: Vec<u8>) -> Self {
+        self.core.set_encrypt_correlation(value);
+        self
     }
 
     /// Sets the caller-controlled multipart Init Indicator.
     #[must_use]
     pub const fn init_indicator(mut self, value: bool) -> Self {
-        self.fields.init_indicator = Some(value);
+        self.core.set_encrypt_init_indicator(value);
         self
     }
 
     /// Sets the caller-controlled multipart Final Indicator.
     #[must_use]
     pub const fn final_indicator(mut self, value: bool) -> Self {
-        self.fields.final_indicator = Some(value);
+        self.core.set_encrypt_final_indicator(value);
         self
     }
 
     /// Sets caller-supplied authenticated-encryption additional data.
     #[must_use]
-    pub fn authenticated_encryption_additional_data(self, value: Vec<u8>) -> Self {
-        set_crypto_field(
-            self,
-            value,
-            CryptoRequestFields::set_authenticated_encryption_additional_data,
-        )
+    pub fn authenticated_encryption_additional_data(mut self, value: Vec<u8>) -> Self {
+        self.core.set_encrypt_aad(value);
+        self
     }
 
     /// Sets exchange-local transport options.
@@ -600,24 +707,17 @@ impl<'a> EncryptBuilder<'a> {
     fn into_request_and_execution(
         self,
     ) -> Result<(EncryptRequest, CryptoBuilderExecution<'a>), FluentBuildError> {
-        let Self {
-            execution,
-            unique_identifier,
-            fields,
-        } = self;
-        let request = fields.into_cipher_request(
-            unique_identifier,
-            &CipherRequestAdapter {
-                new: EncryptRequest::new,
-                with_cryptographic_parameters: EncryptRequest::with_cryptographic_parameters,
-                with_iv_counter_nonce: EncryptRequest::with_iv_counter_nonce,
-                with_correlation_value: EncryptRequest::with_correlation_value,
-                with_init_indicator: EncryptRequest::with_init_indicator,
-                with_final_indicator: EncryptRequest::with_final_indicator,
-                with_authenticated_encryption_additional_data:
-                    EncryptRequest::with_authenticated_encryption_additional_data,
-            },
-        );
+        let Self { execution, core } = self;
+        let request = core.into_request(&CipherRequestAdapter {
+            new: EncryptRequest::new,
+            with_cryptographic_parameters: EncryptRequest::with_cryptographic_parameters,
+            with_iv_counter_nonce: EncryptRequest::with_iv_counter_nonce,
+            with_correlation_value: EncryptRequest::with_correlation_value,
+            with_init_indicator: EncryptRequest::with_init_indicator,
+            with_final_indicator: EncryptRequest::with_final_indicator,
+            with_authenticated_encryption_additional_data:
+                EncryptRequest::with_authenticated_encryption_additional_data,
+        });
         validate_fluent_request(&request)?;
         Ok((request, execution))
     }
@@ -658,8 +758,7 @@ impl<'a> EncryptBuilder<'a> {
 /// A fluent builder for a typed KMIP Decrypt request.
 pub struct DecryptBuilder<'a> {
     execution: CryptoBuilderExecution<'a>,
-    unique_identifier: Option<UniqueIdentifier>,
-    fields: CryptoRequestFields,
+    core: CipherBuilderCore,
     authenticated_encryption_tag: Option<SecretBytes>,
 }
 
@@ -667,8 +766,7 @@ impl<'a> DecryptBuilder<'a> {
     fn new(client: &'a mut Client) -> Self {
         Self {
             execution: CryptoBuilderExecution::new(client),
-            unique_identifier: None,
-            fields: CryptoRequestFields::default(),
+            core: CipherBuilderCore::new(),
             authenticated_encryption_tag: None,
         }
     }
@@ -676,7 +774,7 @@ impl<'a> DecryptBuilder<'a> {
     /// Sets the optional key identifier without converting its representation.
     #[must_use]
     pub fn unique_identifier(mut self, value: UniqueIdentifier) -> Self {
-        self.unique_identifier = Some(value);
+        self.core.set_decrypt_identifier(value);
         self
     }
 
@@ -688,8 +786,9 @@ impl<'a> DecryptBuilder<'a> {
 
     /// Sets an explicitly typed non-byte Data value for expert KMIP use.
     #[must_use]
-    pub fn data_value(self, value: OperationData) -> Self {
-        set_crypto_field(self, value, CryptoRequestFields::set_data)
+    pub fn data_value(mut self, value: OperationData) -> Self {
+        self.core.set_decrypt_data(value);
+        self
     }
 
     /// Sets validated Cryptographic Parameters chosen by the caller.
@@ -700,48 +799,44 @@ impl<'a> DecryptBuilder<'a> {
 
     /// Sets an expert ordered Cryptographic Parameters Structure.
     #[must_use]
-    pub fn cryptographic_parameters_structure(self, value: Structure) -> Self {
-        set_crypto_field(
-            self,
-            value,
-            CryptoRequestFields::set_cryptographic_parameters,
-        )
+    pub fn cryptographic_parameters_structure(mut self, value: Structure) -> Self {
+        self.core.set_decrypt_parameters(value);
+        self
     }
 
     /// Sets the caller-selected IV, counter, or nonce bytes.
     #[must_use]
-    pub fn iv_counter_nonce(self, value: Vec<u8>) -> Self {
-        set_crypto_field(self, value, CryptoRequestFields::set_iv_counter_nonce)
+    pub fn iv_counter_nonce(mut self, value: Vec<u8>) -> Self {
+        self.core.set_decrypt_iv(value);
+        self
     }
 
     /// Sets the multipart correlation value.
     #[must_use]
-    pub fn correlation_value(self, value: Vec<u8>) -> Self {
-        set_crypto_field(self, value, CryptoRequestFields::set_correlation_value)
+    pub fn correlation_value(mut self, value: Vec<u8>) -> Self {
+        self.core.set_decrypt_correlation(value);
+        self
     }
 
     /// Sets the caller-controlled multipart Init Indicator.
     #[must_use]
     pub const fn init_indicator(mut self, value: bool) -> Self {
-        self.fields.init_indicator = Some(value);
+        self.core.set_decrypt_init_indicator(value);
         self
     }
 
     /// Sets the caller-controlled multipart Final Indicator.
     #[must_use]
     pub const fn final_indicator(mut self, value: bool) -> Self {
-        self.fields.final_indicator = Some(value);
+        self.core.set_decrypt_final_indicator(value);
         self
     }
 
     /// Sets caller-supplied authenticated-encryption additional data.
     #[must_use]
-    pub fn authenticated_encryption_additional_data(self, value: Vec<u8>) -> Self {
-        set_crypto_field(
-            self,
-            value,
-            CryptoRequestFields::set_authenticated_encryption_additional_data,
-        )
+    pub fn authenticated_encryption_additional_data(mut self, value: Vec<u8>) -> Self {
+        self.core.set_decrypt_aad(value);
+        self
     }
 
     /// Sets caller-supplied authenticated-encryption tag bytes.
@@ -770,23 +865,19 @@ impl<'a> DecryptBuilder<'a> {
     ) -> Result<(DecryptRequest, CryptoBuilderExecution<'a>), FluentBuildError> {
         let Self {
             execution,
-            unique_identifier,
-            fields,
+            core,
             authenticated_encryption_tag,
         } = self;
-        let mut request = fields.into_cipher_request(
-            unique_identifier,
-            &CipherRequestAdapter {
-                new: DecryptRequest::new,
-                with_cryptographic_parameters: DecryptRequest::with_cryptographic_parameters,
-                with_iv_counter_nonce: DecryptRequest::with_iv_counter_nonce,
-                with_correlation_value: DecryptRequest::with_correlation_value,
-                with_init_indicator: DecryptRequest::with_init_indicator,
-                with_final_indicator: DecryptRequest::with_final_indicator,
-                with_authenticated_encryption_additional_data:
-                    DecryptRequest::with_authenticated_encryption_additional_data,
-            },
-        );
+        let mut request = core.into_request(&CipherRequestAdapter {
+            new: DecryptRequest::new,
+            with_cryptographic_parameters: DecryptRequest::with_cryptographic_parameters,
+            with_iv_counter_nonce: DecryptRequest::with_iv_counter_nonce,
+            with_correlation_value: DecryptRequest::with_correlation_value,
+            with_init_indicator: DecryptRequest::with_init_indicator,
+            with_final_indicator: DecryptRequest::with_final_indicator,
+            with_authenticated_encryption_additional_data:
+                DecryptRequest::with_authenticated_encryption_additional_data,
+        });
         if let Some(value) = authenticated_encryption_tag {
             request = request.with_authenticated_encryption_tag(value);
         }
@@ -1381,18 +1472,6 @@ impl<'a> MacVerifyBuilder<'a> {
 pub struct HashBuilder<'a> {
     execution: CryptoBuilderExecution<'a>,
     fields: CryptoRequestFields,
-}
-
-impl CryptoFieldsOwner for EncryptBuilder<'_> {
-    fn crypto_fields_mut(&mut self) -> &mut CryptoRequestFields {
-        &mut self.fields
-    }
-}
-
-impl CryptoFieldsOwner for DecryptBuilder<'_> {
-    fn crypto_fields_mut(&mut self) -> &mut CryptoRequestFields {
-        &mut self.fields
-    }
 }
 
 impl CryptoFieldsOwner for HashBuilder<'_> {
