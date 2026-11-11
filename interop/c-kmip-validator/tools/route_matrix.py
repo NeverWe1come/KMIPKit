@@ -446,11 +446,15 @@ def event_from_cell(cell: dict, wire: bytes, index: int) -> dict:
     return event
 
 
-def rejected_tag_event(cell: dict, wire: bytes, index: int) -> dict:
+def rejected_input_event(cell: dict, input_sha256: str, index: int) -> dict:
     event = invoked_event(cell, index)
     event.update(decode_outcome='rejected', decode_rejection_code='tag_not_allocated',
-                 decode_input_sha256=hashlib.sha256(wire).hexdigest())
+                 decode_input_sha256=input_sha256)
     return event
+
+
+def rejected_tag_event(cell: dict, wire: bytes, index: int) -> dict:
+    return rejected_input_event(cell, hashlib.sha256(wire).hexdigest(), index)
 
 
 def run(output: Path, binary: Path | None = None) -> int:
@@ -521,9 +525,7 @@ def run(output: Path, binary: Path | None = None) -> int:
             if cell['public_api_symbol'] in result['invoked_symbols']:
                 event = cell_fields(cell)
                 if target.get('allocation') in {'reserved', 'unused'}:
-                    event = invoked_event(cell, index)
-                    event.update(decode_outcome='rejected', decode_rejection_code='tag_not_allocated',
-                                 decode_input_sha256=result['decode_input_sha256'])
+                    event = rejected_input_event(cell, result['decode_input_sha256'], index)
                 else:
                     event.update(status='passed', invocation_count=1, invocation_id=f'c-tag-range-{index}')
                     event['response_tree_sha256'] = result['tree_sha256']
