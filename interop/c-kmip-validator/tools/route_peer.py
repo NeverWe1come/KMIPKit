@@ -161,18 +161,16 @@ def numbers(node, tag):
     return [int.from_bytes(item[2], 'big') for item in descendants(node, tag)]
 
 
-def request_payload_field_present(target, batch_item, catalog):
+def request_payload_field_present(target, batch_item, targets, codec):
     """Check a request payload field under its exact operation's payload."""
     if (target.get('kind') != 'operation_payload_field'
             or target.get('role') != 'request'
             or not isinstance(target.get('operation_id'), str)
             or batch_item[0] != 0x42000F or batch_item[1] != 1):
         return False
-    targets = {item['target_id']: item for item in catalog['normative_targets']}
     operation = targets.get(target['operation_id'])
     if operation is None or operation.get('kind') != 'operation':
         return False
-    codec = Codec(catalog)
     operation_value = codec.values.get((codec.tag('Operation'), normalize(operation['name'])))
     field_tag = codec.tags.get(normalize(target.get('name', '')))
     if operation_value is None or field_tag is None:
@@ -377,6 +375,7 @@ def verify_consumer_provenance(report, artifact_sha256, catalog_sha256):
 
 def execute_network_cells(binary, catalog, manifest):
     codec = Codec(catalog)
+    targets_by_id = {target['target_id']: target for target in catalog['normative_targets']}
     events, keys, checks = [], set(), []
     all_cells = list(iter_cells(catalog, manifest, languages=('c',)))
     artifact_sha256 = sha256(INSTALL / 'lib/libkmipkit_ffi.so')
@@ -508,7 +507,7 @@ def execute_network_cells(binary, catalog, manifest):
                                             'kmipkit_get_attributes_request_to_ttlv_payload',
                                             'kmipkit_get_attribute_list_request_to_ttlv_payload'}:
                                         continue
-                                target = next(t for t in catalog['normative_targets'] if t['target_id'] == cell['target_id'])
+                                target = targets_by_id[cell['target_id']]
                                 if target['kind'] == 'operation':
                                     if target['name'] != operation_name:
                                         continue
@@ -517,7 +516,8 @@ def execute_network_cells(binary, catalog, manifest):
                                     # request tree during construction and send.
                                     # A response decode cannot prove a request field.
                                     if (not is_network or cell['action'] == 'decode'
-                                            or not any(request_payload_field_present(target, item, catalog)
+                                            or not any(request_payload_field_present(target, item,
+                                                targets_by_id, codec)
                                                        for item in descendants(request_tree, 0x42000F))):
                                         continue
                                 else:
