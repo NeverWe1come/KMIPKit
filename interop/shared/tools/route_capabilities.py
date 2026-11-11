@@ -147,6 +147,20 @@ def _function_operation_id(function_id, operations):
     return max(matches, key=lambda operation_id: len(normalized(operations[operation_id]['name'])), default=None)
 
 
+def _async_execution_entrypoint(api, language, operation_name, package_symbols):
+    expected = normalized(operation_name)
+    for function in api['functions']:
+        function_id = function['id']
+        if not function_id.startswith('client_execute_'):
+            continue
+        if normalized(function_id.removeprefix('client_execute_')) != expected:
+            continue
+        symbol = function_entrypoint(function, language)
+        if symbol and symbol in package_symbols[language]:
+            return symbol
+    return None
+
+
 @lru_cache(maxsize=None)
 def construction_inventory(root, commit):
     """Enumerate operation constructors from immutable public source.
@@ -362,11 +376,22 @@ def build_manifest(root=ROOT, commit='9a16cc90a12205101d22a38501a5e74c665df4dc')
         suffix = re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', suffix).lower()
         route_id = f'{language}.{family}.{suffix}'
         execution_id = None if mode == 'local' else language + '.execute.typed-batch'
-        is_async_send = operation_id and normalized(operations[operation_id]['name']) in ASYNC and mode == 'network' and language != 'rust'
+        is_async_send = operation_id and normalized(operations[operation_id]['name']) in ASYNC and mode == 'network'
         if is_async_send:
             execution_id = language + '.execute.' + normalized(operations[operation_id]['name'])
-            data['execution_routes'].append({'execution_route_id': execution_id,
-                'language': language, 'public_api_symbol': symbol, 'source_paths': [path]})
+            execution_symbol = _async_execution_entrypoint(
+                api, language, operations[operation_id]['name'], package_symbols)
+            if execution_symbol is None:
+                raise ValueError(f'missing public async executor for {language} {operations[operation_id]["name"]}')
+            execution_route = {'execution_route_id': execution_id,
+                'language': language, 'public_api_symbol': execution_symbol,
+                'source_paths': [execution[language][1]]}
+            existing_execution = next((row for row in data['execution_routes']
+                if row['execution_route_id'] == execution_id), None)
+            if existing_execution and existing_execution != execution_route:
+                raise ValueError(f'conflicting public async executors for {execution_id}')
+            if existing_execution is None:
+                data['execution_routes'].append(execution_route)
         combinations = ([{'encoding': 'TTLV', 'transport': None}] if mode == 'local' else
             [{'encoding': encoding, 'transport': transport}
              for encoding in ('TTLV', 'JSON', 'XML') for transport in ('raw_tls', 'https')])
