@@ -24,7 +24,7 @@ def test_render_is_inspection_only_and_transfers_native_owner(monkeypatch, name)
     }))
     owner = object()
     monkeypatch.setattr(client, "_wrap_owned_handle", lambda cls, pointer: owner if cls is credentials.SecretBytes else None)
-    with ttlv.CodecLimits.defaults() as limits:
+    with ttlv.codec_limits_defaults() as limits:
         assert getattr(result, name)(limits) is owner
     assert len(calls) == 1
     assert "41" not in repr(result)
@@ -33,8 +33,26 @@ def test_render_is_inspection_only_and_transfers_native_owner(monkeypatch, name)
 @pytest.mark.parametrize("name", ["ttlv_hex", "json", "xml"])
 def test_render_requires_live_response_and_explicit_limits(name):
     result = client.BatchItemResult(client.BatchOutcome.COMPLETED, 0, None, None, None)
-    with ttlv.CodecLimits.defaults() as limits:
+    with ttlv.codec_limits_defaults() as limits:
         with pytest.raises(errors.InvalidInputError):
             getattr(result, name)(limits)
     with pytest.raises(errors.InvalidInputError):
         getattr(result, name)(None)
+
+
+@pytest.mark.parametrize("status,kind", [(4, errors.InvalidInputError), (6, errors.ResourceLimitError), (7, errors.KmipKitError)])
+@pytest.mark.parametrize("name", ["ttlv_hex", "json", "xml"])
+def test_render_failures_preserve_binding_categories_and_redact_payload(monkeypatch, name, status, kind):
+    result = client.BatchItemResult(client.BatchOutcome.COMPLETED, 0, None, None, None)
+    class Item:
+        def _pointer(self):
+            return ffi.cast("kmipkit_client_batch_item_response_t *", 41)
+    object.__setattr__(result, "_native_response_item", Item())
+    monkeypatch.setattr(client, "lib", SimpleNamespace(**{
+        "kmipkit_client_batch_item_response_" + name: lambda *args: status,
+    }))
+    with ttlv.codec_limits_defaults() as limits:
+        with pytest.raises(kind) as rejected:
+            getattr(result, name)(limits)
+    assert "fixture-v1" not in str(rejected.value)
+    assert rejected.value.__cause__ is None

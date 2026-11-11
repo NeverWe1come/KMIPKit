@@ -8585,3 +8585,101 @@ pub extern "C" fn kmipkit_attribute_set_into_items(
         SUCCESS
     })
 }
+
+fn response_view_error_status(error: kmipkit_client::ResponseEncodingError) -> i32 {
+    match error {
+        kmipkit_client::ResponseEncodingError::InvalidResponseTree => ERROR_INVALID_INPUT,
+        kmipkit_client::ResponseEncodingError::LimitExceeded
+        | kmipkit_client::ResponseEncodingError::AllocationFailed => ERROR_RESOURCE_LIMIT,
+        _ => ERROR_INTERNAL,
+    }
+}
+
+fn render_response_view(
+    item: *mut kmipkit_client_batch_item_response_t,
+    limits: *mut kmipkit_codec_limits_t,
+    output: *mut *mut kmipkit_secret_bytes_t,
+    render: fn(
+        &kmipkit_client::ClientBatchItemResponse,
+        &CodecLimits,
+    ) -> Result<Zeroizing<String>, kmipkit_client::ResponseEncodingError>,
+) -> i32 {
+    let out = out_slot!(output);
+    let item_handle = read_handle!(item, ClientBatchItemResponse);
+    let item = try_ffi!(batch_response_item_from_handle(&item_handle));
+    let limits_handle = read_handle!(limits, CodecLimits);
+    let HandleValue::CodecLimits(limits) = &limits_handle.value else {
+        return record_ffi_error(ERROR_INVALID_INPUT);
+    };
+    let mut rendered = try_ffi!(render(item, limits).map_err(response_view_error_status));
+    // Move the allocation into the established zeroizing owner, without an unowned body copy.
+    let bytes = std::mem::take(&mut *rendered).into_bytes();
+    *out = try_ffi!(try_make_handle(
+        Kind::SecretBytes,
+        HandleValue::SecretBytes(SecretBytes::new(bytes)),
+    ));
+    SUCCESS
+}
+
+/// Renders the complete retained Response Message as canonical uppercase TTLV hex under caller limits.
+///
+/// This inspection-only call returns an independently owned zeroizing UTF-8 byte owner. Use
+/// `kmipkit_secret_bytes_with_bytes` for scoped access and `kmipkit_secret_bytes_release` to release
+/// it. The output is null on failure; status and diagnostics never include the response body.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_ttlv_hex(
+    item: *mut kmipkit_client_batch_item_response_t,
+    limits: *mut kmipkit_codec_limits_t,
+    out_rendered: *mut *mut kmipkit_secret_bytes_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        render_response_view(
+            item,
+            limits,
+            out_rendered,
+            kmipkit_client::ClientBatchItemResponse::ttlv_hex,
+        )
+    })
+}
+
+/// Renders the complete retained Response Message as KMIP JSON under caller limits.
+///
+/// This inspection-only call returns an independently owned zeroizing UTF-8 byte owner. Use
+/// `kmipkit_secret_bytes_with_bytes` for scoped access and `kmipkit_secret_bytes_release` to release
+/// it. The output is null on failure; status and diagnostics never include the response body.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_json(
+    item: *mut kmipkit_client_batch_item_response_t,
+    limits: *mut kmipkit_codec_limits_t,
+    out_rendered: *mut *mut kmipkit_secret_bytes_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        render_response_view(
+            item,
+            limits,
+            out_rendered,
+            kmipkit_client::ClientBatchItemResponse::json,
+        )
+    })
+}
+
+/// Renders the complete retained Response Message as KMIP XML under caller limits.
+///
+/// This inspection-only call returns an independently owned zeroizing UTF-8 byte owner. Use
+/// `kmipkit_secret_bytes_with_bytes` for scoped access and `kmipkit_secret_bytes_release` to release
+/// it. The output is null on failure; status and diagnostics never include the response body.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_response_xml(
+    item: *mut kmipkit_client_batch_item_response_t,
+    limits: *mut kmipkit_codec_limits_t,
+    out_rendered: *mut *mut kmipkit_secret_bytes_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        render_response_view(
+            item,
+            limits,
+            out_rendered,
+            kmipkit_client::ClientBatchItemResponse::xml,
+        )
+    })
+}

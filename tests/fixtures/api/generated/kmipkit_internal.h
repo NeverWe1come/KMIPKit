@@ -3276,6 +3276,24 @@ int32_t kmipkit_symmetric_key_builder_set_length(kmipkit_symmetric_key_builder_t
 int32_t kmipkit_symmetric_key_builder_set_name(kmipkit_symmetric_key_builder_t * builder, const uint8_t * name_data, uint64_t name_length);
 /* KMIPKIT-0091-FR-009, KMIPKIT-0091-FR-015, KMIPKIT-0091-FR-016 */
 int32_t kmipkit_symmetric_key_builder_set_usage_mask(kmipkit_symmetric_key_builder_t * builder, int32_t usage_mask);
+/* Renders the complete retained ResponseMessage, including header and ordered batch, under caller codec limits.
+ * Returns independently owned zeroizing UTF-8 bytes. Use kmipkit_secret_bytes_with_bytes for scoped access and kmipkit_secret_bytes_release to release them.
+ * Output is null on failure. Errors contain no body. This inspection path never sends data.
+ */
+/* KMIPKIT-0095-FR-001, KMIPKIT-0095-FR-002, KMIPKIT-0095-FR-003, KMIPKIT-0095-FR-004, KMIPKIT-0095-FR-005 */
+int32_t kmipkit_client_batch_item_response_ttlv_hex(kmipkit_client_batch_item_response_t * item, kmipkit_codec_limits_t * limits, kmipkit_secret_bytes_t ** out_rendered);
+/* Renders the complete retained ResponseMessage, including header and ordered batch, under caller codec limits.
+ * Returns independently owned zeroizing UTF-8 bytes. Use kmipkit_secret_bytes_with_bytes for scoped access and kmipkit_secret_bytes_release to release them.
+ * Output is null on failure. Errors contain no body. This inspection path never sends data.
+ */
+/* KMIPKIT-0095-FR-001, KMIPKIT-0095-FR-002, KMIPKIT-0095-FR-003, KMIPKIT-0095-FR-004, KMIPKIT-0095-FR-005 */
+int32_t kmipkit_client_batch_item_response_json(kmipkit_client_batch_item_response_t * item, kmipkit_codec_limits_t * limits, kmipkit_secret_bytes_t ** out_rendered);
+/* Renders the complete retained ResponseMessage, including header and ordered batch, under caller codec limits.
+ * Returns independently owned zeroizing UTF-8 bytes. Use kmipkit_secret_bytes_with_bytes for scoped access and kmipkit_secret_bytes_release to release them.
+ * Output is null on failure. Errors contain no body. This inspection path never sends data.
+ */
+/* KMIPKIT-0095-FR-001, KMIPKIT-0095-FR-002, KMIPKIT-0095-FR-003, KMIPKIT-0095-FR-004, KMIPKIT-0095-FR-005 */
+int32_t kmipkit_client_batch_item_response_xml(kmipkit_client_batch_item_response_t * item, kmipkit_codec_limits_t * limits, kmipkit_secret_bytes_t ** out_rendered);
 /* KMIPKIT-0006-FR-021, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_message_extension_view_ttlv(kmipkit_message_extension_view_t * extension, kmipkit_ttlv_structure_t ** out_structure);
 /* KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
