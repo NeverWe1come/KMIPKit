@@ -76,6 +76,61 @@ def scalar_enum_value_targets(targets, owner):
                 for parent in target.get('parent_element_ids', []))})
 
 
+def subtree_target_ids(targets, roots, *, include_parent_tags=False, include_name_tags=False):
+    """Expand exact normative roots through their children without name collisions."""
+    by_id = {target['target_id']: target for target in targets}
+    selected = {target_id for target_id in roots if target_id in by_id}
+    traversal_roots = set(selected)
+    if include_parent_tags:
+        selected.update(parent for target_id in traversal_roots
+                        for parent in by_id[target_id].get('parent_element_ids', [])
+                        if parent in by_id and by_id[parent]['kind'] == 'tag')
+    changed = True
+    while changed:
+        previous = len(traversal_roots)
+        traversal_roots.update(target['target_id'] for target in targets
+            if traversal_roots.intersection(target.get('parent_element_ids', [])))
+        changed = len(traversal_roots) != previous
+    selected.update(traversal_roots)
+    if include_name_tags:
+        names = {norm(by_id[target_id]['name']) for target_id in selected}
+        selected.update(target['target_id'] for target in targets
+            if target['kind'] == 'tag' and norm(target['name']) in names)
+    return sorted(selected)
+
+
+def credential_function_target_ids(function_id, targets):
+    """Map credential TTLV converters to the credential branches they encode."""
+    stem = function_id
+    for suffix in ('_into_ttlv', '_try_from_ttlv', '_from_ttlv'):
+        if stem.endswith(suffix):
+            stem = stem.removesuffix(suffix)
+            break
+    if 'credential' not in stem:
+        return None
+    credential_targets = [target for target in targets if target['kind'] == 'credential']
+    outer_id = 'KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL'
+    variants = [target for target in credential_targets if target['target_id'] != outer_id]
+    if stem == 'credential_value':
+        roots = [target['target_id'] for target in variants]
+    elif stem == 'credential':
+        roots = [outer_id, *(target['target_id'] for target in variants)]
+    else:
+        variant_name = norm(stem.removesuffix('_credential'))
+        roots = [target['target_id'] for target in variants
+                 if norm(target['name']) == variant_name]
+    if not roots:
+        return None
+    selected = set(subtree_target_ids(targets, roots, include_name_tags=True))
+    by_id = {target['target_id']: target for target in targets}
+    value_names = {norm(by_id[root]['name']) for root in roots if root in by_id and root != outer_id}
+    selected.update(target['target_id'] for target in targets
+        if target['kind'] == 'enumeration_value'
+        and 'KMIPKIT-ELEM-ENUMERATION-CREDENTIAL-TYPE' in target.get('parent_element_ids', [])
+        and norm(target['name']) in value_names)
+    return sorted(selected)
+
+
 def model_inventory(root, commit, source, api, targets):
     commit = validate_git_commit(commit)
     candidates = {}
@@ -198,13 +253,14 @@ def model_inventory(root, commit, source, api, targets):
     generated = source(root, commit, 'crates/kmipkit-protocol/src/typed_attributes_generated.rs')
     markers = re.findall(r'element_id: "([^"]+)",\s*source_name: "([^"]+)",\s*marker_name: "([^"]+)"', generated)
     for element_id, _source_name, marker in markers:
+        attribute_targets = subtree_target_ids(targets, [element_id], include_parent_tags=True)
         for method in ('new', 'from_item'):
             symbol = f'kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::{marker}>::{method}'
-            add('rust', symbol, 'crates/kmipkit-protocol/src/typed_attributes.rs', [element_id, marker],
-                exclude_object_structures=True)
+            add('rust', symbol, 'crates/kmipkit-protocol/src/typed_attributes.rs', [element_id],
+                exact_target_ids=attribute_targets)
         typed_push = f'kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::{marker}>'
-        add('rust', typed_push, 'crates/kmipkit-protocol/src/attribute.rs', [element_id, marker],
-            exclude_object_structures=True)
+        add('rust', typed_push, 'crates/kmipkit-protocol/src/attribute.rs', [element_id],
+            exact_target_ids=attribute_targets)
     for method in ('try_new', 'try_push'):
         add('rust', f'kmipkit_protocol::AttributeSet::{method}',
             'crates/kmipkit-protocol/src/attribute.rs', [], attributes=True)
@@ -215,8 +271,8 @@ def model_inventory(root, commit, source, api, targets):
         for element_id, _source_name, marker in markers:
             symbol = f'kmipkit_protocol::{owner}::from_typed::<kmipkit_protocol::attribute::typed::{marker}>'
             add('rust', symbol,
-                'crates/kmipkit-protocol/src/attribute.rs', [element_id, marker],
-                exclude_object_structures=True)
+                'crates/kmipkit-protocol/src/attribute.rs', [element_id],
+                exact_target_ids=subtree_target_ids(targets, [element_id], include_parent_tags=True))
 
     # Inspect binding facades directly: the older function metadata sometimes
     # points at an internal JNI trampoline rather than the installed public API.
