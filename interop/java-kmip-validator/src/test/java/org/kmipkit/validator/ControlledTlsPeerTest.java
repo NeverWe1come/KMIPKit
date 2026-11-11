@@ -126,6 +126,53 @@ class ControlledTlsPeerTest {
     }
 
     @Test
+    void controlledQueryProducesPerRouteEvidenceForBothProtocolVersions() throws Exception {
+        Path reportPath = Path.of(System.getProperty("kmipkit.routeEvidenceOutput",
+                "build/route-execution-evidence.json"));
+        Files.deleteIfExists(reportPath);
+
+        for (String protocolVersion : List.of("2.0", "2.1")) {
+            byte[] serverCertificatePem = fixture("server-cert.pem");
+            byte[] serverPrivateKeyPem = fixture("server-key.pem");
+            byte[] clientCertificatePem = fixture("client-cert.pem");
+            byte[] clientPrivateKeyPem = fixture("client-key.pem");
+            SSLServerSocket listener = listener(certificate(serverCertificatePem),
+                    privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+            FutureTask<byte[]> peer = new FutureTask<>(() -> serveOneResponse(listener,
+                    queryResponse("2.0".equals(protocolVersion) ? 0 : 1)));
+            Thread peerThread = new Thread(peer, "java-validator-query-route-evidence-peer-" + protocolVersion);
+            peerThread.setDaemon(true);
+            peerThread.start();
+
+            Path connectionFile = temporaryDirectory.resolve("route-evidence-" + protocolVersion + ".json");
+            Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                    clientCertificatePem, clientPrivateKeyPem, false, protocolVersion));
+            var catalog = CatalogLoader.load(Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json"));
+            var query = catalog.cases().stream().filter(value -> value.caseId().equals("test-op-query"))
+                    .findFirst().orElseThrow();
+
+            JavaKmipDriver.CaseOutcome outcome;
+            try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile))) {
+                outcome = driver.execute(query);
+            } finally {
+                listener.close();
+            }
+            byte[] request = peer.get(15, TimeUnit.SECONDS);
+            assertEquals("passed", outcome.status(), protocolVersion + ": " + outcome);
+            assertEquals(0x18L, requestOperation(request),
+                    "The controlled peer must parse the installed Query request operation.");
+        }
+
+        assertTrue(Files.isRegularFile(reportPath),
+                "Installed Query calls against the controlled peer must emit route execution evidence.");
+        JsonNode report = new ObjectMapper().readTree(reportPath.toFile());
+        assertEquals("java", report.path("language").asText());
+        assertEquals(20, report.path("events").size());
+        assertEquals("test-op-query", report.path("case_ids").get(0).asText());
+        assertEquals("test-norm-tag-range-kmipkit-range-001", report.path("case_ids").get(1).asText());
+    }
+
+    @Test
     void typedClientPreservesKmip20OnTheWire() throws Exception {
         byte[] serverCertificatePem = fixture("server-cert.pem");
         byte[] serverPrivateKeyPem = fixture("server-key.pem");
