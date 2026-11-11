@@ -44,16 +44,20 @@ class InstalledRouteProbeWorkflowTests(unittest.TestCase):
     def test_java_workflow_probes_and_persists_installed_package_routes(self):
         workflow = Path(__file__).parents[3] / ".github" / "workflows" / "interop-java.yml"
         content = workflow.read_text(encoding="utf-8")
-
-        self.assertIn("name: Probe installed Java package public routes", content)
-        self.assertIn("../../interop/shared/tools/probe_route_artifact.py", content)
-        self.assertIn("--language java", content)
-        self.assertIn("--artifact build/maven-repository/org/kmipkit/kmipkit-java/1.0.0/kmipkit-java-1.0.0-linux-glibc-x86_64.jar", content)
-        self.assertIn("--provenance build/artifact-manifest.json", content)
-        self.assertIn("| tee build/route-capability-probe.json", content)
-        self.assertIn("name: Upload Java route capability evidence", content)
-        self.assertIn("name: java-route-capability-evidence", content)
-        self.assertIn("path: interop/java-kmip-validator/build/route-capability-probe.json", content)
+        required_fragments = (
+            "name: Probe installed Java package public routes",
+            "../../interop/shared/tools/probe_route_artifact.py",
+            "--language java",
+            "--artifact build/maven-repository/org/kmipkit/kmipkit-java/1.0.0/kmipkit-java-1.0.0-linux-glibc-x86_64.jar",
+            "--provenance build/artifact-manifest.json",
+            "| tee build/route-capability-probe.json",
+            "name: Upload Java route capability evidence",
+            "name: java-route-capability-evidence",
+            "path: interop/java-kmip-validator/build/route-capability-probe.json",
+        )
+        for fragment in required_fragments:
+            with self.subTest(fragment=fragment):
+                self.assertIn(fragment, content)
         self.assertLess(
             content.index("name: Build and install the pinned JNI package"),
             content.index("name: Probe installed Java package public routes"),
