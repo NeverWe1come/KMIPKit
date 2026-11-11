@@ -94,7 +94,7 @@ class RouteMatrixTests(unittest.TestCase):
 
     def test_tag_allocation_ranges_check_each_boundary_through_the_decoder(self):
         from artifact_support import ROOT, INSTALL
-        from route_ttlv import TreeAbi
+        from route_ttlv import TreeAbi, encode
         catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
         abi = TreeAbi(INSTALL / 'lib/libkmipkit_ffi.so')
         targets = [target for target in catalog['normative_targets'] if target['kind'] == 'tag_range']
@@ -105,6 +105,11 @@ class RouteMatrixTests(unittest.TestCase):
                 self.assertIn('kmipkit_ttlv_decode', result['invoked_symbols'])
                 if target['allocation'] == 'extension':
                     self.assertIn('kmipkit_ttlv_item_create', result['invoked_symbols'])
+                else:
+                    wires = [encode((tag, 5, (7).to_bytes(4, 'big')))
+                             for tag in self.runner.range_boundary_tags(target)]
+                    self.assertEqual(result['rejection_code'], 11)
+                    self.assertEqual(result['decode_input_sha256'], hashlib.sha256(b''.join(wires)).hexdigest())
                 self.assertEqual(result['sample_count'], 2)
 
     def test_ttlv_encoding_parser_keeps_compound_types_distinct(self):
