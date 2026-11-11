@@ -170,11 +170,8 @@ class ControlledTlsPeerTest {
         SSLServerSocket listener = listener(certificate(serverCertificatePem), privateKey(serverPrivateKeyPem),
                 certificate(clientCertificatePem));
         var catalog = CatalogLoader.load(Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json"));
-        var operationCases = List.of("test-op-cancel", "test-op-poll", "test-op-process",
-                "test-op-query-asynchronous-requests").stream()
-                .map(caseId -> catalog.cases().stream().filter(testCase -> testCase.caseId().equals(caseId))
-                        .findFirst().orElseThrow())
-                .toList();
+        var operationCases = casesById(catalog, "test-op-cancel", "test-op-poll", "test-op-process",
+                "test-op-query-asynchronous-requests");
         var peer = new FutureTask<List<byte[]>>(() -> serveAsynchronousResponses(listener, operationCases.size()));
         Thread peerThread = new Thread(peer, "java-validator-controlled-async-peer");
         peerThread.setDaemon(true);
@@ -211,10 +208,7 @@ class ControlledTlsPeerTest {
         SSLServerSocket listener = listener(certificate(serverCertificatePem), privateKey(serverPrivateKeyPem),
                 certificate(clientCertificatePem));
         var catalog = CatalogLoader.load(Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json"));
-        var operationCases = List.of("test-op-cancel", "test-op-poll").stream()
-                .map(caseId -> catalog.cases().stream().filter(testCase -> testCase.caseId().equals(caseId))
-                        .findFirst().orElseThrow())
-                .toList();
+        var operationCases = casesById(catalog, "test-op-cancel", "test-op-poll");
         var peer = new FutureTask<List<byte[]>>(() -> serveAsynchronousResponses(listener, operationCases.size(), 0));
         Thread peerThread = new Thread(peer, "java-validator-controlled-kmip20-async-peer");
         peerThread.setDaemon(true);
@@ -941,6 +935,13 @@ class ControlledTlsPeerTest {
             }
         }
         return List.copyOf(requests);
+    }
+
+    private static List<CatalogLoader.CatalogCase> casesById(CatalogLoader.Catalog catalog, String... caseIds) {
+        return java.util.Arrays.stream(caseIds)
+                .map(caseId -> catalog.cases().stream().filter(testCase -> testCase.caseId().equals(caseId))
+                        .findFirst().orElseThrow())
+                .toList();
     }
 
     private static byte[] asynchronousResponse(long operation, byte[] correlation, int protocolMinorVersion)
