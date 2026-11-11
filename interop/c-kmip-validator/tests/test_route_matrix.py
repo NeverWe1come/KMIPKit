@@ -253,11 +253,13 @@ class RouteMatrixTests(unittest.TestCase):
                 'protocol_version': '2.0', 'encoding': 'TTLV', 'transport': None,
                 'workflow_step_index': None, 'workflow_operation': None, 'workflow_item_index': None}
         wire = bytes.fromhex('42000905000000040000000700000000')
-        event = self.runner.rejected_tag_event(cell, wire, 4)
+        event = self.runner.rejected_tag_event(cell, wire, 4, allocation='reserved')
         self.assertEqual(event['decode_outcome'], 'rejected')
-        self.assertEqual(event['decode_rejection_code'], 'tag_not_allocated')
+        self.assertEqual(event['decode_rejection_code'], 'tag_reserved')
         self.assertEqual(event['decode_input_sha256'], hashlib.sha256(wire).hexdigest())
         self.assertNotIn('response_tree_sha256', event)
+        unused_event = self.runner.rejected_tag_event(cell, wire, 5, allocation='unused')
+        self.assertEqual(unused_event['decode_rejection_code'], 'tag_not_allocated')
 
     def test_certificate_model_recipe_invokes_typed_and_generic_field_routes(self):
         from artifact_support import INSTALL, ROOT
