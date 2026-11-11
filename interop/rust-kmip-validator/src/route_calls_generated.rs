@@ -14,7 +14,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     ValueView::DateTime(value) => Ok(*value),
                     _ => Err("attribute value mismatch"),
                 })?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::ActivationDate>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -23,7 +23,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::ActivationDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::ActivationDate>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -76,7 +76,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         .try_clone()
                         .map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::ApplicationSpecificInformation>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -85,7 +85,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::ApplicationSpecificInformation>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::ApplicationSpecificInformation>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -135,7 +135,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     ValueView::DateTime(value) => Ok(*value),
                     _ => Err("attribute value mismatch"),
                 })?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::ArchiveDate>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -144,7 +144,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::ArchiveDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::ArchiveDate>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -197,7 +197,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         .try_clone()
                         .map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::VendorAttribute>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -206,7 +206,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::VendorAttribute>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::VendorAttribute>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -258,7 +258,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         _ => Err("attribute value mismatch"),
                     },
                 )?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::CertificateType>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -267,7 +267,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::CertificateType>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::CertificateType>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -317,7 +317,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     ValueView::DateTime(value) => Ok(*value),
                     _ => Err("attribute value mismatch"),
                 })?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::CompromiseDate>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -326,7 +326,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::CompromiseDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::CompromiseDate>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -378,7 +378,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         _ => Err("attribute value mismatch"),
                     }
                 })?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::CompromiseOccurrenceDate>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -387,7 +387,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::CompromiseOccurrenceDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::CompromiseOccurrenceDate>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -439,7 +439,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         _ => Err("attribute value mismatch"),
                     },
                 )?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::ContactInformation>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -448,7 +448,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::ContactInformation>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::ContactInformation>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -500,7 +500,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         _ => Err("attribute value mismatch"),
                     }
                 })?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::CryptographicAlgorithm>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -509,7 +509,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::CryptographicAlgorithm>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::CryptographicAlgorithm>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -562,7 +562,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         .try_clone()
                         .map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::CryptographicDomainParameters>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -571,7 +571,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::CryptographicDomainParameters>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::CryptographicDomainParameters>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -623,7 +623,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         _ => Err("attribute value mismatch"),
                     },
                 )?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::CryptographicLength>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -632,7 +632,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::CryptographicLength>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::CryptographicLength>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -685,7 +685,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         .try_clone()
                         .map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::CryptographicParameters>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -694,7 +694,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::CryptographicParameters>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::CryptographicParameters>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -746,7 +746,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         _ => Err("attribute value mismatch"),
                     }
                 })?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::CryptographicUsageMask>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -755,7 +755,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::CryptographicUsageMask>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::CryptographicUsageMask>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -807,7 +807,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         _ => Err("attribute value mismatch"),
                     },
                 )?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::DeactivationDate>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -816,7 +816,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::DeactivationDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::DeactivationDate>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -866,7 +866,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     ValueView::DateTime(value) => Ok(*value),
                     _ => Err("attribute value mismatch"),
                 })?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::DestroyDate>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -875,7 +875,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::DestroyDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::DestroyDate>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -928,7 +928,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         .try_clone()
                         .map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::Digest>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -937,7 +937,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::Digest>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::Digest>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -987,7 +987,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     ValueView::DateTime(value) => Ok(*value),
                     _ => Err("attribute value mismatch"),
                 })?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::InitialDate>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -996,7 +996,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::InitialDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::InitialDate>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -1046,7 +1046,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     ValueView::Enumeration(value) => Ok(*value),
                     _ => Err("attribute value mismatch"),
                 })?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::KeyFormatType>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -1055,7 +1055,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::KeyFormatType>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::KeyFormatType>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -1105,7 +1105,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     ValueView::DateTime(value) => Ok(*value),
                     _ => Err("attribute value mismatch"),
                 })?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::LastChangeDate>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -1114,7 +1114,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::LastChangeDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::LastChangeDate>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -1164,7 +1164,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     ValueView::Interval(value) => Ok(*value),
                     _ => Err("attribute value mismatch"),
                 })?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::LeaseTime>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -1173,7 +1173,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::LeaseTime>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::LeaseTime>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -1226,7 +1226,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         .try_clone()
                         .map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::Link>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -1235,7 +1235,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::Link>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::Link>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -1288,7 +1288,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         .try_clone()
                         .map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::Name>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -1297,7 +1297,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::Name>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::Name>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -1347,7 +1347,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     ValueView::TextString(value) => Ok(value.to_owned()),
                     _ => Err("attribute value mismatch"),
                 })?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::ObjectGroup>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -1356,7 +1356,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::ObjectGroup>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::ObjectGroup>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -1406,7 +1406,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     ValueView::Enumeration(value) => Ok(*value),
                     _ => Err("attribute value mismatch"),
                 })?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::ObjectType>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -1415,7 +1415,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::ObjectType>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::ObjectType>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -1465,7 +1465,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     ValueView::Enumeration(value) => Ok(*value),
                     _ => Err("attribute value mismatch"),
                 })?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::OpaqueDataType>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -1474,7 +1474,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::OpaqueDataType>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::OpaqueDataType>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -1526,7 +1526,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         _ => Err("attribute value mismatch"),
                     },
                 )?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::ProcessStartDate>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -1535,7 +1535,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::ProcessStartDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::ProcessStartDate>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -1587,7 +1587,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         _ => Err("attribute value mismatch"),
                     },
                 )?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::ProtectStopDate>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -1596,7 +1596,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::ProtectStopDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::ProtectStopDate>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -1649,7 +1649,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         .try_clone()
                         .map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::RevocationReason>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -1658,7 +1658,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::RevocationReason>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::RevocationReason>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -1708,7 +1708,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     ValueView::Enumeration(value) => Ok(*value),
                     _ => Err("attribute value mismatch"),
                 })?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::State>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -1717,7 +1717,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::State>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::State>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -1781,7 +1781,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         _ => Err("attribute value mismatch"),
                     },
                 )?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::UniqueIdentifier>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -1790,7 +1790,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::UniqueIdentifier>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::UniqueIdentifier>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -1843,7 +1843,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         .try_clone()
                         .map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::UsageLimits>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -1852,7 +1852,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::UsageLimits>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::UsageLimits>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -1902,7 +1902,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     ValueView::Boolean(value) => Ok(*value),
                     _ => Err("attribute value mismatch"),
                 })?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::Fresh>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -1911,7 +1911,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::Fresh>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::Fresh>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -1963,7 +1963,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         _ => Err("attribute value mismatch"),
                     },
                 )?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::CertificateLength>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -1972,7 +1972,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::CertificateLength>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::CertificateLength>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -2024,7 +2024,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         _ => Err("attribute value mismatch"),
                     }
                 })?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::DigitalSignatureAlgorithm>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -2033,7 +2033,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::DigitalSignatureAlgorithm>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::DigitalSignatureAlgorithm>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -2086,7 +2086,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         .try_clone()
                         .map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::X509CertificateIdentifier>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -2095,7 +2095,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::X509CertificateIdentifier>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::X509CertificateIdentifier>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -2148,7 +2148,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         .try_clone()
                         .map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::X509CertificateIssuer>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -2157,7 +2157,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::X509CertificateIssuer>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::X509CertificateIssuer>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -2210,7 +2210,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         .try_clone()
                         .map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::X509CertificateSubject>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -2219,7 +2219,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::X509CertificateSubject>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::X509CertificateSubject>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -2272,7 +2272,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         .try_clone()
                         .map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::KeyValueLocation>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -2281,7 +2281,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::KeyValueLocation>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::KeyValueLocation>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -2333,7 +2333,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         _ => Err("attribute value mismatch"),
                     },
                 )?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::KeyValuePresent>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -2342,7 +2342,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::KeyValuePresent>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::KeyValuePresent>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -2394,7 +2394,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         _ => Err("attribute value mismatch"),
                     },
                 )?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::OriginalCreationDate>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -2403,7 +2403,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::OriginalCreationDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::OriginalCreationDate>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -2456,7 +2456,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         .try_clone()
                         .map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::AlternativeName>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -2465,7 +2465,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::AlternativeName>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::AlternativeName>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -2518,7 +2518,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         .try_clone()
                         .map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::RandomNumberGenerator>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -2527,7 +2527,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::RandomNumberGenerator>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::RandomNumberGenerator>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -2579,7 +2579,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         _ => Err("attribute value mismatch"),
                     },
                 )?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::Pkcs12FriendlyName>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -2588,7 +2588,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::Pkcs12FriendlyName>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::Pkcs12FriendlyName>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -2638,7 +2638,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     ValueView::TextString(value) => Ok(value.to_owned()),
                     _ => Err("attribute value mismatch"),
                 })?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::Description>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -2647,7 +2647,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::Description>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::Description>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -2697,7 +2697,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     ValueView::TextString(value) => Ok(value.to_owned()),
                     _ => Err("attribute value mismatch"),
                 })?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::Comment>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -2706,7 +2706,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::Comment>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::Comment>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -2756,7 +2756,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     ValueView::Boolean(value) => Ok(*value),
                     _ => Err("attribute value mismatch"),
                 })?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::Sensitive>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -2765,7 +2765,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::Sensitive>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::Sensitive>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -2817,7 +2817,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         _ => Err("attribute value mismatch"),
                     },
                 )?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::AlwaysSensitive>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -2826,7 +2826,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::AlwaysSensitive>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::AlwaysSensitive>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -2876,7 +2876,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     ValueView::Boolean(value) => Ok(*value),
                     _ => Err("attribute value mismatch"),
                 })?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::Extractable>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -2885,7 +2885,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::Extractable>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::Extractable>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -2937,7 +2937,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         _ => Err("attribute value mismatch"),
                     },
                 )?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::NeverExtractable>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -2946,7 +2946,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::NeverExtractable>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::NeverExtractable>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -2998,7 +2998,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         _ => Err("attribute value mismatch"),
                     }
                 })?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::ShortUniqueIdentifier>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -3007,7 +3007,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::ShortUniqueIdentifier>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::ShortUniqueIdentifier>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -3057,7 +3057,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     ValueView::Enumeration(value) => Ok(*value),
                     _ => Err("attribute value mismatch"),
                 })?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::NistKeyType>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -3066,7 +3066,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::NistKeyType>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::NistKeyType>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -3118,7 +3118,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         _ => Err("attribute value mismatch"),
                     },
                 )?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::ProtectionLevel>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -3127,7 +3127,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::ProtectionLevel>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::ProtectionLevel>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -3179,7 +3179,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         _ => Err("attribute value mismatch"),
                     },
                 )?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::ProtectionPeriod>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -3188,7 +3188,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::ProtectionPeriod>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::ProtectionPeriod>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -3238,7 +3238,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     ValueView::Boolean(value) => Ok(*value),
                     _ => Err("attribute value mismatch"),
                 })?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::QuantumSafe>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -3247,7 +3247,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::QuantumSafe>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::QuantumSafe>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -3299,7 +3299,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         _ => Err("attribute value mismatch"),
                     }
                 })?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::ProtectionStorageMask>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -3308,7 +3308,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::ProtectionStorageMask>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::ProtectionStorageMask>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -3358,7 +3358,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     ValueView::Interval(value) => Ok(*value),
                     _ => Err("attribute value mismatch"),
                 })?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::RotateInterval>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -3367,7 +3367,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::RotateInterval>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::RotateInterval>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -3419,7 +3419,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         _ => Err("attribute value mismatch"),
                     },
                 )?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::RotateAutomatic>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -3428,7 +3428,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::RotateAutomatic>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::RotateAutomatic>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -3478,7 +3478,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     ValueView::Interval(value) => Ok(*value),
                     _ => Err("attribute value mismatch"),
                 })?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::RotateOffset>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -3487,7 +3487,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::RotateOffset>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::RotateOffset>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -3537,7 +3537,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     ValueView::DateTime(value) => Ok(*value),
                     _ => Err("attribute value mismatch"),
                 })?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::RotateDate>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -3546,7 +3546,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::RotateDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::RotateDate>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -3598,7 +3598,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         _ => Err("attribute value mismatch"),
                     },
                 )?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::RotateGeneration>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -3607,7 +3607,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::RotateGeneration>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::RotateGeneration>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -3660,7 +3660,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                         .try_clone()
                         .map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::RotateName>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -3669,7 +3669,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::RotateName>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::RotateName>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -3719,7 +3719,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     ValueView::Boolean(value) => Ok(*value),
                     _ => Err("attribute value mismatch"),
                 })?)
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::RotateLatest>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }
@@ -3728,7 +3728,7 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 Attribute::<typed::RotateLatest>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
                 )
-                .map(|v| v.into_item())
+                .map(Attribute::<typed::RotateLatest>::into_item)
                 .map_err(|_| "typed constructor rejected")
             })())
         }

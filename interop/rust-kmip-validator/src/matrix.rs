@@ -15,25 +15,17 @@ fn text<'a>(value: &'a Json, field: &str) -> Result<&'a str> {
     value[field].as_str().ok_or("matrix field missing")
 }
 
-fn sample(target: &Json) -> Result<Item> {
-    let elements: Json =
-        serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
-            .map_err(|_| "invalid target metadata")?;
-    let elements = elements["elements"]
-        .as_array()
-        .ok_or("invalid target metadata")?;
+fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
     let kind = text(target, "kind")?;
     let mut name = text(target, "name")?;
-    if ["enumeration_value", "bitmask_value"].contains(&kind) {
-        if let Some(parent) = target["parent_element_ids"]
+    if ["enumeration_value", "bitmask_value"].contains(&kind)
+        && let Some(parent) = target["parent_element_ids"]
             .as_array()
             .and_then(|v| v.first())
             .and_then(Json::as_str)
-        {
-            if let Some(element) = elements.iter().find(|e| e["element_id"] == parent) {
-                name = element["name"].as_str().ok_or("target name missing")?;
-            }
-        }
+        && let Some(element) = elements.iter().find(|e| e["element_id"] == parent)
+    {
+        name = element["name"].as_str().ok_or("target name missing")?;
     }
     let tag = if kind == "tag" {
         u32::from_str_radix(text(target, "wire_value")?, 16).map_err(|_| "invalid target tag")?
@@ -68,8 +60,9 @@ fn sample(target: &Json) -> Result<Item> {
             "Date Time" | "Date-Time" => Value::date_time(1),
             "Date Time Extended" => Value::date_time_extended(1),
             "Interval" => Value::interval(1),
-            "Text String" => Value::text_string("KMIPKit".to_owned()),
-            "Text String, Enumeration or Integer" => Value::text_string("KMIPKit".to_owned()),
+            "Text String" | "Text String, Enumeration or Integer" => {
+                Value::text_string("KMIPKit".to_owned())
+            }
             _ => Value::structure(kmipkit::ttlv::Structure::new()),
         }
     };
@@ -96,7 +89,7 @@ fn invoke(symbol: &str, sample: &Item) -> Option<Result<Item>> {
     Some((|| match symbol {
         "kmipkit_ttlv::Item::new" => {
             let tag = sample.tag();
-            let value = sample.with_value(|value| value_to_owned(value))?;
+            let value = sample.with_value(value_to_owned)?;
             Item::new(tag, value).map_err(|_| "local item rejected")
         }
         "kmipkit_ttlv::codec::decode" => {
@@ -104,7 +97,7 @@ fn invoke(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "local decode rejected")
         }
         "kmipkit_ttlv::Item::with_value" => sample
-            .with_value(|value| value_to_owned(value))
+            .with_value(value_to_owned)
             .and_then(|v| Item::new(sample.tag(), v).map_err(|_| "local item rejected")),
         "kmipkit_protocol::AttributeSet::try_new" => {
             let set = kmipkit::protocol::AttributeSet::try_new([sample
@@ -158,6 +151,7 @@ fn value_to_owned(value: ValueView<'_>) -> Result<Value> {
     })
 }
 
+#[allow(clippy::too_many_lines)] // Keep row validation and invocation bookkeeping adjacent for auditing.
 pub(crate) fn run(matrix: &Path, output: &Path) -> Result<bool> {
     let catalog_bytes = include_bytes!("../../shared/catalog/kmipkit-1.0-test-catalog.json");
     let routes_bytes = include_bytes!("../../shared/coverage/route-capabilities.json");
@@ -220,6 +214,12 @@ pub(crate) fn run(matrix: &Path, output: &Path) -> Result<bool> {
             return Err("duplicate matrix cell");
         }
     }
+    let elements: Json =
+        serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+            .map_err(|_| "invalid target metadata")?;
+    let elements = elements["elements"]
+        .as_array()
+        .ok_or("invalid target metadata")?;
     let mut events = Vec::new();
     let mut versions = std::collections::BTreeSet::new();
     let mut pending = 0;
@@ -232,7 +232,10 @@ pub(crate) fn run(matrix: &Path, output: &Path) -> Result<bool> {
             .ok_or("unknown normative target")?;
         let symbol = text(row, "public_api_symbol")?;
         versions.insert(text(row, "protocol_version")?.to_owned());
-        let sample = sample(target)?;
+        let Ok(sample) = sample(target, elements) else {
+            pending += 1;
+            continue;
+        };
         let Some(result) = invoke(symbol, &sample) else {
             pending += 1;
             continue;

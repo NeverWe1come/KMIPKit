@@ -32,8 +32,8 @@ for marker, tag, kind in markers:
     else:
         variant, projection = OWNED[kind]
         value = f'sample.with_value(|value| match value {{ ValueView::{variant}(value) => Ok({projection}), _ => Err("attribute value mismatch") }})?'
-    lines += [f'"{owner}::new" => {typed}::new({value}).map(|v| v.into_item()).map_err(|_| "typed constructor rejected"),',
-              f'"{owner}::from_item" => {typed}::from_item(sample.try_clone().map_err(|_| "attribute copy failed")?).map(|v| v.into_item()).map_err(|_| "typed constructor rejected"),']
+    lines += [f'"{owner}::new" => {typed}::new({value}).map({typed}::into_item).map_err(|_| "typed constructor rejected"),',
+              f'"{owner}::from_item" => {typed}::from_item(sample.try_clone().map_err(|_| "attribute copy failed")?).map({typed}::into_item).map_err(|_| "typed constructor rejected"),']
     for wrapper in ('CurrentAttribute', 'NewAttribute'):
         symbol = f'kmipkit_protocol::{wrapper}::from_typed::<kmipkit_protocol::attribute::typed::{marker}>'
         lines.append(f'"{symbol}" => {{ let attribute = {typed}::from_item(sample.try_clone().map_err(|_| "attribute copy failed")?).map_err(|_| "typed constructor rejected")?; {wrapper}::from_typed::<typed::{marker}>(attribute).item().try_clone().map_err(|_| "attribute copy failed") }},')
