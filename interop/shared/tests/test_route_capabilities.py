@@ -110,6 +110,33 @@ class RouteCapabilitiesTests(unittest.TestCase):
             self.assertTrue(emitted_targets <= set(routes[symbol]['normative_target_ids']), symbol)
             self.assertEqual(emitted_targets, set(routes[symbol]['normative_target_ids']), symbol)
 
+    def test_operation_route_matching_uses_complete_name_tokens(self):
+        operations = {operation['operationId']: operation
+                      for operation in self.module._api(ROOT, self.data['library_commit'])['operations']}
+        hash_id = next(operation_id for operation_id, operation in operations.items()
+                       if operation['name'] == 'Hash')
+        recertify_id = next(operation_id for operation_id, operation in operations.items()
+                            if operation['name'] == 'Re-certify')
+        rekey_id = next(operation_id for operation_id, operation in operations.items()
+                        if operation['name'] == 'Re-key')
+        query_async_id = next(operation_id for operation_id, operation in operations.items()
+                              if operation['name'] == 'Query Asynchronous Requests')
+        self.assertIsNone(self.module._function_operation_id('hashed_password_credential_into_ttlv', operations))
+        self.assertEqual(hash_id, self.module._function_operation_id('client_batch_item_hash', operations))
+        self.assertEqual(recertify_id,
+                         self.module._function_operation_id('client_batch_item_response_recertify', operations))
+        self.assertEqual(rekey_id,
+                         self.module._function_operation_id('client_batch_item_response_rekey', operations))
+        self.assertEqual(query_async_id,
+                         self.module._function_operation_id('client_execute_query_async_requests', operations))
+        hashed_password = next(route for route in self.data['routes']
+                               if route['language'] == 'rust'
+                               and route['public_api_symbol'] ==
+                               'kmipkit_protocol::HashedPasswordCredential::into_ttlv')
+        self.assertEqual([], hashed_password['operation_ids'])
+        self.assertIn('KMIPKIT-ELEM-CREDENTIAL-HASHED-PASSWORD', hashed_password['normative_target_ids'])
+        self.assertNotIn('KMIPKIT-ELEM-OP-C2S-HASH', hashed_password['normative_target_ids'])
+
     def test_checked_tag_constructor_exclusions_are_source_backed_and_narrow(self):
         expected = {
             'rust': {'rust.generic-ttlv.item.new', 'rust.generic-ttlv.model.kmipkit.ttlv.structure.try.push'},
