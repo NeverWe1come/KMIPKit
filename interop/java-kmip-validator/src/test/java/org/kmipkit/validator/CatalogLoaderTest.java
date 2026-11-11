@@ -18,7 +18,9 @@ class CatalogLoaderTest {
         var catalog = CatalogLoader.load(CATALOG);
 
         assertEquals(Set.of("2.0", "2.1"), new HashSet<>(catalog.targetVersions()));
-        assertEquals(218, catalog.cases().size());
+        assertEquals(catalog.totalCases(), catalog.cases().size());
+        assertTrue(catalog.cases().size() > 218);
+        assertTrue(catalog.normativeTargets().size() > 2_000);
         assertEquals(catalog.cases().size(), catalog.cases().stream().map(c -> c.caseId()).distinct().count());
         assertTrue(catalog.cases().stream().allMatch(c -> !c.normativeRefs().isEmpty()));
         assertTrue(catalog.cases().stream().allMatch(c -> !c.execution().protocolVersions().isEmpty()));

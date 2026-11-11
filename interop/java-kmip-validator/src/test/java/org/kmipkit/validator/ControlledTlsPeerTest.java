@@ -1,9 +1,13 @@
 package org.kmipkit.validator;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.kmipkit.extensions.ClientBatchItem;
+import org.kmipkit.protocol.KmipValues;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -14,6 +18,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -68,7 +73,7 @@ class ControlledTlsPeerTest {
                 .filter(value -> value.caseId().equals("test-op-discover-versions"))
                 .findFirst().orElseThrow();
 
-        ArtifactProvenance.load(manifestPath, "9692057c9ade474fb0c4e0b7130539da368eb794");
+        ArtifactProvenance.load(manifestPath, "9a16cc90a12205101d22a38501a5e74c665df4dc");
         JavaKmipDriver.CaseOutcome outcome;
         try (JavaKmipDriver driver = JavaKmipDriver.connect(connection)) {
             outcome = driver.execute(testCase);
@@ -117,6 +122,42 @@ class ControlledTlsPeerTest {
         assertTrue(contains(request, new byte[] {0x42, 0x00, 0x74, 0x05, 0, 0, 0, 4, 0, 0, 0, 1}),
                 "The Query request must include a non-empty Query Function.");
         assertEquals("passed", outcome.status(), outcome.toString());
+    }
+
+    @Test
+    void typedClientPreservesKmip20OnTheWire() throws Exception {
+        byte[] serverCertificatePem = fixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = fixture("server-key.pem");
+        byte[] clientCertificatePem = fixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = fixture("client-key.pem");
+        SSLServerSocket listener = listener(certificate(serverCertificatePem),
+                privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+        FutureTask<byte[]> peer = new FutureTask<>(() -> serveOneResponse(listener, queryResponse(0)));
+        Thread peerThread = new Thread(peer, "java-validator-kmip-20-controlled-peer");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        Path connectionFile = temporaryDirectory.resolve("kmip-20-connection.json");
+        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                clientCertificatePem, clientPrivateKeyPem, false, "2.0"));
+        var connection = ConnectionConfig.load(connectionFile);
+        assertEquals("2.0", connection.protocolVersion());
+        var catalog = CatalogLoader.load(Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json"));
+        var query = catalog.cases().stream().filter(value -> value.caseId().equals("test-op-query"))
+                .findFirst().orElseThrow();
+
+        JavaKmipDriver.CaseOutcome outcome;
+        try (JavaKmipDriver driver = JavaKmipDriver.connect(connection)) {
+            outcome = driver.execute(query);
+        } finally {
+            listener.close();
+        }
+        assertEquals("passed", outcome.status(), outcome.toString());
+        byte[] request = peer.get(15, TimeUnit.SECONDS);
+        assertTrue(contains(request, structure(0x420069,
+                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(0)))),
+                "The installed Java client must preserve KMIP 2.0 in the request header: "
+                        + java.util.HexFormat.of().formatHex(request));
     }
 
     @Test
@@ -206,6 +247,231 @@ class ControlledTlsPeerTest {
                 CREATED_OBJECT_ID.getBytes(StandardCharsets.UTF_8))));
     }
 
+    @Test
+    void everyPublicClientOperationReachesPeerAndClassifiesUnsupportedResponse() throws Exception {
+        var catalog = CatalogLoader.load(Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json"));
+        var availableOperations = TypedRequestFactory.availableFactories().keySet();
+        var casesByOperation = new java.util.TreeMap<String, CatalogLoader.CatalogCase>();
+        catalog.cases().stream()
+                .filter(testCase -> "server_exchange".equals(testCase.execution().mode()))
+                .filter(testCase -> testCase.execution().protocolVersions().contains("2.1"))
+                .filter(testCase -> !"server_to_client".equals(testCase.requires().path("workflow_type").asText()))
+                .filter(testCase -> availableOperations.contains(testCase.operation()))
+                .forEach(testCase -> casesByOperation.putIfAbsent(testCase.operation(), testCase));
+        assertEquals(availableOperations.size(), casesByOperation.size(),
+                "Every public KMIP 2.x client operation must have a catalog exchange case.");
+
+        byte[] serverCertificatePem = fixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = fixture("server-key.pem");
+        byte[] clientCertificatePem = fixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = fixture("client-key.pem");
+        SSLServerSocket listener = listener(certificate(serverCertificatePem), privateKey(serverPrivateKeyPem),
+                certificate(clientCertificatePem));
+        MatrixPlan matrixPlan = operationMatrixPlan(casesByOperation, 1);
+        var peerTrace = new java.util.concurrent.CopyOnWriteArrayList<Long>();
+        FutureTask<List<Long>> peer = new FutureTask<>(() -> serveOperationMatrixResponses(listener,
+                matrixPlan, peerTrace));
+        Thread peerThread = new Thread(peer, "java-validator-controlled-operation-matrix-peer");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        Path connectionFile = temporaryDirectory.resolve("operation-matrix-connection.json");
+        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                clientCertificatePem, clientPrivateKeyPem, true));
+        try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile))) {
+            for (var entry : casesByOperation.entrySet()) {
+                JavaKmipDriver.CaseOutcome outcome = driver.execute(entry.getValue());
+                assertPeerHealthy(peer);
+                if ("Create".equals(entry.getKey())) {
+                    assertEquals("passed", outcome.status(), entry.getKey() + ": " + outcome);
+                    assertEquals(0L, outcome.resultStatusCode(), entry.getKey());
+                } else {
+                    assertEquals("server_unsupported", outcome.status(), entry.getKey() + ": " + outcome
+                            + "; peer operations=" + peerTrace);
+                    assertEquals("unsupported", outcome.serverCompatibility(), entry.getKey());
+                    assertEquals(1L, outcome.resultStatusCode(), entry.getKey());
+                    assertEquals(KmipValues.ResultReason.OPERATION_NOT_SUPPORTED,
+                            outcome.resultReasonCode(), entry.getKey());
+                }
+            }
+        } finally {
+            listener.close();
+        }
+        List<Long> observedOperations = peer.get(60, TimeUnit.SECONDS);
+        assertEquals(matrixPlan.expectedOperations().size(), observedOperations.size());
+        for (var entry : casesByOperation.entrySet()) {
+            try (ClientBatchItem expected = TypedRequestFactory.create(entry.getKey())) {
+                assertTrue(observedOperations.contains(expected.operation()), entry.getKey());
+                assertEquals("Operation Not Supported", KmipValues.ResultReason.name(
+                        KmipValues.ResultReason.OPERATION_NOT_SUPPORTED));
+            }
+        }
+    }
+
+    // OASIS KMIP 2.0 §§6.1 and 11: every catalogued client operation applicable
+    // to 2.0 must be emitted through the installed typed request factories.
+    @Test
+    void everyPublicClientOperationReachesPeerForKmip20() throws Exception {
+        var catalog = CatalogLoader.load(Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json"));
+        var availableOperations = TypedRequestFactory.availableFactories().keySet();
+        var casesByOperation = new java.util.TreeMap<String, CatalogLoader.CatalogCase>();
+        catalog.cases().stream()
+                .filter(testCase -> "server_exchange".equals(testCase.execution().mode()))
+                .filter(testCase -> testCase.execution().protocolVersions().contains("2.0"))
+                .filter(testCase -> !"server_to_client".equals(testCase.requires().path("workflow_type").asText()))
+                .filter(testCase -> availableOperations.contains(testCase.operation()))
+                .forEach(testCase -> casesByOperation.putIfAbsent(testCase.operation(), testCase));
+        assertTrue(!casesByOperation.isEmpty(), "KMIP 2.0 must have applicable public client operations.");
+
+        byte[] serverCertificatePem = fixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = fixture("server-key.pem");
+        byte[] clientCertificatePem = fixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = fixture("client-key.pem");
+        SSLServerSocket listener = listener(certificate(serverCertificatePem), privateKey(serverPrivateKeyPem),
+                certificate(clientCertificatePem));
+        MatrixPlan matrixPlan = operationMatrixPlan(casesByOperation, 0);
+        var peerTrace = new java.util.concurrent.CopyOnWriteArrayList<Long>();
+        FutureTask<List<Long>> peer = new FutureTask<>(() -> serveOperationMatrixResponses(listener,
+                matrixPlan, peerTrace));
+        Thread peerThread = new Thread(peer, "java-validator-kmip20-operation-matrix-peer");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        Path connectionFile = temporaryDirectory.resolve("kmip20-operation-matrix-connection.json");
+        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                clientCertificatePem, clientPrivateKeyPem, true, "2.0"));
+        try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile))) {
+            for (var entry : casesByOperation.entrySet()) {
+                JavaKmipDriver.CaseOutcome outcome = driver.execute(entry.getValue());
+                assertPeerHealthy(peer);
+                if ("Create".equals(entry.getKey())) {
+                    assertEquals("passed", outcome.status(), entry.getKey() + ": " + outcome);
+                    assertEquals(0L, outcome.resultStatusCode(), entry.getKey());
+                } else {
+                    assertEquals("server_unsupported", outcome.status(), entry.getKey() + ": " + outcome
+                            + "; peer operations=" + peerTrace);
+                    assertEquals("unsupported", outcome.serverCompatibility(), entry.getKey());
+                    assertEquals(1L, outcome.resultStatusCode(), entry.getKey());
+                    assertEquals(KmipValues.ResultReason.OPERATION_NOT_SUPPORTED,
+                            outcome.resultReasonCode(), entry.getKey());
+                }
+            }
+        } finally {
+            listener.close();
+        }
+        List<Long> observedOperations = peer.get(60, TimeUnit.SECONDS);
+        assertEquals(matrixPlan.expectedOperations().size(), observedOperations.size());
+        for (String operation : casesByOperation.keySet()) {
+            try (ClientBatchItem expected = TypedRequestFactory.create(operation)) {
+                assertTrue(observedOperations.contains(expected.operation()), operation);
+            }
+        }
+    }
+
+    // OASIS KMIP 2.0 §6.1.32: the consumer CLI must preserve the configured
+    // version through request creation, TLS exchange, and response decoding.
+    @Test
+    void cliRunExecutesQueryAtKmip20AndAcceptsItsTypedResponse() throws Exception {
+        byte[] serverCertificatePem = fixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = fixture("server-key.pem");
+        byte[] clientCertificatePem = fixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = fixture("client-key.pem");
+        SSLServerSocket listener = listener(certificate(serverCertificatePem), privateKey(serverPrivateKeyPem),
+                certificate(clientCertificatePem));
+        FutureTask<byte[]> peer = new FutureTask<>(() -> serveOneResponse(listener, queryResponse(0)));
+        Thread peerThread = new Thread(peer, "java-validator-kmip20-cli-peer");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        Path connectionFile = temporaryDirectory.resolve("kmip20-cli-connection.json");
+        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                clientCertificatePem, clientPrivateKeyPem, false, "2.0"));
+        Path sourceCatalog = Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json");
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode catalog = (ObjectNode) mapper.readTree(sourceCatalog.toFile());
+        ArrayNode selectedCases = mapper.createArrayNode();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            if ("test-op-query".equals(testCase.path("case_id").asText())) {
+                selectedCases.add(testCase);
+            }
+        }
+        assertEquals(1, selectedCases.size(), "The KMIP 2.0 Query case must exist in the shared catalog.");
+        catalog.set("test_cases", selectedCases);
+        ((ObjectNode) catalog.path("statistics")).put("total_cases", selectedCases.size());
+        Path selectedCatalog = temporaryDirectory.resolve("kmip20-query-catalog.json");
+        Files.writeString(selectedCatalog, mapper.writeValueAsString(catalog));
+
+        Path outputDirectory = temporaryDirectory.resolve("kmip20-run-report");
+        var standardOutput = new ByteArrayOutputStream();
+        var standardError = new ByteArrayOutputStream();
+        int exitCode;
+        try {
+            exitCode = Main.execute(new String[] {"run", "--connection", connectionFile.toString(), "--catalog",
+                    selectedCatalog.toString(), "--output-dir", outputDirectory.toString()},
+                    new PrintStream(standardOutput), new PrintStream(standardError));
+        } finally {
+            listener.close();
+        }
+        assertEquals(0, exitCode, standardError.toString(StandardCharsets.UTF_8));
+        byte[] request = peer.get(15, TimeUnit.SECONDS);
+        assertEquals(0, requestProtocolMinorVersion(request));
+        assertEquals(0x18L, requestOperation(request));
+        JsonNode report = mapper.readTree(outputDirectory.resolve("results.json").toFile());
+        assertEquals(1, report.path("summary").path("total").asInt());
+        assertEquals("passed", report.path("cases").get(0).path("status").asText());
+        assertEquals(0, report.path("cases").get(0).path("result_status_code").asInt());
+    }
+
+    @Test
+    void cliRunDispatchesGetThroughItsPublicTypedFactory() throws Exception {
+        byte[] serverCertificatePem = fixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = fixture("server-key.pem");
+        byte[] clientCertificatePem = fixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = fixture("client-key.pem");
+        SSLServerSocket listener = listener(certificate(serverCertificatePem), privateKey(serverPrivateKeyPem),
+                certificate(clientCertificatePem));
+        FutureTask<List<byte[]>> peer = new FutureTask<>(() -> serveObjectFixtureAndGet(listener));
+        Thread peerThread = new Thread(peer, "java-validator-cli-get-peer");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        Path connectionFile = temporaryDirectory.resolve("get-cli-connection.json");
+        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                clientCertificatePem, clientPrivateKeyPem, true));
+        Path sourceCatalog = Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json");
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode catalog = (ObjectNode) mapper.readTree(sourceCatalog.toFile());
+        ArrayNode selectedCases = mapper.createArrayNode();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            if ("test-op-get".equals(testCase.path("case_id").asText())) selectedCases.add(testCase);
+        }
+        assertEquals(1, selectedCases.size(), "The Get operation case must exist in the shared catalog.");
+        catalog.set("test_cases", selectedCases);
+        ((ObjectNode) catalog.path("statistics")).put("total_cases", selectedCases.size());
+        Path selectedCatalog = temporaryDirectory.resolve("get-catalog.json");
+        Files.writeString(selectedCatalog, mapper.writeValueAsString(catalog));
+
+        Path outputDirectory = temporaryDirectory.resolve("get-run-report");
+        var standardOutput = new ByteArrayOutputStream();
+        var standardError = new ByteArrayOutputStream();
+        int exitCode;
+        try {
+            exitCode = Main.execute(new String[] {"run", "--connection", connectionFile.toString(), "--catalog",
+                    selectedCatalog.toString(), "--output-dir", outputDirectory.toString(), "--enable-mutations"},
+                    new PrintStream(standardOutput), new PrintStream(standardError));
+        } finally {
+            listener.close();
+        }
+        List<byte[]> requests = peer.get(10, TimeUnit.SECONDS);
+        assertEquals(List.of(1L, 10L, 0x14L), requests.stream().map(ControlledTlsPeerTest::requestOperation).toList());
+        assertTrue(contains(requests.get(1), item(0x420094, 7, CREATED_OBJECT_ID.getBytes(StandardCharsets.UTF_8))),
+                "Get must use the identifier returned by the fixture Create response.");
+        assertEquals(0, exitCode, standardError.toString(StandardCharsets.UTF_8));
+        JsonNode report = mapper.readTree(outputDirectory.resolve("results.json").toFile());
+        assertEquals("server_unsupported", report.path("cases").get(0).path("status").asText());
+        assertEquals(1L, report.path("cases").get(0).path("result_status_code").asLong());
+    }
+
     private String connectionJson(int port, byte[] serverCertificate, byte[] clientCertificate,
                                   byte[] clientPrivateKey) throws Exception {
         return connectionJson(port, serverCertificate, clientCertificate, clientPrivateKey, false);
@@ -213,6 +479,13 @@ class ControlledTlsPeerTest {
 
     private String connectionJson(int port, byte[] serverCertificate, byte[] clientCertificate,
                                   byte[] clientPrivateKey, boolean allowMutations) throws Exception {
+        return connectionJson(port, serverCertificate, clientCertificate, clientPrivateKey,
+                allowMutations, "2.1");
+    }
+
+    private String connectionJson(int port, byte[] serverCertificate, byte[] clientCertificate,
+                                  byte[] clientPrivateKey, boolean allowMutations,
+                                  String protocolVersion) throws Exception {
         Path serverCert = temporaryDirectory.resolve("server-cert.pem");
         Path clientCert = temporaryDirectory.resolve("client-cert.pem");
         Path clientKey = temporaryDirectory.resolve("client-key.pem");
@@ -222,7 +495,7 @@ class ControlledTlsPeerTest {
         ObjectNode root = new ObjectMapper().createObjectNode();
         root.put("server_id", "controlled-test-peer");
         root.put("server_configuration_fingerprint", "a".repeat(64));
-        root.put("protocol_version", "2.1");
+        root.put("protocol_version", protocolVersion);
         root.put("transport", "raw_tls");
         root.put("encoding", "TTLV");
         root.put("api_level", "typed-protocol");
@@ -278,6 +551,146 @@ class ControlledTlsPeerTest {
         }
     }
 
+    private static List<Long> serveUnsupportedResponses(SSLServerSocket listener, int count) throws Exception {
+        return serveUnsupportedResponses(listener, count, 1);
+    }
+
+    private static List<Long> serveUnsupportedResponses(SSLServerSocket listener, int count,
+                                                         int protocolMinorVersion) throws Exception {
+        var operations = new ArrayList<Long>();
+        for (int index = 0; index < count; index++) {
+            try (SSLSocket socket = (SSLSocket) listener.accept()) {
+                socket.setEnabledProtocols(new String[] {"TLSv1.3"});
+                socket.setSoTimeout(10_000);
+                socket.startHandshake();
+                byte[] request = readTtlv(socket.getInputStream());
+                long operation = requestOperation(request);
+                operations.add(operation);
+                socket.getOutputStream().write(unsupportedResponse(operation, protocolMinorVersion));
+                socket.getOutputStream().flush();
+            }
+        }
+        return List.copyOf(operations);
+    }
+
+    private static MatrixPlan operationMatrixPlan(
+            java.util.Map<String, CatalogLoader.CatalogCase> casesByOperation, int protocolMinorVersion)
+            throws Exception {
+        var expectedOperations = new ArrayList<Long>();
+        var responses = new ArrayList<byte[]>();
+        for (var entry : casesByOperation.entrySet()) {
+            String operationName = entry.getKey();
+            CatalogLoader.CatalogCase testCase = entry.getValue();
+            boolean fixture = requiresSymmetricKeyFixture(testCase);
+            if ("Create".equals(operationName)) {
+                expectedOperations.add(1L);
+                responses.add(createResponse(protocolMinorVersion));
+                expectedOperations.add(0x14L);
+                responses.add(destroyResponse(protocolMinorVersion));
+                continue;
+            }
+            if (fixture) {
+                expectedOperations.add(1L);
+                responses.add(createResponse(protocolMinorVersion));
+            }
+            try (ClientBatchItem request = TypedRequestFactory.create(operationName)) {
+                expectedOperations.add(request.operation());
+            }
+            responses.add(unsupportedResponse(expectedOperations.get(expectedOperations.size() - 1),
+                    protocolMinorVersion));
+            if (fixture) {
+                expectedOperations.add(0x14L);
+                responses.add(destroyResponse(protocolMinorVersion));
+            }
+        }
+
+        return new MatrixPlan(List.copyOf(expectedOperations), List.copyOf(responses));
+    }
+
+    private static List<Long> serveOperationMatrixResponses(SSLServerSocket listener,
+            MatrixPlan plan, List<Long> peerTrace) throws Exception {
+        var observedOperations = new ArrayList<Long>();
+        for (int index = 0; index < plan.expectedOperations().size(); index++) {
+            try (SSLSocket socket = (SSLSocket) listener.accept()) {
+                peerTrace.add(-1L);
+                socket.setEnabledProtocols(new String[] {"TLSv1.3"});
+                socket.setSoTimeout(10_000);
+                socket.startHandshake();
+                byte[] request = readTtlv(socket.getInputStream());
+                long operation = requestOperation(request);
+                observedOperations.add(operation);
+                peerTrace.add(operation);
+                if (operation != plan.expectedOperations().get(index)) {
+                    throw new AssertionError("The operation matrix sent an unexpected operation at exchange " + index);
+                }
+                socket.getOutputStream().write(plan.responses().get(index));
+                socket.getOutputStream().flush();
+            }
+        }
+        return List.copyOf(observedOperations);
+    }
+
+    private static boolean requiresSymmetricKeyFixture(CatalogLoader.CatalogCase testCase) {
+        return testCase.isolationRecipe().setupSteps().stream()
+                .anyMatch(step -> step.startsWith("Create unique SymmetricKey"));
+    }
+
+    private static void assertPeerHealthy(FutureTask<?> peer) throws Exception {
+        if (!peer.isDone()) return;
+        try {
+            peer.get();
+        } catch (java.util.concurrent.ExecutionException exception) {
+            throw new AssertionError("The controlled peer rejected the request sequence.", exception.getCause());
+        }
+    }
+
+    private static long requestOperation(byte[] request) {
+        byte[] header = new byte[] {0x42, 0x00, 0x5c, 5, 0, 0, 0, 4};
+        for (int offset = 0; offset <= request.length - header.length - 4; offset++) {
+            boolean matches = true;
+            for (int index = 0; index < header.length; index++) {
+                if (request[offset + index] != header[index]) {
+                    matches = false;
+                    break;
+                }
+            }
+            if (matches) return Integer.toUnsignedLong(ByteBuffer.wrap(request, offset + header.length, 4).getInt());
+        }
+        throw new AssertionError("The outgoing KMIP request omitted its Operation field.");
+    }
+
+    private static int requestProtocolMinorVersion(byte[] request) {
+        byte[] minorHeader = new byte[] {0x42, 0x00, 0x6b, 2, 0, 0, 0, 4};
+        for (int offset = 0; offset <= request.length - minorHeader.length - 4; offset++) {
+            boolean matches = true;
+            for (int index = 0; index < minorHeader.length; index++) {
+                if (request[offset + index] != minorHeader[index]) {
+                    matches = false;
+                    break;
+                }
+            }
+            if (matches) return ByteBuffer.wrap(request, offset + minorHeader.length, 4).getInt();
+        }
+        throw new AssertionError("The outgoing KMIP request omitted ProtocolVersionMinor.");
+    }
+
+    private static byte[] unsupportedResponse(long operation) throws Exception {
+        return unsupportedResponse(operation, 1);
+    }
+
+    private static byte[] unsupportedResponse(long operation, int protocolMinorVersion) throws Exception {
+        byte[] protocolVersion = structure(0x420069,
+                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(protocolMinorVersion)));
+        byte[] header = structure(0x42007a, protocolVersion,
+                item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(1)));
+        byte[] responseItem = structure(0x42000f,
+                item(0x42005c, 5, intBytes(Math.toIntExact(operation))),
+                item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)),
+                item(0x42007f, 5, intBytes(1)),
+                item(0x42007e, 5, intBytes(Math.toIntExact(KmipValues.ResultReason.OPERATION_NOT_SUPPORTED))));
+        return structure(0x42007b, header, responseItem);
+    }
+
     private static byte[] readTtlv(InputStream input) throws Exception {
         DataInputStream data = new DataInputStream(input);
         byte[] header = data.readNBytes(8);
@@ -306,8 +719,12 @@ class ControlledTlsPeerTest {
     }
 
     private static byte[] queryResponse() throws Exception {
+        return queryResponse(1);
+    }
+
+    private static byte[] queryResponse(int protocolMinorVersion) throws Exception {
         byte[] protocolVersion = structure(0x420069,
-                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(1)));
+                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(protocolMinorVersion)));
         byte[] header = structure(0x42007a, protocolVersion,
                 item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(1)));
         byte[] responseItem = structure(0x42000f,
@@ -354,9 +771,29 @@ class ControlledTlsPeerTest {
         return List.copyOf(requests);
     }
 
+    private static List<byte[]> serveObjectFixtureAndGet(SSLServerSocket listener) throws Exception {
+        var requests = new ArrayList<byte[]>();
+        byte[][] responses = {createResponse(), unsupportedResponse(10), destroyResponse()};
+        for (byte[] response : responses) {
+            try (SSLSocket socket = (SSLSocket) listener.accept()) {
+                socket.setEnabledProtocols(new String[] {"TLSv1.3"});
+                socket.setSoTimeout(10_000);
+                socket.startHandshake();
+                requests.add(readTtlv(socket.getInputStream()));
+                socket.getOutputStream().write(response);
+                socket.getOutputStream().flush();
+            }
+        }
+        return List.copyOf(requests);
+    }
+
     private static byte[] createResponse() throws Exception {
+        return createResponse(1);
+    }
+
+    private static byte[] createResponse(int protocolMinorVersion) throws Exception {
         byte[] protocolVersion = structure(0x420069,
-                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(1)));
+                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(protocolMinorVersion)));
         byte[] header = structure(0x42007a, protocolVersion,
                 item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(1)));
         byte[] payload = structure(0x42007c,
@@ -370,8 +807,12 @@ class ControlledTlsPeerTest {
     }
 
     private static byte[] destroyResponse() throws Exception {
+        return destroyResponse(1);
+    }
+
+    private static byte[] destroyResponse(int protocolMinorVersion) throws Exception {
         byte[] protocolVersion = structure(0x420069,
-                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(1)));
+                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(protocolMinorVersion)));
         byte[] header = structure(0x42007a, protocolVersion,
                 item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(1)));
         byte[] payload = structure(0x42007c,
@@ -437,4 +878,6 @@ class ControlledTlsPeerTest {
         }
         return false;
     }
+
+    private record MatrixPlan(List<Long> expectedOperations, List<byte[]> responses) {}
 }
