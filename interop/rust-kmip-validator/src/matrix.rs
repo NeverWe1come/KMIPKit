@@ -355,6 +355,20 @@ fn normalized_name(value: &str) -> String {
         .collect()
 }
 
+fn parent_structure_tag(target: &Json, elements: &[Json]) -> Option<u32> {
+    let parent_id = target["parent_element_ids"].as_array()?.first()?.as_str()?;
+    let parent = elements
+        .iter()
+        .find(|element| element["element_id"] == parent_id)?;
+    let parent_name = parent["name"].as_str()?;
+    elements
+        .iter()
+        .find(|element| element["kind"] == "tag" && element["name"] == parent_name)?
+        .get("wire_value")?
+        .as_str()
+        .and_then(unsigned_wire_value)
+}
+
 fn typed_item_route(symbol: &str) -> bool {
     symbol.contains("Attribute::<") && symbol.ends_with("::from_item")
         || symbol.contains("::try_push_typed::<")
@@ -459,10 +473,22 @@ fn invoke(symbol: &str, sample: &Item, target: &Json, elements: &[Json]) -> Opti
     ]
     .contains(&symbol)
     {
-        let children = sample.as_structure()?;
-        if symbol.ends_with("::try_push") && children.children().is_empty() {
-            return None;
+        if symbol.ends_with("::try_push")
+            && sample
+                .as_structure()
+                .is_none_or(|children| children.children().is_empty())
+        {
+            return Some((|| {
+                let mut structure = kmipkit::ttlv::Structure::new();
+                structure
+                    .try_push(sample.try_clone().map_err(|_| "local copy failed")?)
+                    .map_err(|_| "structure insertion rejected")?;
+                let container_tag = parent_structure_tag(target, elements)
+                    .ok_or("structure parent tag fixture missing")?;
+                crate::driver::item(container_tag, Value::structure(structure))
+            })());
         }
+        let children = sample.as_structure()?;
         return Some((|| {
             let mut structure = kmipkit::ttlv::Structure::new();
             for child in children.children() {
