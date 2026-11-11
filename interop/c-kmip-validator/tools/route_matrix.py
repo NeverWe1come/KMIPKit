@@ -236,6 +236,11 @@ def run(output: Path, binary: Path | None = None) -> int:
     tags = {target['name']: int(target['wire_value'], 16) for target in targets.values() if target['kind'] == 'tag'}
     events, pending = [], []
     fixtures = {key: scalar_fixture(target, tags) for key, target in targets.items()}
+    from route_ttlv import TreeAbi
+    tree_abi = TreeAbi(library)
+    boundaries = json.loads((ROOT / 'interop/shared/vectors/ttlv-boundaries.json').read_text())
+    boundary_vectors = {int(vector['type_code'], 16): vector for vector in boundaries['vectors']}
+    branch_evidence = []
     for index, cell in enumerate(iter_cells(catalog, manifest, languages=('c',))):
         target = targets[cell['target_id']]
         fixture = fixtures[cell['target_id']]
@@ -243,6 +248,16 @@ def run(output: Path, binary: Path | None = None) -> int:
         # Multi-branch semantic cases require dedicated recipes. A scalar check
         # can satisfy only the individual inventory value/tag target case.
         individual_value = case['category'] == 'normative_inventory' and not case.get('requires', {}).get('protocol_scenario')
+        if target['kind'] == 'data_type' and cell['transport'] is None:
+            result = tree_abi.boundary_case(boundary_vectors[int(target['wire_value'], 16)])
+            if cell['public_api_symbol'] in result['invoked_symbols']:
+                event = cell_fields(cell)
+                event.update(status='passed', invocation_count=1, invocation_id=f'c-boundary-{index}')
+                event['response_tree_sha256' if cell['action'] == 'decode' else 'request_tree_sha256'] = result['tree_sha256']
+                events.append(event)
+                branch_evidence.append({**cell_fields(cell), 'sample_count': result['sample_count'],
+                                        'branches': result['branches'], 'tree_sha256': result['tree_sha256']})
+                continue
         if (cell['transport'] is None and fixture is not None and individual_value
                 and (target['kind'] != 'tag' or target.get('allocation') != 'reserved' or
                      (cell['public_api_symbol'] in
@@ -268,6 +283,8 @@ def run(output: Path, binary: Path | None = None) -> int:
                 events.append(event)
         else:
             pending.append(pending_cell(cell, pending_reason(cell)))
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.with_suffix('.branches.json').write_text(json.dumps(branch_evidence, indent=2) + '\n')
     if binary is not None:
         from route_peer import execute_network_cells
         network_events, invoked_keys, peer_checks = execute_network_cells(binary, catalog, manifest)
