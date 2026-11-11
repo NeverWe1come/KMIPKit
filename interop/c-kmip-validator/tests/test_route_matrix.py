@@ -271,6 +271,17 @@ class RouteMatrixTests(unittest.TestCase):
                 self.assertEqual(result['normalized_tree'], expected_tree)
                 self.assertIn(constructor, result['invoked_symbols'])
 
+    def test_key_block_model_recipe_invokes_field_and_item_converters(self):
+        from artifact_support import INSTALL, ROOT
+        from c_route_models import ModelCases
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        target = next(item for item in catalog['normative_targets']
+                      if item['target_id'] == 'KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-BLOCK')
+        result = ModelCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog).execute(target, '2.1')
+        self.assertEqual(result['normalized_tree'], [0x420040, 1, [[0x420042, 5, '00000001']]])
+        self.assertTrue({'kmipkit_key_block_from_fields', 'kmipkit_key_block_from_item'}
+                        .issubset(result['invoked_symbols']))
+
 
     def test_compiled_consumer_provenance_cannot_be_replaced_by_coordinator(self):
         import route_peer
