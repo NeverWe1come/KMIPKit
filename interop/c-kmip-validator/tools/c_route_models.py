@@ -172,9 +172,13 @@ class ModelCases:
         if target.get('kind') == 'enumeration_value':
             selected = self._crypto_enum_field(target)
             wire_value = target.get('wire_value', '')
-            if selected is None or 'X' in wire_value.upper():
+            if selected is None:
                 return None
             field_name, tag_name = selected
+            if 'X' in wire_value.upper():
+                return (field_name, tag_name, 5,
+                        (int(wire_value.replace('X', '0').replace('x', '0'), 16),
+                         int(wire_value.replace('X', 'F').replace('x', 'f'), 16)))
             return field_name, tag_name, 5, int(wire_value, 16)
 
         if target.get('kind') == 'attribute':
@@ -230,6 +234,17 @@ class ModelCases:
         if selected is None:
             return None
         field_name, tag_name, item_type, value = selected
+        if isinstance(value, tuple):
+            samples = [self._execute_cryptographic_parameters(
+                {**target, 'wire_value': f'{sample:08X}'}, protocol_version)
+                for sample in value]
+            if any(sample is None for sample in samples):
+                return None
+            normalized_samples = [sample['normalized_tree'] for sample in samples]
+            symbols = set().union(*(sample['invoked_symbols'] for sample in samples))
+            return {'sample_count': sum(sample['sample_count'] for sample in samples),
+                    'normalized_tree': normalized_samples,
+                    'tree_sha256': digest(normalized_samples), 'invoked_symbols': symbols}
         fields = _CryptographicParametersFieldsV1()
         fields.struct_size = C.sizeof(fields)
         fields.abi_version = 1
