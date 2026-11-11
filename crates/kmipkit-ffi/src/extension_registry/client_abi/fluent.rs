@@ -540,9 +540,6 @@ pub extern "C" fn kmipkit_symmetric_key_builder_add_attribute_item(
     ffi_entrypoint(|| {
         let item = try_ffi!(super::super::copy_required_item_handle(item));
         let raw_tag = item.tag().raw();
-        if (0x0054_0000..=0x0054_FFFF).contains(&raw_tag) {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        }
         let item = if super::super::typed_attributes_catalog_generated::is_catalogued_attribute_tag(
             raw_tag,
         ) {
