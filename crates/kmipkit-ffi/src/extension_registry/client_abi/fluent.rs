@@ -195,6 +195,16 @@ fn update_symmetric_builder(
     Ok(())
 }
 
+fn validated_expert_attribute_item(item: *mut kmipkit_ttlv_item_t) -> FfiResult<Item> {
+    let item = super::super::copy_required_item_handle(item)?;
+    let tag = item.tag().raw();
+    if super::super::typed_attributes_catalog_generated::is_catalogued_attribute_tag(tag) {
+        super::super::typed_attributes::validate_typed_item(tag, item)
+    } else {
+        Ok(item)
+    }
+}
+
 fn symmetric_builder_request(
     request: *const kmipkit_symmetric_key_request_v1_t,
 ) -> FfiResult<SymmetricBuilder> {
@@ -540,17 +550,7 @@ pub extern "C" fn kmipkit_symmetric_key_builder_add_attribute_item(
     item: *mut kmipkit_ttlv_item_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        let item = try_ffi!(super::super::copy_required_item_handle(item));
-        let raw_tag = item.tag().raw();
-        let item = if super::super::typed_attributes_catalog_generated::is_catalogued_attribute_tag(
-            raw_tag,
-        ) {
-            try_ffi!(super::super::typed_attributes::validate_typed_item(
-                raw_tag, item
-            ))
-        } else {
-            item
-        };
+        let item = try_ffi!(validated_expert_attribute_item(item));
         try_ffi!(update_symmetric_builder(builder, |builder| {
             builder.attribute_item(item)
         }));
@@ -566,17 +566,7 @@ pub extern "C" fn kmipkit_symmetric_key_builder_insert_attribute_item(
     item: *mut kmipkit_ttlv_item_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        let item = try_ffi!(super::super::copy_required_item_handle(item));
-        let raw_tag = item.tag().raw();
-        let item = if super::super::typed_attributes_catalog_generated::is_catalogued_attribute_tag(
-            raw_tag,
-        ) {
-            try_ffi!(super::super::typed_attributes::validate_typed_item(
-                raw_tag, item
-            ))
-        } else {
-            item
-        };
+        let item = try_ffi!(validated_expert_attribute_item(item));
         let Ok(index) = usize::try_from(index) else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
