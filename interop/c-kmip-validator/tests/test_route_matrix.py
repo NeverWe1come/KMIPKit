@@ -369,6 +369,14 @@ class RouteMatrixTests(unittest.TestCase):
         ])
         self.assertIn('kmipkit_cryptographic_parameters_from_fields_v1', result['invoked_symbols'])
 
+    def test_query_peer_driver_checks_typed_response_ttlv_accessor(self):
+        root = Path(__file__).resolve().parents[3]
+        source = (root / 'interop/c-kmip-validator/src/live_driver.c').read_text()
+        self.assertTrue('kmipkit_client_batch_item_response_query_ttlv' in source,
+                        'Query driver does not inspect the typed TTLV response accessor')
+        self.assertTrue('kmipkit_ttlv_structure_view_item_count' in source,
+                        'Query driver does not compare the typed response field count')
+
 
     def test_compiled_consumer_provenance_cannot_be_replaced_by_coordinator(self):
         import route_peer
