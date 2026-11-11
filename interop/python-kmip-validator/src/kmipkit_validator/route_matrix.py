@@ -376,6 +376,9 @@ def verify_installed_artifact(artifact: dict) -> None:
     if (package.version != '1.0.0' or module is None or module.origin is None
             or not Path(module.origin).resolve().is_relative_to(Path(sys.prefix).resolve())):
         raise ValueError('pinned wheel is not installed in the isolated environment')
+    installed_origin = json.loads(package.read_text('direct_url.json') or '{}')
+    if installed_origin.get('archive_info', {}).get('hashes', {}).get('sha256') != artifact['artifact_sha256']:
+        raise ValueError('installed wheel identity differs from recorded archive')
     checked = 0
     with zipfile.ZipFile(artifact['artifact_file']) as wheel:
         for name in wheel.namelist():
