@@ -38,6 +38,7 @@ use rustls::server::WebPkiClientVerifier;
 use rustls::{RootCertStore, ServerConfig, ServerConnection, StreamOwned};
 
 use super::*;
+use crate::extension_registry::credential_secrets::kmipkit_secret_bytes_release;
 use crate::kmipkit_byte_span_v1_t;
 
 fn coverage_authentication_handle() -> *mut kmipkit_authentication_t {
@@ -11529,6 +11530,25 @@ fn client_response_extension_abi_returns_ordered_generic_ttlv_copy() {
     )
     .expect("a non-critical response extension is preserved");
     let item = client_batch_item_response_from(response);
+    // KMIPKIT-0095-FR-001..005; KMIP 2.1 §9.1.2 and §9.13.
+    let limits = make_handle(Kind::CodecLimits, HandleValue::CodecLimits(Arc::new(CodecLimits::defaults())));
+    for render in [
+        kmipkit_client_batch_item_response_ttlv_hex,
+        kmipkit_client_batch_item_response_json,
+        kmipkit_client_batch_item_response_xml,
+    ] {
+        let mut output = ptr::null_mut();
+        assert_eq!(render(item, limits, &raw mut output), SUCCESS);
+        let owner = reference_handle(output, Kind::SecretBytes).expect("rendered owner is live");
+        let HandleValue::SecretBytes(secret) = &owner.value else { panic!("wrong owner"); };
+        secret.with_bytes(|bytes| {
+            let text = std::str::from_utf8(bytes).expect("render is UTF-8");
+            assert!(!text.is_empty());
+            assert!(text.starts_with("42007B") || text.contains("ResponseMessage"));
+        });
+        kmipkit_secret_bytes_release(output);
+    }
+    kmipkit_codec_limits_release(limits);
     let mut count = u64::MAX;
     assert_eq!(
         kmipkit_client_batch_item_response_extension_count(item, &raw mut count),
