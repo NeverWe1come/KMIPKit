@@ -145,3 +145,27 @@ branches, and the common CI therefore reports a planned matrix only.
 - These checks validate the contract and planned matrix. T006/T007 remain open
   until the language-specific validators emit and pass full per-cell route,
   batch-response, and cross-language evidence.
+
+## 2026-11-11 operation-name association correction
+
+- Rust's executable matrix exposed a false route association: the public
+  `HashedPasswordCredential::into_ttlv` symbol had been assigned to the KMIP
+  `Hash` operation because the generator searched for normalized substrings.
+  This made the route claim Hash payload cases that the credential converter
+  cannot construct and caused misleading local failures in all four languages.
+- Operation association now compares complete name tokens, chooses the longest
+  matching operation phrase, recognizes the `asynchronous`/`async` spelling,
+  and accounts for the `Re-certify`/`Recertify` and similar compound names.
+  The regenerated manifest keeps all 1,479 routes and removes only the false
+  Hash association from the Rust, C, and Python credential serializers.
+- Red evidence: commits `6d91e9e2f` and `c2860c582` fail on the substring
+  collision and then on compound `Re-*` operation names. Green evidence:
+  `test_route_capabilities.py` passed 40 tests before the final compound-name
+  assertion; the new targeted test and `route_capabilities.py --write/--check`
+  pass with the complete fix. Full shared suite passed 139 tests after the
+  final source and generated manifest were checked in the worktree.
+- Behavior-preserving refactor: `59850d9ee` extracts operation tokenization,
+  phrase variants, and contiguous-token matching into named helpers. The
+  focused regression and generated-manifest check pass after this refactor.
+- This corrects matrix applicability; it does not mark any language matrix
+  complete. T006/T007 and all vendor interoperability runs remain open.
