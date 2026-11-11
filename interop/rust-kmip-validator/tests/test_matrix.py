@@ -57,6 +57,22 @@ class MatrixContract(unittest.TestCase):
         hashes = [event['request_tree_sha256'] for event in report['events']]
         self.assertNotEqual(*hashes, 'a fixed unrelated fixture cannot satisfy different target values')
 
+    def test_reserved_tag_decoder_records_expected_rejection_without_response_tree(self):
+        cell = next(cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
+                    if cell['case_id'] == 'test-norm-tag-tag-420009'
+                    and cell['public_api_symbol'] == 'kmipkit_ttlv::codec::decode'
+                    and cell['action'] == 'decode')
+        process, report = self.run_matrix([cell])
+        self.assertEqual(process.returncode, 0, process.stderr)
+        jsonschema.Draft202012Validator(SCHEMA).validate(report)
+        event = report['events'][0]
+        self.assertEqual('passed', event['status'])
+        self.assertEqual('rejected', event['decode_outcome'])
+        self.assertEqual('tag_not_allocated', event['decode_rejection_code'])
+        expected_wire = bytes.fromhex('42000905000000040000000000000000')
+        self.assertEqual(hashlib.sha256(expected_wire).hexdigest(), event['decode_input_sha256'])
+        self.assertNotIn('response_tree_sha256', event)
+
     def test_all_generic_value_constructors_roundtrip_their_own_data_type(self):
         kinds = {'big_integer': 'BIG-INTEGER', 'boolean': 'BOOLEAN', 'byte_string': 'BYTE-STRING',
                  'date_time': 'DATE-TIME', 'date_time_extended': 'DATE-TIME-EXTENDED',
