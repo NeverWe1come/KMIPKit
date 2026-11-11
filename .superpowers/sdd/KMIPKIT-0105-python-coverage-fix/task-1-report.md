@@ -61,9 +61,13 @@
 - Removed only `/tmp/pytest-of-ramp1953/pytest-1/test_built_wheel_artifact_cont0`,
   created by this run. `df -h /tmp .` then showed 813 MiB available in `/tmp`
   and 764 GiB on the worktree filesystem.
-- Following the parent's instruction, the exact packaging test is being
-  retried with `--basetemp=target/python105-wheel-retry` on the worktree disk.
-  No test was excluded and no coverage threshold changed.
+- Following the parent's instruction, retried the exact packaging test with
+  its temporary build and wheel on the worktree disk.
+- Command: `target/python312-venv/bin/python -m pytest -q bindings/python/tests/test_shared_parity_fixtures.py::test_built_wheel_artifact_contains_py_typed_and_adjacent_native_library --basetemp=target/python105-wheel-retry`.
+- Result: **1 passed** in 57.21 seconds. No test was excluded and no coverage
+  threshold changed. Combined with the original run's 1,299 passes, every
+  collected Python test passed, with the packaging success established by
+  the separate targeted retry rather than a single all-green suite run.
 
 ## Refactor
 
@@ -76,6 +80,10 @@
 - Commands: `git diff --check` and
   `target/python312-venv/bin/python -m py_compile bindings/python/src/kmipkit/fluent.py bindings/python/tests/test_fluent_crypto.py`.
 - Results: passed.
+- Refactor commit: `fe23ba474231147844cd5e3f0778164bbac15bfd`
+  (`refactor(python): consolidate crypto input rejection contracts`).
+- Command: `python3 -B -m unittest scripts.tests.test_requirement_traceability -v`.
+- Result: **2 passed**.
 
 ## Local official coverage gate
 
@@ -87,9 +95,25 @@
   aggregator's one existing documented exclusion; changed production
   **182/193 (94.30%)**, above the unchanged 90% gate.
 - The base is the exact Java base SHA recorded in the failed CI log.
+- Repeated the same aggregate command with
+  `--merge fe23ba474231147844cd5e3f0778164bbac15bfd` after the Refactor
+  commit; results were identical and passed.
 - This local selected-scope gate verifies the Python fix; the complete remote
   gate for the final pushed head remains authoritative.
 
-The exact packaging retry is pending.
+## Review handoff
+
+- Red, Green, and Refactor commits are separate and DCO signed off; exact
+  hashes are recorded above. The final evidence-only commit records the
+  completed packaging retry and all three phase hashes.
+- Production diff is limited to moving three descriptor-initialization lines
+  inside the existing wiping `try/finally`. New tests exercise real builders,
+  local validation, and lifecycle behavior. Only descriptor allocation is
+  replaced in the regression that requires deterministic allocation failure.
+- No generated file, gate threshold, exclusion, ABI, or transport was changed.
+- No push, PR edit, approval, or merge was performed. Untracked parent-owned
+  task brief/progress files were preserved.
+- Full Rust/C/Java/security gates were not repeated for this Python-scoped
+  correction. Parent owns review, push, and authoritative exact-head CI.
 
 Parent owns push and exact-head CI; no remote completion is claimed.
