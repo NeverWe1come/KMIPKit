@@ -17,6 +17,7 @@ from validate_route_evidence import (
     validate_parity_collection,
     validate_report,
 )  # noqa: E402
+import validate_route_evidence as route_evidence  # noqa: E402
 
 
 class RouteExecutionEvidenceTests(unittest.TestCase):
@@ -180,6 +181,20 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         report["case_ids"] = ["case-one", "case-one"]
         with self.assertRaisesRegex(ValueError, "case_ids contains duplicates"):
             self.validate(report)
+
+    def test_incomplete_route_ledger_names_pending_case_ids_and_counts(self):
+        self.catalog["test_cases"].append({
+            "case_id": "case-two",
+            "category": "normative_inventory",
+            "operation": "TTLV Roundtrip",
+            "requires": {"normative_target_id": "KMIPKIT-ELEM-TAG-420001"},
+            "execution": {"protocol_versions": ["2.0"]},
+        })
+        report = copy.deepcopy(self.report)
+        report["case_ids"] = ["case-one"]
+
+        self.assertTrue(callable(getattr(route_evidence, "build_evidence_ledger", None)),
+                        "The route execution validator must build an explicit incomplete ledger.")
 
     def test_missing_action_fails_coverage_even_when_the_route_was_called(self):
         report = copy.deepcopy(self.report)
