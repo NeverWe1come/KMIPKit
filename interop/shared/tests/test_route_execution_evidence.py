@@ -159,6 +159,13 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "missing route execution cells"):
             self.validate(report)
 
+    def test_constructed_request_tree_must_match_the_request_sent(self):
+        report = copy.deepcopy(self.report)
+        send_event = next(event for event in report["events"] if event["action"] == "send")
+        send_event["request_tree_sha256"] = "f" * 64
+        with self.assertRaisesRegex(ValueError, "constructed request tree differs from sent request"):
+            self.validate(report)
+
     def test_network_events_must_name_the_real_separate_execution_entrypoint(self):
         report = copy.deepcopy(self.report)
         report["events"][3]["execution_api_symbol"] = "kmipkit_client_batch_item_create"
