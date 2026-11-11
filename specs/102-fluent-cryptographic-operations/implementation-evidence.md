@@ -3,12 +3,14 @@
 ## Branch and dependency
 
 - Branch: `feature/KMIPKIT-0102-fluent-cryptographic-operations`.
-- Base: PR #184 at `bf9cd80d75bd6c5be12371bf8cfe6edf6337aff2` (latest
-  published head; CI is still running).
+- Base: PR #184 at `197899c1b`. This is the published head after correcting
+  the exact-head Python contract failure.
 - Draft PR: #185, based on #184; title retains `[WIP]`.
 - Red/Green/Refactor commits: `c077230d2`, `a8fc68cf3`, and `8e536b121`.
 - Commit `83748325a` merges the latest #184 branch head into this already-pushed
   branch without rewriting the published feature commits.
+- Merge commit `a0a6d66c8` synchronizes the corrected #184 head into this
+  branch without rewriting its published commits.
 - Scope: Rust fluent builders for Encrypt, Decrypt, Sign, Signature Verify,
   MAC, MAC Verify, and Hash.
 
