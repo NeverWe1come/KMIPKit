@@ -8,14 +8,16 @@ controlled exchange support in
 
 | Requirement | Source | Implementation and verification |
 |---|---|---|
-| KMIPKIT-0099-FR-001 | OASIS KMIP v2.1 §6.1.10 Tables 193–195; KMIPKIT-0093-FR-004 | `RequestBuilder::create_split_key`, `CreateSplitKeyBuilder`; required-field and exact payload tests in `fluent_create_split_key_tests.rs` |
-| KMIPKIT-0099-FR-002 | OASIS KMIP v2.1 §6.1.10 Tables 193–195; existing `CreateSplitKeyRequest` | Optional ID, Prime Field Size, Protection Storage Masks, empty Attributes, and attribute-order tests; KMIPKit's Prime Field Size policy remains covered by the existing typed validator |
-| KMIPKIT-0099-FR-003 | OASIS KMIP v2.1 §§4–5; KMIPKIT-0093-FR-006 | `attribute`, `attribute_item`, `vendor_attribute`, `attribute_at`, and prebuilt `attributes`; typed type, vendor shape, unknown tag, position, and message-extension rejection tests |
-| KMIPKIT-0099-FR-004 | KMIPKIT-0093-FR-004; KMIPKIT-0051-P005; existing typed request validation | `validate` delegates to `build_request`; non-consuming and no-exchange tests, Prime Field Size conditional rejection, Attribute cardinality rejection |
-| KMIPKIT-0099-FR-005 | OASIS KMIP v2.1 §§6.1.10, 8–9; KMIPKIT-0093-FR-005, FR-008 | `build`, `build_request`, `to_batch_item`, `execute`; one-exchange result tests preserve Success/Failure/Pending, repeated identifiers, order, correlation, and delivery state |
-| KMIPKIT-0099-FR-006 | ADR-0012, ADR-0022; KMIPKIT-0093-FR-007 | Existing `RequestOptions`, asynchronous indicator, and KMIP 2.1 typed route; no raw-send or version-selecting method in the builder |
-| KMIPKIT-0099-FR-007 | KMIPKIT-0093-FR-002, FR-011; repository API manifest contract | Rustdoc, English/Spanish examples, generated manifest declarations, `tools/api_manifest` tests and exporter audit |
+| KMIPKIT-0099-FR-001 | OASIS KMIP v2.1 §6.1.10 Tables 193–195; KMIPKIT-0093-FR-004 | `RequestBuilder::create_split_key`, `CreateSplitKeyBuilder`; `split_key_builder_requires_all_four_explicit_semantic_fields`, `split_key_builder_preserves_explicit_and_optional_fields_and_empty_attributes` |
+| KMIPKIT-0099-FR-002 | OASIS KMIP v2.1 §6.1.10 Tables 193–195; `CreateSplitKeyRequest` in `crates/kmipkit-protocol/src/create_split_key.rs` | `split_key_builder_preserves_explicit_and_optional_fields_and_empty_attributes`; `prime_field_method_requires_explicit_size_before_transport`; the existing typed validator remains authoritative for Prime Field Size policy |
+| KMIPKIT-0099-FR-003 | OASIS KMIP v2.1 §§4–5; KMIPKIT-0093-FR-006 | `attribute`, `attribute_item`, `attributes`, `vendor_attribute`, and `attribute_at`; `split_key_builder_preserves_typed_prebuilt_vendor_and_positioned_attributes`, `split_key_builder_rejects_malformed_attributes_duplicate_positions_and_extensions`, and `fluent_split_key_signature_exceptions_are_exact_and_method_scoped` |
+| KMIPKIT-0099-FR-004 | KMIPKIT-0093-FR-004; existing `CreateSplitKeyRequest` typed validation | `validate` delegates to `build_request`; `split_key_builder_validate_is_non_consuming_and_batch_conversion_is_typed`, `prime_field_method_requires_explicit_size_before_transport`, `split_key_builder_rejects_duplicate_singleton_attributes_before_transport`, `split_key_builder_rejects_malformed_attributes_duplicate_positions_and_extensions`, and the complete production AST boundary inventory |
+| KMIPKIT-0099-FR-005 | OASIS KMIP v2.1 §§6.1.10, 8–9; KMIPKIT-0093-FR-005, FR-008 | `build`, `build_request`, `to_batch_item`, `execute`; `split_key_builder_executes_one_typed_exchange_and_preserves_all_response_ids`, `split_key_builder_preserves_failure_and_pending_correlation_without_follow_up`, `split_key_builder_preserves_options_and_transport_delivery_state` |
+| KMIPKIT-0099-FR-006 | ADR-0012, ADR-0022; KMIPKIT-0093-FR-007 | `split_key_builder_preserves_options_and_transport_delivery_state`, `split_key_builder_preserves_failure_and_pending_correlation_without_follow_up`; existing `RequestOptions`, asynchronous indicator, and KMIP 2.1 typed route |
+| KMIPKIT-0099-FR-007 | KMIPKIT-0093-FR-002, FR-011; repository API manifest contract | Rustdoc, bilingual examples compiled by `scripts/test_user_guide_examples.py`, exact manifest contract test `tools/api_manifest/tests/test_0099_fluent_create_split_key_manifest.py`, generated API manifest, and Rust export audit |
 
-The fluent declarations in this Rust-only slice will be recorded with
+The 50 fluent declarations in this Rust-only slice are recorded with
 cross-language parity pending. Generated manifest records are not evidence
-that C, Java, or Python expose these methods.
+that C, Java, or Python expose these methods. The operation tests use the
+controlled `ExchangeScript` transport; the TLS user journeys remain part of
+the later end-to-end delivery and are not claimed by this slice.

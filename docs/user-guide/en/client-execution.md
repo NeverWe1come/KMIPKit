@@ -244,6 +244,59 @@ indicator. This slice is Rust-only: equivalent C, Java, and Python builder
 mappings remain blocked in the manifest pending their binding specifications.
 
 
+## Fluent Create Split Key in Rust
+
+KMIPKIT-0099 adds `client.request().create_split_key()` over the existing typed
+Create Split Key operation. The caller explicitly selects the object type,
+split method, number of parts, and threshold:
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, ClientBatchOutcome, ClientBatchItemResponse, ClientError};
+use kmipkit_protocol::{ObjectType, SplitKeyMethod};
+use kmipkit_protocol::named_values_generated::values::enumeration::object_type;
+use kmipkit_ttlv::codec::CodecLimits;
+
+#[allow(dead_code)]
+fn split_key(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<ClientBatchItemResponse, ClientError> {
+    let response = client.request().create_split_key()
+        .object_type(ObjectType::from_raw(object_type::SYMMETRIC_KEY))
+        .method(SplitKeyMethod::XOR)
+        .parts(3)
+        .threshold(2)
+        .execute(limits)?;
+    if let ClientBatchOutcome::CreateSplitKeyCompleted(completed) = response.outcome() {
+        let identifiers = completed.unique_identifiers();
+        let _ = identifiers;
+    }
+    Ok(response)
+}
+
+fn main() {}
+```
+
+The response exposes every returned Unique Identifier in wire order. The
+builder does not generate split material or choose split parameters. The
+optional input identifier, Prime Field Size, Protection Storage Masks, and
+Object Attributes are added only when the caller supplies them. Polynomial
+Sharing Prime Field requires an explicit Prime Field Size; the typed request
+validator rejects its absence locally. An empty Attributes Structure remains
+present as required by KMIP.
+
+`attribute(Attribute<D>)`, `attribute_item(Item)`, and `attributes(AttributeSet)`
+support typed and expert attributes while preserving insertion order.
+`vendor_attribute(...)` constructs the KMIP Vendor Attribute structure;
+Message Extension tags are rejected as Object Attributes. `validate()` and
+`build_request()` perform local typed validation without using the transport,
+and `to_batch_item()` returns the existing typed batch item. `execute()` uses
+one typed exchange. Success, Failure, Pending, correlation, and delivery state
+remain explicit; it does not retry or Poll automatically. The client keeps its
+configured protocol version and exchange options are supplied separately with
+`with_options`.
+
+
 ## Direct operation methods and per-exchange options
 
 `Client` exposes a typed direct method for each of the 56 client-initiated
