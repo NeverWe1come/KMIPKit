@@ -57,13 +57,15 @@ the remaining operation families and language facades.
   response accessors MUST be documented and recorded in
   `specification/api/public-api.json` using the repository generator. Existing
   public declarations MUST remain unchanged.
-- **KMIPKIT-0097-FR-006**: `CreateKeyPairBuilder::validate()` MUST perform the
-  same local construction and existing typed request validation as
+- **KMIPKIT-0097-FR-006**:
+  `CreateKeyPairBuilder::validate(&self) -> Result<(), FluentBuildError>` MUST
+  perform the same local construction and existing typed request validation as
   `build_request()`, return a payload-free `FluentBuildError` on failure, and
   MUST NOT invoke the transport or consume the builder.
 - **KMIPKIT-0097-FR-007**: The builder MUST accept a prebuilt `AttributeSet`
-  for Common, Private Key, and Public Key Attributes. Each supplied set MUST
-  be appended after that group's semantic values and previously appended
+  through consuming `common_attributes`, `private_key_attributes`, and
+  `public_key_attributes` methods for Common, Private Key, and Public Key
+  Attributes respectively. Each supplied set MUST be appended after that group's semantic values and previously appended
   typed attributes, preserving the supplied set's item order. Repeated set
   methods append in call order. Final request construction MUST run the
   existing typed request validator so duplicate or conflicting effective

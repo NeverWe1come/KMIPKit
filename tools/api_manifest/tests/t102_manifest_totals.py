@@ -16,8 +16,8 @@ T102_BLOCKED_CANDIDATES = 0
 # KMIPKIT-0091 adds fluent DX declarations; KMIPKIT-0095 adds response view
 # declarations and Rust trait exclusions pending cross-language adapters.
 # KMIPKIT-0096 adds four expert-position declarations; KMIPKIT-0097 adds
-# 38 exact Rust key-pair declarations and 18 standard-trait exclusions.
-T102_PUBLIC_DECLARATIONS = 13_922
+# 46 exact Rust key-pair declarations and 18 standard-trait exclusions.
+T102_PUBLIC_DECLARATIONS = 13_930
 T102_KMIP30_DRAFT_ROUTE_DECLARATIONS = 36
 T102_APPROVED_EXCLUSIONS = 18_982
 T102_RUST_AUDIT_MANIFEST = 3_287

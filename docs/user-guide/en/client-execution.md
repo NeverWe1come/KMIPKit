@@ -200,6 +200,42 @@ missing algorithm/length produce `FluentBuildError::MissingCreateKeyPairAlgorith
 or `FluentBuildError::MissingCreateKeyPairLength`. Invalid construction prevents
 an exchange and `execute()` reports delivery state `NotSent`.
 
+`validate()` performs the same local construction and typed request checks as
+`build_request()` without consuming the builder or invoking the transport.
+Prebuilt `AttributeSet` values can be appended with `common_attributes`,
+`private_key_attributes`, and `public_key_attributes`:
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, FluentBuildError};
+use kmipkit_protocol::{AttributeSet, CreateKeyPairRequest, CryptographicAlgorithm};
+use kmipkit_protocol::named_values_generated::values::enumeration::cryptographic_algorithm;
+
+#[allow(dead_code)]
+fn prepare_key_pair(
+    client: &mut Client,
+    common: AttributeSet,
+    private: AttributeSet,
+    public: AttributeSet,
+) -> Result<CreateKeyPairRequest, FluentBuildError> {
+    let builder = client.request().create_key_pair()
+        .algorithm(CryptographicAlgorithm::from_raw(cryptographic_algorithm::RSA))
+        .length(3072)
+        .common_attributes(common)
+        .private_key_attributes(private)
+        .public_key_attributes(public);
+    builder.validate()?;
+    builder.build_request()
+}
+
+fn main() {}
+```
+
+Each set keeps its internal item order. Semantic attributes come first;
+typed attributes and prebuilt sets follow in method-call order within their
+group. Repeated set methods append. Final typed request validation rejects
+duplicate or conflicting effective values before transport; it does not replace
+or silently discard earlier attributes.
+
 No usage mask, curve, key format, or protocol version is inferred by this
 builder. The client retains its configured version (2.1 by default); an explicit
 version override stays in `RequestOptions`. `with_options` supplies exchange

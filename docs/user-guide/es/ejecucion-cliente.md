@@ -210,6 +210,42 @@ o longitud produce `FluentBuildError::MissingCreateKeyPairAlgorithm` o
 `FluentBuildError::MissingCreateKeyPairLength`. Una construcción inválida impide
 el intercambio y `execute()` devuelve el estado de entrega `NotSent`.
 
+`validate()` realiza la misma construcción local y validación tipada que
+`build_request()` sin consumir el builder ni invocar el transporte.
+Puedes añadir valores `AttributeSet` ya construidos mediante
+`common_attributes`, `private_key_attributes` y `public_key_attributes`:
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, FluentBuildError};
+use kmipkit_protocol::{AttributeSet, CreateKeyPairRequest, CryptographicAlgorithm};
+use kmipkit_protocol::named_values_generated::values::enumeration::cryptographic_algorithm;
+
+#[allow(dead_code)]
+fn prepare_key_pair(
+    client: &mut Client,
+    common: AttributeSet,
+    private: AttributeSet,
+    public: AttributeSet,
+) -> Result<CreateKeyPairRequest, FluentBuildError> {
+    let builder = client.request().create_key_pair()
+        .algorithm(CryptographicAlgorithm::from_raw(cryptographic_algorithm::RSA))
+        .length(3072)
+        .common_attributes(common)
+        .private_key_attributes(private)
+        .public_key_attributes(public);
+    builder.validate()?;
+    builder.build_request()
+}
+
+fn main() {}
+```
+
+Cada conjunto conserva el orden de sus elementos. Los atributos semánticos
+aparecen primero; los atributos tipados y los conjuntos siguen el orden de
+las llamadas dentro de su grupo. Las llamadas repetidas añaden elementos.
+La validación tipada final rechaza valores efectivos duplicados o incompatibles
+antes del transporte, sin sustituir ni descartar atributos anteriores.
+
 El builder no deduce máscara de uso, curva, formato de clave ni versión de
 protocolo. El cliente conserva su versión configurada (2.1 por defecto); la
 sobrescritura explícita de versión sigue en `RequestOptions`. `with_options`

@@ -549,7 +549,7 @@ class T102ResponseViewMappingTests(unittest.TestCase):
                     | {RETIRED_REKEY_KEY_PAIR_REQUIREMENT}
                 )
         self.assertEqual(
-        "e79bc0007ed94a506b5daa54b09f2bdc26839146d436786246ee2359db88f59c",
+        "7090bf6074270aa05acdf16e78f53f17de54c813d672aac005400317e3f1781a",
             canonical_sha256(without_0047_versioned_values(unchanged_declarations)),
         )
 
@@ -668,7 +668,7 @@ class T102ResponseViewMappingTests(unittest.TestCase):
                 requirements.add(LOCATE_SERVER_ONLY_REQUIREMENT)
                 function["requirementIds"] = sorted(requirements)
         self.assertEqual(
-            "e715145ebb362b6c701bf6ba41856133e3a13907b2441c555b94492849222407",
+            "2408e103c073ec9732f1129c3a2735fd5fe8c042b1016d4ad59122beb9213a47",
             canonical_sha256(other_manifest),
         )
 

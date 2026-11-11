@@ -403,6 +403,8 @@
     "KMIPKIT-0097-FR-003",
     "KMIPKIT-0097-FR-004",
     "KMIPKIT-0097-FR-005",
+    "KMIPKIT-0097-FR-006",
+    "KMIPKIT-0097-FR-007",
     "KMIPKIT-REQ-SPEC-4.16-001-001",
     "KMIPKIT-REQ-SPEC-4.16-001-002",
     "KMIPKIT-REQ-SPEC-4.16-002",
@@ -715825,6 +715827,142 @@
         "KMIPKIT-0097-FR-003",
         "KMIPKIT-0097-FR-004",
         "KMIPKIT-0097-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-3bc6fde99de03ddba9b6",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateKeyPairBuilder<'a>::validate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-005",
+        "KMIPKIT-0097-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-900615a07f91a5f6b261",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateKeyPairBuilder<'a>::common_attributes",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-005",
+        "KMIPKIT-0097-FR-007"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-437614561ecc8c0e29fb",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateKeyPairBuilder<'a>::private_key_attributes",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-005",
+        "KMIPKIT-0097-FR-007"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-a666b56639ac7f5e2964",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateKeyPairBuilder<'a>::public_key_attributes",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-005",
+        "KMIPKIT-0097-FR-007"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-89f1dc782362b4fc53f9",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::validate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-005",
+        "KMIPKIT-0097-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-43fd908d4be490b3526a",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::common_attributes",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-005",
+        "KMIPKIT-0097-FR-007"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-deeddf0974f42c5b9b4c",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::private_key_attributes",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-005",
+        "KMIPKIT-0097-FR-007"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0097",
+      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0097-7f5aef15d5ec6dffd09d",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::public_key_attributes",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0097-FR-001",
+        "KMIPKIT-0097-FR-003",
+        "KMIPKIT-0097-FR-005",
+        "KMIPKIT-0097-FR-007"
       ],
       "declarationState": "blocked",
       "parityScope": "four-language",
