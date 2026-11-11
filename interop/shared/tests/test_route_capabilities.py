@@ -55,6 +55,17 @@ class RouteCapabilitiesTests(unittest.TestCase):
         self.assertTrue(routes)
         self.assertTrue(any('KMIPKIT-ELEM-ATTRIBUTE-ACTIVATION-DATE' in r['normative_target_ids'] for r in routes))
 
+    def test_typed_attribute_marker_does_not_inherit_a_sibling_attribute_name(self):
+        routes = [route for route in self.data['routes']
+                  if route['language'] == 'rust' and 'typed::Comment>' in route['public_api_symbol']]
+        self.assertTrue(routes)
+        for route in routes:
+            targets = set(route['normative_target_ids'])
+            self.assertIn('KMIPKIT-ELEM-ATTRIBUTE-COMMENT', targets)
+            self.assertIn('KMIPKIT-ELEM-TAG-4200FD', targets)
+            self.assertNotIn('KMIPKIT-ELEM-ATTRIBUTE-DESCRIPTION', targets)
+            self.assertNotIn('KMIPKIT-ELEM-TAG-4200FC', targets)
+
     def test_every_named_enum_and_mask_target_has_an_exact_public_value_symbol(self):
         catalog = json.loads((SHARED / 'catalog/kmipkit-1.0-test-catalog.json').read_text())
         target_ids = {t['target_id'] for t in catalog['normative_targets']
