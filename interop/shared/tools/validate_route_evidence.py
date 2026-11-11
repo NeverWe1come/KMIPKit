@@ -33,17 +33,18 @@ def _event_outcome(record: dict) -> dict:
     return {field: value for field, value in record.items() if field != "invocation_id"}
 
 
-def _expects_tag_decode_rejection(cell: dict, case: dict) -> bool:
+def _expected_tag_decode_rejection_code(cell: dict, case: dict) -> str | None:
     requires = case.get("requires", {})
     if (cell.get("action") != "decode" or cell.get("mode") != "local"
             or ".generic-ttlv." not in f".{cell.get('route_id', '')}."):
-        return False
+        return None
     if requires.get("target_kind") not in {"tag", "tag_range"}:
-        return False
-    if requires.get("allocation") not in {"reserved", "unused"}:
-        return False
+        return None
+    code = {"reserved": "tag_reserved", "unused": "tag_not_allocated"}.get(requires.get("allocation"))
+    if code is None:
+        return None
     symbol = re.sub(r"[^a-z0-9]", "", cell.get("public_api_symbol", "").casefold())
-    return "codecdecode" in symbol or symbol.endswith("ttlvdecode")
+    return code if "codecdecode" in symbol or symbol.endswith("ttlvdecode") else None
 
 
 def _request_identity(record: dict) -> tuple:
@@ -274,14 +275,14 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
         if status == "passed":
             case = case_by_id[event["case_id"]]
             if event["action"] == "decode":
-                expects_rejection = _expects_tag_decode_rejection(planned, case)
+                expected_rejection_code = _expected_tag_decode_rejection_code(planned, case)
                 outcome = event.get("decode_outcome")
-                if outcome == "rejected" or expects_rejection:
-                    if not expects_rejection:
+                if outcome == "rejected" or expected_rejection_code is not None:
+                    if expected_rejection_code is None:
                         raise ValueError(f"decode rejection is not expected for this route cell: {key}")
                     if event.get("decode_outcome") != "rejected":
                         raise ValueError(f"reserved or unused tag decoder did not report its expected rejection: {key}")
-                    if event.get("decode_rejection_code") != "tag_not_allocated":
+                    if event.get("decode_rejection_code") != expected_rejection_code:
                         raise ValueError(f"reserved or unused tag decoder reported the wrong rejection code: {key}")
                     input_hash = event.get("decode_input_sha256")
                     if not isinstance(input_hash, str) or not re.fullmatch(r"[0-9a-f]{64}", input_hash):

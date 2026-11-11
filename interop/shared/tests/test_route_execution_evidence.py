@@ -218,11 +218,34 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
             'invocation_count': 1,
             'invocation_id': 'c.generic-ttlv.decode:decode',
             'decode_outcome': 'rejected',
-            'decode_rejection_code': 'tag_not_allocated',
+            'decode_rejection_code': 'tag_reserved',
             'decode_input_sha256': 'e' * 64,
         })
         summary = self.validate(report)
         self.assertTrue(summary['all_invocations_passed'])
+
+        wrong_classification = copy.deepcopy(report)
+        wrong_classification['events'][-1]['decode_rejection_code'] = 'tag_not_allocated'
+        with self.assertRaisesRegex(ValueError, 'wrong rejection code'):
+            self.validate(wrong_classification)
+
+        unused_tag = copy.deepcopy(report)
+        unused_tag_id = 'KMIPKIT-RANGE-001'
+        self.catalog['test_cases'][0]['requires'].update({
+            'normative_target_id': unused_tag_id,
+            'target_kind': 'tag_range',
+            'allocation': 'unused',
+        })
+        for event in unused_tag['events']:
+            event['target_id'] = unused_tag_id
+        unused_tag['events'][-1]['decode_rejection_code'] = 'tag_not_allocated'
+        self.assertTrue(self.validate(unused_tag)['all_invocations_passed'])
+        self.catalog['test_cases'][0]['requires'] = {
+            'normative_target_id': 'KMIPKIT-ELEM-TAG-420009',
+            'target_kind': 'tag',
+            'allocation': 'reserved',
+            'wire_value': '420009',
+        }
 
         try:
             import jsonschema
@@ -519,7 +542,7 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
                 'invocation_count': 1,
                 'invocation_id': f'{language}:reserved-tag-decode',
                 'decode_outcome': 'rejected',
-                'decode_rejection_code': 'tag_not_allocated',
+                'decode_rejection_code': 'tag_reserved',
                 'decode_input_sha256': 'e' * 64,
             })
         artifacts = {report['language']: report['artifact_sha256'] for report in reports}
