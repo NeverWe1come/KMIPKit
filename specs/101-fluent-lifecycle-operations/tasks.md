@@ -10,7 +10,7 @@
   delivery state, local rejection, version gates, and redaction.
 - [x] D001 Update public API manifest, traceability, examples or API guide,
   generated artifacts, and implementation evidence.
-- [ ] V001 Run format, Clippy, focused and full client suites, coverage,
+- [x] V001 Run format, Clippy, focused and full client suites, coverage,
   manifest generation, export audit, and traceability checks.
 - [ ] P001 Commit Red, Green, and Refactor separately, open a `[WIP]` draft
   based on #183, and keep WIP until exact-head CI is green.

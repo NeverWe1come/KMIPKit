@@ -138,6 +138,7 @@ approved catalog determine wire semantics and assigned values.
   methods; Python MUST offer snake_case operation objects, named arguments,
   and PEP 561 type information. All four surfaces MUST cover the same
   executable operation matrix without changing existing entry points.
+  Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.
 - **KMIPKIT-0093-FR-012**: Server-to-client Notify, Put, Query, Discover
   Versions, and other approved listener operations MUST use received typed
   request objects and typed handler responses. They MUST preserve listener

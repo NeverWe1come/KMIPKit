@@ -35878,11 +35878,6 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::fluent::CreateSymmetricKeyBuilder::attribute",
     ),
     (
-        "T091:fluent-rust-map:73e602c18d32bcaf",
-        "rust-kmipkit-client",
-        "kmipkit_client::fluent::CreateSymmetricKeyBuilder::add_attribute_item",
-    ),
-    (
         "T091:fluent-rust-map:b3da8c3fc040b402",
         "rust-kmipkit-client",
         "kmipkit_client::fluent::CreateSymmetricKeyBuilder::vendor_attribute",
@@ -35941,5 +35936,10 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "T091:fluent-rust-target:9d32d60746b88672",
         "rust-kmipkit-client",
         "kmipkit_client::fluent::GetBuilder::with_asynchronous_indicator",
+    ),
+    (
+        "T091:fluent-rust-map:b032afc80e7f963c",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateSymmetricKeyBuilder::attribute_item",
     ),
 ];
