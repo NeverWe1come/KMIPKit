@@ -14,17 +14,18 @@ must stay based on that dependency while review is pending.
 - [x] Run `cargo test -p kmipkit-client --all-features fluent_register_tests
   -- --nocapture`; expected Red exit 101 reports missing `register`,
   `RegisterBuilder`, and the missing/invalid Register builder errors.
-- [ ] Commit the specification and failing tests with DCO before production
+- [x] Commit the specification and failing tests with DCO before production
   changes.
 
 ## Green implementation
 
-- [ ] Add `RequestBuilder::register()` and public `RegisterBuilder`.
-- [ ] Add semantic object and explicit typed-item setters, attributes,
+- [x] Add `RequestBuilder::register()` and public `RegisterBuilder`.
+- [x] Add semantic object and explicit typed-item setters, attributes,
   Protection Storage Masks, and Opaque Object context.
-- [ ] Add `validate`, `build`, `build_request`, `to_batch_item`, and one-shot
+- [x] Add `validate`, `build`, `build_request`, `to_batch_item`, and one-shot
   `execute` through the existing typed path.
-- [ ] Run focused tests, full client tests, and Clippy; commit Green separately.
+- [x] Run focused tests, the full client suite, and Clippy; commit Green
+  separately.
 
 ## Refactor and evidence
 

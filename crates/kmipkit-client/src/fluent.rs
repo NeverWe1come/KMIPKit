@@ -8,7 +8,8 @@ use kmipkit_protocol::attribute::typed;
 use kmipkit_protocol::{
     Attribute, AttributeDefinition, AttributeSet, AttributeSetError, CreateKeyPairRequest,
     CreateRequest, CreateSplitKeyRequest, CryptographicAlgorithm, DestroyRequest, GetRequest,
-    ObjectType, SplitKeyMethod, UniqueIdentifier, ValidateKmipRequest,
+    ManagedObject, ObjectType, OpaqueObjectContext, RegisterRequest, SplitKeyMethod,
+    UniqueIdentifier, ValidateKmipRequest,
 };
 use kmipkit_transport::{RequestDeliveryState, RequestOptions};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
@@ -94,6 +95,10 @@ pub enum FluentBuildError {
     MissingCreateSplitKeyParts,
     /// Create Split Key is missing Split Key Threshold.
     MissingCreateSplitKeyThreshold,
+    /// Register is missing its object.
+    MissingRegisterObject,
+    /// Register's object or context is invalid.
+    InvalidRegisterObject,
     /// A catalogued attribute has an invalid TTLV type or structure.
     InvalidAttributeValue,
     /// A KMIP message extension tag was supplied as an Object Attribute.
@@ -130,6 +135,8 @@ impl fmt::Display for FluentBuildError {
             Self::MissingCreateSplitKeyMethod => "Create Split Key requires Split Key Method",
             Self::MissingCreateSplitKeyParts => "Create Split Key requires Split Key Parts",
             Self::MissingCreateSplitKeyThreshold => "Create Split Key requires Split Key Threshold",
+            Self::MissingRegisterObject => "Register requires an object",
+            Self::InvalidRegisterObject => "Register object or context is invalid",
             Self::InvalidAttributeValue => "fluent Object Attribute value is invalid",
             Self::MessageExtensionTagNotObjectAttribute => {
                 "KMIP message extension tags are not Object Attributes"
@@ -188,6 +195,12 @@ impl<'a> RequestBuilder<'a> {
         CreateSplitKeyBuilder::new(self.client)
     }
 
+    /// Begins constructing a typed Register request.
+    #[must_use]
+    pub fn register(self) -> RegisterBuilder<'a> {
+        RegisterBuilder::new(self.client)
+    }
+
     /// Begins constructing a typed Get request for an explicit identifier.
     #[must_use]
     pub fn get(self, unique_identifier: UniqueIdentifier) -> GetBuilder<'a> {
@@ -207,6 +220,318 @@ impl<'a> RequestBuilder<'a> {
             request: DestroyRequest::new(Some(unique_identifier)),
             options: None,
             asynchronous_indicator: None,
+        }
+    }
+}
+
+/// A Register builder that validates and executes the existing typed request.
+pub struct RegisterBuilder<'a> {
+    client: &'a mut Client,
+    object: Option<(ObjectType, Item)>,
+    attributes: AttributeSet,
+    protection_storage_masks: Option<Structure>,
+    opaque_object_context: Option<OpaqueObjectContext>,
+    positioned_attributes: Vec<(usize, Item)>,
+    attribute_error: Option<FluentBuildError>,
+    options: Option<RequestOptions>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl<'a> RegisterBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            client,
+            object: None,
+            attributes: AttributeSet::new(),
+            protection_storage_masks: None,
+            opaque_object_context: None,
+            positioned_attributes: Vec::new(),
+            attribute_error: None,
+            options: None,
+            asynchronous_indicator: None,
+        }
+    }
+
+    /// Sets a typed object and derives its KMIP Object Type.
+    #[must_use]
+    pub fn object(mut self, object: ManagedObject) -> Self {
+        let object_type = object.object_type();
+        self.object = Some((object_type, object.into_item()));
+        self
+    }
+
+    /// Sets an explicit Object Type and structurally typed object Item.
+    ///
+    /// This is the expert path for future, vendor, or otherwise generic object
+    /// types. Final validation still checks known Object Type and object-tag
+    /// relationships through the existing Register request model.
+    #[must_use]
+    pub fn object_item(mut self, object_type: ObjectType, object: Item) -> Self {
+        self.object = Some((object_type, object));
+        self
+    }
+
+    /// Appends a catalogued attribute constructed with its typed marker.
+    #[must_use]
+    pub fn attribute<D: AttributeDefinition>(mut self, attribute: Attribute<D>) -> Self {
+        self.add_attribute_item(attribute.into_item());
+        self
+    }
+
+    /// Appends an explicit TTLV Item as an expert Object Attribute.
+    #[must_use]
+    pub fn attribute_item(mut self, item: Item) -> Self {
+        self.add_attribute_item(item);
+        self
+    }
+
+    /// Appends a prebuilt Attribute Set in its existing item order.
+    #[must_use]
+    pub fn attributes(mut self, attributes: AttributeSet) -> Self {
+        for item in attributes.into_items() {
+            self.add_attribute_item(item);
+        }
+        self
+    }
+
+    /// Inserts an explicit expert attribute at its final Object Attributes index.
+    #[must_use]
+    pub fn attribute_at(mut self, position: FluentAttributePosition, item: Item) -> Self {
+        if self.attribute_error.is_some() {
+            return self;
+        }
+        let FluentAttributePosition::ObjectAttributes { index } = position;
+        if !self.accept_object_attribute_tag(&item) {
+            return self;
+        }
+        if self
+            .positioned_attributes
+            .iter()
+            .any(|(existing, _)| *existing == index)
+        {
+            self.attribute_error = Some(FluentBuildError::DuplicateAttributePosition);
+            return self;
+        }
+        self.positioned_attributes.push((index, item));
+        self
+    }
+
+    /// Builds a KMIP Vendor Attribute structure from explicit components.
+    #[must_use]
+    pub fn vendor_attribute(
+        mut self,
+        vendor_identification: &str,
+        attribute_name: &str,
+        attribute_value: &Item,
+    ) -> Self {
+        if self.attribute_error.is_some() {
+            return self;
+        }
+        let value = match attribute_value.with_value(clone_value) {
+            Ok(value) => value,
+            Err(error) => {
+                self.attribute_error = Some(error);
+                return self;
+            }
+        };
+        let vendor = (|| {
+            let mut fields = Structure::new();
+            fields
+                .try_push(item(
+                    VENDOR_IDENTIFICATION_TAG,
+                    Value::text_string(vendor_identification.to_owned()),
+                )?)
+                .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
+            fields
+                .try_push(item(
+                    ATTRIBUTE_NAME_TAG,
+                    Value::text_string(attribute_name.to_owned()),
+                )?)
+                .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
+            fields
+                .try_push(item(ATTRIBUTE_VALUE_TAG, value)?)
+                .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
+            item(VENDOR_ATTRIBUTE_TAG, Value::structure(fields))
+        })();
+        match vendor {
+            Ok(item) => self.add_attribute_item(item),
+            Err(error) => self.attribute_error = Some(error),
+        }
+        self
+    }
+
+    /// Sets optional Protection Storage Masks as an explicit KMIP Structure.
+    #[must_use]
+    pub fn protection_storage_masks(mut self, masks: Structure) -> Self {
+        self.protection_storage_masks = Some(masks);
+        self
+    }
+
+    /// Selects local Register attribute handling for an Opaque Object.
+    #[must_use]
+    pub const fn opaque_object_context(mut self, context: OpaqueObjectContext) -> Self {
+        self.opaque_object_context = Some(context);
+        self
+    }
+
+    /// Sets exchange-local options without changing client or batch policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.options = Some(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.asynchronous_indicator = Some(value);
+        self
+    }
+
+    /// Validates all accumulated inputs without sending a request.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError`] when the object is missing, its local
+    /// Register validation fails, or an attribute cannot be represented.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        self.build_request().map(|_| ())
+    }
+
+    /// Builds the existing typed Register request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError`] when the object is missing, its local
+    /// Register validation fails, or an attribute cannot be represented.
+    pub fn build(self) -> Result<RegisterRequest, FluentBuildError> {
+        self.build_request()
+    }
+
+    /// Builds a typed Register request without consuming the builder inputs.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError`] when the object is missing, its local
+    /// Register validation fails, or an attribute cannot be represented.
+    pub fn build_request(&self) -> Result<RegisterRequest, FluentBuildError> {
+        if let Some(error) = self.attribute_error {
+            return Err(error);
+        }
+        let (object_type, object) = self
+            .object
+            .as_ref()
+            .ok_or(FluentBuildError::MissingRegisterObject)?;
+        let mut attributes = AttributeSet::new();
+        for attribute in self.attributes.as_items() {
+            attributes
+                .try_push(
+                    attribute
+                        .try_clone()
+                        .map_err(|_| FluentBuildError::InvalidTtlvValue)?,
+                )
+                .map_err(|_| FluentBuildError::InvalidAttributeValue)?;
+        }
+        if !self.positioned_attributes.is_empty() {
+            let final_len = attributes
+                .len()
+                .checked_add(self.positioned_attributes.len())
+                .ok_or(FluentBuildError::AttributePositionOutOfBounds)?;
+            let mut positioned = self.positioned_attributes.iter().collect::<Vec<_>>();
+            positioned.sort_by_key(|(index, _)| *index);
+            if positioned.iter().any(|(index, _)| *index >= final_len) {
+                return Err(FluentBuildError::AttributePositionOutOfBounds);
+            }
+            let mut ordered = attributes
+                .as_items()
+                .iter()
+                .map(Item::try_clone)
+                .collect::<Result<Vec<_>, _>>()
+                .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
+            for (index, item) in positioned {
+                let copy = item
+                    .try_clone()
+                    .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
+                if *index > ordered.len() {
+                    return Err(FluentBuildError::AttributePositionOutOfBounds);
+                }
+                ordered.insert(*index, copy);
+            }
+            attributes = AttributeSet::try_new(ordered)
+                .map_err(|_| FluentBuildError::InvalidAttributeValue)?;
+        }
+
+        let object = object
+            .try_clone()
+            .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
+        let mut request = RegisterRequest::new(*object_type, attributes, object);
+        if let Some(masks) = &self.protection_storage_masks {
+            let masks = masks
+                .view()
+                .try_clone()
+                .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
+            request = request.with_protection_storage_masks(masks);
+        }
+        if let Some(context) = self.opaque_object_context {
+            request = request.with_opaque_object_context(context);
+        }
+        if !request.validate().is_valid() {
+            return Err(FluentBuildError::InvalidRegisterObject);
+        }
+        Ok(request)
+    }
+
+    /// Converts the validated request to one existing typed batch item.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError`] when the object is missing, its local
+    /// Register validation fails, or an attribute cannot be represented.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build_request()
+            .map(|request| ClientBatchItem::new(ClientRequest::Register(request)))
+    }
+
+    /// Executes one typed Register exchange through the existing client.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ClientError`] when local validation fails or the existing
+    /// client exchange fails.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let request = self.build_request().map_err(|error| {
+            ClientError::validation(
+                ClientCauseCategory::InvalidInput,
+                RequestDeliveryState::NotSent,
+                error,
+            )
+        })?;
+        self.client.execute_one_typed_request_with_async_indicator(
+            ClientRequest::Register(request),
+            self.asynchronous_indicator,
+            limits,
+            &self.options.unwrap_or_default(),
+        )
+    }
+
+    fn add_attribute_item(&mut self, item: Item) {
+        if self.attribute_error.is_some() || !self.accept_object_attribute_tag(&item) {
+            return;
+        }
+        if self.attributes.try_push(item).is_err() {
+            self.attribute_error = Some(FluentBuildError::InvalidAttributeValue);
+        }
+    }
+
+    fn accept_object_attribute_tag(&mut self, item: &Item) -> bool {
+        if (MESSAGE_EXTENSION_TAG_START..=MESSAGE_EXTENSION_TAG_END).contains(&item.tag().raw()) {
+            self.attribute_error = Some(FluentBuildError::MessageExtensionTagNotObjectAttribute);
+            false
+        } else {
+            true
         }
     }
 }

@@ -370,7 +370,8 @@ pub use execute::{
 };
 pub use fluent::{
     CreateKeyPairBuilder, CreateSplitKeyBuilder, CreateSymmetricKeyBuilder, CryptographicUsageMask,
-    DestroyBuilder, FluentAttributePosition, FluentBuildError, GetBuilder, RequestBuilder,
+    DestroyBuilder, FluentAttributePosition, FluentBuildError, GetBuilder, RegisterBuilder,
+    RequestBuilder,
 };
 pub use kmipkit_protocol::{
     ProfileObjectState, ProfileTransport, ProfileValidationContext, ProfileValidationError,
