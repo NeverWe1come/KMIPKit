@@ -4,6 +4,7 @@ Only request shape/status metadata is retained. Bodies and sentinel secrets are
 never written to evidence artifacts. These peers are controlled fixtures, not
 vendor compatibility evidence.
 """
+import hashlib
 import contextlib
 import json
 import os
@@ -343,6 +344,29 @@ class LiveContract(unittest.TestCase):
 
 
 
+
+    def test_controlled_query_peer_checks_every_encoding_transport_pair(self):
+        baseline = None
+        for version in ("2.0", "2.1"):
+            for encoding in ("TTLV", "JSON", "XML"):
+                for transport in ("raw_tls", "https"):
+                    with self.subTest(version=version, encoding=encoding, transport=transport):
+                        with ControlledPeer(self.pki, lambda tree: response(0x18, minor=int(version[-1]), status=0, reason=None, payload=[])) as peer:
+                            peer.encoding, peer.transport = encoding, transport
+                            process, report = self.command(self.connection(peer.port, version=version, encoding=encoding, transport=transport), self.rows("test-op-query"))
+                        self.assertEqual(process.returncode, 0, process.stderr)
+                        self.assertEqual(peer.operations, [0x18])
+                        normalized = (report["cases"][0]["status"], report["cases"][0]["result_status"])
+                        if baseline is None:
+                            baseline = normalized
+                        self.assertEqual(normalized, baseline)
+
+    def test_hash_does_not_accept_wrong_successful_digest(self):
+        expected = hashlib.sha256(b"A" * 16).digest()
+        for value, outcome in ((expected, "passed"), (b"bad-controlled-digest", "failed")):
+            with self.subTest(outcome=outcome), ControlledPeer(self.pki, lambda tree: response(0x27, status=0, reason=None, payload=[ttlv(0x4200c2, 8, value)])) as peer:
+                _, report = self.command(self.connection(peer.port, mutations=True), self.rows("test-op-hash"))
+            self.assertEqual(report["cases"][0]["status"], outcome)
 
     def test_markdown_preserves_case_outcome_and_redacts_server_text(self):
         before = set(self.directory.rglob("results.md"))
