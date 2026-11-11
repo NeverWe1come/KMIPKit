@@ -216,7 +216,10 @@ def scalar_fixture(target: dict, tags: dict[str, int], catalog: dict | None = No
     if kind == 'tag':
         return int(target['wire_value'], 16), 2, (7).to_bytes(4, 'big')
     if kind == 'operation' and catalog is not None:
-        value = catalog_enum_value(catalog, 'Operation', target['name'], protocol_version)
+        value_version = protocol_version
+        if value_version not in target['protocol_versions']:
+            value_version = target['protocol_versions'][-1]
+        value = catalog_enum_value(catalog, 'Operation', target['name'], value_version)
         tag = normalized_tags.get('operation')
         if tag is None or value is None:
             return None
