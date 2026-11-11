@@ -50,12 +50,10 @@ class CallTrace:
         self.codes = {}
         self.observed: set[str] = set()
         for symbol in symbols:
-            function = public_callable(symbol)
-            while callable(function):
-                code = getattr(function, '__code__', None)
-                if code is not None:
-                    self.codes.setdefault(code, set()).add(symbol)
-                function = getattr(function, '__wrapped__', None)
+            function = inspect.unwrap(public_callable(symbol))
+            code = getattr(function, '__code__', None)
+            if code is not None:
+                self.codes.setdefault(code, set()).add(symbol)
         self.previous = None
 
     def _profile(self, frame, event, arg):
@@ -206,7 +204,7 @@ _GENERIC_SYMBOLS = {
 def execute_cell(cell: dict, case: dict, target: dict) -> dict:
     if cell['transport'] is None:
         return _generic_cell(cell, case, target)
-    raise RecipePending
+    return _network_cell(cell, case, target)
 
 
 def run_matrix(catalog: dict, manifest: dict, artifact: dict,
@@ -238,9 +236,12 @@ def run_matrix(catalog: dict, manifest: dict, artifact: dict,
     for cell in iter_cells(catalog, manifest, languages=('python',)):
         identity = {field: cell[field] for field in event_fields if field in cell}
         try:
-            with CallTrace([cell['public_api_symbol']]) as trace:
+            symbols = [cell['public_api_symbol']]
+            if cell.get('execution_api_symbol'):
+                symbols.append(cell['execution_api_symbol'])
+            with CallTrace(symbols) as trace:
                 observed = execute_cell(cell, cases[cell['case_id']], targets[cell['target_id']])
-            if cell['public_api_symbol'] not in trace.observed:
+            if not set(symbols) <= trace.observed:
                 raise RecipePending
             report['events'].append({**identity, 'invocation_id': str(uuid.uuid4()),
                                      'invocation_count': 1, 'status': 'passed', **observed})
@@ -250,3 +251,114 @@ def run_matrix(catalog: dict, manifest: dict, artifact: dict,
             # No exception names, sources, native text or raw fixture values leave here.
             gaps.append({**identity, 'failure_code': 'recipe_execution_failed'})
     return report, gaps
+
+
+def _ping_tree(wire: bytes, encoding: str) -> list:
+    """Normalize the complete deterministic Ping envelope, retaining child order."""
+    from kmipkit import protocol_values
+    from .controlled_peer import parse_children
+    import xml.etree.ElementTree as ET
+
+    tags = {'RequestMessage': 0x420078, 'RequestHeader': 0x420077,
+            'ResponseMessage': 0x42007B, 'ResponseHeader': 0x42007A,
+            'ProtocolVersion': 0x420069, 'ProtocolVersionMajor': 0x42006A,
+            'ProtocolVersionMinor': 0x42006B, 'AsynchronousIndicator': 0x420007,
+            'BatchCount': 0x42000D, 'BatchItem': 0x42000F, 'Operation': 0x42005C,
+            'RequestPayload': 0x420079, 'ResponsePayload': 0x42007C,
+            'ResultStatus': 0x42007F, 'ResultReason': 0x42007E, 'TimeStamp': 0x420092,
+            'AttestationCapableIndicator': 0x4200D3}
+    types = {'Structure': 1, 'Integer': 2, 'Enumeration': 5, 'Boolean': 6, 'DateTime': 9}
+
+    def scalar(tag, kind, value):
+        if tag == 0x420092:
+            return '<normalized-time-stamp>'
+        if kind == 5 and isinstance(value, str):
+            enum = protocol_values.Operation if tag == 0x42005C else protocol_values.ResultStatus
+            matching = [raw for name, raw in vars(enum).items() if isinstance(raw, int)
+                        and ''.join((enum.name(raw) or '').split()) == value]
+            if len(matching) != 1:
+                raise ValueError('fixture enum mismatch')
+            return matching[0]
+        if kind == 6:
+            return bool(value) if isinstance(value, (bool, int)) else str(value).lower() == 'true'
+        return int(value)
+
+    def binary_nodes(data):
+        nodes = []
+        for tag, kind, value in parse_children(data):
+            result = binary_nodes(value) if kind == 1 else scalar(
+                tag, kind, int.from_bytes(value, 'big', signed=kind in (2, 9)))
+            nodes.append([tag, kind, result])
+        return nodes
+
+    def json_node(node):
+        tag = tags[node['tag']]
+        kind = types[node.get('type', 'Structure')]
+        value = node['value']
+        return [tag, kind, [json_node(child) for child in value] if kind == 1 else scalar(tag, kind, value)]
+
+    def xml_node(node):
+        tag = tags[node.tag]
+        kind = types[node.attrib.get('type', 'Structure')]
+        return [tag, kind, [xml_node(child) for child in node] if kind == 1
+                else scalar(tag, kind, node.attrib['value'])]
+
+    if encoding == 'TTLV':
+        roots = binary_nodes(wire)
+        if len(roots) != 1:
+            raise ValueError('fixture root count mismatch')
+        return roots[0]
+    if encoding == 'JSON':
+        return json_node(json.loads(wire))
+    return xml_node(ET.fromstring(wire))
+
+
+def _network_cell(cell: dict, case: dict, target: dict) -> dict:
+    from .controlled_peer import ControlledTlsPeer, PKI
+    from kmipkit import extensions, protocol_values
+
+    # Other positive operations need stateful, operation-specific fixtures. An
+    # OperationNotSupported response cannot establish their positive semantics.
+    if (case['case_id'] != 'test-op-ping' or cell['protocol_version'] != '2.1'
+            or cell['public_api_symbol'] != 'kmipkit.extensions.client_batch_item_ping'):
+        raise RecipePending
+    peer = ControlledTlsPeer(encoding=cell['encoding'], transport=cell['transport'], protocol_version='2.1')
+    connection = {
+        'server_id': 'controlled-fixture', 'protocol_version': '2.1',
+        'transport': cell['transport'], 'encoding': cell['encoding'], 'api_level': 'typed-protocol',
+        'endpoints': {'raw_tls': {'host': '127.0.0.1', 'port': peer.port},
+                      'https': {'url': f'https://127.0.0.1:{peer.port}/kmip'}},
+        'tls': {'ca_cert_path': str(PKI / 'server-cert.pem'),
+                'client_cert_path': str(PKI / 'client-cert.pem'),
+                'client_key_path': str(PKI / 'client-key.pem'), 'server_name_override': 'localhost',
+                'connect_timeout_seconds': 5, 'read_timeout_seconds': 5},
+    }
+    driver = None
+    try:
+        driver = PythonKmipDriver(connection)
+        with extensions.client_batch_item_ping() as item:
+            result = driver._exchange(item)
+        if result['status'] != 'passed' or result['result_status_code'] != protocol_values.ResultStatus.SUCCESS:
+            raise ValueError('fixture response status assertion failed')
+    finally:
+        if driver is not None:
+            driver.close()
+        peer.close()
+    if len(peer.requests) != 1 or len(peer.responses) != 1:
+        raise ValueError('fixture exchange count assertion failed')
+    request = _ping_tree(peer.requests[0], cell['encoding'])
+    response = _ping_tree(peer.responses[0], cell['encoding'])
+    ping = protocol_values.Operation.PING
+    expected_request = [0x420078, 1, [
+        [0x420077, 1, [[0x420069, 1, [[0x42006A, 2, 2], [0x42006B, 2, 1]]],
+                       [0x4200D3, 6, True], [0x42000D, 2, 1]]],
+        [0x42000F, 1, [[0x42005C, 5, ping], [0x420079, 1, []]]]]]
+    expected_response = [0x42007B, 1, [
+        [0x42007A, 1, [[0x420069, 1, [[0x42006A, 2, 2], [0x42006B, 2, 1]]],
+                       [0x420092, 9, '<normalized-time-stamp>'], [0x42000D, 2, 1]]],
+        [0x42000F, 1, [[0x42005C, 5, ping], [0x42007F, 5, 0], [0x42007C, 1, []]]]]]
+    if request != expected_request or response != expected_response:
+        raise ValueError('fixture Ping request or response shape assertion failed')
+    return {'request_tree_sha256': digest(request), 'response_tree_sha256': digest(response),
+            'wire_bytes_deterministic': True,
+            'wire_bytes_sha256': hashlib.sha256(peer.requests[0]).hexdigest()}
