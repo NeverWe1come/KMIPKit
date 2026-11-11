@@ -29,6 +29,16 @@ def pending_reason(cell: dict) -> str:
     return 'validator_recipe_pending'
 
 
+def should_execute_attribute_case(cell: dict, case: dict, target: dict) -> bool:
+    """Use local typed attribute routes when no protocol exchange is required."""
+    return (
+        cell['transport'] is None
+        and target['kind'] in {'attribute', 'tag', 'enumeration_value', 'bitmask_value'}
+        and case['category'] in {'attributes', 'managed_objects', 'enums_and_bitmasks', 'normative_inventory'}
+        and not case.get('requires', {}).get('protocol_scenario')
+    )
+
+
 def require_complete(events: list[dict], pending: list[dict]) -> None:
     if pending:
         raise ValueError(f'{len(pending)} pending validator recipe cells')
@@ -244,6 +254,9 @@ def run(output: Path, binary: Path | None = None) -> int:
     from route_values import ValueCases
     value_cases = ValueCases(library, catalog)
     value_cache = {}
+    from route_attributes import AttributeCases
+    attribute_cases = AttributeCases(library, catalog)
+    attribute_cache = {}
     for index, cell in enumerate(iter_cells(catalog, manifest, languages=('c',))):
         target = targets[cell['target_id']]
         fixture = fixtures[cell['target_id']]
@@ -263,6 +276,19 @@ def run(output: Path, binary: Path | None = None) -> int:
                 events.append(event)
                 branch_evidence.append({**cell_fields(cell), **{key: result[key] for key in
                     ('sample_count', 'known_values_checked', 'unknown_value_preserved', 'combination_count', 'tree_sha256') if key in result}})
+                continue
+        if should_execute_attribute_case(cell, case, target):
+            attribute_key = (case['case_id'], cell['target_id'], cell['protocol_version'])
+            if attribute_key not in attribute_cache:
+                attribute_cache[attribute_key] = attribute_cases.execute(target, cell['protocol_version'])
+            result = attribute_cache[attribute_key]
+            if result is not None and cell['public_api_symbol'] in result['invoked_symbols']:
+                event = cell_fields(cell)
+                event.update(status='passed', invocation_count=1, invocation_id=f'c-attribute-{index}')
+                event['response_tree_sha256' if cell['action'] == 'decode' else 'request_tree_sha256'] = result['tree_sha256']
+                events.append(event)
+                branch_evidence.append({**cell_fields(cell), 'sample_count': result['sample_count'],
+                                        'negative_checks': result['negative_checks'], 'tree_sha256': result['tree_sha256']})
                 continue
         if target['kind'] == 'data_type' and cell['transport'] is None:
             result = tree_abi.boundary_case(boundary_vectors[int(target['wire_value'], 16)])
