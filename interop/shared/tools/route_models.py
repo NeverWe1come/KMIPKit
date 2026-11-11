@@ -13,6 +13,9 @@ import subprocess
 
 from cli_paths import validate_git_commit
 
+_SCALAR_ENUM_FAMILY_ALIASES = {'RevocationReason': 'Revocation Reason Code'}
+_PROTOCOL_VERSION_TARGET_PREFIX = 'Protocol Version'
+
 def norm(value):
     return re.sub('[^a-z0-9]', '', value.lower()).replace('asynchronous', 'async')
 
@@ -64,8 +67,8 @@ def scalar_enum_value_targets(targets, owner):
     if owner == 'ProtocolVersion':
         return sorted(target['target_id'] for target in targets
             if target['kind'] == 'message_field'
-            and target['name'].startswith('Protocol Version'))
-    family = norm({'RevocationReason': 'Revocation Reason Code'}.get(owner, owner))
+            and target['name'].startswith(_PROTOCOL_VERSION_TARGET_PREFIX))
+    family = norm(_SCALAR_ENUM_FAMILY_ALIASES.get(owner, owner))
     return sorted({target['target_id'] for target in targets
         if target['kind'] in {'enumeration_value', 'bitmask_value'}
         and any(norm(parent.removeprefix('KMIPKIT-ELEM-ENUMERATION-')
