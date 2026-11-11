@@ -218,11 +218,9 @@ class ModelCases:
         if key_material_section is not None:
             key_format, key_material = self._transparent_key_material(key_material_section, protocol_version)
             fields.append((self._tag('Key Value'), 1, [key_material]))
-        elif kind in {'tag', 'structure_member'} and name == 'Key Material':
-            fields.append(self._key_value_tree())
-        elif (kind in {'tag', 'structure_member'} and name == 'Attributes'
-              and 'KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE' in parents):
-            fields.append(self._key_value_tree(include_attributes=True))
+        elif (kind in {'tag', 'structure_member'} and name in {'Attributes', 'Key Material'}
+              and ('KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE' in parents or name == 'Key Material')):
+            fields.append(self._key_value_tree(include_attributes=name == 'Attributes'))
         if kind == 'object_structure':
             if target.get('target_id') == KEY_BLOCK_STRUCTURE:
                 pass
@@ -267,9 +265,8 @@ class ModelCases:
                 pass
             elif key_material_section is not None:
                 pass
-            elif name == 'Attributes' and 'KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE' in parents:
-                pass
-            elif name == 'Key Material':
+            elif (name in {'Attributes', 'Key Material'}
+                  and ('KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE' in parents or name == 'Key Material')):
                 pass
             elif name == 'Cryptographic Algorithm':
                 expected_value = self._enum_value(name, 'AES', protocol_version)
