@@ -120,6 +120,25 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(report['events'])
         self.assertEqual({expected}, {event['request_tree_sha256'] for event in report['events']})
 
+    def test_typed_attribute_and_set_routes_preserve_the_named_enum_and_unknown_values(self):
+        catalog = copy.deepcopy(self.catalog)
+        catalog['test_cases'] = [case for case in catalog['test_cases'] if case['requires'].get('normative_target_id', '')
+                                 .startswith('KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-')]
+        symbols = {'kmipkit.typed_attributes.TypedAttribute.create',
+                   'kmipkit.typed_attributes.TypedAttribute.from_item',
+                   'kmipkit.attribute_operations.AttributeSet.try_new',
+                   'kmipkit.attribute_operations.AttributeSet.try_push',
+                   'kmipkit.attribute_operations.AttributeSet.try_push_typed'}
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in manifest['routes'] if route['public_api_symbol'] in symbols]
+        manifest['routes'].append(next(route for route in self.manifest['routes']
+                                       if route['public_api_symbol'] == 'kmipkit.extensions.client_batch_item_ping'))
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+        self.assertEqual(0, len(gaps), f'{len(gaps)} typed attribute cells lack a recipe')
+        self.assertTrue(report['events'])
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+        self.assertEqual(symbols, {event['public_api_symbol'] for event in report['events']})
+
     def test_every_assigned_tag_is_constructed_and_decoded_with_its_exact_numeric_identity(self):
         catalog = copy.deepcopy(self.catalog)
         catalog['test_cases'] = [case for case in catalog['test_cases']
