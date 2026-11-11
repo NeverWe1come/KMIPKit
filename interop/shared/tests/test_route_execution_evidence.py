@@ -218,11 +218,16 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
             'invocation_count': 1,
             'invocation_id': 'c.generic-ttlv.decode:decode',
             'decode_outcome': 'rejected',
-            'decode_rejection_code': 'tag_not_allocated',
+            'decode_rejection_code': 'tag_reserved',
             'decode_input_sha256': 'e' * 64,
         })
         summary = self.validate(report)
         self.assertTrue(summary['all_invocations_passed'])
+
+        wrong_classification = copy.deepcopy(report)
+        wrong_classification['events'][-1]['decode_rejection_code'] = 'tag_not_allocated'
+        with self.assertRaisesRegex(ValueError, 'wrong rejection code'):
+            self.validate(wrong_classification)
 
         try:
             import jsonschema
@@ -519,7 +524,7 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
                 'invocation_count': 1,
                 'invocation_id': f'{language}:reserved-tag-decode',
                 'decode_outcome': 'rejected',
-                'decode_rejection_code': 'tag_not_allocated',
+                'decode_rejection_code': 'tag_reserved',
                 'decode_input_sha256': 'e' * 64,
             })
         artifacts = {report['language']: report['artifact_sha256'] for report in reports}
