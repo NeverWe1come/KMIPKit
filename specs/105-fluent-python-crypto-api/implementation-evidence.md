@@ -64,8 +64,11 @@ manifest generation and exact-head CI.
 ## Red — public API manifest
 
 - Command: `python3 -m unittest
+  tools.api_manifest.tests.test_0102_fluent_cryptographic_manifest
   tools.api_manifest.tests.test_0105_fluent_python_crypto_api_manifest`.
-- Result: **expected failure**; the manifest has no KMIPKIT-0105 declarations
-  for the seven Python factories or their builder types and methods.
-- The contract pins the Python public surface, four-language mapping, approved
-  source, and requirement linkage before adding its manifest declarations.
+- Result: **expected failure**; the 0102 Rust and 0104 Java builder declarations
+  are still blocked and have no four-language mappings, and no 0105 Python
+  builder exports are declared. The suite recorded 578 failed subcases.
+- The contract pins the complete Python public surface, the existing Rust and
+  Java mapping targets, approved sources, and requirement linkage before
+  completing the public manifest.

@@ -49,7 +49,7 @@ class FluentCryptographicManifestTests(unittest.TestCase):
             (ROOT / "specification/api/public-api.json").read_text(encoding="utf-8")
         )
 
-    def test_exact_root_and_module_paths_are_blocked_for_binding_parity(self) -> None:
+    def test_exact_root_and_module_paths_map_to_all_four_bindings(self) -> None:
         expected = {}
         for prefix in ("kmipkit_client::", "kmipkit_client::fluent::"):
             for builder, methods in BUILDERS.items():
@@ -70,13 +70,13 @@ class FluentCryptographicManifestTests(unittest.TestCase):
             with self.subTest(export=row["exportName"]):
                 self.assertEqual("rust-kmipkit-client", row["packageId"])
                 self.assertEqual("fluent_dx_api", row["capabilityId"])
-                self.assertEqual("blocked", row["declarationState"])
+                self.assertEqual("declared", row["declarationState"])
                 self.assertEqual("four-language", row["parityScope"])
-                self.assertTrue(row["blockedReason"])
+                self.assertEqual({"rust", "c", "java", "python"}, set(row["languageMappings"]))
+                self.assertEqual("Approved", row["approvalSource"]["status"])
                 self.assertTrue(row["requirementIds"])
                 self.assertTrue(all(value.startswith("KMIPKIT-0102-FR-") for value in row["requirementIds"]))
-                self.assertNotIn("languageMappings", row)
-                self.assertNotIn("parityEvidenceIds", row)
+                self.assertNotIn("blockedReason", row)
 
     def test_operation_constructors_and_execution_methods_have_traceable_owners(self) -> None:
         rows = {
