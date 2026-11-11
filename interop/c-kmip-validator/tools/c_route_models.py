@@ -133,6 +133,9 @@ class ModelCases:
         value = self._enum_value(family, value_name, protocol_version)
         return self._tag(tag_name), 5, value.to_bytes(4, 'big')
 
+    def _integer_tree(self, tag_name: str, value: int) -> tuple:
+        return self._tag(tag_name), 2, value.to_bytes(4, 'big', signed=True)
+
     def _key_block_tree(self, protocol_version: str, *, include_key_value: bool = False) -> tuple:
         key_format = self._enum_value('Key Format Type', 'Raw', protocol_version)
         fields = [(KEY_FORMAT_TYPE_TAG, 5, key_format.to_bytes(4, 'big'))]
@@ -161,9 +164,9 @@ class ModelCases:
                 key_block_tree,
             ]),
             'Split Key': ('kmipkit_split_key_from_fields', [
-                (self._tag('Split Key Parts'), 2, (2).to_bytes(4, 'big', signed=True)),
-                (self._tag('Key Part Identifier'), 2, (2).to_bytes(4, 'big', signed=True)),
-                (self._tag('Split Key Threshold'), 2, (1).to_bytes(4, 'big', signed=True)),
+                self._integer_tree('Split Key Parts', 2),
+                self._integer_tree('Key Part Identifier', 2),
+                self._integer_tree('Split Key Threshold', 1),
                 self._enum_tree('Split Key Method', 'Split Key Method', 'XOR', protocol_version),
                 key_block_tree,
             ]),
