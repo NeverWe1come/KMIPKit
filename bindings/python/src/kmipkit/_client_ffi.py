@@ -27,6 +27,7 @@ ffi.cdef(
     typedef struct kmipkit_transport_config_t kmipkit_transport_config_t;
     typedef struct kmipkit_client_t kmipkit_client_t;
     typedef struct kmipkit_symmetric_key_builder_t kmipkit_symmetric_key_builder_t;
+    typedef struct kmipkit_crypto_operation_builder_t kmipkit_crypto_operation_builder_t;
     typedef struct kmipkit_client_batch_t kmipkit_client_batch_t;
     typedef struct kmipkit_client_batch_response_t kmipkit_client_batch_response_t;
     typedef struct kmipkit_client_batch_item_response_t kmipkit_client_batch_item_response_t;
@@ -275,6 +276,54 @@ ffi.cdef(
     int32_t kmipkit_symmetric_key_builder_execute_v1(kmipkit_symmetric_key_builder_t *, kmipkit_client_t *, kmipkit_codec_limits_t *, kmipkit_client_batch_response_t **);
     int32_t kmipkit_symmetric_key_builder_execute_with_options_v1(kmipkit_symmetric_key_builder_t *, kmipkit_client_t *, kmipkit_codec_limits_t *, const kmipkit_request_options_v1_t *, kmipkit_client_batch_response_t **);
     void kmipkit_symmetric_key_builder_release(kmipkit_symmetric_key_builder_t *);
+
+    int32_t kmipkit_encrypt_builder_create(kmipkit_crypto_operation_builder_t **);
+    int32_t kmipkit_decrypt_builder_create(kmipkit_crypto_operation_builder_t **);
+    int32_t kmipkit_sign_builder_create(kmipkit_crypto_operation_builder_t **);
+    int32_t kmipkit_signature_verify_builder_create(kmipkit_crypto_operation_builder_t **);
+    int32_t kmipkit_mac_builder_create(kmipkit_crypto_operation_builder_t **);
+    int32_t kmipkit_mac_verify_builder_create(kmipkit_crypto_operation_builder_t **);
+    int32_t kmipkit_hash_builder_create(kmipkit_crypto_operation_builder_t **);
+    int32_t kmipkit_crypto_operation_builder_set_unique_identifier(
+        kmipkit_crypto_operation_builder_t *, const kmipkit_unique_identifier_v1_t *);
+    int32_t kmipkit_crypto_operation_builder_set_data(
+        kmipkit_crypto_operation_builder_t *, const kmipkit_byte_span_v1_t *);
+    int32_t kmipkit_crypto_operation_builder_set_data_value(
+        kmipkit_crypto_operation_builder_t *, kmipkit_ttlv_value_t *);
+    int32_t kmipkit_crypto_operation_builder_set_cryptographic_parameters(
+        kmipkit_crypto_operation_builder_t *, kmipkit_cryptographic_parameters_t *);
+    int32_t kmipkit_crypto_operation_builder_set_cryptographic_parameters_structure(
+        kmipkit_crypto_operation_builder_t *, kmipkit_ttlv_structure_t *);
+    int32_t kmipkit_crypto_operation_builder_set_iv_counter_nonce(
+        kmipkit_crypto_operation_builder_t *, const kmipkit_byte_span_v1_t *);
+    int32_t kmipkit_crypto_operation_builder_set_authenticated_encryption_additional_data(
+        kmipkit_crypto_operation_builder_t *, const kmipkit_byte_span_v1_t *);
+    int32_t kmipkit_crypto_operation_builder_set_authenticated_encryption_tag(
+        kmipkit_crypto_operation_builder_t *, const kmipkit_byte_span_v1_t *);
+    int32_t kmipkit_crypto_operation_builder_set_digested_data(
+        kmipkit_crypto_operation_builder_t *, const kmipkit_byte_span_v1_t *);
+    int32_t kmipkit_crypto_operation_builder_set_signature_data(
+        kmipkit_crypto_operation_builder_t *, const kmipkit_byte_span_v1_t *);
+    int32_t kmipkit_crypto_operation_builder_set_mac_data(
+        kmipkit_crypto_operation_builder_t *, const kmipkit_byte_span_v1_t *);
+    int32_t kmipkit_crypto_operation_builder_set_correlation_value(
+        kmipkit_crypto_operation_builder_t *, const kmipkit_byte_span_v1_t *);
+    int32_t kmipkit_crypto_operation_builder_set_init_indicator(
+        kmipkit_crypto_operation_builder_t *, uint8_t);
+    int32_t kmipkit_crypto_operation_builder_set_final_indicator(
+        kmipkit_crypto_operation_builder_t *, uint8_t);
+    int32_t kmipkit_crypto_operation_builder_set_asynchronous_indicator(
+        kmipkit_crypto_operation_builder_t *, uint32_t);
+    int32_t kmipkit_crypto_operation_builder_build_batch_item(
+        kmipkit_crypto_operation_builder_t *, kmipkit_client_batch_item_t **);
+    int32_t kmipkit_crypto_operation_builder_execute_v1(
+        kmipkit_crypto_operation_builder_t *, kmipkit_client_t *,
+        kmipkit_codec_limits_t *, kmipkit_client_batch_response_t **);
+    int32_t kmipkit_crypto_operation_builder_execute_with_options_v1(
+        kmipkit_crypto_operation_builder_t *, kmipkit_client_t *,
+        kmipkit_codec_limits_t *, const kmipkit_request_options_v1_t *,
+        kmipkit_client_batch_response_t **);
+    void kmipkit_crypto_operation_builder_release(kmipkit_crypto_operation_builder_t *);
 
     typedef struct {
         uint32_t source_kind;

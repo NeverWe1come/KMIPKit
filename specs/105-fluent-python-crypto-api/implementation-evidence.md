@@ -35,4 +35,28 @@
 
 ## Green and Refactor
 
-Pending implementation and verification.
+### Green
+
+- Added CFFI declarations for all seven existing operation builders, typed
+  setters, batch conversion, execution and release.
+- Added `Request.encrypt()`, `decrypt()`, `sign()`, `signature_verify()`,
+  `mac()`, `mac_verify()` and `hash()` with operation-specific builder classes.
+- The builders copy input into a bounded mutable staging buffer, wipe the
+  binding-owned copy after the synchronous C call, and preserve Rust-owned
+  typed request, batch and response lifetimes.
+- `asynchronous_indicator()` now writes through the existing C ABI builder
+  setter, so the Request Header carries the selected value on the wire.
+- Added typed Hash parameters to the Hash exchange fixture and valid single
+  or multipart indicator shapes to the per-operation TLS fixtures.
+- Command: `/tmp/kmipkit-py105-venv/bin/python -m pytest -q tests/test_fluent_crypto.py`
+  from `bindings/python`.
+- Result: **12 passed**.
+- Commands: `/tmp/kmipkit-py105-venv/bin/python -m py_compile
+  bindings/python/src/kmipkit/fluent.py bindings/python/src/kmipkit/_client_ffi.py
+  bindings/python/tests/test_fluent_crypto.py` and `git diff --check`.
+- Results: passed.
+
+### Refactor
+
+Pending import ordering, typing/documentation cleanup, full binding checks,
+manifest generation and exact-head CI.
