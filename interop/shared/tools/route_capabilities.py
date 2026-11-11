@@ -454,7 +454,7 @@ def build_manifest(root=ROOT, commit='9a16cc90a12205101d22a38501a5e74c665df4dc')
             'mode': mode, 'public_api_symbol': symbol,
             'operation_ids': [operation_id] if operation_id else [],
             'normative_target_ids': ([operation_id] + sorted({t['target_id'] for t in targets
-                if t.get('operation_id') == operation_id and (mode == 'network' or t.get('role') == 'request')})) if operation_id else ['*'],
+                if t.get('operation_id') == operation_id and t.get('role') == 'request'})) if operation_id else ['*'],
             'case_categories': categories + ['normative_inventory'], 'protocol_versions': ['2.0', '2.1'],
             'combinations': combinations, 'actions': ['decode'] if generic and 'decode' in symbol else ['construct'],
             'source_paths': [path], 'artifact_commit': commit,
