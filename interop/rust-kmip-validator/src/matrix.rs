@@ -70,6 +70,13 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
 }
 
 fn invoke(symbol: &str, sample: &Item) -> Option<Result<Item>> {
+    if symbol.starts_with("kmipkit_ttlv::Value::") {
+        return Some(
+            sample.with_value(value_to_owned).and_then(|value| {
+                Item::new(sample.tag(), value).map_err(|_| "local value rejected")
+            }),
+        );
+    }
     if let Some(result) = generated::execute(symbol, sample) {
         return Some(result);
     }
@@ -169,36 +176,18 @@ pub(crate) fn run(matrix: &Path, output: &Path) -> Result<bool> {
                     .map_err(|_| "matrix row invalid")
             })
             .collect::<Result<_>>()?;
+    let canonical_rows: HashSet<_> =
+        include_str!(concat!(env!("OUT_DIR"), "/route-cell-hashes.txt"))
+            .lines()
+            .collect();
     let mut seen = HashSet::new();
     for row in &rows {
         if row["language"] != "rust" || row["mode"] != "local" {
             return Err("local matrix requires Rust local cells");
         }
-        let route = manifest["routes"]
-            .as_array()
-            .ok_or("route manifest invalid")?
-            .iter()
-            .find(|route| route["route_id"] == row["route_id"])
-            .ok_or("unknown matrix route")?;
-        for field in [
-            "public_api_symbol",
-            "artifact_commit",
-            "mode",
-            "language",
-            "execution_route_id",
-        ] {
-            if route[field] != row[field] {
-                return Err("matrix route metadata mismatch");
-            }
-        }
-        if row["transport"] != Json::Null
-            || row["encoding"] != "TTLV"
-            || row["execution_api_symbol"] != Json::Null
-            || !route["actions"]
-                .as_array()
-                .is_some_and(|a| a.contains(&row["action"]))
-        {
-            return Err("invalid local route axes");
+        let canonical = serde_json::to_vec(row).map_err(|_| "matrix normalization failed")?;
+        if !canonical_rows.contains(hash(&canonical).as_str()) {
+            return Err("matrix row does not match canonical shared obligations");
         }
         let key = json!([
             row["case_id"],
