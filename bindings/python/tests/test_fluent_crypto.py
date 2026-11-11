@@ -2,7 +2,90 @@
 
 from __future__ import annotations
 
-from kmipkit import fluent
+import struct
+from collections.abc import Callable
+from pathlib import Path
+from typing import Any
+
+import pytest
+from _test_support import (
+    mtls_transport_config,
+    read_ttlv_frame,
+    start_tls13_mtls_peer,
+    ttlv_enumeration,
+    ttlv_item,
+    ttlv_structure,
+)
+from kmipkit import (
+    client,
+    cryptographic_parameters,
+    errors,
+    extensions,
+    fluent,
+    protocol_values,
+    ttlv,
+)
+
+_FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
+
+
+def _aes_parameters() -> cryptographic_parameters.CryptographicParameters:
+    builder = cryptographic_parameters.CryptographicParameters.builder()
+    try:
+        return builder.cryptographic_algorithm(
+            protocol_values.CryptographicAlgorithm.AES
+        ).build()
+    finally:
+        builder.close()
+
+
+def _items(encoded_structure_value: bytes) -> list[tuple[int, int, bytes]]:
+    items: list[tuple[int, int, bytes]] = []
+    offset = 0
+    while offset < len(encoded_structure_value):
+        tag = int.from_bytes(encoded_structure_value[offset : offset + 3], "big")
+        item_type = encoded_structure_value[offset + 3]
+        length = int.from_bytes(encoded_structure_value[offset + 4 : offset + 8], "big")
+        value_start = offset + 8
+        value_end = value_start + length
+        padded_end = value_end + (-length % 8)
+        assert padded_end <= len(encoded_structure_value)
+        items.append((tag, item_type, encoded_structure_value[value_start:value_end]))
+        offset = padded_end
+    assert offset == len(encoded_structure_value)
+    return items
+
+
+def _find_item(encoded_structure_value: bytes, wanted_tag: int) -> tuple[int, int, bytes] | None:
+    for tag, item_type, value in _items(encoded_structure_value):
+        if tag == wanted_tag:
+            return tag, item_type, value
+        if item_type == 1:
+            found = _find_item(value, wanted_tag)
+            if found is not None:
+                return found
+    return None
+
+
+def _crypto_failure_response(operation: int) -> bytes:
+    version = ttlv_structure(
+        0x420069,
+        ttlv_item(0x42006A, 2, struct.pack(">i", 2)),
+        ttlv_item(0x42006B, 2, struct.pack(">i", 1)),
+    )
+    header = ttlv_structure(
+        0x42007A,
+        version,
+        ttlv_item(0x420092, 9, struct.pack(">q", 1)),
+        ttlv_item(0x42000D, 2, struct.pack(">i", 1)),
+    )
+    response_item = ttlv_structure(
+        0x42000F,
+        ttlv_enumeration(0x42005C, operation),
+        ttlv_enumeration(0x42007F, 1),
+        ttlv_enumeration(0x42007E, 1),
+    )
+    return ttlv_structure(0x42007B, header, response_item)
 
 
 def test_request_namespace_exposes_seven_operation_specific_crypto_builders() -> None:
@@ -34,6 +117,7 @@ def test_crypto_builders_expose_only_the_fields_of_their_typed_operation() -> No
         "with_options",
         "asynchronous_indicator",
         "build",
+        "validate",
         "to_batch_item",
         "execute",
         "close",
@@ -59,3 +143,197 @@ def test_crypto_builders_expose_only_the_fields_of_their_typed_operation() -> No
             assert not (forbidden & set(dir(builder_type))), (
                 f"{builder_name} exposes fields exclusive to {other_builder}"
             )
+
+
+def test_crypto_builders_reject_missing_request_data_and_use_after_close() -> None:
+    builder_names = (
+        "EncryptBuilder",
+        "DecryptBuilder",
+        "SignBuilder",
+        "SignatureVerifyBuilder",
+        "MacBuilder",
+        "MacVerifyBuilder",
+        "HashBuilder",
+    )
+
+    for builder_name in builder_names:
+        builder = getattr(fluent, builder_name)()
+        try:
+            with pytest.raises(errors.KmipKitError):
+                builder.build()
+        finally:
+            builder.close()
+        with pytest.raises(RuntimeError, match="closed"):
+            builder.build()
+
+
+def test_crypto_builder_asynchronous_indicator_requires_uint32_not_bool() -> None:
+    builder = fluent.EncryptBuilder()
+    try:
+        for invalid in (-1, 1 << 32, True):
+            with pytest.raises(errors.KmipKitError):
+                builder.asynchronous_indicator(invalid)
+    finally:
+        builder.close()
+
+
+def test_crypto_builder_accepts_typed_parameters_and_explicit_ttlv_data() -> None:
+    with ttlv.codec_limits_defaults() as limits:
+        parameters = _aes_parameters()
+        data = ttlv.ttlv_value_byte_string(b"expert-data", limits)
+        try:
+            with fluent.EncryptBuilder() as builder:
+                builder.unique_identifier(
+                    extensions.UniqueIdentifier.text_string("typed-parameters-key")
+                )
+                builder.cryptographic_parameters(parameters)
+                builder.data_value(data)
+                item = builder.to_batch_item()
+                try:
+                    assert item.operation == protocol_values.Operation.ENCRYPT
+                finally:
+                    item.close()
+        finally:
+            data.close()
+            parameters.close()
+
+
+@pytest.mark.parametrize(
+    ("factory_name", "operation", "extra_fields", "expected_wire_fields"),
+    (
+        (
+            "encrypt",
+            protocol_values.Operation.ENCRYPT,
+            lambda builder: builder.iv_counter_nonce(b"nonce")
+            .authenticated_encryption_additional_data(b"aad"),
+            ((0x42003D, b"nonce"), (0x4200FE, b"aad")),
+        ),
+        (
+            "decrypt",
+            protocol_values.Operation.DECRYPT,
+            lambda builder: builder.iv_counter_nonce(b"nonce")
+            .authenticated_encryption_additional_data(b"aad")
+            .authenticated_encryption_tag(b"tag"),
+            ((0x42003D, b"nonce"), (0x4200FE, b"aad"), (0x4200FF, b"tag")),
+        ),
+        (
+            "sign",
+            protocol_values.Operation.SIGN,
+            lambda builder: builder.digested_data(b"digest"),
+            ((0x420107, b"digest"),),
+        ),
+        (
+            "signature_verify",
+            protocol_values.Operation.SIGNATURE_VERIFY,
+            lambda builder: builder.digested_data(b"digest").signature_data(b"signature"),
+            ((0x420107, b"digest"), (0x4200C3, b"signature")),
+        ),
+        ("mac", protocol_values.Operation.MAC, lambda builder: builder, ()),
+        (
+            "mac_verify",
+            protocol_values.Operation.MAC_VERIFY,
+            lambda builder: builder.mac_data(b"mac"),
+            ((0x4200C6, b"mac"),),
+        ),
+        ("hash", protocol_values.Operation.HASH, lambda builder: builder, ()),
+    ),
+)
+def test_crypto_builder_executes_one_mtls_exchange_and_copies_input(
+    factory_name: str,
+    operation: int,
+    extra_fields: Callable[[Any], Any],
+    expected_wire_fields: tuple[tuple[int, bytes], ...],
+) -> None:
+    assert callable(getattr(fluent.Request, factory_name, None))
+    received: list[bytes] = []
+
+    def handler(stream: object) -> None:
+        request = read_ttlv_frame(stream)  # type: ignore[arg-type]
+        received.append(request)
+        stream.sendall(_crypto_failure_response(operation))  # type: ignore[attr-defined]
+
+    port, peer_failures, peer = start_tls13_mtls_peer(_FIXTURES, handler)
+    registry = extensions.create_client_extension_registry(
+        (), extensions.default_extension_registry_limits()
+    )
+    configuration = extensions.create_client_configuration(registry)
+    result: client.BatchResult | None = None
+    caller_buffer = bytearray(b"original-data")
+    try:
+        with configuration, client.Client.create(
+            configuration, mtls_transport_config(port, _FIXTURES)
+        ) as kmip_client:
+            with ttlv.codec_limits_defaults() as limits:
+                request = getattr(kmip_client.request(), factory_name)()
+                with request as builder:
+                    parameters = None
+                    parameters_structure = None
+                    try:
+                        builder.data(caller_buffer)
+                        if factory_name in {"encrypt", "decrypt"}:
+                            parameters = _aes_parameters()
+                            if factory_name == "encrypt":
+                                builder.cryptographic_parameters(parameters)
+                            else:
+                                parameters_structure = parameters.into_ttlv()
+                                builder.cryptographic_parameters_structure(parameters_structure)
+                        if factory_name != "hash":
+                            builder.unique_identifier(
+                                extensions.UniqueIdentifier.text_string("crypto-key")
+                            )
+                        builder.correlation_value(b"correlation")
+                        builder.init_indicator(False).final_indicator(True)
+                        builder.with_options(
+                            client.RequestOptions(
+                                total_timeout=client.TimeoutLimit.bounded(8)
+                            )
+                        )
+                        builder.asynchronous_indicator(9)
+                        extra_fields(builder)
+                        caller_buffer[:] = b"modified-data"
+                        result = builder.execute(limits)
+                    finally:
+                        if parameters_structure is not None:
+                            parameters_structure.close()
+                        if parameters is not None:
+                            parameters.close()
+        peer.join(timeout=12)
+        assert not peer.is_alive()
+        assert peer_failures.empty()
+        assert len(received) == 1
+        request = received[0]
+        root_items = _items(request[8:])
+        assert root_items[0][0] == 0x420077
+        operation_item = _find_item(request[8:], 0x42005C)
+        assert operation_item is not None
+        assert int.from_bytes(operation_item[2], "big") == operation
+        data_item = _find_item(request[8:], 0x4200C2)
+        assert data_item is not None
+        assert data_item[1] == 8
+        assert data_item[2] == b"original-data"
+        for tag, expected_bytes in expected_wire_fields:
+            field = _find_item(request[8:], tag)
+            assert field is not None
+            assert field[2] == expected_bytes
+        correlation = _find_item(request[8:], 0x4200D6)
+        assert correlation is not None and correlation[2] == b"correlation"
+        assert _find_item(request[8:], 0x4200D7) is not None
+        assert _find_item(request[8:], 0x4200D8) is not None
+        if factory_name != "hash":
+            identifier = _find_item(request[8:], 0x420094)
+            assert identifier is not None
+            assert identifier[2] == b"crypto-key"
+        async_indicator = _find_item(request[8:], 0x420007)
+        assert async_indicator is not None
+        assert int.from_bytes(async_indicator[2], "big") == 9
+        assert result is not None
+        assert result.items[0].operation == operation
+        assert result.items[0].result_status == 1
+        if factory_name in {"encrypt", "decrypt"}:
+            assert _find_item(request[8:], 0x42002B) is not None
+    finally:
+        if result is not None:
+            result.close()
+        peer.join(timeout=12)
+        if not peer_failures.empty():
+            raise peer_failures.get()
