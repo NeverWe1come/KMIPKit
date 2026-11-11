@@ -1,6 +1,6 @@
 {
   "all_invocations_passed": true,
-  "artifact_sha256": "1ff61159fa0cd873cc2929952f5daca32feea52d1355899cd1371fe31e2652e9",
+  "artifact_sha256": "2cd5cf94c6b9b34cdf6fb264f27dfd71ce6b3c228e3abba6e25323c4dbc4c1d8",
   "catalog_sha256": "8e6f579bfa5b878403c5f963c8a3375f946e76810b470ef24ce8a68f60f8266d",
   "complete_matrix": false,
   "controlled_peer_cells": 2,
