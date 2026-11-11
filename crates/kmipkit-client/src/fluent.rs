@@ -274,9 +274,8 @@ impl<'a> RegisterBuilder<'a> {
 
     /// Appends a catalogued attribute constructed with its typed marker.
     #[must_use]
-    pub fn attribute<D: AttributeDefinition>(mut self, attribute: Attribute<D>) -> Self {
-        self.add_attribute_item(attribute.into_item());
-        self
+    pub fn attribute<D: AttributeDefinition>(self, attribute: Attribute<D>) -> Self {
+        self.attribute_item(attribute.into_item())
     }
 
     /// Appends an explicit TTLV Item as an expert Object Attribute.
@@ -286,7 +285,7 @@ impl<'a> RegisterBuilder<'a> {
     /// to build that standard structure.
     #[must_use]
     pub fn attribute_item(mut self, item: Item) -> Self {
-        self.add_attribute_item(item);
+        append_object_attribute(&mut self.attributes, &mut self.attribute_error, item);
         self
     }
 
@@ -294,7 +293,7 @@ impl<'a> RegisterBuilder<'a> {
     #[must_use]
     pub fn attributes(mut self, attributes: AttributeSet) -> Self {
         for item in attributes.into_items() {
-            self.add_attribute_item(item);
+            append_object_attribute(&mut self.attributes, &mut self.attribute_error, item);
         }
         self
     }
@@ -302,22 +301,12 @@ impl<'a> RegisterBuilder<'a> {
     /// Inserts an explicit expert attribute at its final Object Attributes index.
     #[must_use]
     pub fn attribute_at(mut self, position: FluentAttributePosition, item: Item) -> Self {
-        if self.attribute_error.is_some() {
-            return self;
-        }
-        let FluentAttributePosition::ObjectAttributes { index } = position;
-        if !self.accept_object_attribute_tag(&item) {
-            return self;
-        }
-        if self
-            .positioned_attributes
-            .iter()
-            .any(|(existing, _)| *existing == index)
-        {
-            self.attribute_error = Some(FluentBuildError::DuplicateAttributePosition);
-            return self;
-        }
-        self.positioned_attributes.push((index, item));
+        set_positioned_attribute(
+            &mut self.positioned_attributes,
+            &mut self.attribute_error,
+            position,
+            item,
+        );
         self
     }
 
@@ -332,34 +321,10 @@ impl<'a> RegisterBuilder<'a> {
         if self.attribute_error.is_some() {
             return self;
         }
-        let value = match attribute_value.with_value(clone_value) {
-            Ok(value) => value,
-            Err(error) => {
-                self.attribute_error = Some(error);
-                return self;
+        match make_vendor_attribute(vendor_identification, attribute_name, attribute_value) {
+            Ok(item) => {
+                append_object_attribute(&mut self.attributes, &mut self.attribute_error, item);
             }
-        };
-        let vendor = (|| {
-            let mut fields = Structure::new();
-            fields
-                .try_push(item(
-                    VENDOR_IDENTIFICATION_TAG,
-                    Value::text_string(vendor_identification.to_owned()),
-                )?)
-                .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
-            fields
-                .try_push(item(
-                    ATTRIBUTE_NAME_TAG,
-                    Value::text_string(attribute_name.to_owned()),
-                )?)
-                .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
-            fields
-                .try_push(item(ATTRIBUTE_VALUE_TAG, value)?)
-                .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
-            item(VENDOR_ATTRIBUTE_TAG, Value::structure(fields))
-        })();
-        match vendor {
-            Ok(item) => self.add_attribute_item(item),
             Err(error) => self.attribute_error = Some(error),
         }
         self
@@ -437,34 +402,7 @@ impl<'a> RegisterBuilder<'a> {
                 )
                 .map_err(|_| FluentBuildError::InvalidAttributeValue)?;
         }
-        if !self.positioned_attributes.is_empty() {
-            let final_len = attributes
-                .len()
-                .checked_add(self.positioned_attributes.len())
-                .ok_or(FluentBuildError::AttributePositionOutOfBounds)?;
-            let mut positioned = self.positioned_attributes.iter().collect::<Vec<_>>();
-            positioned.sort_by_key(|(index, _)| *index);
-            if positioned.iter().any(|(index, _)| *index >= final_len) {
-                return Err(FluentBuildError::AttributePositionOutOfBounds);
-            }
-            let mut ordered = attributes
-                .as_items()
-                .iter()
-                .map(Item::try_clone)
-                .collect::<Result<Vec<_>, _>>()
-                .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
-            for (index, item) in positioned {
-                let copy = item
-                    .try_clone()
-                    .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
-                if *index > ordered.len() {
-                    return Err(FluentBuildError::AttributePositionOutOfBounds);
-                }
-                ordered.insert(*index, copy);
-            }
-            attributes = AttributeSet::try_new(ordered)
-                .map_err(|_| FluentBuildError::InvalidAttributeValue)?;
-        }
+        attributes = insert_positioned_attributes(attributes, &self.positioned_attributes)?;
 
         let object = object
             .try_clone()
@@ -520,23 +458,6 @@ impl<'a> RegisterBuilder<'a> {
             limits,
             &self.options.unwrap_or_default(),
         )
-    }
-
-    fn add_attribute_item(&mut self, item: Item) {
-        if self.attribute_error.is_some() || !self.accept_object_attribute_tag(&item) {
-            return;
-        }
-        if self.attributes.try_push(item).is_err() {
-            self.attribute_error = Some(FluentBuildError::InvalidAttributeValue);
-        }
-    }
-
-    fn accept_object_attribute_tag(&mut self, item: &Item) -> bool {
-        if let Err(error) = validate_object_attribute_tag(item) {
-            self.attribute_error = Some(error);
-            return false;
-        }
-        true
     }
 }
 
@@ -646,9 +567,8 @@ impl<'a> CreateSymmetricKeyBuilder<'a> {
 
     /// Adds a catalogued attribute constructed with its generated typed marker.
     #[must_use]
-    pub fn attribute<D: AttributeDefinition>(mut self, attribute: Attribute<D>) -> Self {
-        self.add_attribute_item(attribute.into_item());
-        self
+    pub fn attribute<D: AttributeDefinition>(self, attribute: Attribute<D>) -> Self {
+        self.attribute_item(attribute.into_item())
     }
 
     /// Adds an explicit TTLV Item as an expert Object Attribute.
@@ -658,7 +578,7 @@ impl<'a> CreateSymmetricKeyBuilder<'a> {
     /// to build that standard structure.
     #[must_use]
     pub fn attribute_item(mut self, item: Item) -> Self {
-        self.add_attribute_item(item);
+        append_object_attribute(&mut self.attributes, &mut self.attribute_error, item);
         self
     }
 
@@ -944,9 +864,8 @@ impl<'a> CreateSplitKeyBuilder<'a> {
 
     /// Appends one typed catalogued Object Attribute.
     #[must_use]
-    pub fn attribute<D: AttributeDefinition>(mut self, attribute: Attribute<D>) -> Self {
-        self.add_attribute_item(attribute.into_item());
-        self
+    pub fn attribute<D: AttributeDefinition>(self, attribute: Attribute<D>) -> Self {
+        self.attribute_item(attribute.into_item())
     }
 
     /// Appends an explicit TTLV Item as an expert Object Attribute.
@@ -956,7 +875,7 @@ impl<'a> CreateSplitKeyBuilder<'a> {
     /// to build that standard structure.
     #[must_use]
     pub fn attribute_item(mut self, item: Item) -> Self {
-        self.add_attribute_item(item);
+        append_object_attribute(&mut self.attributes, &mut self.attribute_error, item);
         self
     }
 
@@ -964,7 +883,7 @@ impl<'a> CreateSplitKeyBuilder<'a> {
     #[must_use]
     pub fn attributes(mut self, attributes: AttributeSet) -> Self {
         for item in attributes.into_items() {
-            self.add_attribute_item(item);
+            append_object_attribute(&mut self.attributes, &mut self.attribute_error, item);
         }
         self
     }
@@ -981,7 +900,9 @@ impl<'a> CreateSplitKeyBuilder<'a> {
             return self;
         }
         match make_vendor_attribute(vendor_identification, attribute_name, attribute_value) {
-            Ok(item) => self.add_attribute_item(item),
+            Ok(item) => {
+                append_object_attribute(&mut self.attributes, &mut self.attribute_error, item);
+            }
             Err(error) => {
                 self.attribute_error = Some(error);
             }
@@ -1123,23 +1044,6 @@ impl<'a> CreateSplitKeyBuilder<'a> {
             limits,
             &self.options.unwrap_or_default(),
         )
-    }
-
-    fn add_attribute_item(&mut self, item: Item) {
-        if self.attribute_error.is_some() || !self.accept_object_attribute_tag(&item) {
-            return;
-        }
-        if self.attributes.try_push(item).is_err() {
-            self.attribute_error = Some(FluentBuildError::InvalidAttributeValue);
-        }
-    }
-
-    fn accept_object_attribute_tag(&mut self, item: &Item) -> bool {
-        if let Err(error) = validate_object_attribute_tag(item) {
-            self.attribute_error = Some(error);
-            return false;
-        }
-        true
     }
 }
 
@@ -1642,6 +1546,23 @@ fn validate_object_attribute_tag(item: &Item) -> Result<(), FluentBuildError> {
         return Err(FluentBuildError::InvalidAttributeValue);
     }
     Ok(())
+}
+
+fn append_object_attribute(
+    attributes: &mut AttributeSet,
+    attribute_error: &mut Option<FluentBuildError>,
+    item: Item,
+) {
+    if attribute_error.is_some() {
+        return;
+    }
+    if let Err(error) = validate_object_attribute_tag(&item) {
+        *attribute_error = Some(error);
+        return;
+    }
+    if attributes.try_push(item).is_err() {
+        *attribute_error = Some(FluentBuildError::InvalidAttributeValue);
+    }
 }
 
 fn set_positioned_attribute(

@@ -124,3 +124,22 @@ bilingual guide with KMIPKIT-0093 and KMIPKIT-0100.
   compiler passed 30 examples, and requirement traceability passed 2 tests.
 - The exact-head PR CI remains the final gate; PR #183 stays WIP until it is
   green.
+
+## Follow-up: SonarCloud duplication gate
+
+- SonarCloud reported 95 duplicated lines (7.38% of new code; the project
+  limit is 3%) on the exact PR #183 head `8b4724ca510e8aa20141b21a989873c9722566b8`.
+  The duplicated blocks were in `crates/kmipkit-client/src/fluent.rs` and
+  repeated attribute validation, Vendor Attribute construction, and positioned
+  attribute insertion between Register and Create Split Key.
+- The follow-up refactor routes both builders through the existing shared
+  Vendor Attribute and positioned-attribute helpers and a single checked
+  attribute append helper. It does not change the public API or typed request
+  validation.
+- `cargo test -p kmipkit-client --all-features --locked`: passed all 839 unit
+  tests, UI tests, and doctests after the refactor.
+- `cargo fmt --all -- --check` and
+  `cargo clippy -p kmipkit-client --all-targets --all-features -- -D warnings`:
+  passed after the refactor.
+- SonarCloud and exact-head CI must be rerun after the follow-up commit; PR
+  #183 remains a WIP draft until the quality gate is green.
