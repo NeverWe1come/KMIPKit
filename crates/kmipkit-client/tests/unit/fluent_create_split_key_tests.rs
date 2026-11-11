@@ -244,6 +244,23 @@ fn prime_field_method_requires_explicit_size_before_transport() {
 }
 
 #[test]
+fn split_key_builder_rejects_duplicate_singleton_attributes_before_transport() {
+    let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let builder = valid_builder(&mut client)
+        .attribute(Attribute::<typed::Sensitive>::new(true).unwrap())
+        .attribute(Attribute::<typed::Sensitive>::new(false).unwrap());
+
+    assert_eq!(builder.validate(), Err(FluentBuildError::InvalidRequest));
+    assert_eq!(
+        builder.build_request().unwrap_err(),
+        FluentBuildError::InvalidRequest
+    );
+    let error = builder.execute(&CodecLimits::defaults()).unwrap_err();
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(transport.borrow().exchange_count(), 0);
+}
+
+#[test]
 fn split_key_builder_preserves_typed_prebuilt_vendor_and_positioned_attributes() {
     let mut prebuilt = AttributeSet::new();
     prebuilt
