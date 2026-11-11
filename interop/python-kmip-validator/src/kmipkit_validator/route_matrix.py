@@ -145,6 +145,15 @@ def _generic_samples(case: dict, target: dict, symbol: str) -> list[tuple[int, s
         raise RecipePending
     if kind == 'data_type':
         type_names = {target['name']}
+    elif kind == 'operation_payload_value_variant' and target.get('kind') == 'operation_payload_value_variant' and requires['value_type'] != 'Structure':
+        normalized = lambda name: ''.join(character for character in name.casefold() if character.isalnum())
+        field_name = requires['field_name']
+        tag_entry = next((entry for entry in by_id.values() if entry.get('kind') == 'tag'
+                          and normalized(entry.get('name', '')) == normalized(field_name)), None)
+        if tag_entry is None:
+            raise RecipePending
+        tag = int(tag_entry['wire_value'], 16)
+        type_names = {requires['value_type']}
     else:
         type_names = PythonKmipDriver._catalog_value_types(case, target, element_types)
         # A type representative alone cannot prove a normative payload branch,
