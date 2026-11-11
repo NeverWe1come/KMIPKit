@@ -170,6 +170,11 @@ def applicable_routes(case: dict, manifest: dict, language: str, operation_ids: 
     for route in manifest["routes"]:
         if route["language"] != language or case["category"] not in route["case_categories"]:
             continue
+        requires = case.get("requires", {})
+        if any(requires.get("target_kind") in exclusion["target_kinds"]
+               and requires.get("allocation") in exclusion["allocations"]
+               for exclusion in route.get("case_exclusions", [])):
+            continue
         if request_must_not_be_sent and route["mode"] == "local" and "response" in route["route_id"].casefold():
             continue
         if not case_version.intersection(route["protocol_versions"]):
