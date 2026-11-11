@@ -258,6 +258,29 @@ class RouteMatrixTests(unittest.TestCase):
             self.assertEqual('response_received', event['request_delivery_state'])
             self.assertEqual(1, event['transport_invocation_count'])
 
+    def test_create_routes_validate_peer_rejection_and_all_wire_encodings(self):
+        catalog = copy.deepcopy(self.catalog)
+        catalog['test_cases'] = [case for case in self.catalog['test_cases']
+                                 if case['case_id'] == 'test-op-create']
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in self.manifest['routes']
+                              if route['language'] == 'python'
+                              and route['public_api_symbol'] == 'kmipkit.extensions.client_batch_item_create']
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+        self.assertEqual([], gaps)
+        self.assertTrue(report['events'])
+        from kmipkit import protocol_values
+        self.assertTrue(all(event['status'] == 'passed'
+                            and event['peer_observed_result_status_codes'] == [protocol_values.ResultStatus.OPERATION_FAILED]
+                            and event['peer_observed_result_reason_codes'] == [protocol_values.ResultReason.OPERATION_NOT_SUPPORTED]
+                            for event in report['events']))
+        by_encoding = {}
+        for event in report['events']:
+            by_encoding.setdefault(event['encoding'], set()).add(
+                (event['request_tree_sha256'], event['response_tree_sha256']))
+        self.assertEqual({'TTLV', 'JSON', 'XML'}, set(by_encoding))
+        self.assertEqual(by_encoding['JSON'], by_encoding['XML'])
+
     def test_generic_ttlv_routes_encode_and_decode_the_client_operation_value(self):
         catalog = copy.deepcopy(self.catalog)
         catalog['test_cases'] = [case for case in self.catalog['test_cases']
