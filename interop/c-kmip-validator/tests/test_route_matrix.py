@@ -221,6 +221,8 @@ class RouteMatrixTests(unittest.TestCase):
             network_combinations=(('TTLV', 'raw_tls'),))
         self.assertEqual(len(checks), 3)
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(all('kmipkit_client_batch_item_query' in check['public_api_trace_symbols']
+                            for check in checks), checks)
         fields = [event for event in events if event['target_id'].startswith(
             'KMIPKIT-PAYLOAD-CLIENT-QUERY-REQUEST-')]
         self.assertEqual(len(fields), 6)
