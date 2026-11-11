@@ -62,6 +62,12 @@ class RouteMatrixTests(unittest.TestCase):
                 if item['kind'] == 'tag'}
         self.assertIsNone(self.runner.generic_tree_fixtures(target, catalog, tags, '2.1'))
 
+    def test_ttlv_encoding_parser_keeps_compound_types_distinct(self):
+        self.assertEqual(self.runner._type_codes('Long Integer'), [3])
+        self.assertEqual(self.runner._type_codes('Big Integer'), [4])
+        self.assertEqual(self.runner._type_codes('Date Time Extended'), [11])
+        self.assertEqual(self.runner._type_codes('Text String, Enumeration or Integer'), [7, 5, 2])
+
     def test_unmapped_structure_branch_is_pending_not_arbitrary_scalar(self):
         target = {'kind': 'operation_payload_field', 'name': 'Unique Identifier'}
         self.assertIsNone(self.runner.scalar_fixture(target, {}))
