@@ -252,6 +252,16 @@ def main() -> int:
         expected_cases += ("test-v20-reject-get-constraints",)
     shared = repository / "interop/shared"
     catalog = shared / "catalog/kmipkit-1.0-test-catalog.json"
+    catalog_cases = json.loads(catalog.read_text(encoding="utf-8"))["test_cases"]
+    version_cases = [
+        case for case in catalog_cases
+        if protocol_version in case["execution"]["protocol_versions"]
+    ]
+    local_value_cases = sum(
+        case["execution"]["mode"] == "local_model"
+        and ("enum_type" in case["requires"] or "bitmask_type" in case["requires"])
+        for case in version_cases
+    )
     with tempfile.TemporaryDirectory(prefix="kmipkit-c-live-") as raw_directory:
         directory = Path(raw_directory)
         ca_cert, server_cert, server_key, client_cert, client_key = certificate_files(openssl, directory)
@@ -510,12 +520,12 @@ def main() -> int:
         if result["summary"]["policy_restricted"] != 0 or result["summary"]["not_run"] == 0:
             raise AssertionError("opted-in controlled run must preserve uncovered-case classification")
         expected_summary = {
-            "total": 212,
-            "passed": 88,
+            "total": len(version_cases),
+            "passed": len(expected_cases) + local_value_cases,
             "failed": 0,
             "unsupported": 0,
             "policy_restricted": 0,
-            "not_run": 124,
+            "not_run": len(version_cases) - len(expected_cases) - local_value_cases,
         }
         if protocol_version == "2.1" and result["summary"] != expected_summary:
             raise AssertionError(
@@ -523,12 +533,12 @@ def main() -> int:
                 f"{result['summary']!r}"
             )
         expected_kmip20_summary = {
-            "total": 203,
-            "passed": 83,
+            "total": len(version_cases),
+            "passed": len(expected_cases) + local_value_cases,
             "failed": 0,
             "unsupported": 0,
             "policy_restricted": 0,
-            "not_run": 120,
+            "not_run": len(version_cases) - len(expected_cases) - local_value_cases,
         }
         if protocol_version == "2.0" and result["summary"] != expected_kmip20_summary:
             raise AssertionError(

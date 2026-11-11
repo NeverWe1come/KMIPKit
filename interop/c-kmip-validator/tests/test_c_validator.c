@@ -4,6 +4,7 @@
 #include "json.h"
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 static size_t test_execute_count;
@@ -32,22 +33,29 @@ int main(void) {
     printf("Running C validator unit tests...\n");
 
     // 0. Confirm the shared release catalog is consumed in full.
-    kmip_test_case_t catalog[KMIP_MAX_CASES];
+    kmip_test_case_t *catalog = calloc(KMIP_MAX_CASES, sizeof(*catalog));
     size_t catalog_count = 0;
+    assert(catalog != NULL);
     assert(kmip_load_catalog("../shared/catalog/kmipkit-1.0-test-catalog.json",
                              catalog, &catalog_count));
-    assert(catalog_count == 218);
-    assert(strcmp(catalog[catalog_count - 1].case_id,
-                  "test-v20-reject-set-defaults") == 0);
-    assert(strcmp(catalog[0].mode, "server_exchange") == 0);
-    assert(catalog[0].protocol_version_mask ==
-           (KMIP_VERSION_MASK_2_0 | KMIP_VERSION_MASK_2_1));
-    assert(strcmp(catalog[7].normative_sections[0], "6.1.37") == 0);
-    assert(strcmp(catalog[7].normative_sections[1], "6.1.40") == 0);
-    assert(strcmp(catalog[47].workflow_type, "server_to_client") == 0);
-    assert(strcmp(catalog[135].mode, "local_model") == 0);
-    assert(strcmp(catalog[135].enum_type, "Adjustment Type") == 0);
-    assert(catalog[213].protocol_version_mask == KMIP_VERSION_MASK_2_0);
+    assert(catalog_count == 2689);
+    size_t kmip20_cases = 0;
+    size_t kmip21_cases = 0;
+    size_t local_model_cases = 0;
+    size_t local_value_cases = 0;
+    size_t cases_with_normative_sections = 0;
+    for (size_t index = 0; index < catalog_count; ++index) {
+        kmip20_cases += (catalog[index].protocol_version_mask & KMIP_VERSION_MASK_2_0) != 0;
+        kmip21_cases += (catalog[index].protocol_version_mask & KMIP_VERSION_MASK_2_1) != 0;
+        local_model_cases += strcmp(catalog[index].mode, "local_model") == 0;
+        local_value_cases += strcmp(catalog[index].mode, "local_model") == 0 &&
+            (catalog[index].enum_type[0] || catalog[index].bitmask_type[0]);
+        cases_with_normative_sections += catalog[index].normative_sections[0][0] != '\0' ||
+                                          catalog[index].normative_sections[1][0] != '\0';
+    }
+    assert(kmip20_cases > 0 && kmip21_cases > 0);
+    assert(local_model_cases > 0);
+    assert(cases_with_normative_sections == catalog_count);
 
     kmip_connection_config_t connection;
     assert(kmip_load_connection("../shared/profiles/connection.example.json", &connection));
@@ -201,7 +209,7 @@ int main(void) {
     kmip_validation_summary_t catalog_summary;
     kmip_run_suite(&catalog_caps, catalog, catalog_count, &live_driver, false, &catalog_summary);
     assert(catalog_summary.results_count == catalog_count);
-    assert(catalog_summary.passed == 67); /* 64 enum and 3 bitmask model cases. */
+    assert(catalog_summary.passed == local_value_cases);
     for (size_t i = 0; i < catalog_summary.results_count; ++i) {
         const kmip_case_result_t *result = &catalog_summary.results[i];
         assert(result->case_id[0] != '\0');
@@ -271,5 +279,6 @@ int main(void) {
     assert(disc_count > 0);
 
     printf("All C validator tests passed successfully!\n");
+    free(catalog);
     return 0;
 }

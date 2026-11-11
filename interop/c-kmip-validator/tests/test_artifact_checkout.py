@@ -135,6 +135,18 @@ class ArtifactCheckoutContractTests(unittest.TestCase):
             check=True,
         )
 
+    def test_pinned_c_artifact_matches_the_shared_route_manifest(self):
+        support = (ROOT / "interop/c-kmip-validator/tools/artifact_support.py").read_text(
+            encoding="utf-8"
+        )
+        pin = re.search(r'^PIN = "([0-9a-f]{40})"$', support, re.MULTILINE).group(1)
+        manifest = json.loads(
+            (ROOT / "interop/shared/coverage/route-capabilities.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(pin, manifest["library_commit"])
+
 
 if __name__ == "__main__":
     unittest.main()

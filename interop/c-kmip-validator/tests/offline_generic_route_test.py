@@ -14,6 +14,12 @@ import tempfile
 def main() -> int:
     binary, repository = Path(sys.argv[1]), Path(sys.argv[2])
     catalog = repository / "interop/shared/catalog/kmipkit-1.0-test-catalog.json"
+    cases = json.loads(catalog.read_text(encoding="utf-8"))["test_cases"]
+    expected_local_cases = sum(
+        case["execution"]["mode"] == "local_model"
+        and ("enum_type" in case["requires"] or "bitmask_type" in case["requires"])
+        for case in cases
+    )
     with tempfile.TemporaryDirectory(prefix="kmipkit-c-offline-") as raw_directory:
         directory = Path(raw_directory)
         connection = {
@@ -42,7 +48,10 @@ def main() -> int:
             check=False,
         )
         if preflight.returncode != 0 or "no DNS or network exchange" not in preflight.stdout:
-            raise AssertionError("generic TTLV preflight must not require TLS or open a network connection")
+            raise AssertionError(
+                "generic TTLV preflight must not require TLS or open a network connection: "
+                f"exit={preflight.returncode}, stdout={preflight.stdout!r}, stderr={preflight.stderr!r}"
+            )
         result = subprocess.run(
             [str(binary), "run", "--connection", str(connection_path), "--catalog", str(catalog),
              "--output", str(result_path)],
@@ -55,8 +64,8 @@ def main() -> int:
         if result.returncode != 0:
             raise AssertionError(f"offline generic TTLV run failed: {result.stderr[-300:]!r}")
         report = json.loads(result_path.read_text(encoding="utf-8"))
-        if report["summary"]["passed"] != 67 or report["summary"]["failed"] != 0:
-            raise AssertionError("generic TTLV mode must execute and verify the 67 local value cases")
+        if report["summary"]["passed"] != expected_local_cases or report["summary"]["failed"] != 0:
+            raise AssertionError("generic TTLV mode must execute every local enumeration and bitmask case")
         if report["summary"]["not_run"] == 0 or report["summary"]["policy_restricted"] == 0:
             raise AssertionError("server exchange and mutation states must remain explicit in offline mode")
         for case in report["cases"]:
