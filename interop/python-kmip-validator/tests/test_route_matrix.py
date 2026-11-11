@@ -354,6 +354,25 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
         self.assertLessEqual(set(targets), {event['target_id'] for event in report['events']})
 
+    def test_generic_ttlv_routes_cover_tagged_fields_and_structures(self):
+        kinds = {'structure_member', 'message_field', 'object_structure', 'operation_structure',
+                 'attribute_structure', 'credential'}
+        targets = {target['target_id']: target for target in self.catalog['normative_targets']
+                   if target['kind'] in kinds}
+        catalog = copy.deepcopy(self.catalog)
+        catalog['test_cases'] = [case for case in self.catalog['test_cases']
+                                 if case['requires'].get('normative_target_id') in targets]
+        symbols = {'kmipkit.ttlv.ttlv_item_create', 'kmipkit.ttlv.ttlv_decode',
+                   'kmipkit.ttlv.ttlv_item_view_from_item'}
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in self.manifest['routes']
+                              if route['language'] == 'python' and route['public_api_symbol'] in symbols]
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+        self.assertEqual(0, len(gaps), f'{len(gaps)} tagged structure cells lack generic evidence')
+        self.assertTrue(report['events'])
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+        self.assertLessEqual(set(targets), {event['target_id'] for event in report['events']})
+
     def test_ci_requires_shared_changes_and_matrix_completeness(self):
         workflow = (ROOT / '.github/workflows/interop-python.yml').read_text()
         self.assertIn('python -m kmipkit_validator matrix', workflow)
