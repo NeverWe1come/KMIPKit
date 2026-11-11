@@ -58,7 +58,10 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
 import java.util.ArrayList;
 import java.util.HexFormat;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.FutureTask;
@@ -77,6 +80,48 @@ class ControlledTlsPeerTest {
             new TagRangeFixture("test-norm-tag-range-kmipkit-range-003", "KMIPKIT-RANGE-003", 0x430000, "unused"),
             new TagRangeFixture("test-norm-tag-range-kmipkit-range-004", "KMIPKIT-RANGE-004", 0x540001, "extension"),
             new TagRangeFixture("test-norm-tag-range-kmipkit-range-005", "KMIPKIT-RANGE-005", 0x550000, "unused"));
+    private static final Set<String> GENERIC_ENUMERATION_PARENTS = Set.of(
+            "KMIPKIT-ELEM-ENUMERATION-ADJUSTMENT-TYPE",
+            "KMIPKIT-ELEM-ENUMERATION-ALTERNATIVE-NAME-TYPE",
+            "KMIPKIT-ELEM-ENUMERATION-ASYNCHRONOUS-INDICATOR",
+            "KMIPKIT-ELEM-ENUMERATION-ATTESTATION-TYPE",
+            "KMIPKIT-ELEM-ENUMERATION-BATCH-ERROR-CONTINUATION-OPTION",
+            "KMIPKIT-ELEM-ENUMERATION-CANCELLATION-RESULT",
+            "KMIPKIT-ELEM-ENUMERATION-CERTIFICATE-REQUEST-TYPE",
+            "KMIPKIT-ELEM-ENUMERATION-CLIENT-REGISTRATION-METHOD",
+            "KMIPKIT-ELEM-ENUMERATION-DATA",
+            "KMIPKIT-ELEM-ENUMERATION-DERIVATION-METHOD",
+            "KMIPKIT-ELEM-ENUMERATION-DESTROY-ACTION",
+            "KMIPKIT-ELEM-ENUMERATION-DRBG-ALGORITHM",
+            "KMIPKIT-ELEM-ENUMERATION-ENCODING-OPTION",
+            "KMIPKIT-ELEM-ENUMERATION-FIPS186-VARIATION",
+            "KMIPKIT-ELEM-ENUMERATION-INTEROP-FUNCTION",
+            "KMIPKIT-ELEM-ENUMERATION-KEY-COMPRESSION-TYPE",
+            "KMIPKIT-ELEM-ENUMERATION-KEY-VALUE-LOCATION-TYPE",
+            "KMIPKIT-ELEM-ENUMERATION-KEY-WRAP-TYPE",
+            "KMIPKIT-ELEM-ENUMERATION-LINK-TYPE",
+            "KMIPKIT-ELEM-ENUMERATION-NAME-TYPE",
+            "KMIPKIT-ELEM-ENUMERATION-OBJECT-GROUP-MEMBER",
+            "KMIPKIT-ELEM-ENUMERATION-OPERATION",
+            "KMIPKIT-ELEM-ENUMERATION-PROCESSING-STAGE",
+            "KMIPKIT-ELEM-ENUMERATION-PROFILE-NAME",
+            "KMIPKIT-ELEM-ENUMERATION-PUT-FUNCTION",
+            "KMIPKIT-ELEM-ENUMERATION-QUERY-FUNCTION",
+            "KMIPKIT-ELEM-ENUMERATION-RECOMMENDED-CURVE",
+            "KMIPKIT-ELEM-ENUMERATION-RESULT-STATUS",
+            "KMIPKIT-ELEM-ENUMERATION-REVOCATION-REASON-CODE",
+            "KMIPKIT-ELEM-ENUMERATION-RNG-ALGORITHM",
+            "KMIPKIT-ELEM-ENUMERATION-RNG-MODE",
+            "KMIPKIT-ELEM-ENUMERATION-ROTATE-NAME-TYPE",
+            "KMIPKIT-ELEM-ENUMERATION-SECRET-DATA-TYPE",
+            "KMIPKIT-ELEM-ENUMERATION-SPLIT-KEY-METHOD",
+            "KMIPKIT-ELEM-ENUMERATION-TICKET-TYPE",
+            "KMIPKIT-ELEM-ENUMERATION-UNWRAP-MODE",
+            "KMIPKIT-ELEM-ENUMERATION-USAGE-LIMITS-UNIT",
+            "KMIPKIT-ELEM-ENUMERATION-VALIDATION-AUTHORITY-TYPE",
+            "KMIPKIT-ELEM-ENUMERATION-VALIDATION-TYPE",
+            "KMIPKIT-ELEM-ENUMERATION-VALIDITY-INDICATOR",
+            "KMIPKIT-ELEM-ENUMERATION-WRAPPING-METHOD");
 
     @TempDir
     Path temporaryDirectory;
@@ -232,8 +277,11 @@ class ControlledTlsPeerTest {
                 "Installed Query calls against the controlled peer must emit route execution evidence.");
         JsonNode report = new ObjectMapper().readTree(reportPath.toFile());
         assertEquals("java", report.path("language").asText());
-        assertEquals(68, report.path("events").size());
-        assertEquals(7, report.path("case_ids").size());
+        List<EnumerationFixture> enumerationFixtures = genericEnumerationFixtures();
+        int enumerationEventCount = enumerationFixtures.stream()
+                .mapToInt(fixture -> fixture.protocolVersions().size() * 4).sum();
+        assertEquals(68 + enumerationEventCount, report.path("events").size());
+        assertEquals(7 + enumerationFixtures.size(), report.path("case_ids").size());
         assertEquals("test-op-query", report.path("case_ids").get(0).asText());
         for (int index = 1; index < 6; index++) {
             assertEquals("test-norm-tag-range-kmipkit-range-%03d".formatted(index),
@@ -1082,6 +1130,56 @@ class ControlledTlsPeerTest {
                 appendRejectedTagRangeEvent(events, fixture, protocolVersion, wire);
             }
         }
+    }
+
+    private static List<EnumerationFixture> genericEnumerationFixtures() throws Exception {
+        Path catalogPath = Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json");
+        JsonNode catalog = new ObjectMapper().readTree(catalogPath.toFile());
+        Map<String, JsonNode> targets = new HashMap<>();
+        for (JsonNode target : catalog.path("normative_targets")) {
+            targets.put(target.path("target_id").asText(), target);
+        }
+
+        var fixtures = new ArrayList<EnumerationFixture>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            JsonNode requires = testCase.path("requires");
+            if (!"enumeration_value".equals(requires.path("target_kind").asText())) continue;
+            JsonNode target = targets.get(requires.path("normative_target_id").asText());
+            if (target == null || !target.path("parent_element_ids").isArray()
+                    || target.path("parent_element_ids").isEmpty()) continue;
+            String parentId = target.path("parent_element_ids").get(0).asText();
+            if (!GENERIC_ENUMERATION_PARENTS.contains(parentId)) continue;
+            String parentName = parentId.replace("KMIPKIT-ELEM-ENUMERATION-", "");
+            JsonNode tagTarget = targets.values().stream()
+                    .filter(candidate -> "tag".equals(candidate.path("kind").asText()))
+                    .filter(candidate -> normalizeTargetName(candidate.path("name").asText())
+                            .equals(normalizeTargetName(parentName)))
+                    .findFirst().orElse(null);
+            if (tagTarget == null) continue;
+
+            var versions = new ArrayList<String>();
+            for (JsonNode version : testCase.path("execution").path("protocol_versions")) {
+                versions.add(version.asText());
+            }
+            if (versions.isEmpty()) continue;
+            String wireValue = target.path("wire_value").asText();
+            long enumValue = "extension".equals(target.path("allocation").asText())
+                    ? 0x8000_0000L : parseFirstEnumerationWireValue(wireValue);
+            String tagWireValue = tagTarget.path("wire_value").asText().replaceFirst("^0[xX]", "");
+            int rawTag = Math.toIntExact(Long.parseLong(tagWireValue, 16));
+            fixtures.add(new EnumerationFixture(testCase.path("case_id").asText(),
+                    target.path("target_id").asText(), rawTag, enumValue, List.copyOf(versions)));
+        }
+        return List.copyOf(fixtures);
+    }
+
+    private static long parseFirstEnumerationWireValue(String wireValue) {
+        String firstValue = wireValue.split("-", 2)[0];
+        return Long.parseUnsignedLong(firstValue, 16);
+    }
+
+    private static String normalizeTargetName(String value) {
+        return value.replaceAll("[^A-Za-z0-9]", "").toUpperCase(Locale.ROOT);
     }
 
     private static void appendActivationDateLocalRouteEvents(ArrayNode events, String protocolVersion)
@@ -1944,6 +2042,9 @@ class ControlledTlsPeerTest {
     }
 
     private record TagRangeFixture(String caseId, String targetId, int rawTag, String allocation) {}
+
+    private record EnumerationFixture(String caseId, String targetId, int rawTag, long value,
+            List<String> protocolVersions) {}
 
     private record MatrixPlan(List<Long> expectedOperations, List<byte[]> responses) {}
 }
