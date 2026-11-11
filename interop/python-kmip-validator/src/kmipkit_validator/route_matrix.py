@@ -498,7 +498,7 @@ def _network_tree(wire: bytes, encoding: str) -> list:
     from .controlled_peer import parse_children
     from kmipkit import protocol_values
 
-    by_id, _, _ = _catalog_model_data()
+    by_id, _, elements = _catalog_model_data()
     tag_by_name = {_normalized_name(item['name']): int(item['wire_value'], 16)
                    for item in by_id.values() if item.get('kind') == 'tag'}
     type_codes = {'Structure': 1, 'Integer': 2, 'LongInteger': 3, 'BigInteger': 4,
@@ -519,6 +519,30 @@ def _network_tree(wire: bytes, encoding: str) -> list:
         if len(matches) != 1:
             raise ValueError('controlled peer enum does not match the public enum table')
         return matches[0]
+
+    def bitmask_value(tag: int, value: str) -> int:
+        tag_entry = next((item for item in by_id.values()
+                          if item.get('kind') == 'tag' and int(item['wire_value'], 16) == tag), None)
+        if tag_entry is None:
+            raise ValueError('bitmask tag is absent from the source catalog')
+        bitmask = next((item for item in elements.values()
+                        if item.get('kind') == 'bitmask'
+                        and _normalized_name(item.get('name', '')) == _normalized_name(tag_entry['name'])), None)
+        if bitmask is None:
+            raise ValueError('bitmask definition is absent from the source catalog')
+        assigned = [item for item in elements.values()
+                    if item.get('kind') == 'bitmask_value'
+                    and bitmask['element_id'] in item.get('parent_element_ids', [])]
+        tokens = [_normalized_name(token) for token in value.split('|') if token]
+        bits = 0
+        for token in tokens:
+            match = next((item for item in assigned
+                          if _normalized_name(item.get('name', '')) == token
+                          and item.get('allocation') == 'assigned'), None)
+            if match is None:
+                raise ValueError('bitmask value is absent from the source catalog')
+            bits |= int(match['wire_value'], 16)
+        return bits
 
     def binary_node(raw_tag: int, kind: int, raw: bytes) -> list:
         if kind == 1:
@@ -551,6 +575,8 @@ def _network_tree(wire: bytes, encoding: str) -> list:
         elif kind in (2, 3, 9, 10, 11):
             if kind in (9, 11) and isinstance(value, str) and not value.lstrip('-').isdigit():
                 value = int(datetime.fromisoformat(value.replace('Z', '+00:00')).timestamp())
+            elif kind == 2 and isinstance(value, str) and '|' in value:
+                value = bitmask_value(raw_tag, value)
             else:
                 value = int(value)
         elif kind == 6:
@@ -596,8 +622,12 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
     if case.get('requires', {}).get('expected_status') == 'NotSent':
         return _not_sent_cell(cell, case)
 
-    peer = ControlledTlsPeer(status=protocol_values.ResultStatus.OPERATION_FAILED,
-                             reason=protocol_values.ResultReason.OPERATION_NOT_SUPPORTED,
+    positive_ping = (case['case_id'] == 'test-op-ping'
+                     and cell['public_api_symbol'] == 'kmipkit.extensions.client_batch_item_ping')
+    peer_status = (protocol_values.ResultStatus.SUCCESS if positive_ping
+                   else protocol_values.ResultStatus.OPERATION_FAILED)
+    peer_reason = (None if positive_ping else protocol_values.ResultReason.OPERATION_NOT_SUPPORTED)
+    peer = ControlledTlsPeer(status=peer_status, reason=peer_reason,
                              encoding=cell['encoding'], transport=cell['transport'],
                              protocol_version=cell['protocol_version'])
     connection = {
@@ -638,10 +668,10 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
             else:
                 item = driver._build_item(case, identifier, name=name)
             result = driver._exchange(item)
-        if (result['status'] != 'server_unsupported'
-                or result['result_status_code'] != protocol_values.ResultStatus.OPERATION_FAILED
-                or result.get('result_reason_code') != protocol_values.ResultReason.OPERATION_NOT_SUPPORTED):
-            raise ValueError('controlled peer rejection was not decoded as an unsupported operation')
+        expected_driver_status = 'passed' if positive_ping else 'server_unsupported'
+        if (result['status'] != expected_driver_status or result['result_status_code'] != peer_status
+                or result.get('result_reason_code') != peer_reason):
+            raise ValueError('controlled peer response status did not match the expected route outcome')
     finally:
         if item is not None:
             item.close()
@@ -667,9 +697,10 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
     response_operation = _find_tree_value(response, 0x42005C)
     if (request_operation != expected_operation
             or response_operation != request_operation
-            or _find_tree_value(response, 0x42007F) != protocol_values.ResultStatus.OPERATION_FAILED
-            or _find_tree_value(response, 0x42007E) != protocol_values.ResultReason.OPERATION_NOT_SUPPORTED
-            or _find_tree_value(response, 0x42007C) is not None):
+            or _find_tree_value(response, 0x42007F) != peer_status
+            or _find_tree_value(response, 0x42007E) != peer_reason
+            or (positive_ping and _find_tree_value(response, 0x42007C) != [])
+            or (not positive_ping and _find_tree_value(response, 0x42007C) is not None)):
         raise ValueError('controlled peer request or unsupported response shape mismatch')
     if trace is None:
         raise ValueError('network cell has no public-call trace')
@@ -678,8 +709,8 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
                 peer.responses[0] if cell.get('action') == 'decode' else peer.requests[0]).hexdigest(),
             'request_delivery_state': 'response_received', 'transport_invocation_count': 1,
             'peer_observed_response_count': 1,
-            'peer_observed_result_status_codes': [protocol_values.ResultStatus.OPERATION_FAILED],
-            'peer_observed_result_reason_codes': [protocol_values.ResultReason.OPERATION_NOT_SUPPORTED]}
+            'peer_observed_result_status_codes': [peer_status],
+            **({'peer_observed_result_reason_codes': [peer_reason]} if peer_reason is not None else {})}
 
 
 def _positive_fixture_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | None) -> dict:
