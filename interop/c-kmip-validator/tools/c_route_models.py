@@ -168,11 +168,24 @@ class ModelCases:
         key_format = self._enum_value('Key Format Type', 'Raw', protocol_version)
         fields = []
         expected_value = None
+        target_id = target.get('target_id', '')
+        parents = set(target.get('parent_element_ids', []))
+        if (target_id == 'KMIPKIT-ELEM-OBJECT-STRUCTURE-3-8-KEY-MATERIAL'
+                or any(parent == 'KMIPKIT-ELEM-OBJECT-STRUCTURE-3-8-KEY-MATERIAL'
+                       for parent in parents)):
+            key_format = self._enum_value('Key Format Type', 'Transparent RSA Public Key', protocol_version)
+            key_material = (self._tag('Key Material'), 1, [
+                (self._tag('Modulus'), 4, b'\x01'),
+                (self._tag('Public Exponent'), 4, b'\x01\x00\x01'),
+            ])
+            fields.append((self._tag('Key Value'), 1, [key_material]))
         if kind == 'object_structure':
             if target.get('target_id') == KEY_BLOCK_STRUCTURE:
                 pass
             elif target.get('target_id') == KEY_VALUE_STRUCTURE:
                 fields.append(self._key_value_tree())
+            elif target.get('target_id') == 'KMIPKIT-ELEM-OBJECT-STRUCTURE-3-8-KEY-MATERIAL':
+                pass
             elif target.get('name') in {'Key Wrapping Data', 'Encryption Key Information',
                                         'MAC/Signature Key Information'}:
                 fields.extend([
@@ -207,6 +220,9 @@ class ModelCases:
                 return None
         elif kind in {'tag', 'structure_member', 'attribute'}:
             if name == 'Key Block':
+                pass
+            elif (name in {'Key Material', 'Modulus', 'Public Exponent'}
+                  and any('OBJECT-STRUCTURE-3-8-KEY-MATERIAL' in parent for parent in parents)):
                 pass
             elif name == 'Cryptographic Algorithm':
                 expected_value = self._enum_value(name, 'AES', protocol_version)
