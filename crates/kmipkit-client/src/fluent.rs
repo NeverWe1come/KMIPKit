@@ -679,6 +679,51 @@ impl<'a> CreateKeyPairBuilder<'a> {
         self
     }
 
+    /// Appends prebuilt Common Attributes after the semantic algorithm and length.
+    ///
+    /// Preserves item order and appends after earlier typed attributes or sets.
+    /// Final request validation rejects duplicate or conflicting values.
+    #[must_use]
+    pub fn common_attributes(mut self, attributes: AttributeSet) -> Self {
+        for item in attributes.into_items() {
+            if self.common_attributes.try_push(item).is_err() {
+                self.attribute_error
+                    .get_or_insert(FluentBuildError::InvalidAttributeValue);
+            }
+        }
+        self
+    }
+
+    /// Appends prebuilt Private Key Attributes after the semantic usage mask and name.
+    ///
+    /// Preserves item order and appends after earlier typed attributes or sets.
+    /// Final request validation rejects duplicate or conflicting values.
+    #[must_use]
+    pub fn private_key_attributes(mut self, attributes: AttributeSet) -> Self {
+        for item in attributes.into_items() {
+            if self.private_attributes.try_push(item).is_err() {
+                self.attribute_error
+                    .get_or_insert(FluentBuildError::InvalidAttributeValue);
+            }
+        }
+        self
+    }
+
+    /// Appends prebuilt Public Key Attributes after the semantic usage mask and name.
+    ///
+    /// Preserves item order and appends after earlier typed attributes or sets.
+    /// Final request validation rejects duplicate or conflicting values.
+    #[must_use]
+    pub fn public_key_attributes(mut self, attributes: AttributeSet) -> Self {
+        for item in attributes.into_items() {
+            if self.public_attributes.try_push(item).is_err() {
+                self.attribute_error
+                    .get_or_insert(FluentBuildError::InvalidAttributeValue);
+            }
+        }
+        self
+    }
+
     /// Sets exchange-local options without changing client or batch policy.
     #[must_use]
     pub fn with_options(mut self, options: RequestOptions) -> Self {
@@ -691,6 +736,18 @@ impl<'a> CreateKeyPairBuilder<'a> {
     pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
         self.asynchronous_indicator = Some(value);
         self
+    }
+
+    /// Validates the accumulated inputs locally without consuming the builder.
+    ///
+    /// Uses the same construction and typed request validation as
+    /// [`Self::build_request`] without invoking the transport.
+    ///
+    /// # Errors
+    ///
+    /// Returns the same payload-free error as [`Self::build_request`].
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        self.build_request().map(|_| ())
     }
 
     /// Builds the existing typed Create Key Pair request without sending it.
