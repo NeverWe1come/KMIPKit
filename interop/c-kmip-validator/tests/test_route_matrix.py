@@ -26,6 +26,19 @@ class RouteMatrixTests(unittest.TestCase):
         fixture = self.runner.scalar_fixture(target, {'Cryptographic Algorithm': 0x420028})
         self.assertEqual(fixture, (0x420028, 5, (3).to_bytes(4, 'big')))
 
+    def test_operation_and_object_type_fixtures_use_exact_normative_values(self):
+        from artifact_support import ROOT
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        targets = {target['target_id']: target for target in catalog['normative_targets']}
+        tags = {target['name']: int(target['wire_value'], 16) for target in catalog['normative_targets']
+                if target['kind'] == 'tag'}
+        operation = targets['KMIPKIT-ELEM-OP-C2S-ACTIVATE']
+        object_type = targets['KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY']
+        self.assertEqual(self.runner.scalar_fixture(operation, tags, catalog, '2.1'),
+                         (tags['Operation'], 5, bytes.fromhex('00000012')))
+        self.assertEqual(self.runner.scalar_fixture(object_type, tags, catalog, '2.0'),
+                         (tags['Object Type'], 5, bytes.fromhex(object_type['wire_value'])))
+
     def test_unmapped_structure_branch_is_pending_not_arbitrary_scalar(self):
         target = {'kind': 'operation_payload_field', 'name': 'Unique Identifier'}
         self.assertIsNone(self.runner.scalar_fixture(target, {}))
