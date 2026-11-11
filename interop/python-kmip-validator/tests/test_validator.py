@@ -25,6 +25,11 @@ CATALOG = SHARED / "catalog" / "kmipkit-1.0-test-catalog.json"
 
 
 class ValidatorContractTests(unittest.TestCase):
+    def test_python_artifact_pin_matches_the_shared_route_manifest(self):
+        pin = json.loads((ROOT / "interop/python-kmip-validator/library-pin.json").read_text())
+        manifest = json.loads((SHARED / "coverage" / "route-capabilities.json").read_text())
+        self.assertEqual(pin["commit"], manifest["library_commit"])
+
     def test_plan_is_offline_and_accounts_for_each_protocol_version(self):
         connection, _ = load_connection(CONNECTION)
         catalog, catalog_bytes = load_catalog(CATALOG)
