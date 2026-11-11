@@ -121,7 +121,10 @@ Java exposes the same expert operation as
 `SymmetricKeyBuilder.attributeItemAt(index, item)`. The index is zero-based in
 the final Object Attributes sequence; negative indices are rejected by Java,
 and out-of-range positions fail during typed request construction before
-transport.
+transport. Native insertion/build validation failures are exposed as
+`ClientOperationException` with the original native status/category/cause
+and delivery state code `1` (`NotSent`). Direct Java argument errors retain
+their existing input exceptions.
 
 Python exposes `SymmetricKeyBuilder.attribute_item_at(index, item)` for the
 same final Object Attributes sequence. It requires an explicit `ttlv.TtlvItem`
@@ -153,7 +156,10 @@ C provides direct one-operation helpers
 expert attributes. `kmipkit_symmetric_key_builder_insert_attribute_item`
 inserts an explicit TTLV Item at its zero-based position in the final Object
 Attributes list; catalogued tags retain their required TTLV type, and unknown
-extension tags remain explicit Items. For a compact raw-TLS/mTLS setup,
+extension tags remain explicit Items. The insertion/build functions retain
+their original status codes and expose
+`NotSent` through `kmipkit_last_error_get` on validation failure. This scoped
+classification leaves other ABI errors unchanged. For raw-TLS/mTLS setup,
 `kmipkit_client_create_mtls_v1` accepts certificate and key spans and uses the
 default 8 MiB request cap when no cap is supplied. Certificate spans are read
 during construction; the returned client owns its transport configuration.

@@ -565,7 +565,7 @@ pub extern "C" fn kmipkit_symmetric_key_builder_insert_attribute_item(
     index: u64,
     item: *mut kmipkit_ttlv_item_t,
 ) -> i32 {
-    ffi_entrypoint(|| {
+    let status = ffi_entrypoint(|| {
         let item = try_ffi!(validated_expert_attribute_item(item));
         let Ok(index) = usize::try_from(index) else {
             return record_ffi_error(ERROR_INVALID_INPUT);
@@ -577,7 +577,17 @@ pub extern "C" fn kmipkit_symmetric_key_builder_insert_attribute_item(
             )
         }));
         SUCCESS
-    })
+    });
+    if status != SUCCESS {
+        LAST_ERROR.with(|last_error| {
+            let mut error = last_error.get();
+            if error.status == status && error.category == ERROR_CATEGORY_VALIDATION {
+                error.delivery = DELIVERY_STATE_NOT_SENT;
+                last_error.set(error);
+            }
+        });
+    }
+    status
 }
 
 /// Adds a valid Vendor Attribute using explicit vendor, name, and TTLV value fields.
@@ -618,7 +628,7 @@ pub extern "C" fn kmipkit_symmetric_key_builder_build_batch_item(
     builder: *mut kmipkit_symmetric_key_builder_t,
     out_item: *mut *mut kmipkit_client_batch_item_t,
 ) -> i32 {
-    ffi_entrypoint(|| {
+    let status = ffi_entrypoint(|| {
         let out = out_slot!(out_item);
         let handle = read_handle!(builder, SymmetricKeyBuilder);
         let HandleValue::SymmetricKeyBuilder(builder) = &handle.value else {
@@ -640,7 +650,17 @@ pub extern "C" fn kmipkit_symmetric_key_builder_build_batch_item(
             )))),
         ));
         SUCCESS
-    })
+    });
+    if status != SUCCESS {
+        LAST_ERROR.with(|last_error| {
+            let mut error = last_error.get();
+            if error.status == status && error.category == ERROR_CATEGORY_VALIDATION {
+                error.delivery = DELIVERY_STATE_NOT_SENT;
+                last_error.set(error);
+            }
+        });
+    }
+    status
 }
 
 /// Executes the builder with the client's configured timeout policy.

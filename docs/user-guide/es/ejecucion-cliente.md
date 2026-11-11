@@ -127,7 +127,11 @@ Java ofrece la misma operación experta mediante
 `SymmetricKeyBuilder.attributeItemAt(index, item)`. El índice empieza en cero
 y se refiere a la secuencia final de Object Attributes; Java rechaza índices
 negativos y el builder rechaza posiciones fuera de rango al construir la
-petición tipada, antes de usar el transporte.
+petición tipada, antes de usar el transporte. Los fallos de validación nativos
+al insertar o construir se exponen como `ClientOperationException`, con los
+códigos originales de estado/categoría/causa y el código de entrega `1`
+(`NotSent`). Los errores directos de argumentos Java conservan sus
+excepciones de entrada existentes.
 
 Python ofrece `SymmetricKeyBuilder.attribute_item_at(index, item)` para esa
 misma secuencia final de Object Attributes. Exige un `ttlv.TtlvItem` explícito
@@ -163,7 +167,10 @@ simétrica para atributos expertos. `kmipkit_symmetric_key_builder_insert_attrib
 inserta un `Item` TTLV explícito en su posición, empezando desde cero, dentro
 de la lista final de Object Attributes; los tags catalogados conservan el tipo
 TTLV requerido y los tags de extensión desconocidos siguen siendo Items
-explícitos. Para configurar raw TLS/mTLS de forma
+explícitos. Las funciones de inserción/construcción conservan los códigos
+de estado originales y exponen `NotSent` mediante `kmipkit_last_error_get`
+cuando falla la validación. Esta clasificación limitada al builder conserva
+los errores de otras operaciones ABI. Para configurar raw TLS/mTLS de forma
 compacta, `kmipkit_client_create_mtls_v1` acepta spans de certificados y clave;
 si no se indica un límite, usa 8 MiB para la petición. Lee los spans de
 certificados durante la construcción y el cliente devuelto es dueño de su

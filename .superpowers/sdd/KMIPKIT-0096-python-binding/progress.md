@@ -34,3 +34,25 @@ Complete KMIPKIT-0096 T006 for Python only, with TDD Red/Green/Refactor commits 
   does not mark them `verified` or close T005/T006 before exact-head CI.
 - Red commit: `e90957edc`; Green commit: `868e5a179`.
   Detailed commands/results and Refactor evidence are in `task-1-report.md`.
+
+## FR-003 review follow-up
+
+The parent rebased this delivery onto 0095 head `5791bcadd` and explicitly
+authorized fixing the C/JNI metadata gap across the two existing insertion
+and typed-build endpoints. This supersedes the initial Python-only ruling.
+
+- Root cause confirmed in the native ABI: generic `record_ffi_error` resets
+  delivery to `NONE`. Insertion and typed-build now mark only their own
+  validation failures `NOT_SENT`; other statuses and other ABI operations
+  retain their existing metadata.
+- JNI's generic `check_status`/`return_handle` translated these failures into
+  argument exceptions without delivery metadata. Only the insertion/build
+  bridges now use the existing `ClientOperationException` conversion, with
+  original status/category/cause and native delivery codes. Java argument
+  guards and unrelated JNI status conversion remain unchanged.
+- Red: `86716c1ce`; compiled C returned 2 for the delivery mismatch, and
+  Java had four expected failures across nine tests.
+- Green: focused compiled C, Java/JNI and Python suites pass. Full details
+  and final checks are recorded in `task-2-report.md`.
+- No new ABI, public symbol, exception class, or manifest declaration is
+  required. The original cross-binding metadata gap is resolved.

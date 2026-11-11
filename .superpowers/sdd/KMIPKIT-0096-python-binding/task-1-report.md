@@ -1,5 +1,10 @@
 # KMIPKIT-0096 Python binding delivery
 
+This records the initial Python delivery. The subsequent FR-003 review
+follow-up, authorized by the parent after rebase onto `5791bcadd`, is
+documented in [task-2-report.md](task-2-report.md). That follow-up resolves
+the cross-binding native metadata gap described below.
+
 Base: `3c48b824e3bdc6ab0ff24310eed437a5ebf736d2` on
 `feature/KMIPKIT-0096-python-expert-attributes`.
 

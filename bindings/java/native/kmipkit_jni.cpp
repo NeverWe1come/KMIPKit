@@ -3087,10 +3087,18 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_symmetricKeyBuil
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_symmetricKeyBuilderBuildBatchItem(
         JNIEnv* env, jclass, jlong raw_builder) {
     return guarded<jlong>(env, 0, [&] {
-        return return_handle<kmipkit_client_batch_item_t>(env, [&](auto out) {
-            return kmipkit_symmetric_key_builder_build_batch_item(
-                    from_java_handle<kmipkit_symmetric_key_builder_t>(raw_builder), out);
-        });
+        kmipkit_client_batch_item_t* output = nullptr;
+        const int32_t status = kmipkit_symmetric_key_builder_build_batch_item(
+                from_java_handle<kmipkit_symmetric_key_builder_t>(raw_builder), &output);
+        if (status != 0) {
+            throw_client_operation_status(env, status);
+            return static_cast<jlong>(0);
+        }
+        if (output == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        return to_java_handle(output);
     });
 }
 
@@ -3138,12 +3146,11 @@ JNIEXPORT void JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_symmetricKey
             throw_invalid_input(env);
             return 0;
         }
-        check_status(env, [&] {
-            return kmipkit_symmetric_key_builder_insert_attribute_item(
-                    from_java_handle<kmipkit_symmetric_key_builder_t>(raw_builder),
-                    static_cast<uint64_t>(index),
-                    from_java_handle<kmipkit_ttlv_item_t>(raw_item));
-        });
+        const int32_t status = kmipkit_symmetric_key_builder_insert_attribute_item(
+                from_java_handle<kmipkit_symmetric_key_builder_t>(raw_builder),
+                static_cast<uint64_t>(index),
+                from_java_handle<kmipkit_ttlv_item_t>(raw_item));
+        if (status != 0) throw_client_operation_status(env, status);
         return 0;
     });
 }

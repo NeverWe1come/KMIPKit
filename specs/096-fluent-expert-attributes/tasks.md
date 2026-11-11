@@ -48,3 +48,9 @@
 - Python local evidence is recorded in
   `.superpowers/sdd/KMIPKIT-0096-python-binding/task-1-report.md`.
   T006 stays open until dependent deliveries pass exact-head CI.
+- FR-003 review follow-up aligns the existing C insertion/build last-error
+  delivery with `NotSent` and carries the original metadata through JNI's
+  `ClientOperationException`. Compiled C and Java/JNI tests check this
+  contract and preserve unrelated errors. See
+  `.superpowers/sdd/KMIPKIT-0096-python-binding/task-2-report.md` for the
+  separate Red/Green/Refactor evidence; exact-head CI remains required.
