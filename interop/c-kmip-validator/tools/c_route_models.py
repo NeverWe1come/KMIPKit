@@ -67,24 +67,23 @@ class ModelCases:
         if key_format is None:
             raise ValueError('symmetric_key_format_fixture_missing')
         key_format_value = int(key_format['wire_value'], 16)
+        key_format_tree = (KEY_FORMAT_TYPE_TAG, 5, key_format_value.to_bytes(4, 'big'))
+        key_block_tree = (KEY_BLOCK_TAG, 1, [key_format_tree])
         limits = C.c_void_p()
         owned: list[C.c_void_p] = []
         try:
             self.abi.call('kmipkit_codec_limits_defaults', C.byref(limits))
             key_block = self._from_fields(
-                'kmipkit_key_block_from_fields',
-                [(KEY_FORMAT_TYPE_TAG, 5, key_format_value.to_bytes(4, 'big'))], limits, owned)
+                'kmipkit_key_block_from_fields', [key_format_tree], limits, owned)
             key_block_roundtrip = self._from_item('kmipkit_key_block_from_item', key_block, owned)
-            expected = [SYMMETRIC_KEY_TAG, 1, [[KEY_BLOCK_TAG, 1, [
-                [KEY_FORMAT_TYPE_TAG, 5, key_format_value.to_bytes(4, 'big').hex()]]]]]
+            expected_key_block = [KEY_BLOCK_TAG, 1, [
+                [KEY_FORMAT_TYPE_TAG, 5, key_format_value.to_bytes(4, 'big').hex()]]]
+            expected = [SYMMETRIC_KEY_TAG, 1, [expected_key_block]]
             self._read_and_check(key_block_roundtrip, expected[2][0], 'key_block_item_tree_mismatch')
 
-            symmetric = self._from_fields('kmipkit_symmetric_key_from_fields', [
-                (KEY_BLOCK_TAG, 1, [[KEY_FORMAT_TYPE_TAG, 5, key_format_value.to_bytes(4, 'big')]])],
-                limits, owned)
+            symmetric = self._from_fields('kmipkit_symmetric_key_from_fields', [key_block_tree], limits, owned)
             normalized_tree = self._read_and_check(symmetric, expected, 'symmetric_key_fields_tree_mismatch')
-            managed = self._from_fields('kmipkit_managed_object_from_fields', [
-                (KEY_BLOCK_TAG, 1, [[KEY_FORMAT_TYPE_TAG, 5, key_format_value.to_bytes(4, 'big')]])],
+            managed = self._from_fields('kmipkit_managed_object_from_fields', [key_block_tree],
                 limits, owned, (SYMMETRIC_KEY_OBJECT_TYPE,))
             self._read_and_check(managed, expected, 'managed_symmetric_key_fields_tree_mismatch')
             managed_item = self._from_item('kmipkit_managed_object_from_item', symmetric, owned,
