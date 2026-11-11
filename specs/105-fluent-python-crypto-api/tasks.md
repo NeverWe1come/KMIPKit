@@ -21,11 +21,11 @@
 
 - [x] T009 [US2] Add TLS 1.3 mutual-TLS fixture exchanges for all seven operations in `bindings/python/tests/test_fluent_crypto.py`.
 - [x] T010 [US2] Verify `RequestOptions`, asynchronous indicator, typed batch result, correlation, and no retry/Poll behavior in `bindings/python/tests/test_fluent_crypto.py`.
-- [ ] T011 [US3] Add generated API declaration source rows and the contract test in `specification/api/public-api.json` and `tools/api_manifest/tests/test_0105_fluent_python_crypto_api_manifest.py`.
-- [ ] T012 [US3] Update the Python type information in `bindings/python/src/kmipkit/py.typed` and both user guides at `docs/user-guide/en/client-execution.md` and `docs/user-guide/es/ejecucion-cliente.md`.
+- [x] T011 [US3] Add generated API declaration source rows and the contract test in `specification/api/public-api.json` and `tools/api_manifest/tests/test_0105_fluent_python_crypto_api_manifest.py`.
+- [x] T012 [US3] Verify the existing PEP 561 marker, expose typed Python methods, and update both user guides at `docs/user-guide/en/client-execution.md` and `docs/user-guide/es/ejecucion-cliente.md`.
 
 ## Phase 5 — Verification and review
 
-- [ ] T013 [US3] Regenerate manifest outputs and verify `tools/api_manifest/generate.py --check` and `tools/api_manifest/audit_binding_exports.py`.
+- [x] T013 [US3] Regenerate manifest outputs and verify `tools/api_manifest/generate.py --check` and `tools/api_manifest/audit_binding_exports.py`.
 - [ ] T014 Run Python, Rust FFI, C ABI, Java/JNI, formatting, coverage, traceability, and security checks; record exact results in `specs/105-fluent-python-crypto-api/implementation-evidence.md`.
 - [ ] T015 Commit Red, Green, and Refactor separately and open/update `[WIP]` draft PR stacked on KMIPKIT-0104; keep WIP until exact-head CI passes.

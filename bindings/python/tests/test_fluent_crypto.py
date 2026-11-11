@@ -178,7 +178,7 @@ def test_crypto_builders_reject_missing_request_data_and_use_after_close() -> No
 def test_crypto_builder_asynchronous_indicator_requires_uint32_not_bool() -> None:
     builder = fluent.EncryptBuilder()
     try:
-        for invalid in (-1, 1 << 32, True):
+        for invalid in (-1, 9, 1 << 32, True):
             with pytest.raises(errors.KmipKitError):
                 builder.asynchronous_indicator(invalid)
     finally:

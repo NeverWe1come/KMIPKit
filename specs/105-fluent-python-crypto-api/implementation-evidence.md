@@ -4,7 +4,8 @@
 
 - Branch: `feature/KMIPKIT-0105-python-fluent-crypto-api`.
 - Base: `feature/KMIPKIT-0104-java-fluent-crypto-api` at
-  `cfbf6267828ab5b8407eb380ecf782553f086df6`.
+  `86c9eb2a68d882dd1672402391c39ba918ba9c1f` after rebasing on the Java CI
+  fixes and updated manifest snapshots.
 - Parent PR: #188, Java fluent cryptographic API.
 - PR: not opened yet.
 
@@ -58,8 +59,7 @@
 
 ### Refactor
 
-Pending import ordering, typing/documentation cleanup, full binding checks,
-manifest generation and exact-head CI.
+Pending full binding checks and exact-head CI.
 
 ## Red — public API manifest
 
@@ -72,3 +72,72 @@ manifest generation and exact-head CI.
 - The contract pins the complete Python public surface, the existing Rust and
   Java mapping targets, approved sources, and requirement linkage before
   completing the public manifest.
+
+## Green — public API manifest
+
+- Command: `python3 -m unittest
+  tools.api_manifest.tests.test_0102_fluent_cryptographic_manifest
+  tools.api_manifest.tests.test_0105_fluent_python_crypto_api_manifest`.
+- Result: **4 tests passed**. The approved Rust and Java exports now map to
+  declared C, Java, and Python surfaces; Python-specific ownership and context
+  manager methods have their own KMIPKIT-0105 declarations.
+- Command: `python3 tools/api_manifest/generate.py --write`.
+- Result: generated all 12 public API outputs from the reviewed manifest.
+- Command: `python3 tools/api_manifest/generate.py --check`.
+- Result: all 12 generated outputs are current.
+- Command: `python3 tools/api_manifest/audit_binding_exports.py`.
+- Initial result: the default `/tmp` run failed in `ld` with a Bus error. The
+  audit was retried with its temporary Cargo target on the worktree-backed
+  disk and completed successfully.
+- Successful result: C, Java, and Python inventories were complete with zero
+  missing exports, kind mismatches, or unobserved manifest declarations.
+- Command: `python3 -m unittest
+  tools.api_manifest.tests.test_0102_fluent_cryptographic_manifest
+  tools.api_manifest.tests.test_0105_fluent_python_crypto_api_manifest`.
+- Result: **4 tests passed** after generation.
+
+## Refactor
+
+- Added bilingual Python usage and ownership guidance and corrected the
+  language-parity note in both client-execution guides.
+- Removed unused local async state from the Python crypto builder; the native
+  C builder now remains the single owner of the Request Header indicator.
+- Verified the existing `py.typed` package marker and retained inline public
+  method annotations.
+- Python focused tests: `tests/test_fluent_crypto.py` — **12 passed**.
+- Manifest generation check and binding export audit: passed as recorded above.
+- Full Python, Rust/FFI, C, Java/JNI, coverage, security, and exact-head CI
+  checks remain pending.
+
+## Rebased verification
+
+- Built an isolated Python 3.12.13 environment and installed the editable
+  binding with `uv pip install --no-build-isolation --editable
+  bindings/python`.
+- Focused crypto tests: `target/python312-venv/bin/python -m pytest -q
+  bindings/python/tests/test_fluent_crypto.py` — **12 passed**.
+- Full Python suite: `target/python312-venv/bin/python -m pytest -q
+  bindings/python/tests` — **1,284 passed, 119 subtests passed**.
+- Python coverage command: `target/python312-venv/bin/python -m pytest -q
+  bindings/python/tests --cov=kmipkit --cov-config=bindings/python/pyproject.toml
+  --cov-report=xml:target/coverage-python-0105.xml` — **96.62%**, above the
+  85% gate; all 1,284 tests and 119 subtests passed.
+- Rust FFI/C ABI: `cargo test -p kmipkit-ffi --all-features --locked` — 471
+  unit tests, 55 compiled C consumer tests, and the operation parity test
+  passed.
+- Rust quality: `cargo fmt --all --check` and
+  `cargo clippy --workspace --all-targets --all-features -- -D warnings`
+  passed.
+- Manifest generation: `python3 tools/api_manifest/generate.py --check` — all
+  12 generated outputs current.
+- Binding export audit: `python3 tools/api_manifest/audit_binding_exports.py
+  --report target/python105-exports.json --check` — exit code 0 with no audit
+  issues.
+- Manifest contract: `python3 -m unittest
+  tools.api_manifest.tests.test_0105_fluent_python_crypto_api_manifest` — 2
+  tests passed.
+- All 405 tests across the 108 `test_t102*.py` modules passed in four
+  sequential groups after updating the total and manifest fingerprints for
+  the KMIPKIT-0105 declarations.
+- Rust FFI, C ABI, Java/JNI, full formatting/lint/security gates, coverage,
+  and exact-head CI remain pending.
