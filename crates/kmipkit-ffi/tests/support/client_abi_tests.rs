@@ -11660,6 +11660,25 @@ fn response_views_keep_independent_owners_and_reject_dead_handles() {
 }
 
 #[test]
+fn response_view_rejects_wrong_codec_limits_handle_kind() {
+    let item = successful_pkcs11_response_item();
+    let wrong_limits = make_handle(
+        Kind::CodecLimits,
+        HandleValue::Configuration(empty_client_configuration()),
+    );
+    let mut output = ptr::null_mut();
+
+    assert_eq!(
+        kmipkit_client_batch_item_response_json(item, wrong_limits, &raw mut output),
+        ERROR_INVALID_INPUT
+    );
+    assert!(output.is_null());
+
+    kmipkit_client_batch_item_response_release(item);
+    release(wrong_limits, Kind::CodecLimits);
+}
+
+#[test]
 fn response_view_error_categories_are_stable_and_payload_free() {
     use kmipkit_client::ResponseEncodingError;
     for (error, status) in [
