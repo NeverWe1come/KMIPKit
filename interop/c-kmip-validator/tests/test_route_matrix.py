@@ -230,6 +230,31 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all(event['public_api_symbol'] == 'kmipkit_client_batch_item_query'
                             for event in fields))
 
+    def test_create_payload_normative_cases_invoke_c_and_match_controlled_peer(self):
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_ids = {
+            'test-norm-payload-client-create-request-20-001',
+            'test-norm-payload-client-create-request-20-002',
+            'test-norm-payload-client-create-request-21-001',
+            'test-norm-payload-client-create-request-21-002',
+        }
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                                if case['case_id'] in case_ids]}
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest,
+            network_combinations=(('TTLV', 'raw_tls'),))
+        self.assertEqual(len(checks), 4)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        fields = [event for event in events if event['target_id'].startswith(
+            'KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-')]
+        self.assertEqual(len(fields), 8)
+        self.assertEqual({event['action'] for event in fields}, {'construct', 'send'})
+        self.assertTrue(all(event['public_api_symbol'] == 'kmipkit_client_batch_item_create'
+                            for event in fields))
+
     def test_lifecycle_peer_requires_cleanup_and_checks_illegal_destroy(self):
         import route_peer
         self.assertTrue(hasattr(route_peer, 'verify_lifecycle'), 'stateful lifecycle verification is missing')
