@@ -600,6 +600,22 @@ class RouteMatrixTests(unittest.TestCase):
         )
         self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
 
+    def test_process_matrix_backend_checks_controlled_peer_routes(self):
+        catalog = copy.deepcopy(self.catalog)
+        catalog['test_cases'] = [case for case in catalog['test_cases']
+                                 if case['case_id'] == 'test-op-ping']
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in manifest['routes']
+                              if route['public_api_symbol'] == 'kmipkit.extensions.client_batch_item_ping']
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact, process_workers=2)
+        self.assertEqual([], gaps)
+        self.assertEqual(18, len(report['events']))
+        self.assertTrue(all(event['status'] == 'passed'
+                            and event['peer_observed_result_status_codes'] == [0]
+                            and event['peer_observed_response_count'] == 1
+                            and event['request_delivery_state'] == 'response_received'
+                            for event in report['events']))
+
     def test_construct_and_decode_are_distinct_invocations(self):
         catalog, manifest = self.integer_fixture()
         report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)

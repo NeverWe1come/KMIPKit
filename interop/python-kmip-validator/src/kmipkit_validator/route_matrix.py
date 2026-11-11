@@ -6,12 +6,13 @@ Only successful, observed calls can produce a positive execution event.
 """
 from __future__ import annotations
 
-from concurrent.futures import Future, ThreadPoolExecutor
+from concurrent.futures import Future, ProcessPoolExecutor, ThreadPoolExecutor
 from contextlib import ExitStack
 import hashlib
 import importlib
 import inspect
 import json
+import multiprocessing
 from pathlib import Path
 import struct
 import sys
@@ -365,6 +366,7 @@ _GENERIC_SYMBOLS = {
 }
 
 _MATRIX_WORKERS = 16
+_MATRIX_PROCESS_WORKERS = 8
 _MATRIX_MAX_IN_FLIGHT = 64
 
 
@@ -383,7 +385,8 @@ def execute_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | Non
 
 
 def run_matrix(catalog: dict, manifest: dict, artifact: dict,
-               *, catalog_sha256: str | None = None, route_manifest_sha256: str | None = None) -> tuple[dict, list[dict]]:
+               *, catalog_sha256: str | None = None, route_manifest_sha256: str | None = None,
+               process_workers: int = 0) -> tuple[dict, list[dict]]:
     if artifact['library_commit'] != manifest['library_commit']:
         raise ValueError('installed artifact and route manifest commits differ')
     cases = {case['case_id']: case for case in catalog['test_cases']}
@@ -407,10 +410,14 @@ def run_matrix(catalog: dict, manifest: dict, artifact: dict,
     gaps = []
     outcomes = []
     in_flight = []
-    with ThreadPoolExecutor(max_workers=_MATRIX_WORKERS,
-                            thread_name_prefix='python-route-matrix') as executor:
+    executor_context = (ProcessPoolExecutor(
+        max_workers=process_workers, mp_context=multiprocessing.get_context('spawn'))
+        if process_workers else ThreadPoolExecutor(max_workers=_MATRIX_WORKERS,
+                                                    thread_name_prefix='python-route-matrix'))
+    with executor_context as executor:
         for cell in iter_cells(catalog, manifest, languages=('python',)):
-            future = executor.submit(_execute_matrix_cell, cell, cases, targets)
+            future = executor.submit(_execute_matrix_cell, cell, cases[cell['case_id']],
+                                     targets[cell['target_id']])
             outcomes.append(future)
             in_flight.append(future)
             if len(in_flight) >= _MATRIX_MAX_IN_FLIGHT:
@@ -426,7 +433,7 @@ def run_matrix(catalog: dict, manifest: dict, artifact: dict,
     return report, gaps
 
 
-def _execute_matrix_cell(cell: dict, cases: dict, targets: dict) -> tuple[str, dict]:
+def _execute_matrix_cell(cell: dict, case: dict, target: dict) -> tuple[str, dict]:
     """Execute one matrix cell and return its sanitized event or pending record."""
     event_fields = ('case_id', 'route_id', 'target_id', 'workflow_step_index', 'workflow_operation',
                     'workflow_item_index', 'public_api_symbol', 'execution_route_id', 'execution_api_symbol',
@@ -439,7 +446,7 @@ def _execute_matrix_cell(cell: dict, cases: dict, targets: dict) -> tuple[str, d
         if cell.get('execution_api_symbol'):
             symbols.append(cell['execution_api_symbol'])
         with CallTrace(symbols) as trace:
-            observed = execute_cell(cell, cases[cell['case_id']], targets[cell['target_id']], trace=trace)
+            observed = execute_cell(cell, case, target, trace=trace)
         if not set(symbols) <= trace.observed:
             raise RecipePending
         return 'event', {**identity, 'invocation_id': str(uuid.uuid4()),
@@ -874,7 +881,8 @@ def run_command(output_dir: Path) -> int:
     catalog_sha = hashlib.sha256(catalog_bytes).hexdigest()
     manifest_sha = hashlib.sha256(manifest_bytes).hexdigest()
     report, gaps = run_matrix(catalog, manifest, artifact,
-                              catalog_sha256=catalog_sha, route_manifest_sha256=manifest_sha)
+                              catalog_sha256=catalog_sha, route_manifest_sha256=manifest_sha,
+                              process_workers=_MATRIX_PROCESS_WORKERS)
     _validate(report, SHARED / 'schemas/route-execution-evidence.schema.json',
               'route evidence violates the shared schema')
     output.mkdir(parents=True, exist_ok=True)
