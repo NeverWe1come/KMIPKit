@@ -412,6 +412,12 @@
     "KMIPKIT-0099-FR-005",
     "KMIPKIT-0099-FR-006",
     "KMIPKIT-0099-FR-007",
+    "KMIPKIT-0100-FR-001",
+    "KMIPKIT-0100-FR-002",
+    "KMIPKIT-0100-FR-003",
+    "KMIPKIT-0100-FR-004",
+    "KMIPKIT-0100-FR-005",
+    "KMIPKIT-0100-FR-006",
     "KMIPKIT-REQ-SPEC-4.16-001-001",
     "KMIPKIT-REQ-SPEC-4.16-001-002",
     "KMIPKIT-REQ-SPEC-4.16-002",
@@ -716699,6 +716705,610 @@
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0099",
       "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-a878ac091d9c6e55875a",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::RegisterBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-001",
+        "KMIPKIT-0100-FR-002",
+        "KMIPKIT-0100-FR-003",
+        "KMIPKIT-0100-FR-004",
+        "KMIPKIT-0100-FR-005",
+        "KMIPKIT-0100-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-0cac0ab5bbd7e40b4ed5",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RequestBuilder<'a>::register",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-001",
+        "KMIPKIT-0100-FR-003",
+        "KMIPKIT-0100-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-53d41e1be0cbdc46ab39",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RegisterBuilder<'a>::object",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-001",
+        "KMIPKIT-0100-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-3341126514236a03443b",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RegisterBuilder<'a>::object_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-001",
+        "KMIPKIT-0100-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-b9939ccf97b7df5b55f3",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RegisterBuilder<'a>::attribute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-001",
+        "KMIPKIT-0100-FR-002",
+        "KMIPKIT-0100-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-e6d1fa4b2a6749deb553",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RegisterBuilder<'a>::attribute_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-001",
+        "KMIPKIT-0100-FR-002",
+        "KMIPKIT-0100-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-f9ed03acb3c7607ee077",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RegisterBuilder<'a>::attributes",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-001",
+        "KMIPKIT-0100-FR-002",
+        "KMIPKIT-0100-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-bf39306ca3479b9287cb",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RegisterBuilder<'a>::attribute_at",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-001",
+        "KMIPKIT-0100-FR-002",
+        "KMIPKIT-0100-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-e2352b6c3144cd6aadfc",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RegisterBuilder<'a>::vendor_attribute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-001",
+        "KMIPKIT-0100-FR-002",
+        "KMIPKIT-0100-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-8b07d569be891e8d0f67",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RegisterBuilder<'a>::protection_storage_masks",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-001",
+        "KMIPKIT-0100-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-e90e04de434762a7916b",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RegisterBuilder<'a>::opaque_object_context",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-001",
+        "KMIPKIT-0100-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-debfc56737c5bd24e730",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RegisterBuilder<'a>::with_options",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-5cf2ee03b46d45dcd0fb",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RegisterBuilder<'a>::with_asynchronous_indicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-91c29ae76ae7ab621cd5",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RegisterBuilder<'a>::validate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-13c283eb3ff36e14196c",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RegisterBuilder<'a>::build",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-219c951b5adf195cc1f2",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RegisterBuilder<'a>::build_request",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-903b9c9015a2c4b9301a",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RegisterBuilder<'a>::to_batch_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-c86b9bbdce94acd7d5ba",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RegisterBuilder<'a>::execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-004",
+        "KMIPKIT-0100-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-32c38367fd9488bed93f",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::FluentBuildError::MissingRegisterObject",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-e07d29e8ff2c6240f717",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::FluentBuildError::InvalidRegisterObject",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-bfa246ad7c9bef7718ef",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::fluent::RegisterBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-001",
+        "KMIPKIT-0100-FR-002",
+        "KMIPKIT-0100-FR-003",
+        "KMIPKIT-0100-FR-004",
+        "KMIPKIT-0100-FR-005",
+        "KMIPKIT-0100-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-43451d075bfa54c7f34b",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RequestBuilder<'a>::register",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-001",
+        "KMIPKIT-0100-FR-003",
+        "KMIPKIT-0100-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-c7e608c2a301e20b8e26",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RegisterBuilder<'a>::object",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-001",
+        "KMIPKIT-0100-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-4c56d7103a93cbaabf9c",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RegisterBuilder<'a>::object_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-001",
+        "KMIPKIT-0100-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-cdee6e02c08074cb31bb",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RegisterBuilder<'a>::attribute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-001",
+        "KMIPKIT-0100-FR-002",
+        "KMIPKIT-0100-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-aee0e0eb4d428d33393a",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RegisterBuilder<'a>::attribute_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-001",
+        "KMIPKIT-0100-FR-002",
+        "KMIPKIT-0100-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-8c635904a2a584f25f99",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RegisterBuilder<'a>::attributes",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-001",
+        "KMIPKIT-0100-FR-002",
+        "KMIPKIT-0100-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-50d6c3301f453cc3de1c",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RegisterBuilder<'a>::attribute_at",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-001",
+        "KMIPKIT-0100-FR-002",
+        "KMIPKIT-0100-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-624d8675b808f49fcad4",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RegisterBuilder<'a>::vendor_attribute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-001",
+        "KMIPKIT-0100-FR-002",
+        "KMIPKIT-0100-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-6f98bcb547cd9bcd61df",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RegisterBuilder<'a>::protection_storage_masks",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-001",
+        "KMIPKIT-0100-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-86456431da67796eeeb7",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RegisterBuilder<'a>::opaque_object_context",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-001",
+        "KMIPKIT-0100-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-9fe58f3c93c8eb0a5894",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RegisterBuilder<'a>::with_options",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-855af93838fa7c2495be",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RegisterBuilder<'a>::with_asynchronous_indicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-5e6137a2abe032883c71",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RegisterBuilder<'a>::validate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-c58b80e9a5a22a49e1e6",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RegisterBuilder<'a>::build",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-fdbb56300d7bcec585e6",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RegisterBuilder<'a>::build_request",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-ecfb3dd805e12487e90f",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RegisterBuilder<'a>::to_batch_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-f391b6a5fa2eb6e0e1f9",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RegisterBuilder<'a>::execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-004",
+        "KMIPKIT-0100-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-e9e52dd5fb54be3862bb",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::fluent::FluentBuildError::MissingRegisterObject",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0100-629ee8f73ce11d0582d1",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::fluent::FluentBuildError::InvalidRegisterObject",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0100-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0100",
+      "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
     }
   ],
   "approvedExclusions": [
@@ -979527,6 +980137,222 @@
         "evidence": "language-level behavior, not separate KMIPKit product capabilities."
       },
       "evidence": "KMIPKIT-0099-FR-001; KMIPKIT-0099-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::RegisterBuilder<'a> as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::RegisterBuilder<'a> as core::borrow::Borrow<kmipkit_client::fluent::RegisterBuilder<'a>>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::RegisterBuilder<'a> as core::borrow::BorrowMut<kmipkit_client::fluent::RegisterBuilder<'a>>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::RegisterBuilder<'a> as core::convert::From<kmipkit_client::fluent::RegisterBuilder<'a>>>::from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::RegisterBuilder<'a> as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::RegisterBuilder<'a> as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::RegisterBuilder<'a> as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::RegisterBuilder<'a> as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::RegisterBuilder<'a> as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::RegisterBuilder<'a> as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::RegisterBuilder<'a> as core::borrow::Borrow<kmipkit_client::fluent::RegisterBuilder<'a>>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::RegisterBuilder<'a> as core::borrow::BorrowMut<kmipkit_client::fluent::RegisterBuilder<'a>>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::RegisterBuilder<'a> as core::convert::From<kmipkit_client::fluent::RegisterBuilder<'a>>>::from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::RegisterBuilder<'a> as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::RegisterBuilder<'a> as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::RegisterBuilder<'a> as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::RegisterBuilder<'a> as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::RegisterBuilder<'a> as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Register builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/100-fluent-register/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0100-FR-001; KMIPKIT-0100-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
     }
   ],
   "apiLevels": [

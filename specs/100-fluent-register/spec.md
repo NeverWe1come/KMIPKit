@@ -54,6 +54,11 @@ validation, the existing protocol-version gates, and the shared exchange.
   generated with repository tooling. Foreign-language parity remains a later
   delivery and MUST be marked pending.
 
+Compiler-visible standard trait implementations, such as `Debug`, are
+language-level behavior, not separate KMIPKit product capabilities. The
+manifest records them as exclusions while the explicit Register methods and
+builder remain the declared public API.
+
 ## User scenarios and acceptance
 
 1. A caller builds a typed Certificate or key object, supplies direct

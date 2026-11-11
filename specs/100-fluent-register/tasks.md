@@ -29,12 +29,14 @@ must stay based on that dependency while review is pending.
 
 ## Refactor and evidence
 
-- [ ] Add English and Spanish examples with semantic object construction.
-- [ ] Add requirement traceability and implementation evidence.
-- [ ] Add exact public Rust declarations to the API manifest source and
+- [x] Add English and Spanish examples with semantic object construction.
+- [x] Add requirement traceability and implementation evidence.
+- [x] Add exact public Rust declarations to the API manifest source and
   regenerate outputs; mark language parity pending.
-- [ ] Run formatting, client tests, guide examples, manifest/export checks,
-  coverage, and diff checks; commit Refactor separately.
+- [x] Run formatting, client tests, guide examples, manifest/export checks,
+  coverage, and diff checks; commit Refactor separately. The exact Register
+  exports match; the global Rust audit remains incomplete outside this spec
+  (see `implementation-evidence.md`).
 
 ## PR and follow-on work
 
