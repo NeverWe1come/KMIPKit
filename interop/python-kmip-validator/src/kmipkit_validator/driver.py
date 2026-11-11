@@ -945,7 +945,9 @@ class PythonKmipDriver:
         return cls._structure_item(0x0042_0008, [name_item, value_item])
 
     @classmethod
-    def _attributes(cls, name: str, algorithm: int = 3, bits: int = 256) -> Any:
+    def _attributes(
+        cls, name: str, algorithm: int = 3, bits: int = 256, *, include_comment: bool = False
+    ) -> Any:
         name_value = cls._structure_item(
             0x0042_0053,
             [cls._item(0x0042_0055, "text", name), cls._item(0x0042_0054, "enumeration", 1)],
@@ -959,8 +961,9 @@ class PythonKmipDriver:
                 0x20 if algorithm in (4, 6) else 0x180 if algorithm == 9 else 0x0C,
             ),
             name_value,
-            cls._item(0x0042_00FD, "text", "KMIPKit interop test"),
         ]
+        if include_comment:
+            attributes.append(cls._item(0x0042_00FD, "text", "KMIPKit interop test"))
         return cls._structure(attributes)
 
     @staticmethod
@@ -1638,7 +1641,12 @@ class PythonKmipDriver:
         outcome: dict[str, Any] | None = None
         try:
             if setup_required:
-                attributes = self._attributes(unique_name, algorithm, bits)
+                attributes = self._attributes(
+                    unique_name,
+                    algorithm,
+                    bits,
+                    include_comment=operation in {"Set Attribute", "Modify Attribute", "Delete Attribute"},
+                )
                 try:
                     if operation == "Join Split Key":
                         setup_item = self._extensions.client_batch_item_create_split_key(2, 2, 2, 1, attributes)
