@@ -58,12 +58,31 @@ def _name(value: str) -> str:
     return re.sub('[^a-z0-9]', '', value.lower())
 
 
-def scalar_fixture(target: dict, tags: dict[str, int]) -> tuple[int, int, bytes] | None:
+def scalar_fixture(target: dict, tags: dict[str, int], catalog: dict | None = None,
+                   protocol_version: str | None = None) -> tuple[int, int, bytes] | None:
     """Use each exact normative enum/flag/tag; never substitute an operation probe."""
     normalized_tags = {_name(name): value for name, value in tags.items()}
     kind = target['kind']
     if kind == 'tag':
         return int(target['wire_value'], 16), 2, (7).to_bytes(4, 'big')
+    if kind == 'operation' and catalog is not None:
+        values = [candidate for candidate in catalog['normative_targets']
+                  if candidate['kind'] == 'enumeration_value'
+                  and _name(candidate['name']) == _name(target['name'])
+                  and 'KMIPKIT-ELEM-ENUMERATION-OPERATION' in candidate.get('parent_element_ids', [])
+                  and (protocol_version is None or protocol_version in candidate['protocol_versions'])]
+        if len(values) != 1:
+            return None
+        tag = normalized_tags.get('operation')
+        if tag is None:
+            return None
+        return tag, 5, int(values[0]['wire_value'], 16).to_bytes(4, 'big')
+    if kind == 'object_type':
+        tag = normalized_tags.get('objecttype')
+        raw = target.get('wire_value', '')
+        if tag is None or not re.fullmatch(r'[0-9a-fA-F]{1,8}', raw):
+            return None
+        return tag, 5, int(raw, 16).to_bytes(4, 'big')
     if kind not in {'enumeration_value', 'bitmask_value', 'referenced_enum_value'}:
         return None
     parents = target.get('parent_element_ids', [])
@@ -250,7 +269,6 @@ def run(output: Path, binary: Path | None = None) -> int:
     cases = {case['case_id']: case for case in catalog['test_cases']}
     tags = {target['name']: int(target['wire_value'], 16) for target in targets.values() if target['kind'] == 'tag'}
     events, pending = [], []
-    fixtures = {key: scalar_fixture(target, tags) for key, target in targets.items()}
     from route_ttlv import TreeAbi
     tree_abi = TreeAbi(library)
     boundaries = json.loads((ROOT / 'interop/shared/vectors/ttlv-boundaries.json').read_text())
@@ -264,11 +282,13 @@ def run(output: Path, binary: Path | None = None) -> int:
     attribute_cache = {}
     for index, cell in enumerate(iter_cells(catalog, manifest, languages=('c',))):
         target = targets[cell['target_id']]
-        fixture = fixtures[cell['target_id']]
+        fixture = scalar_fixture(target, tags, catalog, cell['protocol_version'])
         case = cases[cell['case_id']]
         # Multi-branch semantic cases require dedicated recipes. A scalar check
         # can satisfy only the individual inventory value/tag target case.
-        individual_value = case['category'] == 'normative_inventory' and not case.get('requires', {}).get('protocol_scenario')
+        individual_value = (
+            case['category'] == 'normative_inventory' and not case.get('requires', {}).get('protocol_scenario')
+        ) or target['kind'] in {'operation', 'object_type'}
         if cell['transport'] is None and any(key in case.get('requires', {}) for key in ('enum_type', 'bitmask_type')):
             value_key = (case['case_id'], cell['protocol_version'])
             if value_key not in value_cache:
