@@ -45,6 +45,20 @@ _TRANSPARENT_KEY_MATERIAL_FORMATS = {
     12: ('Transparent EC Public Key', [('Recommended Curve', 5, 'P-256'),
                                        ('Q String', 8, b'\x04\x01\x02')]),
 }
+_SECRET_TTLV_ROUTE_FIXTURES = {
+    'kmipkit_secret_bytes_into_ttlv_value': {
+        'target_id': 'KMIPKIT-ELEM-DATA-TYPE-BYTE-STRING', 'create': 'kmipkit_secret_bytes_create',
+        'release': 'kmipkit_secret_bytes_release', 'item_type': 8, 'tag': 'Opaque Data Value',
+        'samples': [b'', b'\x00', bytes(range(7)), bytes(range(8)), bytes(range(9)), b'\x00\xff\x80\xfe'],
+    },
+    'kmipkit_secret_text_into_ttlv_value': {
+        'target_id': 'KMIPKIT-ELEM-DATA-TYPE-TEXT-STRING', 'create': 'kmipkit_secret_text_create',
+        'release': 'kmipkit_secret_text_release', 'item_type': 7, 'tag': 'Unique Batch Item ID',
+        'samples': [b'', b'x', 'abcdeñ'.encode(), 'abcdefñ'.encode(),
+                    'abcdefgñ'.encode(), 'mañana'.encode()],
+        'reject_invalid_utf8': True,
+    },
+}
 
 
 class _CryptographicParametersFieldsV1(C.Structure):
@@ -87,21 +101,7 @@ class ModelCases:
         return actual
 
     def _execute_secret_ttlv_value(self, target: dict, symbol: str) -> dict | None:
-        routes = {
-            'kmipkit_secret_bytes_into_ttlv_value': {
-                'target_id': 'KMIPKIT-ELEM-DATA-TYPE-BYTE-STRING', 'create': 'kmipkit_secret_bytes_create',
-                'release': 'kmipkit_secret_bytes_release', 'item_type': 8, 'tag': 'Opaque Data Value',
-                'samples': [b'', b'\x00', bytes(range(7)), bytes(range(8)), bytes(range(9)),
-                            b'\x00\xff\x80\xfe'],
-            },
-            'kmipkit_secret_text_into_ttlv_value': {
-                'target_id': 'KMIPKIT-ELEM-DATA-TYPE-TEXT-STRING', 'create': 'kmipkit_secret_text_create',
-                'release': 'kmipkit_secret_text_release', 'item_type': 7, 'tag': 'Unique Batch Item ID',
-                'samples': [b'', b'x', 'abcdeñ'.encode(), 'abcdefñ'.encode(),
-                            'abcdefgñ'.encode(), 'mañana'.encode()],
-            },
-        }
-        route = routes.get(symbol)
+        route = _SECRET_TTLV_ROUTE_FIXTURES.get(symbol)
         if route is None or target.get('target_id') != route['target_id']:
             return None
         self.abi.bind(route['create'], [C.c_void_p, C.c_uint64, C.POINTER(C.c_void_p)])
@@ -145,7 +145,7 @@ class ModelCases:
                 self.abi.release('codec_limits', limits)
 
         negative_checks = 0
-        if symbol == 'kmipkit_secret_text_into_ttlv_value':
+        if route.get('reject_invalid_utf8'):
             invalid_utf8 = C.create_string_buffer(b'\xff')
             invalid_secret = C.c_void_p()
             self.abi.called.add(route['create'])
