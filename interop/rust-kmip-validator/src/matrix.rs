@@ -342,6 +342,74 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
     crate::driver::item(tag, value)
 }
 
+fn typed_attribute_marker(symbol: &str) -> Option<&str> {
+    let marker = symbol.split("typed::").nth(1)?;
+    marker.split(['>', ':']).next()
+}
+
+fn normalized_name(value: &str) -> String {
+    value
+        .chars()
+        .filter(|character| character.is_alphanumeric())
+        .flat_map(char::to_lowercase)
+        .collect()
+}
+
+fn typed_item_route(symbol: &str) -> bool {
+    symbol.contains("Attribute::<") && symbol.ends_with("::from_item")
+        || symbol.contains("::try_push_typed::<")
+        || symbol.contains("Attribute::from_typed::<")
+}
+
+fn sample_for_route(symbol: &str, target: &Json, elements: &[Json]) -> Result<Item> {
+    if !typed_item_route(symbol) {
+        return sample(target, elements);
+    }
+    let marker = typed_attribute_marker(symbol).ok_or("typed attribute marker missing")?;
+    let attribute = elements
+        .iter()
+        .find(|element| {
+            element["kind"] == "attribute"
+                && normalized_name(element["name"].as_str().unwrap_or_default())
+                    == normalized_name(marker)
+        })
+        .ok_or("typed attribute definition missing")?;
+    let attribute_id = text(attribute, "element_id")?;
+    let tag = attribute["parent_element_ids"]
+        .as_array()
+        .and_then(|parents| parents.first())
+        .and_then(Json::as_str)
+        .and_then(|parent| parent.strip_prefix("KMIPKIT-ELEM-TAG-"))
+        .and_then(|raw| u32::from_str_radix(raw, 16).ok())
+        .ok_or("typed attribute tag missing")?;
+    let value = if attribute["source_encoding"] == "Structure" {
+        if normalized_name(marker) == "vendorattribute" {
+            vendor_attribute_value()?
+        } else {
+            let mut fields = kmipkit::ttlv::Structure::new();
+            for member in elements.iter().filter(|element| {
+                element["kind"] == "structure_member"
+                    && element["parent_element_ids"]
+                        .as_array()
+                        .is_some_and(|parents| parents.iter().any(|parent| parent == attribute_id))
+            }) {
+                fields
+                    .try_push(sample(member, elements)?)
+                    .map_err(|_| "typed attribute structure rejected")?;
+            }
+            Value::structure(fields)
+        }
+    } else {
+        let source = if target["kind"] == "attribute" {
+            sample(attribute, elements)?
+        } else {
+            sample(target, elements)?
+        };
+        source.with_value(value_to_owned)?
+    };
+    crate::driver::item(tag, value)
+}
+
 #[allow(clippy::too_many_lines)] // Explicit public route dispatch stays together for review.
 fn invoke(symbol: &str, sample: &Item, target: &Json, elements: &[Json]) -> Option<Result<Item>> {
     if let Some(result) = crate::local_credentials::invoke(symbol, sample, target, elements) {
@@ -616,7 +684,7 @@ pub(crate) fn run(matrix: &Path, output: &Path) -> Result<bool> {
             events.push(event);
             continue;
         }
-        let Ok(sample) = sample(target, elements) else {
+        let Ok(sample) = sample_for_route(symbol, target, elements) else {
             pending += 1;
             continue;
         };
@@ -707,20 +775,24 @@ mod tests {
             "../../shared/catalog/kmipkit-1.0-test-catalog.json"
         ))
         .unwrap();
-        let specification: Json = serde_json::from_str(include_str!(
-            "../../../specification/catalog/kmip-2.1.json"
-        ))
-        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
         let target = cases["normative_targets"]
             .as_array()
             .unwrap()
             .iter()
-            .find(|target| {
-                target["target_id"] == "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-21-DIGEST-VALUE"
-            })
+            .find(|target| target["target_id"] == "KMIPKIT-ELEM-STRUCTURE-MEMBER-4-21-DIGEST-VALUE")
             .unwrap();
         let elements = specification["elements"].as_array().unwrap();
-        let fixture = sample(target, elements).unwrap();
+        let fixture = sample_for_route(
+            "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::Digest>::from_item",
+            target,
+            elements,
+        )
+        .unwrap();
+        let member = sample(target, elements).unwrap();
+        assert!(crate::local_wire::target_hash(&fixture, &member).is_ok());
         let result = invoke(
             "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::Digest>::from_item",
             &fixture,
