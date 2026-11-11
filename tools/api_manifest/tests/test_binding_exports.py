@@ -66,6 +66,19 @@ SPEC.loader.exec_module(AUDIT)
 
 
 class BindingExportAuditTests(unittest.TestCase):
+    def test_javap_parent_clause_parser_handles_nested_generics_and_multiple_interfaces(self):
+        self.assertEqual(
+            AUDIT.javap_parent_clauses(
+                "extends org.example.Base<java.lang.String, java.util.List<java.lang.Integer>> "
+                "implements org.example.First<java.lang.String, java.lang.Integer>, "
+                "org.example.Second {"
+            ),
+            (
+                "org.example.Base<java.lang.String, java.util.List<java.lang.Integer>>",
+                "org.example.First<java.lang.String, java.lang.Integer>, org.example.Second",
+            ),
+        )
+
     def test_c_package_audit_expands_local_public_header_includes(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
