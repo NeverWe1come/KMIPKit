@@ -84,9 +84,12 @@ and view calls for the Query operation under KMIP 2.0 and 2.1, then exchanges
 typed Query requests and a checked Query response with the controlled TLS
 peer under both versions. It directly invokes the public Query response
 readers and verifies the returned field count, kind, and raw operation value.
-The same test records the expected unused-tag decoder rejection for both
-versions. CI validates these per-cell events against the shared matrix,
+The same test records the expected unused and reserved tag decoder rejections
+for both versions, and checks that an extension-range tag can be constructed,
+viewed, encoded, and decoded through the installed TTLV API. CI validates these per-cell events against the shared matrix,
 uploads `route-execution-evidence.json` with the generated ledger, and compares
-that ledger with the checked-in `route-evidence-ledger.json`. Only these 20
-cells are executed; the ledger keeps every other Java matrix cell pending and
-does not imply vendor interoperability or full-matrix completion.
+that ledger with the checked-in `route-evidence-ledger.json`. These recipes
+execute 32 cells; the ledger keeps every other Java matrix cell pending and
+does not imply vendor interoperability or full-matrix completion. Activation
+Date and the rest of the attribute routes remain pending until their typed
+construction, request/response, and controlled-peer recipes execute.

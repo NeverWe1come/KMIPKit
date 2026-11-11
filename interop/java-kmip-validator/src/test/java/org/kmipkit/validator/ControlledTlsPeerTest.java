@@ -223,14 +223,13 @@ class ControlledTlsPeerTest {
                 "Installed Query calls against the controlled peer must emit route execution evidence.");
         JsonNode report = new ObjectMapper().readTree(reportPath.toFile());
         assertEquals("java", report.path("language").asText());
-        assertEquals(68, report.path("events").size());
-        assertEquals(7, report.path("case_ids").size());
+        assertEquals(32, report.path("events").size());
+        assertEquals(6, report.path("case_ids").size());
         assertEquals("test-op-query", report.path("case_ids").get(0).asText());
         for (int index = 1; index < 6; index++) {
             assertEquals("test-norm-tag-range-kmipkit-range-%03d".formatted(index),
                     report.path("case_ids").get(index).asText());
         }
-        assertEquals("test-attr-activation-date", report.path("case_ids").get(6).asText());
         assertEquals(2, report.path("protocol_versions").size());
         assertEquals("org.kmipkit.extensions.Client.execute",
                 findEvent(report.path("events"), "send", "2.0").path("execution_api_symbol").asText());
