@@ -109,6 +109,8 @@ confirmation. Mutating cases remain disabled until
 `execution_policy.allow_mutations` is set to `true`; the validators must reject
 live mutation runs without both safety conditions. Do not target a shared or
 production key manager.
+The `Log` operation is included in this guard: KMIP 2.0 §6.1.28 and KMIP 2.1
+§6.1.29 define it as appending the supplied message to the server log.
 
 Build artifacts from one exact `release/1.0.0` commit and install each
 language's artifact into an isolated consumer environment. Keep the commit and

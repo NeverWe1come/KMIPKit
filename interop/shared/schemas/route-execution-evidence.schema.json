@@ -66,6 +66,8 @@
         "response_tree_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
         "wire_bytes_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
         "wire_bytes_deterministic": { "type": "boolean" },
+        "request_delivery_state": { "enum": ["not_sent", "possibly_sent", "response_received"] },
+        "transport_invocation_count": { "type": "integer", "minimum": 0 },
         "batch_operation_sequence": { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 2 },
         "peer_observed_operation_sequence": { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 2 },
         "batch_item_count": { "type": "integer", "minimum": 2 },
