@@ -156,7 +156,13 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
     } else {
         elements
             .iter()
-            .find(|e| e["kind"] == "tag" && e["name"] == name && e["allocation"] == "assigned")
+            .find(|element| {
+                element["kind"] == "tag"
+                    && element["allocation"] == "assigned"
+                    && element["name"]
+                        .as_str()
+                        .is_some_and(|tag_name| tag_name.eq_ignore_ascii_case(name))
+            })
             .and_then(|e| e["wire_value"].as_str())
             .and_then(unsigned_wire_value)
             .or_else(|| {
@@ -360,6 +366,15 @@ fn parent_structure_tag(target: &Json, elements: &[Json]) -> Option<u32> {
     let parent = elements
         .iter()
         .find(|element| element["element_id"] == parent_id)?;
+    if ![
+        "object_structure",
+        "attribute_structure",
+        "operation_structure",
+    ]
+    .contains(&parent["kind"].as_str()?)
+    {
+        return None;
+    }
     let parent_name = parent["name"].as_str()?;
     elements
         .iter()
@@ -483,8 +498,8 @@ fn invoke(symbol: &str, sample: &Item, target: &Json, elements: &[Json]) -> Opti
                 structure
                     .try_push(sample.try_clone().map_err(|_| "local copy failed")?)
                     .map_err(|_| "structure insertion rejected")?;
-                let container_tag = parent_structure_tag(target, elements)
-                    .ok_or("structure parent tag fixture missing")?;
+                // A Request Payload is the stable generic envelope for top-level structures.
+                let container_tag = parent_structure_tag(target, elements).unwrap_or(0x0042_0079);
                 crate::driver::item(container_tag, Value::structure(structure))
             })());
         }
@@ -800,7 +815,37 @@ mod tests {
         )
         .unwrap()
         .unwrap();
-        assert!(crate::local_wire::target_hash(&result, &fixture).is_ok());
+        let projected = crate::local_wire::target_hash(&result, &fixture);
+        assert!(projected.is_ok(), "{projected:?}");
+    }
+
+    #[test]
+    fn structure_try_push_projects_an_empty_object_structure_child() {
+        let cases: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
+        let target = cases["normative_targets"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|target| target["target_id"] == "KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE")
+            .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        let fixture = sample(target, elements).unwrap();
+        let result = invoke(
+            "kmipkit_ttlv::Structure::try_push",
+            &fixture,
+            target,
+            elements,
+        )
+        .unwrap()
+        .unwrap();
+        let projected = crate::local_wire::target_hash(&result, &fixture);
+        assert!(projected.is_ok(), "{projected:?}");
     }
 
     /// OASIS KMIP 2.1 §4.21, Table 69 defines Digest as an attribute Structure.
