@@ -68,3 +68,19 @@ Before completing step 4, add the two contracts identified by the branch review:
   preserve existing declarations and refresh affected hashes through the
   repository generator.
 - [ ] Commit the Red, Green, and documentation/refactor evidence separately.
+
+### Task 6 fix round 1: reject Message Extension tags as object attributes
+
+- [ ] Add focused failing tests proving each prebuilt group rejects tags in
+  `0x540000..=0x54FFFF` with `MessageExtensionTagNotObjectAttribute` and
+  `execute()` returns `NotSent` without a transport call. Replace the prior
+  order-test fixtures with valid catalogued Boolean attributes.
+- [ ] Verify Red against the current implementation.
+- [ ] Apply the existing symmetric-builder object-attribute guard consistently
+  to Common, Private Key, and Public Key set methods; do not add a new send or
+  validation path.
+- [ ] Run focused tests, the client suite, Clippy, formatting, manifest,
+  traceability, documentation, and binding checks. Commit Red and Green
+  separately and append evidence to the task report.
+- [ ] Obtain a scoped re-review of this finding and the fix diff before opening
+  the WIP PR.

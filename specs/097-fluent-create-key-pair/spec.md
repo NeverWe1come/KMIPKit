@@ -69,7 +69,10 @@ the remaining operation families and language facades.
   typed attributes, preserving the supplied set's item order. Repeated set
   methods append in call order. Final request construction MUST run the
   existing typed request validator so duplicate or conflicting effective
-  values are rejected before transport.
+  values are rejected before transport. Items using Message Extension tags
+  (`0x540000` through `0x54FFFF`) MUST be rejected as object attributes with
+  `FluentBuildError::MessageExtensionTagNotObjectAttribute`; they are valid
+  only in their proper message-level extension position.
 
 ## Acceptance criteria
 
@@ -88,6 +91,8 @@ the remaining operation families and language facades.
 7. Prebuilt attribute sets remain in their selected group and preserve their
    internal and call order; repeated/conflicting attributes fail through the
    existing typed request validation.
+8. All three prebuilt group methods reject Message Extension tags locally,
+   before any transport exchange.
 
 ## Explicit limits
 
