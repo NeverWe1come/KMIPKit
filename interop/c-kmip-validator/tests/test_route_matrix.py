@@ -91,6 +91,21 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual([tree[2] for tree in self.runner.generic_tree_fixtures(
             reserved_range, catalog, tags, '2.1')], [bytes.fromhex('00000001'), bytes.fromhex('00000103')])
 
+    def test_tag_allocation_ranges_check_each_boundary_through_the_decoder(self):
+        from artifact_support import ROOT, INSTALL
+        from route_ttlv import TreeAbi
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        abi = TreeAbi(INSTALL / 'lib/libkmipkit_ffi.so')
+        targets = [target for target in catalog['normative_targets'] if target['kind'] == 'tag_range']
+        self.assertEqual(len(targets), 5)
+        for target in targets:
+            with self.subTest(target=target['target_id']):
+                result = self.runner.execute_tag_range_case(abi, target, catalog)
+                self.assertIn('kmipkit_ttlv_decode', result['invoked_symbols'])
+                if target['allocation'] == 'extension':
+                    self.assertIn('kmipkit_ttlv_item_create', result['invoked_symbols'])
+                self.assertEqual(result['sample_count'], 2)
+
     def test_ttlv_encoding_parser_keeps_compound_types_distinct(self):
         self.assertEqual(self.runner._type_codes('Long Integer'), [3])
         self.assertEqual(self.runner._type_codes('Big Integer'), [4])
