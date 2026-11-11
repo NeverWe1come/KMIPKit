@@ -211,6 +211,17 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(result['negative_checks'], 5)
         self.assertGreater(result['sample_count'], 1)
 
+    def test_attribute_local_routes_cover_attribute_cases_without_protocol_scenarios(self):
+        self.assertTrue(self.runner.should_execute_attribute_case(
+            {'transport': None}, {'category': 'attributes', 'requires': {}}, {'kind': 'attribute'}))
+        self.assertFalse(self.runner.should_execute_attribute_case(
+            {'transport': None}, {'category': 'attributes', 'requires': {'protocol_scenario': 'lifecycle'}},
+            {'kind': 'attribute'}))
+        self.assertFalse(self.runner.should_execute_attribute_case(
+            {'transport': 'raw_tls'}, {'category': 'attributes', 'requires': {}}, {'kind': 'attribute'}))
+        self.assertFalse(self.runner.should_execute_attribute_case(
+            {'transport': None}, {'category': 'object_lifecycle', 'requires': {}}, {'kind': 'attribute'}))
+
     def test_structured_name_attribute_has_both_required_fields(self):
         executor = self.attribute_executor()
         target = next(target for target in executor.catalog['normative_targets']
