@@ -69,10 +69,19 @@ class MatrixContract(unittest.TestCase):
         event = report['events'][0]
         self.assertEqual('passed', event['status'])
         self.assertEqual('rejected', event['decode_outcome'])
-        self.assertEqual('tag_not_allocated', event['decode_rejection_code'])
+        self.assertEqual('tag_reserved', event['decode_rejection_code'])
         expected_wire = bytes.fromhex('42000905000000040000000000000000')
         self.assertEqual(hashlib.sha256(expected_wire).hexdigest(), event['decode_input_sha256'])
         self.assertNotIn('response_tree_sha256', event)
+
+    def test_unused_tag_decoder_records_unallocated_rejection(self):
+        cell = next(cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
+                    if cell['case_id'] == 'test-norm-tag-range-kmipkit-range-001'
+                    and cell['public_api_symbol'] == 'kmipkit_ttlv::codec::decode'
+                    and cell['action'] == 'decode')
+        process, report = self.run_matrix([cell])
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual('tag_not_allocated', report['events'][0]['decode_rejection_code'])
 
     def test_enumeration_extension_range_constructs_an_open_value(self):
         target = next(target for target in CATALOG['normative_targets']
