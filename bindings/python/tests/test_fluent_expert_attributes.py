@@ -191,3 +191,12 @@ def test_positioned_item_rejects_closed_builder_and_closed_item():
             item.close()
             with pytest.raises(errors.InvalidInputError):
                 builder.attribute_item_at(0, item)
+
+
+def test_non_builder_native_argument_failure_keeps_generic_delivery_metadata():
+    # KMIPKIT-0096-FR-003: scoped builder metadata must not change other ABI calls.
+    with pytest.raises(errors.ClientExecutionError) as rejected:
+        client._raise_client_status(client.lib.kmipkit_client_batch_create(client.ffi.NULL))
+    assert rejected.value.delivery is errors.DeliveryState.NONE
+    assert rejected.value.client_category is errors.ClientErrorCategory.VALIDATION
+    _assert_redacted(rejected.value)
