@@ -1740,9 +1740,9 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
             "expected_result_reasons": [7, 10],
         },
         {
-            "id": "test-neg-modify-readonly-attribute",
+            "id": "test-neg-modify-attribute-current-mismatch",
             "op": "Modify Attribute",
-            "desc": "Verify server rejects mutation of read-only server-generated attribute (InitialDate / UniqueIdentifier).",
+            "desc": "Verify server rejects Modify Attribute when the Current Attribute value does not match the existing Comment value.",
             "exp_status": "OperationFailed",
         },
         {
@@ -1766,8 +1766,16 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
             },
             "isolation_recipe": {
                 "unique_name_prefix": f"kmipkit-neg-{nt['id']}",
-                "setup_steps": ["Create test object in initial state"],
-                "target_step": f"Attempt illegal {nt['op']}",
+                "setup_steps": (
+                    ["Create test object with Comment='KMIPKit interop test'"]
+                    if nt["id"] == "test-neg-modify-attribute-current-mismatch"
+                    else ["Create test object in initial state"]
+                ),
+                "target_step": (
+                    "Attempt Modify Attribute with Current Attribute='old test value' and New Attribute='new test value'"
+                    if nt["id"] == "test-neg-modify-attribute-current-mismatch"
+                    else f"Attempt illegal {nt['op']}"
+                ),
                 "teardown_steps": ["Revoke and Destroy test object"],
                 "normalized_fields": ["UniqueIdentifier", "TimeStamp"]
             }

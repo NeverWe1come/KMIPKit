@@ -70581,21 +70581,21 @@
       }
     },
     {
-      "case_id": "test-neg-modify-readonly-attribute",
+      "case_id": "test-neg-modify-attribute-current-mismatch",
       "category": "negative_and_boundary",
       "operation": "Modify Attribute",
       "oasis_section": "§3",
-      "description": "Verify server rejects mutation of read-only server-generated attribute (InitialDate / UniqueIdentifier).",
+      "description": "Verify server rejects Modify Attribute when the Current Attribute value does not match the existing Comment value.",
       "requires": {
         "operation": "Modify Attribute",
         "expected_status": "OperationFailed"
       },
       "isolation_recipe": {
-        "unique_name_prefix": "kmipkit-neg-test-neg-modify-readonly-attribute",
+        "unique_name_prefix": "kmipkit-neg-test-neg-modify-attribute-current-mismatch",
         "setup_steps": [
-          "Create test object in initial state"
+          "Create test object with Comment='KMIPKit interop test'"
         ],
-        "target_step": "Attempt illegal Modify Attribute",
+        "target_step": "Attempt Modify Attribute with Current Attribute='old test value' and New Attribute='new test value'",
         "teardown_steps": [
           "Revoke and Destroy test object"
         ],
