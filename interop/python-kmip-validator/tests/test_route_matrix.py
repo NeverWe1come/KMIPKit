@@ -149,6 +149,30 @@ class RouteMatrixTests(unittest.TestCase):
                 pass
         self.assertNotIn('kmipkit.ttlv.ttlv_decode', trace.observed)
 
+    def test_version_rejections_prove_not_sent_and_zero_transport_attempts(self):
+        catalog = copy.deepcopy(self.catalog)
+        catalog['test_cases'] = [case for case in catalog['test_cases']
+                                 if case['requires'].get('expected_status') == 'NotSent']
+        symbols = {'kmipkit.extensions.client_batch_item_' + operation for operation in
+                   ('ping', 'get_constraints', 'set_constraints', 'set_defaults')}
+        symbols.update({'kmipkit.client.Client.execute_process',
+                        'kmipkit.client.Client.execute_query_async_requests'})
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in manifest['routes'] if route['public_api_symbol'] in symbols]
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+        self.assertFalse(gaps)
+        self.assertEqual(72, len(report['events']))
+        self.assertEqual({'construct', 'send'}, {event['action'] for event in report['events']})
+        for event in report['events']:
+            self.assertNotIn('response_tree_sha256', event)
+            self.assertEqual('not_sent', event['request_delivery_state'])
+            self.assertEqual(0, event['transport_invocation_count'])
+        summary = validate_report(report, catalog, manifest,
+                                  catalog_sha256=report['catalog_sha256'],
+                                  route_manifest_sha256=report['route_manifest_sha256'],
+                                  expected_artifact_sha256=self.artifact['artifact_sha256'])
+        self.assertTrue(summary['all_invocations_passed'])
+
     def test_ping_network_cells_execute_public_client_over_all_supported_combinations(self):
         catalog = copy.deepcopy(self.catalog)
         catalog['test_cases'] = [next(case for case in catalog['test_cases'] if case['case_id'] == 'test-op-ping')]
