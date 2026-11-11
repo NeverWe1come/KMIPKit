@@ -159,7 +159,7 @@ int kmipkit_public_fluent_validation_probe(void) {
     kmipkit_ttlv_value_release(wrong_value);
     wrong_value = NULL;
     if (
-        kmipkit_ttlv_raw_tag_create(UINT32_C(0x4200fe), &raw_tag) != 0 ||
+        kmipkit_ttlv_raw_tag_create(UINT32_C(0x4200fd), &raw_tag) != 0 ||
         kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag) != 0 ||
         kmipkit_ttlv_value_text_string(limits, unknown_value, sizeof(unknown_value) - 1, &wrong_value) != 0 ||
         kmipkit_ttlv_item_create(tag, wrong_value, limits, &item) != 0) {
@@ -176,6 +176,25 @@ int kmipkit_public_fluent_validation_probe(void) {
                                        &vendor_value) != 0 ||
         kmipkit_ttlv_item_create(vendor_tag, vendor_value, limits, &vendor_item) != 0) {
         result = 14;
+        goto cleanup;
+    }
+    vendor_value = NULL;
+    if (kmipkit_symmetric_key_builder_add_attribute_item(builder, vendor_item) != 0) {
+        result = 141;
+        goto cleanup;
+    }
+    kmipkit_ttlv_item_release(vendor_item);
+    vendor_item = NULL;
+    kmipkit_tag_release(vendor_tag);
+    vendor_tag = NULL;
+    kmipkit_raw_tag_release(raw_vendor_tag);
+    raw_vendor_tag = NULL;
+    if (kmipkit_ttlv_raw_tag_create(UINT32_C(0x420008), &raw_vendor_tag) != 0 ||
+        kmipkit_ttlv_raw_tag_try_checked(raw_vendor_tag, &vendor_tag) != 0 ||
+        kmipkit_ttlv_value_text_string(limits, unknown_value, sizeof(unknown_value) - 1,
+                                       &vendor_value) != 0 ||
+        kmipkit_ttlv_item_create(vendor_tag, vendor_value, limits, &vendor_item) != 0) {
+        result = 142;
         goto cleanup;
     }
     vendor_value = NULL;
