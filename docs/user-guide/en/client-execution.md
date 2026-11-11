@@ -131,7 +131,10 @@ in Python). Their asynchronous indicator is a separate request-header setting;
 C provides direct one-operation helpers
 `kmipkit_client_create_symmetric_key_v1`, `kmipkit_client_get_by_id_v1`, and
 `kmipkit_client_destroy_by_id_v1`, plus an opaque symmetric-key builder for
-expert attributes. For a compact raw-TLS/mTLS setup,
+expert attributes. `kmipkit_symmetric_key_builder_insert_attribute_item`
+inserts an explicit TTLV Item at its zero-based position in the final Object
+Attributes list; catalogued tags retain their required TTLV type, and unknown
+extension tags remain explicit Items. For a compact raw-TLS/mTLS setup,
 `kmipkit_client_create_mtls_v1` accepts certificate and key spans and uses the
 default 8 MiB request cap when no cap is supplied. Certificate spans are read
 during construction; the returned client owns its transport configuration.

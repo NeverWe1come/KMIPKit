@@ -308671,6 +308671,28 @@
     },
     {
       "approvalEvidence": {
+        "evidence": "Approved for implementation by the maintainer's direct",
+        "kind": "feature-specification",
+        "path": "specs/096-fluent-expert-attributes/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_expert_attributes_c_abi",
+      "capabilityState": "declared",
+      "mappings": {
+        "c": [
+          "kmipkit_symmetric_key_builder_insert_attribute_item"
+        ]
+      },
+      "ownerSpecId": "KMIPKIT-0096",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "KMIPKIT-0096-FR-002",
+        "KMIPKIT-0096-FR-003",
+        "KMIPKIT-0096-FR-004"
+      ]
+    },
+    {
+      "approvalEvidence": {
         "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`.",
         "kind": "feature-specification",
         "path": "specs/004-generic-ttlv-model/spec.md",
@@ -1033857,6 +1033879,62 @@
       "requirementIds": [
         "KMIPKIT-0103-FR-004",
         "KMIPKIT-0103-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct",
+        "kind": "feature-specification",
+        "path": "specs/096-fluent-expert-attributes/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "Inserts an explicit Object Attribute item at its final zero-based position. The item is copied and validated before request execution."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "builder",
+            "ownership": "borrowed",
+            "type": "kmipkit_symmetric_key_builder_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "index",
+            "type": "uint64_t"
+          },
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_ttlv_item_t *"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "fluent_expert_attributes_c_abi",
+      "declarationId": "symmetric_key_builder_insert_attribute_item:c",
+      "declarationState": "declared",
+      "exportName": "kmipkit_symmetric_key_builder_insert_attribute_item",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_symmetric_key_builder_insert_attribute_item",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "KMIPKIT-0096-FR-002",
+        "KMIPKIT-0096-FR-003",
+        "KMIPKIT-0096-FR-004"
       ]
     }
   ],

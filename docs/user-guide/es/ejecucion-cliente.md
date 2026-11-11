@@ -139,7 +139,11 @@ transporte de ese intercambio.
 C ofrece las funciones directas para una operación
 `kmipkit_client_create_symmetric_key_v1`, `kmipkit_client_get_by_id_v1` y
 `kmipkit_client_destroy_by_id_v1`, además de un builder opaco de clave
-simétrica para atributos expertos. Para configurar raw TLS/mTLS de forma
+simétrica para atributos expertos. `kmipkit_symmetric_key_builder_insert_attribute_item`
+inserta un `Item` TTLV explícito en su posición, empezando desde cero, dentro
+de la lista final de Object Attributes; los tags catalogados conservan el tipo
+TTLV requerido y los tags de extensión desconocidos siguen siendo Items
+explícitos. Para configurar raw TLS/mTLS de forma
 compacta, `kmipkit_client_create_mtls_v1` acepta spans de certificados y clave;
 si no se indica un límite, usa 8 MiB para la petición. Lee los spans de
 certificados durante la construcción y el cliente devuelto es dueño de su

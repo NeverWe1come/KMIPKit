@@ -558,6 +558,38 @@ pub extern "C" fn kmipkit_symmetric_key_builder_add_attribute_item(
     })
 }
 
+/// Inserts an explicit expert attribute at its final Object Attributes index.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_symmetric_key_builder_insert_attribute_item(
+    builder: *mut kmipkit_symmetric_key_builder_t,
+    index: u64,
+    item: *mut kmipkit_ttlv_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let item = try_ffi!(super::super::copy_required_item_handle(item));
+        let raw_tag = item.tag().raw();
+        let item = if super::super::typed_attributes_catalog_generated::is_catalogued_attribute_tag(
+            raw_tag,
+        ) {
+            try_ffi!(super::super::typed_attributes::validate_typed_item(
+                raw_tag, item
+            ))
+        } else {
+            item
+        };
+        let Ok(index) = usize::try_from(index) else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        try_ffi!(update_symmetric_builder(builder, |builder| {
+            builder.attribute_at(
+                kmipkit_client::fluent::FluentAttributePosition::ObjectAttributes { index },
+                item,
+            )
+        }));
+        SUCCESS
+    })
+}
+
 /// Adds a valid Vendor Attribute using explicit vendor, name, and TTLV value fields.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_symmetric_key_builder_add_vendor_attribute(

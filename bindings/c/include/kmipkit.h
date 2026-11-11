@@ -3460,6 +3460,10 @@ int32_t kmipkit_sign_builder_create(kmipkit_crypto_operation_builder_t ** out_bu
  */
 /* KMIPKIT-0103-FR-001, KMIPKIT-0103-FR-005, KMIPKIT-0103-FR-006 */
 int32_t kmipkit_signature_verify_builder_create(kmipkit_crypto_operation_builder_t ** out_builder);
+/* Inserts an explicit Object Attribute item at its final zero-based position. The item is copied and validated before request execution.
+ */
+/* KMIPKIT-0096-FR-002, KMIPKIT-0096-FR-003, KMIPKIT-0096-FR-004 */
+int32_t kmipkit_symmetric_key_builder_insert_attribute_item(kmipkit_symmetric_key_builder_t * builder, uint64_t index, kmipkit_ttlv_item_t * item);
 /* Executes one KMIP batch and returns an owned generic ResponseMessage TTLV only for an approved missing, repeated, or malformed Unique Identifier in a successful MAC, MAC Verify, Sign, or Signature Verify response.
  * The caller owns and must release out_error_response_ttlv when it is non-null; it remains null for all other failures and successful execution.
  * The generic response is preserved without placing raw response bytes in diagnostics.

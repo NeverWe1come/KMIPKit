@@ -81,6 +81,7 @@ static TEMP_DIRECTORY_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 unsafe extern "C" {
     fn kmipkit_public_client_surface_probe() -> i32;
     fn kmipkit_public_crypto_builders_probe() -> i32;
+    fn kmipkit_public_positioned_attribute_probe() -> i32;
     fn kmipkit_public_crypto_execute_tls_probe(
         port: u16,
         leaf_certificate: *const u8,
@@ -115,6 +116,16 @@ fn public_c_fluent_crypto_builders_expose_semantic_opaque_constructors() {
     assert_eq!(
         status, 0,
         "public fluent C crypto declarations and ABI calls must agree"
+    );
+}
+
+#[test]
+fn public_c_fluent_builder_inserts_explicit_attributes_at_a_final_position() {
+    // SAFETY: The compiled C consumer releases every temporary builder and TTLV handle.
+    let status = unsafe { kmipkit_public_positioned_attribute_probe() };
+    assert_eq!(
+        status, 0,
+        "the C ABI must insert explicit attributes and reject out-of-range positions"
     );
 }
 
