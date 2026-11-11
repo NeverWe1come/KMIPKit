@@ -238,6 +238,24 @@ class RouteMatrixTests(unittest.TestCase):
         expected = self.runner.digest([[0x4200FF, 1, [[0x4200FF, 2, 7]]]])
         self.assertEqual({expected}, {event['request_tree_sha256'] for event in report['events']})
 
+    def test_query_routes_record_the_peer_rejection_without_calling_it_success(self):
+        catalog = copy.deepcopy(self.catalog)
+        catalog['test_cases'] = [case for case in self.catalog['test_cases']
+                                 if case['case_id'] == 'test-op-query']
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in self.manifest['routes']
+                              if route['language'] == 'python'
+                              and route['public_api_symbol'] == 'kmipkit.extensions.client_batch_item_query']
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+        self.assertEqual([], gaps)
+        self.assertEqual(36, len(report['events']))
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+        for event in report['events']:
+            self.assertEqual([1], event['peer_observed_result_status_codes'])
+            self.assertEqual([1], event['peer_observed_result_reason_codes'])
+            self.assertEqual('response_received', event['request_delivery_state'])
+            self.assertEqual(1, event['transport_invocation_count'])
+
     def test_generic_ttlv_routes_encode_and_decode_the_client_operation_value(self):
         catalog = copy.deepcopy(self.catalog)
         catalog['test_cases'] = [case for case in self.catalog['test_cases']
