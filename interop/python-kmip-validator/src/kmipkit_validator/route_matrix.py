@@ -533,15 +533,20 @@ def _network_tree(wire: bytes, encoding: str) -> list:
         assigned = [item for item in elements.values()
                     if item.get('kind') == 'bitmask_value'
                     and bitmask['element_id'] in item.get('parent_element_ids', [])]
-        tokens = [_normalized_name(token) for token in value.split('|') if token]
+        raw_tokens = value.split('|') if '|' in value else [value]
         bits = 0
-        for token in tokens:
-            match = next((item for item in assigned
-                          if _normalized_name(item.get('name', '')) == token
-                          and item.get('allocation') == 'assigned'), None)
-            if match is None:
-                raise ValueError('bitmask value is absent from the source catalog')
-            bits |= int(match['wire_value'], 16)
+        for raw_token in raw_tokens:
+            remaining = _normalized_name(raw_token)
+            candidates = sorted((item for item in assigned if item.get('allocation') == 'assigned'),
+                                key=lambda item: len(_normalized_name(item.get('name', ''))), reverse=True)
+            while remaining:
+                match = next((item for item in candidates
+                              if remaining.startswith(_normalized_name(item.get('name', '')))), None)
+                if match is None:
+                    raise ValueError('bitmask value is absent from the source catalog')
+                token = _normalized_name(match['name'])
+                bits |= int(match['wire_value'], 16)
+                remaining = remaining[len(token):]
         return bits
 
     def binary_node(raw_tag: int, kind: int, raw: bytes) -> list:
@@ -575,7 +580,7 @@ def _network_tree(wire: bytes, encoding: str) -> list:
         elif kind in (2, 3, 9, 10, 11):
             if kind in (9, 11) and isinstance(value, str) and not value.lstrip('-').isdigit():
                 value = int(datetime.fromisoformat(value.replace('Z', '+00:00')).timestamp())
-            elif kind == 2 and isinstance(value, str) and '|' in value:
+            elif kind == 2 and isinstance(value, str) and not value.lstrip('-').isdigit():
                 value = bitmask_value(raw_tag, value)
             else:
                 value = int(value)
