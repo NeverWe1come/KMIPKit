@@ -46,7 +46,8 @@ must all pass the same existing validation before an exchange can be sent.
 
 1. Tests prove ordered insertion at the beginning, between semantic
    attributes, and at the end of the final Object Attributes list.
-2. Tests reject invalid paths, duplicate insertion indices, out-of-range
+2. The typed path exposes only Object Attributes, so other parent paths cannot
+   be represented. Tests reject duplicate insertion indices, out-of-range
    indices, wrong catalogued TTLV types, and message-extension tags.
 3. A successful build yields the existing typed `CreateRequest`; the normal
    client execution path remains the only send path.
