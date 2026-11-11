@@ -43,8 +43,53 @@
 - Result: passed.
 - Command: `git diff --check`.
 - Result: passed.
+- Green commit: `527eb1f48bd4fd009cd63f6b1c82cbf28ded5bc3`
+  (`fix(python): wipe crypto staging on span allocation failure`).
 
-## Remaining verification
+## Full Python coverage and environmental packaging failure
 
-Full Python coverage and changed-line measurement are in progress. Parent
-owns push and exact-head CI; no remote completion is claimed.
+- Command: `target/python312-venv/bin/python -m pytest -q bindings/python/tests --cov=kmipkit --cov-config=bindings/python/pyproject.toml --cov-report=xml:target/coverage-python-0105-fix.xml`.
+- Result: **1,299 passed, 119 subtests passed, 1 failed** in 94.02 seconds;
+  total Python line coverage **96.79%**, above the unchanged 85% gate.
+- Failure: existing wheel-packaging test
+  `test_built_wheel_artifact_contains_py_typed_and_adjacent_native_library`
+  launched a native build in its temporary fixture. The native compilation
+  completed, but wheel archive creation failed with **No space left on
+  device** in `/tmp`. This broader test run unintentionally launched native
+  compilation despite the task's reuse preference; it is explicitly recorded
+  rather than reported as a clean full-suite pass.
+- Removed only `/tmp/pytest-of-ramp1953/pytest-1/test_built_wheel_artifact_cont0`,
+  created by this run. `df -h /tmp .` then showed 813 MiB available in `/tmp`
+  and 764 GiB on the worktree filesystem.
+- Following the parent's instruction, the exact packaging test is being
+  retried with `--basetemp=target/python105-wheel-retry` on the worktree disk.
+  No test was excluded and no coverage threshold changed.
+
+## Refactor
+
+- Consolidated the non-buffer Data cases into the existing setter-type matrix
+  without changing the tested inputs or behavior.
+- Updated feature traceability to name the new staging-failure regression
+  and lifecycle/input contracts.
+- Command: `target/python312-venv/bin/python -m pytest -q bindings/python/tests/test_fluent_crypto.py`.
+- Result after refactor: **28 passed** in 2.33 seconds.
+- Commands: `git diff --check` and
+  `target/python312-venv/bin/python -m py_compile bindings/python/src/kmipkit/fluent.py bindings/python/tests/test_fluent_crypto.py`.
+- Results: passed.
+
+## Local official coverage gate
+
+- Copied the unmodified full-suite XML report to
+  `target/coverage-0105-fix/coverage-python/coverage.xml`, matching the
+  repository aggregator's artifact layout.
+- Command: `python3 scripts/coverage_gate.py aggregate --workspace . --report-dir target/coverage-0105-fix --base fec2849cc77e123023e913a6301544c1a45eecb4 --merge 527eb1f48bd4fd009cd63f6b1c82cbf28ded5bc3 --scopes-json '["python"]'`.
+- Result: **passed**, Python adapters **8858/9151 (96.80%)** after the
+  aggregator's one existing documented exclusion; changed production
+  **182/193 (94.30%)**, above the unchanged 90% gate.
+- The base is the exact Java base SHA recorded in the failed CI log.
+- This local selected-scope gate verifies the Python fix; the complete remote
+  gate for the final pushed head remains authoritative.
+
+The exact packaging retry is pending.
+
+Parent owns push and exact-head CI; no remote completion is claimed.
