@@ -447,6 +447,24 @@ class RouteMatrixTests(unittest.TestCase):
                     self.assertTrue({'kmipkit_key_block_from_fields', 'kmipkit_key_block_from_item'}
                                     .issubset(result['invoked_symbols']))
 
+    def test_key_block_route_roundtrips_optional_key_value_attributes(self):
+        from artifact_support import INSTALL, ROOT
+        from c_route_models import ModelCases
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        targets = {item['target_id']: item for item in catalog['normative_targets']}
+        tags = {item['name']: int(item['wire_value'], 16) for item in catalog['normative_targets']
+                if item['kind'] == 'tag'}
+        target = targets['KMIPKIT-ELEM-STRUCTURE-MEMBER-3-2-KEY-VALUE-ATTRIBUTES']
+        result = ModelCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog).execute(
+            target, '2.1', 'kmipkit_key_block_from_fields')
+        self.assertIsNotNone(result)
+        self.assertEqual(result['normalized_tree'], [tags['Key Block'], 1, [
+            [tags['Key Format Type'], 5, '00000001'],
+            [tags['Key Value'], 1, [[tags['Key Material'], 8, 'a1'],
+                                    [tags['Attributes'], 1, []]]],
+        ]])
+        self.assertIn('kmipkit_key_block_from_fields', result['invoked_symbols'])
+
     def test_key_block_route_constructs_wrapping_information_and_key_value(self):
         from artifact_support import INSTALL, ROOT
         from c_route_models import ModelCases
