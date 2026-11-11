@@ -35,16 +35,43 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
             .find(|e| e["kind"] == "tag" && e["name"] == name && e["allocation"] == "assigned")
             .and_then(|e| e["wire_value"].as_str())
             .and_then(|v| u32::from_str_radix(v, 16).ok())
-            .unwrap_or(0x0042_0001)
+            .or_else(|| {
+                target["parent_element_ids"]
+                    .as_array()?
+                    .iter()
+                    .find_map(|parent| {
+                        u32::from_str_radix(parent.as_str()?.strip_prefix("KMIPKIT-ELEM-TAG-")?, 16)
+                            .ok()
+                    })
+            })
+            .or((kind == "data_type").then_some(0x0042_0001))
+            .ok_or("target tag needs a concrete fixture recipe")?
     };
-    let wire_value = target["wire_value"]
-        .as_str()
-        .and_then(|v| u32::from_str_radix(v, 16).ok())
-        .unwrap_or(1);
+    let wire_value = match target["wire_value"].as_str() {
+        Some(value)
+            if [
+                "enumeration_value",
+                "referenced_enum_value",
+                "bitmask_value",
+                "object_type",
+            ]
+            .contains(&kind) =>
+        {
+            u32::from_str_radix(value.trim_start_matches("0x"), 16)
+                .map_err(|_| "target range needs a concrete fixture recipe")?
+        }
+        _ => 1,
+    };
     let encoding = target["source_encoding"]
         .as_str()
         .or_else(|| target["value_type"].as_str())
-        .unwrap_or(name);
+        .or_else(|| {
+            elements
+                .iter()
+                .find(|element| element["kind"] == "attribute" && element["name"] == name)
+                .and_then(|element| element["source_encoding"].as_str())
+        })
+        .unwrap_or(if kind == "data_type" { name } else { "" });
     let value = if ["enumeration_value", "referenced_enum_value", "object_type"].contains(&kind) {
         Value::enumeration(wire_value)
     } else if kind == "bitmask_value" {
@@ -70,7 +97,8 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
                     .map_err(|_| "local structure rejected")?;
                 Value::structure(structure)
             }
-            _ => Value::structure(kmipkit::ttlv::Structure::new()),
+            _ if kind == "tag" => Value::boolean(true),
+            _ => return Err("target value needs a concrete fixture recipe"),
         }
     };
     crate::driver::item(tag, value)
