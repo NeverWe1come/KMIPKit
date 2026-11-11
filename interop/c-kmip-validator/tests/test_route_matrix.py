@@ -221,8 +221,8 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(result['normalized_tree'], [0x420013, 1, [
             [0x42001d, 5, '00000001'], [0x42001e, 8, '010203']]])
         self.assertTrue({
-            'kmipkit_certificate_from_fields', 'kmipkit_certificate_from_item',
-            'kmipkit_managed_object_from_fields', 'kmipkit_managed_object_from_item',
+            'kmipkit_certificate_from_fields', 'kmipkit_managed_object_from_fields',
+            'kmipkit_managed_object_from_item',
         }.issubset(result['invoked_symbols']))
 
 

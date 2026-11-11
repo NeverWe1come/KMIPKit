@@ -483,6 +483,8 @@ def run(output: Path, binary: Path | None = None) -> int:
     from route_attributes import AttributeCases
     attribute_cases = AttributeCases(library, catalog)
     attribute_cache = {}
+    from c_route_models import ModelCases
+    model_cases = ModelCases(library, catalog)
     generic_cache = {}
     for index, cell in enumerate(iter_cells(catalog, manifest, languages=('c',))):
         target = targets[cell['target_id']]
@@ -518,6 +520,16 @@ def run(output: Path, binary: Path | None = None) -> int:
                 events.append(event)
                 branch_evidence.append({**cell_fields(cell), 'sample_count': result['sample_count'],
                                         'negative_checks': result['negative_checks'], 'tree_sha256': result['tree_sha256']})
+                continue
+        if cell['transport'] is None:
+            result = model_cases.execute(target, cell['protocol_version'])
+            if result is not None and cell['public_api_symbol'] in result['invoked_symbols']:
+                event = cell_fields(cell)
+                event.update(status='passed', invocation_count=1, invocation_id=f'c-model-{index}')
+                event['response_tree_sha256' if cell['action'] == 'decode' else 'request_tree_sha256'] = result['tree_sha256']
+                events.append(event)
+                branch_evidence.append({**cell_fields(cell), 'sample_count': result['sample_count'],
+                                        'tree_sha256': result['tree_sha256']})
                 continue
         if (cell['transport'] is None and target['kind'] == 'tag_range'
                 and cell['action'] == 'decode' and cell['public_api_symbol'] == 'kmipkit_ttlv_decode'):
