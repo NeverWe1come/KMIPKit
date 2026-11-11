@@ -60,3 +60,12 @@
 
 Pending import ordering, typing/documentation cleanup, full binding checks,
 manifest generation and exact-head CI.
+
+## Red — public API manifest
+
+- Command: `python3 -m unittest
+  tools.api_manifest.tests.test_0105_fluent_python_crypto_api_manifest`.
+- Result: **expected failure**; the manifest has no KMIPKIT-0105 declarations
+  for the seven Python factories or their builder types and methods.
+- The contract pins the Python public surface, four-language mapping, approved
+  source, and requirement linkage before adding its manifest declarations.
