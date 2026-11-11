@@ -198,7 +198,7 @@ def normative_expression(case: dict) -> str:
         return allocation_expression(raw_value(requires["wire_value"]), requires.get("allocation", "assigned"))
 
     if kind == "tag_range":
-        range_parts = re.split(r"\s*[-–—]\s*", requires["wire_value"])
+        range_parts = [part.strip() for part in re.split(r"[-–—]", requires["wire_value"])]
         if len(range_parts) != 2 or any(not re.fullmatch(r"(?:0x)?[0-9a-fA-FXx]+", part) for part in range_parts):
             raise ValueError(f"{case['case_id']} has an unsupported tag range")
         allocation = requires.get("allocation", "unused")
