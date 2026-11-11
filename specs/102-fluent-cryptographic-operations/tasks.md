@@ -14,5 +14,5 @@
   generated artifacts for exactly the new public exports.
 - [ ] V001 Run format, Clippy, focused and full client suites, coverage,
   manifest generation/audit, traceability, and documentation checks.
-- [ ] P001 Commit Red, Green, and Refactor separately and open a `[WIP]` draft
+- [x] P001 Commit Red, Green, and Refactor separately and open a `[WIP]` draft
   against PR #184; keep WIP until exact-head CI is green.

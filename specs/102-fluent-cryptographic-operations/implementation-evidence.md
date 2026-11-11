@@ -4,6 +4,8 @@
 
 - Branch: `feature/KMIPKIT-0102-fluent-cryptographic-operations`.
 - Base: PR #184 at `5d9c22369` (unmerged; exact-head CI is running).
+- Draft PR: #185, based on #184; title retains `[WIP]`.
+- Red/Green/Refactor commits: `c077230d2`, `a8fc68cf3`, and `8e536b121`.
 - Scope: Rust fluent builders for Encrypt, Decrypt, Sign, Signature Verify,
   MAC, MAC Verify, and Hash.
 
@@ -52,4 +54,10 @@
   passed, 2 tests.
 - `python3 tools/api_manifest/generate.py --check`: passed; all 12 generated
   outputs are current.
+- Rebased full-client verification on the current #184 head:
+  `cargo test -p kmipkit-client --all-features --locked --quiet` — passed
+  (864 unit tests, package integration tests, and doctests; 3 external KMS
+  tests ignored because no KMS is configured).
+- Rebased `cargo clippy -p kmipkit-client --all-targets --all-features -- -D
+  warnings` — passed.
 - Full coverage and exact-head CI remain pending on the stacked draft PR.
