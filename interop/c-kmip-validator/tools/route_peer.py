@@ -23,6 +23,7 @@ import threading
 import xml.etree.ElementTree as ET
 
 from artifact_support import INSTALL, PIN, ROOT, sha256
+from route_evidence import cell_fields
 sys.path.insert(0, str(ROOT / 'interop/c-kmip-validator/tests'))
 from controlled_kms_test import certificate_files, response, tlv
 sys.path.insert(0, str(ROOT / 'interop/shared/tools'))
@@ -343,6 +344,8 @@ def execute_network_cells(binary, catalog, manifest):
     codec = Codec(catalog)
     events, keys, checks = [], set(), []
     all_cells = list(iter_cells(catalog, manifest, languages=('c',)))
+    artifact_sha256 = sha256(INSTALL / 'lib/libkmipkit_ffi.so')
+    catalog_sha256 = sha256(ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json')
     cells_by_case = {}
     for cell in all_cells:
         cells_by_case.setdefault(cell['case_id'], []).append(cell)
@@ -418,8 +421,7 @@ def execute_network_cells(binary, catalog, manifest):
                             if thread is not None:
                                 thread.join(6)
                             result = json.loads(result_path.read_text()) if result_path.exists() else {}
-                            verify_consumer_provenance(result, sha256(INSTALL / 'lib/libkmipkit_ffi.so'),
-                                                       sha256(ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json'))
+                            verify_consumer_provenance(result, artifact_sha256, catalog_sha256)
                             case_passed = bool(result.get('cases') and result['cases'][0]['status'] == 'passed')
                             trace = [line.split('\t') for line in trace_path.read_text().splitlines()] if trace_path.exists() else []
                             called_symbols = {symbol for symbol, status in trace if status == '0'}
@@ -464,10 +466,7 @@ def execute_network_cells(binary, catalog, manifest):
                                 target = next(t for t in catalog['normative_targets'] if t['target_id'] == cell['target_id'])
                                 if target['kind'] != 'operation' or target['name'] != operation_name:
                                     continue
-                                event = {key: cell[key] for key in ('case_id', 'route_id', 'target_id',
-                                    'public_api_symbol', 'execution_route_id', 'execution_api_symbol', 'action',
-                                    'protocol_version', 'encoding', 'transport', 'workflow_step_index',
-                                    'workflow_operation', 'workflow_item_index') if key in cell}
+                                event = cell_fields(cell)
                                 event.update(status='passed', invocation_count=1, invocation_id=f'c-peer-{len(events)}')
                                 event['response_tree_sha256' if cell['action'] == 'decode' else 'request_tree_sha256'] = tree_digest(response_tree if cell['action'] == 'decode' else request_tree)
                                 if boundary and cell['action'] == 'send':

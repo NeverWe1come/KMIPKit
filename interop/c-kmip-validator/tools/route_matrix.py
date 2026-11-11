@@ -17,6 +17,7 @@ import sys
 import uuid
 
 from artifact_support import INSTALL, PIN, ROOT, sha256, verify_installed_artifact
+from route_evidence import cell_fields, pending_cell
 
 sys.path.insert(0, str(ROOT / 'interop/shared/tools'))
 from coverage_matrix import iter_cells
@@ -210,10 +211,7 @@ LOCAL_SYMBOLS = {
 
 
 def event_from_cell(cell: dict, wire: bytes, index: int) -> dict:
-    event = {key: cell[key] for key in ('case_id', 'route_id', 'target_id',
-             'public_api_symbol', 'execution_route_id', 'execution_api_symbol',
-             'action', 'protocol_version', 'encoding', 'transport', 'workflow_step_index',
-             'workflow_operation', 'workflow_item_index') if key in cell}
+    event = cell_fields(cell)
     tree = {'tag': int.from_bytes(wire[:3], 'big'), 'type': wire[3], 'value': wire[8:12].hex()}
     tree_hash = hashlib.sha256(json.dumps(tree, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
     event.update(invocation_id=f'c-abi-{index}', status='passed', invocation_count=1,
@@ -262,20 +260,14 @@ def run(output: Path, binary: Path | None = None) -> int:
                     events.append(event_from_cell(cell, wire, index))
             except ValueError:
                 if cell['public_api_symbol'] not in abi.called:
-                    pending.append({**{key: cell[key] for key in ('case_id', 'route_id', 'target_id',
-                        'action', 'protocol_version', 'encoding', 'transport', 'execution_route_id',
-                        'workflow_step_index', 'workflow_item_index') if key in cell}, 'reason': 'fixture_preparation_failed'})
+                    pending.append(pending_cell(cell, 'fixture_preparation_failed'))
                     continue
-                event = {key: cell[key] for key in ('case_id', 'route_id', 'target_id',
-                    'public_api_symbol', 'execution_route_id', 'execution_api_symbol',
-                    'action', 'protocol_version', 'encoding', 'transport')}
+                event = cell_fields(cell)
                 event.update(status='failed', failure_code='installed_abi_call_failed',
                              invocation_id=f'c-abi-{index}', invocation_count=1)
                 events.append(event)
         else:
-            pending.append({**{key: cell[key] for key in ('case_id', 'route_id', 'target_id', 'action',
-                             'protocol_version', 'encoding', 'transport', 'execution_route_id',
-                             'workflow_step_index', 'workflow_item_index') if key in cell}, 'reason': pending_reason(cell)})
+            pending.append(pending_cell(cell, pending_reason(cell)))
     if binary is not None:
         from route_peer import execute_network_cells
         network_events, invoked_keys, peer_checks = execute_network_cells(binary, catalog, manifest)
