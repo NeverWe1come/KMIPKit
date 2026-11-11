@@ -171,17 +171,19 @@ EXPECTED = (
 # They also include the 0047 release stack and reconciled 0048/0049/0050 inventories.
 # The snapshot includes the approved KMIPKIT-0052 async typed-reader routes.
 # It also includes the approved KMIPKIT-0099 Create Split Key and KMIPKIT-0100
-# Register declarations and KMIPKIT-0101 lifecycle declarations.
-# Includes the approved KMIPKIT-0093 inventory reconciliation.
-UNCHANGED_DECLARATIONS_SHA256 = "5fca7622d2a4c011fcca1035d15a139adfeae4568ba5bd4101a36fda220ac996"
+# Register declarations, lifecycle declarations, KMIPKIT-0102 crypto builders,
+# the KMIPKIT-0103 C and KMIPKIT-0104 Java crypto facades, and KMIPKIT-0093
+# inventory reconciliation.
+UNCHANGED_DECLARATIONS_SHA256 = "89d4c89997dc8450c25d63a036c88c6bb32b121b28e5f3427a10ce0917d342ca"
 UNCHANGED_OPERATIONS_SHA256 = "9ee0f7c51c05a8abd96af7f6d3017f3ffb780c4262f231eaf3cb8c01a38147c7"
 # T098's maintainer-approved reconciliation updates lifecycle approval evidence
 # and inherited requirement links outside the T102 declaration/operation rows.
 # The test separately pins those T098 records; this fingerprint covers the
 # resulting manifest baseline after the explicit T102 normalizations below.
-# The non-target snapshot includes the async reader routes and exact Python adapter exclusions.
-# It also includes the approved KMIPKIT-0101 lifecycle declarations.
-OTHER_MANIFEST_SHA256 = "3c2e711869fb3c9d6931adccacb80abf7f7d47215d250d0fbe0bc639eccd8f3b"
+# The non-target snapshot includes the async reader routes, exact Python adapter
+# exclusions, KMIPKIT-0101/0102/0103/0104 declarations, and KMIPKIT-0093
+# reconciliation.
+OTHER_MANIFEST_SHA256 = "3b262cb930c42962397b7280060d53e5090a0fa97f1d2f8401c114b9d7bd40be"
 EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",

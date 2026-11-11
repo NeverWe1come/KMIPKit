@@ -349,6 +349,24 @@ def read_native_exports(binary: Path) -> list[str]:
     return sorted(names)
 
 
+def javap_parent_clauses(tail: str) -> tuple[str | None, str | None]:
+    """Return Java superclass and interface clauses without backtracking regexes."""
+    extended: str | None = None
+    implemented: str | None = None
+
+    if "extends " in tail:
+        extended_tail = tail.partition("extends ")[2]
+        if " implements " in extended_tail:
+            extended_tail = extended_tail.partition(" implements ")[0]
+        extended = extended_tail.removesuffix("{").strip() or None
+
+    if "implements " in tail:
+        implemented_tail = tail.partition("implements ")[2]
+        implemented = implemented_tail.removesuffix("{").strip() or None
+
+    return extended, implemented
+
+
 def inventory_javap_outputs(outputs: dict[str, str], package: str = "java-kmipkit") -> dict[str, Any]:
     """Inventory public and protected declarations from deterministic ``javap`` output."""
     records: list[dict[str, str]] = []
@@ -407,13 +425,12 @@ def inventory_javap_outputs(outputs: dict[str, str], package: str = "java-kmipki
                         tail = tail[index + 1:].lstrip()
                         break
         parents: list[str] = []
-        extended = re.search(r"\bextends\s+(.+?)(?=\s+implements\s+|\s*\{?$)", tail)
-        if extended is not None:
-            extended_types = top_level_type_names(extended.group(1))
+        extended_clause, implemented_clause = javap_parent_clauses(tail)
+        if extended_clause is not None:
+            extended_types = top_level_type_names(extended_clause)
             parents.extend(extended_types if is_interface else extended_types[:1])
-        implemented = re.search(r"\bimplements\s+(.+?)\s*\{?$", tail)
-        if implemented is not None:
-            parents.extend(top_level_type_names(implemented.group(1)))
+        if implemented_clause is not None:
+            parents.extend(top_level_type_names(implemented_clause))
         class_parents[owner] = parents
         members: list[dict[str, Any]] = []
         for line_number, line in enumerate(output.splitlines(), 1):
