@@ -204,6 +204,48 @@ fn conflicting_table_191_key_algorithms_are_rejected_before_transport() {
     assert!(!format!("{error:?} {error}").contains(PRIVATE_SENTINEL));
 }
 
+#[test]
+fn malformed_typed_vendor_attributes_are_rejected_in_every_key_group() {
+    for group in [
+        COMMON_ATTRIBUTES,
+        PRIVATE_KEY_ATTRIBUTES,
+        PUBLIC_KEY_ATTRIBUTES,
+    ] {
+        let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+        let builder = client
+            .request()
+            .create_key_pair()
+            .algorithm(CryptographicAlgorithm::from_raw(RSA))
+            .length(2048);
+        let builder = match group {
+            COMMON_ATTRIBUTES => builder.common_attribute(
+                Attribute::<typed::VendorAttribute>::new(Structure::new())
+                    .expect("an empty structure is a constructible vendor attribute value"),
+            ),
+            PRIVATE_KEY_ATTRIBUTES => builder.private_attribute(
+                Attribute::<typed::VendorAttribute>::new(Structure::new())
+                    .expect("an empty structure is a constructible vendor attribute value"),
+            ),
+            _ => builder.public_attribute(
+                Attribute::<typed::VendorAttribute>::new(Structure::new())
+                    .expect("an empty structure is a constructible vendor attribute value"),
+            ),
+        };
+
+        assert_eq!(
+            builder.validate(),
+            Err(FluentBuildError::InvalidAttributeValue)
+        );
+        assert_eq!(
+            builder.build_request().unwrap_err(),
+            FluentBuildError::InvalidAttributeValue
+        );
+        let error = builder.execute(&CodecLimits::defaults()).unwrap_err();
+        assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+        assert_eq!(transport.borrow().exchange_count(), 0);
+    }
+}
+
 fn grouped_key_pair(client: &mut Client) -> CreateKeyPairBuilder<'_> {
     client
         .request()
