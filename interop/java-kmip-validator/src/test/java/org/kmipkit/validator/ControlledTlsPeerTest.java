@@ -35,6 +35,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
@@ -470,6 +471,67 @@ class ControlledTlsPeerTest {
         JsonNode report = mapper.readTree(outputDirectory.resolve("results.json").toFile());
         assertEquals("passed", report.path("cases").get(0).path("status").asText());
         assertEquals(0L, report.path("cases").get(0).path("result_status_code").asLong());
+    }
+
+    @Test
+    void cliRunReadsAttributeListAndValuesThroughTypedFactories() throws Exception {
+        byte[] serverCertificatePem = fixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = fixture("server-key.pem");
+        byte[] clientCertificatePem = fixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = fixture("client-key.pem");
+        SSLServerSocket listener = listener(certificate(serverCertificatePem), privateKey(serverPrivateKeyPem),
+                certificate(clientCertificatePem));
+        Path connectionFile = temporaryDirectory.resolve("attribute-read-connection.json");
+        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                clientCertificatePem, clientPrivateKeyPem, true));
+
+        Path sourceCatalog = Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json");
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode catalog = (ObjectNode) mapper.readTree(sourceCatalog.toFile());
+        Set<String> selectedIds = Set.of("test-op-get-attribute-list", "test-op-get-attributes");
+        ArrayNode selectedCases = mapper.createArrayNode();
+        var targetOperations = new ArrayList<Long>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            if (!selectedIds.contains(testCase.path("case_id").asText())) continue;
+            selectedCases.add(testCase);
+            try (ClientBatchItem request = TypedRequestFactory.create(testCase.path("operation").asText())) {
+                targetOperations.add(request.operation());
+            }
+        }
+        assertEquals(selectedIds.size(), selectedCases.size(), "Both attribute read cases must exist.");
+        catalog.set("test_cases", selectedCases);
+        ((ObjectNode) catalog.path("statistics")).put("total_cases", selectedCases.size());
+        Path selectedCatalog = temporaryDirectory.resolve("attribute-read-catalog.json");
+        Files.writeString(selectedCatalog, mapper.writeValueAsString(catalog));
+
+        FutureTask<List<byte[]>> peer = new FutureTask<>(
+                () -> serveAttributeReadCases(listener, targetOperations));
+        Thread peerThread = new Thread(peer, "java-validator-attribute-read-peer");
+        peerThread.setDaemon(true);
+        peerThread.start();
+        Path outputDirectory = temporaryDirectory.resolve("attribute-read-run-report");
+        var standardError = new ByteArrayOutputStream();
+        int exitCode;
+        try {
+            exitCode = Main.execute(new String[] {"run", "--connection", connectionFile.toString(), "--catalog",
+                    selectedCatalog.toString(), "--output-dir", outputDirectory.toString(), "--enable-mutations"},
+                    new PrintStream(new ByteArrayOutputStream()), new PrintStream(standardError));
+        } finally {
+            listener.close();
+        }
+        List<byte[]> requests = peer.get(10, TimeUnit.SECONDS);
+        assertEquals(6, requests.size());
+        for (int index = 0; index < targetOperations.size(); index++) {
+            byte[] request = requests.get(index * 3 + 1);
+            assertEquals(targetOperations.get(index), requestOperation(request));
+            assertTrue(contains(request, item(0x420094, 7,
+                    CREATED_OBJECT_ID.getBytes(StandardCharsets.UTF_8))),
+                    "The request must use the identifier from its setup Create response.");
+        }
+        assertEquals(0, exitCode, standardError.toString(StandardCharsets.UTF_8));
+        JsonNode report = mapper.readTree(outputDirectory.resolve("results.json").toFile());
+        assertEquals(2, report.path("summary").path("passed").asInt());
+        assertEquals(0, report.path("summary").path("failed").asInt());
     }
 
     private String connectionJson(int port, byte[] serverCertificate, byte[] clientCertificate,
