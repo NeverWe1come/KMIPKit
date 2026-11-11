@@ -223,6 +223,19 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertFalse(gaps)
         self.assertEqual(11, len({event['case_id'] for event in report['events']}))
 
+    def test_structure_with_item_route_adds_and_decodes_a_child(self):
+        catalog = copy.deepcopy(self.catalog)
+        catalog['test_cases'] = [case for case in self.catalog['test_cases']
+                                 if case['case_id'] == 'test-norm-data-type-data-type-structure']
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in self.manifest['routes']
+                              if route['language'] == 'python'
+                              and route['public_api_symbol'] == 'kmipkit.ttlv.ttlv_structure_with_item']
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+        self.assertEqual([], gaps)
+        self.assertEqual(2, len(report['events']))
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
     def test_generic_ttlv_routes_encode_and_decode_the_client_operation_value(self):
         catalog = copy.deepcopy(self.catalog)
         catalog['test_cases'] = [case for case in self.catalog['test_cases']
