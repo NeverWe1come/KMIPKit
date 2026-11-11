@@ -206,6 +206,10 @@ RECIPES = {
     'test-op-rng-seed': ((38,), 'rng_seed'),
     'test-v20-reject-get-constraints': ((56,), 'get_constraints'),
     'test-op-create': ((1, 20), 'create'),
+    'test-norm-payload-client-create-request-20-001': ((1, 20), 'create'),
+    'test-norm-payload-client-create-request-20-002': ((1, 20), 'create'),
+    'test-norm-payload-client-create-request-21-001': ((1, 20), 'create'),
+    'test-norm-payload-client-create-request-21-002': ((1, 20), 'create'),
     'test-op-get': ((1, 10, 20), 'get'),
     'test-op-get-attributes': ((1, 11, 20), 'get_attributes'),
     'test-op-get-attribute-list': ((1, 12, 20), 'get_attribute_list'),
@@ -382,9 +386,18 @@ def verify_consumer_provenance(report, artifact_sha256, catalog_sha256):
 
 
 def case_for_controlled_exchange(case):
-    """Run opaque Query request constructors through the controlled peer."""
-    is_query_payload = case['case_id'].startswith('test-norm-payload-client-query-request-')
-    if is_query_payload and case.get('execution', {}).get('mode') == 'local_model':
+    """Run opaque request constructors through the controlled peer."""
+    peer_model_cases = {
+        'test-norm-payload-client-query-request-20-001',
+        'test-norm-payload-client-query-request-21-001',
+        'test-norm-payload-client-query-request-21-002',
+        'test-norm-payload-client-create-request-20-001',
+        'test-norm-payload-client-create-request-20-002',
+        'test-norm-payload-client-create-request-21-001',
+        'test-norm-payload-client-create-request-21-002',
+    }
+    if (case['case_id'] in peer_model_cases
+            and case.get('execution', {}).get('mode') == 'local_model'):
         return {**case, 'execution': {**case['execution'], 'mode': 'server_exchange'}}
     return case
 

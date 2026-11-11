@@ -1305,8 +1305,14 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     bool private_key_workflow = strcmp(test_case->case_id, "test-obj-private-key") == 0;
     bool public_key_workflow = strcmp(test_case->case_id, "test-obj-public-key") == 0;
     bool rsa_key_workflow = private_key_workflow || public_key_workflow;
+    bool create_payload_workflow =
+        strcmp(test_case->case_id, "test-norm-payload-client-create-request-20-001") == 0 ||
+        strcmp(test_case->case_id, "test-norm-payload-client-create-request-20-002") == 0 ||
+        strcmp(test_case->case_id, "test-norm-payload-client-create-request-21-001") == 0 ||
+        strcmp(test_case->case_id, "test-norm-payload-client-create-request-21-002") == 0;
     bool create_workflow = strcmp(test_case->case_id, "test-op-create") == 0 ||
-        strcmp(test_case->case_id, "test-obj-symmetric-key") == 0 || rsa_key_workflow;
+        strcmp(test_case->case_id, "test-obj-symmetric-key") == 0 || rsa_key_workflow ||
+        create_payload_workflow;
     uint32_t requested_object_type = private_key_workflow ?
         KMIPKIT_ENUMERATION_OBJECT_TYPE_PRIVATE_KEY : public_key_workflow ?
         KMIPKIT_ENUMERATION_OBJECT_TYPE_PUBLIC_KEY :
