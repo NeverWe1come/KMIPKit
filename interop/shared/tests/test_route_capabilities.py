@@ -133,9 +133,10 @@ class RouteCapabilitiesTests(unittest.TestCase):
         targets = {target['target_id']: target for target in catalog['normative_targets']}
         hashed = set(routes['kmipkit_protocol::HashedPasswordCredential::into_ttlv']['normative_target_ids'])
         self.assertIn('KMIPKIT-ELEM-CREDENTIAL-HASHED-PASSWORD', hashed)
-        self.assertIn('KMIPKIT-ELEM-ENUM-VALUE-CREDENTIAL-TYPE-HASHED-PASSWORD-00000005', hashed)
         self.assertIn('KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-HASHED-PASSWORD', hashed)
         self.assertNotIn('KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL', hashed)
+        self.assertFalse(any(target_id.startswith('KMIPKIT-ELEM-ENUM-VALUE-CREDENTIAL-TYPE-')
+                             for target_id in hashed))
         self.assertNotIn('KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-PASSWORD', hashed)
         self.assertNotIn('KMIPKIT-ELEM-ENUM-VALUE-SECRET-DATA-TYPE-PASSWORD-00000001', hashed)
 
@@ -146,6 +147,17 @@ class RouteCapabilitiesTests(unittest.TestCase):
                          and target['target_id'] != 'KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL'}
         self.assertTrue(variant_roots <= credential_value)
         self.assertTrue(all(target_id in targets for target_id in credential_value))
+        self.assertFalse(any(target_id.startswith('KMIPKIT-ELEM-ENUM-VALUE-CREDENTIAL-TYPE-')
+                             for target_id in credential_value))
+
+        credential = set(routes['kmipkit_protocol::Credential::into_ttlv']['normative_target_ids'])
+        self.assertIn('KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL', credential)
+        credential_type_values = {target_id for target_id, target in targets.items()
+                                  if target['kind'] == 'enumeration_value'
+                                  and 'KMIPKIT-ELEM-ENUMERATION-CREDENTIAL-TYPE'
+                                  in target.get('parent_element_ids', [])
+                                  and target.get('allocation') == 'assigned'}
+        self.assertTrue(credential_type_values <= credential)
 
     def test_typed_sensitive_attribute_does_not_claim_same_named_reason_enum(self):
         route = next(route for route in self.data['routes']
