@@ -118,6 +118,15 @@ class CoverageMatrixTests(unittest.TestCase):
         self.assertEqual({"construct", "send"}, {cell["action"] for cell in network_cells})
         self.assertFalse(any("response" in cell["route_id"] for cell in cells))
 
+    def test_network_request_field_targets_do_not_create_response_decode_cells(self):
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest)
+                 if cell["case_id"] == "test-norm-payload-client-query-request-21-001"
+                 and cell["language"] == "c"
+                 and cell["target_id"] == "KMIPKIT-PAYLOAD-CLIENT-QUERY-REQUEST-21-001"
+                 and cell["mode"] == "network"]
+        self.assertTrue(cells)
+        self.assertEqual({"construct", "send"}, {cell["action"] for cell in cells})
+
     def test_reserved_tag_uses_raw_preservation_routes_not_checked_item_constructors(self):
         cells = [cell for cell in iter_cells(self.catalog, self.manifest)
                  if cell["case_id"] == "test-norm-tag-tag-420009"]
