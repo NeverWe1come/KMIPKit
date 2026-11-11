@@ -171,6 +171,17 @@ def _generic_samples(case: dict, target: dict, symbol: str) -> list[tuple[int, s
             raise RecipePending
         tag = int(tag_entry['wire_value'], 16)
         type_names = {requires['value_type']}
+    elif kind == 'operation_payload_field':
+        normalized = lambda name: ''.join(character for character in name.casefold() if character.isalnum())
+        field_name = requires.get('field_name', target.get('name', ''))
+        tag_entry = next((entry for entry in by_id.values() if entry.get('kind') == 'tag'
+                          and normalized(entry.get('name', '')) == normalized(field_name)), None)
+        if tag_entry is None:
+            raise RecipePending
+        tag = int(tag_entry['wire_value'], 16)
+        type_names = PythonKmipDriver._catalog_value_types(case, target, element_types)
+        if normalized(field_name) == 'uniqueidentifier':
+            type_names = {'Text String'}
     else:
         type_names = PythonKmipDriver._catalog_value_types(case, target, element_types)
         # A type representative alone cannot prove a normative payload branch,
@@ -187,6 +198,10 @@ def _generic_samples(case: dict, target: dict, symbol: str) -> list[tuple[int, s
         'Text String': ['', 'KMIP-λ'], 'Byte String': [b'', bytes(range(9))],
         'Date Time': [-1, 0, 1], 'Interval': [0, 1, 0xFFFFFFFF], 'Date Time Extended': [-1, 0, 1],
     }
+    if kind == 'operation_payload_field' and ''.join(
+            character for character in requires.get('field_name', '').casefold() if character.isalnum()
+    ) == 'uniqueidentifier':
+        return [(tag, 'Text String', 'KMIPKit-interop')]
     return [(tag, name, value) for name in sorted(type_names) for value in samples[name]]
 
 

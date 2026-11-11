@@ -267,8 +267,11 @@ class RouteMatrixTests(unittest.TestCase):
                               if route['language'] == 'python' and route['public_api_symbol'] in symbols]
         report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
         self.assertEqual([], gaps)
-        self.assertEqual(3, len(report['events']))
+        self.assertEqual(6, len(report['events']))
         self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+        self.assertEqual({'KMIPKIT-ELEM-OP-C2S-ACTIVATE',
+                          'KMIPKIT-PAYLOAD-CLIENT-ACTIVATE-REQUEST-20-001'},
+                         {event['target_id'] for event in report['events']})
 
     def test_ci_requires_shared_changes_and_matrix_completeness(self):
         workflow = (ROOT / '.github/workflows/interop-python.yml').read_text()
