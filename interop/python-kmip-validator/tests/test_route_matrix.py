@@ -91,6 +91,27 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertNotIn('private-key-sentinel', json.dumps([report, gaps]))
         self.assertEqual({'recipe_execution_failed'}, {gap['failure_code'] for gap in gaps})
 
+    def test_call_observation_does_not_confuse_shared_synchronization_wrappers(self):
+        from kmipkit import ttlv
+        with self.runner.CallTrace(['kmipkit.ttlv.ttlv_decode']) as trace:
+            with ttlv.codec_limits_defaults():
+                pass
+        self.assertNotIn('kmipkit.ttlv.ttlv_decode', trace.observed)
+
+    def test_ping_network_cells_execute_public_client_over_all_supported_combinations(self):
+        catalog = copy.deepcopy(self.catalog)
+        catalog['test_cases'] = [next(case for case in catalog['test_cases'] if case['case_id'] == 'test-op-ping')]
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in manifest['routes']
+                              if route['public_api_symbol'] == 'kmipkit.extensions.client_batch_item_ping']
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+        self.assertFalse(gaps)
+        self.assertEqual(18, len(report['events']))
+        for event in report['events']:
+            self.assertEqual('passed', event['status'])
+        self.assertEqual(1, len({event['request_tree_sha256'] for event in report['events']}))
+        self.assertEqual(1, len({event['response_tree_sha256'] for event in report['events']}))
+
     def test_construct_and_decode_are_distinct_invocations(self):
         catalog, manifest = self.integer_fixture()
         report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
