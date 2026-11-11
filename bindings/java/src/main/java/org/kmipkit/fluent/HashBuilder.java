@@ -6,6 +6,6 @@ import org.kmipkit.client.KmipClient;
 public final class HashBuilder extends CryptoOperationBuilder<HashBuilder>
         implements HashInput<HashBuilder> {
     HashBuilder(KmipClient client) {
-        super(client, 6);
+        super(client, NATIVE_OPERATION_HASH);
     }
 }

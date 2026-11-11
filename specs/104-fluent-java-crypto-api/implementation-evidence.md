@@ -72,7 +72,11 @@
 
 ## Refactor
 
-Pending the separate cleanup commit and exact-head CI.
+- Replaced the seven positional native operation numbers in the Java concrete
+  builders with named operation constants in the shared builder base.
+- Re-ran the complete Gradle test suite after the cleanup; result:
+  `BUILD SUCCESSFUL`.
+- Refactor is committed separately from the Red and Green commits.
 
 ## Verification
 

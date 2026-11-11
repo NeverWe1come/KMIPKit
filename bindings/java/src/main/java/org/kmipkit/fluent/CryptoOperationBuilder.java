@@ -15,6 +15,14 @@ import org.kmipkit.ttlv.TtlvValue;
 
 /** Shared native ownership and one-exchange lifecycle for typed crypto builders. */
 abstract class CryptoOperationBuilder<B extends CryptoOperationBuilder<B>> implements AutoCloseable {
+    static final int NATIVE_OPERATION_ENCRYPT = 0;
+    static final int NATIVE_OPERATION_DECRYPT = 1;
+    static final int NATIVE_OPERATION_SIGN = 2;
+    static final int NATIVE_OPERATION_SIGNATURE_VERIFY = 3;
+    static final int NATIVE_OPERATION_MAC = 4;
+    static final int NATIVE_OPERATION_MAC_VERIFY = 5;
+    static final int NATIVE_OPERATION_HASH = 6;
+
     static final int DATA = 0;
     static final int IV_COUNTER_NONCE = 1;
     static final int AUTHENTICATED_ENCRYPTION_ADDITIONAL_DATA = 2;

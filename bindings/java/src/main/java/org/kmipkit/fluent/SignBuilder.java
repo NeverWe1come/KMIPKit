@@ -6,6 +6,6 @@ import org.kmipkit.client.KmipClient;
 public final class SignBuilder extends CryptoOperationBuilder<SignBuilder>
         implements SignInput<SignBuilder> {
     SignBuilder(KmipClient client) {
-        super(client, 2);
+        super(client, NATIVE_OPERATION_SIGN);
     }
 }

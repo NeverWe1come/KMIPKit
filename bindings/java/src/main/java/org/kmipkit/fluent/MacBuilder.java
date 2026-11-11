@@ -6,6 +6,6 @@ import org.kmipkit.client.KmipClient;
 public final class MacBuilder extends CryptoOperationBuilder<MacBuilder>
         implements MacInput<MacBuilder> {
     MacBuilder(KmipClient client) {
-        super(client, 4);
+        super(client, NATIVE_OPERATION_MAC);
     }
 }

@@ -6,6 +6,6 @@ import org.kmipkit.client.KmipClient;
 public final class DecryptBuilder extends CryptoOperationBuilder<DecryptBuilder>
         implements DecryptInput<DecryptBuilder> {
     DecryptBuilder(KmipClient client) {
-        super(client, 1);
+        super(client, NATIVE_OPERATION_DECRYPT);
     }
 }
