@@ -223,6 +223,22 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertFalse(gaps)
         self.assertEqual(11, len({event['case_id'] for event in report['events']}))
 
+    def test_generic_ttlv_routes_encode_and_decode_the_client_operation_value(self):
+        catalog = copy.deepcopy(self.catalog)
+        catalog['test_cases'] = [case for case in self.catalog['test_cases']
+                                 if case['case_id'] == 'test-op-ping']
+        symbols = {'kmipkit.ttlv.ttlv_item_create', 'kmipkit.ttlv.ttlv_decode',
+                   'kmipkit.ttlv.ttlv_item_view_from_item', 'kmipkit.ttlv.ttlv_value_enumeration'}
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in manifest['routes']
+                              if route['language'] == 'python' and route['public_api_symbol'] in symbols]
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+        self.assertEqual([], gaps)
+        self.assertEqual(4, len(report['events']))
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+        expected = self.runner.digest([[0x42005C, 5, 0x3B]])
+        self.assertEqual({expected}, {event['request_tree_sha256'] for event in report['events']})
+
     def test_ci_requires_shared_changes_and_matrix_completeness(self):
         workflow = (ROOT / '.github/workflows/interop-python.yml').read_text()
         self.assertIn('python -m kmipkit_validator matrix', workflow)
