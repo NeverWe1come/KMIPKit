@@ -122,6 +122,22 @@ class MatrixContract(unittest.TestCase):
         self.assertEqual(len(report['events']), 4)
         self.assertEqual(report['events'][2]['request_tree_sha256'], report['events'][3]['request_tree_sha256'])
 
+    def test_ci_gate_refuses_a_partial_real_route_run(self):
+        with tempfile.TemporaryDirectory() as directory:
+            matrix = Path(directory) / 'one-cell.jsonl'
+            matrix.write_text(json.dumps(self.cell('kmipkit_ttlv::Item::new')) + '\n')
+            process = subprocess.run([sys.executable, str(ROOT / 'interop/rust-kmip-validator/tools/run_route_matrix.py'),
+                '--matrix', str(matrix), '--output-dir', directory, '--validator', str(VALIDATOR)],
+                capture_output=True, text=True, timeout=30)
+            self.assertNotEqual(process.returncode, 0)
+            summary_path = Path(directory) / 'matrix-summary.json'
+            self.assertTrue(summary_path.exists(), process.stderr)
+            summary = json.loads(summary_path.read_bytes())
+            self.assertTrue(summary['schema_valid'])
+            self.assertFalse(summary['complete_matrix'])
+            self.assertEqual(summary['invoked_local_cells'], 1)
+            self.assertEqual(summary['gate_failure_code'], 'missing_required_matrix_cells')
+
     def test_forged_symbol_is_rejected_without_false_positive(self):
         cell = self.cell('kmipkit_ttlv::Item::new')
         cell['public_api_symbol'] = 'kmipkit_ttlv::Value::boolean'
