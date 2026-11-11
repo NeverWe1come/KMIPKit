@@ -222,3 +222,26 @@ branches, and the common CI therefore reports a planned matrix only.
 - The language matrices must incorporate this manifest and rerun before their
   status can be assessed. No vendor-server interoperability has been run; the
   shared PR remains WIP.
+
+## 2026-11-11 credential converter model-route correction
+
+- The Rust executable matrix then showed that public model methods such as
+  `HashedPasswordCredential::try_from_ttlv` still inherited the `Credential
+  Type` enum value from name-based model inventory, even though the typed
+  `Credential Value` converter does not carry that discriminator. The
+  discriminator belongs to the outer `Credential` model.
+- Model inventory now applies the exact credential route mapper to Rust and C
+  model converters. The regenerated manifest remains at 1,479 routes and keeps
+  the six assigned credential-type values on outer `Credential` converters;
+  variant and value converters no longer claim them.
+- Red: `3e722639c` changed the route regression to require that boundary. The
+  test failed on `HashedPasswordCredential` retaining its enum value.
+- Green: `2385976eb` applies the exact branch mapping to typed model methods
+  and regenerates route metadata. The focused route regression and
+  `python3 -B interop/shared/tools/route_capabilities.py --check` pass.
+- Refactor: `6190145a3` extracts the converter name and credential-type value
+  helpers. The focused regression and generated-manifest check remain green.
+- Full shared suite passed 143 tests in 194.430 seconds; `git diff --check`
+  passed. Language matrices still need the resulting common SHA before their
+  counts can be treated as current. Vendor KMS interoperability remains
+  unverified and the PR remains WIP.
