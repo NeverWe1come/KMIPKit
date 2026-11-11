@@ -804,4 +804,33 @@ mod tests {
 
         assert!(crate::local_wire::target_hash(&result, &fixture).is_ok());
     }
+
+    /// OASIS KMIP 2.1 §4.21 and §§5.6–5.7 preserve the direct Digest item in typed wrappers.
+    #[test]
+    fn typed_attribute_wrapper_routes_resolve_the_attribute_marker() {
+        let cases: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let specification: Json = serde_json::from_str(include_str!(
+            "../../../specification/catalog/kmip-2.1.json"
+        ))
+        .unwrap();
+        let target = cases["normative_targets"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|target| target["target_id"] == "KMIPKIT-ELEM-ATTRIBUTE-DIGEST")
+            .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        for symbol in [
+            "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::Digest>",
+            "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::Digest>",
+            "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::Digest>",
+        ] {
+            let fixture = sample_for_route(symbol, target, elements).unwrap();
+            let result = invoke(symbol, &fixture, target, elements).unwrap().unwrap();
+            assert!(crate::local_wire::target_hash(&result, &fixture).is_ok());
+        }
+    }
 }
