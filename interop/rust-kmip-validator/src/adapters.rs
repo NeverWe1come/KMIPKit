@@ -455,6 +455,37 @@ mod tests {
     use super::*;
     // KMIPKIT-0084-FR-003; each row's own exact OASIS references identify the contract.
     #[test]
+    fn negative_modify_attribute_recipe_sends_an_explicit_mismatching_selector() {
+        let catalog: crate::models::Catalog = crate::models::load(
+            &std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("../shared/catalog/kmipkit-1.0-test-catalog.json"),
+        )
+        .expect("catalog");
+        let case = catalog
+            .test_cases
+            .iter()
+            .find(|case| case.case_id == "test-neg-modify-attribute-current-mismatch")
+            .expect("negative Modify Attribute case");
+        let identifier = UniqueIdentifier::from("owned-fixture");
+        let request = request(case, Some(&identifier), "kmipkit-fixture").expect("request");
+        assert!(request.validation_report().is_valid());
+        let ClientRequest::ModifyAttribute(request) = request else {
+            panic!("negative case must build Modify Attribute");
+        };
+        let current = request.current_attribute().expect("Current Attribute");
+        assert_eq!(0x0042_00fd, current.item().tag().raw());
+        assert!(current.item().with_value(|value| matches!(
+            value,
+            ValueView::TextString(text) if text == "old test value"
+        )));
+        assert_eq!(0x0042_00fd, request.new_attribute().item().tag().raw());
+        assert!(request.new_attribute().item().with_value(|value| matches!(
+            value,
+            ValueView::TextString(text) if text == "new test value"
+        )));
+    }
+
+    #[test]
     fn every_synchronous_operation_has_a_public_typed_builder() {
         let catalog: crate::models::Catalog = crate::models::load(
             &std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -475,12 +506,6 @@ mod tests {
                 Some(&UniqueIdentifier::from("owned-fixture")),
                 "kmipkit-fixture",
             ) {
-                Ok(request) if case.case_id == "test-neg-modify-readonly-attribute" => {
-                    assert!(
-                        !request.validation_report().is_valid(),
-                        "OASIS §4.57 State cannot be modified directly"
-                    );
-                }
                 Ok(request) if request.validation_report().is_valid() => {}
                 Ok(request) => {
                     eprintln!("{}: {:?}", case.case_id, request.validation_report());
