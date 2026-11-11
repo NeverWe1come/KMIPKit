@@ -177,6 +177,19 @@ class MatrixContract(unittest.TestCase):
         self.assertEqual(len(report['events']), len(symbols))
         self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
 
+    def test_credential_variants_and_nonce_invoke_their_real_model_routes(self):
+        kinds = {'UsernameAndPasswordCredential': 'USERNAME-AND-PASSWORD', 'DeviceCredential': 'DEVICE',
+                 'AttestationCredential': 'ATTESTATION', 'HashedPasswordCredential': 'HASHED-PASSWORD'}
+        cells = [self.cell('kmipkit_protocol::' + owner + '::try_from_ttlv', 'KMIPKIT-ELEM-CREDENTIAL-' + target)
+                 for owner, target in kinds.items()]
+        cells.append(self.cell('kmipkit_protocol::Nonce::try_from_ttlv', 'KMIPKIT-ELEM-MESSAGE-FIELD-9-14-NONCE'))
+        process, report = self.run_matrix(cells)
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual(len(report['events']), 5)
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+        encoded = json.dumps(report)
+        self.assertNotIn('KMIPKit', encoded, 'fixture credentials must stay out of evidence')
+
     def test_forged_symbol_is_rejected_without_false_positive(self):
         cell = self.cell('kmipkit_ttlv::Item::new')
         cell['public_api_symbol'] = 'kmipkit_ttlv::Value::boolean'
