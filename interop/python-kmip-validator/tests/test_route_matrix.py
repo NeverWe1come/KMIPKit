@@ -250,9 +250,11 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual([], gaps)
         self.assertEqual(36, len(report['events']))
         self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+        from kmipkit import protocol_values
         for event in report['events']:
             self.assertEqual([1], event['peer_observed_result_status_codes'])
-            self.assertEqual([1], event['peer_observed_result_reason_codes'])
+            self.assertEqual([protocol_values.ResultReason.OPERATION_NOT_SUPPORTED],
+                             event['peer_observed_result_reason_codes'])
             self.assertEqual('response_received', event['request_delivery_state'])
             self.assertEqual(1, event['transport_invocation_count'])
 
@@ -483,8 +485,17 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(18, len(report['events']))
         for event in report['events']:
             self.assertEqual('passed', event['status'])
-        self.assertEqual(1, len({event['request_tree_sha256'] for event in report['events']}))
-        self.assertEqual(1, len({event['response_tree_sha256'] for event in report['events']}))
+            self.assertEqual([1], event['peer_observed_result_status_codes'])
+            from kmipkit import protocol_values
+            self.assertEqual([protocol_values.ResultReason.OPERATION_NOT_SUPPORTED],
+                             event['peer_observed_result_reason_codes'])
+        by_encoding = {}
+        for event in report['events']:
+            by_encoding.setdefault(event['encoding'], set()).add(
+                (event['request_tree_sha256'], event['response_tree_sha256']))
+        self.assertEqual({'TTLV', 'JSON', 'XML'}, set(by_encoding))
+        self.assertTrue(all(len(values) == 1 for values in by_encoding.values()))
+        self.assertEqual(by_encoding['JSON'], by_encoding['XML'])
 
     def test_construct_and_decode_are_distinct_invocations(self):
         catalog, manifest = self.integer_fixture()

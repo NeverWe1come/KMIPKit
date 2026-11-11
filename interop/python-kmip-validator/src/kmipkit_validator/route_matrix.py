@@ -375,7 +375,7 @@ def execute_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | Non
         return _generic_cell(cell, case, target)
     if case['case_id'] == 'test-op-discover-versions':
         return _positive_fixture_cell(cell, case, target, trace=trace)
-    return _network_cell(cell, case, target)
+    return _network_cell(cell, case, target, trace=trace)
 
 
 def run_matrix(catalog: dict, manifest: dict, artifact: dict,
@@ -435,6 +435,7 @@ def _ping_tree(wire: bytes, encoding: str) -> list:
     from kmipkit import protocol_values
     from .controlled_peer import parse_children
     import xml.etree.ElementTree as ET
+    from datetime import datetime
 
     tags = {'RequestMessage': 0x420078, 'RequestHeader': 0x420077,
             'ResponseMessage': 0x42007B, 'ResponseHeader': 0x42007A,
@@ -490,21 +491,117 @@ def _ping_tree(wire: bytes, encoding: str) -> list:
     return xml_node(ET.fromstring(wire))
 
 
-def _network_cell(cell: dict, case: dict, target: dict) -> dict:
+def _network_tree(wire: bytes, encoding: str) -> list:
+    """Normalize a complete peer message to numeric tags and TTLV type codes."""
+    from datetime import datetime
+    import xml.etree.ElementTree as ET
+    from .controlled_peer import parse_children
+    from kmipkit import protocol_values
+
+    by_id, _, _ = _catalog_model_data()
+    tag_by_name = {_normalized_name(item['name']): int(item['wire_value'], 16)
+                   for item in by_id.values() if item.get('kind') == 'tag'}
+    type_codes = {'Structure': 1, 'Integer': 2, 'LongInteger': 3, 'BigInteger': 4,
+                  'Enumeration': 5, 'Boolean': 6, 'TextString': 7, 'ByteString': 8,
+                  'DateTime': 9, 'Interval': 10, 'DateTimeExtended': 11}
+
+    def enum_value(tag: int, value: Any) -> Any:
+        if isinstance(value, int):
+            return value
+        enum_type = {0x42005C: protocol_values.Operation,
+                     0x42007F: protocol_values.ResultStatus,
+                     0x42007E: protocol_values.ResultReason}.get(tag)
+        if enum_type is None:
+            return value
+        normalized = _normalized_name(str(value))
+        matches = [raw for name, raw in vars(enum_type).items() if isinstance(raw, int)
+                   and _normalized_name(enum_type.name(raw) or name) == normalized]
+        if len(matches) != 1:
+            raise ValueError('controlled peer enum does not match the public enum table')
+        return matches[0]
+
+    def binary_node(raw_tag: int, kind: int, raw: bytes) -> list:
+        if kind == 1:
+            value = [binary_node(*entry) for entry in parse_children(raw)]
+        elif kind in (4, 7, 8):
+            value = raw.hex()
+        elif kind == 6:
+            value = bool(int.from_bytes(raw, 'big'))
+        elif kind in (2, 3, 5, 9, 10, 11):
+            value = int.from_bytes(raw, 'big', signed=kind in (2, 3, 9, 11))
+        else:
+            raise ValueError('controlled peer emitted an unknown TTLV type')
+        return [raw_tag, kind, value]
+
+    def document_node(name: str, kind_name: str, value: Any) -> list:
+        raw_tag = tag_by_name.get(_normalized_name(name))
+        kind = type_codes.get(kind_name)
+        if raw_tag is None or kind is None:
+            raise ValueError('controlled peer document has an unknown tag or type')
+        if kind == 1:
+            children = value if isinstance(value, list) else []
+            normalized = [child if isinstance(child, list)
+                          else document_node(child['tag'], child.get('type', 'Structure'), child['value'])
+                          for child in children]
+            return [raw_tag, kind, normalized]
+        if kind == 5:
+            value = enum_value(raw_tag, value)
+        elif kind in (7, 8):
+            value = str(value).encode('utf-8').hex()
+        elif kind in (2, 3, 9, 10, 11):
+            if kind in (9, 11) and isinstance(value, str) and not value.lstrip('-').isdigit():
+                value = int(datetime.fromisoformat(value.replace('Z', '+00:00')).timestamp())
+            else:
+                value = int(value)
+        elif kind == 6:
+            value = value if isinstance(value, bool) else str(value).casefold() == 'true'
+        return [raw_tag, kind, value]
+
+    if encoding == 'TTLV':
+        if len(wire) < 8:
+            raise ValueError('controlled peer returned a truncated TTLV item')
+        roots = parse_children(wire[8:])
+        return [binary_node(*root) for root in roots]
+    if encoding == 'JSON':
+        root = json.loads(wire)
+        return [document_node(root['tag'], root.get('type', 'Structure'), root['value'])]
+    root = ET.fromstring(wire)
+
+    def xml_value(node):
+        kind = node.attrib.get('type', 'Structure')
+        if kind == 'Structure':
+            value = [xml_value(child) for child in node]
+        else:
+            value = node.attrib.get('value', '')
+        return document_node(node.tag, kind, value)
+
+    return [xml_value(root)]
+
+
+def _find_tree_value(roots: list, tag: int) -> Any | None:
+    for current_tag, _, value in roots:
+        if current_tag == tag:
+            return value
+        if isinstance(value, list):
+            found = _find_tree_value(value, tag)
+            if found is not None:
+                return found
+    return None
+
+
+def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | None) -> dict:
     from .controlled_peer import ControlledTlsPeer, PKI
-    from kmipkit import extensions, protocol_values
+    from kmipkit import extensions, protocol_values, ttlv
 
     if case.get('requires', {}).get('expected_status') == 'NotSent':
         return _not_sent_cell(cell, case)
 
-    # Other positive operations need stateful, operation-specific fixtures. An
-    # OperationNotSupported response cannot establish their positive semantics.
-    if (case['case_id'] != 'test-op-ping' or cell['protocol_version'] != '2.1'
-            or cell['public_api_symbol'] != 'kmipkit.extensions.client_batch_item_ping'):
-        raise RecipePending
-    peer = ControlledTlsPeer(encoding=cell['encoding'], transport=cell['transport'], protocol_version='2.1')
+    peer = ControlledTlsPeer(status=protocol_values.ResultStatus.OPERATION_FAILED,
+                             reason=protocol_values.ResultReason.OPERATION_NOT_SUPPORTED,
+                             encoding=cell['encoding'], transport=cell['transport'],
+                             protocol_version=cell['protocol_version'])
     connection = {
-        'server_id': 'controlled-fixture', 'protocol_version': '2.1',
+        'server_id': 'controlled-fixture', 'protocol_version': cell['protocol_version'],
         'transport': cell['transport'], 'encoding': cell['encoding'], 'api_level': 'typed-protocol',
         'endpoints': {'raw_tls': {'host': '127.0.0.1', 'port': peer.port},
                       'https': {'url': f'https://127.0.0.1:{peer.port}/kmip'}},
@@ -514,34 +611,75 @@ def _network_cell(cell: dict, case: dict, target: dict) -> dict:
                 'connect_timeout_seconds': 5, 'read_timeout_seconds': 5},
     }
     driver = None
+    item = None
+    identifier = None
     try:
         driver = PythonKmipDriver(connection)
-        with extensions.client_batch_item_ping() as item:
+        operation = case['operation']
+        symbol = cell['public_api_symbol']
+        if symbol.startswith('kmipkit.client.Client.execute_'):
+            correlation = None if operation == 'Query Asynchronous Requests' else b'kmipkit-route-correlation'
+            result = driver._async_exchange(operation, correlation)
+        else:
+            identifier = extensions.UniqueIdentifier.text_string('KMIPKit-python-route')
+            name = 'KMIPKit-python-route'
+            if symbol.endswith('.to_batch_item') and symbol.startswith('kmipkit.attribute_operations.'):
+                item = driver._build_high_level_item(case, identifier, name=name)
+            elif operation == 'Logout':
+                ticket_type = driver._item(0x42014A, 'enumeration', 1)
+                ticket_value = driver._item(0x42014B, 'bytes', b'fixture-ticket')
+                ticket = driver._structure([ticket_type, ticket_value])
+                try:
+                    item = extensions.client_batch_item_logout(ticket)
+                finally:
+                    ticket.close()
+                    ticket_type.close()
+                    ticket_value.close()
+            else:
+                item = driver._build_item(case, identifier, name=name)
             result = driver._exchange(item)
-        if result['status'] != 'passed' or result['result_status_code'] != protocol_values.ResultStatus.SUCCESS:
-            raise ValueError('fixture response status assertion failed')
+        if (result['status'] != 'server_unsupported'
+                or result['result_status_code'] != protocol_values.ResultStatus.OPERATION_FAILED
+                or result.get('result_reason_code') != protocol_values.ResultReason.OPERATION_NOT_SUPPORTED):
+            raise ValueError('controlled peer rejection was not decoded as an unsupported operation')
     finally:
+        if item is not None:
+            item.close()
         if driver is not None:
             driver.close()
         peer.close()
     if len(peer.requests) != 1 or len(peer.responses) != 1:
         raise ValueError('fixture exchange count assertion failed')
-    request = _ping_tree(peer.requests[0], cell['encoding'])
-    response = _ping_tree(peer.responses[0], cell['encoding'])
-    ping = protocol_values.Operation.PING
-    expected_request = [0x420078, 1, [
-        [0x420077, 1, [[0x420069, 1, [[0x42006A, 2, 2], [0x42006B, 2, 1]]],
-                       [0x4200D3, 6, True], [0x42000D, 2, 1]]],
-        [0x42000F, 1, [[0x42005C, 5, ping], [0x420079, 1, []]]]]]
-    expected_response = [0x42007B, 1, [
-        [0x42007A, 1, [[0x420069, 1, [[0x42006A, 2, 2], [0x42006B, 2, 1]]],
-                       [0x420092, 9, '<normalized-time-stamp>'], [0x42000D, 2, 1]]],
-        [0x42000F, 1, [[0x42005C, 5, ping], [0x42007F, 5, 0], [0x42007C, 1, []]]]]]
-    if request != expected_request or response != expected_response:
-        raise ValueError('fixture Ping request or response shape assertion failed')
+    if (normalized_operation_name := ''.join(character for character in operation.casefold() if character.isalnum())):
+        if ''.join(character for character in str(peer.request_observation.get('operation', '')).casefold()
+                   if character.isalnum()) != normalized_operation_name:
+            raise ValueError('peer did not receive the exact requested operation')
+    request = _network_tree(peer.requests[0], cell['encoding'])
+    response = _network_tree(peer.responses[0], cell['encoding'])
+    operation_codes = [raw for name, raw in vars(protocol_values.Operation).items()
+                       if isinstance(raw, int) and ''.join(
+                           character for character in (protocol_values.Operation.name(raw) or name).casefold()
+                           if character.isalnum()) == normalized_operation_name]
+    if len(operation_codes) != 1:
+        raise ValueError('catalog operation is absent from the public enum table')
+    expected_operation = operation_codes[0]
+    request_operation = _find_tree_value(request, 0x42005C)
+    response_operation = _find_tree_value(response, 0x42005C)
+    if (request_operation != expected_operation
+            or response_operation != request_operation
+            or _find_tree_value(response, 0x42007F) != protocol_values.ResultStatus.OPERATION_FAILED
+            or _find_tree_value(response, 0x42007E) != protocol_values.ResultReason.OPERATION_NOT_SUPPORTED
+            or _find_tree_value(response, 0x42007C) is not None):
+        raise ValueError('controlled peer request or unsupported response shape mismatch')
+    if trace is None:
+        raise ValueError('network cell has no public-call trace')
     return {'request_tree_sha256': digest(request), 'response_tree_sha256': digest(response),
-            'wire_bytes_deterministic': True,
-            'wire_bytes_sha256': hashlib.sha256(peer.responses[0] if cell.get('action') == 'decode' else peer.requests[0]).hexdigest()}
+            'wire_bytes_sha256': hashlib.sha256(
+                peer.responses[0] if cell.get('action') == 'decode' else peer.requests[0]).hexdigest(),
+            'request_delivery_state': 'response_received', 'transport_invocation_count': 1,
+            'peer_observed_response_count': 1,
+            'peer_observed_result_status_codes': [protocol_values.ResultStatus.OPERATION_FAILED],
+            'peer_observed_result_reason_codes': [protocol_values.ResultReason.OPERATION_NOT_SUPPORTED]}
 
 
 def _positive_fixture_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | None) -> dict:
