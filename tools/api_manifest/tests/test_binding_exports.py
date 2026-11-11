@@ -1063,6 +1063,8 @@ class BindingExportAuditTests(unittest.TestCase):
             "clientBatchItemResponsePing", "clientBatchItemResponseQueryTtlv",
             "clientBatchItemResponseRawTtlv",
             "clientBatchItemResponseHeaderTtlv",
+            "clientBatchItemResponseTtlvHex", "clientBatchItemResponseJson",
+            "clientBatchItemResponseXml",
             "clientBatchItemResponsePkcs11", "clientBatchItemResponseRecertify",
             "clientBatchItemResponseEncrypt", "clientBatchItemResponseDecrypt",
             "clientBatchItemResponseLogin", "clientBatchItemResponseObtainLease",
@@ -1237,6 +1239,11 @@ class BindingExportAuditTests(unittest.TestCase):
             }
         )
         native_members.add("registerRequestWithProtectionStorageMasks")
+        response_view_bridge_members = {
+            "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseTtlvHex",
+            "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseJson",
+            "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseXml",
+        }
         response_ttlv_bridge_members = {
             "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseRawTtlv",
             "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseHeaderTtlv",
@@ -1337,7 +1344,11 @@ class BindingExportAuditTests(unittest.TestCase):
                 "org.kmipkit.NativeExtensionRegistry.withPollRequestCorrelationValue": "T093",
             }.get(key[1])
             if bridge_owner is None:
-                if multi_encoding_bridge:
+                if key[1] in response_view_bridge_members:
+                    self.assertIn("KMIPKIT-0095-FR-003", evidence)
+                    self.assertIn("AutoCloseable", evidence)
+                    self.assertIn("JNI plumbing", exclusion["reason"])
+                elif multi_encoding_bridge:
                     self.assertIn("KMIPKIT-0057-FR-001", evidence)
                     self.assertIn("KMIPKIT-0057-FR-005", evidence)
                     self.assertIn("raw-handle JNI bridge plumbing", exclusion["reason"])
@@ -1380,6 +1391,7 @@ class BindingExportAuditTests(unittest.TestCase):
                     "ffi-and-bindings.md" not in evidence
                     and not combined_approved_references
                     and key[1] not in response_ttlv_bridge_members
+                    and key[1] not in response_view_bridge_members
                 ):
                     self.assertTrue(
                         any(task_id in evidence for task_id in ("T035", "T037", "T039"))

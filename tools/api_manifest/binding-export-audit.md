@@ -180,3 +180,17 @@ Its official `--check` run completed with 1,708 exact C manifest matches,
 and match the manifest, with no missing or unobserved routes, kind mismatches,
 or inventory issues. No binding capability is promoted by this audit; typed
 parameters and Authentication execution parity remain assigned to KMIPKIT-0053.
+
+
+## Response-view binding delivery snapshot (2026-11-11)
+
+The current audit report is
+`specs/043-public-api-bindings/reports/binding-export-report-2026-11-11-response-views.json`.
+It was generated from the built C DSO and complete Java/Python inventories
+after KMIPKIT-0095 T009. Earlier dated reports remain historical snapshots.
+
+| Package | Scanner complete | Observed | Manifest declarations | Exact matches | Exact exclusions | Missing | Stale | Kind mismatches | Issues | `matchesManifest` |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| C | yes | 2,058 | 1,998 | 1,998 | 60 | 0 | 0 | 0 | 0 | yes |
+| Java | yes | 3,090 | 2,390 | 2,390 | 700 | 0 | 0 | 0 | 0 | yes |
+| Python | yes | 3,605 | 2,596 | 2,596 | 1,009 | 0 | 0 | 0 | 0 | yes |

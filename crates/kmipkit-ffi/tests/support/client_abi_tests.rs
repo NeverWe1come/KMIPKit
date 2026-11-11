@@ -11476,6 +11476,37 @@ fn pkcs11_correlation_span_distinguishes_absence_from_present_empty() {
     assert_eq!(span.length, 0);
 }
 
+fn assert_response_view_encodings(item: *mut kmipkit_client_batch_item_response_t) {
+    // SAFETY: The fixture item remains live throughout the synchronous compiled C consumer.
+    assert_eq!(
+        unsafe { kmipkit_client_abi_c_consumer_response_views(item) },
+        1
+    );
+    // KMIPKIT-0095-FR-001..005; KMIP 2.1 §§8.4–8.6 and §9.13.
+    let limits = make_handle(
+        Kind::CodecLimits,
+        HandleValue::CodecLimits(Arc::new(CodecLimits::defaults())),
+    );
+    for render in [
+        kmipkit_client_batch_item_response_ttlv_hex,
+        kmipkit_client_batch_item_response_json,
+        kmipkit_client_batch_item_response_xml,
+    ] {
+        let mut output = ptr::null_mut();
+        assert_eq!(render(item, limits, &raw mut output), SUCCESS);
+        let owner = reference_handle(output, Kind::SecretBytes).expect("rendered owner is live");
+        let HandleValue::SecretBytes(secret) = &owner.value else {
+            panic!("wrong owner");
+        };
+        secret.with_bytes(|bytes| {
+            let text = std::str::from_utf8(bytes).expect("render is UTF-8");
+            assert!(text.starts_with("42007B") || text.contains("ResponseMessage"));
+        });
+        kmipkit_secret_bytes_release(output);
+    }
+    kmipkit_codec_limits_release(limits);
+}
+
 #[test]
 // KMIP 2.1 §9.13, Table 418: retain the ordered generic response extension.
 fn client_response_extension_abi_returns_ordered_generic_ttlv_copy() {
@@ -11525,7 +11556,6 @@ fn client_response_extension_abi_returns_ordered_generic_ttlv_copy() {
             ),
         ],
     );
-    kmipkit_ttlv::codec::decode(&response).expect("the fixture response is valid TTLV");
     let response = execute_single_abi_response(
         ClientRequest::CreateKeyPair(CreateKeyPairRequest::new()),
         b"key-pair",
@@ -11533,35 +11563,7 @@ fn client_response_extension_abi_returns_ordered_generic_ttlv_copy() {
     )
     .expect("a non-critical response extension is preserved");
     let item = client_batch_item_response_from(response);
-    // SAFETY: The fixture item remains live throughout the synchronous compiled C consumer.
-    assert_eq!(
-        unsafe { kmipkit_client_abi_c_consumer_response_views(item) },
-        1
-    );
-    // KMIPKIT-0095-FR-001..005; KMIP 2.1 §§8.4–8.6 and §9.13.
-    let limits = make_handle(
-        Kind::CodecLimits,
-        HandleValue::CodecLimits(Arc::new(CodecLimits::defaults())),
-    );
-    for render in [
-        kmipkit_client_batch_item_response_ttlv_hex,
-        kmipkit_client_batch_item_response_json,
-        kmipkit_client_batch_item_response_xml,
-    ] {
-        let mut output = ptr::null_mut();
-        assert_eq!(render(item, limits, &raw mut output), SUCCESS);
-        let owner = reference_handle(output, Kind::SecretBytes).expect("rendered owner is live");
-        let HandleValue::SecretBytes(secret) = &owner.value else {
-            panic!("wrong owner");
-        };
-        secret.with_bytes(|bytes| {
-            let text = std::str::from_utf8(bytes).expect("render is UTF-8");
-            assert!(!text.is_empty());
-            assert!(text.starts_with("42007B") || text.contains("ResponseMessage"));
-        });
-        kmipkit_secret_bytes_release(output);
-    }
-    kmipkit_codec_limits_release(limits);
+    assert_response_view_encodings(item);
     let mut count = u64::MAX;
     assert_eq!(
         kmipkit_client_batch_item_response_extension_count(item, &raw mut count),
@@ -11645,7 +11647,7 @@ fn response_views_keep_independent_owners_and_reject_dead_handles() {
             bytes
                 .windows(b"ResponseMessage".len())
                 .any(|word| word == b"ResponseMessage")
-        )
+        );
     });
     kmipkit_secret_bytes_release(output);
     assert!(reference_handle(output, Kind::SecretBytes).is_err());

@@ -2204,7 +2204,7 @@ class BatchItemResult(_BatchItemResultNativeState):
                 raise
 
     def ttlv_hex(self, limits: ttlv.CodecLimits) -> credentials.SecretBytes:
-        """Render the complete retained response as ttlv_hex in an owned UTF-8 buffer.
+        """Render the complete retained response as canonical uppercase TTLV hex in an owned UTF-8 buffer.
 
         Close the returned native zeroizing owner. ``with_bytes`` clears its
         temporary callback view; copies retained by Python or the caller cannot
@@ -2213,7 +2213,7 @@ class BatchItemResult(_BatchItemResultNativeState):
         return self._render_response_view("ttlv_hex", limits)
 
     def json(self, limits: ttlv.CodecLimits) -> credentials.SecretBytes:
-        """Render the complete retained response as json in an owned UTF-8 buffer.
+        """Render the complete retained response as KMIP JSON in an owned UTF-8 buffer.
 
         Close the returned native zeroizing owner. ``with_bytes`` clears its
         temporary callback view; copies retained by Python or the caller cannot
@@ -2222,7 +2222,7 @@ class BatchItemResult(_BatchItemResultNativeState):
         return self._render_response_view("json", limits)
 
     def xml(self, limits: ttlv.CodecLimits) -> credentials.SecretBytes:
-        """Render the complete retained response as xml in an owned UTF-8 buffer.
+        """Render the complete retained response as KMIP XML in an owned UTF-8 buffer.
 
         Close the returned native zeroizing owner. ``with_bytes`` clears its
         temporary callback view; copies retained by Python or the caller cannot

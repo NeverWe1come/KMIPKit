@@ -56,3 +56,26 @@ def test_render_failures_preserve_binding_categories_and_redact_payload(monkeypa
             getattr(result, name)(limits)
     assert "fixture-v1" not in str(rejected.value)
     assert rejected.value.__cause__ is None
+
+
+def test_failed_python_owner_adoption_releases_native_result(monkeypatch):
+    result = client.BatchItemResult(client.BatchOutcome.COMPLETED, 0, None, None, None)
+    class Item:
+        def _pointer(self):
+            return ffi.cast("kmipkit_client_batch_item_response_t *", 41)
+    object.__setattr__(result, "_native_response_item", Item())
+    released = []
+    def render(item, limits, output):
+        output[0] = ffi.cast("kmipkit_secret_bytes_t *", 42)
+        return 0
+    def fail_adoption(*args):
+        raise MemoryError("owner allocation failed")
+    monkeypatch.setattr(client, "lib", SimpleNamespace(
+        kmipkit_client_batch_item_response_json=render,
+        kmipkit_secret_bytes_release=lambda value: released.append(int(ffi.cast("uintptr_t", value))),
+    ))
+    monkeypatch.setattr(client, "_wrap_owned_handle", fail_adoption)
+    with ttlv.codec_limits_defaults() as limits:
+        with pytest.raises(MemoryError, match="owner allocation failed"):
+            result.json(limits)
+    assert released == [42]

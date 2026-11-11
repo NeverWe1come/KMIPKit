@@ -8595,14 +8595,16 @@ fn response_view_error_status(error: kmipkit_client::ResponseEncodingError) -> i
     }
 }
 
+type ResponseViewRenderer = fn(
+    &kmipkit_client::ClientBatchItemResponse,
+    &CodecLimits,
+) -> Result<Zeroizing<String>, kmipkit_client::ResponseEncodingError>;
+
 fn render_response_view(
     item: *mut kmipkit_client_batch_item_response_t,
     limits: *mut kmipkit_codec_limits_t,
     output: *mut *mut kmipkit_secret_bytes_t,
-    render: fn(
-        &kmipkit_client::ClientBatchItemResponse,
-        &CodecLimits,
-    ) -> Result<Zeroizing<String>, kmipkit_client::ResponseEncodingError>,
+    render: ResponseViewRenderer,
 ) -> i32 {
     let out = out_slot!(output);
     let item_handle = read_handle!(item, ClientBatchItemResponse);

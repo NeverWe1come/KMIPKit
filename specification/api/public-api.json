@@ -1070510,7 +1070510,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation."
       },
-      "evidence": "Applications use ClientBatchItemResult.ttlvHex(CodecLimits), returning an AutoCloseable native zeroizing owner."
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and KMIPKIT-0095-FR-003. Applications use ClientBatchItemResult.ttlvHex(CodecLimits), returning an AutoCloseable native zeroizing owner."
     },
     {
       "packageId": "java-kmipkit",
@@ -1070522,7 +1070522,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation."
       },
-      "evidence": "Applications use ClientBatchItemResult.json(CodecLimits), returning an AutoCloseable native zeroizing owner."
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and KMIPKIT-0095-FR-003. Applications use ClientBatchItemResult.json(CodecLimits), returning an AutoCloseable native zeroizing owner."
     },
     {
       "packageId": "java-kmipkit",
@@ -1070534,7 +1070534,7 @@
         "status": "Approved",
         "evidence": "**Status**: Approved for implementation."
       },
-      "evidence": "Applications use ClientBatchItemResult.xml(CodecLimits), returning an AutoCloseable native zeroizing owner."
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and KMIPKIT-0095-FR-003. Applications use ClientBatchItemResult.xml(CodecLimits), returning an AutoCloseable native zeroizing owner."
     }
   ],
   "apiLevels": [
