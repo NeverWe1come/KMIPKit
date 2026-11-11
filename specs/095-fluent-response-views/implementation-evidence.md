@@ -96,3 +96,24 @@ requested rendered output, before its allocation or writes.
 
 No response contents are included in failure diagnostics; callers receive only
 the existing payload-free resource-limit category.
+
+### Follow-up Green
+
+Red commit: `d673d874d` (DCO signed off). All four native paths were observed
+failing before the production change: Rust and compiled C returned test exit
+101, Python reported `DID NOT RAISE ResourceLimitError`, and Java reported
+`Expected ResourceLimitException ... but nothing was thrown`.
+
+The TTLV inspection writer now computes its final hexadecimal byte length with
+checked multiplication, rejects a value above max_message_bytes as
+LimitExceeded, then reserves exactly the checked length. Intermediate binary
+and final text owners remain zeroizing; failure categories and public APIs are
+unchanged. The binary codec remains independently bounded.
+
+Green verification:
+
+- Focused Rust output-limit regression: 1 passed.
+- Compiled C consumer through the FFI response-extension fixture: 1 passed.
+- Fresh native/JNI build: passed.
+- Python response-view and native response fixtures against the rebuilt DSO: 17 passed.
+- Java response-view and native mTLS fixtures: 2 passed.
