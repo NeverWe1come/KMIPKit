@@ -339,6 +339,10 @@ mod rekey_execution_tests;
 mod rekey_key_pair_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/fluent_lifecycle_operation_tests.rs"]
+mod fluent_lifecycle_operation_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/reprovision_execution_tests.rs"]
 mod reprovision_execution_tests;
 
