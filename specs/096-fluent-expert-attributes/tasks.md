@@ -4,9 +4,9 @@
 - [x] T002 Commit Red evidence separately from production code; the focused
   command failed at compile time because the planned public type and method
   are not implemented yet.
-- [ ] T003 Implement the typed Object Attributes path, ordered insertion, and
+- [x] T003 Implement the typed Object Attributes path, ordered insertion, and
   payload-free position errors.
-- [ ] T004 Document public Rust APIs and update generated API manifest outputs.
+- [x] T004 Document public Rust APIs and update generated API manifest outputs.
 - [ ] T005 Pass focused tests, crate tests, format, Clippy, traceability,
   manifest checks, and PR CI; mark ready only after green CI.
 - [ ] T006 Carry equivalent insertion semantics into dependent C, Java, and
