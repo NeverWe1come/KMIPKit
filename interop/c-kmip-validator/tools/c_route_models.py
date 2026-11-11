@@ -19,6 +19,32 @@ KEY_FORMAT_TYPE_TAG = 0x420042
 SYMMETRIC_KEY_OBJECT_TYPE = 2
 KEY_BLOCK_STRUCTURE = 'KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-BLOCK'
 KEY_VALUE_STRUCTURE = 'KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE'
+_TRANSPARENT_KEY_MATERIAL_FORMATS = {
+    4: ('Transparent Symmetric Key', [('Key', 8, b'\xa1')]),
+    5: ('Transparent DSA Private Key', [('P', 4, b'\x01'), ('Q', 4, b'\x01'),
+                                        ('G', 4, b'\x01'), ('X', 4, b'\x01')]),
+    6: ('Transparent DSA Public Key', [('P', 4, b'\x01'), ('Q', 4, b'\x01'),
+                                       ('G', 4, b'\x01'), ('Y', 4, b'\x01')]),
+    7: ('Transparent RSA Private Key', [
+        ('Modulus', 4, b'\x01'), ('Public Exponent', 4, b'\x01\x00\x01'),
+        ('Private Exponent', 4, b'\x01'), ('P', 4, b'\x01'), ('Q', 4, b'\x01'),
+        ('Prime Exponent P', 4, b'\x01'), ('Prime Exponent Q', 4, b'\x01'),
+        ('CRT Coefficient', 4, b'\x01'),
+    ]),
+    8: ('Transparent RSA Public Key', [('Modulus', 4, b'\x01'),
+                                        ('Public Exponent', 4, b'\x01\x00\x01')]),
+    9: ('Transparent DH Private Key', [
+        ('P', 4, b'\x01'), ('Q', 4, b'\x01'), ('G', 4, b'\x01'),
+        ('J', 4, b'\x01'), ('X', 4, b'\x01'),
+    ]),
+    10: ('Transparent DH Public Key', [
+        ('P', 4, b'\x01'), ('Q', 4, b'\x01'), ('G', 4, b'\x01'),
+        ('J', 4, b'\x01'), ('Y', 4, b'\x01'),
+    ]),
+    11: ('Transparent EC Private Key', [('Recommended Curve', 5, 'P-256'), ('D', 4, b'\x01')]),
+    12: ('Transparent EC Public Key', [('Recommended Curve', 5, 'P-256'),
+                                       ('Q String', 8, b'\x04\x01\x02')]),
+}
 
 
 class _CryptographicParametersFieldsV1(C.Structure):
@@ -163,41 +189,14 @@ class ModelCases:
         return None
 
     def _transparent_key_material(self, section: int, protocol_version: str) -> tuple[int, tuple]:
-        formats = {
-            4: ('Transparent Symmetric Key', [('Key', 8, b'\xa1')]),
-            5: ('Transparent DSA Private Key', [('P', 4, b'\x01'), ('Q', 4, b'\x01'),
-                                                ('G', 4, b'\x01'), ('X', 4, b'\x01')]),
-            6: ('Transparent DSA Public Key', [('P', 4, b'\x01'), ('Q', 4, b'\x01'),
-                                               ('G', 4, b'\x01'), ('Y', 4, b'\x01')]),
-            7: ('Transparent RSA Private Key', [
-                ('Modulus', 4, b'\x01'), ('Public Exponent', 4, b'\x01\x00\x01'),
-                ('Private Exponent', 4, b'\x01'), ('P', 4, b'\x01'), ('Q', 4, b'\x01'),
-                ('Prime Exponent P', 4, b'\x01'), ('Prime Exponent Q', 4, b'\x01'),
-                ('CRT Coefficient', 4, b'\x01'),
-            ]),
-            8: ('Transparent RSA Public Key', [('Modulus', 4, b'\x01'),
-                                                ('Public Exponent', 4, b'\x01\x00\x01')]),
-            9: ('Transparent DH Private Key', [
-                ('P', 4, b'\x01'), ('Q', 4, b'\x01'), ('G', 4, b'\x01'),
-                ('J', 4, b'\x01'), ('X', 4, b'\x01'),
-            ]),
-            10: ('Transparent DH Public Key', [
-                ('P', 4, b'\x01'), ('Q', 4, b'\x01'), ('G', 4, b'\x01'),
-                ('J', 4, b'\x01'), ('Y', 4, b'\x01'),
-            ]),
-            11: ('Transparent EC Private Key', [
-                ('Recommended Curve', 5, self._enum_value('Recommended Curve', 'P-256', protocol_version)
-                 .to_bytes(4, 'big')), ('D', 4, b'\x01'),
-            ]),
-            12: ('Transparent EC Public Key', [
-                ('Recommended Curve', 5, self._enum_value('Recommended Curve', 'P-256', protocol_version)
-                 .to_bytes(4, 'big')), ('Q String', 8, b'\x04\x01\x02'),
-            ]),
-        }
-        name, members = formats[section]
+        name, members = _TRANSPARENT_KEY_MATERIAL_FORMATS[section]
         key_format = self._enum_value('Key Format Type', name, protocol_version)
-        key_material = (self._tag('Key Material'), 1,
-                        [(self._tag(member), item_type, value) for member, item_type, value in members])
+        material_fields = []
+        for member, item_type, value in members:
+            if item_type == 5:
+                value = self._enum_value(member, value, protocol_version).to_bytes(4, 'big')
+            material_fields.append((self._tag(member), item_type, value))
+        key_material = (self._tag('Key Material'), 1, material_fields)
         return key_format, key_material
 
     def _execute_key_block_target(self, target: dict, protocol_version: str) -> dict | None:
