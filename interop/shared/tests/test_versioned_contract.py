@@ -117,6 +117,18 @@ def result_payload(
 
 
 class VersionedContractTests(unittest.TestCase):
+    def test_connection_example_profile_rejects_duplicate_json_keys(self) -> None:
+        profile_path = ROOT / "interop/shared/profiles/connection.example.json"
+
+        def reject_duplicate_keys(pairs: list[tuple[str, object]]) -> dict[str, object]:
+            parsed: dict[str, object] = {}
+            for key, value in pairs:
+                self.assertNotIn(key, parsed, f"duplicate key {key!r} in {profile_path}")
+                parsed[key] = value
+            return parsed
+
+        json.loads(profile_path.read_text(encoding="utf-8"), object_pairs_hook=reject_duplicate_keys)
+
     @classmethod
     def setUpClass(cls) -> None:
         cls.catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
