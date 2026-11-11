@@ -185,6 +185,40 @@ fn response_item_renders_the_retained_full_message_in_all_three_encodings() {
 }
 
 #[test]
+fn ttlv_hex_limits_bound_the_rendered_output_not_only_binary_ttlv() {
+    // KMIPKIT-0095-FR-005; KMIP 2.1 §§8.4–8.6. Inspection uses the requested output cap.
+    let bytes = response_bytes((2, 1), &[ResponseItemFixture::success(None)]);
+    let binary_length = bytes.len();
+    let hex_length = binary_length.checked_mul(2).expect("fixture size fits");
+    let exchange_count = Rc::new(Cell::new(0));
+    let transport = ExactLimitTransport {
+        response: bytes,
+        exchange_count: Rc::clone(&exchange_count),
+        last_response_cap: Rc::new(Cell::new(None)),
+    };
+    let mut client = Client::for_test(transport);
+    let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::discover_versions()));
+    let response = client
+        .execute(batch, &CodecLimits::defaults())
+        .expect("valid fixture");
+    let item = response.get(0).expect("one response item");
+    for maximum in [binary_length, hex_length - 1] {
+        let limits = CodecLimits::new(maximum, 64, 100_000).expect("supported output limit");
+        let result = item.ttlv_hex(&limits);
+        assert!(
+            matches!(result, Err(ResponseEncodingError::LimitExceeded)),
+            "binary TTLV fitting the cap must not permit oversized hexadecimal output"
+        );
+    }
+    let limits = CodecLimits::new(hex_length, 64, 100_000).expect("exact output limit");
+    let rendered = item
+        .ttlv_hex(&limits)
+        .expect("exact final-output boundary is allowed");
+    assert_eq!(rendered.len(), hex_length);
+    assert_eq!(exchange_count.get(), 1, "inspection does not send again");
+}
+
+#[test]
 fn response_encoding_error_display_is_payload_free() {
     let display_cases = [
         (

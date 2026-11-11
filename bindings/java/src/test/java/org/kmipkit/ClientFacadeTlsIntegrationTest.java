@@ -769,6 +769,18 @@ final class ClientFacadeTlsIntegrationTest {
                             .formatHex(pingQueryLogoutResponseMessage()).getBytes(StandardCharsets.US_ASCII),
                             hex.withBytes(byte[]::clone));
                     assertTrue(identical, "canonical rendering preserves the complete response");
+                    int binaryLength = pingQueryLogoutResponseMessage().length;
+                    CodecLimits binaryOnly = CodecLimits.create(binaryLength, 64, 100_000);
+                    assertThrows(ResourceLimitException.class, () -> {
+                        try (var unexpectedlyRendered = queryResult.ttlvHex(binaryOnly)) {
+                            // Closing a wrongly accepted owner keeps the Red path deterministic.
+                        }
+                    });
+                    int hexLength = Math.multiplyExact(binaryLength, 2);
+                    try (var exact = queryResult.ttlvHex(CodecLimits.create(hexLength, 64, 100_000))) {
+                        int actualLength = exact.withBytes(bytes -> bytes.length);
+                        assertEquals(hexLength, actualLength);
+                    }
                     for (var owner : List.of(json, xml)) {
                         owner.withBytes(bytes -> {
                             String text = new String(bytes, StandardCharsets.UTF_8);
