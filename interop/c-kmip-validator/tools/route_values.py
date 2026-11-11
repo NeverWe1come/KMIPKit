@@ -21,6 +21,12 @@ class ValueCases:
         self.tags = {norm(target['name']): int(target['wire_value'], 16)
                      for target in catalog['normative_targets'] if target['kind'] == 'tag'}
 
+    def item_type_values(self, version):
+        return sorted(int(target['wire_value'], 16) for target in self.catalog['normative_targets']
+            if target['kind'] == 'enumeration_value'
+            and target.get('parent_element_ids') == ['KMIPKIT-ELEM-ENUMERATION-ITEM-TYPE']
+            and version in target['protocol_versions'])
+
     def execute(self, case, version):
         requires = case['requires']
         type_name = requires.get('enum_type') or requires.get('bitmask_type')
@@ -34,10 +40,7 @@ class ValueCases:
                 results.append([vector['type_code'], result['tree_sha256']])
                 symbols.update(result['invoked_symbols'])
                 count += result['sample_count']
-            values = sorted(int(target['wire_value'], 16) for target in self.catalog['normative_targets']
-                if target['kind'] == 'enumeration_value'
-                and target.get('parent_element_ids') == ['KMIPKIT-ELEM-ENUMERATION-ITEM-TYPE']
-                and version in target['protocol_versions'])
+            values = self.item_type_values(version)
             tag = self.tags.get(norm('Operation'))
             if tag is None or not values:
                 return None
