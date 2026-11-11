@@ -399,6 +399,12 @@ def validate_installed_values(data, language, values):
             raise ValueError('installed named value is missing or has a different wire code: ' + row['public_api_symbol'])
 
 
+def _request_operation_targets(operation_id, targets):
+    """Bind operation constructors to request-side targets only."""
+    return [operation_id] + sorted({target['target_id'] for target in targets
+        if target.get('operation_id') == operation_id and target.get('role') == 'request'})
+
+
 def build_manifest(root=ROOT, commit='9a16cc90a12205101d22a38501a5e74c665df4dc'):
     """Generate constructor identities from the exact package's public sources."""
     commit = validate_git_commit(commit)
@@ -453,8 +459,7 @@ def build_manifest(root=ROOT, commit='9a16cc90a12205101d22a38501a5e74c665df4dc')
         data['routes'].append({'route_id': route_id, 'language': language, 'api_level': family,
             'mode': mode, 'public_api_symbol': symbol,
             'operation_ids': [operation_id] if operation_id else [],
-            'normative_target_ids': ([operation_id] + sorted({t['target_id'] for t in targets
-                if t.get('operation_id') == operation_id and (mode == 'network' or t.get('role') == 'request')})) if operation_id else ['*'],
+            'normative_target_ids': _request_operation_targets(operation_id, targets) if operation_id else ['*'],
             'case_categories': categories + ['normative_inventory'], 'protocol_versions': ['2.0', '2.1'],
             'combinations': combinations, 'actions': ['decode'] if generic and 'decode' in symbol else ['construct'],
             'source_paths': [path], 'artifact_commit': commit,
