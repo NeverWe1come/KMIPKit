@@ -48,11 +48,15 @@ def _operation_name_from_target(target_id: str) -> str | None:
     return _norm(match.group(1)) if match else None
 
 
-def _case_targets(case: dict, operation_ids: dict[str, str]) -> set[str]:
-    return {item["target_id"] for item in _case_obligations(case, operation_ids)}
+def _case_targets(case: dict, operation_ids: dict[str, str], normative_targets: list[dict] | None = None) -> set[str]:
+    return {item["target_id"] for item in _case_obligations(case, operation_ids, normative_targets)}
 
 
-def _case_obligations(case: dict, operation_ids: dict[str, str]) -> list[dict]:
+def _case_obligations(
+    case: dict,
+    operation_ids: dict[str, str],
+    normative_targets: list[dict] | None = None,
+) -> list[dict]:
     """Preserve each normative target and each ordered scenario operation/item."""
     requires = case.get("requires", {})
     obligations = []
@@ -106,6 +110,26 @@ def _case_obligations(case: dict, operation_ids: dict[str, str]) -> list[dict]:
         parameters = {}
     plain_targets.extend(value for value in requires.get("normative_target_ids", []) if isinstance(value, str))
 
+    for field, target_kind, parent_prefix in (
+        ("enum_type", "enumeration_value", "KMIPKIT-ELEM-ENUMERATION-"),
+        ("bitmask_type", "bitmask_value", "KMIPKIT-ELEM-BITMASK-"),
+    ):
+        family_name = requires.get(field)
+        if not isinstance(family_name, str):
+            continue
+        family_targets = [target for target in normative_targets or []
+                          if ((target.get("kind") == target_kind
+                               and any(parent.startswith(parent_prefix)
+                                       and _norm(parent.removeprefix(parent_prefix)) == _norm(family_name)
+                                       for parent in target.get("parent_element_ids", [])))
+                              or (field == "enum_type" and _norm(family_name) == "tag"
+                                  and target.get("kind") in {"tag", "tag_range"})
+                              or (field == "enum_type" and target.get("kind") == "referenced_enum_value"
+                                  and _norm(target.get("parent_name", "")) == _norm(family_name)))]
+        if not family_targets:
+            raise ValueError(f"{field} has no normative value targets: {case['case_id']}")
+        plain_targets.extend(target["target_id"] for target in family_targets)
+
     item_targets = set()
     scenario_items = parameters.get("items", [])
     if not isinstance(scenario_items, list):
@@ -150,7 +174,10 @@ def _case_obligations(case: dict, operation_ids: dict[str, str]) -> list[dict]:
         operation_name for target_id in plain_targets
         if (operation_name := _operation_name_from_target(target_id)) is not None
     }
-    if (operation_id and operation_id not in item_targets
+    local_value_case = (case.get("execution", {}).get("mode") == "local_model"
+                        and any(field in requires for field in ("enum_type", "bitmask_type")))
+    if (not local_value_case
+            and operation_id and operation_id not in item_targets
             and operation_id not in scenario_step_targets
             and _norm(case.get("operation", "")) not in explicit_operation_names):
         add(operation_id)
@@ -179,8 +206,14 @@ def _unavailable_for_case(manifest: dict, language: str, targets: set[str]) -> d
     return None
 
 
-def applicable_routes(case: dict, manifest: dict, language: str, operation_ids: dict[str, str]) -> list[dict]:
-    targets = _case_targets(case, operation_ids)
+def applicable_routes(
+    case: dict,
+    manifest: dict,
+    language: str,
+    operation_ids: dict[str, str],
+    normative_targets: list[dict] | None = None,
+) -> list[dict]:
+    targets = _case_targets(case, operation_ids, normative_targets)
     case_version = set(case["execution"]["protocol_versions"])
     expected_status = str(case.get("requires", {}).get("expected_status", "")).casefold()
     request_must_not_be_sent = expected_status.replace("_", "") == "notsent"
@@ -216,13 +249,14 @@ def _network_response_actions(case: dict, target_id: str, normative_targets: dic
 def iter_cells(catalog: dict, manifest: dict, *, languages: tuple[str, ...] = LANGUAGES) -> Iterator[dict]:
     """Yield construction, execution, and response-decode obligations separately."""
     operation_ids = _operation_ids(catalog)
-    normative_targets = {target["target_id"]: target for target in catalog.get("normative_targets", [])}
+    all_normative_targets = catalog.get("normative_targets", [])
+    normative_targets = {target["target_id"]: target for target in all_normative_targets}
     execution_routes = {route["execution_route_id"]: route for route in manifest.get("execution_routes", [])}
     for case in catalog["test_cases"]:
         versions = case["execution"]["protocol_versions"]
         for language in languages:
-            routes = applicable_routes(case, manifest, language, operation_ids)
-            obligations = _case_obligations(case, operation_ids)
+            routes = applicable_routes(case, manifest, language, operation_ids, all_normative_targets)
+            obligations = _case_obligations(case, operation_ids, all_normative_targets)
             if not obligations:
                 unavailable = _unavailable_for_case(manifest, language, set())
                 if unavailable is None:
