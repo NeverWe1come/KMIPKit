@@ -92,8 +92,15 @@ typed request bytes are instead checked as captured by the controlled peer.
 CI validates these per-cell events against the shared matrix,
 uploads `route-execution-evidence.json` with the generated ledger, and compares
 that ledger with the checked-in `route-evidence-ledger.json`. These recipes
-execute 68 cells; the ledger keeps every other Java matrix cell pending and
-does not imply vendor interoperability or full-matrix completion. The
+execute 4,240 of 71,525 planned Java route cells, with no failed cells; the
+ledger keeps the other 67,285 pending and does not imply vendor
+interoperability or full-matrix completion. Local TTLV recipes exercise 41
+enumeration families and all six bitmask catalog cases through the applicable
+installed constructors, item views, decoders, and typed attribute wrappers.
+The finite Profile Name reserved range
+`test-norm-enumeration-value-profile-name-reserved-00000001-00000103` remains
+pending until the shared catalog expands it to each named Profile Name value.
+Other enum families, attribute routes, and operations remain pending. The
 Activation Date recipe exercises generic and typed TTLV routes, both public
 Get Attributes constructors, the typed response reader, and both protocol
-versions against the controlled peer. Other attribute routes remain pending.
+versions against the controlled peer. No vendor KMS is deployed.
