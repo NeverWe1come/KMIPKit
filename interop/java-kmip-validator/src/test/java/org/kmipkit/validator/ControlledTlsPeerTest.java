@@ -1189,33 +1189,10 @@ class ControlledTlsPeerTest {
                         "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
                         fixture.targetId(), "org.kmipkit.ttlv.TtlvValue.Enumeration", null, null,
                         "construct", protocolVersion, null, treeHash, null);
-                try (RawTag raw = RawTag.fromRaw(fixture.rawTag());
-                        Tag tag = raw.checked();
-                        TtlvItem created = TtlvItem.create(tag, value, CodecLimits.defaults());
-                        var view = created.view();
-                        var createdValue = view.value()) {
-                    assertEquals(fixture.rawTag(), view.tag().raw());
-                    assertEquals(TtlvItemType.Enumeration, view.itemType());
-                    assertEquals(fixture.value(), createdValue.enumeration());
-                }
+                appendLocalTtlvRoundtripEvents(events, fixture.caseId(), fixture.targetId(),
+                        fixture.rawTag(), TtlvItemType.Enumeration, value, wire,
+                        protocolVersion, fixture.value());
             }
-            appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_item.create",
-                    fixture.targetId(), "org.kmipkit.ttlv.TtlvItem.create", null, null,
-                    "construct", protocolVersion, null, treeHash, null);
-            appendRouteEvent(events, fixture.caseId(),
-                    "java.generic-ttlv.function.ttlv_item_view_from_item", fixture.targetId(),
-                    "org.kmipkit.ttlv.TtlvItem.view", null, null,
-                    "decode", protocolVersion, null, null, treeHash);
-            try (TtlvItem decoded = TtlvCodec.decode(wire);
-                    var view = decoded.view();
-                    var decodedValue = view.value()) {
-                assertEquals(fixture.rawTag(), view.tag().raw());
-                assertEquals(TtlvItemType.Enumeration, view.itemType());
-                assertEquals(fixture.value(), decodedValue.enumeration());
-            }
-            appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_codec.decode",
-                    fixture.targetId(), "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
-                    "decode", protocolVersion, null, null, treeHash);
         }
     }
 
@@ -1235,12 +1212,12 @@ class ControlledTlsPeerTest {
                     null, null, "construct", protocolVersion, null, activationDateHash, null);
             appendLocalTtlvRoundtripEvents(events, "test-attr-activation-date",
                     "KMIPKIT-ELEM-ATTRIBUTE-ACTIVATION-DATE", 0x420001, TtlvItemType.DateTime,
-                    value, activationDateWire, protocolVersion);
+                    value, activationDateWire, protocolVersion, 1);
         }
         try (TtlvValue value = TtlvValue.Enumeration(0x0b)) {
             appendLocalTtlvRoundtripEvents(events, "test-attr-activation-date",
                     "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES", 0x42005c, TtlvItemType.Enumeration,
-                    value, getAttributesOperationWire, protocolVersion);
+                    value, getAttributesOperationWire, protocolVersion, 0x0b);
         }
 
         CodecLimits limits = CodecLimits.defaults();
@@ -1291,8 +1268,8 @@ class ControlledTlsPeerTest {
     }
 
     private static void appendLocalTtlvRoundtripEvents(ArrayNode events, String caseId, String targetId,
-            int rawTag, TtlvItemType expectedType, TtlvValue value, byte[] wire, String protocolVersion)
-            throws Exception {
+            int rawTag, TtlvItemType expectedType, TtlvValue value, byte[] wire,
+            String protocolVersion, long expectedValue) throws Exception {
         String wireHash = normalizedTreeSha256(wire);
         try (RawTag raw = RawTag.fromRaw(rawTag);
                 Tag tag = raw.checked();
@@ -1301,8 +1278,8 @@ class ControlledTlsPeerTest {
                 var viewValue = view.value()) {
             assertEquals(rawTag, view.tag().raw());
             assertEquals(expectedType, view.itemType());
-            if (expectedType == TtlvItemType.DateTime) assertEquals(1L, viewValue.dateTime());
-            else assertEquals(0x0bL, viewValue.enumeration());
+            if (expectedType == TtlvItemType.DateTime) assertEquals(expectedValue, viewValue.dateTime());
+            else assertEquals(expectedValue, viewValue.enumeration());
         }
         appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_item.create", targetId,
                 "org.kmipkit.ttlv.TtlvItem.create", null, null, "construct", protocolVersion,
@@ -1315,8 +1292,8 @@ class ControlledTlsPeerTest {
                 var decodedValue = view.value()) {
             assertEquals(rawTag, view.tag().raw());
             assertEquals(expectedType, view.itemType());
-            if (expectedType == TtlvItemType.DateTime) assertEquals(1L, decodedValue.dateTime());
-            else assertEquals(0x0bL, decodedValue.enumeration());
+            if (expectedType == TtlvItemType.DateTime) assertEquals(expectedValue, decodedValue.dateTime());
+            else assertEquals(expectedValue, decodedValue.enumeration());
         }
         appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_codec.decode", targetId,
                 "org.kmipkit.ttlv.TtlvCodec.decode", null, null, "decode", protocolVersion,
