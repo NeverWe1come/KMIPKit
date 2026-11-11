@@ -30,6 +30,12 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
                 "operation": "TTLV Roundtrip",
                 "requires": {"normative_target_id": "KMIPKIT-ELEM-TAG-420001"},
                 "execution": {"protocol_versions": ["2.0"]},
+            }, {
+                "case_id": "case-two",
+                "category": "normative_inventory",
+                "operation": "TTLV Roundtrip",
+                "requires": {"normative_target_id": "KMIPKIT-ELEM-TAG-420001"},
+                "execution": {"protocol_versions": ["2.0"]},
             }],
             "normative_targets": [],
         }
@@ -152,6 +158,27 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
             self.skipTest("jsonschema dependency is not installed")
         schema = json.loads((SHARED / "schemas/route-execution-evidence.schema.json").read_text())
         jsonschema.validate(self.report, schema)
+
+    def test_case_subset_report_requires_only_selected_case_cells_and_is_not_global_complete(self):
+        report = copy.deepcopy(self.report)
+        report["case_ids"] = ["case-one"]
+
+        summary = self.validate(report)
+
+        self.assertEqual(5, summary["expected_cells"])
+        self.assertEqual(5, summary["invoked_cells"])
+        self.assertTrue(summary["selected_scope_complete"])
+        self.assertFalse(summary["complete_matrix"])
+
+    def test_case_subset_rejects_unknown_and_duplicate_case_ids(self):
+        report = copy.deepcopy(self.report)
+        report["case_ids"] = ["case-one", "case-missing"]
+        with self.assertRaisesRegex(ValueError, "unknown case_ids"):
+            self.validate(report)
+
+        report["case_ids"] = ["case-one", "case-one"]
+        with self.assertRaisesRegex(ValueError, "case_ids contains duplicates"):
+            self.validate(report)
 
     def test_missing_action_fails_coverage_even_when_the_route_was_called(self):
         report = copy.deepcopy(self.report)
