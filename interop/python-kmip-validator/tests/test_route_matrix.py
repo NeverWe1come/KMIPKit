@@ -83,6 +83,17 @@ class RouteMatrixTests(unittest.TestCase):
                                 route_manifest_sha256=report['route_manifest_sha256'],
                                 expected_artifact_sha256=self.artifact['artifact_sha256'])
 
+    def test_failure_after_an_observed_api_call_is_distinct_from_missing_coverage(self):
+        from unittest.mock import patch
+        catalog, manifest = self.integer_fixture()
+        with patch.object(self.runner, 'item_tree', side_effect=ValueError('secret-value-sentinel')):
+            report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+        self.assertTrue(report['events'], 'an invoked public API failure must remain an execution event')
+        self.assertTrue(gaps, 'unreached public APIs must remain pending coverage')
+        self.assertEqual({'failed'}, {event['status'] for event in report['events']})
+        self.assertEqual({'route_execution_failed'}, {event['failure_code'] for event in report['events']})
+        self.assertNotIn('secret-value-sentinel', json.dumps([report, gaps]))
+
     def test_installed_distribution_records_the_exact_verified_wheel_digest(self):
         from kmipkit_validator.contract import validate_artifact
         artifact = validate_artifact()
