@@ -18,11 +18,12 @@ def norm(value):
 
 
 def target_ids(targets, names, *, all_attributes=False, all_objects=False, operation_id=None,
-               exclude_subtree_kinds=()):
+               exclude_subtree_kinds=(), exclude_target_ids=()):
     """Associate model/field identities, then expand their normative children."""
     targets = [target for target in targets if 'operation_id' not in target
         or (operation_id is not None and target['operation_id'] == operation_id
             and target.get('role', 'request') == 'request')]
+    excluded = set(exclude_target_ids)
     blocked = {target['target_id'] for target in targets if target['kind'] in exclude_subtree_kinds}
     changed = True
     while changed:
@@ -31,18 +32,18 @@ def target_ids(targets, names, *, all_attributes=False, all_objects=False, opera
             if blocked.intersection(target.get('parent_element_ids', [])))
         changed = len(blocked) != previous
     names = {norm(name) for name in names}
-    roots = {t['target_id'] for t in targets if t['target_id'] not in blocked
+    roots = {t['target_id'] for t in targets if t['target_id'] not in blocked | excluded
         and (norm(t['name']) in names or norm(t['target_id']) in names)}
     if all_attributes:
-        roots.update(t['target_id'] for t in targets if t['target_id'] not in blocked
+        roots.update(t['target_id'] for t in targets if t['target_id'] not in blocked | excluded
             and t['kind'] in {'attribute', 'attribute_structure'})
     if all_objects:
-        roots.update(t['target_id'] for t in targets if t['target_id'] not in blocked
+        roots.update(t['target_id'] for t in targets if t['target_id'] not in blocked | excluded
             and t['kind'] in {'object_type', 'object_structure'})
     # Parent families are referenced by values even when a source inventory
     # emits individual values rather than a separate family row.
     for target in targets:
-        if target['target_id'] in blocked:
+        if target['target_id'] in blocked | excluded:
             continue
         for parent in target.get('parent_element_ids', []):
             family = parent.replace('KMIPKIT-ELEM-ENUMERATION-', '').replace('KMIPKIT-ELEM-BITMASK-', '')
@@ -52,7 +53,7 @@ def target_ids(targets, names, *, all_attributes=False, all_objects=False, opera
     while changed:
         previous = len(roots)
         for target in targets:
-            if target['target_id'] not in blocked and roots.intersection(target.get('parent_element_ids', [])):
+            if target['target_id'] not in blocked | excluded and roots.intersection(target.get('parent_element_ids', [])):
                 roots.add(target['target_id'])
         changed = len(roots) != previous
     return sorted(roots)
@@ -65,14 +66,20 @@ def model_inventory(root, commit, source, api, targets):
     operations['setendpointrole'] = 'KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE'
     generated = source(root, commit, 'crates/kmipkit-protocol/src/typed_attributes_generated.rs')
     markers = re.findall(r'element_id: "([^"]+)",\s*source_name: "([^"]+)",\s*marker_name: "([^"]+)"', generated)
+    object_type_targets = {target['target_id'] for target in targets
+        if target['kind'] == 'object_type' or
+        'KMIPKIT-ELEM-ENUMERATION-OBJECT-TYPE' in target.get('parent_element_ids', [])}
 
     def add(language, symbol, path, names, *, attributes=False, exclude_object_structures=False,
-            objects=False, operation_id=None):
+            objects=False, operation_id=None, object_item=False, exact_target_ids=None):
         if attributes:
             names = [name for _, name, _ in markers] + [marker for _, _, marker in markers]
-        ids = target_ids(targets, names, all_objects=objects, operation_id=operation_id,
-            exclude_subtree_kinds={'object_structure', 'operation_structure'}
-                if attributes or exclude_object_structures else ())
+        ids = (sorted(set(exact_target_ids) & {target['target_id'] for target in targets})
+            if exact_target_ids is not None else target_ids(targets, names, all_objects=objects,
+                operation_id=operation_id,
+                exclude_subtree_kinds={'object_structure', 'operation_structure'}
+                    if attributes or exclude_object_structures else (),
+                exclude_target_ids=object_type_targets if object_item else ()))
         if operation_id and any(norm(name) in operations and operations[norm(name)] == operation_id for name in names):
             ids = sorted(set(ids) | {target['target_id'] for target in targets
                 if target.get('operation_id') == operation_id and target.get('role', 'request') == 'request'})
@@ -143,7 +150,12 @@ def model_inventory(root, commit, source, api, targets):
             if method == 'with_cryptographic_properties':
                 names = ['Cryptographic Algorithm', 'Cryptographic Length']
         operation_id = operations.get(norm(owner.removesuffix('Request'))) if owner.endswith('Request') else None
-        add('rust', symbol, selected, names, objects=owner == 'ManagedObject', operation_id=operation_id)
+        is_object_item = owner == 'ManagedObject' or any(
+            target['kind'] == 'object_structure' and norm(target['name']) == norm(owner)
+            for target in targets)
+        exact_targets = ['KMIPKIT-RANGE-004'] if owner == 'ManagedObject' and method == 'unknown' else None
+        add('rust', symbol, selected, names, objects=owner == 'ManagedObject',
+            operation_id=operation_id, object_item=is_object_item, exact_target_ids=exact_targets)
         # C exposes the metadata-backed ABI constructors. Java and Python
         # facades are inventoried from their public source classes below.
         mapped = declaration.get('languageMappings', {}).get('c', {}).get('name', '')
@@ -152,7 +164,8 @@ def model_inventory(root, commit, source, api, targets):
             continue
         path = 'bindings/c/include/kmipkit.h'
         if re.search(r'\b' + re.escape(mapped) + r'\s*\(', source(root, commit, path)):
-            add('c', mapped, path, names, objects=owner == 'ManagedObject', operation_id=operation_id)
+            add('c', mapped, path, names, objects=owner == 'ManagedObject',
+                operation_id=operation_id, object_item=is_object_item)
 
     # Open typed enumeration/mask wrappers that really construct a value.
     for path, text in rust_sources.items():
@@ -218,6 +231,7 @@ def model_inventory(root, commit, source, api, targets):
                 add('python', f'kmipkit.{module}.{cls.name}.{method.name}', path, names,
                     attributes=cls.name in {'TypedAttribute', 'AttributeSet', 'CurrentAttribute', 'NewAttribute'},
                     objects=cls.name == 'ManagedObject' and method.name in {'from_item', 'from_fields'},
+                    object_item=cls.name == 'ManagedObject',
                     operation_id=operations.get(norm(cls.name.removesuffix('Request'))) if cls.name.endswith('Request') else None)
 
     java_paths = subprocess.check_output(['git', '-C', str(root), 'ls-tree', '-r', '--name-only', commit,
@@ -264,6 +278,9 @@ def model_inventory(root, commit, source, api, targets):
             add('java', f'{package}.{symbol_owner}.{method}', path, names,
                 attributes=owner in {'TypedAttribute', 'AttributeSet'},
                 objects=owner == 'ManagedObject' and method in {'fromItem', 'fromFields'},
+                object_item=owner == 'ManagedObject' or any(
+                    target['kind'] == 'object_structure' and norm(target['name']) == norm(owner)
+                    for target in targets),
                 operation_id=operations.get(norm(owner.removesuffix('Request'))) if owner.endswith('Request') else None)
 
     # Public C constructors for the common field/item models and attribute set.
@@ -279,7 +296,8 @@ def model_inventory(root, commit, source, api, targets):
             'certificate', 'certificate_request', 'symmetric_key', 'public_key', 'private_key', 'secret_data',
             'opaque_object', 'pgp_key', 'split_key', 'typed_attribute', 'attribute_set', 'cryptographic_parameters', 'request_message', 'response_message'}:
             continue
-        add('c', symbol, c_path, [owner], attributes=owner in {'typed_attribute', 'attribute_set'}, objects=owner == 'managed_object')
+        add('c', symbol, c_path, [owner], attributes=owner in {'typed_attribute', 'attribute_set'},
+            objects=owner == 'managed_object', object_item=owner == 'managed_object')
     for symbol in re.findall(r'int32_t (kmipkit_client_batch_set_\w+)\s*\(', source(root, commit, c_path)):
         field = symbol.removeprefix('kmipkit_client_batch_set_')
         add('c', symbol, c_path, [{'order_option': 'Batch Order Option', 'request_timestamp': 'Time Stamp'}.get(field, field)])

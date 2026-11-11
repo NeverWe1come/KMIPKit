@@ -33,6 +33,19 @@ def _event_outcome(record: dict) -> dict:
     return {field: value for field, value in record.items() if field != "invocation_id"}
 
 
+def _expects_tag_decode_rejection(cell: dict, case: dict) -> bool:
+    requires = case.get("requires", {})
+    if (cell.get("action") != "decode" or cell.get("mode") != "local"
+            or ".generic-ttlv." not in f".{cell.get('route_id', '')}."):
+        return False
+    if requires.get("target_kind") not in {"tag", "tag_range"}:
+        return False
+    if requires.get("allocation") not in {"reserved", "unused"}:
+        return False
+    symbol = re.sub(r"[^a-z0-9]", "", cell.get("public_api_symbol", "").casefold())
+    return "codecdecode" in symbol or symbol.endswith("ttlvdecode")
+
+
 def _request_identity(record: dict) -> tuple:
     """Identify a request across its construction and send action rows."""
     return (
@@ -259,11 +272,32 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
         if event.get("invocation_id") is None or not isinstance(event["invocation_id"], str) or not event["invocation_id"]:
             raise ValueError(f"route execution event requires an invocation_id: {key}")
         if status == "passed":
-            hash_field = "response_tree_sha256" if event["action"] == "decode" else "request_tree_sha256"
-            tree_hash = event.get(hash_field)
-            if not isinstance(tree_hash, str) or not re.fullmatch(r"[0-9a-f]{64}", tree_hash):
-                expected_hash = "response tree hash" if event["action"] == "decode" else "request tree hash"
-                raise ValueError(f"passed {event['action']} event requires a valid {expected_hash}: {key}")
+            case = case_by_id[event["case_id"]]
+            if event["action"] == "decode":
+                expects_rejection = _expects_tag_decode_rejection(planned, case)
+                outcome = event.get("decode_outcome")
+                if outcome == "rejected" or expects_rejection:
+                    if not expects_rejection:
+                        raise ValueError(f"decode rejection is not expected for this route cell: {key}")
+                    if event.get("decode_outcome") != "rejected":
+                        raise ValueError(f"reserved or unused tag decoder did not report its expected rejection: {key}")
+                    if event.get("decode_rejection_code") != "tag_not_allocated":
+                        raise ValueError(f"reserved or unused tag decoder reported the wrong rejection code: {key}")
+                    input_hash = event.get("decode_input_sha256")
+                    if not isinstance(input_hash, str) or not re.fullmatch(r"[0-9a-f]{64}", input_hash):
+                        raise ValueError(f"expected decode rejection requires a valid input SHA-256: {key}")
+                    if "response_tree_sha256" in event:
+                        raise ValueError(f"rejected TTLV input cannot have a decoded response tree: {key}")
+                else:
+                    if outcome not in {None, "decoded"}:
+                        raise ValueError(f"decode_outcome is invalid for this route cell: {key}")
+                    tree_hash = event.get("response_tree_sha256")
+                    if not isinstance(tree_hash, str) or not re.fullmatch(r"[0-9a-f]{64}", tree_hash):
+                        raise ValueError(f"passed decode event requires a valid response tree hash: {key}")
+            else:
+                tree_hash = event.get("request_tree_sha256")
+                if not isinstance(tree_hash, str) or not re.fullmatch(r"[0-9a-f]{64}", tree_hash):
+                    raise ValueError(f"passed {event['action']} event requires a valid request tree hash: {key}")
         if "wire_bytes_deterministic" in event and not isinstance(event["wire_bytes_deterministic"], bool):
             raise ValueError(f"wire_bytes_deterministic must be a boolean: {key}")
         if event.get("wire_bytes_deterministic") is True:
@@ -455,7 +489,10 @@ def validate_parity_collection(reports: list[dict], catalog: dict, manifest: dic
     for language, language_reports in by_language.items():
         for report in language_reports:
             for event in report["events"]:
-                tree_field = "response_tree_sha256" if event["action"] == "decode" else "request_tree_sha256"
+                if event["action"] == "decode" and event.get("decode_outcome") == "rejected":
+                    tree_field = "decode_input_sha256"
+                else:
+                    tree_field = "response_tree_sha256" if event["action"] == "decode" else "request_tree_sha256"
                 if event.get("status") != "passed" or not event.get(tree_field):
                     continue
                 key = (
@@ -470,11 +507,19 @@ def validate_parity_collection(reports: list[dict], catalog: dict, manifest: dic
     byte_compared = 0
     groups_without_cross_language_comparison = 0
     for key, language_events in grouped.items():
-        per_language_hashes = {
-            language: {event["response_tree_sha256"] if key[5] == "decode" else event["request_tree_sha256"]
-                       for event in events}
-            for language, events in language_events.items()
-        }
+        per_language_hashes = {}
+        for language, events in language_events.items():
+            per_language_hashes[language] = {
+                event["decode_input_sha256"] if key[5] == "decode" and event.get("decode_outcome") == "rejected"
+                else event["response_tree_sha256"] if key[5] == "decode"
+                else event["request_tree_sha256"]
+                for event in events
+            }
+        if key[5] == "decode" and any(
+                len({(event.get("decode_outcome", "decoded"), event.get("decode_rejection_code"))
+                     for event in events}) > 1
+                for events in language_events.values()):
+            raise ValueError(f"decoder routes disagree on the normalized decode outcome: {key}")
         if any(len(hashes) > 1 for hashes in per_language_hashes.values()):
             raise ValueError(f"constructor routes disagree on normalized KMIP trees: {key}")
         if len(per_language_hashes) > 1:
@@ -490,6 +535,11 @@ def validate_parity_collection(reports: list[dict], catalog: dict, manifest: dic
             groups_without_cross_language_comparison += 1
 
         events = [event for group in language_events.values() for event in group]
+        if key[5] == "decode":
+            decode_outcomes = {event.get("decode_outcome", "decoded") for event in events}
+            rejection_codes = {event.get("decode_rejection_code") for event in events}
+            if len(decode_outcomes) > 1 or len(rejection_codes) > 1:
+                raise ValueError(f"languages disagree on the normalized decode outcome: {key}")
         if events and all(event.get("wire_bytes_deterministic") is True
                           and isinstance(event.get("wire_bytes_sha256"), str) for event in events):
             if len({event["wire_bytes_sha256"] for event in events}) > 1:
