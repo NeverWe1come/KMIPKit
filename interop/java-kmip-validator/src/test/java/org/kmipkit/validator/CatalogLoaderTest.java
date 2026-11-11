@@ -41,4 +41,14 @@ class CatalogLoaderTest {
 
         assertThrows(IllegalArgumentException.class, () -> CatalogLoader.load(malformed));
     }
+
+    @Test
+    void resolvesAttributeCasesToTheirNormativeAttributeTags() throws Exception {
+        var catalog = CatalogLoader.load(CATALOG);
+        var byId = catalog.cases().stream().collect(java.util.stream.Collectors.toMap(
+                CatalogLoader.CatalogCase::caseId, testCase -> testCase));
+
+        assertEquals(0x420028L, byId.get("test-attr-cryptographic-algorithm").attributeTag());
+        assertEquals(0x420053L, byId.get("test-attr-name").attributeTag());
+    }
 }
