@@ -193,8 +193,17 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         report = copy.deepcopy(self.report)
         report["case_ids"] = ["case-one"]
 
-        self.assertTrue(callable(getattr(route_evidence, "build_evidence_ledger", None)),
-                        "The route execution validator must build an explicit incomplete ledger.")
+        ledger = route_evidence.build_evidence_ledger(
+            report, self.catalog, self.manifest, catalog_sha256="c" * 64,
+            route_manifest_sha256="d" * 64, expected_artifact_sha256="b" * 64,
+        )
+
+        self.assertEqual(10, ledger["planned_cells"])
+        self.assertEqual(5, ledger["executed_cells"])
+        self.assertEqual(5, ledger["pending_cells"])
+        self.assertEqual(["case-two"], ledger["pending_case_ids"])
+        self.assertFalse(ledger["complete_matrix"])
+        self.assertEqual("route_evidence_not_emitted", ledger["pending_reason_code"])
 
     def test_missing_action_fails_coverage_even_when_the_route_was_called(self):
         report = copy.deepcopy(self.report)

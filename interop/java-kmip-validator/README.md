@@ -78,3 +78,12 @@ deployed KMS. CI also probes the installed JAR against the shared public-route
 manifest and uploads `route-capability-probe.json`. That report establishes
 package symbol and named-value availability only; it does not claim that every
 catalog route or interoperability case has executed successfully.
+
+The installed-consumer suite also records an exact local decoder invocation
+for the unused KMIP Tag range under both KMIP 2.0 and 2.1, checks the expected
+unallocated-tag rejection code, and validates those two route cells against
+the shared matrix. CI uploads `route-execution-evidence.json` together with
+the generated ledger and compares that ledger with the checked-in
+`route-evidence-ledger.json`. The ledger counts every remaining Java matrix
+cell and lists cases still pending a real recipe; a passing selected-scope
+check does not mark the full matrix complete.

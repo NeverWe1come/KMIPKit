@@ -120,6 +120,38 @@ jobs:
             -PkmipkitMavenRepo="$GITHUB_WORKSPACE/interop/java-kmip-validator/build/maven-repository" \
             test
 
+      - name: Read installed Java artifact digest
+        id: java-artifact
+        run: |
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          from pathlib import Path
+
+          manifest = json.loads(Path("build/artifact-manifest.json").read_text())
+          print(f"sha256={manifest['artifact_sha256']}")
+          PY
+
+      - name: Validate invoked Java routes and write the pending coverage ledger
+        env:
+          JAVA_ARTIFACT_SHA256: ${{ steps.java-artifact.outputs.sha256 }}
+        run: |
+          python3 ../../interop/shared/tools/validate_route_evidence.py \
+            --selected-scope \
+            --report build/route-execution-evidence.json \
+            --artifact-sha256 "$JAVA_ARTIFACT_SHA256" \
+            --ledger-output build/route-evidence-ledger.json
+          cmp route-evidence-ledger.json build/route-evidence-ledger.json
+
+      - name: Upload Java route execution evidence and coverage ledger
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1
+        with:
+          name: java-route-execution-evidence
+          path: |
+            interop/java-kmip-validator/build/route-execution-evidence.json
+            interop/java-kmip-validator/build/route-evidence-ledger.json
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Validate generated Java report against the shared schema
         run: |
           python3 - <<'PY'
