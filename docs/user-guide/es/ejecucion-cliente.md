@@ -112,6 +112,17 @@ Ok(())
 fn main() {}
 ```
 
+Para extensiones expertas, Rust también acepta un `Item` TTLV explícito mediante
+`attribute_item()`. `attribute_at(FluentAttributePosition::ObjectAttributes
+{ index })` coloca el ítem en una posición, empezando desde cero, de la lista
+final ordenada de Object Attributes. El índice cuenta los campos semánticos
+como algoritmo, longitud, máscara de uso y nombre, además de los atributos
+expertos añadidos al final. El builder valida los tipos TTLV catalogados, la
+estructura Vendor Attribute y la petición tipada completa antes del envío; las
+posiciones repetidas o fuera de rango fallan con estado de entrega `NotSent`.
+Esta ruta no puede modificar la cabecera, el batch ni el transporte, y tampoco
+permite enviar mensajes arbitrarios.
+
 El mismo flujo con ámbito está disponible en Java
 (`client.request().createSymmetricKey()`), Python
 (`client.request().create_symmetric_key()`) y C. Los builders de Java y Python

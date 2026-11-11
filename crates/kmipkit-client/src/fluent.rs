@@ -309,8 +309,7 @@ impl<'a> CreateSymmetricKeyBuilder<'a> {
             return self;
         }
         let FluentAttributePosition::ObjectAttributes { index } = position;
-        if (MESSAGE_EXTENSION_TAG_START..=MESSAGE_EXTENSION_TAG_END).contains(&item.tag().raw()) {
-            self.attribute_error = Some(FluentBuildError::MessageExtensionTagNotObjectAttribute);
+        if !self.accept_object_attribute_tag(&item) {
             return self;
         }
         if self
@@ -540,13 +539,20 @@ impl<'a> CreateSymmetricKeyBuilder<'a> {
         if self.attribute_error.is_some() {
             return;
         }
-        let raw_tag = item.tag().raw();
-        if (MESSAGE_EXTENSION_TAG_START..=MESSAGE_EXTENSION_TAG_END).contains(&raw_tag) {
-            self.attribute_error = Some(FluentBuildError::MessageExtensionTagNotObjectAttribute);
+        if !self.accept_object_attribute_tag(&item) {
             return;
         }
         if self.attributes.try_push(item).is_err() {
             self.attribute_error = Some(FluentBuildError::InvalidAttributeValue);
+        }
+    }
+
+    fn accept_object_attribute_tag(&mut self, item: &Item) -> bool {
+        if (MESSAGE_EXTENSION_TAG_START..=MESSAGE_EXTENSION_TAG_END).contains(&item.tag().raw()) {
+            self.attribute_error = Some(FluentBuildError::MessageExtensionTagNotObjectAttribute);
+            false
+        } else {
+            true
         }
     }
 }
