@@ -31,6 +31,11 @@ ffi.cdef(
     typedef struct kmipkit_client_batch_t kmipkit_client_batch_t;
     typedef struct kmipkit_client_batch_response_t kmipkit_client_batch_response_t;
     typedef struct kmipkit_client_batch_item_response_t kmipkit_client_batch_item_response_t;
+    typedef struct kmipkit_secret_bytes_t kmipkit_secret_bytes_t;
+    void kmipkit_secret_bytes_release(kmipkit_secret_bytes_t *);
+    int32_t kmipkit_client_batch_item_response_ttlv_hex(kmipkit_client_batch_item_response_t *, struct kmipkit_codec_limits_t *, kmipkit_secret_bytes_t **);
+    int32_t kmipkit_client_batch_item_response_json(kmipkit_client_batch_item_response_t *, struct kmipkit_codec_limits_t *, kmipkit_secret_bytes_t **);
+    int32_t kmipkit_client_batch_item_response_xml(kmipkit_client_batch_item_response_t *, struct kmipkit_codec_limits_t *, kmipkit_secret_bytes_t **);
     typedef struct kmipkit_client_batch_item_t kmipkit_client_batch_item_t;
     typedef struct kmipkit_client_async_operation_outcome_t kmipkit_client_async_operation_outcome_t;
     typedef struct kmipkit_cancel_request_t kmipkit_cancel_request_t;

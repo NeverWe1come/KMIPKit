@@ -6724,6 +6724,9 @@ fn ffi_usage_allocation_ttlv_getter_fails_closed_for_invalid_and_unrelated_items
 
 #[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
 unsafe extern "C" {
+    fn kmipkit_client_abi_c_consumer_response_views(
+        item: *mut kmipkit_client_batch_item_response_t,
+    ) -> i32;
     fn kmipkit_client_abi_c_consumer_reads_async_response_v1(
         outcome: *mut kmipkit_client_async_operation_outcome_t,
         expected_operation: u32,
@@ -11530,8 +11533,16 @@ fn client_response_extension_abi_returns_ordered_generic_ttlv_copy() {
     )
     .expect("a non-critical response extension is preserved");
     let item = client_batch_item_response_from(response);
-    // KMIPKIT-0095-FR-001..005; KMIP 2.1 §9.1.2 and §9.13.
-    let limits = make_handle(Kind::CodecLimits, HandleValue::CodecLimits(Arc::new(CodecLimits::defaults())));
+    // SAFETY: The fixture item remains live throughout the synchronous compiled C consumer.
+    assert_eq!(
+        unsafe { kmipkit_client_abi_c_consumer_response_views(item) },
+        1
+    );
+    // KMIPKIT-0095-FR-001..005; KMIP 2.1 §§8.4–8.6 and §9.13.
+    let limits = make_handle(
+        Kind::CodecLimits,
+        HandleValue::CodecLimits(Arc::new(CodecLimits::defaults())),
+    );
     for render in [
         kmipkit_client_batch_item_response_ttlv_hex,
         kmipkit_client_batch_item_response_json,
@@ -11540,7 +11551,9 @@ fn client_response_extension_abi_returns_ordered_generic_ttlv_copy() {
         let mut output = ptr::null_mut();
         assert_eq!(render(item, limits, &raw mut output), SUCCESS);
         let owner = reference_handle(output, Kind::SecretBytes).expect("rendered owner is live");
-        let HandleValue::SecretBytes(secret) = &owner.value else { panic!("wrong owner"); };
+        let HandleValue::SecretBytes(secret) = &owner.value else {
+            panic!("wrong owner");
+        };
         secret.with_bytes(|bytes| {
             let text = std::str::from_utf8(bytes).expect("render is UTF-8");
             assert!(!text.is_empty());
@@ -11606,4 +11619,61 @@ fn successful_response_ttlv_absence_is_an_internal_error() {
         super::require_success_response_ttlv::<()>(None::<Result<(), i32>>),
         Err(ERROR_INTERNAL)
     );
+}
+
+#[test]
+fn response_views_keep_independent_owners_and_reject_dead_handles() {
+    // KMIPKIT-0095-FR-003/005; KMIP 2.1 §§8.4–8.6 retained response ownership.
+    let item = successful_pkcs11_response_item();
+    let limits = make_handle(
+        Kind::CodecLimits,
+        HandleValue::CodecLimits(Arc::new(CodecLimits::defaults())),
+    );
+    let mut output = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_json(item, limits, &raw mut output),
+        SUCCESS
+    );
+    kmipkit_client_batch_item_response_release(item);
+    kmipkit_codec_limits_release(limits);
+    let owner = reference_handle(output, Kind::SecretBytes).expect("independent render owner");
+    let HandleValue::SecretBytes(secret) = &owner.value else {
+        panic!("wrong owner");
+    };
+    secret.with_bytes(|bytes| {
+        assert!(
+            bytes
+                .windows(b"ResponseMessage".len())
+                .any(|word| word == b"ResponseMessage")
+        )
+    });
+    kmipkit_secret_bytes_release(output);
+    assert!(reference_handle(output, Kind::SecretBytes).is_err());
+    let mut absent = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_json(item, limits, &raw mut absent),
+        ERROR_INVALID_INPUT
+    );
+    assert!(absent.is_null());
+}
+
+#[test]
+fn response_view_error_categories_are_stable_and_payload_free() {
+    use kmipkit_client::ResponseEncodingError;
+    for (error, status) in [
+        (
+            ResponseEncodingError::InvalidResponseTree,
+            ERROR_INVALID_INPUT,
+        ),
+        (ResponseEncodingError::LimitExceeded, ERROR_RESOURCE_LIMIT),
+        (
+            ResponseEncodingError::AllocationFailed,
+            ERROR_RESOURCE_LIMIT,
+        ),
+        (ResponseEncodingError::EncodingFailed, ERROR_INTERNAL),
+    ] {
+        assert_eq!(response_view_error_status(error), status);
+        assert!(!format!("{error:?}: {error}").contains("fixture-v1"));
+        assert!(std::error::Error::source(&error).is_none());
+    }
 }

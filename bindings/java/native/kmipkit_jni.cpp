@@ -2036,6 +2036,63 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_credentialTypeF
     });
 }
 
+JNIEXPORT jobject JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseTtlvHex(
+        JNIEnv* env, jclass, jlong item, jlongArray raw_limits) {
+    return guarded<jobject>(env, nullptr, [&]() -> jobject {
+        CodecLimits limits;
+        if (!limits.initialize(env, raw_limits)) return nullptr;
+        kmipkit_secret_bytes_t* output = nullptr;
+        const int32_t status = kmipkit_client_batch_item_response_ttlv_hex(
+                from_java_handle<kmipkit_client_batch_item_response_t>(item), limits.get(), &output);
+        if (status != 0) {
+            throw_status(env, status);
+            return nullptr;
+        }
+        jobject owner = wrap_owned_ttlv_handle(env, to_java_handle(output),
+                "org/kmipkit/credentials/SecretBytes");
+        if (owner == nullptr) kmipkit_secret_bytes_release(output);
+        return owner;
+    });
+}
+
+JNIEXPORT jobject JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseJson(
+        JNIEnv* env, jclass, jlong item, jlongArray raw_limits) {
+    return guarded<jobject>(env, nullptr, [&]() -> jobject {
+        CodecLimits limits;
+        if (!limits.initialize(env, raw_limits)) return nullptr;
+        kmipkit_secret_bytes_t* output = nullptr;
+        const int32_t status = kmipkit_client_batch_item_response_json(
+                from_java_handle<kmipkit_client_batch_item_response_t>(item), limits.get(), &output);
+        if (status != 0) {
+            throw_status(env, status);
+            return nullptr;
+        }
+        jobject owner = wrap_owned_ttlv_handle(env, to_java_handle(output),
+                "org/kmipkit/credentials/SecretBytes");
+        if (owner == nullptr) kmipkit_secret_bytes_release(output);
+        return owner;
+    });
+}
+
+JNIEXPORT jobject JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseXml(
+        JNIEnv* env, jclass, jlong item, jlongArray raw_limits) {
+    return guarded<jobject>(env, nullptr, [&]() -> jobject {
+        CodecLimits limits;
+        if (!limits.initialize(env, raw_limits)) return nullptr;
+        kmipkit_secret_bytes_t* output = nullptr;
+        const int32_t status = kmipkit_client_batch_item_response_xml(
+                from_java_handle<kmipkit_client_batch_item_response_t>(item), limits.get(), &output);
+        if (status != 0) {
+            throw_status(env, status);
+            return nullptr;
+        }
+        jobject owner = wrap_owned_ttlv_handle(env, to_java_handle(output),
+                "org/kmipkit/credentials/SecretBytes");
+        if (owner == nullptr) kmipkit_secret_bytes_release(output);
+        return owner;
+    });
+}
+
 JNIEXPORT jint JNICALL Java_org_kmipkit_NativeExtensionRegistry_secretBytesCreate(
         JNIEnv* env, jclass, jbyteArray data, jlongArray out_secret) {
     return guarded<jint>(env, KMIPKIT_ERROR_INTERNAL, [&] {
