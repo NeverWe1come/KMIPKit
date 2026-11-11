@@ -237,12 +237,19 @@ def execute_tag_range_case(tree_abi, target: dict, catalog: dict) -> dict:
                 'invoked_symbols': set().union(*(result['invoked_symbols'] for result in results)),
                 'tree_sha256': digest([result['normalized_tree'] for result in results])}
 
-    results, symbols = [], set()
+    results, symbols, wires, rejection_codes = [], set(), [], []
     for tag in range_boundary_tags(target):
-        code = tree_abi.reject_wire(encode((tag, 5, (7).to_bytes(4, 'big'))))
+        wire = encode((tag, 5, (7).to_bytes(4, 'big')))
+        code = tree_abi.reject_wire(wire)
+        if code not in {11, 12}:
+            raise ValueError('tag_range_rejection_code_mismatch')
         symbols.update(tree_abi.called)
+        wires.append(wire)
+        rejection_codes.append(code)
         results.append([tag, code])
-    return {'sample_count': len(results), 'invoked_symbols': symbols, 'tree_sha256': digest(results)}
+    return {'sample_count': len(results), 'invoked_symbols': symbols, 'tree_sha256': digest(results),
+            'rejection_codes': rejection_codes,
+            'decode_input_sha256': hashlib.sha256(b''.join(wires)).hexdigest()}
 
 
 def scalar_fixture(target: dict, tags: dict[str, int], catalog: dict | None = None,
@@ -513,10 +520,16 @@ def run(output: Path, binary: Path | None = None) -> int:
             result = execute_tag_range_case(tree_abi, target, catalog)
             if cell['public_api_symbol'] in result['invoked_symbols']:
                 event = cell_fields(cell)
-                event.update(status='passed', invocation_count=1, invocation_id=f'c-tag-range-{index}')
-                event['response_tree_sha256'] = result['tree_sha256']
+                if target.get('allocation') in {'reserved', 'unused'}:
+                    event = invoked_event(cell, index)
+                    event.update(decode_outcome='rejected', decode_rejection_code='tag_not_allocated',
+                                 decode_input_sha256=result['decode_input_sha256'])
+                else:
+                    event.update(status='passed', invocation_count=1, invocation_id=f'c-tag-range-{index}')
+                    event['response_tree_sha256'] = result['tree_sha256']
                 events.append(event)
                 branch_evidence.append({**cell_fields(cell), 'sample_count': result['sample_count'],
+                                        'rejection_codes': result.get('rejection_codes'),
                                         'tree_sha256': result['tree_sha256']})
                 continue
         if target['kind'] == 'data_type' and cell['transport'] is None:

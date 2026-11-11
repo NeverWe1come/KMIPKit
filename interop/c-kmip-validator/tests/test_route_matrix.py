@@ -99,6 +99,12 @@ class RouteMatrixTests(unittest.TestCase):
         abi = TreeAbi(INSTALL / 'lib/libkmipkit_ffi.so')
         targets = [target for target in catalog['normative_targets'] if target['kind'] == 'tag_range']
         self.assertEqual(len(targets), 5)
+        expected_rejections = {
+            'KMIPKIT-RANGE-001': [12, 12],
+            'KMIPKIT-RANGE-002': [12, 11],
+            'KMIPKIT-RANGE-003': [12, 12],
+            'KMIPKIT-RANGE-005': [12, 12],
+        }
         for target in targets:
             with self.subTest(target=target['target_id']):
                 result = self.runner.execute_tag_range_case(abi, target, catalog)
@@ -108,7 +114,7 @@ class RouteMatrixTests(unittest.TestCase):
                 else:
                     wires = [encode((tag, 5, (7).to_bytes(4, 'big')))
                              for tag in self.runner.range_boundary_tags(target)]
-                    self.assertEqual(result['rejection_code'], 11)
+                    self.assertEqual(result['rejection_codes'], expected_rejections[target['target_id']])
                     self.assertEqual(result['decode_input_sha256'], hashlib.sha256(b''.join(wires)).hexdigest())
                 self.assertEqual(result['sample_count'], 2)
 
