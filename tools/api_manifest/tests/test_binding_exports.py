@@ -524,6 +524,39 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertNotIn("org.kmipkit.extensions.AttributeRequest", names)
         self.assertNotIn("org.kmipkit.extensions.AttributeRequest.uniqueIdentifier", names)
 
+    def test_javap_inventory_propagates_members_from_package_private_interfaces(self):
+        outputs = {
+            "org/kmipkit/fluent/FieldSet.class": """
+                interface org.kmipkit.fluent.FieldSet<B> extends org.kmipkit.fluent.FieldBase<B> {
+                  public default B data(byte[]);
+                }
+            """,
+            "org/kmipkit/fluent/FieldBase.class": """
+                interface org.kmipkit.fluent.FieldBase<B> {
+                  public default B uniqueIdentifier(java.lang.String);
+                }
+            """,
+            "org/kmipkit/fluent/BuilderBase.class": """
+                abstract class org.kmipkit.fluent.BuilderBase<B> {
+                  public final B execute();
+                }
+            """,
+            "org/kmipkit/fluent/EncryptBuilder.class": """
+                public final class org.kmipkit.fluent.EncryptBuilder extends org.kmipkit.fluent.BuilderBase<org.kmipkit.fluent.EncryptBuilder> implements org.kmipkit.fluent.FieldSet<org.kmipkit.fluent.EncryptBuilder> {
+                }
+            """,
+        }
+
+        result = AUDIT.inventory_javap_outputs(outputs)
+        names = {row["exportName"] for row in result["declarations"]}
+
+        self.assertTrue(result["complete"])
+        self.assertIn("org.kmipkit.fluent.EncryptBuilder.execute", names)
+        self.assertIn("org.kmipkit.fluent.EncryptBuilder.data", names)
+        self.assertIn("org.kmipkit.fluent.EncryptBuilder.uniqueIdentifier", names)
+        self.assertNotIn("org.kmipkit.fluent.FieldSet", names)
+        self.assertNotIn("org.kmipkit.fluent.FieldBase", names)
+
     def test_javap_inventory_keeps_public_base_members_at_the_declaring_type(self):
         outputs = {
             "org/kmipkit/ClientOperationException.class": """
