@@ -207,6 +207,7 @@ def applicable_routes(case: dict, manifest: dict, language: str, operation_ids: 
 def iter_cells(catalog: dict, manifest: dict, *, languages: tuple[str, ...] = LANGUAGES) -> Iterator[dict]:
     """Yield construction, execution, and response-decode obligations separately."""
     operation_ids = _operation_ids(catalog)
+    normative_targets = {target["target_id"]: target for target in catalog.get("normative_targets", [])}
     execution_routes = {route["execution_route_id"]: route for route in manifest.get("execution_routes", [])}
     for case in catalog["test_cases"]:
         versions = case["execution"]["protocol_versions"]
@@ -272,7 +273,9 @@ def iter_cells(catalog: dict, manifest: dict, *, languages: tuple[str, ...] = LA
                                 yield {**base, "action": "construct", "execution_route_id": execution_route_id,
                                        "execution_api_symbol": execution["public_api_symbol"]}
                             expected_status = str(case.get("requires", {}).get("expected_status", "")).casefold()
-                            actions = ("send",) if expected_status.replace("_", "") == "notsent" else ("send", "decode")
+                            request_target = normative_targets.get(obligation["target_id"], {}).get("role") == "request"
+                            actions = (("send",) if expected_status.replace("_", "") == "notsent"
+                                       or request_target else ("send", "decode"))
                             for action in actions:
                                 yield {**base, "action": action, "execution_route_id": execution_route_id,
                                        "execution_api_symbol": execution["public_api_symbol"]}
