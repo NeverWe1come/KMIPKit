@@ -96,6 +96,21 @@ jobs:
             --maven-repository build/maven-repository \
             --manifest build/artifact-manifest.json
 
+      - name: Probe installed Java package public routes
+        run: |
+          python3 ../../interop/shared/tools/probe_route_artifact.py \
+            --language java \
+            --artifact build/maven-repository/org/kmipkit/kmipkit-java/1.0.0/kmipkit-java-1.0.0-linux-glibc-x86_64.jar \
+            --provenance build/artifact-manifest.json | tee build/route-capability-probe.json
+
+      - name: Upload Java route capability evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1
+        with:
+          name: java-route-capability-evidence
+          path: interop/java-kmip-validator/build/route-capability-probe.json
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Test Java artifact installer path validation
         run: python3 -B -m unittest discover -s tests -p 'test_install_artifact.py' -v
 
