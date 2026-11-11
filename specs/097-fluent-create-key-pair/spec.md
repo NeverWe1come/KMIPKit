@@ -57,6 +57,17 @@ the remaining operation families and language facades.
   response accessors MUST be documented and recorded in
   `specification/api/public-api.json` using the repository generator. Existing
   public declarations MUST remain unchanged.
+- **KMIPKIT-0097-FR-006**: `CreateKeyPairBuilder::validate()` MUST perform the
+  same local construction and existing typed request validation as
+  `build_request()`, return a payload-free `FluentBuildError` on failure, and
+  MUST NOT invoke the transport or consume the builder.
+- **KMIPKIT-0097-FR-007**: The builder MUST accept a prebuilt `AttributeSet`
+  for Common, Private Key, and Public Key Attributes. Each supplied set MUST
+  be appended after that group's semantic values and previously appended
+  typed attributes, preserving the supplied set's item order. Repeated set
+  methods append in call order. Final request construction MUST run the
+  existing typed request validator so duplicate or conflicting effective
+  values are rejected before transport.
 
 ## Acceptance criteria
 
@@ -70,6 +81,11 @@ the remaining operation families and language facades.
    asynchronous correlation using existing result types.
 5. Rust formatting, Clippy, client tests, traceability, manifest generation,
    export checks, and required PR CI pass before the draft is marked ready.
+6. `validate()` succeeds for a valid builder and reports the same error as
+   request construction for invalid inputs without invoking transport.
+7. Prebuilt attribute sets remain in their selected group and preserve their
+   internal and call order; repeated/conflicting attributes fail through the
+   existing typed request validation.
 
 ## Explicit limits
 
