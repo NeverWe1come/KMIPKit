@@ -60,15 +60,8 @@ class ModelCases:
         return output
 
     def _execute_symmetric_key(self, protocol_version: str) -> dict:
-        key_format = next((item for item in self.catalog['normative_targets']
-                           if item['kind'] == 'enumeration_value' and item['name'] == 'Raw'
-                           and item.get('parent_element_ids') == ['KMIPKIT-ELEM-ENUMERATION-KEY-FORMAT-TYPE']
-                           and protocol_version in item['protocol_versions']), None)
-        if key_format is None:
-            raise ValueError('symmetric_key_format_fixture_missing')
-        key_format_value = int(key_format['wire_value'], 16)
-        key_format_tree = (KEY_FORMAT_TYPE_TAG, 5, key_format_value.to_bytes(4, 'big'))
-        key_block_tree = (KEY_BLOCK_TAG, 1, [key_format_tree])
+        key_block_tree = self._key_block_tree(protocol_version)
+        key_format_tree = key_block_tree[2][0]
         limits = C.c_void_p()
         owned: list[C.c_void_p] = []
         try:
@@ -76,8 +69,7 @@ class ModelCases:
             key_block = self._from_fields(
                 'kmipkit_key_block_from_fields', [key_format_tree], limits, owned)
             key_block_roundtrip = self._from_item('kmipkit_key_block_from_item', key_block, owned)
-            expected_key_block = [KEY_BLOCK_TAG, 1, [
-                [KEY_FORMAT_TYPE_TAG, 5, key_format_value.to_bytes(4, 'big').hex()]]]
+            expected_key_block = normalized(key_block_tree)
             expected = [SYMMETRIC_KEY_TAG, 1, [expected_key_block]]
             self._read_and_check(key_block_roundtrip, expected[2][0], 'key_block_item_tree_mismatch')
 
@@ -118,11 +110,14 @@ class ModelCases:
     def _object_type(self, name: str, protocol_version: str) -> int:
         return self._enum_value('Object Type', name, protocol_version)
 
+    def _key_block_tree(self, protocol_version: str) -> tuple:
+        key_format = self._enum_value('Key Format Type', 'Raw', protocol_version)
+        return (KEY_BLOCK_TAG, 1, [
+            (KEY_FORMAT_TYPE_TAG, 5, key_format.to_bytes(4, 'big'))])
+
     def _execute_named_object(self, root: dict, protocol_version: str) -> dict:
         name = root['name']
-        key_format = self._enum_value('Key Format Type', 'Raw', protocol_version)
-        key_block_tree = (KEY_BLOCK_TAG, 1, [
-            (KEY_FORMAT_TYPE_TAG, 5, key_format.to_bytes(4, 'big'))])
+        key_block_tree = self._key_block_tree(protocol_version)
         recipes = {
             'Certificate Request': ('kmipkit_certificate_request_from_fields', [
                 (self._tag('Certificate Request Type'), 5,
