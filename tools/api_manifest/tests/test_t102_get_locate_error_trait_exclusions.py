@@ -87,6 +87,9 @@ ERROR_VARIANTS = (
 RESPONSE_STATES = {
     "GetResponse": {
         "": "verified",
+        # KMIPKIT-0094 accessors remain Rust-only until binding parity lands.
+        "::key_block": "blocked",
+        "::managed_object": "blocked",
         "::object": "verified",
         "::object_type": "verified",
         "::result": "verified",
