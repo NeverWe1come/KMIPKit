@@ -94,3 +94,15 @@
   includes the current #184 head, refreshed manifest snapshots, the shared
   crypto request-state refactor, and the added coverage tests. Exact-head CI
   for the updated branch is pending after push; PR #185 remains `[WIP]`.
+- SonarCloud at `f937b1fbf41858481a11c75d47f74c217af2bba4` still reported
+  6.6% duplicated lines on new code (154 of 2,319 lines). A follow-up refactor
+  shares cipher request fields and request assembly across Encrypt, Decrypt,
+  and Hash without changing their public builders or request behavior. The
+  repository's production AST audit rejects macros in production modules, so
+  the request adapters are explicit function-pointer structures.
+- Follow-up checks after that refactor: `cargo fmt --all --check`,
+  `git diff --check`, `cargo clippy -p kmipkit-client --all-targets
+  --all-features --locked -- -D warnings`, and
+  `cargo test -p kmipkit-client --all-features --locked` all passed. This
+  includes the 879 client unit tests, integration tests, and doctests. The
+  exact-head Sonar result will be recorded after the update is pushed.

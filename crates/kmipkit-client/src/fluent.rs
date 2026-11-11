@@ -403,10 +403,8 @@ impl<'a, R: ValidateKmipRequest> CryptoRequestState<'a, R> {
     }
 }
 
-/// A fluent builder for a typed KMIP Encrypt request.
-pub struct EncryptBuilder<'a> {
-    execution: CryptoBuilderExecution<'a>,
-    unique_identifier: Option<UniqueIdentifier>,
+#[derive(Default)]
+struct CryptoRequestFields {
     data: Option<OperationData>,
     cryptographic_parameters: Option<Structure>,
     iv_counter_nonce: Option<SecretBytes>,
@@ -416,18 +414,67 @@ pub struct EncryptBuilder<'a> {
     authenticated_encryption_additional_data: Option<SecretBytes>,
 }
 
+struct CipherRequestAdapter<R> {
+    new: fn(Option<UniqueIdentifier>, Option<OperationData>) -> R,
+    with_cryptographic_parameters: fn(R, Structure) -> R,
+    with_iv_counter_nonce: fn(R, SecretBytes) -> R,
+    with_correlation_value: fn(R, SecretBytes) -> R,
+    with_init_indicator: fn(R, bool) -> R,
+    with_final_indicator: fn(R, bool) -> R,
+    with_authenticated_encryption_additional_data: fn(R, SecretBytes) -> R,
+}
+
+impl CryptoRequestFields {
+    fn into_cipher_request<R>(
+        self,
+        unique_identifier: Option<UniqueIdentifier>,
+        adapter: &CipherRequestAdapter<R>,
+    ) -> R {
+        let Self {
+            data,
+            cryptographic_parameters,
+            iv_counter_nonce,
+            correlation_value,
+            init_indicator,
+            final_indicator,
+            authenticated_encryption_additional_data,
+        } = self;
+        let mut request = (adapter.new)(unique_identifier, data);
+        if let Some(value) = cryptographic_parameters {
+            request = (adapter.with_cryptographic_parameters)(request, value);
+        }
+        if let Some(value) = iv_counter_nonce {
+            request = (adapter.with_iv_counter_nonce)(request, value);
+        }
+        if let Some(value) = correlation_value {
+            request = (adapter.with_correlation_value)(request, value);
+        }
+        if let Some(value) = init_indicator {
+            request = (adapter.with_init_indicator)(request, value);
+        }
+        if let Some(value) = final_indicator {
+            request = (adapter.with_final_indicator)(request, value);
+        }
+        if let Some(value) = authenticated_encryption_additional_data {
+            request = (adapter.with_authenticated_encryption_additional_data)(request, value);
+        }
+        request
+    }
+}
+
+/// A fluent builder for a typed KMIP Encrypt request.
+pub struct EncryptBuilder<'a> {
+    execution: CryptoBuilderExecution<'a>,
+    unique_identifier: Option<UniqueIdentifier>,
+    fields: CryptoRequestFields,
+}
+
 impl<'a> EncryptBuilder<'a> {
     fn new(client: &'a mut Client) -> Self {
         Self {
             execution: CryptoBuilderExecution::new(client),
             unique_identifier: None,
-            data: None,
-            cryptographic_parameters: None,
-            iv_counter_nonce: None,
-            correlation_value: None,
-            init_indicator: None,
-            final_indicator: None,
-            authenticated_encryption_additional_data: None,
+            fields: CryptoRequestFields::default(),
         }
     }
 
@@ -441,63 +488,63 @@ impl<'a> EncryptBuilder<'a> {
     /// Moves plaintext bytes into the request's zeroizing secret owner.
     #[must_use]
     pub fn data(mut self, value: Vec<u8>) -> Self {
-        self.data = Some(OperationData::ByteString(SecretBytes::new(value)));
+        self.fields.data = Some(OperationData::ByteString(SecretBytes::new(value)));
         self
     }
 
     /// Sets an explicitly typed non-byte Data value for expert KMIP use.
     #[must_use]
     pub fn data_value(mut self, value: OperationData) -> Self {
-        self.data = Some(value);
+        self.fields.data = Some(value);
         self
     }
 
     /// Sets validated Cryptographic Parameters chosen by the caller.
     #[must_use]
     pub fn cryptographic_parameters(mut self, value: CryptographicParameters) -> Self {
-        self.cryptographic_parameters = Some(value.into_ttlv());
+        self.fields.cryptographic_parameters = Some(value.into_ttlv());
         self
     }
 
     /// Sets an expert ordered Cryptographic Parameters Structure.
     #[must_use]
     pub fn cryptographic_parameters_structure(mut self, value: Structure) -> Self {
-        self.cryptographic_parameters = Some(value);
+        self.fields.cryptographic_parameters = Some(value);
         self
     }
 
     /// Sets the caller-selected IV, counter, or nonce bytes.
     #[must_use]
     pub fn iv_counter_nonce(mut self, value: Vec<u8>) -> Self {
-        self.iv_counter_nonce = Some(SecretBytes::new(value));
+        self.fields.iv_counter_nonce = Some(SecretBytes::new(value));
         self
     }
 
     /// Sets the multipart correlation value.
     #[must_use]
     pub fn correlation_value(mut self, value: Vec<u8>) -> Self {
-        self.correlation_value = Some(SecretBytes::new(value));
+        self.fields.correlation_value = Some(SecretBytes::new(value));
         self
     }
 
     /// Sets the caller-controlled multipart Init Indicator.
     #[must_use]
     pub const fn init_indicator(mut self, value: bool) -> Self {
-        self.init_indicator = Some(value);
+        self.fields.init_indicator = Some(value);
         self
     }
 
     /// Sets the caller-controlled multipart Final Indicator.
     #[must_use]
     pub const fn final_indicator(mut self, value: bool) -> Self {
-        self.final_indicator = Some(value);
+        self.fields.final_indicator = Some(value);
         self
     }
 
     /// Sets caller-supplied authenticated-encryption additional data.
     #[must_use]
     pub fn authenticated_encryption_additional_data(mut self, value: Vec<u8>) -> Self {
-        self.authenticated_encryption_additional_data = Some(SecretBytes::new(value));
+        self.fields.authenticated_encryption_additional_data = Some(SecretBytes::new(value));
         self
     }
 
@@ -521,33 +568,21 @@ impl<'a> EncryptBuilder<'a> {
         let Self {
             execution,
             unique_identifier,
-            data,
-            cryptographic_parameters,
-            iv_counter_nonce,
-            correlation_value,
-            init_indicator,
-            final_indicator,
-            authenticated_encryption_additional_data,
+            fields,
         } = self;
-        let mut request = EncryptRequest::new(unique_identifier, data);
-        if let Some(value) = cryptographic_parameters {
-            request = request.with_cryptographic_parameters(value);
-        }
-        if let Some(value) = iv_counter_nonce {
-            request = request.with_iv_counter_nonce(value);
-        }
-        if let Some(value) = correlation_value {
-            request = request.with_correlation_value(value);
-        }
-        if let Some(value) = init_indicator {
-            request = request.with_init_indicator(value);
-        }
-        if let Some(value) = final_indicator {
-            request = request.with_final_indicator(value);
-        }
-        if let Some(value) = authenticated_encryption_additional_data {
-            request = request.with_authenticated_encryption_additional_data(value);
-        }
+        let request = fields.into_cipher_request(
+            unique_identifier,
+            &CipherRequestAdapter {
+                new: EncryptRequest::new,
+                with_cryptographic_parameters: EncryptRequest::with_cryptographic_parameters,
+                with_iv_counter_nonce: EncryptRequest::with_iv_counter_nonce,
+                with_correlation_value: EncryptRequest::with_correlation_value,
+                with_init_indicator: EncryptRequest::with_init_indicator,
+                with_final_indicator: EncryptRequest::with_final_indicator,
+                with_authenticated_encryption_additional_data:
+                    EncryptRequest::with_authenticated_encryption_additional_data,
+            },
+        );
         validate_fluent_request(&request)?;
         Ok((request, execution))
     }
@@ -589,13 +624,7 @@ impl<'a> EncryptBuilder<'a> {
 pub struct DecryptBuilder<'a> {
     execution: CryptoBuilderExecution<'a>,
     unique_identifier: Option<UniqueIdentifier>,
-    data: Option<OperationData>,
-    cryptographic_parameters: Option<Structure>,
-    iv_counter_nonce: Option<SecretBytes>,
-    correlation_value: Option<SecretBytes>,
-    init_indicator: Option<bool>,
-    final_indicator: Option<bool>,
-    authenticated_encryption_additional_data: Option<SecretBytes>,
+    fields: CryptoRequestFields,
     authenticated_encryption_tag: Option<SecretBytes>,
 }
 
@@ -604,13 +633,7 @@ impl<'a> DecryptBuilder<'a> {
         Self {
             execution: CryptoBuilderExecution::new(client),
             unique_identifier: None,
-            data: None,
-            cryptographic_parameters: None,
-            iv_counter_nonce: None,
-            correlation_value: None,
-            init_indicator: None,
-            final_indicator: None,
-            authenticated_encryption_additional_data: None,
+            fields: CryptoRequestFields::default(),
             authenticated_encryption_tag: None,
         }
     }
@@ -631,7 +654,7 @@ impl<'a> DecryptBuilder<'a> {
     /// Sets an explicitly typed non-byte Data value for expert KMIP use.
     #[must_use]
     pub fn data_value(mut self, value: OperationData) -> Self {
-        self.data = Some(value);
+        self.fields.data = Some(value);
         self
     }
 
@@ -644,42 +667,42 @@ impl<'a> DecryptBuilder<'a> {
     /// Sets an expert ordered Cryptographic Parameters Structure.
     #[must_use]
     pub fn cryptographic_parameters_structure(mut self, value: Structure) -> Self {
-        self.cryptographic_parameters = Some(value);
+        self.fields.cryptographic_parameters = Some(value);
         self
     }
 
     /// Sets the caller-selected IV, counter, or nonce bytes.
     #[must_use]
     pub fn iv_counter_nonce(mut self, value: Vec<u8>) -> Self {
-        self.iv_counter_nonce = Some(SecretBytes::new(value));
+        self.fields.iv_counter_nonce = Some(SecretBytes::new(value));
         self
     }
 
     /// Sets the multipart correlation value.
     #[must_use]
     pub fn correlation_value(mut self, value: Vec<u8>) -> Self {
-        self.correlation_value = Some(SecretBytes::new(value));
+        self.fields.correlation_value = Some(SecretBytes::new(value));
         self
     }
 
     /// Sets the caller-controlled multipart Init Indicator.
     #[must_use]
     pub const fn init_indicator(mut self, value: bool) -> Self {
-        self.init_indicator = Some(value);
+        self.fields.init_indicator = Some(value);
         self
     }
 
     /// Sets the caller-controlled multipart Final Indicator.
     #[must_use]
     pub const fn final_indicator(mut self, value: bool) -> Self {
-        self.final_indicator = Some(value);
+        self.fields.final_indicator = Some(value);
         self
     }
 
     /// Sets caller-supplied authenticated-encryption additional data.
     #[must_use]
     pub fn authenticated_encryption_additional_data(mut self, value: Vec<u8>) -> Self {
-        self.authenticated_encryption_additional_data = Some(SecretBytes::new(value));
+        self.fields.authenticated_encryption_additional_data = Some(SecretBytes::new(value));
         self
     }
 
@@ -710,34 +733,22 @@ impl<'a> DecryptBuilder<'a> {
         let Self {
             execution,
             unique_identifier,
-            data,
-            cryptographic_parameters,
-            iv_counter_nonce,
-            correlation_value,
-            init_indicator,
-            final_indicator,
-            authenticated_encryption_additional_data,
+            fields,
             authenticated_encryption_tag,
         } = self;
-        let mut request = DecryptRequest::new(unique_identifier, data);
-        if let Some(value) = cryptographic_parameters {
-            request = request.with_cryptographic_parameters(value);
-        }
-        if let Some(value) = iv_counter_nonce {
-            request = request.with_iv_counter_nonce(value);
-        }
-        if let Some(value) = correlation_value {
-            request = request.with_correlation_value(value);
-        }
-        if let Some(value) = init_indicator {
-            request = request.with_init_indicator(value);
-        }
-        if let Some(value) = final_indicator {
-            request = request.with_final_indicator(value);
-        }
-        if let Some(value) = authenticated_encryption_additional_data {
-            request = request.with_authenticated_encryption_additional_data(value);
-        }
+        let mut request = fields.into_cipher_request(
+            unique_identifier,
+            &CipherRequestAdapter {
+                new: DecryptRequest::new,
+                with_cryptographic_parameters: DecryptRequest::with_cryptographic_parameters,
+                with_iv_counter_nonce: DecryptRequest::with_iv_counter_nonce,
+                with_correlation_value: DecryptRequest::with_correlation_value,
+                with_init_indicator: DecryptRequest::with_init_indicator,
+                with_final_indicator: DecryptRequest::with_final_indicator,
+                with_authenticated_encryption_additional_data:
+                    DecryptRequest::with_authenticated_encryption_additional_data,
+            },
+        );
         if let Some(value) = authenticated_encryption_tag {
             request = request.with_authenticated_encryption_tag(value);
         }
@@ -1331,22 +1342,14 @@ impl<'a> MacVerifyBuilder<'a> {
 /// A fluent builder for a typed KMIP Hash request.
 pub struct HashBuilder<'a> {
     execution: CryptoBuilderExecution<'a>,
-    cryptographic_parameters: Option<Structure>,
-    data: Option<OperationData>,
-    correlation_value: Option<SecretBytes>,
-    init_indicator: Option<bool>,
-    final_indicator: Option<bool>,
+    fields: CryptoRequestFields,
 }
 
 impl<'a> HashBuilder<'a> {
     fn new(client: &'a mut Client) -> Self {
         Self {
             execution: CryptoBuilderExecution::new(client),
-            cryptographic_parameters: None,
-            data: None,
-            correlation_value: None,
-            init_indicator: None,
-            final_indicator: None,
+            fields: CryptoRequestFields::default(),
         }
     }
 
@@ -1359,7 +1362,7 @@ impl<'a> HashBuilder<'a> {
     /// Sets an expert ordered Cryptographic Parameters Structure.
     #[must_use]
     pub fn cryptographic_parameters_structure(mut self, value: Structure) -> Self {
-        self.cryptographic_parameters = Some(value);
+        self.fields.cryptographic_parameters = Some(value);
         self
     }
 
@@ -1372,28 +1375,28 @@ impl<'a> HashBuilder<'a> {
     /// Sets an explicitly typed non-byte Data value for expert KMIP use.
     #[must_use]
     pub fn data_value(mut self, value: OperationData) -> Self {
-        self.data = Some(value);
+        self.fields.data = Some(value);
         self
     }
 
     /// Sets the multipart correlation value.
     #[must_use]
     pub fn correlation_value(mut self, value: Vec<u8>) -> Self {
-        self.correlation_value = Some(SecretBytes::new(value));
+        self.fields.correlation_value = Some(SecretBytes::new(value));
         self
     }
 
     /// Sets the caller-controlled multipart Init Indicator.
     #[must_use]
     pub const fn init_indicator(mut self, value: bool) -> Self {
-        self.init_indicator = Some(value);
+        self.fields.init_indicator = Some(value);
         self
     }
 
     /// Sets the caller-controlled multipart Final Indicator.
     #[must_use]
     pub const fn final_indicator(mut self, value: bool) -> Self {
-        self.final_indicator = Some(value);
+        self.fields.final_indicator = Some(value);
         self
     }
 
@@ -1414,24 +1417,33 @@ impl<'a> HashBuilder<'a> {
     fn into_request_and_execution(
         self,
     ) -> Result<(HashRequest, CryptoBuilderExecution<'a>), FluentBuildError> {
-        let Some(parameters) = self.cryptographic_parameters else {
+        let Self { execution, fields } = self;
+        let CryptoRequestFields {
+            data,
+            cryptographic_parameters,
+            correlation_value,
+            init_indicator,
+            final_indicator,
+            ..
+        } = fields;
+        let Some(parameters) = cryptographic_parameters else {
             return Err(FluentBuildError::MissingHashCryptographicParameters);
         };
         let mut request = HashRequest::new(parameters);
-        if let Some(value) = self.data {
+        if let Some(value) = data {
             request = request.with_data(value);
         }
-        if let Some(value) = self.correlation_value {
+        if let Some(value) = correlation_value {
             request = request.with_correlation_value(value);
         }
-        if let Some(value) = self.init_indicator {
+        if let Some(value) = init_indicator {
             request = request.with_init_indicator(value);
         }
-        if let Some(value) = self.final_indicator {
+        if let Some(value) = final_indicator {
             request = request.with_final_indicator(value);
         }
         validate_fluent_request(&request)?;
-        Ok((request, self.execution))
+        Ok((request, execution))
     }
 
     /// Builds the existing typed Hash request without sending it.
