@@ -577,33 +577,20 @@ fn ordered_prebuilt_attributes(tags: [u32; 2]) -> AttributeSet {
 #[test]
 fn key_pair_prebuilt_sets_preserve_group_internal_and_repeated_call_order() {
     let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let first_tags = [typed::Fresh::TAG, typed::KeyValuePresent::TAG];
+    let second_tags = [typed::QuantumSafe::TAG, typed::RotateAutomatic::TAG];
     let builder = grouped_key_pair(&mut client)
-        .common_attributes(ordered_prebuilt_attributes([
-            typed::Fresh::TAG,
-            typed::KeyValuePresent::TAG,
-        ]))
-        .private_key_attributes(ordered_prebuilt_attributes([
-            typed::QuantumSafe::TAG,
-            typed::RotateAutomatic::TAG,
-        ]))
-        .public_key_attributes(ordered_prebuilt_attributes([
-            typed::KeyValuePresent::TAG,
-            typed::Fresh::TAG,
-        ]))
+        .common_attributes(ordered_prebuilt_attributes(first_tags))
+        .private_key_attributes(ordered_prebuilt_attributes(second_tags))
+        .public_key_attributes(ordered_prebuilt_attributes([first_tags[1], first_tags[0]]))
         .common_attribute(Attribute::<typed::AlwaysSensitive>::new(true).unwrap())
         .private_attribute(Attribute::<typed::NeverExtractable>::new(true).unwrap())
         .public_attribute(Attribute::<typed::NeverExtractable>::new(false).unwrap())
-        .common_attributes(ordered_prebuilt_attributes([
-            typed::QuantumSafe::TAG,
-            typed::RotateAutomatic::TAG,
-        ]))
-        .private_key_attributes(ordered_prebuilt_attributes([
-            typed::Fresh::TAG,
-            typed::KeyValuePresent::TAG,
-        ]))
+        .common_attributes(ordered_prebuilt_attributes(second_tags))
+        .private_key_attributes(ordered_prebuilt_attributes(first_tags))
         .public_key_attributes(ordered_prebuilt_attributes([
-            typed::RotateAutomatic::TAG,
-            typed::QuantumSafe::TAG,
+            second_tags[1],
+            second_tags[0],
         ]));
     assert_eq!(builder.validate(), Ok(()));
     let payload = builder.build().unwrap().into_ttlv_payload().unwrap();
@@ -627,12 +614,7 @@ fn key_pair_prebuilt_sets_preserve_group_internal_and_repeated_call_order() {
                 typed::CryptographicLength::TAG,
                 typed::Sensitive::TAG,
             ],
-            [
-                typed::Fresh::TAG,
-                typed::KeyValuePresent::TAG,
-                typed::QuantumSafe::TAG,
-                typed::RotateAutomatic::TAG,
-            ],
+            [first_tags[0], first_tags[1], second_tags[0], second_tags[1]],
             typed::AlwaysSensitive::TAG,
         ),
         (
@@ -642,12 +624,7 @@ fn key_pair_prebuilt_sets_preserve_group_internal_and_repeated_call_order() {
                 typed::Name::TAG,
                 typed::Extractable::TAG,
             ],
-            [
-                typed::QuantumSafe::TAG,
-                typed::RotateAutomatic::TAG,
-                typed::Fresh::TAG,
-                typed::KeyValuePresent::TAG,
-            ],
+            [second_tags[0], second_tags[1], first_tags[0], first_tags[1]],
             typed::NeverExtractable::TAG,
         ),
         (
@@ -657,12 +634,7 @@ fn key_pair_prebuilt_sets_preserve_group_internal_and_repeated_call_order() {
                 typed::Name::TAG,
                 typed::Extractable::TAG,
             ],
-            [
-                typed::KeyValuePresent::TAG,
-                typed::Fresh::TAG,
-                typed::RotateAutomatic::TAG,
-                typed::QuantumSafe::TAG,
-            ],
+            [first_tags[1], first_tags[0], second_tags[1], second_tags[0]],
             typed::NeverExtractable::TAG,
         ),
     ] {
