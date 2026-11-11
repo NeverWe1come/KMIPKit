@@ -177,5 +177,20 @@ class RouteMatrixTests(unittest.TestCase):
             self.assertTrue(any(event['public_api_symbol'] == symbol and event['action'] == 'send' for event in events), symbol)
 
 
+    def test_hash_and_rng_cases_call_their_public_routes_and_check_responses(self):
+        from artifact_support import ROOT
+        from route_peer import RECIPES, execute_network_cells
+        case_ids = {'test-op-hash', 'test-op-rng-retrieve', 'test-op-rng-seed'}
+        self.assertTrue(case_ids <= RECIPES.keys(), 'Hash/RNG case-specific peer recipes are missing')
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases'] if case['case_id'] in case_ids]}
+        events, _, checks = execute_network_cells(ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+        self.assertEqual(len(checks), 36)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks))
+        for name in ('hash', 'rng_retrieve', 'rng_seed'):
+            self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_' + name and event['action'] == 'decode' for event in events))
+
+
 if __name__ == '__main__':
     unittest.main()
