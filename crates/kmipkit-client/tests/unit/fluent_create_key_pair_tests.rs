@@ -71,8 +71,7 @@ fn key_pair_builder_requires_distinct_explicit_algorithm_and_length_values() {
         .length(2048)
         .private_name(PRIVATE_SENTINEL)
         .build()
-        .err()
-        .expect("algorithm is required even when length is explicit");
+        .expect_err("algorithm is required even when length is explicit");
     assert_eq!(
         algorithm_error,
         FluentBuildError::MissingCreateKeyPairAlgorithm
@@ -85,8 +84,7 @@ fn key_pair_builder_requires_distinct_explicit_algorithm_and_length_values() {
         .algorithm(CryptographicAlgorithm::from_raw(RSA))
         .private_name(PRIVATE_SENTINEL)
         .build()
-        .err()
-        .expect("algorithm does not select a key length");
+        .expect_err("algorithm does not select a key length");
     assert_eq!(length_error, FluentBuildError::MissingCreateKeyPairLength);
     assert_ne!(algorithm_error, length_error);
 
