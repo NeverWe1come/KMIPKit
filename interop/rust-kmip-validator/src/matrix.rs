@@ -1,6 +1,6 @@
 //! Execute only named public routes; pending recipes never produce call evidence.
 use crate::models::{Result, hash};
-use kmipkit::ttlv::{Item, Value, ValueView};
+use kmipkit::ttlv::{Item, Value, ValueView, codec::DecodeErrorKind};
 use serde_json::{Value as Json, json};
 use std::{
     collections::HashSet,
@@ -279,6 +279,46 @@ fn value_to_owned(value: ValueView<'_>) -> Result<Value> {
     })
 }
 
+fn expected_tag_decode_rejection(row: &Json, target: &Json, catalog: &Json) -> Option<u32> {
+    if row["action"] != "decode" || !row["route_id"].as_str()?.contains("generic-ttlv") {
+        return None;
+    }
+    let symbol: String = text(row, "public_api_symbol")
+        .ok()?
+        .chars()
+        .filter(char::is_ascii_alphanumeric)
+        .flat_map(char::to_lowercase)
+        .collect();
+    if !(symbol.contains("codecdecode") || symbol.ends_with("ttlvdecode")) {
+        return None;
+    }
+    let case = catalog["test_cases"]
+        .as_array()?
+        .iter()
+        .find(|case| case["case_id"] == row["case_id"])?;
+    let requires = &case["requires"];
+    if !["tag", "tag_range"].contains(&requires["target_kind"].as_str()?)
+        || !["reserved", "unused"].contains(&requires["allocation"].as_str()?)
+    {
+        return None;
+    }
+    let wire_value = text(target, "wire_value").ok()?;
+    let start = wire_value
+        .split(['-', '–', '—'])
+        .next()?
+        .trim()
+        .trim_start_matches("0x")
+        .replace(['X', 'x'], "0");
+    u32::from_str_radix(&start, 16).ok()
+}
+
+fn reserved_tag_ttlv(raw_tag: u32) -> [u8; 16] {
+    let tag = raw_tag.to_be_bytes();
+    [
+        tag[1], tag[2], tag[3], 5, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0,
+    ]
+}
+
 #[allow(clippy::too_many_lines)] // Keep row validation and invocation bookkeeping adjacent for auditing.
 pub(crate) fn run(matrix: &Path, output: &Path) -> Result<bool> {
     let catalog_bytes = include_bytes!("../../shared/catalog/kmipkit-1.0-test-catalog.json");
@@ -342,6 +382,26 @@ pub(crate) fn run(matrix: &Path, output: &Path) -> Result<bool> {
             .ok_or("unknown normative target")?;
         let symbol = text(row, "public_api_symbol")?;
         versions.insert(text(row, "protocol_version")?.to_owned());
+        if let Some(raw_tag) = expected_tag_decode_rejection(row, target, &catalog) {
+            let wire = reserved_tag_ttlv(raw_tag);
+            let result = kmipkit::ttlv::codec::decode(&wire);
+            let rejected = matches!(result, Err(error) if matches!(
+                error.kind(), DecodeErrorKind::ReservedTag | DecodeErrorKind::UnallocatedTag));
+            let mut event = json!({"case_id":row["case_id"],"route_id":row["route_id"],
+                "target_id":row["target_id"],"public_api_symbol":symbol,
+                "execution_route_id":null,"execution_api_symbol":null,
+                "invocation_id":format!("rust-local-{}",events.len()),"action":"decode",
+                "protocol_version":row["protocol_version"],"encoding":"TTLV","transport":null,
+                "status":if rejected {"passed"} else {"failed"},"invocation_count":1,
+                "decode_outcome":"rejected","decode_input_sha256":hash(&wire)});
+            if rejected {
+                event["decode_rejection_code"] = "tag_not_allocated".into();
+            } else {
+                event["failure_code"] = "expected_tag_rejection_not_observed".into();
+            }
+            events.push(event);
+            continue;
+        }
         let Ok(sample) = sample(target, elements) else {
             pending += 1;
             continue;
