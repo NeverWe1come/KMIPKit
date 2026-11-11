@@ -74,7 +74,7 @@ def find_value(tree: list[tuple[int, int, bytes]], tag: int) -> bytes | None:
     return None
 
 
-def ping_response(request: bytes, status: int, reason: int | None) -> bytes:
+def ping_response(request: bytes, status: int, reason: int | None, protocol_minor: int = 1) -> bytes:
     tree = parse_children(request[8:])
     operation_bytes = find_value(tree, 0x42005C)
     batch_id = find_value(tree, 0x420093)
@@ -92,7 +92,7 @@ def ping_response(request: bytes, status: int, reason: int | None) -> bytes:
     version = structure(
         0x420069,
         item(0x42006A, 2, struct.pack(">i", 2)),
-        item(0x42006B, 2, struct.pack(">i", 1)),
+        item(0x42006B, 2, struct.pack(">i", protocol_minor)),
     )
     header = structure(
         0x42007A,
@@ -138,7 +138,9 @@ def request_observation(request: bytes, encoding: str) -> dict[str, object]:
     }
 
 
-def text_response(operation: str, encoding: str, status: int, reason: int | None) -> bytes:
+def text_response(
+    operation: str, encoding: str, status: int, reason: int | None, protocol_minor: int = 1
+) -> bytes:
     from kmipkit import protocol_values
 
     status_name = protocol_values.ResultStatus.name(status)
@@ -162,7 +164,7 @@ def text_response(operation: str, encoding: str, status: int, reason: int | None
                             "tag": "ProtocolVersion",
                             "value": [
                                 {"tag": "ProtocolVersionMajor", "type": "Integer", "value": 2},
-                                {"tag": "ProtocolVersionMinor", "type": "Integer", "value": 1},
+                                {"tag": "ProtocolVersionMinor", "type": "Integer", "value": protocol_minor},
                             ],
                         },
                         {"tag": "TimeStamp", "type": "DateTime", "value": "1970-01-01T00:00:01Z"},
@@ -184,7 +186,7 @@ def text_response(operation: str, encoding: str, status: int, reason: int | None
     document = (
         "<ResponseMessage><ResponseHeader><ProtocolVersion>"
         '<ProtocolVersionMajor type="Integer" value="2"/>'
-        '<ProtocolVersionMinor type="Integer" value="1"/>'
+        f'<ProtocolVersionMinor type="Integer" value="{protocol_minor}"/>'
         "</ProtocolVersion>"
         '<TimeStamp type="DateTime" value="1970-01-01T00:00:01Z"/>'
         '<BatchCount type="Integer" value="1"/>'
@@ -250,12 +252,14 @@ class ControlledTlsPeer:
         expect_no_connection: bool = False,
         encoding: str = "TTLV",
         transport: str = "raw_tls",
+        protocol_version: str = "2.1",
     ) -> None:
         self.status = status
         self.reason = reason
         self.expect_no_connection = expect_no_connection
         self.encoding = encoding
         self.transport = transport
+        self.protocol_minor = int(protocol_version.split(".")[1])
         self.listener = socket.socket()
         self.listener.bind(("127.0.0.1", 0))
         self.listener.listen(1)
@@ -295,13 +299,16 @@ class ControlledTlsPeer:
                 self.requests.append(request)
                 self.request_observation = request_observation(request, self.encoding)
                 if self.encoding == "TTLV":
-                    response = ping_response(request, self.status, self.reason)
+                    response = ping_response(
+                        request, self.status, self.reason, self.protocol_minor
+                    )
                 else:
                     response = text_response(
                         str(self.request_observation["operation"]),
                         self.encoding,
                         self.status,
                         self.reason,
+                        self.protocol_minor,
                     )
                 self.responses.append(response)
                 if self.transport == "https":
@@ -331,6 +338,83 @@ class ControlledTlsPeer:
 
 
 class ControlledExchangeTests(unittest.TestCase):
+    def test_every_applicable_catalog_operation_is_sent_to_a_controlled_kmip_peer(self):
+        from kmipkit import extensions, protocol_values
+
+        catalog = json.loads(DEFAULT_CATALOG.read_text(encoding="utf-8"))
+        async_operations = {
+            "Poll", "Process", "Cancel", "Query Asynchronous Requests"
+        }
+        for protocol_version in ("2.0", "2.1"):
+            cases = [
+                case
+                for case in catalog["test_cases"]
+                if case["execution"]["mode"] == "server_exchange"
+                and protocol_version in case["execution"]["protocol_versions"]
+                and case.get("requires", {}).get("workflow_type") != "server_to_client"
+                and PythonKmipDriver.supports(case, "typed-protocol")
+            ]
+            self.assertGreater(len(cases), 140)
+            for case in cases:
+                with self.subTest(protocol_version=protocol_version, case_id=case["case_id"]):
+                    peer = ControlledTlsPeer(
+                        status=protocol_values.ResultStatus.OPERATION_FAILED,
+                        reason=protocol_values.ResultReason.OPERATION_NOT_SUPPORTED,
+                        protocol_version=protocol_version,
+                    )
+                    connection = {
+                        "server_id": "loopback",
+                        "protocol_version": protocol_version,
+                        "transport": "raw_tls",
+                        "encoding": "TTLV",
+                        "api_level": "typed-protocol",
+                        "endpoints": {"raw_tls": {"host": "127.0.0.1", "port": peer.port}},
+                        "tls": {
+                            "ca_cert_path": str(PKI / "server-cert.pem"),
+                            "client_cert_path": str(PKI / "client-cert.pem"),
+                            "client_key_path": str(PKI / "client-key.pem"),
+                            "server_name_override": "localhost",
+                            "connect_timeout_seconds": 5,
+                            "read_timeout_seconds": 5,
+                        },
+                    }
+                    driver = PythonKmipDriver(connection)
+                    item = None
+                    try:
+                        if case["operation"] in async_operations:
+                            correlation = (
+                                None
+                                if case["operation"] == "Query Asynchronous Requests"
+                                else b"fixture-correlation"
+                            )
+                            observed = driver._async_exchange(case["operation"], correlation)
+                        elif case["operation"] == "Logout":
+                            ticket_type = driver._item(0x0042_014A, "enumeration", 1)
+                            ticket_value = driver._item(0x0042_014B, "bytes", b"fixture-ticket")
+                            ticket = driver._structure([ticket_type, ticket_value])
+                            try:
+                                item = extensions.client_batch_item_logout(ticket)
+                                observed = driver._exchange(item)
+                            finally:
+                                ticket.close()
+                                ticket_type.close()
+                                ticket_value.close()
+                        else:
+                            item = driver._build_item(
+                                case,
+                                extensions.UniqueIdentifier.text_string("catalog-operation-fixture"),
+                                name="catalog-operation-fixture",
+                            )
+                            observed = driver._exchange(item)
+                        self.assertEqual("server_unsupported", observed["status"])
+                        self.assertEqual(case["operation"], peer.request_observation["operation"])
+                        self.assertEqual(1, len(peer.requests))
+                    finally:
+                        if item is not None:
+                            item.close()
+                        driver.close()
+                        peer.close()
+
     def _execute_attribute_route(
         self, peer: ControlledTlsPeer, *, high_level: bool, case_id: str
     ) -> dict:

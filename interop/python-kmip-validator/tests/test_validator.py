@@ -1,5 +1,6 @@
 from contextlib import redirect_stdout
 import io
+import importlib
 import json
 from pathlib import Path
 import tempfile
@@ -127,6 +128,67 @@ class ValidatorContractTests(unittest.TestCase):
                 with item.validation_report() as report:
                     self.assertTrue(report.is_valid)
                 item.close()
+
+    def test_every_catalogued_python_network_request_constructor_is_invoked(self):
+        from kmipkit import extensions
+
+        catalog, _ = load_catalog(CATALOG)
+        manifest = json.loads((SHARED / "coverage" / "route-capabilities.json").read_text())
+        expected = {
+            route["public_api_symbol"]
+            for route in manifest["routes"]
+            if route["language"] == "python"
+            and route["mode"] == "network"
+            and "construct" in route["actions"]
+            and route["public_api_symbol"].startswith("kmipkit.extensions.client_batch_item_")
+        }
+        invoked = set()
+        originals = {}
+        for symbol in expected:
+            owner_name, attribute = symbol.rsplit(".", 1)
+            owner = importlib.import_module(owner_name)
+            original = getattr(owner, attribute)
+
+            def track_call(*args, _original=original, _symbol=symbol, **kwargs):
+                invoked.add(_symbol)
+                return _original(*args, **kwargs)
+
+            originals[(owner, attribute)] = original
+            setattr(owner, attribute, track_call)
+
+        driver = object.__new__(PythonKmipDriver)
+        driver._extensions = extensions
+        identifier = extensions.UniqueIdentifier.text_string("constructor-route-fixture")
+        try:
+            for case in catalog["test_cases"]:
+                if not PythonKmipDriver.supports(case, "typed-protocol"):
+                    continue
+                if case["operation"] in {
+                    "Logout", "Poll", "Process", "Cancel", "Query Asynchronous Requests"
+                } or case["requires"].get("workflow_type") == "async_poll":
+                    continue
+                item = driver._build_item(case, identifier, name="constructor-route-fixture")
+                item.close()
+
+            # Logout needs a Ticket supplied by a Login response in a live run.
+            # A structurally valid fixture still verifies its public constructor offline.
+            ticket_type = driver._item(0x0042_014A, "enumeration", 1)
+            ticket_value = driver._item(0x0042_014B, "bytes", b"fixture-ticket")
+            ticket = driver._structure([ticket_type, ticket_value])
+            try:
+                logout = extensions.client_batch_item_logout(ticket)
+                with logout.validation_report() as report:
+                    self.assertTrue(report.is_valid)
+                logout.close()
+            finally:
+                ticket.close()
+                ticket_type.close()
+                ticket_value.close()
+        finally:
+            for (owner, attribute), original in originals.items():
+                setattr(owner, attribute, original)
+
+        self.assertEqual(expected, invoked, f"uninvoked Python request routes: {sorted(expected - invoked)}")
 
     def test_python_mutation_gate_includes_required_setup_and_cleanup(self):
         catalog, _ = load_catalog(CATALOG)
