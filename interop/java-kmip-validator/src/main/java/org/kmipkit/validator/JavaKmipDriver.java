@@ -9,10 +9,15 @@ import org.kmipkit.extensions.ClientBatch;
 import org.kmipkit.extensions.ClientBatchItem;
 import org.kmipkit.extensions.ClientBatchItemResult;
 import org.kmipkit.extensions.ClientBatchResponse;
+import org.kmipkit.extensions.AsyncOperationOutcome;
+import org.kmipkit.extensions.CancelRequest;
 import org.kmipkit.extensions.ClientConfiguration;
 import org.kmipkit.extensions.ClientExtensionRegistry;
 import org.kmipkit.extensions.ExtensionRegistryLimits;
+import org.kmipkit.extensions.PollRequest;
+import org.kmipkit.extensions.ProcessRequest;
 import org.kmipkit.extensions.ProtocolVersion;
+import org.kmipkit.extensions.QueryAsyncRequestsRequest;
 import org.kmipkit.extensions.TransportConfiguration;
 import org.kmipkit.extensions.UniqueIdentifier;
 import org.kmipkit.extensions.WireEncoding;
@@ -66,6 +71,143 @@ public final class JavaKmipDriver implements AutoCloseable {
             return executeWithSymmetricKeyFixture(testCase, start);
         }
         return executeTypedRequest(testCase, start, null, null);
+    }
+
+    /** Executes an asynchronous case with an explicit server-issued correlation fixture. */
+    CaseOutcome executeAsynchronousRequest(CatalogLoader.CatalogCase testCase, byte[] correlation) {
+        long start = System.nanoTime();
+        if (testCase == null || correlation == null || correlation.length == 0) {
+            return CaseOutcome.notRun("An asynchronous catalog case and non-empty correlation fixture are required.",
+                    elapsedMillis(start));
+        }
+        String operation = testCase.operation();
+        if (!isAsynchronousOperation(operation)) {
+            return CaseOutcome.notRun("The catalog case does not name a Java asynchronous operation.",
+                    elapsedMillis(start));
+        }
+        if (!testCase.execution().protocolVersions().contains(connection.protocolVersion())) {
+            return CaseOutcome.notRun("The asynchronous operation is not defined for the configured KMIP version.",
+                    elapsedMillis(start));
+        }
+
+        try (AsyncOperationOutcome outcome = executeAsynchronousRoute(operation, correlation.clone())) {
+            var metadata = outcome.metadataV1();
+            long expectedOperation = asynchronousOperationCode(operation);
+            long statusCode = metadata.resultStatus();
+            long reasonCode = metadata.resultReason().orElse(-1);
+            if (metadata.operation() != expectedOperation) {
+                return CaseOutcome.failed("The asynchronous response operation did not match the request.",
+                        elapsedMillis(start), statusCode, optionalCode(reasonCode));
+            }
+            if (statusCode == 0 || statusCode == 2) {
+                if (!verifyAsynchronousResponse(operation, outcome, correlation, statusCode)) {
+                    return CaseOutcome.failed("The asynchronous response shape did not match the request.",
+                            elapsedMillis(start), statusCode, optionalCode(reasonCode));
+                }
+                return CaseOutcome.passed(elapsedMillis(start), statusCode, optionalCode(reasonCode));
+            }
+            return nonSuccessOutcome(testCase, statusCode, reasonCode, start);
+        } catch (Exception exception) {
+            return exchangeFailure(exception, start);
+        }
+    }
+
+    private AsyncOperationOutcome executeAsynchronousRoute(String operation, byte[] correlation) throws Exception {
+        return switch (operation) {
+            case "Cancel" -> {
+                try (CancelRequest request = CancelRequest.create(correlation.clone());
+                        TtlvStructure payload = request.toTtlvPayload()) {
+                    requireNonEmptyPayload(payload, "Cancel");
+                    yield client.executeCancel(correlation, CODEC_LIMITS);
+                }
+            }
+            case "Poll" -> {
+                try (PollRequest request = PollRequest.create(correlation.clone());
+                        TtlvStructure payload = request.toTtlvPayload()) {
+                    requireNonEmptyPayload(payload, "Poll");
+                    yield client.executePoll(correlation, CODEC_LIMITS);
+                }
+            }
+            case "Process" -> {
+                try (ProcessRequest request = ProcessRequest.create(correlation.clone());
+                        TtlvStructure payload = request.toTtlvPayload()) {
+                    requireNonEmptyPayload(payload, "Process");
+                    yield client.executeProcess(correlation, CODEC_LIMITS, java.util.OptionalLong.of(1));
+                }
+            }
+            case "Query Asynchronous Requests" -> {
+                try (QueryAsyncRequestsRequest request = QueryAsyncRequestsRequest.create();
+                        QueryAsyncRequestsRequest withCorrelation = request.withCorrelationValues(
+                                List.of(correlation.clone()));
+                        QueryAsyncRequestsRequest withOperation = withCorrelation.withOperations(List.of(0x18L));
+                        TtlvStructure payload = withOperation.toTtlvPayload()) {
+                    requireNonEmptyPayload(payload, "Query Asynchronous Requests");
+                    yield client.executeQueryAsyncRequests(CODEC_LIMITS, List.of(correlation.clone()),
+                            List.of(0x18L), java.util.OptionalLong.of(2));
+                }
+            }
+            default -> throw new IllegalArgumentException("No Java asynchronous route for the catalog operation");
+        };
+    }
+
+    private static void requireNonEmptyPayload(TtlvStructure payload, String operation) {
+        try (var view = payload.view()) {
+            if (view.itemCount() == 0) throw new IllegalStateException(operation + " request payload is empty");
+        }
+    }
+
+    private static boolean verifyAsynchronousResponse(String operation, AsyncOperationOutcome outcome,
+            byte[] expectedCorrelation, long resultStatus) {
+        if (resultStatus == 2 && !outcome.metadataV1().outcomeKind().isPending()) return false;
+        return switch (operation) {
+            case "Cancel" -> outcome.cancelResponse().filter(response ->
+                    response.result().operation() == 0x19
+                            && hasCorrelation(expectedCorrelation, response::withEchoedCorrelationValue)).isPresent();
+            case "Poll" -> outcome.pollResponse().filter(response ->
+                    response.result().operation() == 0x1a && (resultStatus != 2 || response.isPending())
+                            && hasCorrelation(expectedCorrelation, response::withAsynchronousCorrelationValue)).isPresent();
+            case "Process" -> outcome.processResponse().filter(response ->
+                    response.result().operation() == 0x3a && (resultStatus != 2 || response.isPending())
+                            && hasCorrelation(expectedCorrelation, response::withAsynchronousCorrelationValue)).isPresent();
+            case "Query Asynchronous Requests" -> outcome.queryAsyncRequestsResponse().filter(response ->
+                    response.result().operation() == 0x39 && (resultStatus != 2 || response.isPending())
+                            && hasCorrelation(expectedCorrelation, response::withAsynchronousCorrelationValue)).isPresent();
+            default -> false;
+        };
+    }
+
+    private static boolean hasCorrelation(byte[] expected, CorrelationReader reader) {
+        boolean[] matches = {false};
+        boolean present = reader.read(value -> {
+            if (value.remaining() != expected.length) return;
+            matches[0] = true;
+            for (byte expectedByte : expected) {
+                if (value.get() != expectedByte) {
+                    matches[0] = false;
+                    break;
+                }
+            }
+        });
+        return present && matches[0];
+    }
+
+    private static boolean isAsynchronousOperation(String operation) {
+        return asynchronousOperationCode(operation) >= 0;
+    }
+
+    private static long asynchronousOperationCode(String operation) {
+        return switch (operation) {
+            case "Cancel" -> 0x19;
+            case "Poll" -> 0x1a;
+            case "Process" -> 0x3a;
+            case "Query Asynchronous Requests" -> 0x39;
+            default -> -1;
+        };
+    }
+
+    @FunctionalInterface
+    private interface CorrelationReader {
+        boolean read(java.util.function.Consumer<java.nio.ByteBuffer> callback);
     }
 
     private CaseOutcome executeTypedRequest(CatalogLoader.CatalogCase testCase, long start,

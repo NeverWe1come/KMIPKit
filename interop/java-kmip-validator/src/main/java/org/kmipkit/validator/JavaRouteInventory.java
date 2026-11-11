@@ -1,6 +1,7 @@
 package org.kmipkit.validator;
 
 import org.kmipkit.extensions.ClientBatchItem;
+import org.kmipkit.extensions.Client;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -53,6 +54,11 @@ public final class JavaRouteInventory {
             return new Route(testCase.operation(), Status.WORKFLOW_UNAVAILABLE,
                     "This catalog case requires a server-initiated workflow; the Java consumer has no server request listener.");
         }
+        if (testCase.requires().path("requires_async").asBoolean(false)) {
+            return new Route(testCase.operation(), Status.TYPED_API_PENDING,
+                    "The installed Java package exposes the dedicated asynchronous executor, but this catalog recipe "
+                            + "does not supply a server-issued correlation value for its live exchange.");
+        }
         return routeFor(testCase.operation());
     }
 
@@ -70,7 +76,7 @@ public final class JavaRouteInventory {
         typed(routes, "Add Attribute", "addAttribute");
         typed(routes, "Adjust Attribute", "adjustAttribute");
         typed(routes, "Archive", "archive");
-        payloadOnly(routes, "Cancel", "CancelRequest");
+        asynchronousExecutable(routes, "Cancel", "executeCancel");
         typed(routes, "Certify", "certify");
         typed(routes, "Check", "check");
         typed(routes, "Create Key Pair", "createKeyPair");
@@ -98,10 +104,10 @@ public final class JavaRouteInventory {
         noPublicRoute(routes, "Notify", "Notify is a server-initiated operation outside the client request API.");
         typed(routes, "Obtain Lease", "obtainLease");
         typed(routes, "PKCS#11", "pkcs11");
-        payloadOnly(routes, "Poll", "PollRequest");
-        payloadOnly(routes, "Process", "ProcessRequest");
+        asynchronousExecutable(routes, "Poll", "executePoll");
+        asynchronousExecutable(routes, "Process", "executeProcess");
         noPublicRoute(routes, "Put", "The pinned Java package exposes no public Put request constructor.");
-        payloadOnly(routes, "Query Asynchronous Requests", "QueryAsyncRequestsRequest");
+        asynchronousExecutable(routes, "Query Asynchronous Requests", "executeQueryAsyncRequests");
         typed(routes, "Re-Provision", "reprovision");
         typed(routes, "Re-certify", "recertify");
         typed(routes, "Re-key", "rekey");
@@ -151,6 +157,19 @@ public final class JavaRouteInventory {
         routes.put(operation, new Route(operation, Status.PAYLOAD_ONLY,
                 "The Java package exposes " + requestType
                         + " payload construction, but not a ClientBatchItem route for sending it."));
+    }
+
+    private static void asynchronousExecutable(Map<String, Route> routes, String operation, String executor) {
+        boolean available = java.util.Arrays.stream(Client.class.getMethods())
+                .anyMatch(method -> method.getName().equals(executor)
+                        && Modifier.isPublic(method.getModifiers())
+                        && !Modifier.isStatic(method.getModifiers()));
+        if (!available) {
+            throw new IllegalStateException("Pinned Java package is missing asynchronous executor: " + executor);
+        }
+        routes.put(operation, new Route(operation, Status.EXECUTABLE_TYPED,
+                "JavaKmipDriver constructs the operation-specific asynchronous request and calls Client."
+                        + executor + " directly."));
     }
 
     private static void noPublicRoute(Map<String, Route> routes, String operation, String reason) {
