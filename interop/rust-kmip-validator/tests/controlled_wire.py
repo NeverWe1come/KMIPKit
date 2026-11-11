@@ -5,6 +5,7 @@ inventory. This fixture codec never imports an implementation codec.
 """
 from datetime import datetime, timezone
 import json
+import re
 from pathlib import Path
 import xml.etree.ElementTree as ET
 
@@ -51,10 +52,10 @@ def scalar(tag, kind, value):
     if kind == 9 and isinstance(value, str):
         return int(datetime.fromisoformat(value.replace('Z', '+00:00')).timestamp())
     if isinstance(value, str) and not value.lstrip('-').isdecimal():
-        if kind == 2 and '|' in value:
+        if kind == 2 and ('|' in value or ' ' in value):
             result = 0
-            for bit in value.split('|'):
-                result |= VALUES[tag, name_key(bit)]
+            for bit in re.split(r'[|\s]+', value):
+                result |= int(bit, 16) if bit.startswith('0x') else VALUES[tag, name_key(bit)]
             return result
         return VALUES[tag, name_key(value)]
     return int(value)
@@ -128,7 +129,7 @@ def receive(channel, encoding, transport, ttlv_receive):
             if not part:
                 raise AssertionError('controlled HTTP body truncated')
             body.extend(part)
-        return body
+        return bytes(body)
     if encoding == 'TTLV':
         return ttlv_receive(channel)
     body = bytearray()

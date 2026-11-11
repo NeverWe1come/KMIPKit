@@ -100,7 +100,13 @@ pub(crate) fn client(connection: &Connection) -> Result<Client> {
     } else {
         kmipkit::ProtocolVersion::V2_1
     };
-    let configuration = ClientConfiguration::new(registry).with_protocol_version(version);
+    let configuration = ClientConfiguration::new(registry)
+        .with_protocol_version(version)
+        .with_wire_encoding(match connection.encoding.as_str() {
+            "JSON" => kmipkit_transport::WireEncoding::Json,
+            "XML" => kmipkit_transport::WireEncoding::Xml,
+            _ => kmipkit_transport::WireEncoding::Ttlv,
+        });
     Client::new(configuration, transport).map_err(|_| "client configuration rejected")
 }
 
@@ -501,17 +507,16 @@ pub(crate) fn execute(
                     .get_constraints_with_options(&limits, &options)
                     .map(|response| observed(&response));
             }
-            request => return execute_batch(client, connection, request, &options, &limits),
+            request => return execute_batch(client, connection, request, &limits),
         }
     }
-    execute_batch(client, connection, request, &options, &limits)
+    execute_batch(client, connection, request, &limits)
 }
 
 fn execute_batch(
     client: &mut Client,
     connection: &Connection,
     request: ClientRequest,
-    options: &RequestOptions,
     limits: &kmipkit::ttlv::codec::CodecLimits,
 ) -> std::result::Result<Observed, kmipkit::ClientError> {
     let batch = authenticated_batch(connection, request).map_err(|_| {
@@ -521,7 +526,7 @@ fn execute_batch(
             std::io::Error::other("credential unavailable"),
         )
     })?;
-    let response = client.execute_with_options(batch, limits, options)?;
+    let response = client.execute(batch, limits)?;
     response.get(0).map(observed).ok_or_else(|| {
         kmipkit::ClientError::validation(
             kmipkit::ClientCauseCategory::InvalidInput,
@@ -568,11 +573,7 @@ pub(crate) fn batch(
             std::io::Error::other("credential unavailable"),
         )
     })?;
-    let response = client.execute_with_options(
-        batch,
-        &kmipkit::ttlv::codec::CodecLimits::defaults(),
-        &options(connection),
-    )?;
+    let response = client.execute(batch, &kmipkit::ttlv::codec::CodecLimits::defaults())?;
     Ok(response.iter().map(observed).collect())
 }
 

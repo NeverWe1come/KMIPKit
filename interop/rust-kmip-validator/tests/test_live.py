@@ -17,6 +17,7 @@ import subprocess
 import tempfile
 import threading
 import time
+import traceback
 import unittest
 import xml.etree.ElementTree as ET
 
@@ -233,7 +234,7 @@ class ControlledPeer:
                         controlled_wire.send(channel, wire_reply, self.encoding, self.transport)
         except Exception as error:
             if not self.stop.is_set():
-                self.errors.append(type(error).__name__)
+                self.errors.append(type(error).__name__ + ":" + ",".join(f"{Path(frame.filename).name}:{frame.lineno}" for frame in traceback.extract_tb(error.__traceback__)))
 
     def __enter__(self):
         self.thread.start()
@@ -451,6 +452,7 @@ class LiveContract(unittest.TestCase):
         del self.fixture_axes
 
     def catalog_scenario(self, version, api="typed-protocol"):
+        encoding, transport = getattr(self, "fixture_axes", ("TTLV", "raw_tls"))
         elements = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text())["elements"]
         operations = {int(e["wire_value"], 16): e["name"] for e in elements if e["kind"] == "enumeration_value" and e["parent_element_ids"] == ["KMIPKIT-ELEM-ENUMERATION-OPERATION"] and e.get("allocation") == "assigned"}
         cipher = (ROOT / "interop/rust-kmip-validator/tests/fixtures/aes256-cbc.bin").read_bytes()
@@ -522,7 +524,8 @@ class LiveContract(unittest.TestCase):
         cases = CATALOG["test_cases"]
         environment_non_runs = {c["case_id"] for c in cases if c["requires"].get("workflow_type") == "server_to_client" or version not in c["execution"]["protocol_versions"] or version == "2.0" and c["operation"] in {"Ping", "Process", "Query Asynchronous Requests", "Set Defaults"}}
         with ControlledPeer(self.pki, answer) as peer:
-            _, report = self.command(self.connection(peer.port, version=version, api=api, mutations=True), cases)
+            peer.encoding, peer.transport = encoding, transport
+            _, report = self.command(self.connection(peer.port, version=version, api=api, encoding=encoding, transport=transport, mutations=True), cases)
             gaps = [(c["case_id"], c["diagnostic"]) for c in report["cases"] if c["status"] == "not_run" and c["case_id"] not in environment_non_runs and "library_api_unavailable:" not in c["diagnostic"] and "library_preflight_rejection:" not in c["diagnostic"]]
             self.assertEqual(gaps, [])
             failures = [(c["case_id"], c["diagnostic"]) for c in report["cases"] if c["status"] == "failed"]
@@ -551,7 +554,7 @@ class LiveContract(unittest.TestCase):
             if evidence:
                 output = Path(evidence)
                 output.mkdir(parents=True, exist_ok=True)
-                (output / f"rust-controlled-{version}-{api}.json").write_text(json.dumps(report, indent=2) + "\n")
+                (output / f"rust-controlled-{version}-{api}-{encoding}-{transport}.json").write_text(json.dumps(report, indent=2) + "\n")
             self.assertEqual(len(peer.request_trees), peer.connections)
             self.assertEqual(len(peer.response_trees), len(peer.request_trees))
             return report, tuple(peer.request_trees), tuple(peer.response_trees)
