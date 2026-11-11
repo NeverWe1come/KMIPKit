@@ -73,6 +73,27 @@ class MatrixContract(unittest.TestCase):
         self.assertEqual(hashlib.sha256(expected_wire).hexdigest(), event['decode_input_sha256'])
         self.assertNotIn('response_tree_sha256', event)
 
+    def test_enumeration_extension_range_constructs_an_open_value(self):
+        target = next(target for target in CATALOG['normative_targets']
+                      if target['kind'] == 'enumeration_value'
+                      and target.get('allocation') == 'extension'
+                      and target.get('wire_value', '').startswith('8X'))
+        cell = self.cell('kmipkit_ttlv::Value::enumeration', target['target_id'])
+        process, report = self.run_matrix([cell])
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual(report['events'][0]['status'], 'passed')
+        tag = int(target['parent_element_ids'][0].rsplit('-', 1)[1], 16)
+        expected = json.dumps([[tag, 5, 0x80000000]], separators=(',', ':')).encode()
+        self.assertEqual(hashlib.sha256(expected).hexdigest(), report['events'][0]['request_tree_sha256'])
+
+    def test_operation_target_constructs_its_operation_enum_item(self):
+        cell = self.cell('kmipkit_ttlv::Item::new', 'KMIPKIT-ELEM-OP-C2S-QUERY')
+        process, report = self.run_matrix([cell])
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual(report['events'][0]['status'], 'passed')
+        self.assertEqual(hashlib.sha256(b'[[4325468,5,24]]').hexdigest(),
+                         report['events'][0]['request_tree_sha256'])
+
     def test_all_generic_value_constructors_roundtrip_their_own_data_type(self):
         kinds = {'big_integer': 'BIG-INTEGER', 'boolean': 'BOOLEAN', 'byte_string': 'BYTE-STRING',
                  'date_time': 'DATE-TIME', 'date_time_extended': 'DATE-TIME-EXTENDED',
