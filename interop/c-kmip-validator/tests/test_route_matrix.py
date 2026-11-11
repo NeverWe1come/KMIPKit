@@ -48,5 +48,57 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertIn('validate_route_evidence.py', workflow)
 
 
+    def test_installed_scalar_roundtrip_checks_exact_value(self):
+        from artifact_support import INSTALL
+        abi = self.runner.InstalledAbi(INSTALL / 'lib/libkmipkit_ffi.so')
+        fixture = (0x420028, 5, bytes.fromhex('00000003'))
+        wire = abi.execute('kmipkit_ttlv_decode', fixture)
+        self.assertEqual(wire[8:12], fixture[2])
+        self.assertIn('kmipkit_ttlv_decode', abi.called)
+
+    def test_named_route_is_not_credited_when_another_symbol_was_called(self):
+        from artifact_support import INSTALL
+        abi = self.runner.InstalledAbi(INSTALL / 'lib/libkmipkit_ffi.so')
+        with self.assertRaisesRegex(ValueError, 'named_route_not_invoked'):
+            abi.execute('kmipkit_ttlv_value_boolean', (0x420028, 5, bytes.fromhex('00000003')))
+
+    def test_codec_roundtrips_controlled_response_in_all_encodings(self):
+        from route_peer import Codec, parse, response
+        from artifact_support import ROOT
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        codec = Codec(catalog)
+        wire = response((1, 10, 20), 1)
+        for encoding in ('TTLV', 'JSON', 'XML'):
+            self.assertEqual(codec.decode(codec.encode(wire, encoding), encoding), parse(wire))
+
+    def test_positive_case_cannot_pass_by_operation_name_alone(self):
+        from route_peer import assert_recipe, parse, tlv
+        # This contains the correct Query operation but omits Query Function.
+        integer = lambda tag, value: tlv(tag, 2, value.to_bytes(4, 'big'))
+        request = tlv(0x420078, 1, integer(0x42006A, 2) + integer(0x42006B, 1)
+                      + integer(0x42000D, 1) + tlv(0x42005C, 5, (24).to_bytes(4, 'big')))
+        with self.assertRaisesRegex(ValueError, 'fixture_query_function_mismatch'):
+            assert_recipe(parse(request), 'test-op-query', '2.1')
+
+
+    def test_lifecycle_peer_requires_cleanup_and_checks_illegal_destroy(self):
+        import route_peer
+        self.assertTrue(hasattr(route_peer, 'verify_lifecycle'), 'stateful lifecycle verification is missing')
+        from route_peer import parse, response
+        effects = route_peer.verify_lifecycle((1, 18, 20, 19, 20), parse(response((1, 18, 20, 19, 20), 1)))
+        self.assertIn('illegal_destroy_rejected', effects)
+        self.assertEqual(effects[-1], 'destroyed')
+        with self.assertRaisesRegex(ValueError, 'fixture_cleanup_missing'):
+            route_peer.verify_lifecycle((1,), parse(response((1,), 1)))
+
+    def test_reserved_tag_decoder_is_checked_as_rejection(self):
+        from artifact_support import INSTALL
+        abi = self.runner.InstalledAbi(INSTALL / 'lib/libkmipkit_ffi.so')
+        self.assertTrue(hasattr(abi, 'execute_reserved_tag'), 'reserved tag negative recipe is missing')
+        wire = abi.execute_reserved_tag('kmipkit_ttlv_decode', 0x420009)
+        self.assertEqual(wire[:3], bytes.fromhex('420009'))
+        self.assertIn('kmipkit_ttlv_decode', abi.called)
+
+
 if __name__ == '__main__':
     unittest.main()
