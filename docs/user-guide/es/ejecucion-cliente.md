@@ -874,6 +874,53 @@ buffer ni copias de TLS, del sistema operativo o de bibliotecas externas. La
 política aprobada y sus límites exactos están en
 [ADR-0012](../../adr/0012-caller-requested-wire-encoding-policy.md).
 
+## Búsqueda y ciclo de vida con builders
+
+KMIPKIT-0101 añade builders Rust para Locate, Activate, Archive, Recover,
+Revoke, Re-key, Re-key Key Pair y Re-certify. Cada builder recibe valores
+semánticos y produce la request tipada existente; Locate y Re-key conservan
+los modelos tipados de filtros y atributos. El builder permite validar en
+local, crear un elemento de batch o ejecutar un intercambio. El resultado
+asíncrono Pending y su valor de correlación quedan visibles para quien llama;
+el cliente no ejecuta Poll ni reintentos automáticos.
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, FluentBuildError};
+use kmipkit_protocol::{AttributeSet, RevocationReason, UniqueIdentifier};
+
+#[allow(dead_code)]
+fn fluent_lifecycle_requests(client: &mut Client) -> Result<(), FluentBuildError> {
+    let key_id = UniqueIdentifier::from("existing-key");
+    client.request().activate().unique_identifier(key_id.clone()).build_request()?;
+    client.request().archive().unique_identifier(key_id.clone()).build_request()?;
+    client.request().recover().unique_identifier(key_id.clone()).build_request()?;
+    client.request().revoke(RevocationReason::KEY_COMPROMISE)
+        .unique_identifier(key_id.clone())
+        .revocation_message("nota de auditoría indicada por el operador")
+        .compromise_occurrence_date(1_700_000_000)
+        .build_request()?;
+    client.request().locate(AttributeSet::new())
+        .maximum_items(25).offset_items(0).build_request()?;
+    client.request().rekey().unique_identifier(key_id.clone()).build_request()?;
+    client.request().rekey_key_pair().private_key_unique_identifier(key_id).build_request()?;
+    client.request().recertify()
+        .unique_identifier(UniqueIdentifier::from("existing-certificate"))
+        .build_request()?;
+    Ok(())
+}
+
+fn main() {
+    let _ = fluent_lifecycle_requests;
+}
+```
+
+Los modelos de request tipados siguen determinando los campos obligatorios,
+la cardinalidad y las restricciones de versión. Por ejemplo, Re-certify exige
+un identificador de certificado origen o un valor de solicitud de certificado
+con su tipo; Revoke rechaza Compromise Occurrence Date si el motivo no es Key
+Compromise o CA Compromise. `RequestOptions` de intercambio se configura por
+separado del Asynchronous Indicator de la cabecera.
+
 ## Extensiones de mensaje
 
 KMIP §9.13 exige rechazar una extensión Message Extension crítica que no se

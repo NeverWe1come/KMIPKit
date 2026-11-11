@@ -770,6 +770,53 @@ cleared before reallocation, or copies owned by TLS, the operating system, or
 third-party libraries. The approved policy and its precise limits are in
 [ADR-0012](../../adr/0012-caller-requested-wire-encoding-policy.md).
 
+## Fluent object lookup and lifecycle
+
+KMIPKIT-0101 adds Rust builders for Locate, Activate, Archive, Recover, Revoke,
+Re-key, Re-key Key Pair, and Re-certify. Each builder takes semantic values
+and produces the existing typed request; Locate and Re-key preserve their
+existing typed attribute and filter models. A builder can validate locally,
+produce a batch item, or execute one exchange. An asynchronous Pending result
+and its correlation value remain visible to the caller; the client does not
+Poll or retry automatically.
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, FluentBuildError};
+use kmipkit_protocol::{AttributeSet, RevocationReason, UniqueIdentifier};
+
+#[allow(dead_code)]
+fn fluent_lifecycle_requests(client: &mut Client) -> Result<(), FluentBuildError> {
+    let key_id = UniqueIdentifier::from("existing-key");
+    client.request().activate().unique_identifier(key_id.clone()).build_request()?;
+    client.request().archive().unique_identifier(key_id.clone()).build_request()?;
+    client.request().recover().unique_identifier(key_id.clone()).build_request()?;
+    client.request().revoke(RevocationReason::KEY_COMPROMISE)
+        .unique_identifier(key_id.clone())
+        .revocation_message("operator supplied audit note")
+        .compromise_occurrence_date(1_700_000_000)
+        .build_request()?;
+    client.request().locate(AttributeSet::new())
+        .maximum_items(25).offset_items(0).build_request()?;
+    client.request().rekey().unique_identifier(key_id.clone()).build_request()?;
+    client.request().rekey_key_pair().private_key_unique_identifier(key_id).build_request()?;
+    client.request().recertify()
+        .unique_identifier(UniqueIdentifier::from("existing-certificate"))
+        .build_request()?;
+    Ok(())
+}
+
+fn main() {
+    let _ = fluent_lifecycle_requests;
+}
+```
+
+The typed request models remain authoritative for required fields, field
+cardinality, and version checks. For example, Re-certify requires a source
+certificate identifier or a certificate request value and its type; Revoke
+rejects a Compromise Occurrence Date unless the reason is Key Compromise or CA
+Compromise. Supplying exchange-local `RequestOptions` remains separate from
+the Request Header Asynchronous Indicator.
+
 ## Message Extensions
 
 KMIP §9.13 requires rejection of an unrecognized critical Message

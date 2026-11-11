@@ -123,7 +123,7 @@ fn lifecycle_constructors_build_their_typed_request_variants() {
 }
 
 #[test]
-fn constructors_preserve_semantic_identifiers_filters_and_revocation_fields() {
+fn lifecycle_builders_preserve_optional_identifiers_and_activation_identifier() {
     let (mut client, _, _) = client_for(ExchangeScript::FailBeforeWrite);
     let request = client
         .request()
@@ -160,7 +160,10 @@ fn constructors_preserve_semantic_identifiers_filters_and_revocation_fields() {
         panic!("the request remains Activate");
     };
     assert_eq!(request.unique_identifier(), Some(&activation_id));
+}
 
+#[test]
+fn revoke_builder_preserves_semantic_revocation_fields() {
     let (mut client, _, _) = client_for(ExchangeScript::FailBeforeWrite);
     let revoke_id = UniqueIdentifier::from("revoke-id");
     let item = client
@@ -184,7 +187,10 @@ fn constructors_preserve_semantic_identifiers_filters_and_revocation_fields() {
         Some("operator supplied message")
     );
     assert_eq!(request.compromise_occurrence_date(), Some(1_700_000_000));
+}
 
+#[test]
+fn locate_builder_preserves_explicit_attributes_and_filters() {
     let comment_tag = RawTag::new(0x0042_00FD)
         .expect("Comment has an assigned KMIP tag")
         .try_checked()
@@ -213,14 +219,21 @@ fn constructors_preserve_semantic_identifiers_filters_and_revocation_fields() {
     assert_eq!(request.attributes().len(), 1);
     assert_eq!(request.attributes().as_items()[0].tag().raw(), 0x0042_00FD);
     assert_eq!(
-        request.storage_status_mask().map(|value| value.raw()),
+        request
+            .storage_status_mask()
+            .map(kmipkit_protocol::StorageStatusMask::raw),
         Some(5)
     );
     assert_eq!(
-        request.object_group_member().map(|value| value.raw()),
+        request
+            .object_group_member()
+            .map(kmipkit_protocol::ObjectGroupMember::raw),
         Some(9)
     );
+}
 
+#[test]
+fn rekey_builder_preserves_identifier_and_emitted_offset() {
     let (mut client, _, _) = client_for(ExchangeScript::FailBeforeWrite);
     let rekey_id = UniqueIdentifier::from("rekey-id");
     let request = client
@@ -365,7 +378,7 @@ fn revoke_execute_exposes_success_failure_and_pending_without_follow_up() {
             .outcome()
             .result()
             .reason()
-            .map(|reason| reason.raw()),
+            .map(kmipkit_protocol::ResultReason::raw),
         Some(OBJECT_NOT_FOUND)
     );
     assert_eq!(fake.borrow().exchange_count(), 1);

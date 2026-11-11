@@ -1034,6 +1034,8 @@ impl BoundaryAudit {
             is_exact_fluent_catalogued_attribute(fluent_root_scope, impl_type, signature);
         let fluent_explicit_attribute_item =
             is_exact_fluent_explicit_attribute_item(fluent_root_scope, impl_type, signature);
+        let fluent_operation_ttlv_value =
+            is_exact_fluent_operation_ttlv_value(fluent_root_scope, impl_type, signature);
         let fluent_builder_explicit_value =
             is_exact_fluent_builder_explicit_value(fluent_root_scope, impl_type, signature);
         let s2c_root_scope = self.is_source_root(Path::new("server_to_client.rs"));
@@ -1043,7 +1045,8 @@ impl BoundaryAudit {
             || error_response_ttlv_callback
             || async_outcome_callback
             || error_validation_source
-            || fluent_catalogued_attribute;
+            || fluent_catalogued_attribute
+            || fluent_operation_ttlv_value;
         if has_public_type_or_const_generics(signature) && !approved_generic_signature {
             finder
                 .violations
@@ -1070,6 +1073,7 @@ impl BoundaryAudit {
                             || signature.ident == "attribute_at" && index == 2
                             || signature.ident == "object_item" && index == 2)
                     || fluent_builder_explicit_value && index == 1
+                    || fluent_operation_ttlv_value && index == 1
                 {
                     continue;
                 }
@@ -2456,6 +2460,50 @@ fn is_exact_fluent_builder_explicit_value(
     }
 }
 
+fn is_exact_fluent_operation_ttlv_value(
+    fluent_root_scope: bool,
+    impl_type: Option<&str>,
+    signature: &syn::Signature,
+) -> bool {
+    let expected_argument = match (impl_type, signature.ident.to_string().as_str()) {
+        (Some("LocateBuilder"), "attributes")
+        | (
+            Some("RekeyKeyPairBuilder"),
+            "common_attributes" | "private_key_attributes" | "public_key_attributes",
+        ) => "AttributeSet",
+        (Some("RekeyBuilder" | "RecertifyBuilder"), "attributes" | "protection_storage_masks")
+        | (
+            Some("RekeyKeyPairBuilder"),
+            "common_protection_storage_masks"
+            | "private_protection_storage_masks"
+            | "public_protection_storage_masks",
+        ) => "Structure",
+        _ => return false,
+    };
+    fluent_root_scope
+        && signature.generics.params.is_empty()
+        && signature.generics.where_clause.is_none()
+        && signature.asyncness.is_none()
+        && signature.constness.is_none()
+        && signature.unsafety.is_none()
+        && signature.abi.is_none()
+        && signature.variadic.is_none()
+        && signature.inputs.len() == 2
+        && matches!(&signature.output, syn::ReturnType::Type(_, output) if is_plain_type_path(output, "Self"))
+        && matches!(
+            signature.inputs.first(),
+            Some(syn::FnArg::Receiver(receiver))
+                if receiver.reference.is_none()
+                    && receiver.colon_token.is_none()
+                    && receiver.attrs.is_empty()
+        )
+        && matches!(
+            signature.inputs.get(1),
+            Some(syn::FnArg::Typed(argument))
+                if argument.attrs.is_empty() && is_plain_type_path(&argument.ty, expected_argument)
+        )
+}
+
 fn is_plain_reference_to_str(ty: &Type) -> bool {
     matches!(ty, Type::Reference(reference)
         if reference.lifetime.is_none()
@@ -2569,6 +2617,76 @@ fn fluent_builder_signature_exceptions_are_exact_and_method_scoped() {
         Some("RegisterBuilder"),
         &unbounded_object
     ));
+}
+
+#[test]
+fn fluent_operation_ttlv_inputs_are_exact_and_method_scoped() {
+    for (impl_type, signature) in [
+        (
+            "LocateBuilder",
+            "fn attributes(self, value: AttributeSet) -> Self",
+        ),
+        (
+            "RekeyBuilder",
+            "fn attributes(self, value: Structure) -> Self",
+        ),
+        (
+            "RekeyBuilder",
+            "fn protection_storage_masks(self, value: Structure) -> Self",
+        ),
+        (
+            "RekeyKeyPairBuilder",
+            "fn private_key_attributes(self, value: AttributeSet) -> Self",
+        ),
+        (
+            "RekeyKeyPairBuilder",
+            "fn common_protection_storage_masks(self, value: Structure) -> Self",
+        ),
+        (
+            "RecertifyBuilder",
+            "fn protection_storage_masks(self, value: Structure) -> Self",
+        ),
+    ] {
+        let signature = syn::parse_str::<syn::Signature>(signature).unwrap();
+        assert!(is_exact_fluent_operation_ttlv_value(
+            true,
+            Some(impl_type),
+            &signature
+        ));
+        assert!(!is_exact_fluent_operation_ttlv_value(
+            false,
+            Some(impl_type),
+            &signature
+        ));
+        assert!(!is_exact_fluent_operation_ttlv_value(
+            true,
+            Some("OtherBuilder"),
+            &signature
+        ));
+    }
+
+    for (impl_type, signature) in [
+        ("LocateBuilder", "fn attributes(self, value: Item) -> Self"),
+        (
+            "RekeyBuilder",
+            "fn attributes(self, value: Vec<Item>) -> Self",
+        ),
+        (
+            "RekeyKeyPairBuilder",
+            "fn private_key_attributes(self, value: Structure) -> Self",
+        ),
+        (
+            "RecertifyBuilder",
+            "fn attributes<T>(self, value: Structure) -> Self",
+        ),
+    ] {
+        let signature = syn::parse_str::<syn::Signature>(signature).unwrap();
+        assert!(!is_exact_fluent_operation_ttlv_value(
+            true,
+            Some(impl_type),
+            &signature
+        ));
+    }
 }
 
 fn is_exact_error_validation_source(

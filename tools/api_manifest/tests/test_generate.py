@@ -24,6 +24,7 @@ GENERATOR = ROOT / "tools" / "api_manifest" / "generate.py"
 MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 SCHEMA = ROOT / "specification" / "api" / "public-api.schema.json"
 CATALOG = ROOT / "specification" / "catalog" / "kmip-2.1.json"
+DRAFT_CATALOG = ROOT / "specification" / "api" / "kmip-3.0-draft-api.json"
 MINIMAL_FIXTURE = ROOT / "tools" / "api_manifest" / "tests" / "fixtures" / "registry-manifest.json"
 PUBLIC_API_V1_FIXTURE = ROOT / "tools" / "api_manifest" / "tests" / "fixtures" / "public-api-v1.json"
 GENERATED_OUTPUTS = (
@@ -111,22 +112,30 @@ def _create_repo(parent: Path) -> Path:
     catalog_path = root / "specification" / "catalog" / CATALOG.name
     catalog_path.parent.mkdir(parents=True)
     shutil.copy2(CATALOG, catalog_path)
+    if DRAFT_CATALOG.is_file():
+        draft_catalog_path = api_dir / DRAFT_CATALOG.name
+        shutil.copy2(DRAFT_CATALOG, draft_catalog_path)
+        for relative_path in (
+            "specification/oasis/kmip-3.0/upstream/kmip-spec-v3.0.html",
+            "specification/oasis/kmip-3.0/SOURCES.md",
+            "specification/oasis/kmip-3.0/CHECKSUMS.sha256",
+        ):
+            source_path = ROOT / relative_path
+            destination = root / relative_path
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source_path, destination)
 
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
     dependency_matrix = ROOT / "specs" / "043-public-api-bindings" / "contracts" / "operation-dependencies.md"
     dependency_destination = root / "specs" / "043-public-api-bindings" / "contracts" / dependency_matrix.name
     dependency_destination.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(dependency_matrix, dependency_destination)
+    referenced_spec_ids: set[str] = set()
     for operation in manifest.get("operations", []):
         dependency = operation.get("ownerDependency", {})
         owner_id = dependency.get("specId")
-        if not isinstance(owner_id, str):
-            continue
-        owner_directory = generate._feature_directory(ROOT, owner_id)
-        source_path = owner_directory / "spec.md"
-        destination = root / "specs" / owner_directory.name / "spec.md"
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source_path, destination)
+        if isinstance(owner_id, str):
+            referenced_spec_ids.add(owner_id)
     referenced_paths: set[str] = set()
     relocated_generated_evidence: dict[str, str] = {}
     for collection_name in (
@@ -136,6 +145,10 @@ def _create_repo(parent: Path) -> Path:
         "approvedExclusions",
     ):
         for record in manifest.get(collection_name, []):
+            for spec_field in ("candidateSpecId", "featureSpecId", "ownerSpecId"):
+                spec_id = record.get(spec_field)
+                if isinstance(spec_id, str):
+                    referenced_spec_ids.add(spec_id)
             evidence_paths = record.get("evidencePaths", [])
             if isinstance(evidence_paths, list):
                 for index, evidence_path in enumerate(evidence_paths):
@@ -168,6 +181,13 @@ def _create_repo(parent: Path) -> Path:
                     evidence_ids[index] = relocated_path
                 else:
                     referenced_paths.add(evidence_id)
+
+    for spec_id in referenced_spec_ids:
+        owner_directory = generate._feature_directory(ROOT, spec_id)
+        source_path = owner_directory / "spec.md"
+        destination = root / "specs" / owner_directory.name / "spec.md"
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source_path, destination)
 
     # KMIPKIT-0018 retains a stale Draft status and relies on its merged PR
     # approval record in the public API feature evidence during owner checks.
@@ -260,6 +280,25 @@ def _apply_input_array_contract(manifest: dict[str, object]) -> None:
 
 
 class ManifestGeneratorCliTests(unittest.TestCase):
+    def test_temporary_repository_copies_candidate_spec_sources(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = _create_repo(Path(directory))
+
+            candidate_spec = root / "specs" / "101-fluent-lifecycle-operations" / "spec.md"
+
+            self.assertTrue(candidate_spec.is_file())
+
+    def test_temporary_repository_copies_enabled_draft_catalog_inputs(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = _create_repo(Path(directory))
+
+            self.assertTrue((root / "specification/api/kmip-3.0-draft-api.json").is_file())
+            self.assertTrue(
+                (root / "specification/oasis/kmip-3.0/upstream/kmip-spec-v3.0.html").is_file()
+            )
+            self.assertTrue((root / "specification/oasis/kmip-3.0/SOURCES.md").is_file())
+            self.assertTrue((root / "specification/oasis/kmip-3.0/CHECKSUMS.sha256").is_file())
+
     def test_java_parity_json_chunks_remain_stable_after_an_array_insertion(self) -> None:
         baseline = [
             {"id": f"candidate-{index}", "payload": "x" * 32}

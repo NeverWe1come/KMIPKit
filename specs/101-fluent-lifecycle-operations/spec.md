@@ -1,7 +1,7 @@
 # Feature Specification: Fluent Lifecycle and Lookup Operations (KMIPKIT-0101)
 
 **Branch**: `feature/KMIPKIT-0101-fluent-lifecycle-operations`  
-**Base**: PR #183 head `31bd4ec1b`  
+**Base**: PR #183 head `8b4724ca5` after rebase
 **Status**: Approved within the maintainer's direct authorization of the complete KMIPKIT-0093 plan.  
 **Owning identifier**: KMIPKIT-0101
 
@@ -37,8 +37,11 @@ Revoke, Re-key, Re-key Key Pair, and Re-certify. It extends the existing
   fields present in its existing request model, preserve caller-supplied
   values and order, and offer `validate`, `build_request`,
   `to_batch_item`, and one-exchange `execute` operations. Required values MUST
-  be validated locally by the existing typed request validator. No optional
-  filter, identifier, reason, offset, or attribute may be invented.
+  be validated locally by the existing typed request validator. Optional
+  identifiers MUST remain omittable where the typed model allows omission; the
+  Locate constructor MUST require the caller's `AttributeSet`, including when
+  the caller intentionally supplies an empty set. No optional filter,
+  identifier, reason, offset, or attribute may be invented.
 - **KMIPKIT-0101-FR-003**: Locate MUST accept a prebuilt `AttributeSet` and
   operation-specific paging and object-selection filters. Attribute type,
   value, multiplicity, and version checks MUST use existing catalog and typed
