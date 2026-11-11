@@ -86,10 +86,14 @@ peer under both versions. It directly invokes the public Query response
 readers and verifies the returned field count, kind, and raw operation value.
 The same test records the expected unused and reserved tag decoder rejections
 for both versions, and checks that an extension-range tag can be constructed,
-viewed, encoded, and decoded through the installed TTLV API. CI validates these per-cell events against the shared matrix,
+viewed, and decoded from a deterministic wire fixture through the installed
+TTLV API. The pinned public `TtlvCodec` exposes no generic encode operation;
+typed request bytes are instead checked as captured by the controlled peer.
+CI validates these per-cell events against the shared matrix,
 uploads `route-execution-evidence.json` with the generated ledger, and compares
 that ledger with the checked-in `route-evidence-ledger.json`. These recipes
-execute 32 cells; the ledger keeps every other Java matrix cell pending and
-does not imply vendor interoperability or full-matrix completion. Activation
-Date and the rest of the attribute routes remain pending until their typed
-construction, request/response, and controlled-peer recipes execute.
+execute 68 cells; the ledger keeps every other Java matrix cell pending and
+does not imply vendor interoperability or full-matrix completion. The
+Activation Date recipe exercises generic and typed TTLV routes, both public
+Get Attributes constructors, the typed response reader, and both protocol
+versions against the controlled peer. Other attribute routes remain pending.

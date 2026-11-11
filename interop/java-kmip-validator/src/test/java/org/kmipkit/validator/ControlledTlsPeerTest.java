@@ -10,10 +10,10 @@ import org.kmipkit.extensions.ClientBatch;
 import org.kmipkit.extensions.ClientBatchItem;
 import org.kmipkit.extensions.ClientBatchItemResult;
 import org.kmipkit.extensions.ClientBatchResponse;
-import org.kmipkit.extensions.GetAttributesRequest;
 import org.kmipkit.extensions.AttributeReference;
-import org.kmipkit.extensions.UniqueIdentifier;
 import org.kmipkit.extensions.AttributeSet;
+import org.kmipkit.extensions.GetAttributesRequest;
+import org.kmipkit.extensions.UniqueIdentifier;
 import org.kmipkit.extensions.QueryResponse;
 import org.kmipkit.extensions.QueryResponseField;
 import org.kmipkit.extensions.QueryResponseFieldKind;
@@ -28,8 +28,8 @@ import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvItemType;
 import org.kmipkit.ttlv.StandardAttribute;
 import org.kmipkit.ttlv.TtlvStructure;
-import org.kmipkit.ttlv.TypedAttribute;
 import org.kmipkit.ttlv.TtlvValue;
+import org.kmipkit.ttlv.TypedAttribute;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -1231,20 +1231,9 @@ class ControlledTlsPeerTest {
                     : "org.kmipkit.extensions.GetAttributesRequest.toBatchItem";
             String requestHash = normalizedTreeSha256(observedRequest);
             String responseHash = normalizedTreeSha256(activationDateResponse(minor));
-            appendRouteEvent(events, "test-attr-activation-date", routeId,
-                    "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES", symbol, "java.execute.typed-batch",
-                    "org.kmipkit.extensions.Client.execute", "construct", protocolVersion,
-                    "raw_tls", requestHash, null);
-            ObjectNode sent = appendRouteEvent(events, "test-attr-activation-date", routeId,
-                    "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES", symbol, "java.execute.typed-batch",
-                    "org.kmipkit.extensions.Client.execute", "send", protocolVersion,
-                    "raw_tls", requestHash, null);
-            sent.put("request_delivery_state", "response_received");
-            sent.put("transport_invocation_count", 1);
-            appendRouteEvent(events, "test-attr-activation-date", routeId,
-                    "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES", symbol, "java.execute.typed-batch",
-                    "org.kmipkit.extensions.Client.execute", "decode", protocolVersion,
-                    "raw_tls", null, responseHash);
+            appendTypedNetworkRouteEvents(events, "test-attr-activation-date", routeId,
+                    "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES", symbol, protocolVersion,
+                    requestHash, responseHash);
         }
         appendRouteEvent(events, "test-attr-activation-date",
                 "java.typed-protocol.function.client_batch_item_response_get_attributes",
@@ -1357,19 +1346,8 @@ class ControlledTlsPeerTest {
             String requestTreeHash, String responseTreeHash) {
         String routeId = "java.typed-protocol.client_batch_item.query";
         String symbol = "org.kmipkit.extensions.ClientBatchItem.query";
-        String executionRoute = "java.execute.typed-batch";
-        String executionSymbol = "org.kmipkit.extensions.Client.execute";
-        appendRouteEvent(events, "test-op-query", routeId, "KMIPKIT-ELEM-OP-C2S-QUERY", symbol,
-                executionRoute, executionSymbol, "construct", protocolVersion, "raw_tls",
-                requestTreeHash, null);
-        ObjectNode sent = appendRouteEvent(events, "test-op-query", routeId,
-                "KMIPKIT-ELEM-OP-C2S-QUERY", symbol, executionRoute, executionSymbol,
-                "send", protocolVersion, "raw_tls", requestTreeHash, null);
-        sent.put("request_delivery_state", "response_received");
-        sent.put("transport_invocation_count", 1);
-        appendRouteEvent(events, "test-op-query", routeId, "KMIPKIT-ELEM-OP-C2S-QUERY", symbol,
-                executionRoute, executionSymbol, "decode", protocolVersion, "raw_tls",
-                null, responseTreeHash);
+        appendTypedNetworkRouteEvents(events, "test-op-query", routeId,
+                "KMIPKIT-ELEM-OP-C2S-QUERY", symbol, protocolVersion, requestTreeHash, responseTreeHash);
         appendRouteEvent(events, "test-op-query", "java.typed-protocol.function.client_batch_item_response_query",
                 "KMIPKIT-ELEM-OP-C2S-QUERY", "org.kmipkit.extensions.ClientBatchItemResult.queryResponse",
                 null, null, "decode", protocolVersion, null, null, responseTreeHash);
@@ -1379,6 +1357,24 @@ class ControlledTlsPeerTest {
         appendRouteEvent(events, "test-op-query", "java.typed-protocol.function.client_batch_item_response_query_field_count",
                 "KMIPKIT-ELEM-OP-C2S-QUERY", "org.kmipkit.extensions.QueryResponse.fieldCount",
                 null, null, "decode", protocolVersion, null, null, responseTreeHash);
+    }
+
+    private static void appendTypedNetworkRouteEvents(ArrayNode events, String caseId, String routeId,
+            String targetId, String publicApiSymbol, String protocolVersion,
+            String requestTreeHash, String responseTreeHash) {
+        String executionRoute = "java.execute.typed-batch";
+        String executionSymbol = "org.kmipkit.extensions.Client.execute";
+        appendRouteEvent(events, caseId, routeId, targetId, publicApiSymbol,
+                executionRoute, executionSymbol, "construct", protocolVersion, "raw_tls",
+                requestTreeHash, null);
+        ObjectNode sent = appendRouteEvent(events, caseId, routeId, targetId, publicApiSymbol,
+                executionRoute, executionSymbol, "send", protocolVersion, "raw_tls",
+                requestTreeHash, null);
+        sent.put("request_delivery_state", "response_received");
+        sent.put("transport_invocation_count", 1);
+        appendRouteEvent(events, caseId, routeId, targetId, publicApiSymbol,
+                executionRoute, executionSymbol, "decode", protocolVersion, "raw_tls",
+                null, responseTreeHash);
     }
 
     private static ObjectNode appendRouteEvent(ArrayNode events, String caseId, String routeId,
