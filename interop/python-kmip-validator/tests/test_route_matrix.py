@@ -272,7 +272,7 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual({'KMIPKIT-ELEM-OP-C2S-ACTIVATE',
                           'KMIPKIT-PAYLOAD-CLIENT-ACTIVATE-REQUEST-20-001'},
                          {event['target_id'] for event in report['events']})
-        operation_hash = self.runner.digest([[0x42005C, 5, 1]])
+        operation_hash = self.runner.digest([[0x42005C, 5, 0x12]])
         operation_events = [event for event in report['events']
                             if event['target_id'] == 'KMIPKIT-ELEM-OP-C2S-ACTIVATE']
         self.assertEqual({operation_hash}, {event['request_tree_sha256'] for event in operation_events})

@@ -117,7 +117,7 @@ def encode_fixture(tree: list) -> bytes:
 def _generic_samples(case: dict, target: dict, symbol: str) -> list[tuple[int, str, Any]]:
     """Resolve the finite numeric/type representatives from this exact catalog case."""
     requires = case['requires']
-    kind = requires.get('target_kind', target.get('kind'))
+    kind = target.get('kind', requires.get('target_kind'))
     target_id = target['target_id']
     by_id, element_types, elements = _catalog_model_data()
     tag = 0x4200FF
