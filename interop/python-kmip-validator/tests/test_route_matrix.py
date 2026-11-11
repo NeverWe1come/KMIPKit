@@ -469,8 +469,11 @@ class RouteMatrixTests(unittest.TestCase):
         cell = {'protocol_version': '2.1', 'encoding': 'TTLV', 'transport': 'raw_tls',
                 'public_api_symbol': 'kmipkit.extensions.client_batch_item_ping', 'action': 'decode'}
         case = next(case for case in self.catalog['test_cases'] if case['case_id'] == 'test-op-ping')
-        with patch('kmipkit_validator.controlled_peer.ControlledTlsPeer', side_effect=peer_factory):
-            observed = self.runner.execute_cell(cell, case, {})
+        symbol = cell['public_api_symbol']
+        with self.runner.CallTrace([symbol]) as trace:
+            with patch('kmipkit_validator.controlled_peer.ControlledTlsPeer', side_effect=peer_factory):
+                observed = self.runner.execute_cell(cell, case, {}, trace=trace)
+        self.assertIn(symbol, trace.observed)
         self.assertEqual(hashlib.sha256(peers[0].responses[0]).hexdigest(), observed['wire_bytes_sha256'])
         self.assertNotEqual(hashlib.sha256(peers[0].requests[0]).hexdigest(), observed['wire_bytes_sha256'])
 
