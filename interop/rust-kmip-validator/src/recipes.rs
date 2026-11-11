@@ -13,7 +13,6 @@ use kmipkit::protocol::{
 use kmipkit::{Client, ClientBatch, ClientBatchItem, ClientRequest};
 
 pub(crate) enum Failure {
-    LocalRejection(&'static str),
     Prerequisite(&'static str),
     Library(kmipkit::ClientError),
     Assertion(&'static str),
@@ -199,6 +198,7 @@ impl Attempt<'_> {
         algorithm: &str,
         bits: i32,
         active: bool,
+        include_comment: bool,
     ) -> std::result::Result<(UniqueIdentifier, UniqueIdentifier), Failure> {
         let raw = match algorithm {
             "RSA" => 4,
@@ -206,7 +206,11 @@ impl Attempt<'_> {
             "HMAC_SHA256" => 9,
             _ => 3,
         };
-        let attrs = adapters::attributes(&self.name, raw, bits)?;
+        let attrs = if include_comment {
+            adapters::attributes_with_comment(&self.name, raw, bits)?
+        } else {
+            adapters::attributes(&self.name, raw, bits)?
+        };
         let request = if [4, 6].contains(&raw) {
             ClientRequest::CreateKeyPair(CreateKeyPairRequest::new().with_common_attributes(attrs))
         } else {
@@ -344,9 +348,13 @@ impl Attempt<'_> {
                 self.own(&response);
                 identifier = response.identifier;
             } else if case.operation == "Re-key Key Pair" {
-                identifier = Some(self.key("RSA", 2048, false)?.0);
+                identifier = Some(self.key("RSA", 2048, false, false)?.0);
             } else {
-                identifier = Some(self.key("AES", 256, false)?.0);
+                let needs_comment = matches!(
+                    case.operation.as_str(),
+                    "Modify Attribute" | "Delete Attribute"
+                );
+                identifier = Some(self.key("AES", 256, false, needs_comment)?.0);
             }
             if case.operation == "Recover" {
                 self.setup(ClientRequest::Archive(ArchiveRequest::new(
@@ -361,13 +369,6 @@ impl Attempt<'_> {
         }
         let target_identifier = identifier.clone();
         let request = adapters::request(case, identifier.as_ref(), &self.name)?;
-        if case.case_id == "test-neg-modify-readonly-attribute"
-            && !request.validation_report().is_valid()
-        {
-            return Err(Failure::LocalRejection(
-                "library_preflight_rejection: State modification is rejected locally under OASIS KMIP 2.1 §4.57; server negative probe cannot be sent",
-            ));
-        }
         let response = self.exchange(request)?;
         if case.operation == "Destroy" && response.status == 0 {
             self.owned
@@ -519,7 +520,7 @@ impl Attempt<'_> {
             .and_then(|v| i32::try_from(v).ok())
             .unwrap_or(256);
         let active = case.case_id != "test-neg-encrypt-preactive-key";
-        let (private, public) = self.key(algorithm, bits, active)?;
+        let (private, public) = self.key(algorithm, bits, active, false)?;
         let raw = match algorithm {
             "RSA" => 4,
             "ECDSA" => 6,
@@ -621,7 +622,7 @@ impl Attempt<'_> {
         let id = if case.operation == "Hash" {
             None
         } else {
-            Some(self.key(algorithm, bits, true)?.0)
+            Some(self.key(algorithm, bits, true, false)?.0)
         };
         let raw = if algorithm == "RSA" { 4 } else { 3 };
         let initial = match case.operation.as_str() {

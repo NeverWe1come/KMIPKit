@@ -6,9 +6,9 @@ use kmipkit::protocol::{
     ActivateRequest, AddAttributeRequest, AdjustAttributeRequest, AdjustmentType, ArchiveRequest,
     AttributeReference, AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest,
     CreateRequest, CreateSplitKeyRequest, CryptographicParameters, CryptographicParametersBuilder,
-    DecryptRequest, DelegatedLoginRequest, DeleteAttributeRequest, DerivationMethod,
-    DerivationParameters, DeriveKeyRequest, DestroyRequest, EncryptRequest, EndpointRole,
-    ExportRequest, GetAttributeListRequest, GetAttributesRequest, GetRequest,
+    CurrentAttribute, DecryptRequest, DelegatedLoginRequest, DeleteAttributeRequest,
+    DerivationMethod, DerivationParameters, DeriveKeyRequest, DestroyRequest, EncryptRequest,
+    EndpointRole, ExportRequest, GetAttributeListRequest, GetAttributesRequest, GetRequest,
     GetUsageAllocationRequest, HashRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest,
     LocateRequest, LogRequest, LoginRequest, LogoutRequest, MacRequest, MacVerifyRequest,
     ModifyAttributeRequest, NewAttribute, ObjectType, ObtainLeaseRequest, OperationData,
@@ -153,7 +153,24 @@ fn decode_hex(hex: &str) -> Option<Vec<u8>> {
 pub(crate) mod local;
 
 pub(crate) fn attributes(name: &str, algorithm: u32, bits: i32) -> Result<AttributeSet> {
-    AttributeSet::try_new(vec![
+    attributes_for(name, algorithm, bits, None)
+}
+
+pub(crate) fn attributes_with_comment(
+    name: &str,
+    algorithm: u32,
+    bits: i32,
+) -> Result<AttributeSet> {
+    attributes_for(name, algorithm, bits, Some("KMIPKit interop test"))
+}
+
+fn attributes_for(
+    name: &str,
+    algorithm: u32,
+    bits: i32,
+    comment: Option<&str>,
+) -> Result<AttributeSet> {
+    let mut items = vec![
         item(0x0042_0028, Value::enumeration(algorithm))?,
         item(0x0042_002a, Value::integer(bits))?,
         item(
@@ -174,8 +191,11 @@ pub(crate) fn attributes(name: &str, algorithm: u32, bits: i32) -> Result<Attrib
                 ],
             )?),
         )?,
-    ])
-    .map_err(|_| "invalid explicit key attributes")
+    ];
+    if let Some(comment) = comment {
+        items.push(item(0x0042_00fd, Value::text_string(comment.to_owned()))?);
+    }
+    AttributeSet::try_new(items).map_err(|_| "invalid explicit key attributes")
 }
 
 pub(crate) fn create(name: &str) -> Result<ClientRequest> {
@@ -380,15 +400,19 @@ pub(crate) fn request(
             NewAttribute::new(item(0x0042_00fc, Value::text_string("interop".to_owned()))?),
         )),
         "Modify Attribute" => {
-            let attribute = if case.case_id == "test-neg-modify-readonly-attribute" {
-                item(0x0042_008d, Value::enumeration(2))?
-            } else {
-                item(0x0042_00fc, Value::text_string("updated".to_owned()))?
-            };
+            let (current_value, new_value) =
+                if case.case_id == "test-neg-modify-attribute-current-mismatch" {
+                    ("old test value", "new test value")
+                } else {
+                    ("KMIPKit interop test", "updated")
+                };
             ClientRequest::ModifyAttribute(ModifyAttributeRequest::new(
                 id_text,
-                None,
-                NewAttribute::new(attribute),
+                Some(CurrentAttribute::new(item(
+                    0x0042_00fd,
+                    Value::text_string(current_value.to_owned()),
+                )?)),
+                NewAttribute::new(item(0x0042_00fd, Value::text_string(new_value.to_owned()))?),
             ))
         }
         "Delete Attribute" => ClientRequest::DeleteAttribute(DeleteAttributeRequest::new(

@@ -81,11 +81,6 @@ pub(crate) fn run_case(case: &Case, connection: &Connection, client: &mut Client
             let _shape = observed.payload_tags;
             observed_result(case, observed.status, observed.reason)
         }
-        Err(crate::recipes::Failure::LocalRejection(reason)) => {
-            let mut result = CaseResult::non_run(case, "not_run", reason.to_owned());
-            result.library_correctness = "passed";
-            result
-        }
         Err(crate::recipes::Failure::Prerequisite(reason)) => {
             CaseResult::non_run(case, "not_run", format!("{reason}; {}", reference(case)))
         }
