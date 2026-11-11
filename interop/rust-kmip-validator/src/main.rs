@@ -4,6 +4,7 @@ mod adapters;
 mod driver;
 mod fixtures;
 mod incoming;
+mod local_credentials;
 mod local_models;
 mod local_wire;
 mod matrix;

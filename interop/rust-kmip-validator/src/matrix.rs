@@ -17,6 +17,9 @@ fn text<'a>(value: &'a Json, field: &str) -> Result<&'a str> {
 
 #[allow(clippy::too_many_lines)] // Exact source tag/type selection remains auditable in one recipe.
 fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
+    if let Some(fixture) = crate::local_credentials::fixture(target) {
+        return fixture;
+    }
     let kind = text(target, "kind")?;
     let mut name = text(target, "name")?;
     if ["enumeration_value", "bitmask_value", "object_type"].contains(&kind)
@@ -104,7 +107,7 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
             "Enumeration" => Value::enumeration(1),
             "Byte String" => Value::byte_string(vec![0x4b]),
             "Date Time" | "Date-Time" => Value::date_time(1),
-            "Date Time Extended" => Value::date_time_extended(1),
+            "Date Time Extended" | "Date-Time Extended" => Value::date_time_extended(1),
             "Interval" => Value::interval(1),
             "Text String" | "Text String, Enumeration or Integer" => {
                 Value::text_string("KMIPKit".to_owned())
@@ -126,7 +129,10 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
 }
 
 #[allow(clippy::too_many_lines)] // Explicit public route dispatch stays together for review.
-fn invoke(symbol: &str, sample: &Item) -> Option<Result<Item>> {
+fn invoke(symbol: &str, sample: &Item, target_id: &str) -> Option<Result<Item>> {
+    if let Some(result) = crate::local_credentials::invoke(symbol, sample, target_id) {
+        return Some(result);
+    }
     if symbol.starts_with("kmipkit_ttlv::Value::") {
         let expected = match sample.item_type() {
             kmipkit::ttlv::ItemType::Structure => "structure",
@@ -340,7 +346,7 @@ pub(crate) fn run(matrix: &Path, output: &Path) -> Result<bool> {
             pending += 1;
             continue;
         };
-        let Some(result) = invoke(symbol, &sample) else {
+        let Some(result) = invoke(symbol, &sample, text(row, "target_id")?) else {
             pending += 1;
             continue;
         };
