@@ -74,3 +74,20 @@ issues.
 
 Hosted SonarCloud and CI results for the refactor commit remain pending. The
 PR must remain `[WIP]` until every required check passes on its current head.
+
+## CI Contract Snapshot Correction
+
+The Script Contracts workflow on PR #181 head `2b2df87ab75a45fd198a1802f4a5353750904ae0`
+failed in `test_t102_pkcs11_request_trait_exclusions` because the shared
+historical totals still expected 13,930 public declarations and 18,982
+approved exclusions. The manifest now contains 13,980 declarations and
+19,000 exclusions: the approved KMIPKIT-0099 API adds 50 declarations and 18
+standard-trait exclusions. Three downstream T102 fingerprint snapshots also
+included the new declarations in their non-target hashes. Updated those
+snapshot values and recorded the intentional manifest totals.
+
+| Command | Result |
+|---|---|
+| `python3 -B -m unittest tools.api_manifest.tests.test_t102_pkcs11_request_trait_exclusions tools.api_manifest.tests.test_t102_certify_request_builder_mapping tools.api_manifest.tests.test_t102_optional_request_structure_mapping tools.api_manifest.tests.test_t102_response_view_mappings -v` | Passed, 23 tests. |
+| `python3 -B tools/api_manifest/generate.py --check` | Passed; verified 12 generated outputs. |
+| `git diff --check` | Passed. |

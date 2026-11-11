@@ -192,7 +192,8 @@ PKCS11_REQUEST_SETTER_IDS = {
 # Includes the reviewed 0047 release stack and complete 0048/0049 inventories.
 # Snapshot includes final 0049 and exact 0050 constructor mappings.
 # The snapshot includes the approved KMIPKIT-0052 async typed-reader routes.
-OTHER_DECLARATIONS_SHA256 = "e380d3c7ad9d77b83d94f8606f8681e3cce86f2bc2e65def69dd202bf7727764"
+# It also includes the 50 approved KMIPKIT-0099 fluent Create Split Key declarations.
+OTHER_DECLARATIONS_SHA256 = "2262c64f426e388615f5f1ed48ca0a4d798bbaeb39c200c80a96b66832688ee1"
 OTHER_OPERATIONS_SHA256 = "2ea94003f2877d0e6d84271d67d9add6f48a5c5b7a837c48b22fe40f41022d39"
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(
@@ -402,7 +403,7 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
                     },
                 )
         other_declarations = without_0047_versioned_values(other_declarations)
-        self.assertEqual("e380d3c7ad9d77b83d94f8606f8681e3cce86f2bc2e65def69dd202bf7727764", canonical_sha256(other_declarations))
+        self.assertEqual(OTHER_DECLARATIONS_SHA256, canonical_sha256(other_declarations))
 
         other_operations = copy.deepcopy(self.manifest["operations"])
         for operation in other_operations:
