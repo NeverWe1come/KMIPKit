@@ -178,3 +178,8 @@ are cleared when the callback returns, including exceptional returns. A caller
 that creates a `String`, `str`, immutable bytes, or another copy owns that copy;
 KMIPKit cannot guarantee its erasure by the language runtime. Do not log
 rendered responses: they can contain key material and credentials.
+
+The `max_message_bytes` inspection limit bounds the final requested output.
+Canonical TTLV hexadecimal needs exactly twice the binary TTLV byte length.
+A cap large enough for the binary message can therefore reject its hex view;
+a cap equal to the complete hexadecimal length is accepted.
