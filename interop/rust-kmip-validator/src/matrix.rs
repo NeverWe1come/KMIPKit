@@ -391,6 +391,18 @@ fn typed_item_route(symbol: &str) -> bool {
 }
 
 fn sample_for_route(symbol: &str, target: &Json, elements: &[Json]) -> Result<Item> {
+    if symbol == "kmipkit_protocol::QueryResponse::to_ttlv_payload"
+        && target["kind"] == "operation_payload_field"
+        && target["name"] == "Profile Information"
+    {
+        let source = sample(target, elements)?;
+        let profile_name = crate::driver::item(0x0042_00ec, Value::enumeration(0x0000_012a))?;
+        let mut profile = kmipkit::ttlv::Structure::new();
+        profile
+            .try_push(profile_name)
+            .map_err(|_| "Profile Information fixture rejected")?;
+        return crate::driver::item(source.tag().raw(), Value::structure(profile));
+    }
     if symbol == "kmipkit_protocol::ManagedObject::try_from_item"
         && target["kind"] == "object_structure"
     {
@@ -445,7 +457,13 @@ fn sample_for_route(symbol: &str, target: &Json, elements: &[Json]) -> Result<It
 }
 
 #[allow(clippy::too_many_lines)] // Explicit public route dispatch stays together for review.
-fn invoke(symbol: &str, sample: &Item, target: &Json, elements: &[Json]) -> Option<Result<Item>> {
+fn invoke(
+    symbol: &str,
+    sample: &Item,
+    target: &Json,
+    elements: &[Json],
+    protocol_version: &str,
+) -> Option<Result<Item>> {
     if let Some(result) = crate::local_credentials::invoke(symbol, sample, target, elements) {
         return Some(result);
     }
@@ -546,7 +564,7 @@ fn invoke(symbol: &str, sample: &Item, target: &Json, elements: &[Json]) -> Opti
         let context = crate::local_models::parameter_context(sample).ok()?;
         return generated::execute(symbol, &context);
     }
-    if let Some(result) = crate::local_models::invoke(symbol, sample) {
+    if let Some(result) = crate::local_models::invoke(symbol, sample, protocol_version) {
         return Some(result);
     }
     if let Some(result) = generated::execute(symbol, sample) {
@@ -766,7 +784,13 @@ pub(crate) fn run(matrix: &Path, output: &Path) -> Result<bool> {
             pending += 1;
             continue;
         };
-        let Some(result) = invoke(symbol, &sample, target, elements) else {
+        let Some(result) = invoke(
+            symbol,
+            &sample,
+            target,
+            elements,
+            text(row, "protocol_version")?,
+        ) else {
             pending += 1;
             continue;
         };
@@ -840,6 +864,7 @@ mod tests {
             &fixture,
             target,
             elements,
+            "2.1",
         )
         .unwrap()
         .unwrap();
@@ -869,6 +894,7 @@ mod tests {
             &fixture,
             target,
             elements,
+            "2.1",
         )
         .unwrap()
         .unwrap();
@@ -906,6 +932,7 @@ mod tests {
             &fixture,
             target,
             elements,
+            "2.1",
         )
         .unwrap()
         .unwrap();
@@ -936,7 +963,9 @@ mod tests {
             "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::Digest>",
         ] {
             let fixture = sample_for_route(symbol, target, elements).unwrap();
-            let result = invoke(symbol, &fixture, target, elements).unwrap().unwrap();
+            let result = invoke(symbol, &fixture, target, elements, "2.1")
+                .unwrap()
+                .unwrap();
             assert!(crate::local_wire::target_hash(&result, &fixture).is_ok());
         }
     }
@@ -1017,7 +1046,7 @@ mod tests {
                 .find(|target| target["target_id"] == target_id)
                 .unwrap();
             let fixture = sample(target, elements).unwrap();
-            let result = invoke(symbol, &fixture, target, elements).unwrap();
+            let result = invoke(symbol, &fixture, target, elements, "2.1").unwrap();
             assert!(
                 result.is_ok(),
                 "{target_id} via {symbol}: {:?}",

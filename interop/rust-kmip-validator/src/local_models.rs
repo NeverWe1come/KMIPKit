@@ -1,6 +1,9 @@
 //! Explicit local parameter model calls, OASIS KMIP 2.1 §4.16, Table 59.
 use crate::{driver::item, models::Result};
-use kmipkit::protocol::{CryptographicParameters, CryptographicParametersBuilder};
+use kmipkit::protocol::{
+    CheckRequest, CryptographicParameters, CryptographicParametersBuilder, KeyBlock, KeyFormatType,
+    QueryResponse, ResponseMessage,
+};
 use kmipkit::ttlv::{Item, Value, ValueView};
 
 fn scalar_u32(sample: &Item) -> Result<u32> {
@@ -14,6 +17,94 @@ fn scalar_i32(sample: &Item) -> Result<i32> {
         ValueView::Integer(v) => Ok(*v),
         _ => Err("parameter fixture type mismatch"),
     })
+}
+
+fn push(structure: &mut kmipkit::ttlv::Structure, child: Item) -> Result<()> {
+    structure
+        .try_push(child)
+        .map_err(|_| "response fixture structure rejected")
+}
+
+fn query_response_payload(sample: &Item, protocol_version: &str) -> Result<Item> {
+    // OASIS KMIP 2.0 §6.1.37, Table 260; KMIP 2.1 §6.1.40, Table 283.
+    let (major, minor) = match protocol_version {
+        "2.0" => (2, 0),
+        "2.1" => (2, 1),
+        _ => return Err("unsupported Query response fixture version"),
+    };
+    let mut version = kmipkit::ttlv::Structure::new();
+    push(&mut version, item(0x0042_006a, Value::integer(major))?)?;
+    push(&mut version, item(0x0042_006b, Value::integer(minor))?)?;
+
+    let mut header = kmipkit::ttlv::Structure::new();
+    push(&mut header, item(0x0042_0069, Value::structure(version))?)?;
+    push(&mut header, item(0x0042_0092, Value::date_time(1))?)?;
+    push(&mut header, item(0x0042_000d, Value::integer(1))?)?;
+
+    let mut payload = kmipkit::ttlv::Structure::new();
+    push(
+        &mut payload,
+        sample
+            .try_clone()
+            .map_err(|_| "response fixture copy failed")?,
+    )?;
+    if sample.tag().raw() != 0x0042_015f {
+        push(
+            &mut payload,
+            item(
+                0x0042_015f,
+                Value::structure(kmipkit::ttlv::Structure::new()),
+            )?,
+        )?;
+    }
+    let mut batch = kmipkit::ttlv::Structure::new();
+    push(&mut batch, item(0x0042_005c, Value::enumeration(0x18))?)?;
+    push(&mut batch, item(0x0042_007f, Value::enumeration(0))?)?;
+    push(&mut batch, item(0x0042_007c, Value::structure(payload))?)?;
+
+    let mut message = kmipkit::ttlv::Structure::new();
+    push(&mut message, item(0x0042_007a, Value::structure(header))?)?;
+    push(&mut message, item(0x0042_000f, Value::structure(batch))?)?;
+    let response = ResponseMessage::try_from_ttlv(message)
+        .map_err(|_| "response fixture validation rejected")?;
+    let batch_item = response
+        .batch_items()
+        .next()
+        .ok_or("response fixture has no batch item")?;
+    let query = QueryResponse::try_from_response_item(batch_item)
+        .map_err(|_| "Query response parser rejected fixture")?;
+    item(
+        0x0042_007c,
+        Value::structure(
+            query
+                .to_ttlv_payload()
+                .map_err(|_| "Query response payload accessor failed")?,
+        ),
+    )
+}
+
+fn keyblock_cryptographic_properties(sample: &Item) -> Result<Item> {
+    // OASIS KMIP 2.0 §3.1, Table 12; KMIP 2.1 §3.1, Table 12.
+    let (algorithm, length) = match sample.tag().raw() {
+        0x0042_0028 => (scalar_u32(sample)?, 256),
+        0x0042_002a => (3, scalar_i32(sample)?),
+        _ => return Err("KeyBlock cryptographic property target is unsupported"),
+    };
+    KeyBlock::try_new(KeyFormatType::from_raw(1))
+        .map_err(|_| "KeyBlock fixture rejected")?
+        .with_cryptographic_properties(Some(algorithm), Some(length))
+        .try_into_item()
+        .map_err(|_| "KeyBlock cryptographic properties rejected")
+}
+
+fn check_usage_mask(sample: &Item) -> Result<Item> {
+    // OASIS KMIP 2.0 §6.1.7, Table 183; KMIP 2.1 §6.1.7, Table 183.
+    let mask = scalar_i32(sample)?;
+    let payload = CheckRequest::new()
+        .with_cryptographic_usage_mask(mask)
+        .into_ttlv_payload()
+        .map_err(|_| "Check request payload construction failed")?;
+    item(0x0042_0079, Value::structure(payload))
 }
 
 fn method(tag: u32) -> Option<&'static str> {
@@ -108,7 +199,16 @@ pub(crate) fn parameter_context(sample: &Item) -> Result<Item> {
     item(0x0042_002b, Value::structure(structure))
 }
 
-pub(crate) fn invoke(symbol: &str, sample: &Item) -> Option<Result<Item>> {
+pub(crate) fn invoke(symbol: &str, sample: &Item, protocol_version: &str) -> Option<Result<Item>> {
+    if symbol == "kmipkit_protocol::CheckRequest::with_cryptographic_usage_mask" {
+        return Some(check_usage_mask(sample));
+    }
+    if symbol == "kmipkit_protocol::KeyBlock::with_cryptographic_properties" {
+        return Some(keyblock_cryptographic_properties(sample));
+    }
+    if symbol == "kmipkit_protocol::QueryResponse::to_ttlv_payload" {
+        return Some(query_response_payload(sample, protocol_version));
+    }
     if let Some(selected) =
         symbol.strip_prefix("kmipkit_protocol::CryptographicParametersBuilder::")
     {
@@ -142,5 +242,29 @@ pub(crate) fn invoke(symbol: &str, sample: &Item) -> Option<Result<Item>> {
     } else {
         let model = CryptographicParameters::try_from_ttlv(structure).ok()?;
         Some(item(0x0042_002b, Value::structure(model.into_ttlv())))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn query_response_payload_accessor_preserves_operation_field() {
+        let sample =
+            item(0x0042_005c, Value::enumeration(0x18)).expect("Query Operation sample is valid");
+        let output = query_response_payload(&sample, "2.1");
+        assert!(
+            output.is_ok(),
+            "Query response fixture rejected: {:?}",
+            output.err()
+        );
+        let output = output.expect("response accessor returns a payload");
+        let projected = crate::local_wire::target_hash(&output, &sample);
+        assert!(
+            projected.is_ok(),
+            "Query response payload mismatch: {:?}",
+            projected.err()
+        );
     }
 }
