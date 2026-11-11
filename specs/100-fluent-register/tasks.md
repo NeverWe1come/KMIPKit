@@ -1,8 +1,8 @@
 # KMIPKIT-0100 Tasks
 
 **Prerequisite**: complete KMIPKIT-0093 scope was authorized by the maintainer
-on 2026-11-11. This branch is stacked on PR #181 at its published head and
-must stay based on that dependency while review is pending.
+on 2026-11-11. This branch is stacked on PR #181 head
+`d1eaf235a6aa39fa5db4a53e0562f1bdddf5afe6` while its review is pending.
 
 ## Specification and Red
 
