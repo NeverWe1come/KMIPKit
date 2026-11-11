@@ -208,6 +208,20 @@ class RouteCapabilitiesTests(unittest.TestCase):
         self.assertIn('KMIPKIT-ELEM-CREDENTIAL-HASHED-PASSWORD', hashed_password['normative_target_ids'])
         self.assertNotIn('KMIPKIT-ELEM-OP-C2S-HASH', hashed_password['normative_target_ids'])
 
+    def test_network_query_constructor_only_claims_request_payload_targets(self):
+        # OASIS KMIP 2.1 §6.1.40 Table 282 defines Query inputs; Table 283 is its response.
+        catalog = json.loads((SHARED / 'catalog/kmipkit-1.0-test-catalog.json').read_text())
+        targets = {target['target_id']: target for target in catalog['normative_targets']}
+        operation_id = 'KMIPKIT-ELEM-OP-C2S-QUERY'
+        route = next(route for route in self.data['routes']
+                     if route['language'] == 'c'
+                     and route['public_api_symbol'] == 'kmipkit_client_batch_item_query')
+        expected = {operation_id} | {
+            target_id for target_id, target in targets.items()
+            if target.get('operation_id') == operation_id and target.get('role') == 'request'
+        }
+        self.assertEqual(expected, set(route['normative_target_ids']))
+
     def test_checked_tag_constructor_exclusions_are_source_backed_and_narrow(self):
         expected = {
             'rust': {'rust.generic-ttlv.item.new', 'rust.generic-ttlv.model.kmipkit.ttlv.structure.try.push'},
