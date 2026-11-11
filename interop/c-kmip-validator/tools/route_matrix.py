@@ -446,15 +446,21 @@ def event_from_cell(cell: dict, wire: bytes, index: int) -> dict:
     return event
 
 
-def rejected_input_event(cell: dict, input_sha256: str, index: int) -> dict:
+def tag_decode_rejection_code(allocation: str) -> str:
+    return 'tag_reserved' if allocation == 'reserved' else 'tag_not_allocated'
+
+
+def rejected_input_event(cell: dict, input_sha256: str, index: int, *, allocation: str) -> dict:
     event = invoked_event(cell, index)
-    event.update(decode_outcome='rejected', decode_rejection_code='tag_not_allocated',
+    event.update(decode_outcome='rejected',
+                 decode_rejection_code=tag_decode_rejection_code(allocation),
                  decode_input_sha256=input_sha256)
     return event
 
 
-def rejected_tag_event(cell: dict, wire: bytes, index: int) -> dict:
-    return rejected_input_event(cell, hashlib.sha256(wire).hexdigest(), index)
+def rejected_tag_event(cell: dict, wire: bytes, index: int, *, allocation: str) -> dict:
+    return rejected_input_event(cell, hashlib.sha256(wire).hexdigest(), index,
+                                allocation=allocation)
 
 
 def run(output: Path, binary: Path | None = None) -> int:
@@ -537,7 +543,8 @@ def run(output: Path, binary: Path | None = None) -> int:
             if cell['public_api_symbol'] in result['invoked_symbols']:
                 event = cell_fields(cell)
                 if target.get('allocation') in {'reserved', 'unused'}:
-                    event = rejected_input_event(cell, result['decode_input_sha256'], index)
+                    event = rejected_input_event(cell, result['decode_input_sha256'], index,
+                                                 allocation=target.get('allocation', 'unused'))
                 else:
                     event.update(status='passed', invocation_count=1, invocation_id=f'c-tag-range-{index}')
                     event['response_tree_sha256'] = result['tree_sha256']
@@ -565,7 +572,8 @@ def run(output: Path, binary: Path | None = None) -> int:
                 if target['kind'] == 'tag' and target.get('allocation') == 'reserved':
                     wire = abi.execute_reserved_tag(cell['public_api_symbol'], fixture[0])
                     if cell['action'] == 'decode':
-                        event = rejected_tag_event(cell, wire, index)
+                        event = rejected_tag_event(cell, wire, index,
+                                                   allocation=target.get('allocation', 'unused'))
                     else:
                         event = event_from_cell(cell, wire, index)
                     events.append(event)
