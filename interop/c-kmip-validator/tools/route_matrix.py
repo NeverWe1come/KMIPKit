@@ -434,6 +434,14 @@ def event_from_cell(cell: dict, wire: bytes, index: int) -> dict:
     return event
 
 
+def rejected_tag_event(cell: dict, wire: bytes, index: int) -> dict:
+    event = cell_fields(cell)
+    event.update(status='passed', invocation_id=f'c-abi-{index}', invocation_count=1,
+                 decode_outcome='rejected', decode_rejection_code='tag_not_allocated',
+                 decode_input_sha256=hashlib.sha256(wire).hexdigest())
+    return event
+
+
 def run(output: Path, binary: Path | None = None) -> int:
     provenance = verify_installed_artifact()
     library = INSTALL / 'lib/libkmipkit_ffi.so'
@@ -525,9 +533,10 @@ def run(output: Path, binary: Path | None = None) -> int:
             try:
                 if target['kind'] == 'tag' and target.get('allocation') == 'reserved':
                     wire = abi.execute_reserved_tag(cell['public_api_symbol'], fixture[0])
-                    event = event_from_cell(cell, wire, index)
                     if cell['action'] == 'decode':
-                        event['response_tree_sha256'] = hashlib.sha256(json.dumps({'tag': fixture[0], 'decode_error_kind': 11}, sort_keys=True).encode()).hexdigest()
+                        event = rejected_tag_event(cell, wire, index)
+                    else:
+                        event = event_from_cell(cell, wire, index)
                     events.append(event)
                 else:
                     wire = abi.execute(cell['public_api_symbol'], fixture)
