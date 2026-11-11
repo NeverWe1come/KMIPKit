@@ -26,6 +26,35 @@ COVERAGE = ROOT / 'interop/shared/coverage'
 LANGUAGES = ('rust', 'c', 'java', 'python')
 ASYNC = {'cancel', 'poll', 'process', 'queryasyncrequests'}
 
+CHECKED_TAG_INPUTS = {
+    ('rust', 'kmipkit_ttlv::Item::new'): 'crates/kmipkit-ttlv/src/item.rs',
+    ('rust', 'kmipkit_ttlv::Structure::try_push'): 'crates/kmipkit-ttlv/src/structure.rs',
+    ('c', 'kmipkit_ttlv_item_create'): 'bindings/c/include/kmipkit.h',
+    ('c', 'kmipkit_ttlv_structure_with_item'): 'bindings/c/include/kmipkit.h',
+    ('java', 'org.kmipkit.ttlv.TtlvItem.create'): 'bindings/java/src/main/java/org/kmipkit/ttlv/TtlvItem.java',
+    ('java', 'org.kmipkit.ttlv.TtlvStructure.withItem'): 'bindings/java/src/main/java/org/kmipkit/ttlv/TtlvStructure.java',
+    ('python', 'kmipkit.ttlv.ttlv_item_create'): 'bindings/python/src/kmipkit/ttlv.py',
+    ('python', 'kmipkit.ttlv.ttlv_structure_with_item'): 'bindings/python/src/kmipkit/ttlv.py',
+}
+
+
+def _case_exclusions(root, commit, language, symbol):
+    path = CHECKED_TAG_INPUTS.get((language, symbol))
+    if path is None:
+        return []
+    # The public constructors take an allocation-checked Tag. Preserve the
+    # exclusion with the exact route declaration and the shared allocation
+    # checker, so RawTag and decoder routes remain independently testable.
+    source_paths = [path, 'crates/kmipkit-ttlv/src/tag.rs']
+    for source_path in source_paths:
+        source(root, commit, source_path)
+    return [{
+        'target_kinds': ['tag', 'tag_range'],
+        'allocations': ['reserved', 'unused'],
+        'reason': 'This constructor takes an allocation-checked Tag; RawTag::try_checked rejects reserved and unused allocations before an Item can be constructed.',
+        'source_paths': source_paths,
+    }]
+
 
 def normalized(value):
     return re.sub('[^a-z0-9]', '', value.lower()).replace('asynchronous', 'async')
@@ -251,6 +280,9 @@ def validate(data, root=ROOT):
             raise ValueError('route artifact commit differs from manifest')
         for path in route['source_paths']:
             source(root, commit, path)
+        for exclusion in route.get('case_exclusions', []):
+            for path in exclusion['source_paths']:
+                source(root, commit, path)
     missing = expected - constructors
     if missing:
         raise ValueError('missing public API route: ' + repr(sorted(missing)))
@@ -264,8 +296,8 @@ def validate(data, root=ROOT):
             raise ValueError('constructor operation mapping differs from public source')
         if route['combinations'] != expected_route['combinations']:
             raise ValueError('supported encoding/transport pairs differ from public source')
-        for field in ('public_api_symbol', 'api_level', 'mode', 'actions', 'execution_route_id', 'source_paths', 'normative_target_ids', 'case_categories', 'protocol_versions'):
-            if route[field] != expected_route[field]:
+        for field in ('public_api_symbol', 'api_level', 'mode', 'actions', 'execution_route_id', 'source_paths', 'normative_target_ids', 'case_categories', 'protocol_versions', 'case_exclusions'):
+            if route.get(field) != expected_route.get(field):
                 raise ValueError('public API route mapping differs: ' + field)
     if data['execution_routes'] != canonical['execution_routes']:
         raise ValueError('execution route inventory differs from public source')
@@ -445,6 +477,10 @@ def build_manifest(root=ROOT, commit='9a16cc90a12205101d22a38501a5e74c665df4dc')
             data['unavailable'].append({'language': language, 'capability': 'named-value-symbol',
                 'normative_target_ids': numeric_targets, 'reason': 'The public package does not export assigned named constants for these referenced PKCS#11 functions/return codes. Their exact numeric values are constructible using the declared public generic Enumeration constructor; this is not a missing validator recipe.',
                 'source_paths': ['specification/api/public-api.json']})
+    for route in data['routes']:
+        exclusions = _case_exclusions(root, commit, route['language'], route['public_api_symbol'])
+        if exclusions:
+            route['case_exclusions'] = exclusions
     data['routes'].sort(key=lambda route: route['route_id'])
     return data
 

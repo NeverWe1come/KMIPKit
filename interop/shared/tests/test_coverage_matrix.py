@@ -109,7 +109,8 @@ class CoverageMatrixTests(unittest.TestCase):
             language_cells = [cell for cell in cells if cell["language"] == language]
             self.assertTrue(language_cells)
             self.assertFalse(route_ids & {cell["route_id"] for cell in language_cells})
-            self.assertTrue(any("raw.tag" in cell["route_id"] and cell["action"] == "construct"
+            self.assertTrue(any("rawtag" in cell["route_id"].replace("_", "").replace(".", "")
+                                and cell["action"] == "construct"
                                 for cell in language_cells))
 
     def test_missing_version_route_fails_even_if_the_case_has_another_version(self):

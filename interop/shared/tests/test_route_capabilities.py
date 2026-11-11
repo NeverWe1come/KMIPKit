@@ -66,6 +66,25 @@ class RouteCapabilitiesTests(unittest.TestCase):
             self.assertNotIn('KMIPKIT-ELEM-ATTRIBUTE-DESCRIPTION', targets)
             self.assertNotIn('KMIPKIT-ELEM-TAG-4200FC', targets)
 
+    def test_checked_tag_constructor_exclusions_are_source_backed_and_narrow(self):
+        expected = {
+            'rust': {'rust.generic-ttlv.item.new', 'rust.generic-ttlv.model.kmipkit.ttlv.structure.try.push'},
+            'c': {'c.generic-ttlv.kmipkit_ttlv_item_create', 'c.generic-ttlv.model.kmipkit.ttlv.structure.with.item'},
+            'java': {'java.generic-ttlv.ttlv_item.create', 'java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem'},
+            'python': {'python.generic-ttlv.ttlv.ttlv_item_create', 'python.generic-ttlv.model.kmipkit.ttlv.ttlv.structure.with.item'},
+        }
+        for language, route_ids in expected.items():
+            routes = {route['route_id']: route for route in self.data['routes']
+                      if route['language'] == language}
+            for route_id in route_ids:
+                route = routes[route_id]
+                self.assertEqual([{
+                    'target_kinds': ['tag', 'tag_range'],
+                    'allocations': ['reserved', 'unused'],
+                    'reason': 'This constructor takes an allocation-checked Tag; RawTag::try_checked rejects reserved and unused allocations before an Item can be constructed.',
+                    'source_paths': [route['source_paths'][0], 'crates/kmipkit-ttlv/src/tag.rs'],
+                }], route['case_exclusions'])
+
     def test_every_named_enum_and_mask_target_has_an_exact_public_value_symbol(self):
         catalog = json.loads((SHARED / 'catalog/kmipkit-1.0-test-catalog.json').read_text())
         target_ids = {t['target_id'] for t in catalog['normative_targets']
