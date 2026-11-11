@@ -24,6 +24,10 @@ def norm(value):
     return re.sub('[^a-z0-9]', '', value.lower()).replace('asynchronous', 'async')
 
 
+def snake_case(value):
+    return re.sub(r'(?<!^)(?=[A-Z])', '_', value).lower()
+
+
 def target_ids(targets, names, *, all_attributes=False, all_objects=False, operation_id=None,
                exclude_subtree_kinds=(), exclude_target_ids=()):
     """Associate model/field identities, then expand their normative children."""
@@ -237,6 +241,11 @@ def model_inventory(root, commit, source, api, targets):
             target['kind'] == 'object_structure' and norm(target['name']) == norm(owner)
             for target in targets)
         exact_targets = ['KMIPKIT-RANGE-004'] if owner == 'ManagedObject' and method == 'unknown' else None
+        credential_targets = credential_function_target_ids(
+            f'{snake_case(owner)}_{method}', targets) \
+            if method in {'from_ttlv', 'into_ttlv', 'try_from_ttlv'} else None
+        if credential_targets is not None:
+            exact_targets = credential_targets
         raw_value_targets = scalar_enum_value_targets(targets, owner) if method == 'from_raw' else None
         add('rust', symbol, selected, names, objects=owner == 'ManagedObject',
             operation_id=operation_id, object_item=is_object_item,
@@ -250,7 +259,8 @@ def model_inventory(root, commit, source, api, targets):
         path = 'bindings/c/include/kmipkit.h'
         if re.search(r'\b' + re.escape(mapped) + r'\s*\(', source(root, commit, path)):
             add('c', mapped, path, names, objects=owner == 'ManagedObject',
-                operation_id=operation_id, object_item=is_object_item)
+                operation_id=operation_id, object_item=is_object_item,
+                exact_target_ids=credential_targets)
 
     # Open typed enumeration/mask wrappers that really construct a value.
     for path, text in rust_sources.items():
