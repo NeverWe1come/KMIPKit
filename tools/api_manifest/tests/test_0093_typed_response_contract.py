@@ -49,6 +49,21 @@ class TypedResponseContractManifestTests(unittest.TestCase):
                 self.assertEqual(row["python"]["returnType"], "credentials.SecretBytes")
                 self.assertEqual(row["ordering"], "preserves-response-field-wire-order")
 
+    def test_c_response_renderers_document_caller_managed_copies(self):
+        manifest = json.loads((ROOT / "specification/api/public-api.json").read_text())
+        functions = {row["id"]: row for row in manifest["functions"]}
+        for function_id in (
+            "client_batch_item_response_ttlv_hex",
+            "client_batch_item_response_json",
+            "client_batch_item_response_xml",
+        ):
+            with self.subTest(function=function_id):
+                documentation = " ".join(
+                    functions[function_id]["c"]["documentation"]
+                ).lower()
+                self.assertIn("caller", documentation)
+                self.assertIn("cannot be zeroized", documentation)
+
 
 if __name__ == "__main__":
     unittest.main()
