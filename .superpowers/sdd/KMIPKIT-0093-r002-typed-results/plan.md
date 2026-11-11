@@ -89,3 +89,14 @@ operation response tables, and KMIP Profiles v2.1 encoding sections.
 The response implementation predates this slice in the approved 0095/0096
 stack. Its Rust, C, Java, and Python behavior is being revalidated on the
 rebased head before the separate Refactor evidence is recorded.
+
+### Additional Red evidence found during full manifest review
+
+After rebasing onto 0096 Refactor, the manifest regression test
+`test_t102_response_view_mappings.py::T102ResponseViewMappingTests.test_exact_response_views_reuse_the_existing_four_language_outcomes`
+failed because R002 had added FR-005 to response-view field accessors and
+had not propagated FR-008 to their mapped C, Java, and Python declarations.
+The new focused test
+`test_operation_response_view_requirement_mapping_is_four_language_parity`
+reproduces the contract error: FR-005 appears on a `ClientResponseView`
+declaration, although FR-005 is reserved for typed result conversion.
