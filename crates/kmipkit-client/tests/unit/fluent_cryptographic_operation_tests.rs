@@ -515,6 +515,204 @@ fn locally_invalid_cryptographic_requests_are_not_sent() {
 }
 
 #[test]
+fn cryptographic_builder_expert_parameter_paths_validate() {
+    assert_eq!(
+        FluentBuildError::MissingHashCryptographicParameters.to_string(),
+        "Hash requires caller-selected Cryptographic Parameters"
+    );
+
+    let (mut client, _, _) = client_for(ExchangeScript::FailBeforeWrite);
+    client
+        .request()
+        .encrypt()
+        .cryptographic_parameters_structure(typed_aes_gcm_parameters().into_ttlv())
+        .data(b"plaintext".to_vec())
+        .build()
+        .expect("Encrypt accepts an explicitly typed expert parameter structure");
+
+    let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let error = client
+        .request()
+        .decrypt()
+        .unique_identifier(UniqueIdentifier::from("decrypt-key"))
+        .data(b"ciphertext".to_vec())
+        .execute(&CodecLimits::defaults())
+        .expect_err("Decrypt reaches its typed client route");
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(fake.borrow().exchange_count(), 1, "{error:?}");
+
+    let (mut client, _, _) = client_for(ExchangeScript::FailBeforeWrite);
+    client
+        .request()
+        .decrypt()
+        .cryptographic_parameters(typed_aes_gcm_parameters())
+        .data(b"ciphertext".to_vec())
+        .build()
+        .expect("Decrypt accepts caller-selected cryptographic parameters");
+
+    let (mut client, _, _) = client_for(ExchangeScript::FailBeforeWrite);
+    client
+        .request()
+        .decrypt()
+        .data(b"multipart-ciphertext".to_vec())
+        .correlation_value(b"decrypt-correlation".to_vec())
+        .init_indicator(false)
+        .build()
+        .expect("Decrypt accepts the explicit multipart continuation shape");
+}
+
+#[test]
+fn decrypt_sign_and_signature_verify_execute_the_typed_route() {
+    let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let error = client
+        .request()
+        .decrypt()
+        .unique_identifier(UniqueIdentifier::from("decrypt-key"))
+        .data(b"ciphertext".to_vec())
+        .execute(&CodecLimits::defaults())
+        .expect_err("Decrypt reaches its typed client route");
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(fake.borrow().exchange_count(), 1);
+
+    let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let error = client
+        .request()
+        .sign()
+        .unique_identifier(UniqueIdentifier::from("sign-key"))
+        .cryptographic_parameters_structure(typed_signature_parameters().into_ttlv())
+        .data_value(OperationData::ByteString(SecretBytes::new(
+            b"message".to_vec(),
+        )))
+        .execute(&CodecLimits::defaults())
+        .expect_err("Sign reaches its typed client route");
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(fake.borrow().exchange_count(), 1);
+
+    let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let error = client
+        .request()
+        .signature_verify()
+        .unique_identifier(UniqueIdentifier::from("verify-key"))
+        .cryptographic_parameters_structure(typed_signature_parameters().into_ttlv())
+        .data(b"message".to_vec())
+        .signature_data(b"signature".to_vec())
+        .execute(&CodecLimits::defaults())
+        .expect_err("Signature Verify reaches its typed client route");
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn mac_mac_verify_and_hash_execute_the_typed_route() {
+    let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let error = client
+        .request()
+        .mac()
+        .unique_identifier(UniqueIdentifier::from("mac-key"))
+        .cryptographic_parameters_structure(typed_hmac_parameters().into_ttlv())
+        .data_value(OperationData::ByteString(SecretBytes::new(
+            b"message".to_vec(),
+        )))
+        .execute(&CodecLimits::defaults())
+        .expect_err("MAC reaches its typed client route");
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(fake.borrow().exchange_count(), 1);
+
+    let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let error = client
+        .request()
+        .mac_verify()
+        .unique_identifier(UniqueIdentifier::from("mac-verify-key"))
+        .cryptographic_parameters_structure(typed_hmac_parameters().into_ttlv())
+        .data(b"message".to_vec())
+        .mac_data(b"expected-mac".to_vec())
+        .correlation_value(b"mac-correlation".to_vec())
+        .init_indicator(true)
+        .final_indicator(true)
+        .execute(&CodecLimits::defaults())
+        .expect_err("MAC Verify reaches its typed client route");
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(fake.borrow().exchange_count(), 1);
+
+    let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let error = client
+        .request()
+        .hash()
+        .cryptographic_parameters(typed_hash_parameters())
+        .data(b"message".to_vec())
+        .execute(&CodecLimits::defaults())
+        .expect_err("Hash reaches its typed client route");
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn cryptographic_builders_accept_explicit_options_and_async_headers() {
+    let (mut client, _, _) = client_for(ExchangeScript::FailBeforeWrite);
+    client
+        .request()
+        .decrypt()
+        .data(b"ciphertext".to_vec())
+        .with_options(RequestOptions::default())
+        .with_asynchronous_indicator(1)
+        .build()
+        .expect("Decrypt accepts exchange-local options and the explicit async header");
+
+    let (mut client, _, _) = client_for(ExchangeScript::FailBeforeWrite);
+    client
+        .request()
+        .sign()
+        .data(b"message".to_vec())
+        .with_options(RequestOptions::default())
+        .with_asynchronous_indicator(1)
+        .build()
+        .expect("Sign accepts exchange-local options and the explicit async header");
+
+    let (mut client, _, _) = client_for(ExchangeScript::FailBeforeWrite);
+    client
+        .request()
+        .signature_verify()
+        .data(b"message".to_vec())
+        .signature_data(b"signature".to_vec())
+        .with_options(RequestOptions::default())
+        .with_asynchronous_indicator(1)
+        .build()
+        .expect("Signature Verify accepts exchange-local options and the explicit async header");
+
+    let (mut client, _, _) = client_for(ExchangeScript::FailBeforeWrite);
+    client
+        .request()
+        .mac()
+        .data(b"message".to_vec())
+        .with_options(RequestOptions::default())
+        .with_asynchronous_indicator(1)
+        .build()
+        .expect("MAC accepts exchange-local options and the explicit async header");
+
+    let (mut client, _, _) = client_for(ExchangeScript::FailBeforeWrite);
+    client
+        .request()
+        .mac_verify()
+        .data(b"message".to_vec())
+        .mac_data(b"expected-mac".to_vec())
+        .with_options(RequestOptions::default())
+        .with_asynchronous_indicator(1)
+        .build()
+        .expect("MAC Verify accepts exchange-local options and the explicit async header");
+
+    let (mut client, _, _) = client_for(ExchangeScript::FailBeforeWrite);
+    client
+        .request()
+        .hash()
+        .cryptographic_parameters(typed_hash_parameters())
+        .data(b"message".to_vec())
+        .with_options(RequestOptions::default())
+        .with_asynchronous_indicator(1)
+        .build()
+        .expect("Hash accepts exchange-local options and the explicit async header");
+}
+
+#[test]
 fn fluent_cryptographic_requests_redact_moved_secret_data() {
     let (mut client, _, _) = client_for(ExchangeScript::FailBeforeWrite);
     let request = client
