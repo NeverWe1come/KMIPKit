@@ -80,6 +80,7 @@ static TEMP_DIRECTORY_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
 unsafe extern "C" {
     fn kmipkit_public_client_surface_probe() -> i32;
+    fn kmipkit_public_crypto_builders_probe() -> i32;
     fn kmipkit_public_fluent_builder_probe() -> i32;
     fn kmipkit_public_fluent_validation_probe() -> i32;
     fn kmipkit_public_fluent_lifecycle_probe(
@@ -93,6 +94,16 @@ unsafe extern "C" {
         trust_root: *const u8,
         trust_root_length: u64,
     ) -> i32;
+}
+
+#[test]
+fn public_c_fluent_crypto_builders_expose_semantic_opaque_constructors() {
+    // SAFETY: The compiled C consumer releases every temporary builder handle.
+    let status = unsafe { kmipkit_public_crypto_builders_probe() };
+    assert_eq!(
+        status, 0,
+        "public fluent C crypto declarations and ABI calls must agree"
+    );
 }
 
 #[test]

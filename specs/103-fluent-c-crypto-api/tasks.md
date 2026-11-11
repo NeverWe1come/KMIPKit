@@ -4,7 +4,7 @@
   for all seven cryptographic operations.
 - [x] C002 Record the approved C ABI scope, ownership model, result handling,
   exclusions, and acceptance criteria.
-- [ ] R001 Add failing compiled C-consumer tests for all seven constructors,
+- [x] R001 Add failing compiled C-consumer tests for all seven constructors,
   semantic fields, build/execute behavior, and invalid inputs; capture Red.
 - [ ] G001 Implement opaque operation builders and fixed-width exported C ABI
   constructors, setters, build, execute, options, and release functions.
