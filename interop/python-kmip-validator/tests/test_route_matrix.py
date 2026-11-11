@@ -91,6 +91,37 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertNotIn('private-key-sentinel', json.dumps([report, gaps]))
         self.assertEqual({'recipe_execution_failed'}, {gap['failure_code'] for gap in gaps})
 
+    def test_generic_enum_recipe_uses_its_own_numeric_tag_and_assigned_value(self):
+        catalog, manifest = self.integer_fixture()
+        catalog['test_cases'] = [next(case for case in self.catalog['test_cases']
+                                     if case['requires'].get('normative_target_id') ==
+                                     'KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-AES-00000003')]
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+        self.assertFalse(gaps)
+        expected = self.runner.digest([[0x420028, 5, 3]])
+        self.assertTrue(report['events'])
+        self.assertEqual({expected}, {event['request_tree_sha256'] for event in report['events']})
+
+    def test_generic_routes_exercise_every_public_ttlv_data_type(self):
+        catalog = copy.deepcopy(self.catalog)
+        catalog['test_cases'] = [case for case in self.catalog['test_cases']
+                                 if case['requires'].get('target_kind') == 'data_type']
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in manifest['routes'] if route['language'] == 'python'
+                              and route['public_api_symbol'].startswith('kmipkit.ttlv.')]
+        manifest['routes'].append(next(route for route in self.manifest['routes']
+                                       if route['public_api_symbol'] == 'kmipkit.extensions.client_batch_item_ping'))
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+        self.assertFalse(gaps)
+        self.assertEqual(11, len({event['case_id'] for event in report['events']}))
+
+    def test_ci_requires_shared_changes_and_matrix_completeness(self):
+        workflow = (ROOT / '.github/workflows/interop-python.yml').read_text()
+        self.assertIn('python -m kmipkit_validator matrix', workflow)
+        self.assertIn('validate_route_evidence.py', workflow)
+        self.assertIn('interop/shared/|bindings/python/', workflow)
+        self.assertIn('route-execution-evidence.json', workflow)
+
     def test_cli_matrix_dispatches_without_requiring_a_vendor_connection(self):
         from kmipkit_validator import cli
         from unittest.mock import patch
