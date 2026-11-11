@@ -1542,26 +1542,6 @@ impl DestroyBuilder<'_> {
     }
 }
 
-macro_rules! fluent_exchange_options {
-    ($builder:ident) => {
-        impl $builder<'_> {
-            /// Sets exchange-local options without changing client policy.
-            #[must_use]
-            pub fn with_options(mut self, options: RequestOptions) -> Self {
-                self.options = Some(options);
-                self
-            }
-
-            /// Sets the Request Header Asynchronous Indicator for this exchange.
-            #[must_use]
-            pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-                self.asynchronous_indicator = Some(value);
-                self
-            }
-        }
-    };
-}
-
 fn validate_fluent_request<R: ValidateKmipRequest>(request: &R) -> Result<(), FluentBuildError> {
     if request.validate().is_valid() {
         Ok(())
@@ -1594,86 +1574,290 @@ fn execute_fluent_request(
     )
 }
 
-macro_rules! fluent_typed_request_methods {
-    ($builder:ident, $request:ty, $variant:ident) => {
-        impl $builder<'_> {
-            /// Validates the typed request without sending it.
-            pub fn validate(&self) -> Result<(), FluentBuildError> {
-                validate_fluent_request(&self.request)
-            }
-
-            /// Builds the existing typed request without sending it.
-            pub fn build_request(self) -> Result<$request, FluentBuildError> {
-                validate_fluent_request(&self.request)?;
-                Ok(self.request)
-            }
-
-            /// Converts this request to its typed batch item.
-            pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
-                self.build_request()
-                    .map(|request| ClientBatchItem::new(ClientRequest::$variant(request)))
-            }
-
-            /// Executes exactly one typed request exchange.
-            pub fn execute(
-                self,
-                limits: &kmipkit_ttlv::codec::CodecLimits,
-            ) -> Result<ClientBatchItemResponse, ClientError> {
-                let Self {
-                    client,
-                    request,
-                    options,
-                    asynchronous_indicator,
-                } = self;
-                validate_fluent_request(&request).map_err(fluent_client_validation_error)?;
-                execute_fluent_request(
-                    client,
-                    ClientRequest::$variant(request),
-                    asynchronous_indicator,
-                    options,
-                    limits,
-                )
-            }
-        }
-    };
+/// A fluent builder for an existing typed Activate request.
+pub struct ActivateBuilder<'a> {
+    client: &'a mut Client,
+    request: ActivateRequest,
+    options: Option<RequestOptions>,
+    asynchronous_indicator: Option<u32>,
 }
 
-macro_rules! fluent_identifier_lifecycle_builder {
-    ($builder:ident, $request:ty, $variant:ident) => {
-        #[doc = concat!("A fluent builder for an existing typed ", stringify!($variant), " request.")]
-        pub struct $builder<'a> {
-            client: &'a mut Client,
-            request: $request,
-            options: Option<RequestOptions>,
-            asynchronous_indicator: Option<u32>,
+impl<'a> ActivateBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            client,
+            request: ActivateRequest::new(None),
+            options: None,
+            asynchronous_indicator: None,
         }
+    }
 
-        impl<'a> $builder<'a> {
-            fn new(client: &'a mut Client) -> Self {
-                Self {
-                    client,
-                    request: <$request>::new(None),
-                    options: None,
-                    asynchronous_indicator: None,
-                }
-            }
+    /// Sets the optional Unique Identifier in the typed request.
+    #[must_use]
+    pub fn unique_identifier(mut self, value: UniqueIdentifier) -> Self {
+        self.request = ActivateRequest::new(Some(value));
+        self
+    }
 
-            /// Sets the optional Unique Identifier in the typed request.
-            #[must_use]
-            pub fn unique_identifier(mut self, value: UniqueIdentifier) -> Self {
-                self.request = <$request>::new(Some(value));
-                self
-            }
-        }
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.options = Some(options);
+        self
+    }
 
-        fluent_exchange_options!($builder);
-        fluent_typed_request_methods!($builder, $request, $variant);
-    };
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.asynchronous_indicator = Some(value);
+        self
+    }
+
+    /// Validates the typed request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError::InvalidRequest`] if the typed validator rejects the fields.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        validate_fluent_request(&self.request)
+    }
+
+    /// Builds the existing typed request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError::InvalidRequest`] if the typed validator rejects the fields.
+    pub fn build_request(self) -> Result<ActivateRequest, FluentBuildError> {
+        validate_fluent_request(&self.request)?;
+        Ok(self.request)
+    }
+
+    /// Converts this request to its typed batch item.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError::InvalidRequest`] if the typed validator rejects the fields.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build_request()
+            .map(|request| ClientBatchItem::new(ClientRequest::Activate(request)))
+    }
+
+    /// Executes exactly one typed request exchange.
+    ///
+    /// # Errors
+    ///
+    /// Returns a validation error before sending when the request is invalid, or the existing
+    /// client error for exchange and response failures.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let Self {
+            client,
+            request,
+            options,
+            asynchronous_indicator,
+        } = self;
+        validate_fluent_request(&request).map_err(fluent_client_validation_error)?;
+        execute_fluent_request(
+            client,
+            ClientRequest::Activate(request),
+            asynchronous_indicator,
+            options,
+            limits,
+        )
+    }
 }
 
-fluent_identifier_lifecycle_builder!(ActivateBuilder, ActivateRequest, Activate);
-fluent_identifier_lifecycle_builder!(ArchiveBuilder, ArchiveRequest, Archive);
-fluent_identifier_lifecycle_builder!(RecoverBuilder, RecoverRequest, Recover);
+/// A fluent builder for an existing typed Archive request.
+pub struct ArchiveBuilder<'a> {
+    client: &'a mut Client,
+    request: ArchiveRequest,
+    options: Option<RequestOptions>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl<'a> ArchiveBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            client,
+            request: ArchiveRequest::new(None),
+            options: None,
+            asynchronous_indicator: None,
+        }
+    }
+
+    /// Sets the optional Unique Identifier in the typed request.
+    #[must_use]
+    pub fn unique_identifier(mut self, value: UniqueIdentifier) -> Self {
+        self.request = ArchiveRequest::new(Some(value));
+        self
+    }
+
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.options = Some(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.asynchronous_indicator = Some(value);
+        self
+    }
+
+    /// Validates the typed request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError::InvalidRequest`] if the typed validator rejects the fields.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        validate_fluent_request(&self.request)
+    }
+
+    /// Builds the existing typed request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError::InvalidRequest`] if the typed validator rejects the fields.
+    pub fn build_request(self) -> Result<ArchiveRequest, FluentBuildError> {
+        validate_fluent_request(&self.request)?;
+        Ok(self.request)
+    }
+
+    /// Converts this request to its typed batch item.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError::InvalidRequest`] if the typed validator rejects the fields.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build_request()
+            .map(|request| ClientBatchItem::new(ClientRequest::Archive(request)))
+    }
+
+    /// Executes exactly one typed request exchange.
+    ///
+    /// # Errors
+    ///
+    /// Returns a validation error before sending when the request is invalid, or the existing
+    /// client error for exchange and response failures.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let Self {
+            client,
+            request,
+            options,
+            asynchronous_indicator,
+        } = self;
+        validate_fluent_request(&request).map_err(fluent_client_validation_error)?;
+        execute_fluent_request(
+            client,
+            ClientRequest::Archive(request),
+            asynchronous_indicator,
+            options,
+            limits,
+        )
+    }
+}
+
+/// A fluent builder for an existing typed Recover request.
+pub struct RecoverBuilder<'a> {
+    client: &'a mut Client,
+    request: RecoverRequest,
+    options: Option<RequestOptions>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl<'a> RecoverBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            client,
+            request: RecoverRequest::new(None),
+            options: None,
+            asynchronous_indicator: None,
+        }
+    }
+
+    /// Sets the optional Unique Identifier in the typed request.
+    #[must_use]
+    pub fn unique_identifier(mut self, value: UniqueIdentifier) -> Self {
+        self.request = RecoverRequest::new(Some(value));
+        self
+    }
+
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.options = Some(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.asynchronous_indicator = Some(value);
+        self
+    }
+
+    /// Validates the typed request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError::InvalidRequest`] if the typed validator rejects the fields.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        validate_fluent_request(&self.request)
+    }
+
+    /// Builds the existing typed request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError::InvalidRequest`] if the typed validator rejects the fields.
+    pub fn build_request(self) -> Result<RecoverRequest, FluentBuildError> {
+        validate_fluent_request(&self.request)?;
+        Ok(self.request)
+    }
+
+    /// Converts this request to its typed batch item.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError::InvalidRequest`] if the typed validator rejects the fields.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build_request()
+            .map(|request| ClientBatchItem::new(ClientRequest::Recover(request)))
+    }
+
+    /// Executes exactly one typed request exchange.
+    ///
+    /// # Errors
+    ///
+    /// Returns a validation error before sending when the request is invalid, or the existing
+    /// client error for exchange and response failures.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let Self {
+            client,
+            request,
+            options,
+            asynchronous_indicator,
+        } = self;
+        validate_fluent_request(&request).map_err(fluent_client_validation_error)?;
+        execute_fluent_request(
+            client,
+            ClientRequest::Recover(request),
+            asynchronous_indicator,
+            options,
+            limits,
+        )
+    }
+}
 
 /// A fluent builder for an existing typed Revoke request.
 pub struct RevokeBuilder<'a> {
@@ -1702,8 +1886,8 @@ impl<'a> RevokeBuilder<'a> {
 
     /// Sets the optional audit Revocation Message.
     #[must_use]
-    pub fn revocation_message(mut self, value: impl Into<String>) -> Self {
-        self.request = self.request.with_revocation_message(value.into());
+    pub fn revocation_message(mut self, value: &str) -> Self {
+        self.request = self.request.with_revocation_message(value.to_owned());
         self
     }
 
@@ -1714,24 +1898,58 @@ impl<'a> RevokeBuilder<'a> {
         self
     }
 
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.options = Some(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.asynchronous_indicator = Some(value);
+        self
+    }
+
     /// Validates the typed Revoke request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError::InvalidRequest`] if the typed request
+    /// validator rejects the supplied reason, identifier, or date combination.
     pub fn validate(&self) -> Result<(), FluentBuildError> {
         validate_fluent_request(&self.request)
     }
 
     /// Builds the existing typed Revoke request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError::InvalidRequest`] if the typed request
+    /// validator rejects the supplied reason, identifier, or date combination.
     pub fn build_request(self) -> Result<RevokeRequest, FluentBuildError> {
         validate_fluent_request(&self.request)?;
         Ok(self.request)
     }
 
     /// Converts this request to its typed batch item.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError::InvalidRequest`] if the typed request
+    /// validator rejects the supplied reason, identifier, or date combination.
     pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
         self.build_request()
             .map(|request| ClientBatchItem::new(ClientRequest::Revoke(request)))
     }
 
     /// Executes exactly one typed Revoke exchange.
+    ///
+    /// # Errors
+    ///
+    /// Returns a validation error before sending when the typed request is
+    /// invalid, or the existing client error for exchange and response failures.
     pub fn execute(
         self,
         limits: &kmipkit_ttlv::codec::CodecLimits,
@@ -1752,8 +1970,6 @@ impl<'a> RevokeBuilder<'a> {
         )
     }
 }
-
-fluent_exchange_options!(RevokeBuilder);
 
 /// A fluent builder for an existing typed Locate request.
 pub struct LocateBuilder<'a> {
@@ -1826,24 +2042,58 @@ impl<'a> LocateBuilder<'a> {
         self
     }
 
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.options = Some(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.asynchronous_indicator = Some(value);
+        self
+    }
+
     /// Validates the typed Locate request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError::InvalidRequest`] if the typed Locate request
+    /// validator rejects the supplied filters or attributes.
     pub fn validate(&self) -> Result<(), FluentBuildError> {
         validate_fluent_request(&self.request)
     }
 
     /// Builds the existing typed Locate request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError::InvalidRequest`] if the typed Locate request
+    /// validator rejects the supplied filters or attributes.
     pub fn build_request(self) -> Result<LocateRequest, FluentBuildError> {
         validate_fluent_request(&self.request)?;
         Ok(self.request)
     }
 
     /// Converts this request to its typed batch item.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError::InvalidRequest`] if the typed Locate request
+    /// validator rejects the supplied filters or attributes.
     pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
         self.build_request()
             .map(|request| ClientBatchItem::new(ClientRequest::Locate(request)))
     }
 
     /// Executes exactly one typed Locate exchange.
+    ///
+    /// # Errors
+    ///
+    /// Returns a validation error before sending when the typed request is
+    /// invalid, or the existing client error for exchange and response failures.
     pub fn execute(
         self,
         limits: &kmipkit_ttlv::codec::CodecLimits,
@@ -1864,8 +2114,6 @@ impl<'a> LocateBuilder<'a> {
         )
     }
 }
-
-fluent_exchange_options!(LocateBuilder);
 
 /// A fluent builder for an existing typed Re-key request.
 pub struct RekeyBuilder<'a> {
@@ -1912,10 +2160,76 @@ impl<'a> RekeyBuilder<'a> {
         self.request = std::mem::take(&mut self.request).with_protection_storage_masks(value);
         self
     }
-}
 
-fluent_exchange_options!(RekeyBuilder);
-fluent_typed_request_methods!(RekeyBuilder, RekeyRequest, Rekey);
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.options = Some(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.asynchronous_indicator = Some(value);
+        self
+    }
+
+    /// Validates the typed request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError::InvalidRequest`] if the typed validator rejects the fields.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        validate_fluent_request(&self.request)
+    }
+
+    /// Builds the existing typed request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError::InvalidRequest`] if the typed validator rejects the fields.
+    pub fn build_request(self) -> Result<RekeyRequest, FluentBuildError> {
+        validate_fluent_request(&self.request)?;
+        Ok(self.request)
+    }
+
+    /// Converts this request to its typed batch item.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError::InvalidRequest`] if the typed validator rejects the fields.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build_request()
+            .map(|request| ClientBatchItem::new(ClientRequest::Rekey(request)))
+    }
+
+    /// Executes exactly one typed request exchange.
+    ///
+    /// # Errors
+    ///
+    /// Returns a validation error before sending when the request is invalid, or the existing
+    /// client error for exchange and response failures.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let Self {
+            client,
+            request,
+            options,
+            asynchronous_indicator,
+        } = self;
+        validate_fluent_request(&request).map_err(fluent_client_validation_error)?;
+        execute_fluent_request(
+            client,
+            ClientRequest::Rekey(request),
+            asynchronous_indicator,
+            options,
+            limits,
+        )
+    }
+}
 
 /// A fluent builder for an existing typed Re-key Key Pair request.
 pub struct RekeyKeyPairBuilder<'a> {
@@ -1993,10 +2307,76 @@ impl<'a> RekeyKeyPairBuilder<'a> {
             std::mem::take(&mut self.request).with_public_protection_storage_masks(value);
         self
     }
-}
 
-fluent_exchange_options!(RekeyKeyPairBuilder);
-fluent_typed_request_methods!(RekeyKeyPairBuilder, RekeyKeyPairRequest, RekeyKeyPair);
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.options = Some(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.asynchronous_indicator = Some(value);
+        self
+    }
+
+    /// Validates the typed request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError::InvalidRequest`] if the typed validator rejects the fields.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        validate_fluent_request(&self.request)
+    }
+
+    /// Builds the existing typed request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError::InvalidRequest`] if the typed validator rejects the fields.
+    pub fn build_request(self) -> Result<RekeyKeyPairRequest, FluentBuildError> {
+        validate_fluent_request(&self.request)?;
+        Ok(self.request)
+    }
+
+    /// Converts this request to its typed batch item.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError::InvalidRequest`] if the typed validator rejects the fields.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build_request()
+            .map(|request| ClientBatchItem::new(ClientRequest::RekeyKeyPair(request)))
+    }
+
+    /// Executes exactly one typed request exchange.
+    ///
+    /// # Errors
+    ///
+    /// Returns a validation error before sending when the request is invalid, or the existing
+    /// client error for exchange and response failures.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let Self {
+            client,
+            request,
+            options,
+            asynchronous_indicator,
+        } = self;
+        validate_fluent_request(&request).map_err(fluent_client_validation_error)?;
+        execute_fluent_request(
+            client,
+            ClientRequest::RekeyKeyPair(request),
+            asynchronous_indicator,
+            options,
+            limits,
+        )
+    }
+}
 
 /// A fluent builder for an existing typed Re-certify request.
 pub struct RecertifyBuilder<'a> {
@@ -2065,10 +2445,76 @@ impl<'a> RecertifyBuilder<'a> {
         self.request = std::mem::take(&mut self.request).with_protection_storage_masks(value);
         self
     }
-}
 
-fluent_exchange_options!(RecertifyBuilder);
-fluent_typed_request_methods!(RecertifyBuilder, RecertifyRequest, Recertify);
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.options = Some(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.asynchronous_indicator = Some(value);
+        self
+    }
+
+    /// Validates the typed request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError::InvalidRequest`] if the typed validator rejects the fields.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        validate_fluent_request(&self.request)
+    }
+
+    /// Builds the existing typed request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError::InvalidRequest`] if the typed validator rejects the fields.
+    pub fn build_request(self) -> Result<RecertifyRequest, FluentBuildError> {
+        validate_fluent_request(&self.request)?;
+        Ok(self.request)
+    }
+
+    /// Converts this request to its typed batch item.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError::InvalidRequest`] if the typed validator rejects the fields.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build_request()
+            .map(|request| ClientBatchItem::new(ClientRequest::Recertify(request)))
+    }
+
+    /// Executes exactly one typed request exchange.
+    ///
+    /// # Errors
+    ///
+    /// Returns a validation error before sending when the request is invalid, or the existing
+    /// client error for exchange and response failures.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let Self {
+            client,
+            request,
+            options,
+            asynchronous_indicator,
+        } = self;
+        validate_fluent_request(&request).map_err(fluent_client_validation_error)?;
+        execute_fluent_request(
+            client,
+            ClientRequest::Recertify(request),
+            asynchronous_indicator,
+            options,
+            limits,
+        )
+    }
+}
 
 fn item(raw_tag: u32, value: Value) -> Result<Item, FluentBuildError> {
     let tag: Tag = RawTag::new(raw_tag)

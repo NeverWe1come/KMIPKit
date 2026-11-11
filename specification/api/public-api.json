@@ -418,6 +418,12 @@
     "KMIPKIT-0100-FR-004",
     "KMIPKIT-0100-FR-005",
     "KMIPKIT-0100-FR-006",
+    "KMIPKIT-0101-FR-001",
+    "KMIPKIT-0101-FR-002",
+    "KMIPKIT-0101-FR-003",
+    "KMIPKIT-0101-FR-004",
+    "KMIPKIT-0101-FR-005",
+    "KMIPKIT-0101-FR-006",
     "KMIPKIT-REQ-SPEC-4.16-001-001",
     "KMIPKIT-REQ-SPEC-4.16-001-002",
     "KMIPKIT-REQ-SPEC-4.16-002",
@@ -717309,6 +717315,2812 @@
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0100",
       "blockedReason": "The Rust Register builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-d206deba82e5be070c3b",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::ActivateBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-001",
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004",
+        "KMIPKIT-0101-FR-005",
+        "KMIPKIT-0101-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-bfcd239583d3fbaaaf6a",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::ActivateBuilder<'a>::build_request",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-c1e9687ea7edc864c3a7",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::ActivateBuilder<'a>::execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-004",
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-cf795c1c873ce7c0ccc4",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::ActivateBuilder<'a>::to_batch_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-948a75ec22478ed42ec2",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::ActivateBuilder<'a>::validate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-6b18cf516aaed3b446bb",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::ActivateBuilder<'a>::with_asynchronous_indicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-bb5a7df56cb962ced755",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::ActivateBuilder<'a>::with_options",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-bce68c29338e78eca3a4",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::ArchiveBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-001",
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004",
+        "KMIPKIT-0101-FR-005",
+        "KMIPKIT-0101-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-f6220d9b6600429b1693",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::ArchiveBuilder<'a>::build_request",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-2311ad4ee516c9c361a5",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::ArchiveBuilder<'a>::execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-004",
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-fedc69c27c810bf7568d",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::ArchiveBuilder<'a>::to_batch_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-489ce83164e6c24efcc2",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::ArchiveBuilder<'a>::validate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-92221aac0e7ea8fbcdce",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::ArchiveBuilder<'a>::with_asynchronous_indicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-41040cc5d8c6098858a8",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::ArchiveBuilder<'a>::with_options",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-7cc377037f9d5ee4e167",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::LocateBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-001",
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004",
+        "KMIPKIT-0101-FR-005",
+        "KMIPKIT-0101-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-551e12d056e397e0db08",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::LocateBuilder<'a>::attributes",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-704c6ee927f21dc42fbb",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::LocateBuilder<'a>::build_request",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-51879c4895b8ed13c174",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::LocateBuilder<'a>::execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-004",
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-ba858b313128788e8f23",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::LocateBuilder<'a>::maximum_items",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-f5f1a2cfbea2ff6d6803",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::LocateBuilder<'a>::object_group_member",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-5ea589ee5f4af831520e",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::LocateBuilder<'a>::offset_items",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-b4ed2fc6d318acb3b833",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::LocateBuilder<'a>::storage_status_mask",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-9e3151ba36726ef1b513",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::LocateBuilder<'a>::to_batch_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-07548ddb3874cc448ab1",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::LocateBuilder<'a>::validate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-942bdac82b1feee91508",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::LocateBuilder<'a>::with_asynchronous_indicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-085840e4a69a10271504",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::LocateBuilder<'a>::with_options",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-af3dd54eceafe12c5018",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::RecertifyBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-001",
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004",
+        "KMIPKIT-0101-FR-005",
+        "KMIPKIT-0101-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-47b14ab5030549157f68",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RecertifyBuilder<'a>::attributes",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-c21a80174def119c344b",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RecertifyBuilder<'a>::build_request",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-b3c0791469d75d427c85",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RecertifyBuilder<'a>::certificate_request_type",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-2603d48788d7a79a72bc",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RecertifyBuilder<'a>::certificate_request_unique_identifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-bee8b3adeafcc6a44d2b",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RecertifyBuilder<'a>::certificate_request_value",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-8b023683cbf279e7c696",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RecertifyBuilder<'a>::execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-004",
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-e6ae64a1ef0ab0f2a135",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RecertifyBuilder<'a>::offset",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-21bc5ea5d28b8904bcfa",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RecertifyBuilder<'a>::protection_storage_masks",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-237933356b1d55d351e0",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RecertifyBuilder<'a>::to_batch_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-b02855849b7d3293c1fc",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RecertifyBuilder<'a>::unique_identifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-06d9b5861e28fff51acc",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RecertifyBuilder<'a>::validate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-172ba4bced0ecc29cc1e",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RecertifyBuilder<'a>::with_asynchronous_indicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-c7c5322b9ac7ba6cd149",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RecertifyBuilder<'a>::with_options",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-bd614437f03d8403fb7c",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::RecoverBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-001",
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004",
+        "KMIPKIT-0101-FR-005",
+        "KMIPKIT-0101-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-d97ed6b27846b6211d6a",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RecoverBuilder<'a>::build_request",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-e6531756f03adac4d927",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RecoverBuilder<'a>::execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-004",
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-8923353ef46b1e2e0ca3",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RecoverBuilder<'a>::to_batch_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-8eb70e74d9447fe12a16",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RecoverBuilder<'a>::validate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-7b46bb35388be120918b",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RecoverBuilder<'a>::with_asynchronous_indicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-9cea085159286b7fb987",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RecoverBuilder<'a>::with_options",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-eada681233987be7103b",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::RekeyBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-001",
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004",
+        "KMIPKIT-0101-FR-005",
+        "KMIPKIT-0101-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-1da1a605311253210a12",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RekeyBuilder<'a>::attributes",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-b7f93fa69afa1a3ec537",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RekeyBuilder<'a>::build_request",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-71519969f83cd6cc0c03",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RekeyBuilder<'a>::execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-004",
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-c5b207185b6439ec9fb8",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RekeyBuilder<'a>::offset",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-d244f64488774c42c179",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RekeyBuilder<'a>::protection_storage_masks",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-db4209ed0505805f73af",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RekeyBuilder<'a>::to_batch_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-9f234c7075ba95380d3f",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RekeyBuilder<'a>::validate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-8d6ca1db678d135a1581",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RekeyBuilder<'a>::with_asynchronous_indicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-2d4fbf0d06232efdd392",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RekeyBuilder<'a>::with_options",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-e4182699ebcecbb2fff7",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::RekeyKeyPairBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-001",
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004",
+        "KMIPKIT-0101-FR-005",
+        "KMIPKIT-0101-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-6d3f3933f7aa8e6dbe7c",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RekeyKeyPairBuilder<'a>::build_request",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-80f2d877652bef257cd7",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RekeyKeyPairBuilder<'a>::common_attributes",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-dfae4fe622eeddc5ba3d",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RekeyKeyPairBuilder<'a>::common_protection_storage_masks",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-9768296fb621c28141d7",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RekeyKeyPairBuilder<'a>::execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-004",
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-84674e8a737716050aba",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RekeyKeyPairBuilder<'a>::offset",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-025ad7cccaa157f50fc7",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RekeyKeyPairBuilder<'a>::private_key_attributes",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-c9422745929a35427d36",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RekeyKeyPairBuilder<'a>::private_protection_storage_masks",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-4bcfa499ed4b9fdf9954",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RekeyKeyPairBuilder<'a>::public_key_attributes",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-f320405048c86479dfb0",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RekeyKeyPairBuilder<'a>::public_protection_storage_masks",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-20029f3fb88270e2acbe",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RekeyKeyPairBuilder<'a>::to_batch_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-b4575e22311cf27e3cce",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RekeyKeyPairBuilder<'a>::validate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-88280be577ae0a2854c9",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RekeyKeyPairBuilder<'a>::with_asynchronous_indicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-c7eb1a51e843bd08d2c5",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RekeyKeyPairBuilder<'a>::with_options",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-f6a3ebd1f8a0e911010d",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RequestBuilder<'a>::activate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-001",
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-de7aac114eca3713f463",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RequestBuilder<'a>::archive",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-001",
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-af4e95442c47d3cce12f",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RequestBuilder<'a>::locate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-001",
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-c6908ca4027891154d1d",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RequestBuilder<'a>::recertify",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-001",
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-4bfd8889b3657b27868b",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RequestBuilder<'a>::recover",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-001",
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-ecaa9562827f05917585",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RequestBuilder<'a>::rekey",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-001",
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-6f4e25226bcb78f5ad9b",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RequestBuilder<'a>::rekey_key_pair",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-001",
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-05910847a98b37020989",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RequestBuilder<'a>::revoke",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-001",
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-e89f9ce58226ab4aa5a1",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::RevokeBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-001",
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004",
+        "KMIPKIT-0101-FR-005",
+        "KMIPKIT-0101-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-ba31fec69e76769d4283",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RevokeBuilder<'a>::build_request",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-008aceb9fac7ffea9687",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RevokeBuilder<'a>::compromise_occurrence_date",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-a25dbc813b7c01336791",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RevokeBuilder<'a>::execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-004",
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-d15c78e4ff5420bc8f65",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RevokeBuilder<'a>::revocation_message",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-d01429b0bfcdc4aeda3c",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RevokeBuilder<'a>::to_batch_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-75f2921e96b11c8aa352",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RevokeBuilder<'a>::unique_identifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-95b2dd7d3df5f4816334",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RevokeBuilder<'a>::validate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-02c497880dcfc0aa60de",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RevokeBuilder<'a>::with_asynchronous_indicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-175c5d807d4cd76fbdee",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RevokeBuilder<'a>::with_options",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-fd4e2007b8c5eeaa0ef9",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::fluent::ActivateBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-001",
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004",
+        "KMIPKIT-0101-FR-005",
+        "KMIPKIT-0101-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-54f8d8cf096c800c2a6b",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::ActivateBuilder<'a>::build_request",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-cf9c8547554a0ab389a5",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::ActivateBuilder<'a>::execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-004",
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-15fead4c5b78e7d0178e",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::ActivateBuilder<'a>::to_batch_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-36cb785c8b84e8207bd9",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::ActivateBuilder<'a>::validate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-37fdba483615f66173c5",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::ActivateBuilder<'a>::with_asynchronous_indicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-16cda9e04ecfcabb9176",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::ActivateBuilder<'a>::with_options",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-8ef6473dbd96ee5e9eef",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::fluent::ArchiveBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-001",
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004",
+        "KMIPKIT-0101-FR-005",
+        "KMIPKIT-0101-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-82f25a4fc33c37953be6",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::ArchiveBuilder<'a>::build_request",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-5daae3046c4cff9a4d1d",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::ArchiveBuilder<'a>::execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-004",
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-62f111a57cb2b5541170",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::ArchiveBuilder<'a>::to_batch_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-4dc2649b948289b04cc7",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::ArchiveBuilder<'a>::validate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-e23ca31f78a2d82301fd",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::ArchiveBuilder<'a>::with_asynchronous_indicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-f67b1ae3ec8a735ebb27",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::ArchiveBuilder<'a>::with_options",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-f936abc82b866260c32b",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::fluent::LocateBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-001",
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004",
+        "KMIPKIT-0101-FR-005",
+        "KMIPKIT-0101-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-e27ff6c6e82ee6004a62",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::LocateBuilder<'a>::attributes",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-80155a1cd7654f29d61d",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::LocateBuilder<'a>::build_request",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0b8050421ee312e97bab",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::LocateBuilder<'a>::execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-004",
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-a98332996275a7b591f0",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::LocateBuilder<'a>::maximum_items",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-bbaa5bddd505f553ebe2",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::LocateBuilder<'a>::object_group_member",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-38b517988e71fc39fd21",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::LocateBuilder<'a>::offset_items",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-05a5c7d11c13bb30a762",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::LocateBuilder<'a>::storage_status_mask",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-ff3cc04a7b8d1ad54a17",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::LocateBuilder<'a>::to_batch_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-aaf3f95849757bd66ef4",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::LocateBuilder<'a>::validate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-7e97c0d75667adb6ddbb",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::LocateBuilder<'a>::with_asynchronous_indicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-ce3d50d8a6bb69c5c670",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::LocateBuilder<'a>::with_options",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-eb83f6f7a4d409cf0169",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::fluent::RecertifyBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-001",
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004",
+        "KMIPKIT-0101-FR-005",
+        "KMIPKIT-0101-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-b5cbce25536da107052c",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RecertifyBuilder<'a>::attributes",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-f4ac79c10bf4791f5c84",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RecertifyBuilder<'a>::build_request",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-62c62fafab9887500b5b",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RecertifyBuilder<'a>::certificate_request_type",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-4f9cea5d09e739003027",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RecertifyBuilder<'a>::certificate_request_unique_identifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-c7ad8e5a985163b8e2f7",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RecertifyBuilder<'a>::certificate_request_value",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-5f156c17f70af054960d",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RecertifyBuilder<'a>::execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-004",
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-34a3133e7e8cc226c350",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RecertifyBuilder<'a>::offset",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-949386cfd6b284d46ca0",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RecertifyBuilder<'a>::protection_storage_masks",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-cef4e53a1f9af124f498",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RecertifyBuilder<'a>::to_batch_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0b42e7b7877b33bfbf59",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RecertifyBuilder<'a>::unique_identifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-a2fd44dfc13ffda2b466",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RecertifyBuilder<'a>::validate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-75a0cbbca56dca517d13",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RecertifyBuilder<'a>::with_asynchronous_indicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-9e92e843fc360a150e8a",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RecertifyBuilder<'a>::with_options",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-4791a34c11058cc2b61c",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::fluent::RecoverBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-001",
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004",
+        "KMIPKIT-0101-FR-005",
+        "KMIPKIT-0101-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-d451e280a7c5e0e6aef4",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RecoverBuilder<'a>::build_request",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-be95784118d8a90554a0",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RecoverBuilder<'a>::execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-004",
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-021d9f98deefd0a7bbdb",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RecoverBuilder<'a>::to_batch_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0cdfbf18ed01fe9afe64",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RecoverBuilder<'a>::validate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-a8ea5622455f3de612fc",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RecoverBuilder<'a>::with_asynchronous_indicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-01eca958389912cb0022",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RecoverBuilder<'a>::with_options",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-ee97d4fe28ec86dec41c",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::fluent::RekeyBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-001",
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004",
+        "KMIPKIT-0101-FR-005",
+        "KMIPKIT-0101-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-a9c7e45dc62bc3dd3b03",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RekeyBuilder<'a>::attributes",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-4c04c3b8ef6a0b7d6dbf",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RekeyBuilder<'a>::build_request",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-09d796db4bbd284ab32f",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RekeyBuilder<'a>::execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-004",
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-665a90729c01a19ec3f8",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RekeyBuilder<'a>::offset",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-e16f24a908f30b27432e",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RekeyBuilder<'a>::protection_storage_masks",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-dbe81870821f93696611",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RekeyBuilder<'a>::to_batch_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-70086830b4c1f6579377",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RekeyBuilder<'a>::validate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-05d9c9622c57c3b6e66f",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RekeyBuilder<'a>::with_asynchronous_indicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-f12e1293261372d06f4f",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RekeyBuilder<'a>::with_options",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-76717d1b28a37b453c2c",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::fluent::RekeyKeyPairBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-001",
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004",
+        "KMIPKIT-0101-FR-005",
+        "KMIPKIT-0101-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-81b7d41867770679f609",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RekeyKeyPairBuilder<'a>::build_request",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-3bb044722062e6a76048",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RekeyKeyPairBuilder<'a>::common_attributes",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-f49448c5af9fae64a99c",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RekeyKeyPairBuilder<'a>::common_protection_storage_masks",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-64b251d4b6c2a9700967",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RekeyKeyPairBuilder<'a>::execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-004",
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-d746a130d9ad57239e24",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RekeyKeyPairBuilder<'a>::offset",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-c3e61aafa0ccf9fa16f5",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RekeyKeyPairBuilder<'a>::private_key_attributes",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-65f6e0a76f91fa3399b1",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RekeyKeyPairBuilder<'a>::private_protection_storage_masks",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-99c094aa5eb4156310de",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RekeyKeyPairBuilder<'a>::public_key_attributes",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-e826a0ed0c28e94d62a8",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RekeyKeyPairBuilder<'a>::public_protection_storage_masks",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-ec2da5eced147fc3ba57",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RekeyKeyPairBuilder<'a>::to_batch_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-76f29a21c27d709e9258",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RekeyKeyPairBuilder<'a>::validate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-c76c9c33cabdea5213e5",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RekeyKeyPairBuilder<'a>::with_asynchronous_indicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-8d30a2e3a1d01fa163ac",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RekeyKeyPairBuilder<'a>::with_options",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-2f5bcc4f7c12f4cd9d01",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RequestBuilder<'a>::activate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-001",
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-fb16f39592cfb20ec73e",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RequestBuilder<'a>::archive",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-001",
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-ff8c999cabfb1ff7897d",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RequestBuilder<'a>::locate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-001",
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-8ebd8393d265326a93c0",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RequestBuilder<'a>::recertify",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-001",
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-584c8482407cd3a23588",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RequestBuilder<'a>::recover",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-001",
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-d61cde3467cefa35339c",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RequestBuilder<'a>::rekey",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-001",
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-eb03131b0044a2ea7453",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RequestBuilder<'a>::rekey_key_pair",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-001",
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-f9d6cb1060f257deca1c",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RequestBuilder<'a>::revoke",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-001",
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-78b27ba3f4b4ac1d5758",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::fluent::RevokeBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-001",
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004",
+        "KMIPKIT-0101-FR-005",
+        "KMIPKIT-0101-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-8084a06b91434cc084b2",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RevokeBuilder<'a>::build_request",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-c66a75022bcb0c045050",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RevokeBuilder<'a>::compromise_occurrence_date",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-040ef51492c20edbd82e",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RevokeBuilder<'a>::execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-004",
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-defdbe2b7268d2e99d2b",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RevokeBuilder<'a>::revocation_message",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-fc413385a0e3addb6b2d",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RevokeBuilder<'a>::to_batch_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-657ba76c18e91a2c4492",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RevokeBuilder<'a>::unique_identifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-9f902cab44d0b597e3d1",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RevokeBuilder<'a>::validate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002",
+        "KMIPKIT-0101-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-e2d1511dc0c73b0153b2",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RevokeBuilder<'a>::with_asynchronous_indicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-f983717b65fa85c6003b",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RevokeBuilder<'a>::with_options",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-b632481f44143dbf3c63",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::ActivateBuilder<'a>::unique_identifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-ff25de9b2e799d836588",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::ActivateBuilder<'a>::unique_identifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-79b7cc9c0b97bb697fdf",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::ArchiveBuilder<'a>::unique_identifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-bd81bc68fa7859cf4905",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::ArchiveBuilder<'a>::unique_identifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-d436edb389af1cdc6d5d",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RecoverBuilder<'a>::unique_identifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-7d7f3d989331dfaccff2",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RecoverBuilder<'a>::unique_identifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-4db2885e0cc29e207041",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RekeyBuilder<'a>::unique_identifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-7ade0ed0937f523d6bbd",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RekeyBuilder<'a>::unique_identifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-071041e3977353cc2f98",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RekeyKeyPairBuilder<'a>::private_key_unique_identifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-19bb9cbd20040439aef9",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RekeyKeyPairBuilder<'a>::private_key_unique_identifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0101-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0101",
+      "blockedReason": "This Rust delivery implements the lifecycle builders; equivalent C, Java, and Python fluent surfaces are scheduled in later KMIPKIT-0093 deliveries."
     }
   ],
   "approvedExclusions": [
