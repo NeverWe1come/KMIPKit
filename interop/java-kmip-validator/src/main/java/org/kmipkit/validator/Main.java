@@ -73,7 +73,7 @@ public final class Main {
         out.println("Applicable cases: " + applicable.size());
         out.println("Local TTLV model cases: " + local);
         out.println("Server exchanges executable through selected Java API level: " + typed);
-        out.println("Public typed constructors awaiting catalog recipes: " + recipePending);
+        out.println("Public request routes awaiting required catalog fixtures: " + recipePending);
         out.println("Payload-only and missing public routes: " + (payloadOnly + apiUnavailable));
         out.println("Server-initiated workflows without a Java listener: " + workflowUnavailable);
         out.println("Cases requiring explicit mutation opt-in: " + mutation);

@@ -1,7 +1,7 @@
 package org.kmipkit.validator;
 
-import org.kmipkit.extensions.ClientBatchItem;
 import org.kmipkit.extensions.Client;
+import org.kmipkit.extensions.ClientBatchItem;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -151,12 +151,6 @@ public final class JavaRouteInventory {
         routes.put(operation, new Route(operation, Status.EXECUTABLE_TYPED,
                 "JavaKmipDriver constructs ClientBatchItem." + method
                         + " and checks its installed typed response reader; server-side object preconditions are reported."));
-    }
-
-    private static void payloadOnly(Map<String, Route> routes, String operation, String requestType) {
-        routes.put(operation, new Route(operation, Status.PAYLOAD_ONLY,
-                "The Java package exposes " + requestType
-                        + " payload construction, but not a ClientBatchItem route for sending it."));
     }
 
     private static void asynchronousExecutable(Map<String, Route> routes, String operation, String executor) {

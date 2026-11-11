@@ -140,7 +140,7 @@ class MainContractTest {
         String plan = assertCommandOutput(0, "plan", "--connection", connection("2.1", "typed-protocol").toString(),
                 "--catalog", catalogFile.toString());
         assertTrue(plan.contains("Server exchanges executable through selected Java API level: 2"));
-        assertTrue(plan.contains("Public typed constructors awaiting catalog recipes: 0"));
+        assertTrue(plan.contains("Public request routes awaiting required catalog fixtures: 0"));
     }
 
     @Test
