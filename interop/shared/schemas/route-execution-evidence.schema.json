@@ -66,7 +66,7 @@
         "request_tree_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
         "response_tree_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
         "decode_outcome": { "enum": ["decoded", "rejected"] },
-        "decode_rejection_code": { "enum": ["tag_not_allocated"] },
+        "decode_rejection_code": { "enum": ["tag_reserved", "tag_not_allocated"] },
         "decode_input_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
         "wire_bytes_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
         "wire_bytes_deterministic": { "type": "boolean" },
