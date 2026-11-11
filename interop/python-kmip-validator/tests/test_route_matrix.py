@@ -585,6 +585,21 @@ class RouteMatrixTests(unittest.TestCase):
         )
         self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
 
+    def test_process_matrix_backend_executes_local_routes_in_catalog_order(self):
+        catalog, manifest = self.integer_fixture()
+        manifest['routes'] = [route for route in manifest['routes'] if route['mode'] == 'local']
+        expected_cells = list(iter_cells(catalog, manifest, languages=('python',)))
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact, process_workers=2)
+        self.assertEqual([], gaps)
+        self.assertEqual(len(expected_cells), len(report['events']))
+        self.assertEqual(
+            [(cell['case_id'], cell['target_id'], cell['public_api_symbol'], cell['protocol_version'])
+             for cell in expected_cells],
+            [(event['case_id'], event['target_id'], event['public_api_symbol'], event['protocol_version'])
+             for event in report['events']],
+        )
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
     def test_construct_and_decode_are_distinct_invocations(self):
         catalog, manifest = self.integer_fixture()
         report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
