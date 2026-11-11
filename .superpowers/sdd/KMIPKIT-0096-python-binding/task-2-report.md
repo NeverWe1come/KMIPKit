@@ -39,3 +39,26 @@ The repository `target` is temporarily linked to the prior stack's Cargo
 target cache to avoid duplicating build outputs; Cargo recompiles this
 worktree's source. This symlink will be removed after verification without
 removing the shared target directory.
+
+## Green
+
+The two C entry points now classify only their own validation failures as
+`NOT_SENT`, retaining the original status/category/cause. JNI's insertion and
+typed-build bridges use the existing client-operation exception conversion;
+generic argument checks and all other JNI conversion paths are unchanged.
+There is no new ABI, native symbol, exception class, or manifest declaration.
+
+```sh
+CARGO_BUILD_JOBS=2 cargo test -p kmipkit-ffi --all-features --locked --test c_api_coverage public_c_fluent_builder_inserts_explicit_attributes_at_a_final_position -- --exact
+CARGO_BUILD_JOBS=2 bash bindings/java/native/build.sh
+bash bindings/java/gradlew -p bindings/java --offline --console=plain --no-daemon '-Dorg.gradle.jvmargs=-Xmx2g -XX:MaxMetaspaceSize=768m' test --tests org.kmipkit.fluent.FluentFacadeShapeTest
+PYTHONPATH=bindings/python/src KMIPKIT_NATIVE_LIBRARY=/home/ramp1953/.codex/worktrees/fluent-python-attributes/KMIPKit-fluent-dx-worktree/target/debug/libkmipkit_ffi.so /tmp/kmipkit-0095-py312/bin/python -m pytest -q bindings/python/tests/test_fluent_expert_attributes.py bindings/python/tests/test_fluent.py --tb=short
+```
+
+All exited 0. Compiled C: 1 passed, 55 filtered out. Java/JNI: nine tests,
+zero failures, with native library rebuilt from this worktree. Python:
+46 passed. The Python override ensures the newly built shared library is
+used; only the generated CFFI declarations are reused from the prior stack.
+Normal native builds emit two pre-existing default-feature `dead_code`
+warnings in `kmipkit-client::execute` and aws-lc build diagnostics; there are
+no newly introduced warnings.

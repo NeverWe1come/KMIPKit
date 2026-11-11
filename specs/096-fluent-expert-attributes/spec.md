@@ -64,3 +64,15 @@ must all pass the same existing validation before an exchange can be sent.
 This slice establishes the Rust request path. Equivalent C, Java, and Python
 methods are delivered in the dependent binding slices. It does not add generic
 TTLV request submission or positional editing outside Object Attributes.
+
+## Binding error contract
+
+FR-003 applies to the local insertion and typed-build boundary in every
+binding. The C insertion/build entry points retain their existing status
+codes and report `NotSent` through the existing last-error delivery metadata
+when native validation rejects the request. JNI exposes these failures as
+the existing `ClientOperationException`, with the original status, category,
+cause, and delivery codes; Python exposes `ClientExecutionError` with those
+same classifications. Direct Java/Python argument-shape errors retain their
+existing payload-free input exceptions. The scoped builder error handling
+does not change metadata or exception mapping for unrelated operations.
