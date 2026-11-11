@@ -117,3 +117,21 @@ Green verification:
 - Fresh native/JNI build: passed.
 - Python response-view and native response fixtures against the rebuilt DSO: 17 passed.
 - Java response-view and native mTLS fixtures: 2 passed.
+
+### Follow-up Refactor
+
+Green commit: `2751bf559` (DCO signed off). Consolidated checked arithmetic and
+output-cap validation into one payload-free failure path before the exact
+reserve; documented why the final byte count is twice the binary byte count.
+Bilingual guides now distinguish binary input size from final rendered output.
+There is no public API, error-family, request-permit or transport change.
+
+Follow-up Refactor verification (commands executed sequentially with two Cargo jobs):
+
+- `cargo test -p kmipkit-client --all-features`: 967 passed, 0 failed, 3 existing local-Cosmian cases ignored. Includes the new final-output boundary regression and request/inspection source-boundary checks.
+- `cargo test -p kmipkit-ffi --all-features --lib`: 473 passed, including the compiled C binary-fits/hex-exceeds regression.
+- `cargo clippy -p kmipkit-client -p kmipkit-ffi --all-targets --all-features -- -D warnings`: passed.
+- `cargo fmt --all --check` and `git diff --check`: passed.
+
+No generator inputs or public declarations changed in the review fix. Remote
+CI, regeneration/review/rebase and push remain with the parent task.

@@ -51,3 +51,18 @@ renderer failure surfaces. Generic internal exceptions remain excluded as
 standalone capabilities under KMIPKIT-0043; this delivery does not change that
 panic-fallback contract. `response_view_error_categories_are_stable_and_payload_free`
 checks every Rust variant against this translation.
+
+## FR-005 review correction: hexadecimal output size
+
+The inspection writer uses checked `2 * binary_length`, validates that final
+UTF-8 output length against max_message_bytes, and only then reserves and emits
+uppercase hexadecimal. An overflow or exceeded cap returns the existing
+payload-free LimitExceeded category; zeroizing intermediate/final owners are
+unchanged. Exact final-length limits remain accepted.
+
+Evidence: Rust
+`response_boundary_tests::ttlv_hex_limits_bound_the_rendered_output_not_only_binary_ttlv`
+rejects caps equal to binary size and one byte below hex size, accepts the exact
+hex size, and observes one exchange. The compiled C consumer and the Java/Python
+native mTLS response fixtures reject binary-only caps with their existing
+resource-limit status/exception. Java/Python also accept exact hex output caps.

@@ -183,3 +183,8 @@ cadenas `String` o `str`, los bytes inmutables y otras copias creadas por el
 usuario quedan bajo su responsabilidad: KMIPKit no puede garantizar que el
 runtime las borre. Evita registrar estas representaciones, que pueden contener
 material de claves y credenciales.
+
+El límite de inspección `max_message_bytes` se aplica a la salida final solicitada.
+El hexadecimal TTLV canónico ocupa exactamente el doble que el TTLV binario.
+Un límite suficiente para el mensaje binario puede rechazar su vista hexadecimal;
+se acepta un límite igual a la longitud completa de esa representación.
