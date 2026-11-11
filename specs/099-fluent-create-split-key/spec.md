@@ -52,10 +52,13 @@ complete.
 - **KMIPKIT-0099-FR-003**: The builder MUST provide typed and explicit Item
   attribute insertion, a Vendor Attribute constructor that forms the valid
   KMIP Vendor Attribute structure, and explicit final-position insertion in
-  the direct Object Attributes list. Message Extension tags MUST be rejected
-  as Object Attributes. The final set MUST use the existing `AttributeSet`
-  and typed request validation; unrecognized tags MUST retain their explicit
-  TTLV type and value.
+  the direct Object Attributes list. Allocated unknown tags MUST be supplied
+  as explicit typed `Item` values and retained as raw tags, including tags in
+  the `0x540000` through `0x54FFFF` extension range. They MUST NOT be
+  reinterpreted as Vendor Attributes. This supersedes the original
+  extension-tag rejection rule in KMIPKIT-0099 under the expanded
+  KMIPKIT-0093 contract. The final set MUST use the existing `AttributeSet`
+  and typed request validation.
 - **KMIPKIT-0099-FR-004**: `validate(&self)` MUST build and validate through the
   same local path as `build_request()` without consuming the builder or
   invoking transport. The existing typed validator MUST enforce its

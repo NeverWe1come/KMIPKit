@@ -93,6 +93,14 @@ def small_catalog() -> dict[str, object]:
 
 
 class AttributeTypeGeneratorTests(unittest.TestCase):
+    def test_client_attribute_tag_catalog_contains_only_attribute_assignments(self) -> None:
+        rendered = generator.render_client_attribute_tags_rust(small_catalog())
+
+        self.assertIn("0x42_00_01", rendered)
+        self.assertIn("0x42_00_28", rendered)
+        self.assertIn("0x42_00_08", rendered)
+        self.assertNotIn("0x42_00_5C", rendered)
+
     def assert_catalog_rejected(self, catalog: dict[str, object]) -> None:
         with self.assertRaises(ValueError):
             render_rust(catalog)
@@ -262,6 +270,9 @@ class AttributeTypeGeneratorTests(unittest.TestCase):
         expected_typed_c_header = generator.render_typed_c_header(small_catalog()).encode("utf-8")
         expected_typed_java = generator.render_typed_java(small_catalog()).encode("utf-8")
         expected_typed_python = generator.render_typed_python(small_catalog()).encode("utf-8")
+        expected_client_attribute_tags = generator.render_client_attribute_tags_rust(
+            small_catalog()
+        ).encode("utf-8")
 
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -293,6 +304,11 @@ class AttributeTypeGeneratorTests(unittest.TestCase):
                     unittest.mock.call(
                         root.resolve(strict=True), generator.TYPED_PYTHON_OUTPUT_PATH, expected_typed_python
                     ),
+                    unittest.mock.call(
+                        root.resolve(strict=True),
+                        generator.CLIENT_ATTRIBUTE_TAG_OUTPUT_PATH,
+                        expected_client_attribute_tags,
+                    ),
                 ],
             )
 
@@ -308,6 +324,7 @@ class AttributeTypeGeneratorTests(unittest.TestCase):
                         expected_typed_c_header,
                         expected_typed_java,
                         expected_typed_python,
+                        expected_client_attribute_tags,
                     ],
                 ),
                 patch.object(generator, "load_validated_catalog", return_value=small_catalog()),
@@ -327,6 +344,7 @@ class AttributeTypeGeneratorTests(unittest.TestCase):
                         expected_typed_c_header,
                         expected_typed_java,
                         expected_typed_python,
+                        expected_client_attribute_tags,
                     ],
                 ),
                 patch.object(generator, "load_validated_catalog", return_value=small_catalog()),

@@ -69,10 +69,12 @@ the remaining operation families and language facades.
   typed attributes, preserving the supplied set's item order. Repeated set
   methods append in call order. Final request construction MUST run the
   existing typed request validator so duplicate or conflicting effective
-  values are rejected before transport. Items using Message Extension tags
-  (`0x540000` through `0x54FFFF`) MUST be rejected as object attributes with
-  `FluentBuildError::MessageExtensionTagNotObjectAttribute`; they are valid
-  only in their proper message-level extension position.
+  values are rejected before transport. Allocated unknown tags MUST be
+  supplied as explicit typed `Item` values and preserved as raw tags, including
+  values in the `0x540000` through `0x54FFFF` extension range. These tags MUST
+  NOT be reinterpreted as Vendor Attributes. This requirement supersedes the
+  original extension-tag rejection rule in KMIPKIT-0097 under the expanded
+  KMIPKIT-0093 contract.
 
 ## Acceptance criteria
 

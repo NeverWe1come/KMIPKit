@@ -210,26 +210,25 @@ fn aes_256_builder_emits_typed_attributes_and_interpreted_text_name() {
 }
 
 #[test]
-fn explicit_unknown_attribute_is_preserved_but_extension_tags_are_rejected() {
+fn explicit_extension_tag_attribute_item_is_preserved_without_reinterpretation() {
     let unknown = item(0x0054_0ABC, Value::integer(7));
     let mut client = failed_request_client();
-    let builder = client
+    let request = client
         .request()
         .create_symmetric_key()
         .aes_256()
         .usage_mask(CryptographicUsageMask::ENCRYPT)
         .attribute_item(unknown)
-        .attribute_item(item(
-            0x0042_005C,
-            Value::text_string("ignored after error".to_owned()),
-        ));
-    assert_eq!(
-        builder
-            .build()
-            .err()
-            .expect("message extension tags are not attributes"),
-        FluentBuildError::MessageExtensionTagNotObjectAttribute
-    );
+        .build_request()
+        .expect("an explicitly typed unknown tag is retained as a raw Item");
+
+    let extension = request
+        .attributes()
+        .as_items()
+        .iter()
+        .find(|attribute| attribute.tag().raw() == 0x0054_0ABC)
+        .expect("the extension tag remains present");
+    assert!(extension.with_value(|value| matches!(value, ValueView::Integer(7))));
 }
 
 #[test]
@@ -285,7 +284,10 @@ fn catalogued_attribute_item_rejects_a_wrong_ttlv_type() {
 
 #[test]
 fn explicit_generic_attribute_and_vendor_attribute_are_retained() {
-    let unknown = item(0x0042_005C, Value::text_string("expert-value".to_owned()));
+    let explicit = item(
+        typed::ContactInformation::TAG,
+        Value::text_string("expert-value".to_owned()),
+    );
     let catalogued = Attribute::<typed::Description>::new("managed by fluent".to_owned())
         .expect("catalogued Text String attribute");
     let mut client = failed_request_client();
@@ -295,7 +297,7 @@ fn explicit_generic_attribute_and_vendor_attribute_are_retained() {
         .aes_256()
         .usage_mask(CryptographicUsageMask::ENCRYPT)
         .attribute(catalogued)
-        .attribute_item(unknown)
+        .attribute_item(explicit)
         .vendor_attribute(
             "Vendor_Name.1",
             "region",
@@ -307,7 +309,7 @@ fn explicit_generic_attribute_and_vendor_attribute_are_retained() {
     let attributes = request.attributes().as_items();
     assert_eq!(attributes.len(), 6);
     assert_eq!(attributes[3].tag().raw(), typed::Description::TAG);
-    assert_eq!(attributes[4].tag().raw(), 0x0042_005C);
+    assert_eq!(attributes[4].tag().raw(), typed::ContactInformation::TAG);
     assert_eq!(attributes[5].tag().raw(), typed::VendorAttribute::TAG);
     let vendor_fields = attributes[5]
         .as_structure()
@@ -333,34 +335,40 @@ fn expert_attribute_positions_apply_to_the_final_ordered_attribute_sequence() {
         .name("ordered-key")
         .attribute_at(
             FluentAttributePosition::ObjectAttributes { index: 0 },
-            item(0x0042_005C, Value::text_string("first".to_owned())),
+            item(
+                typed::ContactInformation::TAG,
+                Value::text_string("first".to_owned()),
+            ),
         )
         .attribute_at(
             FluentAttributePosition::ObjectAttributes { index: 2 },
-            item(0x0042_005C, Value::text_string("middle".to_owned())),
+            item(
+                typed::Description::TAG,
+                Value::text_string("middle".to_owned()),
+            ),
         )
         .attribute_at(
             FluentAttributePosition::ObjectAttributes { index: 6 },
-            item(0x0042_005C, Value::text_string("last".to_owned())),
+            item(typed::Comment::TAG, Value::text_string("last".to_owned())),
         )
         .build_request()
         .expect("explicit positions fit the final attribute sequence");
 
     let attributes = request.attributes().as_items();
     assert_eq!(attributes.len(), 7);
-    assert_eq!(attributes[0].tag().raw(), 0x0042_005C);
+    assert_eq!(attributes[0].tag().raw(), typed::ContactInformation::TAG);
     assert_eq!(
         attributes[1].tag().raw(),
         typed::CryptographicAlgorithm::TAG
     );
-    assert_eq!(attributes[2].tag().raw(), 0x0042_005C);
+    assert_eq!(attributes[2].tag().raw(), typed::Description::TAG);
     assert_eq!(attributes[3].tag().raw(), typed::CryptographicLength::TAG);
     assert_eq!(
         attributes[4].tag().raw(),
         typed::CryptographicUsageMask::TAG
     );
     assert_eq!(attributes[5].tag().raw(), typed::Name::TAG);
-    assert_eq!(attributes[6].tag().raw(), 0x0042_005C);
+    assert_eq!(attributes[6].tag().raw(), typed::Comment::TAG);
     for (position, expected) in [(0, "first"), (2, "middle"), (6, "last")] {
         assert!(attributes[position].with_value(|value| matches!(
             value,
@@ -376,11 +384,17 @@ fn expert_attribute_positions_reject_duplicate_and_out_of_range_indices() {
         .usage_mask(CryptographicUsageMask::ENCRYPT)
         .attribute_at(
             FluentAttributePosition::ObjectAttributes { index: 0 },
-            item(0x0042_005C, Value::text_string("one".to_owned())),
+            item(
+                typed::ContactInformation::TAG,
+                Value::text_string("one".to_owned()),
+            ),
         )
         .attribute_at(
             FluentAttributePosition::ObjectAttributes { index: 0 },
-            item(0x0042_005C, Value::text_string("two".to_owned())),
+            item(
+                typed::ContactInformation::TAG,
+                Value::text_string("two".to_owned()),
+            ),
         )
         .build_request();
     assert_eq!(
@@ -393,7 +407,10 @@ fn expert_attribute_positions_reject_duplicate_and_out_of_range_indices() {
         .usage_mask(CryptographicUsageMask::ENCRYPT)
         .attribute_at(
             FluentAttributePosition::ObjectAttributes { index: 4 },
-            item(0x0042_005C, Value::text_string("too late".to_owned())),
+            item(
+                typed::ContactInformation::TAG,
+                Value::text_string("too late".to_owned()),
+            ),
         )
         .build_request();
     assert_eq!(
@@ -403,7 +420,7 @@ fn expert_attribute_positions_reject_duplicate_and_out_of_range_indices() {
 }
 
 #[test]
-fn expert_attribute_positions_keep_type_and_extension_validation() {
+fn expert_attribute_positions_keep_type_validation_and_extension_tags_raw() {
     let wrong_type = CreateSymmetricKeyBuilder::detached()
         .aes_256()
         .usage_mask(CryptographicUsageMask::ENCRYPT)
@@ -424,10 +441,11 @@ fn expert_attribute_positions_keep_type_and_extension_validation() {
             FluentAttributePosition::ObjectAttributes { index: 0 },
             item(0x0054_0001, Value::integer(7)),
         )
-        .build_request();
+        .build_request()
+        .expect("a positioned explicit extension Item remains unchanged");
     assert_eq!(
-        extension.err(),
-        Some(FluentBuildError::MessageExtensionTagNotObjectAttribute)
+        extension.attributes().as_items()[0].tag().raw(),
+        0x0054_0001
     );
 }
 
@@ -441,11 +459,17 @@ fn rejected_expert_attribute_position_is_not_sent() {
         .usage_mask(CryptographicUsageMask::ENCRYPT)
         .attribute_at(
             FluentAttributePosition::ObjectAttributes { index: 0 },
-            item(0x0042_005C, Value::text_string("one".to_owned())),
+            item(
+                typed::ContactInformation::TAG,
+                Value::text_string("one".to_owned()),
+            ),
         )
         .attribute_at(
             FluentAttributePosition::ObjectAttributes { index: 0 },
-            item(0x0042_005C, Value::text_string("two".to_owned())),
+            item(
+                typed::ContactInformation::TAG,
+                Value::text_string("two".to_owned()),
+            ),
         )
         .execute(&CodecLimits::defaults())
         .expect_err("duplicate positions fail before exchange");

@@ -769,7 +769,7 @@ fn key_pair_prebuilt_conflicting_algorithms_use_the_existing_request_validator()
     assert!(!format!("{error:?} {error}").contains(PRIVATE_SENTINEL));
 }
 
-fn assert_key_pair_prebuilt_message_extensions_are_rejected(group: u32) {
+fn assert_key_pair_prebuilt_extension_items_are_preserved(group: u32) {
     for tag in [0x0054_0000, 0x0054_8000, 0x0054_FFFF] {
         let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
         let attributes = AttributeSet::try_new([test_item(tag, Value::boolean(true))]).unwrap();
@@ -779,31 +779,38 @@ fn assert_key_pair_prebuilt_message_extensions_are_rejected(group: u32) {
             PRIVATE_KEY_ATTRIBUTES => builder.private_key_attributes(attributes),
             _ => builder.public_key_attributes(attributes),
         };
-        assert_eq!(
-            builder.validate(),
-            Err(FluentBuildError::MessageExtensionTagNotObjectAttribute)
-        );
-        assert_eq!(
-            builder.build_request().unwrap_err(),
-            FluentBuildError::MessageExtensionTagNotObjectAttribute
-        );
-        let error = builder.execute(&CodecLimits::defaults()).unwrap_err();
-        assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+        assert_eq!(builder.validate(), Ok(()));
+        let request = builder
+            .build_request()
+            .expect("explicit extension Items remain raw Object Attribute entries");
+        let payload = request
+            .into_ttlv_payload()
+            .expect("the typed payload retains explicit extension Items");
+        let group = payload_groups(&payload)
+            .into_iter()
+            .find(|item| item.tag().raw() == group)
+            .expect("the selected attribute group is encoded");
+        let items = group.as_structure().unwrap().children();
+        let extension = items
+            .iter()
+            .find(|item| item.tag().raw() == tag)
+            .expect("the exact extension tag remains in the group");
+        assert!(extension.with_value(|value| matches!(value, ValueView::Boolean(true))));
         assert_eq!(transport.borrow().exchange_count(), 0);
     }
 }
 
 #[test]
-fn key_pair_prebuilt_common_attributes_reject_message_extensions_before_transport() {
-    assert_key_pair_prebuilt_message_extensions_are_rejected(COMMON_ATTRIBUTES);
+fn key_pair_prebuilt_common_attributes_preserve_extension_items() {
+    assert_key_pair_prebuilt_extension_items_are_preserved(COMMON_ATTRIBUTES);
 }
 
 #[test]
-fn key_pair_prebuilt_private_attributes_reject_message_extensions_before_transport() {
-    assert_key_pair_prebuilt_message_extensions_are_rejected(PRIVATE_KEY_ATTRIBUTES);
+fn key_pair_prebuilt_private_attributes_preserve_extension_items() {
+    assert_key_pair_prebuilt_extension_items_are_preserved(PRIVATE_KEY_ATTRIBUTES);
 }
 
 #[test]
-fn key_pair_prebuilt_public_attributes_reject_message_extensions_before_transport() {
-    assert_key_pair_prebuilt_message_extensions_are_rejected(PUBLIC_KEY_ATTRIBUTES);
+fn key_pair_prebuilt_public_attributes_preserve_extension_items() {
+    assert_key_pair_prebuilt_extension_items_are_preserved(PUBLIC_KEY_ATTRIBUTES);
 }

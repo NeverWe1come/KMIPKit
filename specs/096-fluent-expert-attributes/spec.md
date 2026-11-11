@@ -48,7 +48,10 @@ must all pass the same existing validation before an exchange can be sent.
    attributes, and at the end of the final Object Attributes list.
 2. The typed path exposes only Object Attributes, so other parent paths cannot
    be represented. Tests reject duplicate insertion indices, out-of-range
-   indices, wrong catalogued TTLV types, and message-extension tags.
+   indices and wrong catalogued TTLV types. An allocated unknown tag is
+   retained only when supplied as an explicit typed `Item`, including tags in
+   the `0x540000`–`0x54FFFF` extension range; it remains a raw tag and is not
+   converted into a Vendor Attribute.
 3. A successful build yields the existing typed `CreateRequest`; the normal
    client execution path remains the only send path.
 4. Focused protocol and client tests, formatting, Clippy, manifest checks,

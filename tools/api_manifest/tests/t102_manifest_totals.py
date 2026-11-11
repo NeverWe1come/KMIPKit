@@ -17,12 +17,13 @@ T102_BLOCKED_CANDIDATES = 0
 # declarations and Rust trait exclusions pending cross-language adapters.
 # KMIPKIT-0096 adds four expert-position declarations; KMIPKIT-0097 adds
 # 46 exact Rust key-pair declarations; KMIPKIT-0099 adds 50 exact Rust
-# Create Split Key declarations and 18 standard-trait exclusions. Update this
-# full-manifest snapshot only when an approved feature intentionally adds or
-# removes declarations.
-T102_PUBLIC_DECLARATIONS = 13_980
+# Create Split Key declarations and 18 standard-trait exclusions; KMIPKIT-0100
+# adds 40 exact Rust Register declarations and 18 standard-trait exclusions.
+# Update this full-manifest snapshot only when an approved feature intentionally
+# adds or removes declarations.
+T102_PUBLIC_DECLARATIONS = 14_020
 T102_KMIP30_DRAFT_ROUTE_DECLARATIONS = 36
-T102_APPROVED_EXCLUSIONS = 19_000
+T102_APPROVED_EXCLUSIONS = 19_018
 T102_RUST_AUDIT_MANIFEST = 3_287
 T102_RUST_AUDIT_EXCLUDED = 7_176
 T102_RUST_AUDIT_OBSERVED = 10_463

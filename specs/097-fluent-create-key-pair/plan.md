@@ -69,7 +69,11 @@ Before completing step 4, add the two contracts identified by the branch review:
   repository generator.
 - [ ] Commit the Red, Green, and documentation/refactor evidence separately.
 
-### Task 6 fix round 1: reject Message Extension tags as object attributes
+### Historical Task 6 fix round 1: reject Message Extension tags as object attributes
+
+This earlier policy was superseded by KMIPKIT-0093. Current fluent builders
+preserve allocated extension tags only when the caller supplies an explicit
+typed `Item`; the raw tag is not converted to a Vendor Attribute.
 
 - [ ] Add focused failing tests proving each prebuilt group rejects tags in
   `0x540000..=0x54FFFF` with `MessageExtensionTagNotObjectAttribute` and
