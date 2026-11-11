@@ -9,7 +9,8 @@ METHODS = {
     "algorithm", "length", "private_usage_mask", "public_usage_mask",
     "private_name", "public_name", "common_attribute", "private_attribute",
     "public_attribute", "with_options", "with_asynchronous_indicator",
-    "build", "build_request", "to_batch_item", "execute",
+    "build", "build_request", "to_batch_item", "execute", "validate",
+    "common_attributes", "private_key_attributes", "public_key_attributes",
 }
 
 
@@ -32,7 +33,7 @@ class FluentCreateKeyPairManifestTests(unittest.TestCase):
         rows = [row for row in self.manifest["publicDeclarations"]
                 if row.get("candidateSpecId") == "KMIPKIT-0097"]
         self.assertEqual(expected, {row["exportName"]: row["kind"] for row in rows})
-        self.assertEqual(len(rows), 38)
+        self.assertEqual(len(rows), 46)
         for row in rows:
             with self.subTest(export=row["exportName"]):
                 self.assertEqual(row["packageId"], "rust-kmipkit-client")
@@ -57,3 +58,13 @@ class FluentCreateKeyPairManifestTests(unittest.TestCase):
                 self.assertIn("CreateKeyPairBuilder<'a> as core::", row["exportName"])
                 self.assertIn("KMIPKIT-0097-FR-005", row["evidence"])
                 self.assertNotIn("*", row["exportName"])
+
+    def test_local_validation_and_prebuilt_sets_have_exact_requirement_owners(self) -> None:
+        for row in self.manifest["publicDeclarations"]:
+            if row.get("candidateSpecId") != "KMIPKIT-0097":
+                continue
+            method = row["exportName"].rsplit("::", 1)[-1]
+            if method == "validate":
+                self.assertIn("KMIPKIT-0097-FR-006", row["requirementIds"])
+            elif method in {"common_attributes", "private_key_attributes", "public_key_attributes"}:
+                self.assertIn("KMIPKIT-0097-FR-007", row["requirementIds"])

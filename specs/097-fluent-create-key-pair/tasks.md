@@ -10,3 +10,7 @@
   generated API manifest; update traceability and repository audit inputs.
 - [ ] T005 Run required local verification, open a `[WIP]` draft PR, repair all
   red CI checks, and mark ready only after the exact PR head is fully green.
+
+- [x] T006 Add non-consuming local `validate()` and append-only prebuilt Common,
+  Private Key, and Public Key attribute groups; record focused Red/Green commits,
+  bilingual examples, exact API declarations, and FR-006/FR-007 traceability.
