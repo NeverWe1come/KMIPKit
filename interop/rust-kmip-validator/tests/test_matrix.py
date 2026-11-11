@@ -57,6 +57,33 @@ class MatrixContract(unittest.TestCase):
         hashes = [event['request_tree_sha256'] for event in report['events']]
         self.assertNotEqual(*hashes, 'a fixed unrelated fixture cannot satisfy different target values')
 
+    def test_all_generic_value_constructors_roundtrip_their_own_data_type(self):
+        kinds = {'big_integer': 'BIG-INTEGER', 'boolean': 'BOOLEAN', 'byte_string': 'BYTE-STRING',
+                 'date_time': 'DATE-TIME', 'date_time_extended': 'DATE-TIME-EXTENDED',
+                 'enumeration': 'ENUMERATION', 'integer': 'INTEGER', 'interval': 'INTERVAL',
+                 'long_integer': 'LONG-INTEGER', 'structure': 'STRUCTURE', 'text_string': 'TEXT-STRING'}
+        cells = [self.cell('kmipkit_ttlv::Value::' + name, 'KMIPKIT-ELEM-DATA-TYPE-' + target)
+                 for name, target in kinds.items()]
+        process, report = self.run_matrix(cells)
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual(len(report['events']), 11)
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
+    def test_unknown_case_and_wrong_version_cannot_generate_evidence(self):
+        for mutation in ({'case_id': 'not-a-real-case'}, {'protocol_version': '1.4'}):
+            cell = self.cell('kmipkit_ttlv::Item::new')
+            cell.update(mutation)
+            process, report = self.run_matrix([cell])
+            self.assertNotEqual(process.returncode, 0)
+            self.assertIsNone(report)
+
+    def test_route_cannot_claim_an_unrelated_normative_target(self):
+        cell = self.cell('kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::CryptographicLength>::new')
+        cell['target_id'] = 'KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-AES-00000003'
+        process, report = self.run_matrix([cell])
+        self.assertNotEqual(process.returncode, 0)
+        self.assertIsNone(report)
+
     def test_forged_symbol_is_rejected_without_false_positive(self):
         cell = self.cell('kmipkit_ttlv::Item::new')
         cell['public_api_symbol'] = 'kmipkit_ttlv::Value::boolean'
