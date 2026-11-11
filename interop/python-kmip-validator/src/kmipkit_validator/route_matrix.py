@@ -17,7 +17,7 @@ import sys
 import uuid
 from typing import Any
 
-from .contract import ROOT, SHARED
+from .contract import SHARED
 from .driver import PythonKmipDriver, _TTLV_TYPE_KINDS, _catalog_model_data
 
 # The shared generator is the sole authority for applicable cells.
@@ -237,6 +237,7 @@ def run_matrix(catalog: dict, manifest: dict, artifact: dict,
                     'action', 'protocol_version', 'encoding', 'transport')
     for cell in iter_cells(catalog, manifest, languages=('python',)):
         identity = {field: cell[field] for field in event_fields if field in cell}
+        trace = None
         try:
             symbols = [cell['public_api_symbol']]
             if cell.get('execution_api_symbol'):
@@ -251,7 +252,12 @@ def run_matrix(catalog: dict, manifest: dict, artifact: dict,
             gaps.append({**identity, 'failure_code': 'recipe_pending'})
         except Exception:
             # No exception names, sources, native text or raw fixture values leave here.
-            gaps.append({**identity, 'failure_code': 'recipe_execution_failed'})
+            if trace is not None and set(symbols) <= trace.observed:
+                report['events'].append({**identity, 'invocation_id': str(uuid.uuid4()),
+                                         'invocation_count': 1, 'status': 'failed',
+                                         'failure_code': 'route_execution_failed'})
+            else:
+                gaps.append({**identity, 'failure_code': 'recipe_execution_failed'})
     return report, gaps
 
 
@@ -435,7 +441,9 @@ def run_command(output_dir: Path) -> int:
         # but this CLI deliberately emits fixed text and numeric counts only.
         pass
     closure = {'language': 'python', 'required_cells': len(report['events']) + len(gaps),
-               'verified_cells': len(report['events']), 'pending_cells': len(gaps), 'complete': passed}
+               'verified_cells': sum(event['status'] == 'passed' for event in report['events']),
+               'failed_cells': sum(event['status'] == 'failed' for event in report['events']),
+               'pending_cells': len(gaps), 'complete': passed}
     (output / 'closure.json').write_text(json.dumps(closure, indent=2, sort_keys=True) + '\n')
     print(json.dumps(closure, sort_keys=True))
     return 0 if passed else 1
