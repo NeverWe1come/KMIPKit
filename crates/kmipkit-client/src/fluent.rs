@@ -6,9 +6,9 @@ use std::ops::BitOr;
 
 use kmipkit_protocol::attribute::typed;
 use kmipkit_protocol::{
-    Attribute, AttributeDefinition, AttributeSet, AttributeSetError, CreateRequest,
-    CryptographicAlgorithm, DestroyRequest, GetRequest, ObjectType, UniqueIdentifier,
-    ValidateKmipRequest,
+    Attribute, AttributeDefinition, AttributeSet, AttributeSetError, CreateKeyPairRequest,
+    CreateRequest, CryptographicAlgorithm, DestroyRequest, GetRequest, ObjectType,
+    UniqueIdentifier, ValidateKmipRequest,
 };
 use kmipkit_transport::{RequestDeliveryState, RequestOptions};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
@@ -82,6 +82,10 @@ pub enum FluentBuildError {
     MissingCryptographicLength,
     /// Create Symmetric Key is missing Cryptographic Usage Mask.
     MissingCryptographicUsageMask,
+    /// Create Key Pair is missing Cryptographic Algorithm.
+    MissingCreateKeyPairAlgorithm,
+    /// Create Key Pair is missing Cryptographic Length.
+    MissingCreateKeyPairLength,
     /// A catalogued attribute has an invalid TTLV type or structure.
     InvalidAttributeValue,
     /// A KMIP message extension tag was supplied as an Object Attribute.
@@ -110,6 +114,10 @@ impl fmt::Display for FluentBuildError {
             Self::MissingCryptographicUsageMask => {
                 "Create Symmetric Key requires Cryptographic Usage Mask"
             }
+            Self::MissingCreateKeyPairAlgorithm => {
+                "Create Key Pair requires Cryptographic Algorithm"
+            }
+            Self::MissingCreateKeyPairLength => "Create Key Pair requires Cryptographic Length",
             Self::InvalidAttributeValue => "fluent Object Attribute value is invalid",
             Self::MessageExtensionTagNotObjectAttribute => {
                 "KMIP message extension tags are not Object Attributes"
@@ -154,6 +162,12 @@ impl<'a> RequestBuilder<'a> {
     #[must_use]
     pub fn create_symmetric_key(self) -> CreateSymmetricKeyBuilder<'a> {
         CreateSymmetricKeyBuilder::new(Some(self.client))
+    }
+
+    /// Begins constructing a typed Create Key Pair request.
+    #[must_use]
+    pub fn create_key_pair(self) -> CreateKeyPairBuilder<'a> {
+        CreateKeyPairBuilder::new(self.client)
     }
 
     /// Begins constructing a typed Get request for an explicit identifier.
@@ -555,6 +569,263 @@ impl<'a> CreateSymmetricKeyBuilder<'a> {
             true
         }
     }
+}
+
+/// A Create Key Pair builder with independent common and key-specific attributes.
+pub struct CreateKeyPairBuilder<'a> {
+    client: &'a mut Client,
+    algorithm: Option<CryptographicAlgorithm>,
+    length: Option<i32>,
+    private_usage_mask: Option<CryptographicUsageMask>,
+    public_usage_mask: Option<CryptographicUsageMask>,
+    private_name: Option<String>,
+    public_name: Option<String>,
+    common_attributes: AttributeSet,
+    private_attributes: AttributeSet,
+    public_attributes: AttributeSet,
+    attribute_error: Option<FluentBuildError>,
+    options: Option<RequestOptions>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl<'a> CreateKeyPairBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            client,
+            algorithm: None,
+            length: None,
+            private_usage_mask: None,
+            public_usage_mask: None,
+            private_name: None,
+            public_name: None,
+            common_attributes: AttributeSet::new(),
+            private_attributes: AttributeSet::new(),
+            public_attributes: AttributeSet::new(),
+            attribute_error: None,
+            options: None,
+            asynchronous_indicator: None,
+        }
+    }
+
+    /// Selects an explicit common KMIP Cryptographic Algorithm.
+    #[must_use]
+    pub const fn algorithm(mut self, algorithm: CryptographicAlgorithm) -> Self {
+        self.algorithm = Some(algorithm);
+        self
+    }
+
+    /// Selects an explicit common KMIP Cryptographic Length in bits.
+    #[must_use]
+    pub const fn length(mut self, length: i32) -> Self {
+        self.length = Some(length);
+        self
+    }
+
+    /// Selects an explicit private key Cryptographic Usage Mask.
+    #[must_use]
+    pub const fn private_usage_mask(mut self, usage_mask: CryptographicUsageMask) -> Self {
+        self.private_usage_mask = Some(usage_mask);
+        self
+    }
+
+    /// Selects an explicit public key Cryptographic Usage Mask.
+    #[must_use]
+    pub const fn public_usage_mask(mut self, usage_mask: CryptographicUsageMask) -> Self {
+        self.public_usage_mask = Some(usage_mask);
+        self
+    }
+
+    /// Adds a private key Name using Uninterpreted Text String.
+    #[must_use]
+    pub fn private_name(mut self, name: &str) -> Self {
+        self.private_name = Some(name.to_owned());
+        self
+    }
+
+    /// Adds a public key Name using Uninterpreted Text String.
+    #[must_use]
+    pub fn public_name(mut self, name: &str) -> Self {
+        self.public_name = Some(name.to_owned());
+        self
+    }
+
+    /// Appends a typed Common Attribute after the explicit algorithm and length.
+    #[must_use]
+    pub fn common_attribute<D: AttributeDefinition>(mut self, attribute: Attribute<D>) -> Self {
+        if self.common_attributes.try_push_typed(attribute).is_err() {
+            self.attribute_error
+                .get_or_insert(FluentBuildError::InvalidAttributeValue);
+        }
+        self
+    }
+
+    /// Appends a typed Private Key Attribute after its usage mask and name.
+    #[must_use]
+    pub fn private_attribute<D: AttributeDefinition>(mut self, attribute: Attribute<D>) -> Self {
+        if self.private_attributes.try_push_typed(attribute).is_err() {
+            self.attribute_error
+                .get_or_insert(FluentBuildError::InvalidAttributeValue);
+        }
+        self
+    }
+
+    /// Appends a typed Public Key Attribute after its usage mask and name.
+    #[must_use]
+    pub fn public_attribute<D: AttributeDefinition>(mut self, attribute: Attribute<D>) -> Self {
+        if self.public_attributes.try_push_typed(attribute).is_err() {
+            self.attribute_error
+                .get_or_insert(FluentBuildError::InvalidAttributeValue);
+        }
+        self
+    }
+
+    /// Sets exchange-local options without changing client or batch policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.options = Some(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.asynchronous_indicator = Some(value);
+        self
+    }
+
+    /// Builds the existing typed Create Key Pair request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns a payload-free error for missing fields or invalid attributes.
+    pub fn build(self) -> Result<CreateKeyPairRequest, FluentBuildError> {
+        self.build_request()
+    }
+
+    /// Builds a typed request without consuming the accumulated inputs.
+    ///
+    /// # Errors
+    ///
+    /// Returns a payload-free error for missing fields or invalid attributes.
+    pub fn build_request(&self) -> Result<CreateKeyPairRequest, FluentBuildError> {
+        if let Some(error) = self.attribute_error {
+            return Err(error);
+        }
+        let algorithm = self
+            .algorithm
+            .ok_or(FluentBuildError::MissingCreateKeyPairAlgorithm)?;
+        let length = self
+            .length
+            .ok_or(FluentBuildError::MissingCreateKeyPairLength)?;
+        let mut common = AttributeSet::new();
+        common
+            .try_push_typed(
+                Attribute::<typed::CryptographicAlgorithm>::new(algorithm.raw())
+                    .map_err(|_| FluentBuildError::InvalidAttributeValue)?,
+            )
+            .map_err(|_| FluentBuildError::InvalidAttributeValue)?;
+        common
+            .try_push_typed(
+                Attribute::<typed::CryptographicLength>::new(length)
+                    .map_err(|_| FluentBuildError::InvalidAttributeValue)?,
+            )
+            .map_err(|_| FluentBuildError::InvalidAttributeValue)?;
+        append_key_pair_attributes(&mut common, &self.common_attributes)?;
+        let private = key_pair_attributes(
+            self.private_usage_mask,
+            self.private_name.as_deref(),
+            &self.private_attributes,
+        )?;
+        let public = key_pair_attributes(
+            self.public_usage_mask,
+            self.public_name.as_deref(),
+            &self.public_attributes,
+        )?;
+        let mut request = CreateKeyPairRequest::new().with_common_attributes(common);
+        if !private.is_empty() {
+            request = request.with_private_key_attributes(private);
+        }
+        if !public.is_empty() {
+            request = request.with_public_key_attributes(public);
+        }
+        if !request.validate().is_valid() {
+            return Err(FluentBuildError::InvalidRequest);
+        }
+        Ok(request)
+    }
+
+    /// Converts the request to an existing typed batch item.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError`] when request construction fails.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build_request()
+            .map(|request| ClientBatchItem::new(ClientRequest::CreateKeyPair(request)))
+    }
+
+    /// Executes one typed Create Key Pair exchange using the existing response.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ClientError`] for local validation or client exchange failure.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let request = self.build_request().map_err(|error| {
+            ClientError::validation(
+                ClientCauseCategory::InvalidInput,
+                RequestDeliveryState::NotSent,
+                error,
+            )
+        })?;
+        self.client.execute_one_typed_request_with_async_indicator(
+            ClientRequest::CreateKeyPair(request),
+            self.asynchronous_indicator,
+            limits,
+            &self.options.unwrap_or_default(),
+        )
+    }
+}
+
+fn key_pair_attributes(
+    usage_mask: Option<CryptographicUsageMask>,
+    name: Option<&str>,
+    additional: &AttributeSet,
+) -> Result<AttributeSet, FluentBuildError> {
+    let mut attributes = AttributeSet::new();
+    if let Some(usage_mask) = usage_mask {
+        attributes
+            .try_push_typed(
+                Attribute::<typed::CryptographicUsageMask>::new(usage_mask.raw())
+                    .map_err(|_| FluentBuildError::InvalidAttributeValue)?,
+            )
+            .map_err(|_| FluentBuildError::InvalidAttributeValue)?;
+    }
+    if let Some(name) = name {
+        attributes
+            .try_push_typed(
+                Attribute::<typed::Name>::new(name_attribute(name.to_owned())?)
+                    .map_err(|_| FluentBuildError::InvalidAttributeValue)?,
+            )
+            .map_err(|_| FluentBuildError::InvalidAttributeValue)?;
+    }
+    append_key_pair_attributes(&mut attributes, additional)?;
+    Ok(attributes)
+}
+
+fn append_key_pair_attributes(
+    attributes: &mut AttributeSet,
+    additional: &AttributeSet,
+) -> Result<(), FluentBuildError> {
+    for item in additional.as_items() {
+        attributes.try_push(
+            item.try_clone()
+                .map_err(|_| FluentBuildError::InvalidTtlvValue)?,
+        )?;
+    }
+    Ok(())
 }
 
 /// A fluent builder for an existing typed Get request.
