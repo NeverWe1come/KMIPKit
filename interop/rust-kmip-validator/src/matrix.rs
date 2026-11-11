@@ -551,3 +551,33 @@ pub(crate) fn run(matrix: &Path, output: &Path) -> Result<bool> {
     }
     Ok(success)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn vendor_attribute_target_uses_a_table_150_structure_fixture() {
+        let cases: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let specification: Json = serde_json::from_str(include_str!(
+            "../../../specification/catalog/kmip-2.1.json"
+        ))
+        .unwrap();
+        let target = cases["normative_targets"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|target| target["target_id"] == "KMIPKIT-ELEM-TAG-420008")
+            .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        let fixture = sample(target, elements).unwrap();
+        assert_eq!(fixture.item_type(), kmipkit::ttlv::ItemType::Structure);
+        let result = invoke("kmipkit_protocol::AttributeSet::try_new", &fixture, target, elements)
+            .unwrap()
+            .unwrap();
+        assert!(crate::local_wire::target_hash(&result, &fixture).is_ok());
+    }
+}
