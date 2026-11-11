@@ -240,6 +240,37 @@ class RouteMatrixTests(unittest.TestCase):
             'kmipkit_managed_object_from_item',
         }.issubset(result['invoked_symbols']))
 
+    def test_named_managed_object_recipes_cover_catalogued_object_structures(self):
+        from artifact_support import INSTALL, ROOT
+        from c_route_models import ModelCases
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        cases = {
+            'KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE-REQUEST': (
+                'kmipkit_certificate_request_from_fields',
+                [0x420018, 1, [[0x420019, 5, '00000002'], [0x420140, 8, '72657175657374']]],
+            ),
+            'KMIPKIT-ELEM-OBJECT-STRUCTURE-PGP-KEY': (
+                'kmipkit_pgp_key_from_fields',
+                [0x4200bd, 1, [[0x4200be, 2, '00000007'],
+                               [0x420040, 1, [[0x420042, 5, '00000001']]]]],
+            ),
+            'KMIPKIT-ELEM-OBJECT-STRUCTURE-PRIVATE-KEY': (
+                'kmipkit_private_key_from_fields',
+                [0x420064, 1, [[0x420040, 1, [[0x420042, 5, '00000001']]]]],
+            ),
+            'KMIPKIT-ELEM-OBJECT-STRUCTURE-PUBLIC-KEY': (
+                'kmipkit_public_key_from_fields',
+                [0x42006d, 1, [[0x420040, 1, [[0x420042, 5, '00000001']]]]],
+            ),
+        }
+        recipes = ModelCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog)
+        for target_id, (constructor, expected_tree) in cases.items():
+            with self.subTest(target=target_id):
+                target = next(item for item in catalog['normative_targets'] if item['target_id'] == target_id)
+                result = recipes.execute(target, '2.1')
+                self.assertEqual(result['normalized_tree'], expected_tree)
+                self.assertIn(constructor, result['invoked_symbols'])
+
 
     def test_compiled_consumer_provenance_cannot_be_replaced_by_coordinator(self):
         import route_peer
