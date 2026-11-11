@@ -64,6 +64,9 @@
         "invocation_count": { "const": 1 },
         "request_tree_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
         "response_tree_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "decode_outcome": { "enum": ["decoded", "rejected"] },
+        "decode_rejection_code": { "enum": ["tag_not_allocated"] },
+        "decode_input_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
         "wire_bytes_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
         "wire_bytes_deterministic": { "type": "boolean" },
         "request_delivery_state": { "enum": ["not_sent", "possibly_sent", "response_received"] },
@@ -92,7 +95,28 @@
           "then": { "required": ["failure_code"] }
         },
         {
-          "if": { "properties": { "status": { "const": "passed" }, "action": { "const": "decode" } } },
+          "if": {
+            "properties": {
+              "status": { "const": "passed" },
+              "action": { "const": "decode" },
+              "decode_outcome": { "const": "rejected" }
+            },
+            "required": ["status", "action", "decode_outcome"]
+          },
+          "then": {
+            "required": ["decode_rejection_code", "decode_input_sha256"],
+            "not": { "required": ["response_tree_sha256"] }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": { "const": "passed" },
+              "action": { "const": "decode" }
+            },
+            "required": ["status", "action"],
+            "not": { "properties": { "decode_outcome": { "const": "rejected" } } }
+          },
           "then": { "required": ["response_tree_sha256"] }
         },
         {

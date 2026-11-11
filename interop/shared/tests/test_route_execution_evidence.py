@@ -186,7 +186,7 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
             'wire_value': '420009',
         }
         self.manifest['routes'].append({
-            'route_id': 'c.local.decode',
+            'route_id': 'c.generic-ttlv.decode',
             'language': 'c',
             'api_level': 'generic-ttlv',
             'mode': 'local',
@@ -205,7 +205,7 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
             event['target_id'] = 'KMIPKIT-ELEM-TAG-420009'
         report['events'].append({
             'case_id': 'case-one',
-            'route_id': 'c.local.decode',
+            'route_id': 'c.generic-ttlv.decode',
             'target_id': 'KMIPKIT-ELEM-TAG-420009',
             'public_api_symbol': 'kmipkit_ttlv_decode',
             'execution_route_id': None,
@@ -216,7 +216,7 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
             'transport': None,
             'status': 'passed',
             'invocation_count': 1,
-            'invocation_id': 'c.local.decode:decode',
+            'invocation_id': 'c.generic-ttlv.decode:decode',
             'decode_outcome': 'rejected',
             'decode_rejection_code': 'tag_not_allocated',
             'decode_input_sha256': 'e' * 64,
@@ -230,6 +230,20 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
             self.skipTest('jsonschema dependency is not installed')
         schema = json.loads((SHARED / 'schemas/route-execution-evidence.schema.json').read_text())
         jsonschema.validate(report, schema)
+
+        missing_hash = copy.deepcopy(report)
+        del missing_hash['events'][-1]['decode_input_sha256']
+        with self.assertRaisesRegex(ValueError, 'input SHA-256'):
+            self.validate(missing_hash)
+
+        unexpected_tree = copy.deepcopy(report)
+        unexpected_tree['events'][-1]['response_tree_sha256'] = 'f' * 64
+        with self.assertRaisesRegex(ValueError, 'cannot have a decoded response tree'):
+            self.validate(unexpected_tree)
+
+        self.catalog['test_cases'][0]['requires']['allocation'] = 'assigned'
+        with self.assertRaisesRegex(ValueError, 'rejection is not expected'):
+            self.validate(report)
 
     def test_network_events_must_name_the_real_separate_execution_entrypoint(self):
         report = copy.deepcopy(self.report)
@@ -463,6 +477,66 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
                                                       for report in reports},
             )
 
+    def test_cross_language_parity_compares_expected_decoder_rejection_inputs(self):
+        reports, manifest = self._four_language_fixture()
+        self.catalog['test_cases'][0]['requires'] = {
+            'normative_target_id': 'KMIPKIT-ELEM-TAG-420009',
+            'target_kind': 'tag',
+            'allocation': 'reserved',
+            'wire_value': '420009',
+        }
+        for language, report in zip(('rust', 'c', 'java', 'python'), reports, strict=True):
+            for event in report['events']:
+                event['target_id'] = 'KMIPKIT-ELEM-TAG-420009'
+            route_id = f'{language}.generic-ttlv.decoder'
+            manifest['routes'].append({
+                'route_id': route_id,
+                'language': language,
+                'api_level': 'generic-ttlv',
+                'mode': 'local',
+                'public_api_symbol': f'{language}_ttlv_decode',
+                'operation_ids': [],
+                'normative_target_ids': ['*'],
+                'case_categories': ['normative_inventory'],
+                'protocol_versions': ['2.0'],
+                'combinations': [{'encoding': 'TTLV', 'transport': None}],
+                'actions': ['decode'],
+                'execution_route_id': None,
+                'artifact_commit': 'a' * 40,
+            })
+            report['events'].append({
+                'case_id': 'case-one',
+                'route_id': route_id,
+                'target_id': 'KMIPKIT-ELEM-TAG-420009',
+                'public_api_symbol': f'{language}_ttlv_decode',
+                'execution_route_id': None,
+                'execution_api_symbol': None,
+                'action': 'decode',
+                'protocol_version': '2.0',
+                'encoding': 'TTLV',
+                'transport': None,
+                'status': 'passed',
+                'invocation_count': 1,
+                'invocation_id': f'{language}:reserved-tag-decode',
+                'decode_outcome': 'rejected',
+                'decode_rejection_code': 'tag_not_allocated',
+                'decode_input_sha256': 'e' * 64,
+            })
+        artifacts = {report['language']: report['artifact_sha256'] for report in reports}
+        summary = validate_parity_collection(
+            reports, self.catalog, manifest, catalog_sha256='c' * 64,
+            route_manifest_sha256='d' * 64,
+            expected_artifact_sha256_by_language=artifacts,
+        )
+        self.assertTrue(summary['tree_parity_passed'])
+
+        reports[-1]['events'][-1]['decode_input_sha256'] = 'f' * 64
+        with self.assertRaisesRegex(ValueError, 'languages disagree on normalized KMIP trees'):
+            validate_parity_collection(
+                reports, self.catalog, manifest, catalog_sha256='c' * 64,
+                route_manifest_sha256='d' * 64,
+                expected_artifact_sha256_by_language=artifacts,
+            )
 
 if __name__ == "__main__":
     unittest.main()
