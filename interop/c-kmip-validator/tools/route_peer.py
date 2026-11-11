@@ -507,6 +507,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                            'transport': transport, 'status': 'passed' if observation and not code and run.returncode == 0 else 'failed',
                                            'consumer_case_status': (result.get('cases') or [{}])[0].get('status', 'missing'),
                                            'consumer_server_compatibility': (result.get('cases') or [{}])[0].get('server_compatibility', 'missing'),
+                                           'public_api_trace_symbols': sorted(invoked_symbols),
                                            **({'failure_code': code or 'peer_observation_missing'} if code or not observation else {})})
                             if not observation or code or run.returncode != 0:
                                 continue
