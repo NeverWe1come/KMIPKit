@@ -79,3 +79,20 @@
 - PR #183 exact-head CI passed; its branch remains unmerged. Draft PR #184
   remains `[WIP]` while its prior-head SonarCloud duplication failure is
   rechecked on the repaired head.
+
+## Exact-head CI regression repair: Red
+
+- Head `1885a509e8ce6f3f52c935d2b1dcb8bb647ef134`, CI run
+  `43039339116`: the Script contracts job failed in
+  `test_t102_slice_and_manifest_snapshots_remain_consistent`, with
+  `15822 != 14208`. The approved KMIPKIT-0093 inventory reconciliation added
+  1,614 declarations and 3,467 exclusions without updating the shared live
+  manifest totals; historical Rust export report totals remain separate.
+- Local reproduction:
+  `python3 -B -m unittest tools.api_manifest.tests.test_t102_pkcs11_request_trait_exclusions.T102Pkcs11RequestTraitExclusionTests.test_t102_slice_and_manifest_snapshots_remain_consistent`
+  failed with the same assertion before repair.
+- The same run's Coverage gate rejected changed Rust coverage `162/329`,
+  below the required 90%. Existing tests predominantly exercised local
+  construction and Revoke execution, leaving other lifecycle exchanges and
+  several setters unexecuted. This repair adds behavioral tests without
+  changing coverage thresholds or excluding production lines.
