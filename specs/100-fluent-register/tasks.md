@@ -40,7 +40,7 @@ on 2026-11-11. This branch is stacked on PR #181 head
 
 ## PR and follow-on work
 
-- [ ] Open `[WIP]` draft PR #182, based on PR #181; attach it to this task.
+- [ ] Keep `[WIP]` draft PR #183 based on PR #181; attach it to this task.
 - [ ] Fix all CI failures and wait for required checks on the exact final SHA.
 - [ ] Remove WIP and mark ready only when all required CI is green. Do not
   approve or merge.
