@@ -163,5 +163,19 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(result['tag'], 0x42002C)
 
 
+    def test_attribute_request_routes_are_independently_executed(self):
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_ids = {'test-op-get-attributes', 'test-op-get-attribute-list'}
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases'] if case['case_id'] in case_ids]}
+        events, _, checks = execute_network_cells(ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+        self.assertTrue(checks and all(check['status'] == 'passed' for check in checks))
+        for symbol in ('kmipkit_client_batch_item_get_attributes_from_request',
+                       'kmipkit_client_batch_item_get_attribute_list_from_request'):
+            self.assertTrue(any(event['public_api_symbol'] == symbol and event['action'] == 'send' for event in events), symbol)
+
+
 if __name__ == '__main__':
     unittest.main()
