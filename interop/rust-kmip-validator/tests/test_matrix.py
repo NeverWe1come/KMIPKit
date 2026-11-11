@@ -21,6 +21,7 @@ ROUTES_PATH = ROOT / 'interop/shared/coverage/route-capabilities.json'
 CATALOG = json.loads(CATALOG_PATH.read_bytes())
 ROUTES = json.loads(ROUTES_PATH.read_bytes())
 SCHEMA = json.loads((ROOT / 'interop/shared/schemas/route-execution-evidence.schema.json').read_bytes())
+ELEMENTS = json.loads((ROOT / 'specification/catalog/kmip-2.1.json').read_bytes())['elements']
 
 
 class MatrixContract(unittest.TestCase):
@@ -82,7 +83,11 @@ class MatrixContract(unittest.TestCase):
         process, report = self.run_matrix([cell])
         self.assertEqual(process.returncode, 0, process.stderr)
         self.assertEqual(report['events'][0]['status'], 'passed')
-        tag = int(target['parent_element_ids'][0].rsplit('-', 1)[1], 16)
+        enumeration = next(element for element in ELEMENTS
+                           if element['element_id'] == target['parent_element_ids'][0])
+        tag_element = next(element for element in ELEMENTS
+                           if element['kind'] == 'tag' and element['name'] == enumeration['name'])
+        tag = int(tag_element['wire_value'], 16)
         expected = json.dumps([[tag, 5, 0x80000000]], separators=(',', ':')).encode()
         self.assertEqual(hashlib.sha256(expected).hexdigest(), report['events'][0]['request_tree_sha256'])
 
@@ -93,6 +98,75 @@ class MatrixContract(unittest.TestCase):
         self.assertEqual(report['events'][0]['status'], 'passed')
         self.assertEqual(hashlib.sha256(b'[[4325468,5,24]]').hexdigest(),
                          report['events'][0]['request_tree_sha256'])
+
+    def test_every_operation_target_uses_its_normative_operation_value(self):
+        targets = {target['target_id']: target for target in CATALOG['normative_targets']}
+        operation_values = {element['name']: int(element['wire_value'], 16)
+                            for element in ELEMENTS
+                            if element['kind'] == 'enumeration_value'
+                            and element.get('allocation') == 'assigned'
+                            and 'KMIPKIT-ELEM-ENUMERATION-OPERATION' in element.get('parent_element_ids', [])}
+        operation_tag = int(next(element['wire_value'] for element in ELEMENTS
+                                 if element['kind'] == 'tag' and element['name'] == 'Operation'), 16)
+        selected = {}
+        for cell in iter_cells(CATALOG, ROUTES, languages=('rust',)):
+            target = targets[cell['target_id']]
+            if target['kind'] == 'operation' and cell['public_api_symbol'] == 'kmipkit_ttlv::Item::new':
+                selected[(cell['target_id'], cell['protocol_version'])] = cell
+        cells = list(selected.values())
+        process, report = self.run_matrix(cells)
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertGreater(len(cells), 50)
+        for cell, event in zip(cells, report['events']):
+            expected = json.dumps([[operation_tag, 5, operation_values[targets[cell['target_id']]['name']]],
+                                   ], separators=(',', ':')).encode()
+            self.assertEqual(hashlib.sha256(expected).hexdigest(), event['request_tree_sha256'],
+                             cell['target_id'])
+
+    def test_every_open_enumeration_range_constructs_its_lowest_extension_value(self):
+        targets = {target['target_id']: target for target in CATALOG['normative_targets']}
+        selected = {}
+        for cell in iter_cells(CATALOG, ROUTES, languages=('rust',)):
+            target = targets[cell['target_id']]
+            if (target['kind'] == 'enumeration_value' and target.get('allocation') == 'extension'
+                    and cell['public_api_symbol'] == 'kmipkit_ttlv::Value::enumeration'):
+                selected[(cell['target_id'], cell['protocol_version'])] = cell
+        cells = list(selected.values())
+        process, report = self.run_matrix(cells)
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertGreater(len(cells), 100)
+        for cell, event in zip(cells, report['events']):
+            target = targets[cell['target_id']]
+            enumeration = next(element for element in ELEMENTS
+                               if element['element_id'] == target['parent_element_ids'][0])
+            tag_element = next(element for element in ELEMENTS
+                               if element['kind'] == 'tag' and element['name'] == enumeration['name'])
+            tag = int(tag_element['wire_value'], 16)
+            value = int(target['wire_value'].replace('X', '0').replace('x', '0'), 16)
+            expected = json.dumps([[tag, 5, value]], separators=(',', ':')).encode()
+            self.assertEqual(hashlib.sha256(expected).hexdigest(), event['request_tree_sha256'],
+                             cell['target_id'])
+
+    def test_referenced_enum_values_roundtrip_through_generic_public_routes(self):
+        targets = {target['target_id']: target for target in CATALOG['normative_targets']}
+        selected = {}
+        symbols = {'kmipkit_ttlv::Item::new', 'kmipkit_ttlv::codec::decode',
+                   'kmipkit_ttlv::Value::enumeration'}
+        for cell in iter_cells(CATALOG, ROUTES, languages=('rust',)):
+            if (targets[cell['target_id']]['kind'] == 'referenced_enum_value'
+                    and cell['public_api_symbol'] in symbols):
+                selected[(cell['case_id'], cell['route_id'], cell['target_id'],
+                          cell['protocol_version'], cell['public_api_symbol'])] = cell
+        cells = list(selected.values())
+        process, report = self.run_matrix(cells)
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertGreater(len(cells), 1000)
+        for cell, event in zip(cells, report['events']):
+            target = targets[cell['target_id']]
+            expected = json.dumps([[0x00420001, 5, int(target['wire_value'], 16)]],
+                                  separators=(',', ':')).encode()
+            field = 'response_tree_sha256' if cell['action'] == 'decode' else 'request_tree_sha256'
+            self.assertEqual(hashlib.sha256(expected).hexdigest(), event[field], cell['target_id'])
 
     def test_all_generic_value_constructors_roundtrip_their_own_data_type(self):
         kinds = {'big_integer': 'BIG-INTEGER', 'boolean': 'BOOLEAN', 'byte_string': 'BYTE-STRING',
@@ -176,7 +250,7 @@ class MatrixContract(unittest.TestCase):
             self.assertEqual(summary['gate_failure_code'], 'missing_required_matrix_cells')
 
     def test_missing_request_recipe_cannot_pass_an_empty_structure(self):
-        cell = self.cell('kmipkit_ttlv::Item::new', 'KMIPKIT-ELEM-OP-C2S-QUERY')
+        cell = self.cell('kmipkit_protocol::QueryResponse::to_ttlv_payload', 'KMIPKIT-ELEM-OP-C2S-QUERY')
         process, report = self.run_matrix([cell])
         self.assertNotEqual(process.returncode, 0)
         self.assertEqual(report['events'], [])
