@@ -129,6 +129,20 @@ y se refiere a la secuencia final de Object Attributes; Java rechaza índices
 negativos y el builder rechaza posiciones fuera de rango al construir la
 petición tipada, antes de usar el transporte.
 
+Python ofrece `SymmetricKeyBuilder.attribute_item_at(index, item)` para esa
+misma secuencia final de Object Attributes. Exige un `ttlv.TtlvItem` explícito
+y un índice entero no negativo (rechaza booleanos). El builder nativo copia
+el Item, por lo que el llamante puede cerrarlo tras insertarlo. Rust sigue
+validando los tipos catalogados y el orden de los campos Vendor Attribute;
+las etiquetas asignadas desconocidas, incluidas las de extensión, conservan
+su tipo TTLV explícito y su etiqueta original. Las posiciones repetidas o
+fuera de rango fallan en `build()` o `execute()` antes de abrir una conexión.
+Los errores y la representación del builder excluyen los valores de los
+atributos. Los fallos de validación nativos al insertar o construir la petición
+tipada producen `ClientExecutionError` con entrega `NOT_SENT`; los tipos de
+argumento Python inválidos producen el `InvalidInputError` existente, sin
+valores de atributos. Esta operación no añade edición de la cabecera ni del batch.
+
 El mismo flujo con ámbito está disponible en Java
 (`client.request().createSymmetricKey()`), Python
 (`client.request().create_symmetric_key()`) y C. Los builders de Java y Python

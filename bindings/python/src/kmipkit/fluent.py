@@ -265,6 +265,35 @@ class SymmetricKeyBuilder:
             ))
         return self
 
+    def attribute_item_at(self, index: int, item: ttlv.TtlvItem) -> SymmetricKeyBuilder:
+        """Copy an explicit Item into the final Object Attributes at ``index``.
+
+        The zero-based index includes semantic and appended attributes. Rust
+        validates catalogued types and Vendor Attribute structure, and rejects
+        duplicate or out-of-range positions when building the typed request.
+        This method only addresses Object Attributes and never sends a request.
+        """
+        index = _unsigned(index, 64)
+        if not isinstance(item, ttlv.TtlvItem):
+            errors.raise_for_status(4)
+        self._ensure_open()
+        with _NATIVE_CALL_LOCK:
+            try:
+                _raise_client_status(lib.kmipkit_symmetric_key_builder_insert_attribute_item(
+                    self._handle, index, ffi.cast("kmipkit_ttlv_item_t *", item._pointer()),
+                ))
+            except errors.ClientExecutionError as failure:
+                if failure.client_category is not errors.ClientErrorCategory.VALIDATION:
+                    raise
+                raise errors.ClientExecutionError(
+                    status=failure.status,
+                    category=failure.client_category,
+                    cause=failure.cause,
+                    delivery=errors.DeliveryState.NOT_SENT,
+                    profile_validation=failure.profile_validation,
+                ) from None
+        return self
+
     def add_vendor_attribute(
         self, vendor_identification: str, attribute_name: str, value: ttlv.TtlvItem,
     ) -> SymmetricKeyBuilder:
@@ -303,7 +332,20 @@ class SymmetricKeyBuilder:
             errors.raise_for_status(4)
         output = ffi.new("kmipkit_client_batch_item_t **")
         with _NATIVE_CALL_LOCK:
-            _raise_client_status(lib.kmipkit_symmetric_key_builder_build_batch_item(self._handle, output))
+            try:
+                _raise_client_status(lib.kmipkit_symmetric_key_builder_build_batch_item(self._handle, output))
+            except errors.ClientExecutionError as failure:
+                if failure.client_category is not errors.ClientErrorCategory.VALIDATION:
+                    raise
+                # Native builder errors use generic ABI metadata. A typed
+                # request rejected here cannot have reached the transport.
+                raise errors.ClientExecutionError(
+                    status=failure.status,
+                    category=failure.client_category,
+                    cause=failure.cause,
+                    delivery=errors.DeliveryState.NOT_SENT,
+                    profile_validation=failure.profile_validation,
+                ) from None
         if output[0] == ffi.NULL:
             errors.raise_for_status(7)
         # The fluent facade uses the client CFFI declarations while the shared
