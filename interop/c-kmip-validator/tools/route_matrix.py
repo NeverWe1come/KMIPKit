@@ -241,6 +241,9 @@ def run(output: Path, binary: Path | None = None) -> int:
     boundaries = json.loads((ROOT / 'interop/shared/vectors/ttlv-boundaries.json').read_text())
     boundary_vectors = {int(vector['type_code'], 16): vector for vector in boundaries['vectors']}
     branch_evidence = []
+    from route_values import ValueCases
+    value_cases = ValueCases(library, catalog)
+    value_cache = {}
     for index, cell in enumerate(iter_cells(catalog, manifest, languages=('c',))):
         target = targets[cell['target_id']]
         fixture = fixtures[cell['target_id']]
@@ -248,6 +251,19 @@ def run(output: Path, binary: Path | None = None) -> int:
         # Multi-branch semantic cases require dedicated recipes. A scalar check
         # can satisfy only the individual inventory value/tag target case.
         individual_value = case['category'] == 'normative_inventory' and not case.get('requires', {}).get('protocol_scenario')
+        if cell['transport'] is None and any(key in case.get('requires', {}) for key in ('enum_type', 'bitmask_type')):
+            value_key = (case['case_id'], cell['protocol_version'])
+            if value_key not in value_cache:
+                value_cache[value_key] = value_cases.execute(case, cell['protocol_version'])
+            result = value_cache[value_key]
+            if result is not None and cell['public_api_symbol'] in result['invoked_symbols']:
+                event = cell_fields(cell)
+                event.update(status='passed', invocation_count=1, invocation_id=f'c-values-{index}')
+                event['response_tree_sha256' if cell['action'] == 'decode' else 'request_tree_sha256'] = result['tree_sha256']
+                events.append(event)
+                branch_evidence.append({**cell_fields(cell), **{key: result[key] for key in
+                    ('sample_count', 'known_values_checked', 'unknown_value_preserved', 'combination_count', 'tree_sha256') if key in result}})
+                continue
         if target['kind'] == 'data_type' and cell['transport'] is None:
             result = tree_abi.boundary_case(boundary_vectors[int(target['wire_value'], 16)])
             if cell['public_api_symbol'] in result['invoked_symbols']:

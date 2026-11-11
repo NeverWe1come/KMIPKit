@@ -1140,6 +1140,81 @@ static kmip_execution_outcome_t execute_local_model_case(const kmip_test_case_t 
     return outcome_not_run("local model catalog case has no enum or bitmask discriminator");
 }
 
+
+/* Standalone typed requests are a distinct installed construction route. The
+ * fixture selector is consumed only by this independent test executable. */
+static bool standalone_attribute_route_selected(void) {
+    const char *route = getenv("KMIPKIT_C_ATTRIBUTE_REQUEST_ROUTE");
+    return route && strcmp(route, "standalone") == 0;
+}
+
+static bool exported_attribute_payload_matches(
+    kmipkit_ttlv_structure_t *payload,
+    const kmipkit_unique_identifier_v1_t *identifier,
+    const kmipkit_attribute_reference_v1_t *references,
+    uint64_t reference_count) {
+    kmipkit_ttlv_structure_view_t *view = NULL;
+    uint64_t count = 0;
+    bool valid = kmipkit_ttlv_structure_view(payload, &view) == 0 &&
+        kmipkit_ttlv_structure_view_item_count(view, &count) == 0 &&
+        count == reference_count + (identifier ? 1U : 0U);
+    for (uint64_t index = 0; valid && index < reference_count; ++index) {
+        kmipkit_ttlv_item_view_t *item = NULL;
+        kmipkit_ttlv_value_view_t *value = NULL;
+        uint32_t actual_reference = 0;
+        valid = references[index].kind == KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG &&
+            kmipkit_ttlv_structure_view_item_at(view, index + (identifier ? 1U : 0U), &item) == 0 &&
+            item_view_has_tag(item, UINT32_C(0x42013B),
+                              KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION, &value) &&
+            kmipkit_ttlv_value_view_enumeration(value, &actual_reference) == 0 &&
+            actual_reference == references[index].tag_value;
+        if (value) kmipkit_ttlv_value_view_release(value);
+        if (item) kmipkit_ttlv_item_view_release(item);
+    }
+    if (view) kmipkit_ttlv_structure_view_release(view);
+    return valid;
+}
+
+static int32_t build_get_attributes_item(
+    const kmipkit_unique_identifier_v1_t *identifier,
+    const kmipkit_attribute_reference_v1_t *references,
+    uint64_t reference_count,
+    kmipkit_client_batch_item_t **out_item) {
+    if (!standalone_attribute_route_selected()) {
+        return kmipkit_client_batch_item_get_attributes(identifier, references, reference_count, out_item);
+    }
+    kmipkit_get_attributes_request_t *request = NULL;
+    kmipkit_ttlv_structure_t *payload = NULL;
+    int32_t status = kmipkit_get_attributes_request_create(identifier, references, reference_count, &request);
+    if (status == 0) status = kmipkit_get_attributes_request_to_ttlv_payload(request, &payload);
+    if (status == 0 && !exported_attribute_payload_matches(payload, identifier, references, reference_count)) {
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    if (status == 0) status = kmipkit_client_batch_item_get_attributes_from_request(request, out_item);
+    if (payload) kmipkit_ttlv_structure_release(payload);
+    if (request) kmipkit_get_attributes_request_release(request);
+    return status;
+}
+
+static int32_t build_get_attribute_list_item(
+    const kmipkit_unique_identifier_v1_t *identifier,
+    kmipkit_client_batch_item_t **out_item) {
+    if (!standalone_attribute_route_selected()) {
+        return kmipkit_client_batch_item_get_attribute_list(identifier, out_item);
+    }
+    kmipkit_get_attribute_list_request_t *request = NULL;
+    kmipkit_ttlv_structure_t *payload = NULL;
+    int32_t status = kmipkit_get_attribute_list_request_create(identifier, &request);
+    if (status == 0) status = kmipkit_get_attribute_list_request_to_ttlv_payload(request, &payload);
+    if (status == 0 && !exported_attribute_payload_matches(payload, identifier, NULL, 0)) {
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    if (status == 0) status = kmipkit_client_batch_item_get_attribute_list_from_request(request, out_item);
+    if (payload) kmipkit_ttlv_structure_release(payload);
+    if (request) kmipkit_get_attribute_list_request_release(request);
+    return status;
+}
+
 kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_case,
                                                 const kmip_attempt_context_t *attempt,
                                                 void *user_data) {
@@ -1339,13 +1414,13 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                         .tag_value = cryptographic_algorithm_attribute_workflow ?
                             UINT32_C(0x420028) : UINT32_C(0x42002A)
                     };
-                    status = kmipkit_client_batch_item_get_attributes(
+                    status = build_get_attributes_item(
                         NULL, &attribute_reference, 1, &item);
                 } else {
-                    status = kmipkit_client_batch_item_get_attributes(NULL, NULL, 0, &item);
+                    status = build_get_attributes_item(NULL, NULL, 0, &item);
                 }
             } else {
-                status = kmipkit_client_batch_item_get_attribute_list(NULL, &item);
+                status = build_get_attribute_list_item(NULL, &item);
             }
             if (status == 0 && !request_item_is_valid(
                     item, request_validation_diagnostic, sizeof(request_validation_diagnostic))) {

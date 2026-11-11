@@ -346,6 +346,9 @@ def execute_network_cells(binary, catalog, manifest):
     all_cells = list(iter_cells(catalog, manifest, languages=('c',)))
     artifact_sha256 = sha256(INSTALL / 'lib/libkmipkit_ffi.so')
     catalog_sha256 = sha256(ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json')
+    case_variants = [(case, variant) for case in catalog['test_cases'] for variant in
+        (('direct', 'standalone') if case['case_id'] in {'test-op-get-attributes', 'test-op-get-attribute-list',
+         'test-attr-cryptographic-algorithm', 'test-attr-cryptographic-length'} else ('direct',))]
     cells_by_case = {}
     for cell in all_cells:
         cells_by_case.setdefault(cell['case_id'], []).append(cell)
@@ -360,7 +363,7 @@ def execute_network_cells(binary, catalog, manifest):
         for version in ('2.0', '2.1'):
             for encoding in ('TTLV', 'JSON', 'XML'):
                 for transport in ('raw_tls', 'https'):
-                    for case in catalog['test_cases']:
+                    for case, variant in case_variants:
                         case_id = case['case_id']
                         if case_id not in RECIPES or version not in case['execution']['protocol_versions']:
                             continue
@@ -417,7 +420,8 @@ def execute_network_cells(binary, catalog, manifest):
                             run = subprocess.run([str(binary.resolve()), 'run', '--connection', str(connection_path),
                                 '--catalog', str(catalog_path), '--allow-mutations', '--output', str(result_path)],
                                 cwd=ROOT, capture_output=True, timeout=10,
-                                env={**os.environ, 'KMIPKIT_C_ROUTE_OBSERVATIONS': str(trace_path)})
+                                env={**os.environ, 'KMIPKIT_C_ROUTE_OBSERVATIONS': str(trace_path),
+                                     'KMIPKIT_C_ATTRIBUTE_REQUEST_ROUTE': variant})
                             if thread is not None:
                                 thread.join(6)
                             result = json.loads(result_path.read_text()) if result_path.exists() else {}
@@ -440,7 +444,7 @@ def execute_network_cells(binary, catalog, manifest):
                                     (0x42000F, 1, [(0x42005C, 5, (56).to_bytes(4, 'big')), (0x420079, 1, [])])])
                                 observation.append((attempted, None))
                             code = errors[0] if errors else 'consumer_check_failed' if not case_passed else 'public_api_trace_missing' if not called_symbols else None
-                            checks.append({'case_id': case_id, 'protocol_version': version, 'encoding': encoding,
+                            checks.append({'case_id': case_id, 'constructor_variant': variant, 'protocol_version': version, 'encoding': encoding,
                                            'transport': transport, 'status': 'passed' if observation and not code and run.returncode == 0 else 'failed',
                                            **({'failure_code': code or 'peer_observation_missing'} if code or not observation else {})})
                             if not observation or code or run.returncode != 0:
@@ -448,6 +452,8 @@ def execute_network_cells(binary, catalog, manifest):
                             request_tree, response_tree = observation[0]
                             operation_name = case['operation']
                             for cell in cells_by_case[case_id]:
+                                if _key(cell) in keys:
+                                    continue
                                 if cell['protocol_version'] != version or cell['public_api_symbol'] not in called_symbols:
                                     continue
                                 is_network = cell['transport'] is not None
@@ -459,16 +465,25 @@ def execute_network_cells(binary, catalog, manifest):
                                 else:
                                     # Accessor routes remain local TTLV obligations.
                                     # Emit them once from an actual decoded TLS response.
-                                    if (encoding, transport) != ('TTLV', 'raw_tls') or cell['action'] != 'decode':
+                                    if (encoding, transport) != ('TTLV', 'raw_tls') or cell['action'] not in ('decode', 'encode'):
                                         continue
-                                    if not cell['public_api_symbol'].startswith('kmipkit_client_batch_'):
+                                    if (cell['action'] == 'decode' and not cell['public_api_symbol'].startswith('kmipkit_client_batch_')):
+                                        continue
+                                    if cell['action'] == 'encode' and cell['public_api_symbol'] not in {
+                                            'kmipkit_get_attributes_request_to_ttlv_payload',
+                                            'kmipkit_get_attribute_list_request_to_ttlv_payload'}:
                                         continue
                                 target = next(t for t in catalog['normative_targets'] if t['target_id'] == cell['target_id'])
                                 if target['kind'] != 'operation' or target['name'] != operation_name:
                                     continue
                                 event = cell_fields(cell)
                                 event.update(status='passed', invocation_count=1, invocation_id=f'c-peer-{len(events)}')
-                                event['response_tree_sha256' if cell['action'] == 'decode' else 'request_tree_sha256'] = tree_digest(response_tree if cell['action'] == 'decode' else request_tree)
+                                digest_tree = response_tree if cell['action'] == 'decode' else request_tree
+                                if cell['action'] == 'encode':
+                                    target_operation = 11 if case_id in {'test-op-get-attributes', 'test-attr-cryptographic-algorithm', 'test-attr-cryptographic-length'} else 12
+                                    target_item = next(item for item in request_tree[2] if item[0] == 0x42000F and numbers(item, 0x42005C) == [target_operation])
+                                    digest_tree = next(descendants(target_item, 0x420079))
+                                event['response_tree_sha256' if cell['action'] == 'decode' else 'request_tree_sha256'] = tree_digest(digest_tree)
                                 if boundary and cell['action'] == 'send':
                                     event.update(request_delivery_state='not_sent', transport_invocation_count=0)
                                 elif cell['action'] == 'send':
