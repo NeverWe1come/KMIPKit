@@ -387,7 +387,19 @@ class RouteMatrixTests(unittest.TestCase):
             target, '2.1', 'kmipkit_key_block_from_fields')
         self.assertEqual(result['normalized_tree'], [0x420040, 1, [
             [0x420042, 5, '00000001'], [0x420028, 5, '00000003'],
+            [0x42002a, 2, '00000080'],
         ]])
+        self.assertIn('kmipkit_key_block_from_fields', result['invoked_symbols'])
+
+    def test_key_block_route_constructs_wrapping_information_and_key_value(self):
+        from artifact_support import INSTALL, ROOT
+        from c_route_models import ModelCases
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        target = next(item for item in catalog['normative_targets']
+                      if item['target_id'] == 'KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-WRAPPING-DATA')
+        result = ModelCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog).execute(
+            target, '2.1', 'kmipkit_key_block_from_fields')
+        self.assertTrue(any(child[0] == 0x420046 for child in result['normalized_tree'][2]))
         self.assertIn('kmipkit_key_block_from_fields', result['invoked_symbols'])
 
 
