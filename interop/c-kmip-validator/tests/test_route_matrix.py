@@ -210,6 +210,21 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(event['decode_input_sha256'], hashlib.sha256(wire).hexdigest())
         self.assertNotIn('response_tree_sha256', event)
 
+    def test_certificate_model_recipe_invokes_typed_and_generic_field_routes(self):
+        from artifact_support import INSTALL, ROOT
+        from c_route_models import ModelCases
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        target = next(item for item in catalog['normative_targets']
+                      if item['target_id'] == 'KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE')
+        result = ModelCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog).execute(target, '2.1')
+        self.assertEqual(result['sample_count'], 1)
+        self.assertEqual(result['normalized_tree'], [0x420013, 1, [
+            [0x42001d, 5, '00000001'], [0x42001e, 8, '010203']]])
+        self.assertTrue({
+            'kmipkit_certificate_from_fields', 'kmipkit_certificate_from_item',
+            'kmipkit_managed_object_from_fields', 'kmipkit_managed_object_from_item',
+        }.issubset(result['invoked_symbols']))
+
 
     def test_compiled_consumer_provenance_cannot_be_replaced_by_coordinator(self):
         import route_peer
