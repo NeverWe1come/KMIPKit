@@ -523,6 +523,34 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all(len(values) == 1 for values in by_encoding.values()))
         self.assertEqual(by_encoding['JSON'], by_encoding['XML'])
 
+    def test_network_matrix_cells_execute_concurrently_and_keep_catalog_order(self):
+        from threading import Barrier
+        from unittest.mock import patch
+        catalog = copy.deepcopy(self.catalog)
+        catalog['test_cases'] = [next(case for case in catalog['test_cases']
+                                      if case['case_id'] == 'test-op-ping')]
+        manifest = copy.deepcopy(self.manifest)
+        symbol = 'kmipkit.extensions.client_batch_item_ping'
+        manifest['routes'] = [route for route in manifest['routes']
+                              if route['public_api_symbol'] == symbol]
+        expected_cells = list(iter_cells(catalog, manifest, languages=('python',)))
+        rendezvous = Barrier(2)
+
+        def execute(cell, case, target, *, trace):
+            trace.record_invocation(cell['public_api_symbol'])
+            rendezvous.wait(timeout=1)
+            return {'request_tree_sha256': 'a' * 64, 'response_tree_sha256': 'b' * 64}
+
+        with patch.object(self.runner, 'execute_cell', side_effect=execute):
+            report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+        self.assertEqual([], gaps)
+        self.assertEqual(len(expected_cells), len(report['events']))
+        self.assertEqual(
+            [(cell['protocol_version'], cell['encoding'], cell['transport']) for cell in expected_cells],
+            [(event['protocol_version'], event['encoding'], event['transport']) for event in report['events']],
+        )
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
     def test_construct_and_decode_are_distinct_invocations(self):
         catalog, manifest = self.integer_fixture()
         report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
