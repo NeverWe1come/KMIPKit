@@ -134,10 +134,11 @@ def credential_function_target_ids(function_id, targets):
     by_id = {target['target_id']: target for target in targets}
     value_names = {norm(by_id[root]['name']) for root in roots
                    if root in by_id and root != _CREDENTIAL_OUTER_TARGET_ID}
-    selected.update(target['target_id'] for target in targets
-        if target['kind'] == 'enumeration_value'
-        and _CREDENTIAL_TYPE_TARGET_ID in target.get('parent_element_ids', [])
-        and norm(target['name']) in value_names)
+    if stem == 'credential':
+        selected.update(target['target_id'] for target in targets
+            if target['kind'] == 'enumeration_value'
+            and _CREDENTIAL_TYPE_TARGET_ID in target.get('parent_element_ids', [])
+            and norm(target['name']) in value_names)
     return sorted(selected)
 
 
