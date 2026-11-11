@@ -1,6 +1,7 @@
 """Matrix coverage must be backed by actual installed ABI calls (0092 FR-002/009)."""
 from pathlib import Path
 import importlib.util
+import hashlib
 import json
 import sys
 import unittest
@@ -184,6 +185,19 @@ class RouteMatrixTests(unittest.TestCase):
         wire = abi.execute_reserved_tag('kmipkit_ttlv_decode', 0x420009)
         self.assertEqual(wire[:3], bytes.fromhex('420009'))
         self.assertIn('kmipkit_ttlv_decode', abi.called)
+
+    def test_reserved_tag_decode_event_reports_rejection_without_tree_hash(self):
+        cell = {'case_id': 'test-norm-tag-tag-420009', 'route_id': 'c.generic-ttlv.kmipkit_ttlv_decode',
+                'target_id': 'KMIPKIT-ELEM-TAG-420009', 'public_api_symbol': 'kmipkit_ttlv_decode',
+                'execution_route_id': None, 'execution_api_symbol': None, 'action': 'decode',
+                'protocol_version': '2.0', 'encoding': 'TTLV', 'transport': None,
+                'workflow_step_index': None, 'workflow_operation': None, 'workflow_item_index': None}
+        wire = bytes.fromhex('42000905000000040000000700000000')
+        event = self.runner.rejected_tag_event(cell, wire, 4)
+        self.assertEqual(event['decode_outcome'], 'rejected')
+        self.assertEqual(event['decode_rejection_code'], 'tag_not_allocated')
+        self.assertEqual(event['decode_input_sha256'], hashlib.sha256(wire).hexdigest())
+        self.assertNotIn('response_tree_sha256', event)
 
 
     def test_compiled_consumer_provenance_cannot_be_replaced_by_coordinator(self):
