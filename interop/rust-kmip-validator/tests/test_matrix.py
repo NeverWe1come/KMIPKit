@@ -138,6 +138,13 @@ class MatrixContract(unittest.TestCase):
             self.assertEqual(summary['invoked_local_cells'], 1)
             self.assertEqual(summary['gate_failure_code'], 'missing_required_matrix_cells')
 
+    def test_missing_request_recipe_cannot_pass_an_empty_structure(self):
+        cell = self.cell('kmipkit_ttlv::Item::new', 'KMIPKIT-ELEM-OP-C2S-QUERY')
+        process, report = self.run_matrix([cell])
+        self.assertNotEqual(process.returncode, 0)
+        self.assertEqual(report['events'], [])
+        self.assertIn('pending_recipe', process.stderr)
+
     def test_forged_symbol_is_rejected_without_false_positive(self):
         cell = self.cell('kmipkit_ttlv::Item::new')
         cell['public_api_symbol'] = 'kmipkit_ttlv::Value::boolean'
