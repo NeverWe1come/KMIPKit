@@ -170,6 +170,21 @@ class MatrixContract(unittest.TestCase):
             field = 'response_tree_sha256' if cell['action'] == 'decode' else 'request_tree_sha256'
             self.assertEqual(hashlib.sha256(expected).hexdigest(), event[field], cell['target_id'])
 
+    def test_payload_value_variants_execute_generic_item_construction_and_decode(self):
+        targets = {target['target_id']: target for target in CATALOG['normative_targets']}
+        selected = {}
+        symbols = {'kmipkit_ttlv::Item::new', 'kmipkit_ttlv::codec::decode'}
+        for cell in iter_cells(CATALOG, ROUTES, languages=('rust',)):
+            if (targets[cell['target_id']]['kind'] == 'operation_payload_value_variant'
+                    and cell['public_api_symbol'] in symbols):
+                selected[(cell['target_id'], cell['protocol_version'],
+                          cell['public_api_symbol'])] = cell
+        cells = list(selected.values())
+        process, report = self.run_matrix(cells)
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertGreater(len(cells), 100)
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
     def test_all_generic_value_constructors_roundtrip_their_own_data_type(self):
         kinds = {'big_integer': 'BIG-INTEGER', 'boolean': 'BOOLEAN', 'byte_string': 'BYTE-STRING',
                  'date_time': 'DATE-TIME', 'date_time_extended': 'DATE-TIME-EXTENDED',
