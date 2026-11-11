@@ -585,9 +585,8 @@ impl<'a> DecryptBuilder<'a> {
 
     /// Moves ciphertext bytes into the request's zeroizing secret owner.
     #[must_use]
-    pub fn data(mut self, value: Vec<u8>) -> Self {
-        self.data = Some(OperationData::ByteString(SecretBytes::new(value)));
-        self
+    pub fn data(self, value: Vec<u8>) -> Self {
+        self.data_value(OperationData::ByteString(SecretBytes::new(value)))
     }
 
     /// Sets an explicitly typed non-byte Data value for expert KMIP use.
@@ -599,9 +598,8 @@ impl<'a> DecryptBuilder<'a> {
 
     /// Sets validated Cryptographic Parameters chosen by the caller.
     #[must_use]
-    pub fn cryptographic_parameters(mut self, value: CryptographicParameters) -> Self {
-        self.cryptographic_parameters = Some(value.into_ttlv());
-        self
+    pub fn cryptographic_parameters(self, value: CryptographicParameters) -> Self {
+        self.cryptographic_parameters_structure(value.into_ttlv())
     }
 
     /// Sets an expert ordered Cryptographic Parameters Structure.
@@ -656,14 +654,14 @@ impl<'a> DecryptBuilder<'a> {
     /// Sets exchange-local transport options.
     #[must_use]
     pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.execution = self.execution.with_options(options);
+        self.execution.options = Some(options);
         self
     }
 
     /// Sets the Request Header Asynchronous Indicator for this exchange.
     #[must_use]
     pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.execution = self.execution.with_asynchronous_indicator(value);
+        self.execution.asynchronous_indicator = Some(value);
         self
     }
 
@@ -764,11 +762,8 @@ impl<'a> SignBuilder<'a> {
 
     /// Sets caller-selected typed Cryptographic Parameters.
     #[must_use]
-    pub fn cryptographic_parameters(mut self, value: CryptographicParameters) -> Self {
-        self.request = self
-            .request
-            .with_cryptographic_parameters(value.into_ttlv());
-        self
+    pub fn cryptographic_parameters(self, value: CryptographicParameters) -> Self {
+        self.cryptographic_parameters_structure(value.into_ttlv())
     }
 
     /// Sets an expert ordered Cryptographic Parameters Structure.
@@ -780,11 +775,8 @@ impl<'a> SignBuilder<'a> {
 
     /// Moves message bytes into the request's zeroizing secret owner.
     #[must_use]
-    pub fn data(mut self, value: Vec<u8>) -> Self {
-        self.request = self
-            .request
-            .with_data(OperationData::ByteString(SecretBytes::new(value)));
-        self
+    pub fn data(self, value: Vec<u8>) -> Self {
+        self.data_value(OperationData::ByteString(SecretBytes::new(value)))
     }
 
     /// Sets an explicitly typed non-byte Data value for expert KMIP use.
@@ -825,14 +817,14 @@ impl<'a> SignBuilder<'a> {
     /// Sets exchange-local transport options.
     #[must_use]
     pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.execution = self.execution.with_options(options);
+        self.execution.options = Some(options);
         self
     }
 
     /// Sets the Request Header Asynchronous Indicator for this exchange.
     #[must_use]
     pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.execution = self.execution.with_asynchronous_indicator(value);
+        self.execution.asynchronous_indicator = Some(value);
         self
     }
 
@@ -915,11 +907,8 @@ impl<'a> SignatureVerifyBuilder<'a> {
 
     /// Moves message bytes into the request's zeroizing secret owner.
     #[must_use]
-    pub fn data(mut self, value: Vec<u8>) -> Self {
-        self.request = self
-            .request
-            .with_data(OperationData::ByteString(SecretBytes::new(value)));
-        self
+    pub fn data(self, value: Vec<u8>) -> Self {
+        self.data_value(OperationData::ByteString(SecretBytes::new(value)))
     }
 
     /// Sets an explicitly typed non-byte Data value for expert KMIP use.
@@ -967,14 +956,14 @@ impl<'a> SignatureVerifyBuilder<'a> {
     /// Sets exchange-local transport options.
     #[must_use]
     pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.execution = self.execution.with_options(options);
+        self.execution.options = Some(options);
         self
     }
 
     /// Sets the Request Header Asynchronous Indicator for this exchange.
     #[must_use]
     pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.execution = self.execution.with_asynchronous_indicator(value);
+        self.execution.asynchronous_indicator = Some(value);
         self
     }
 
@@ -1041,11 +1030,8 @@ impl<'a> MacBuilder<'a> {
 
     /// Sets caller-selected typed Cryptographic Parameters.
     #[must_use]
-    pub fn cryptographic_parameters(mut self, value: CryptographicParameters) -> Self {
-        self.request = self
-            .request
-            .with_cryptographic_parameters(value.into_ttlv());
-        self
+    pub fn cryptographic_parameters(self, value: CryptographicParameters) -> Self {
+        self.cryptographic_parameters_structure(value.into_ttlv())
     }
 
     /// Sets an expert ordered Cryptographic Parameters Structure.
@@ -1057,11 +1043,8 @@ impl<'a> MacBuilder<'a> {
 
     /// Moves message bytes into the request's zeroizing secret owner.
     #[must_use]
-    pub fn data(mut self, value: Vec<u8>) -> Self {
-        self.request = self
-            .request
-            .with_data(OperationData::ByteString(SecretBytes::new(value)));
-        self
+    pub fn data(self, value: Vec<u8>) -> Self {
+        self.data_value(OperationData::ByteString(SecretBytes::new(value)))
     }
 
     /// Sets an explicitly typed non-byte Data value for expert KMIP use.
@@ -1095,14 +1078,14 @@ impl<'a> MacBuilder<'a> {
     /// Sets exchange-local transport options.
     #[must_use]
     pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.execution = self.execution.with_options(options);
+        self.execution.options = Some(options);
         self
     }
 
     /// Sets the Request Header Asynchronous Indicator for this exchange.
     #[must_use]
     pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.execution = self.execution.with_asynchronous_indicator(value);
+        self.execution.asynchronous_indicator = Some(value);
         self
     }
 
@@ -1169,11 +1152,8 @@ impl<'a> MacVerifyBuilder<'a> {
 
     /// Sets caller-selected typed Cryptographic Parameters.
     #[must_use]
-    pub fn cryptographic_parameters(mut self, value: CryptographicParameters) -> Self {
-        self.request = self
-            .request
-            .with_cryptographic_parameters(value.into_ttlv());
-        self
+    pub fn cryptographic_parameters(self, value: CryptographicParameters) -> Self {
+        self.cryptographic_parameters_structure(value.into_ttlv())
     }
 
     /// Sets an expert ordered Cryptographic Parameters Structure.
@@ -1185,11 +1165,8 @@ impl<'a> MacVerifyBuilder<'a> {
 
     /// Moves message bytes into the request's zeroizing secret owner.
     #[must_use]
-    pub fn data(mut self, value: Vec<u8>) -> Self {
-        self.request = self
-            .request
-            .with_data(OperationData::ByteString(SecretBytes::new(value)));
-        self
+    pub fn data(self, value: Vec<u8>) -> Self {
+        self.data_value(OperationData::ByteString(SecretBytes::new(value)))
     }
 
     /// Sets an explicitly typed non-byte Data value for expert KMIP use.
@@ -1230,14 +1207,14 @@ impl<'a> MacVerifyBuilder<'a> {
     /// Sets exchange-local transport options.
     #[must_use]
     pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.execution = self.execution.with_options(options);
+        self.execution.options = Some(options);
         self
     }
 
     /// Sets the Request Header Asynchronous Indicator for this exchange.
     #[must_use]
     pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.execution = self.execution.with_asynchronous_indicator(value);
+        self.execution.asynchronous_indicator = Some(value);
         self
     }
 
@@ -1305,9 +1282,8 @@ impl<'a> HashBuilder<'a> {
 
     /// Sets caller-selected typed Cryptographic Parameters.
     #[must_use]
-    pub fn cryptographic_parameters(mut self, value: CryptographicParameters) -> Self {
-        self.cryptographic_parameters = Some(value.into_ttlv());
-        self
+    pub fn cryptographic_parameters(self, value: CryptographicParameters) -> Self {
+        self.cryptographic_parameters_structure(value.into_ttlv())
     }
 
     /// Sets an expert ordered Cryptographic Parameters Structure.
@@ -1319,9 +1295,8 @@ impl<'a> HashBuilder<'a> {
 
     /// Moves message bytes into the request's zeroizing secret owner.
     #[must_use]
-    pub fn data(mut self, value: Vec<u8>) -> Self {
-        self.data = Some(OperationData::ByteString(SecretBytes::new(value)));
-        self
+    pub fn data(self, value: Vec<u8>) -> Self {
+        self.data_value(OperationData::ByteString(SecretBytes::new(value)))
     }
 
     /// Sets an explicitly typed non-byte Data value for expert KMIP use.
@@ -1355,14 +1330,14 @@ impl<'a> HashBuilder<'a> {
     /// Sets exchange-local transport options.
     #[must_use]
     pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.execution = self.execution.with_options(options);
+        self.execution.options = Some(options);
         self
     }
 
     /// Sets the Request Header Asynchronous Indicator for this exchange.
     #[must_use]
     pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.execution = self.execution.with_asynchronous_indicator(value);
+        self.execution.asynchronous_indicator = Some(value);
         self
     }
 

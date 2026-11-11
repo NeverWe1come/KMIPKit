@@ -3,9 +3,11 @@
 ## Branch and dependency
 
 - Branch: `feature/KMIPKIT-0102-fluent-cryptographic-operations`.
-- Base: PR #184 at `5d9c22369` (unmerged; exact-head CI is running).
+- Base: PR #184 at `1885a509e` (unmerged; exact-head CI is running).
 - Draft PR: #185, based on #184; title retains `[WIP]`.
 - Red/Green/Refactor commits: `c077230d2`, `a8fc68cf3`, and `8e536b121`.
+- Commit `2c495141d` merges the latest #184 branch head into this already-pushed
+  branch without rewriting the published feature commits.
 - Scope: Rust fluent builders for Encrypt, Decrypt, Sign, Signature Verify,
   MAC, MAC Verify, and Hash.
 
@@ -47,6 +49,14 @@
 - `cargo fmt --all`: passed.
 - Public Rust export audit completed with `matchesManifest: true` after adding
   the new declarations.
+- SonarCloud reported 26.8% duplicated lines on new code (552 lines; limit
+  3%) at head `fd5b0bdaa201cd3b2cf64d1c39ed6d6976cbe17c`. The repeated spans
+  were fluent setters shared across operation builders. The refactor routes
+  byte and typed-parameter inputs through each builder's existing semantic
+  setters while preserving the seven explicit public builder types and all
+  signatures.
+- Commit `5dab7e23b` refreshes the historical non-target manifest count and
+  fingerprint to account for KMIPKIT-0102's generated Rust API declarations.
 
 ## Verification
 
@@ -54,10 +64,16 @@
   passed, 2 tests.
 - `python3 tools/api_manifest/generate.py --check`: passed; all 12 generated
   outputs are current.
-- Rebased full-client verification on the current #184 head:
+- Full-client verification with the updated #184 head:
   `cargo test -p kmipkit-client --all-features --locked --quiet` — passed
-  (864 unit tests, package integration tests, and doctests; 3 external KMS
+  (865 unit tests, package integration tests, and doctests; 3 external KMS
   tests ignored because no KMS is configured).
-- Rebased `cargo clippy -p kmipkit-client --all-targets --all-features -- -D
+- `cargo clippy -p kmipkit-client --all-targets --all-features -- -D
   warnings` — passed.
+- `python3 -m unittest tools.api_manifest.tests.test_0102_fluent_cryptographic_manifest tools.api_manifest.tests.test_t102_certify_request_builder_mapping`:
+  passed, 10 tests.
+- `python3 -m unittest tools.normative_catalog.tests.test_feature_traceability`:
+  passed, 31 tests.
+- `python3 -B tools/api_manifest/generate.py --check`: passed; 12 outputs
+  verified.
 - Full coverage and exact-head CI remain pending on the stacked draft PR.
