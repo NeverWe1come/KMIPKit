@@ -174,6 +174,27 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
         self.assertEqual(symbols, {event['public_api_symbol'] for event in report['events']})
 
+    def test_reserved_tag_routes_check_rejection_without_a_fabricated_item(self):
+        catalog = copy.deepcopy(self.catalog)
+        catalog['test_cases'] = [case for case in catalog['test_cases']
+                                 if case['requires'].get('target_kind') in ('tag', 'tag_range')
+                                 and case['requires'].get('allocation') in ('reserved', 'unused')]
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in manifest['routes'] if route['language'] == 'python'
+                              and route['public_api_symbol'].startswith('kmipkit.ttlv.')]
+        manifest['routes'].append(next(route for route in self.manifest['routes']
+                                       if route['public_api_symbol'] == 'kmipkit.extensions.client_batch_item_ping'))
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+        self.assertEqual(0, len(gaps), f'{len(gaps)} reserved allocation cells lack rejection checks')
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+        decodes = [event for event in report['events'] if event['action'] == 'decode']
+        self.assertTrue(decodes)
+        for event in decodes:
+            self.assertEqual('rejected', event['decode_outcome'])
+            self.assertEqual('tag_not_allocated', event['decode_rejection_code'])
+            self.assertRegex(event['decode_input_sha256'], '^[0-9a-f]{64}$')
+            self.assertNotIn('response_tree_sha256', event)
+
     def test_every_assigned_tag_is_constructed_and_decoded_with_its_exact_numeric_identity(self):
         catalog = copy.deepcopy(self.catalog)
         catalog['test_cases'] = [case for case in catalog['test_cases']
