@@ -145,6 +145,19 @@ class MatrixContract(unittest.TestCase):
         self.assertEqual(report['events'], [])
         self.assertIn('pending_recipe', process.stderr)
 
+    def test_parameter_modifier_projects_the_exact_constructed_target(self):
+        cell = self.cell('kmipkit_protocol::CryptographicParametersBuilder::with_padding_method',
+                         'KMIPKIT-ELEM-ENUM-VALUE-PADDING-METHOD-NONE-00000001')
+        process, report = self.run_matrix([cell])
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual(report['events'][0]['request_tree_sha256'], hashlib.sha256(b'[[4325471,5,1]]').hexdigest())
+
+    def test_parameter_constructor_preserves_source_permitted_empty_model(self):
+        cell = self.cell('kmipkit_protocol::CryptographicParametersBuilder::new', 'KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS')
+        process, report = self.run_matrix([cell])
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual(report['events'][0]['request_tree_sha256'], hashlib.sha256(b'[[4325419,1,[]]]').hexdigest())
+
     def test_forged_symbol_is_rejected_without_false_positive(self):
         cell = self.cell('kmipkit_ttlv::Item::new')
         cell['public_api_symbol'] = 'kmipkit_ttlv::Value::boolean'
