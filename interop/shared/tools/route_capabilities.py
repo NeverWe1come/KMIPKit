@@ -75,6 +75,19 @@ def normalized(value):
     return re.sub('[^a-z0-9]', '', value.lower()).replace('asynchronous', 'async')
 
 
+def _name_tokens(value):
+    """Tokenize identifiers and normative labels without substring aliases."""
+    return [token.casefold() for token in re.findall(
+        r'[A-Z]+(?=[A-Z][a-z])|[A-Z]?[a-z]+|[A-Z]+|[0-9]+', value)]
+
+
+def _contains_name_tokens(name, identifier):
+    expected = _name_tokens(name)
+    actual = _name_tokens(identifier)
+    return bool(expected) and any(actual[index:index + len(expected)] == expected
+        for index in range(len(actual) - len(expected) + 1))
+
+
 @lru_cache(maxsize=None)
 def source(root, commit, path):
     """Read immutable release input, never an uncommitted source approximation."""
@@ -472,7 +485,13 @@ def build_manifest(root=ROOT, commit='9a16cc90a12205101d22a38501a5e74c665df4dc')
             else:
                 value = normalized(function_id)
                 target_ids = [target['target_id'] for target in targets
-                    if normalized(target.get('name', '')) and normalized(target['name']) in value]
+                    if _contains_name_tokens(target.get('name', ''), function_id)]
+                if re.search(r'(?:^|_)bytes(?:_|$)', function_id):
+                    target_ids.extend(target['target_id'] for target in targets
+                        if target['kind'] == 'data_type' and normalized(target['name']) == 'bytestring')
+                if re.search(r'(?:^|_)text(?:_|$)', function_id):
+                    target_ids.extend(target['target_id'] for target in targets
+                        if target['kind'] == 'data_type' and normalized(target['name']) == 'textstring')
                 if 'typedattribute' in value:
                     target_ids.extend(target['target_id'] for target in targets
                         if target['kind'] in {'attribute', 'attribute_structure'})

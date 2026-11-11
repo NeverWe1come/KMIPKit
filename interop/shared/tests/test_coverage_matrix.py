@@ -12,7 +12,7 @@ from unittest.mock import patch
 
 SHARED = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SHARED / "tools"))
-from coverage_matrix import _resolve_output_path, build_matrix, iter_cells  # noqa: E402
+from coverage_matrix import _case_obligations, _operation_ids, _resolve_output_path, build_matrix, iter_cells  # noqa: E402
 
 
 class CoverageMatrixTests(unittest.TestCase):
@@ -77,6 +77,28 @@ class CoverageMatrixTests(unittest.TestCase):
             self.assertEqual({(index, operation, target) for index, (operation, target)
                               in enumerate(zip(case["requires"]["protocol_scenario"]["operations"], target_ids))},
                              steps)
+
+    def test_duplicate_operation_names_default_to_client_initiated_direction(self):
+        operation_ids = _operation_ids(self.catalog)
+        self.assertEqual('KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS',
+                         operation_ids['discoverversions'])
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-op-discover-versions')
+        obligations = _case_obligations(case, operation_ids)
+        self.assertEqual(['KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS'],
+                         [item['target_id'] for item in obligations
+                          if item['target_id'].startswith('KMIPKIT-ELEM-OP-')])
+
+    def test_explicit_server_initiated_operation_target_is_not_overridden(self):
+        operation_ids = _operation_ids(self.catalog)
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-op-discover-versions')
+        case = json.loads(json.dumps(case))
+        case['requires']['normative_target_id'] = 'KMIPKIT-ELEM-OP-S2C-DISCOVER-VERSIONS'
+        obligations = _case_obligations(case, operation_ids)
+        self.assertEqual(['KMIPKIT-ELEM-OP-S2C-DISCOVER-VERSIONS'],
+                         [item['target_id'] for item in obligations
+                          if item['target_id'].startswith('KMIPKIT-ELEM-OP-')])
 
     def test_repeated_batch_items_remain_separate_ordered_obligations(self):
         case = next(case for case in self.catalog["test_cases"]

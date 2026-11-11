@@ -29,11 +29,23 @@ def _resolve_output_path(path: Path, root: Path) -> Path:
 
 
 def _operation_ids(catalog: dict) -> dict[str, str]:
+    grouped: dict[str, list[str]] = {}
+    for target in catalog["normative_targets"]:
+        if target["kind"] == "operation":
+            grouped.setdefault(_norm(target["name"]), []).append(target["target_id"])
+    # An operation name can have both §6.1 client-to-server and §6.2
+    # server-to-client targets. Unqualified client test cases default to C2S;
+    # an explicitly authored direction remains available through its target ID.
     return {
-        _norm(target["name"]): target["target_id"]
-        for target in catalog["normative_targets"]
-        if target["kind"] == "operation"
+        name: next((target_id for target_id in sorted(target_ids)
+                    if "-OP-C2S-" in target_id), sorted(target_ids)[0])
+        for name, target_ids in grouped.items()
     }
+
+
+def _operation_name_from_target(target_id: str) -> str | None:
+    match = re.fullmatch(r"KMIPKIT-ELEM-OP-(?:C2S|S2C)-(.+)", target_id)
+    return _norm(match.group(1)) if match else None
 
 
 def _case_targets(case: dict, operation_ids: dict[str, str]) -> set[str]:
@@ -134,7 +146,13 @@ def _case_obligations(case: dict, operation_ids: dict[str, str]) -> list[dict]:
     # Cases authored before individual operation target IDs were attached can
     # still be matched to the normative operation by its exact catalog name.
     operation_id = operation_ids.get(_norm(case.get("operation", "")))
-    if operation_id and operation_id not in item_targets and operation_id not in scenario_step_targets:
+    explicit_operation_names = {
+        operation_name for target_id in plain_targets
+        if (operation_name := _operation_name_from_target(target_id)) is not None
+    }
+    if (operation_id and operation_id not in item_targets
+            and operation_id not in scenario_step_targets
+            and _norm(case.get("operation", "")) not in explicit_operation_names):
         add(operation_id)
     return obligations
 
