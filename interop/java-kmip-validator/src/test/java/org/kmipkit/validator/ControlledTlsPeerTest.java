@@ -278,6 +278,9 @@ class ControlledTlsPeerTest {
         JsonNode report = new ObjectMapper().readTree(reportPath.toFile());
         assertEquals("java", report.path("language").asText());
         List<EnumerationFixture> enumerationFixtures = genericEnumerationFixtures();
+        assertTrue(enumerationFixtures.stream().noneMatch(fixture -> fixture.caseId().equals(
+                        "test-norm-enumeration-value-profile-name-reserved-00000001-00000103")),
+                "A finite Profile Name range must remain pending until each named value is represented.");
         int enumerationEventCount = enumerationFixtures.stream()
                 .mapToInt(fixture -> fixture.protocolVersions().size() * 4).sum();
         assertEquals(68 + enumerationEventCount, report.path("events").size());
