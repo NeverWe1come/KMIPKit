@@ -25,24 +25,6 @@ from .typed_attributes import StandardAttribute
 _MAX_CRYPTO_INPUT_BYTES = 16 * 1024 * 1024
 
 
-def _raise_builder_status(status: int) -> None:
-    """Preserve sanitized native errors and identify rejected builds as unsent."""
-    try:
-        _raise_client_status(status)
-    except errors.ClientExecutionError as failure:
-        if failure.client_category is not errors.ClientErrorCategory.VALIDATION:
-            raise
-        # Native builder calls use generic ABI metadata. These validation
-        # failures occur before the typed request can reach the transport.
-        raise errors.ClientExecutionError(
-            status=failure.status,
-            category=failure.client_category,
-            cause=failure.cause,
-            delivery=errors.DeliveryState.NOT_SENT,
-            profile_validation=failure.profile_validation,
-        ) from None
-
-
 def _wipe_crypto_stage(staged: bytearray) -> None:
     """Overwrite a mutable Python buffer owned by this binding."""
     staged[:] = bytes(len(staged))
@@ -296,7 +278,7 @@ class SymmetricKeyBuilder:
             errors.raise_for_status(4)
         self._ensure_open()
         with _NATIVE_CALL_LOCK:
-            _raise_builder_status(lib.kmipkit_symmetric_key_builder_insert_attribute_item(
+            _raise_client_status(lib.kmipkit_symmetric_key_builder_insert_attribute_item(
                 self._handle, index, ffi.cast("kmipkit_ttlv_item_t *", item._pointer()),
             ))
         return self
@@ -339,7 +321,7 @@ class SymmetricKeyBuilder:
             errors.raise_for_status(4)
         output = ffi.new("kmipkit_client_batch_item_t **")
         with _NATIVE_CALL_LOCK:
-            _raise_builder_status(lib.kmipkit_symmetric_key_builder_build_batch_item(self._handle, output))
+            _raise_client_status(lib.kmipkit_symmetric_key_builder_build_batch_item(self._handle, output))
         if output[0] == ffi.NULL:
             errors.raise_for_status(7)
         # The fluent facade uses the client CFFI declarations while the shared
