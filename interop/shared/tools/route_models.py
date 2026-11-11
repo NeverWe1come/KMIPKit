@@ -126,27 +126,15 @@ def model_inventory(root, commit, source, api, targets):
                 names = ['Cryptographic Algorithm', 'Cryptographic Length']
         operation_id = operations.get(norm(owner.removesuffix('Request'))) if owner.endswith('Request') else None
         add('rust', symbol, selected, names, objects=owner == 'ManagedObject', operation_id=operation_id)
-        # These are mappings of actual public typed constructors, not inferred
-        # parity. The installed probes subsequently check every mapped symbol.
-        for language in ('c',):
-            mapping = declaration.get('languageMappings', {}).get(language, {})
-            mapped = mapping.get('name', '')
-            if not mapped or 'NativeExtensionRegistry' in mapped:
-                continue
-            if language == 'c':
-                path = 'bindings/c/include/kmipkit.h'
-                if not any(part in mapped for part in ('_from_', '_create', '_try_new', '_set_', '_try_push', '_with_')):
-                    continue
-                if not re.search(r'\b' + re.escape(mapped) + r'\s*\(', source(root, commit, path)):
-                    continue
-            elif language == 'python':
-                path = 'bindings/python/src/kmipkit/' + mapped.split('.')[1] + '.py'
-            else:
-                class_parts = mapped.split('.')[:-1]
-                if 'Builder' in class_parts:
-                    class_parts = class_parts[:class_parts.index('Builder')]
-                path = 'bindings/java/src/main/java/' + '/'.join(class_parts) + '.java'
-            add(language, mapped, path, names, objects=owner == 'ManagedObject', operation_id=operation_id)
+        # C exposes the metadata-backed ABI constructors. Java and Python
+        # facades are inventoried from their public source classes below.
+        mapped = declaration.get('languageMappings', {}).get('c', {}).get('name', '')
+        c_constructor_forms = ('_from_', '_create', '_try_new', '_set_', '_try_push', '_with_')
+        if not mapped or not any(part in mapped for part in c_constructor_forms):
+            continue
+        path = 'bindings/c/include/kmipkit.h'
+        if re.search(r'\b' + re.escape(mapped) + r'\s*\(', source(root, commit, path)):
+            add('c', mapped, path, names, objects=owner == 'ManagedObject', operation_id=operation_id)
 
     # Open typed enumeration/mask wrappers that really construct a value.
     for path, text in rust_sources.items():
