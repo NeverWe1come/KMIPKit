@@ -1377,7 +1377,17 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         }
     } else if (strcmp(test_case->operation, "Query") == 0) {
         const uint32_t query_function = KMIPKIT_ENUMERATION_QUERY_FUNCTION_QUERY_OPERATIONS;
-        status = kmipkit_client_batch_item_query(&query_function, 1, 0, NULL, 0, &item);
+        if (strcmp(test_case->case_id, "test-norm-payload-client-query-request-21-002") == 0) {
+            static const uint8_t query_group[] = "KMIPKit-Test-Group";
+            const kmipkit_byte_span_v1_t object_group = {
+                .data = query_group,
+                .length = sizeof(query_group) - 1
+            };
+            status = kmipkit_client_batch_item_query(
+                &query_function, 1, 1, &object_group, 1, &item);
+        } else {
+            status = kmipkit_client_batch_item_query(&query_function, 1, 0, NULL, 0, &item);
+        }
     } else if (strcmp(test_case->operation, "Log") == 0) {
         static const uint8_t message[] = "KMIPKit interoperability validation probe";
         status = kmipkit_client_batch_item_log(message, sizeof(message) - 1, &item);

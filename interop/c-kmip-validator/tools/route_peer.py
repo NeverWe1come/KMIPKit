@@ -215,6 +215,9 @@ RECIPES = {
     'test-op-destroy': ((1, 20, 19, 20), 'destroy'),
     'test-op-get-constraints': ((1, 56, 19, 20), 'get_constraints'),
     'test-op-locate': ((8,), 'locate'), 'test-op-query': ((24,), 'query'),
+    'test-norm-payload-client-query-request-20-001': ((24,), 'query'),
+    'test-norm-payload-client-query-request-21-001': ((24,), 'query'),
+    'test-norm-payload-client-query-request-21-002': ((24,), 'query'),
     'test-op-discover-versions': ((30,), 'discover_versions'),
     'test-op-log': ((44,), 'log'), 'test-op-login': ((45,), 'login'),
     'test-op-ping': ((59,), 'ping'),
@@ -256,8 +259,13 @@ def assert_recipe(node, case_id, version):
         raise ValueError('fixture_attribute_reference_mismatch')
     if case_id == 'test-attr-cryptographic-length' and numbers(node, 0x42013B) != [0x42002A]:
         raise ValueError('fixture_attribute_reference_mismatch')
-    if case_id == 'test-op-query' and numbers(node, 0x420074) != [1]:
+    if RECIPES[case_id][1] == 'query' and numbers(node, 0x420074) != [1]:
         raise ValueError('fixture_query_function_mismatch')
+    if case_id == 'test-norm-payload-client-query-request-21-002':
+        groups = list(descendants(node, 0x420166))
+        if (len(groups) != 1 or groups[0][1] != 1
+                or [item[2] for item in groups[0][2] if item[0] == 0x420056] != [b'KMIPKit-Test-Group']):
+            raise ValueError('fixture_query_object_groups_mismatch')
     if case_id == 'test-op-locate' and numbers(node, 0x42004F) != [3]:
         raise ValueError('fixture_locate_bound_missing')
     if case_id == 'test-op-log' and not list(descendants(node, 0x420141)):
@@ -373,7 +381,10 @@ def verify_consumer_provenance(report, artifact_sha256, catalog_sha256):
         raise ValueError('consumer_artifact_provenance_mismatch')
 
 
-def execute_network_cells(binary, catalog, manifest):
+def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0', '2.1'),
+                          network_combinations=(('TTLV', 'raw_tls'), ('TTLV', 'https'),
+                                                ('JSON', 'raw_tls'), ('JSON', 'https'),
+                                                ('XML', 'raw_tls'), ('XML', 'https'))):
     codec = Codec(catalog)
     targets_by_id = {target['target_id']: target for target in catalog['normative_targets']}
     events, keys, checks = [], set(), []
@@ -394,9 +405,8 @@ def execute_network_cells(binary, catalog, manifest):
         context.load_cert_chain(cert, key)
         context.load_verify_locations(ca)
         context.verify_mode = ssl.CERT_REQUIRED
-        for version in ('2.0', '2.1'):
-            for encoding in ('TTLV', 'JSON', 'XML'):
-                for transport in ('raw_tls', 'https'):
+        for version in protocol_versions:
+            for encoding, transport in network_combinations:
                     for case, variant in case_variants:
                         case_id = case['case_id']
                         if case_id not in RECIPES or version not in case['execution']['protocol_versions']:
@@ -430,6 +440,12 @@ def execute_network_cells(binary, catalog, manifest):
                                             encoded_response = (f'HTTP/1.1 200 OK\r\nContent-Type: {content_type}\r\nContent-Length: {len(encoded_response)}\r\nConnection: close\r\n\r\n'.encode() + encoded_response)
                                         stream.sendall(encoded_response)
                                         observation.append((request_tree, response_tree))
+                                except TimeoutError:
+                                    errors.append('fixture_peer_accept_timeout')
+                                except ssl.SSLError:
+                                    errors.append('fixture_tls_handshake_failed')
+                                except ConnectionError:
+                                    errors.append('fixture_connection_failed')
                                 except Exception as error:
                                     code = str(error)
                                     errors.append(code if re.fullmatch('fixture_[a-z_]+', code) else 'controlled_peer_contract_failed')
@@ -450,7 +466,15 @@ def execute_network_cells(binary, catalog, manifest):
                             connection_path, catalog_path, result_path, trace_path = (directory / name for name in ('connection.json', 'catalog.json', 'result.json', 'calls.tsv'))
                             trace_path.unlink(missing_ok=True)
                             connection_path.write_text(json.dumps(config))
-                            catalog_path.write_text(json.dumps({**catalog, 'test_cases': [case]}))
+                            peer_case = case
+                            if (case['case_id'].startswith('test-norm-payload-client-query-request-')
+                                    and case.get('execution', {}).get('mode') == 'local_model'):
+                                # The public C Query constructor is opaque outside
+                                # a client exchange; send the locally specified
+                                # request through this controlled peer to inspect it.
+                                peer_case = {**case, 'execution': {
+                                    **case['execution'], 'mode': 'server_exchange'}}
+                            catalog_path.write_text(json.dumps({**catalog, 'test_cases': [peer_case]}))
                             run = subprocess.run([str(binary.resolve()), 'run', '--connection', str(connection_path),
                                 '--catalog', str(catalog_path), '--allow-mutations', '--output', str(result_path)],
                                 cwd=ROOT, capture_output=True, timeout=10,
@@ -480,6 +504,8 @@ def execute_network_cells(binary, catalog, manifest):
                             code = errors[0] if errors else 'consumer_check_failed' if not case_passed else 'public_api_trace_missing' if not called_symbols else None
                             checks.append({'case_id': case_id, 'constructor_variant': variant, 'protocol_version': version, 'encoding': encoding,
                                            'transport': transport, 'status': 'passed' if observation and not code and run.returncode == 0 else 'failed',
+                                           'consumer_case_status': (result.get('cases') or [{}])[0].get('status', 'missing'),
+                                           'consumer_server_compatibility': (result.get('cases') or [{}])[0].get('server_compatibility', 'missing'),
                                            **({'failure_code': code or 'peer_observation_missing'} if code or not observation else {})})
                             if not observation or code or run.returncode != 0:
                                 continue

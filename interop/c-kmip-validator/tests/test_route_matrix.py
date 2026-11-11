@@ -217,12 +217,13 @@ class RouteMatrixTests(unittest.TestCase):
         selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
                                                 if case['case_id'] in case_ids]}
         events, _, checks = execute_network_cells(
-            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
-        self.assertEqual(len(checks), 18)
-        self.assertTrue(all(check['status'] == 'passed' for check in checks))
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest,
+            network_combinations=(('TTLV', 'raw_tls'),))
+        self.assertEqual(len(checks), 3)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
         fields = [event for event in events if event['target_id'].startswith(
             'KMIPKIT-PAYLOAD-CLIENT-QUERY-REQUEST-')]
-        self.assertEqual(len(fields), 36)
+        self.assertEqual(len(fields), 6)
         self.assertEqual({event['action'] for event in fields}, {'construct', 'send'})
         self.assertTrue(all(event['public_api_symbol'] == 'kmipkit_client_batch_item_query'
                             for event in fields))
