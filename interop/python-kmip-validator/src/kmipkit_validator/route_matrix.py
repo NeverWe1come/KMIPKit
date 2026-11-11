@@ -372,7 +372,7 @@ def _network_cell(cell: dict, case: dict, target: dict) -> dict:
         raise ValueError('fixture Ping request or response shape assertion failed')
     return {'request_tree_sha256': digest(request), 'response_tree_sha256': digest(response),
             'wire_bytes_deterministic': True,
-            'wire_bytes_sha256': hashlib.sha256(peer.requests[0]).hexdigest()}
+            'wire_bytes_sha256': hashlib.sha256(peer.responses[0] if cell.get('action') == 'decode' else peer.requests[0]).hexdigest()}
 
 
 def verify_installed_artifact(artifact: dict) -> None:
