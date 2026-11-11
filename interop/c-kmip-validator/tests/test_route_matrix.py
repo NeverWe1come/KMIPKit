@@ -53,6 +53,15 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(result['constructed_wire'], result['decoded_wire'])
         self.assertIn('kmipkit_ttlv_item_create', result['invoked_symbols'])
 
+    def test_reserved_tag_is_not_constructed_as_an_assigned_ttlv_item(self):
+        from artifact_support import ROOT
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        target = next(item for item in catalog['normative_targets']
+                      if item['target_id'] == 'KMIPKIT-ELEM-TAG-420009')
+        tags = {item['name']: int(item['wire_value'], 16) for item in catalog['normative_targets']
+                if item['kind'] == 'tag'}
+        self.assertIsNone(self.runner.generic_tree_fixtures(target, catalog, tags, '2.1'))
+
     def test_unmapped_structure_branch_is_pending_not_arbitrary_scalar(self):
         target = {'kind': 'operation_payload_field', 'name': 'Unique Identifier'}
         self.assertIsNone(self.runner.scalar_fixture(target, {}))
