@@ -128,14 +128,17 @@ class ModelCases:
     def _object_type(self, name: str, protocol_version: str) -> int:
         return self._enum_value('Object Type', name, protocol_version)
 
-    def _key_block_tree(self, protocol_version: str) -> tuple:
+    def _key_block_tree(self, protocol_version: str, *, include_key_value: bool = False) -> tuple:
         key_format = self._enum_value('Key Format Type', 'Raw', protocol_version)
-        return (KEY_BLOCK_TAG, 1, [
-            (KEY_FORMAT_TYPE_TAG, 5, key_format.to_bytes(4, 'big'))])
+        fields = [(KEY_FORMAT_TYPE_TAG, 5, key_format.to_bytes(4, 'big'))]
+        if include_key_value:
+            fields.append((self._tag('Key Value'), 1, [
+                (self._tag('Key Material'), 8, b'\xa1')]))
+        return (KEY_BLOCK_TAG, 1, fields)
 
     def _execute_named_object(self, root: dict, protocol_version: str) -> dict:
         name = root['name']
-        key_block_tree = self._key_block_tree(protocol_version)
+        key_block_tree = self._key_block_tree(protocol_version, include_key_value=name == 'Secret Data')
         recipes = {
             'Certificate Request': ('kmipkit_certificate_request_from_fields', [
                 (self._tag('Certificate Request Type'), 5,
@@ -148,6 +151,11 @@ class ModelCases:
             ]),
             'Private Key': ('kmipkit_private_key_from_fields', [key_block_tree]),
             'Public Key': ('kmipkit_public_key_from_fields', [key_block_tree]),
+            'Secret Data': ('kmipkit_secret_data_from_fields', [
+                (self._tag('Secret Data Type'), 5,
+                 self._enum_value('Secret Data Type', 'Password', protocol_version).to_bytes(4, 'big')),
+                key_block_tree,
+            ]),
         }
         recipe = recipes.get(name)
         if recipe is None:
@@ -205,7 +213,7 @@ class ModelCases:
                      and (item['target_id'] == target.get('target_id')
                           or item['target_id'] in parents)), None)
         if root is not None and root['name'] in {
-                'Certificate Request', 'PGP Key', 'Private Key', 'Public Key'}:
+                'Certificate Request', 'PGP Key', 'Private Key', 'Public Key', 'Secret Data'}:
             self.abi.called.clear()
             result = self._execute_named_object(root, protocol_version)
             return result if self._supports_target(target, result) else None
