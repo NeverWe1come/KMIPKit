@@ -90,6 +90,26 @@ fn unsigned_wire_value(value: &str) -> Option<u32> {
     u32::from_str_radix(&digits, 16).ok()
 }
 
+fn vendor_attribute_value() -> Result<Value> {
+    let mut fields = kmipkit::ttlv::Structure::new();
+    for field in [
+        crate::driver::item(
+            0x0042_009d,
+            Value::text_string("KMIPKit.TestVendor_1".to_owned()),
+        )?,
+        crate::driver::item(
+            0x0042_000a,
+            Value::text_string("Opaque.Attribute".to_owned()),
+        )?,
+        crate::driver::item(0x0042_000b, Value::byte_string(vec![0, 0x80, 0xff]))?,
+    ] {
+        fields
+            .try_push(field)
+            .map_err(|_| "vendor attribute fixture rejected")?;
+    }
+    Ok(Value::structure(fields))
+}
+
 #[allow(clippy::too_many_lines)] // Exact source tag/type selection remains auditable in one recipe.
 fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
     if let Some(fixture) = crate::local_credentials::fixture(target) {
@@ -97,6 +117,11 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
     }
     let kind = text(target, "kind")?;
     let mut name = text(target, "name")?;
+    if kind == "operation_payload_value_variant"
+        && let Some(field_name) = target["field_name"].as_str()
+    {
+        name = field_name;
+    }
     if ["enumeration_value", "bitmask_value", "object_type"].contains(&kind)
         && let Some(parent) = target["parent_element_ids"]
             .as_array()
@@ -113,6 +138,13 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
     };
     let tag = if kind == "operation" {
         0x0042_005c
+    } else if kind == "tag_range" && target["allocation"] == "extension" {
+        let wire_value = text(target, "wire_value")?;
+        let start = wire_value
+            .split(['-', '–', '—'])
+            .next()
+            .ok_or("tag range is empty")?;
+        unsigned_wire_value(start).ok_or("tag range needs a concrete fixture")?
     } else if kind == "referenced_enum_value" {
         match text(target, "parent_name")? {
             "PKCS#11 Function" => 0x0042_015a,
@@ -185,8 +217,66 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
                 }
             })
         })
-        .unwrap_or(if kind == "data_type" { name } else { "" });
-    let value = if [
+        .unwrap_or_else(|| {
+            if kind == "data_type" {
+                name
+            } else if [
+                "attribute_structure",
+                "operation_structure",
+                "object_structure",
+            ]
+            .contains(&kind)
+                || kind == "message_field" && name.contains("Structure")
+            {
+                "Structure"
+            } else if kind == "operation_payload_field" {
+                match name {
+                    "New Attribute"
+                    | "Current Attribute"
+                    | "Common Attributes"
+                    | "Private Key Attributes"
+                    | "Public Key Attributes"
+                    | "Common Protection Storage Masks"
+                    | "Private Protection Storage Masks"
+                    | "Public Protection Storage Masks"
+                    | "Any Object (Section 2)"
+                    | "All Objects" => "Structure",
+                    "Adjustment Type"
+                    | "Derivation Method"
+                    | "Key Wrap Type"
+                    | "Object Group Member"
+                    | "Validity Indicator"
+                    | "Query Function"
+                    | "Client Registration Method"
+                    | "Endpoint Role"
+                    | "Put Function" => "Enumeration",
+                    "Adjustment Value"
+                    | "Request Count"
+                    | "Maximum Items"
+                    | "Offset Items"
+                    | "Storage Status Mask"
+                    | "Located Items" => "Integer",
+                    "Offset" => "Interval",
+                    "Replace Existing" => "Boolean",
+                    "Validity Date" => "Date Time",
+                    "Digested Data" => "Byte String",
+                    "Private Key Unique Identifier"
+                    | "Public Key Unique Identifier"
+                    | "Interop Identifier"
+                    | "Certificate Request Unique Identifier"
+                    | "Replaced Unique Identifier" => "Text String",
+                    _ => "",
+                }
+            } else if kind == "attribute_structure" {
+                "Structure"
+            } else {
+                ""
+            }
+        });
+    let value = if target["target_id"] == "KMIPKIT-ELEM-TAG-420008" {
+        // KMIP 2.1 §4.60, Table 150 defines the required Vendor Attribute fields and order.
+        vendor_attribute_value()?
+    } else if [
         "enumeration_value",
         "referenced_enum_value",
         "object_type",
@@ -198,30 +288,55 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
     } else if kind == "bitmask_value" {
         Value::integer(wire_value.cast_signed())
     } else {
-        match encoding {
-            "Boolean" => Value::boolean(true),
-            "Integer" => Value::integer(256),
-            "Long Integer" => Value::long_integer(-17),
-            "Big Integer" => Value::big_integer(vec![0; 8]),
-            "Enumeration" => Value::enumeration(1),
-            "Byte String" => Value::byte_string(vec![0x4b]),
-            "Date Time" | "Date-Time" => Value::date_time(1),
-            "Date Time Extended" | "Date-Time Extended" => Value::date_time_extended(1),
-            "Interval" => Value::interval(1),
-            "Text String" | "Text String, Enumeration or Integer" => {
-                Value::text_string("KMIPKit".to_owned())
-            }
+        let normalized_encoding = encoding.to_ascii_lowercase();
+        if normalized_encoding.contains("boolean") {
+            Value::boolean(true)
+        } else if normalized_encoding.contains("big integer") {
+            Value::big_integer(vec![0; 8])
+        } else if normalized_encoding.contains("long integer") {
+            Value::long_integer(-17)
+        } else if normalized_encoding.contains("byte string")
+            || normalized_encoding.contains("bytestring")
+        {
+            Value::byte_string(vec![0x4b])
+        } else if normalized_encoding.contains("date time extended")
+            || normalized_encoding.contains("date-time extended")
+        {
+            Value::date_time_extended(1)
+        } else if normalized_encoding.contains("date time")
+            || normalized_encoding.contains("date-time")
+        {
+            Value::date_time(1)
+        } else if normalized_encoding.contains("interval") {
+            Value::interval(1)
+        } else if normalized_encoding.contains("enumeration") {
+            Value::enumeration(1)
+        } else if normalized_encoding.contains("integer") {
+            Value::integer(256)
+        } else if normalized_encoding.contains("structure")
+            || normalized_encoding.contains("rng parameters")
+        {
             // §4.16 Table 59 permits every Cryptographic Parameters member to be absent.
-            "Structure" if tag == 0x0042_002b => Value::structure(kmipkit::ttlv::Structure::new()),
-            "Structure" if kind == "data_type" => {
+            if tag == 0x0042_002b {
+                Value::structure(kmipkit::ttlv::Structure::new())
+            } else if kind == "data_type" {
                 let mut structure = kmipkit::ttlv::Structure::new();
                 structure
                     .try_push(crate::driver::item(0x0042_000d, Value::integer(1))?)
                     .map_err(|_| "local structure rejected")?;
                 Value::structure(structure)
+            } else {
+                Value::structure(kmipkit::ttlv::Structure::new())
             }
-            _ if kind == "tag" => Value::boolean(true),
-            _ => return Err("target value needs a concrete fixture recipe"),
+        } else if normalized_encoding.contains("text string")
+            || normalized_encoding.contains("textstring")
+            || normalized_encoding.contains("any")
+            || normalized_encoding.contains("varies")
+            || kind == "tag"
+        {
+            Value::text_string("KMIPKit".to_owned())
+        } else {
+            return Err("target value needs a concrete fixture recipe");
         }
     };
     crate::driver::item(tag, value)
@@ -562,10 +677,9 @@ mod tests {
             "../../shared/catalog/kmipkit-1.0-test-catalog.json"
         ))
         .unwrap();
-        let specification: Json = serde_json::from_str(include_str!(
-            "../../../specification/catalog/kmip-2.1.json"
-        ))
-        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
         let target = cases["normative_targets"]
             .as_array()
             .unwrap()
@@ -575,9 +689,14 @@ mod tests {
         let elements = specification["elements"].as_array().unwrap();
         let fixture = sample(target, elements).unwrap();
         assert_eq!(fixture.item_type(), kmipkit::ttlv::ItemType::Structure);
-        let result = invoke("kmipkit_protocol::AttributeSet::try_new", &fixture, target, elements)
-            .unwrap()
-            .unwrap();
+        let result = invoke(
+            "kmipkit_protocol::AttributeSet::try_new",
+            &fixture,
+            target,
+            elements,
+        )
+        .unwrap()
+        .unwrap();
         assert!(crate::local_wire::target_hash(&result, &fixture).is_ok());
     }
 }

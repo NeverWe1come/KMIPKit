@@ -81,7 +81,7 @@ fn kind_for_target(symbol: &str, target: &Json, elements: &[Json]) -> u32 {
             .as_str()
             .unwrap_or_default()
             .chars()
-            .filter(|character| character.is_ascii_alphanumeric())
+            .filter(char::is_ascii_alphanumeric)
             .flat_map(char::to_lowercase)
             .collect::<String>();
         if let Some(value) = elements.iter().find_map(|element| {
@@ -91,7 +91,7 @@ fn kind_for_target(symbol: &str, target: &Json, elements: &[Json]) -> u32 {
             let member_name = element["name"]
                 .as_str()?
                 .chars()
-                .filter(|character| character.is_ascii_alphanumeric())
+                .filter(char::is_ascii_alphanumeric)
                 .flat_map(char::to_lowercase)
                 .collect::<String>();
             if member_name != name {
