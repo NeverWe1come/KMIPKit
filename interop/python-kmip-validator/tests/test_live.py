@@ -443,17 +443,26 @@ class ControlledExchangeTests(unittest.TestCase):
                             peer.close()
 
     def _execute_attribute_route(
-        self, peer: ControlledTlsPeer, *, high_level: bool, case_id: str
+        self,
+        peer: ControlledTlsPeer,
+        *,
+        high_level: bool,
+        case_id: str,
+        encoding: str,
+        transport: str,
     ) -> dict:
         from kmipkit import extensions
 
         connection = {
             "server_id": "loopback",
             "protocol_version": "2.1",
-            "transport": "raw_tls",
-            "encoding": "TTLV",
+            "transport": transport,
+            "encoding": encoding,
             "api_level": "typed-protocol",
-            "endpoints": {"raw_tls": {"host": "127.0.0.1", "port": peer.port}},
+            "endpoints": {
+                "raw_tls": {"host": "127.0.0.1", "port": peer.port},
+                "https": {"url": f"https://127.0.0.1:{peer.port}/kmip"},
+            },
             "tls": {
                 "ca_cert_path": str(PKI / "server-cert.pem"),
                 "client_cert_path": str(PKI / "client-cert.pem"),
@@ -484,6 +493,11 @@ class ControlledExchangeTests(unittest.TestCase):
     def test_high_level_and_typed_attribute_routes_emit_identical_requests_and_responses(self):
         from kmipkit import protocol_values
 
+        network_combinations = tuple(
+            (encoding, transport)
+            for encoding in ("TTLV", "JSON", "XML")
+            for transport in ("raw_tls", "https")
+        )
         for case_id in (
             "test-op-add-attribute",
             "test-op-adjust-attribute",
@@ -493,26 +507,35 @@ class ControlledExchangeTests(unittest.TestCase):
             "test-op-modify-attribute",
             "test-attr-comment",
         ):
-            sent = []
-            received = []
-            outcomes = []
-            for high_level in (False, True):
-                peer = ControlledTlsPeer(
-                    status=protocol_values.ResultStatus.OPERATION_FAILED,
-                    reason=protocol_values.ResultReason.OPERATION_NOT_SUPPORTED,
-                )
-                outcomes.append(
-                    self._execute_attribute_route(peer, high_level=high_level, case_id=case_id)
-                )
-                sent.append(peer.requests[0])
-                received.append(peer.responses[0])
-            with self.subTest(case_id=case_id):
-                self.assertEqual(sent[0], sent[1])
-                self.assertEqual(received[0], received[1])
-                self.assertEqual(
-                    ["server_unsupported", "server_unsupported"],
-                    [result["status"] for result in outcomes],
-                )
+            for encoding, transport in network_combinations:
+                sent = []
+                received = []
+                outcomes = []
+                for high_level in (False, True):
+                    peer = ControlledTlsPeer(
+                        status=protocol_values.ResultStatus.OPERATION_FAILED,
+                        reason=protocol_values.ResultReason.OPERATION_NOT_SUPPORTED,
+                        encoding=encoding,
+                        transport=transport,
+                    )
+                    outcomes.append(
+                        self._execute_attribute_route(
+                            peer,
+                            high_level=high_level,
+                            case_id=case_id,
+                            encoding=encoding,
+                            transport=transport,
+                        )
+                    )
+                    sent.append(peer.requests[0])
+                    received.append(peer.responses[0])
+                with self.subTest(case_id=case_id, encoding=encoding, transport=transport):
+                    self.assertEqual(sent[0], sent[1])
+                    self.assertEqual(received[0], received[1])
+                    self.assertEqual(
+                        ["server_unsupported", "server_unsupported"],
+                        [result["status"] for result in outcomes],
+                    )
 
     def _execute_ping(
         self,
