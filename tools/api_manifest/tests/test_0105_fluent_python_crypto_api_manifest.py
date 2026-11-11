@@ -90,6 +90,24 @@ class FluentPythonCryptoManifestTests(unittest.TestCase):
                 self.assertIn("KMIPKIT-0105-FR-007", row["requirementIds"])
                 self.assertEqual("Approved", row["approvalSource"]["status"])
 
+    def test_rust_and_java_crypto_exports_are_ready_mapping_targets(self) -> None:
+        rows = self.manifest["publicDeclarations"]
+        for spec_id, package_id, requirement_prefix in (
+            ("KMIPKIT-0102", "rust-kmipkit-client", "KMIPKIT-0102-FR-"),
+            ("KMIPKIT-0104", "java-kmipkit", "KMIPKIT-0104-FR-"),
+        ):
+            owned = [row for row in rows if row.get("candidateSpecId") == spec_id]
+            self.assertTrue(owned)
+            for row in owned:
+                with self.subTest(spec=spec_id, export=row["exportName"]):
+                    self.assertEqual(package_id, row["packageId"])
+                    self.assertEqual("declared", row["declarationState"])
+                    self.assertEqual(LANGUAGE_IDS, set(row["languageMappings"]))
+                    self.assertEqual("Approved", row["approvalSource"]["status"])
+                    self.assertTrue(
+                        any(value.startswith(requirement_prefix) for value in row["requirementIds"])
+                    )
+
 
 if __name__ == "__main__":
     unittest.main()
