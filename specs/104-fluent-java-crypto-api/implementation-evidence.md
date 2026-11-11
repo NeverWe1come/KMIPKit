@@ -7,8 +7,9 @@
   head when this slice was created.
 - Scope: Java facade for the seven KMIPKIT-0102 cryptographic request builders,
   using the opaque C builder ABI from KMIPKIT-0103.
-- PR: pending implementation and publication; title will retain `[WIP]` until
-  all required checks on the exact head pass.
+- PR: #188 (`[WIP] KMIPKIT-0104 Java fluent cryptographic API`), draft and
+  stacked on KMIPKIT-0103. The title remains `[WIP]` until all required checks
+  on the exact head pass.
 
 ## Red
 
@@ -78,6 +79,32 @@
   `BUILD SUCCESSFUL`.
 - Refactor is committed separately from the Red and Green commits.
 
-## Verification
+## CI follow-up
 
-Pending exact-head CI and local test evidence.
+- The first hosted run for PR #188 reported three actionable failures:
+  `Script contracts / ubuntu-latest`, `Coverage gate / selected scopes`, and
+  SonarCloud. The script failure exposed T102 snapshots that still used the
+  pre-Java declaration count and fingerprints. The coverage failure reported
+  changed-code coverage at 136/210 lines. SonarCloud identified the parent
+  clause regular expressions in `audit_binding_exports.py`.
+- The first expanded local T102 run also exposed a stale KMIPKIT-0093
+  ExportResponse snapshot: `key_block` and `managed_object` are intentionally
+  blocked until they have an approved four-language owner. Added those two
+  manifest states to the exact expected snapshot; the focused four-test module
+  now passes.
+- Updated the T102 declaration count and the three dependent fingerprints to
+  include the 121 KMIPKIT-0104 declarations. Added Java builder and JNI bridge
+  shape tests for semantic setters, batch conversion, byte selectors,
+  unique-identifier variants, indicators, and invalid selectors.
+- Replaced the two parent-clause regular expressions with direct clause
+  parsing in `javap_parent_clauses`, avoiding the Sonar findings while keeping
+  interface inheritance in the Java export inventory.
+- Local verification after these changes:
+  - All 405 tests across the 108 `test_t102*.py` modules passed in four
+    sequential groups (to keep each local invocation bounded).
+  - `python3 -m unittest tools.api_manifest.tests.test_binding_exports`: 59
+    tests passed.
+  - `mvn --batch-mode --file bindings/java/pom.xml
+    -Dtest=FluentCryptoApiShapeTest test`: 5 tests passed; build successful.
+- Coverage gate and SonarCloud must be rerun against the updated PR head. The
+  PR remains draft until those and every other required exact-head check pass.
