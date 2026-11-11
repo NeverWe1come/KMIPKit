@@ -15,6 +15,81 @@ fn text<'a>(value: &'a Json, field: &str) -> Result<&'a str> {
     value[field].as_str().ok_or("matrix field missing")
 }
 
+fn operation_value(name: &str) -> Option<u32> {
+    use kmipkit::ClientOperation as Operation;
+
+    Some(match name {
+        "Activate" => Operation::Activate.raw(),
+        "Add Attribute" => Operation::AddAttribute.raw(),
+        "Adjust Attribute" => Operation::AdjustAttribute.raw(),
+        "Archive" => Operation::Archive.raw(),
+        "Cancel" => Operation::Cancel.raw(),
+        "Certify" => Operation::Certify.raw(),
+        "Check" => Operation::Check.raw(),
+        "Create" => Operation::Create.raw(),
+        "Create Key Pair" => Operation::CreateKeyPair.raw(),
+        "Create Split Key" => Operation::CreateSplitKey.raw(),
+        "Decrypt" => Operation::Decrypt.raw(),
+        "Delegated Login" => Operation::DelegatedLogin.raw(),
+        "Delete Attribute" => Operation::DeleteAttribute.raw(),
+        "Derive Key" => Operation::DeriveKey.raw(),
+        "Destroy" => Operation::Destroy.raw(),
+        "Discover Versions" => Operation::DiscoverVersions.raw(),
+        "Encrypt" => Operation::Encrypt.raw(),
+        "Export" => Operation::Export.raw(),
+        "Get" => Operation::Get.raw(),
+        "Get Attribute List" => Operation::GetAttributeList.raw(),
+        "Get Attributes" => Operation::GetAttributes.raw(),
+        "Get Constraints" => Operation::GetConstraints.raw(),
+        "Get Usage Allocation" => Operation::GetUsageAllocation.raw(),
+        "Hash" => Operation::Hash.raw(),
+        "Import" => Operation::Import.raw(),
+        "Interop" => Operation::Interop.raw(),
+        "Join Split Key" => Operation::JoinSplitKey.raw(),
+        "Locate" => Operation::Locate.raw(),
+        "Log" => Operation::Log.raw(),
+        "Login" => Operation::Login.raw(),
+        "Logout" => Operation::Logout.raw(),
+        "MAC" => Operation::Mac.raw(),
+        "MAC Verify" => Operation::MacVerify.raw(),
+        "Modify Attribute" => Operation::ModifyAttribute.raw(),
+        "Notify" => 0x1b,
+        "Obtain Lease" => Operation::ObtainLease.raw(),
+        "PKCS#11" => Operation::Pkcs11.raw(),
+        "Ping" => Operation::Ping.raw(),
+        "Poll" => Operation::Poll.raw(),
+        "Process" => Operation::Process.raw(),
+        "Put" => 0x1c,
+        "Query" => Operation::Query.raw(),
+        "Query Asynchronous Requests" => Operation::QueryAsyncRequests.raw(),
+        "RNG Retrieve" => Operation::RngRetrieve.raw(),
+        "RNG Seed" => Operation::RngSeed.raw(),
+        "Re-Provision" => Operation::ReProvision.raw(),
+        "Re-certify" => Operation::Recertify.raw(),
+        "Re-key" => Operation::Rekey.raw(),
+        "Re-key Key Pair" => Operation::RekeyKeyPair.raw(),
+        "Recover" => Operation::Recover.raw(),
+        "Register" => Operation::Register.raw(),
+        "Revoke" => Operation::Revoke.raw(),
+        "Set Attribute" => Operation::SetAttribute.raw(),
+        "Set Constraints" => Operation::SetConstraints.raw(),
+        "Set Defaults" => Operation::SetDefaults.raw(),
+        "Set Endpoint Role" => Operation::SetEndpointRole.raw(),
+        "Sign" => Operation::Sign.raw(),
+        "Signature Verify" => Operation::SignatureVerify.raw(),
+        "Validate" => Operation::Validate.raw(),
+        _ => return None,
+    })
+}
+
+fn unsigned_wire_value(value: &str) -> Option<u32> {
+    let digits = value
+        .trim()
+        .trim_start_matches("0x")
+        .replace(['X', 'x'], "0");
+    u32::from_str_radix(&digits, 16).ok()
+}
+
 #[allow(clippy::too_many_lines)] // Exact source tag/type selection remains auditable in one recipe.
 fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
     if let Some(fixture) = crate::local_credentials::fixture(target) {
@@ -31,14 +106,27 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
     {
         name = element["name"].as_str().ok_or("target name missing")?;
     }
-    let tag = if kind == "tag" {
-        u32::from_str_radix(text(target, "wire_value")?, 16).map_err(|_| "invalid target tag")?
+    let operation = if kind == "operation" {
+        operation_value(name).ok_or("operation target needs a concrete public enum value")?
+    } else {
+        0
+    };
+    let tag = if kind == "operation" {
+        0x0042_005c
+    } else if kind == "referenced_enum_value" {
+        match text(target, "parent_name")? {
+            "PKCS#11 Function" => 0x0042_015a,
+            "PKCS#11 Return Code" => 0x0042_015d,
+            _ => return Err("referenced enumeration needs a concrete tag"),
+        }
+    } else if kind == "tag" {
+        unsigned_wire_value(text(target, "wire_value")?).ok_or("invalid target tag")?
     } else {
         elements
             .iter()
             .find(|e| e["kind"] == "tag" && e["name"] == name && e["allocation"] == "assigned")
             .and_then(|e| e["wire_value"].as_str())
-            .and_then(|v| u32::from_str_radix(v, 16).ok())
+            .and_then(unsigned_wire_value)
             .or_else(|| {
                 target["parent_element_ids"]
                     .as_array()?
@@ -48,23 +136,27 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
                             .ok()
                     })
             })
+            .or((kind == "enumeration_value" && name == "Item Type").then_some(0x0042_0001))
             .or((kind == "data_type").then_some(0x0042_0001))
             .ok_or("target tag needs a concrete fixture recipe")?
     };
-    let wire_value = match target["wire_value"].as_str() {
-        Some(value)
-            if [
-                "enumeration_value",
-                "referenced_enum_value",
-                "bitmask_value",
-                "object_type",
-            ]
-            .contains(&kind) =>
-        {
-            u32::from_str_radix(value.trim_start_matches("0x"), 16)
-                .map_err(|_| "target range needs a concrete fixture recipe")?
+    let wire_value = if kind == "operation" {
+        operation
+    } else {
+        match target["wire_value"].as_str() {
+            Some(value)
+                if [
+                    "enumeration_value",
+                    "referenced_enum_value",
+                    "bitmask_value",
+                    "object_type",
+                ]
+                .contains(&kind) =>
+            {
+                unsigned_wire_value(value).ok_or("target range needs a concrete fixture recipe")?
+            }
+            _ => 1,
         }
-        _ => 1,
     };
     let encoding = target["source_encoding"]
         .as_str()
@@ -94,7 +186,14 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
             })
         })
         .unwrap_or(if kind == "data_type" { name } else { "" });
-    let value = if ["enumeration_value", "referenced_enum_value", "object_type"].contains(&kind) {
+    let value = if [
+        "enumeration_value",
+        "referenced_enum_value",
+        "object_type",
+        "operation",
+    ]
+    .contains(&kind)
+    {
         Value::enumeration(wire_value)
     } else if kind == "bitmask_value" {
         Value::integer(wire_value.cast_signed())

@@ -163,7 +163,9 @@ class MatrixContract(unittest.TestCase):
         self.assertGreater(len(cells), 1000)
         for cell, event in zip(cells, report['events']):
             target = targets[cell['target_id']]
-            expected = json.dumps([[0x00420001, 5, int(target['wire_value'], 16)]],
+            tag = {'PKCS#11 Function': 0x0042015a,
+                   'PKCS#11 Return Code': 0x0042015d}[target['parent_name']]
+            expected = json.dumps([[tag, 5, int(target['wire_value'], 16)]],
                                   separators=(',', ':')).encode()
             field = 'response_tree_sha256' if cell['action'] == 'decode' else 'request_tree_sha256'
             self.assertEqual(hashlib.sha256(expected).hexdigest(), event[field], cell['target_id'])
