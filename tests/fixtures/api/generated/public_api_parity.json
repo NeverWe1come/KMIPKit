@@ -317997,6 +317997,7 @@
           "kmipkit_symmetric_key_builder_create",
           "kmipkit_symmetric_key_builder_execute_v1",
           "kmipkit_symmetric_key_builder_execute_with_options_v1",
+          "kmipkit_symmetric_key_builder_insert_attribute_item",
           "kmipkit_symmetric_key_builder_release",
           "kmipkit_symmetric_key_builder_set_algorithm",
           "kmipkit_symmetric_key_builder_set_length",
@@ -318164,6 +318165,7 @@
           "org.kmipkit.fluent.SymmetricKeyBuilder.algorithm",
           "org.kmipkit.fluent.SymmetricKeyBuilder.asynchronousIndicator",
           "org.kmipkit.fluent.SymmetricKeyBuilder.attributeItem",
+          "org.kmipkit.fluent.SymmetricKeyBuilder.attributeItemAt",
           "org.kmipkit.fluent.SymmetricKeyBuilder.build",
           "org.kmipkit.fluent.SymmetricKeyBuilder.cataloguedAttribute",
           "org.kmipkit.fluent.SymmetricKeyBuilder.close",
@@ -318355,6 +318357,7 @@
           "kmipkit.fluent.SymmetricKeyBuilder.aes_256",
           "kmipkit.fluent.SymmetricKeyBuilder.algorithm",
           "kmipkit.fluent.SymmetricKeyBuilder.asynchronous_indicator",
+          "kmipkit.fluent.SymmetricKeyBuilder.attribute_item_at",
           "kmipkit.fluent.SymmetricKeyBuilder.build",
           "kmipkit.fluent.SymmetricKeyBuilder.close",
           "kmipkit.fluent.SymmetricKeyBuilder.execute",
@@ -318370,6 +318373,7 @@
           "kmipkit_client::Client::execute_with_options",
           "kmipkit_client::Client::new",
           "kmipkit_client::Client::request",
+          "kmipkit_client::CreateSymmetricKeyBuilder::attribute_at",
           "kmipkit_client::DecryptBuilder",
           "kmipkit_client::DecryptBuilder<'a>::authenticated_encryption_additional_data",
           "kmipkit_client::DecryptBuilder<'a>::authenticated_encryption_tag",
@@ -318488,6 +318492,7 @@
           "kmipkit_client::fluent::CreateSymmetricKeyBuilder::aes_256",
           "kmipkit_client::fluent::CreateSymmetricKeyBuilder::algorithm",
           "kmipkit_client::fluent::CreateSymmetricKeyBuilder::attribute",
+          "kmipkit_client::fluent::CreateSymmetricKeyBuilder::attribute_at",
           "kmipkit_client::fluent::CreateSymmetricKeyBuilder::attribute_item",
           "kmipkit_client::fluent::CreateSymmetricKeyBuilder::detached",
           "kmipkit_client::fluent::CreateSymmetricKeyBuilder::execute",
@@ -1034215,6 +1034220,86 @@
     },
     {
       "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct",
+        "kind": "feature-specification",
+        "path": "specs/096-fluent-expert-attributes/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0096",
+      "capabilityId": "fluent_dx_api",
+      "declarationId": "rust-observed-kmipkit-0096-attribute-at-module",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::attribute_at",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_symmetric_key_builder_insert_attribute_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.attributeItemAt",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.attribute_item_at",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::attribute_at",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0096-FR-001",
+        "KMIPKIT-0096-FR-002",
+        "KMIPKIT-0096-FR-003",
+        "KMIPKIT-0096-FR-004"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct",
+        "kind": "feature-specification",
+        "path": "specs/096-fluent-expert-attributes/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0096",
+      "capabilityId": "fluent_dx_api",
+      "declarationId": "rust-observed-kmipkit-0096-attribute-at-root",
+      "declarationState": "declared",
+      "exportName": "kmipkit_client::CreateSymmetricKeyBuilder::attribute_at",
+      "kind": "associated-item",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_symmetric_key_builder_insert_attribute_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.attributeItemAt",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.attribute_item_at",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::CreateSymmetricKeyBuilder::attribute_at",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "rust-kmipkit-client",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0096-FR-001",
+        "KMIPKIT-0096-FR-002",
+        "KMIPKIT-0096-FR-003",
+        "KMIPKIT-0096-FR-004"
+      ]
+    },
+    {
+      "approvalSource": {
         "evidence": "**Status**: Approved for implementation (specification PR #169 merged into `release/1.0.0` on 2026-11-10)",
         "kind": "feature-specification",
         "path": "specs/091-fluent-dx-foundation/spec.md",
@@ -1048796,6 +1048881,45 @@
     },
     {
       "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct",
+        "kind": "feature-specification",
+        "path": "specs/096-fluent-expert-attributes/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0096",
+      "capabilityId": "fluent_dx_api",
+      "declarationId": "T096:java-fluent-crypto:attribute-item-at",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.SymmetricKeyBuilder.attributeItemAt",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_symmetric_key_builder_insert_attribute_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.attributeItemAt",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.attribute_item_at",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::attribute_at",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0096-FR-002",
+        "KMIPKIT-0096-FR-003",
+        "KMIPKIT-0096-FR-004"
+      ]
+    },
+    {
+      "approvalSource": {
         "evidence": "**Status**: Approved delivery slice under the maintainer's 2026-11-11\nauthorization to complete KMIPKIT-0093.",
         "kind": "feature-specification",
         "path": "specs/105-fluent-python-crypto-api/spec.md",
@@ -1054985,6 +1055109,46 @@
         "KMIPKIT-0095-FR-003",
         "KMIPKIT-0095-FR-004",
         "KMIPKIT-0095-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation by the maintainer's direct",
+        "kind": "feature-specification",
+        "path": "specs/096-fluent-expert-attributes/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0096",
+      "capabilityId": "fluent_dx_api",
+      "declarationId": "T096:fluent-python:attribute-item-at",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.SymmetricKeyBuilder.attribute_item_at",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_symmetric_key_builder_insert_attribute_item",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.SymmetricKeyBuilder.attributeItemAt",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.SymmetricKeyBuilder.attribute_item_at",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::attribute_at",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0096-FR-001",
+        "KMIPKIT-0096-FR-002",
+        "KMIPKIT-0096-FR-003",
+        "KMIPKIT-0096-FR-004"
       ]
     }
   ],

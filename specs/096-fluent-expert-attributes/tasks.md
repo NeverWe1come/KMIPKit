@@ -39,5 +39,12 @@
   focused `FluentFacadeShapeTest` passes, including negative and out-of-range
   position rejection. Red, Green, and Refactor evidence are commits
   `6f58e371e`, `14b338716`, and `ffc996f18` in the dependent Java delivery.
-- Python binding parity and cross-language response views remain outstanding;
-  T006 stays open until those dependent deliveries pass exact-head CI.
+- Python exposes `SymmetricKeyBuilder.attribute_item_at(index, item)` through
+  the existing C insertion ABI. Its focused tests cover actual TLS wire order
+  at the beginning/between/end, final positions independent of call order,
+  catalogued types, Vendor Attribute structure/order, raw extension tags,
+  copied ownership, redaction, invalid Python inputs, and no connection for
+  rejected builds/executions. No Rust or native ABI changes are introduced.
+- Python local evidence is recorded in
+  `.superpowers/sdd/KMIPKIT-0096-python-binding/task-1-report.md`.
+  T006 stays open until dependent deliveries pass exact-head CI.
