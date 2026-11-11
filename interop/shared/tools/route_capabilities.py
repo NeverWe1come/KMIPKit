@@ -36,22 +36,37 @@ CHECKED_TAG_INPUTS = {
     ('python', 'kmipkit.ttlv.ttlv_item_create'): 'bindings/python/src/kmipkit/ttlv.py',
     ('python', 'kmipkit.ttlv.ttlv_structure_with_item'): 'bindings/python/src/kmipkit/ttlv.py',
 }
+ITEM_VIEW_INPUTS = {
+    ('rust', 'kmipkit_ttlv::Item::with_value'): 'crates/kmipkit-ttlv/src/item.rs',
+    ('java', 'org.kmipkit.ttlv.TtlvItem.view'): 'bindings/java/src/main/java/org/kmipkit/ttlv/TtlvItem.java',
+    ('python', 'kmipkit.ttlv.ttlv_item_view_from_item'): 'bindings/python/src/kmipkit/ttlv.py',
+}
 
 
 def _case_exclusions(root, commit, language, symbol):
     path = CHECKED_TAG_INPUTS.get((language, symbol))
+    if path is not None:
+        # Checked constructors cannot represent these tags; RawTag routes can.
+        source_paths = [path, 'crates/kmipkit-ttlv/src/tag.rs']
+        for source_path in source_paths:
+            source(root, commit, source_path)
+        return [{
+            'target_kinds': ['tag', 'tag_range'],
+            'allocations': ['reserved', 'unused'],
+            'reason': 'This constructor takes an allocation-checked Tag; RawTag::try_checked rejects reserved and unused allocations before an Item can be constructed.',
+            'source_paths': source_paths,
+        }]
+    path = ITEM_VIEW_INPUTS.get((language, symbol))
     if path is None:
         return []
-    # The public constructors take an allocation-checked Tag. Preserve the
-    # exclusion with the exact route declaration and the shared allocation
-    # checker, so RawTag and decoder routes remain independently testable.
-    source_paths = [path, 'crates/kmipkit-ttlv/src/tag.rs']
+    # Decoder rejection produces no Item to pass to the Item view accessor.
+    source_paths = [path, 'crates/kmipkit-ttlv/src/codec/decoder.rs', 'crates/kmipkit-ttlv/src/tag.rs']
     for source_path in source_paths:
         source(root, commit, source_path)
     return [{
         'target_kinds': ['tag', 'tag_range'],
         'allocations': ['reserved', 'unused'],
-        'reason': 'This constructor takes an allocation-checked Tag; RawTag::try_checked rejects reserved and unused allocations before an Item can be constructed.',
+        'reason': 'The TTLV decoder rejects reserved and unused allocations before it can return an Item; this accessor therefore has no valid Item input for the case.',
         'source_paths': source_paths,
     }]
 

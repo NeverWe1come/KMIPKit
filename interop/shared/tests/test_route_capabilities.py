@@ -85,6 +85,25 @@ class RouteCapabilitiesTests(unittest.TestCase):
                     'source_paths': [route['source_paths'][0], 'crates/kmipkit-ttlv/src/tag.rs'],
                 }], route['case_exclusions'])
 
+    def test_reserved_tag_item_view_exclusions_require_decoder_rejection_sources(self):
+        expected = {
+            'rust': ('rust.generic-ttlv.function.ttlv_item_view_from_item',
+                     'crates/kmipkit-ttlv/src/item.rs'),
+            'java': ('java.generic-ttlv.function.ttlv_item_view_from_item',
+                     'bindings/java/src/main/java/org/kmipkit/ttlv/TtlvItem.java'),
+            'python': ('python.generic-ttlv.function.ttlv_item_view_from_item',
+                        'bindings/python/src/kmipkit/ttlv.py'),
+        }
+        for language, (route_id, route_source) in expected.items():
+            route = next(route for route in self.data['routes'] if route['route_id'] == route_id)
+            self.assertEqual([{
+                'target_kinds': ['tag', 'tag_range'],
+                'allocations': ['reserved', 'unused'],
+                'reason': 'The TTLV decoder rejects reserved and unused allocations before it can return an Item; this accessor therefore has no valid Item input for the case.',
+                'source_paths': [route_source, 'crates/kmipkit-ttlv/src/codec/decoder.rs',
+                                 'crates/kmipkit-ttlv/src/tag.rs'],
+            }], route['case_exclusions'])
+
     def test_async_request_routes_use_the_exact_public_operation_executor(self):
         expected = {
             'rust': 'kmipkit_client::Client::execute_{operation}',
