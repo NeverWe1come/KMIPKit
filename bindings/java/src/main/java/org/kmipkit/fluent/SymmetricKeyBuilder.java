@@ -91,6 +91,18 @@ public final class SymmetricKeyBuilder implements AutoCloseable {
         return this;
     }
 
+    /** Inserts an explicit expert item at its zero-based position in final Object Attributes. */
+    public SymmetricKeyBuilder attributeItemAt(int index, TtlvItem item) {
+        if (index < 0) throw new InvalidInputException("attribute position is invalid");
+        if (item == null) throw new InvalidInputException("attribute item is invalid");
+        NativeHandle.withValues(new NativeHandle[] {handle, item.nativeHandleOwner()}, values -> {
+            NativeFluentRegistry.symmetricKeyBuilderInsertAttributeItem(
+                    values[0], index, values[1]);
+            return null;
+        });
+        return this;
+    }
+
     /** Adds a Vendor Attribute whose required structure is assembled and checked in Rust. */
     public SymmetricKeyBuilder vendorAttribute(String vendor, String attributeName, TtlvItem value) {
         if (vendor == null || attributeName == null || value == null) {

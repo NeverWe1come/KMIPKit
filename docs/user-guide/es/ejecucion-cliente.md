@@ -123,6 +123,12 @@ posiciones repetidas o fuera de rango fallan con estado de entrega `NotSent`.
 Esta ruta no puede modificar la cabecera, el batch ni el transporte, y tampoco
 permite enviar mensajes arbitrarios.
 
+Java ofrece la misma operación experta mediante
+`SymmetricKeyBuilder.attributeItemAt(index, item)`. El índice empieza en cero
+y se refiere a la secuencia final de Object Attributes; Java rechaza índices
+negativos y el builder rechaza posiciones fuera de rango al construir la
+petición tipada, antes de usar el transporte.
+
 El mismo flujo con ámbito está disponible en Java
 (`client.request().createSymmetricKey()`), Python
 (`client.request().create_symmetric_key()`) y C. Los builders de Java y Python
