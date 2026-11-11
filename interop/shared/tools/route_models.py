@@ -13,6 +13,9 @@ import subprocess
 
 from cli_paths import validate_git_commit
 
+_SCALAR_ENUM_FAMILY_ALIASES = {'RevocationReason': 'Revocation Reason Code'}
+_PROTOCOL_VERSION_TARGET_PREFIX = 'Protocol Version'
+
 def norm(value):
     return re.sub('[^a-z0-9]', '', value.lower()).replace('asynchronous', 'async')
 
@@ -57,6 +60,20 @@ def target_ids(targets, names, *, all_attributes=False, all_objects=False, opera
                 roots.add(target['target_id'])
         changed = len(roots) != previous
     return sorted(roots)
+
+
+def scalar_enum_value_targets(targets, owner):
+    """Return only named values belonging to an open scalar enum or mask."""
+    if owner == 'ProtocolVersion':
+        return sorted(target['target_id'] for target in targets
+            if target['kind'] == 'message_field'
+            and target['name'].startswith(_PROTOCOL_VERSION_TARGET_PREFIX))
+    family = norm(_SCALAR_ENUM_FAMILY_ALIASES.get(owner, owner))
+    return sorted({target['target_id'] for target in targets
+        if target['kind'] in {'enumeration_value', 'bitmask_value'}
+        and any(norm(parent.removeprefix('KMIPKIT-ELEM-ENUMERATION-')
+                     .removeprefix('KMIPKIT-ELEM-BITMASK-')) == family
+                for parent in target.get('parent_element_ids', []))})
 
 
 def model_inventory(root, commit, source, api, targets):
@@ -154,8 +171,10 @@ def model_inventory(root, commit, source, api, targets):
             target['kind'] == 'object_structure' and norm(target['name']) == norm(owner)
             for target in targets)
         exact_targets = ['KMIPKIT-RANGE-004'] if owner == 'ManagedObject' and method == 'unknown' else None
+        raw_value_targets = scalar_enum_value_targets(targets, owner) if method == 'from_raw' else None
         add('rust', symbol, selected, names, objects=owner == 'ManagedObject',
-            operation_id=operation_id, object_item=is_object_item, exact_target_ids=exact_targets)
+            operation_id=operation_id, object_item=is_object_item,
+            exact_target_ids=raw_value_targets if method == 'from_raw' else exact_targets)
         # C exposes the metadata-backed ABI constructors. Java and Python
         # facades are inventoried from their public source classes below.
         mapped = declaration.get('languageMappings', {}).get('c', {}).get('name', '')
@@ -171,7 +190,8 @@ def model_inventory(root, commit, source, api, targets):
     for path, text in rust_sources.items():
         for owner in re.findall(r'pub struct (\w+)\(u32\)', text):
             if re.search(r'pub const fn from_raw\(raw: u32\) -> Self', text):
-                add('rust', f'kmipkit_protocol::{owner}::from_raw', path, [owner])
+                add('rust', f'kmipkit_protocol::{owner}::from_raw', path, [owner],
+                    exact_target_ids=scalar_enum_value_targets(targets, owner))
 
     # Specialize Attribute<D> per source marker so an untyped Value cannot
     # satisfy the typed attribute route for another normative target.
