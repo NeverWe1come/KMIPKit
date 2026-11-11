@@ -483,7 +483,10 @@ class RouteMatrixTests(unittest.TestCase):
                 self.assertRegex(result['tree_sha256'], r'^[0-9a-f]{64}$')
                 self.assertIn(symbol, result['invoked_symbols'])
                 self.assertNotIn('normalized_tree', result)
-                self.assertEqual(result.get('negative_checks'), 1 if 'text' in symbol else 0)
+                if 'text' in symbol:
+                    self.assertEqual(result.get('negative_checks'), 1)
+                else:
+                    self.assertNotIn('negative_checks', result)
 
     def test_key_block_route_constructs_wrapping_information_and_key_value(self):
         from artifact_support import INSTALL, ROOT
