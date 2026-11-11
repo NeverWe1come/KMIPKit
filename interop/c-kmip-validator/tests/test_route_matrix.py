@@ -286,6 +286,17 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue({'kmipkit_key_block_from_fields', 'kmipkit_key_block_from_item'}
                         .issubset(result['invoked_symbols']))
 
+    def test_key_value_model_recipe_invokes_format_scoped_converters(self):
+        from artifact_support import INSTALL, ROOT
+        from c_route_models import ModelCases
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        target = next(item for item in catalog['normative_targets']
+                      if item['target_id'] == 'KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE')
+        result = ModelCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog).execute(target, '2.1')
+        self.assertEqual(result['normalized_tree'], [0x420045, 1, [[0x420043, 8, 'a1']]])
+        self.assertTrue({'kmipkit_key_value_from_fields', 'kmipkit_key_value_from_item'}
+                        .issubset(result['invoked_symbols']))
+
     def test_secret_data_model_recipe_covers_required_key_material(self):
         from artifact_support import INSTALL, ROOT
         from c_route_models import ModelCases
