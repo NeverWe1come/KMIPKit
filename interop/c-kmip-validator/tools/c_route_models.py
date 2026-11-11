@@ -109,8 +109,7 @@ class ModelCases:
 
     def _execute_key_value(self, protocol_version: str) -> dict:
         key_format = self._enum_value('Key Format Type', 'Raw', protocol_version)
-        key_value_tree = (self._tag('Key Value'), 1, [
-            (self._tag('Key Material'), 8, b'\xa1')])
+        key_value_tree = self._key_value_tree()
         limits = C.c_void_p()
         owned: list[C.c_void_p] = []
         try:
@@ -177,9 +176,12 @@ class ModelCases:
         key_format = self._enum_value('Key Format Type', 'Raw', protocol_version)
         fields = [(KEY_FORMAT_TYPE_TAG, 5, key_format.to_bytes(4, 'big'))]
         if include_key_value:
-            fields.append((self._tag('Key Value'), 1, [
-                (self._tag('Key Material'), 8, b'\xa1')]))
+            fields.append(self._key_value_tree())
         return (KEY_BLOCK_TAG, 1, fields)
+
+    def _key_value_tree(self) -> tuple:
+        return (self._tag('Key Value'), 1, [
+            (self._tag('Key Material'), 8, b'\xa1')])
 
     def _execute_named_object(self, root: dict, protocol_version: str) -> dict:
         name = root['name']
