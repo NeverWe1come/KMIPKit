@@ -18,6 +18,7 @@ KEY_BLOCK_TAG = 0x420040
 KEY_FORMAT_TYPE_TAG = 0x420042
 SYMMETRIC_KEY_OBJECT_TYPE = 2
 KEY_BLOCK_STRUCTURE = 'KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-BLOCK'
+KEY_VALUE_STRUCTURE = 'KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE'
 
 
 class ModelCases:
@@ -99,6 +100,26 @@ class ModelCases:
             self.abi.call('kmipkit_codec_limits_defaults', C.byref(limits))
             self._exercise_key_block(key_block_tree, limits, owned)
             normalized_tree = normalized(key_block_tree)
+            return {'sample_count': 1, 'normalized_tree': normalized_tree,
+                    'tree_sha256': digest(normalized_tree), 'invoked_symbols': set(self.abi.called)}
+        finally:
+            for handle in reversed(owned):
+                self.abi.release('ttlv_item', handle)
+            self.abi.release('codec_limits', limits)
+
+    def _execute_key_value(self, protocol_version: str) -> dict:
+        key_format = self._enum_value('Key Format Type', 'Raw', protocol_version)
+        key_value_tree = (self._tag('Key Value'), 1, [
+            (self._tag('Key Material'), 8, b'\xa1')])
+        limits = C.c_void_p()
+        owned: list[C.c_void_p] = []
+        try:
+            self.abi.call('kmipkit_codec_limits_defaults', C.byref(limits))
+            item = self._from_fields('kmipkit_key_value_from_fields', key_value_tree[2],
+                                     limits, owned, (key_format,))
+            converted = self._from_item('kmipkit_key_value_from_item', item, owned, (key_format,))
+            normalized_tree = self._read_and_check(converted, normalized(key_value_tree),
+                                                   'key_value_item_tree_mismatch')
             return {'sample_count': 1, 'normalized_tree': normalized_tree,
                     'tree_sha256': digest(normalized_tree), 'invoked_symbols': set(self.abi.called)}
         finally:
@@ -234,6 +255,10 @@ class ModelCases:
 
     def execute(self, target: dict, protocol_version: str) -> dict | None:
         parents = set(target.get('parent_element_ids', []))
+        if target.get('target_id') == KEY_VALUE_STRUCTURE or KEY_VALUE_STRUCTURE in parents:
+            self.abi.called.clear()
+            result = self._execute_key_value(protocol_version)
+            return result if self._supports_target(target, result) else None
         if target.get('target_id') == KEY_BLOCK_STRUCTURE or KEY_BLOCK_STRUCTURE in parents:
             self.abi.called.clear()
             result = self._execute_key_block(protocol_version)
