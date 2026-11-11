@@ -239,6 +239,37 @@ class RouteMatrixTests(unittest.TestCase):
         expected = self.runner.digest([[0x42005C, 5, 0x3B]])
         self.assertEqual({expected}, {event['request_tree_sha256'] for event in report['events']})
 
+    def test_generic_ttlv_routes_cover_every_catalogued_client_and_server_operation(self):
+        catalog = copy.deepcopy(self.catalog)
+        operation_ids = {target['target_id'] for target in catalog['normative_targets']
+                         if target['kind'] == 'operation'}
+        catalog['test_cases'] = [case for case in self.catalog['test_cases']
+                                 if case['requires'].get('normative_target_id') in operation_ids]
+        symbols = {'kmipkit.ttlv.ttlv_item_create', 'kmipkit.ttlv.ttlv_decode',
+                   'kmipkit.ttlv.ttlv_item_view_from_item'}
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in manifest['routes']
+                              if route['language'] == 'python' and route['public_api_symbol'] in symbols]
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+        self.assertEqual(0, len(gaps), f'{len(gaps)} operation IDs lack generic TTLV evidence')
+        self.assertTrue(report['events'])
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+        self.assertEqual(operation_ids, {event['target_id'] for event in report['events']})
+
+    def test_generic_ttlv_routes_encode_and_decode_operation_payload_fields(self):
+        catalog = copy.deepcopy(self.catalog)
+        catalog['test_cases'] = [case for case in self.catalog['test_cases']
+                                 if case['case_id'] == 'test-norm-payload-client-activate-request-20-001']
+        symbols = {'kmipkit.ttlv.ttlv_item_create', 'kmipkit.ttlv.ttlv_decode',
+                   'kmipkit.ttlv.ttlv_item_view_from_item'}
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in manifest['routes']
+                              if route['language'] == 'python' and route['public_api_symbol'] in symbols]
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+        self.assertEqual([], gaps)
+        self.assertEqual(3, len(report['events']))
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
     def test_ci_requires_shared_changes_and_matrix_completeness(self):
         workflow = (ROOT / '.github/workflows/interop-python.yml').read_text()
         self.assertIn('python -m kmipkit_validator matrix', workflow)
