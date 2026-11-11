@@ -538,6 +538,8 @@ class RouteMatrixTests(unittest.TestCase):
 
         def execute(cell, case, target, *, trace):
             trace.record_invocation(cell['public_api_symbol'])
+            if cell.get('execution_api_symbol'):
+                trace.record_invocation(cell['execution_api_symbol'])
             rendezvous.wait(timeout=1)
             return {'request_tree_sha256': 'a' * 64, 'response_tree_sha256': 'b' * 64}
 

@@ -6,6 +6,7 @@ Only successful, observed calls can produce a positive execution event.
 """
 from __future__ import annotations
 
+from concurrent.futures import Future, ThreadPoolExecutor
 from contextlib import ExitStack
 import hashlib
 import importlib
@@ -401,33 +402,56 @@ def run_matrix(catalog: dict, manifest: dict, artifact: dict,
         'events': [],
     }
     gaps = []
+    outcomes = []
+    pending = []
+    with ThreadPoolExecutor(max_workers=16, thread_name_prefix='python-route-matrix') as executor:
+        for cell in iter_cells(catalog, manifest, languages=('python',)):
+            if cell['transport'] is None:
+                outcomes.append(_execute_matrix_cell(cell, cases, targets))
+                continue
+            future = executor.submit(_execute_matrix_cell, cell, cases, targets)
+            outcomes.append(future)
+            pending.append(future)
+            if len(pending) >= 64:
+                pending.pop(0).result()
+    for outcome in outcomes:
+        if isinstance(outcome, Future):
+            outcome = outcome.result()
+        kind, value = outcome
+        if kind == 'event':
+            report['events'].append(value)
+        else:
+            gaps.append(value)
+    return report, gaps
+
+
+def _execute_matrix_cell(cell: dict, cases: dict, targets: dict) -> tuple[str, dict]:
+    """Execute one matrix cell and return its sanitized event or pending record."""
     event_fields = ('case_id', 'route_id', 'target_id', 'workflow_step_index', 'workflow_operation',
                     'workflow_item_index', 'public_api_symbol', 'execution_route_id', 'execution_api_symbol',
                     'action', 'protocol_version', 'encoding', 'transport')
-    for cell in iter_cells(catalog, manifest, languages=('python',)):
-        identity = {field: cell[field] for field in event_fields if field in cell}
-        trace = None
-        try:
-            symbols = [cell['public_api_symbol']]
-            if cell.get('execution_api_symbol'):
-                symbols.append(cell['execution_api_symbol'])
-            with CallTrace(symbols) as trace:
-                observed = execute_cell(cell, cases[cell['case_id']], targets[cell['target_id']], trace=trace)
-            if not set(symbols) <= trace.observed:
-                raise RecipePending
-            report['events'].append({**identity, 'invocation_id': str(uuid.uuid4()),
-                                     'invocation_count': 1, 'status': 'passed', **observed})
-        except RecipePending:
-            gaps.append({**identity, 'failure_code': 'recipe_pending'})
-        except Exception:
-            # No exception names, sources, native text or raw fixture values leave here.
-            if trace is not None and set(symbols) <= trace.observed:
-                report['events'].append({**identity, 'invocation_id': str(uuid.uuid4()),
-                                         'invocation_count': 1, 'status': 'failed',
-                                         'failure_code': 'route_execution_failed'})
-            else:
-                gaps.append({**identity, 'failure_code': 'recipe_execution_failed'})
-    return report, gaps
+    identity = {field: cell[field] for field in event_fields if field in cell}
+    trace = None
+    symbols = []
+    try:
+        symbols = [cell['public_api_symbol']]
+        if cell.get('execution_api_symbol'):
+            symbols.append(cell['execution_api_symbol'])
+        with CallTrace(symbols) as trace:
+            observed = execute_cell(cell, cases[cell['case_id']], targets[cell['target_id']], trace=trace)
+        if not set(symbols) <= trace.observed:
+            raise RecipePending
+        return 'event', {**identity, 'invocation_id': str(uuid.uuid4()),
+                         'invocation_count': 1, 'status': 'passed', **observed}
+    except RecipePending:
+        return 'gap', {**identity, 'failure_code': 'recipe_pending'}
+    except Exception:
+        # No exception names, sources, native text or raw fixture values leave here.
+        if trace is not None and set(symbols) <= trace.observed:
+            return 'event', {**identity, 'invocation_id': str(uuid.uuid4()),
+                             'invocation_count': 1, 'status': 'failed',
+                             'failure_code': 'route_execution_failed'}
+        return 'gap', {**identity, 'failure_code': 'recipe_execution_failed'}
 
 
 def _ping_tree(wire: bytes, encoding: str) -> list:
