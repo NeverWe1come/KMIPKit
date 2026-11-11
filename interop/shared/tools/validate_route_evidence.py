@@ -7,7 +7,9 @@ import hashlib
 import json
 from pathlib import Path
 import re
+import tempfile
 
+from cli_paths import resolve_within
 from coverage_matrix import iter_cells
 
 
@@ -492,12 +494,14 @@ def main() -> None:
     parser.add_argument("--parity", action="store_true",
                         help="validate all four full language matrices and compare normalized trees")
     args = parser.parse_args()
-    root = args.root
+    root = args.root.resolve(strict=True)
     catalog_path = root / "interop/shared/catalog/kmipkit-1.0-test-catalog.json"
     manifest_path = root / "interop/shared/coverage/route-capabilities.json"
     catalog_bytes = catalog_path.read_bytes()
     manifest_bytes = manifest_path.read_bytes()
-    reports = [json.loads(path.read_text(encoding="utf-8")) for path in args.report]
+    report_paths = [resolve_within(path, (root, Path(tempfile.gettempdir())), must_exist=True)
+                    for path in args.report]
+    reports = [json.loads(path.read_text(encoding="utf-8")) for path in report_paths]  # NOSONAR: report paths are resolved under the repository or system temp directory
     catalog = json.loads(catalog_bytes)
     manifest = json.loads(manifest_bytes)
     catalog_sha = hashlib.sha256(catalog_bytes).hexdigest()

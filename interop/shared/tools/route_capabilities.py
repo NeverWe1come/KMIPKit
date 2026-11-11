@@ -18,6 +18,7 @@ import tempfile
 
 import jsonschema
 
+from cli_paths import validate_git_commit, validate_git_path, resolve_within
 from route_models import model_inventory, value_inventory
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -33,7 +34,9 @@ def normalized(value):
 @lru_cache(maxsize=None)
 def source(root, commit, path):
     """Read immutable release input, never an uncommitted source approximation."""
-    return subprocess.check_output(['git', '-C', str(root), 'show', f'{commit}:{path}'], text=True)
+    commit = validate_git_commit(commit)
+    path = validate_git_path(path)
+    return subprocess.check_output(['git', '-C', str(root), 'cat-file', 'blob', f'{commit}:{path}'], text=True)  # NOSONAR: commit and path are restricted to validated Git identifiers
 
 
 @lru_cache(maxsize=4)
@@ -124,6 +127,7 @@ def construction_inventory(root, commit):
     editing generated declarations. Add new constructor forms here when the
     library surface changes; a missing candidate is a completeness failure.
     """
+    commit = validate_git_commit(commit)
     api = _api(root, commit)
     operations = {normalized(o['name']): o for o in api['operations'] if o['scope'] == 'client_1_0'}
     # The pinned metadata omits this public KMIP 2.1 constructor. Associate
@@ -131,7 +135,7 @@ def construction_inventory(root, commit):
     operations['setendpointrole'] = {'name': 'Set Endpoint Role',
         'operationId': 'KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE'}
     paths = subprocess.check_output(['git', '-C', str(root), 'ls-tree', '-r', '--name-only', commit,
-                                     'crates/kmipkit-protocol/src'], text=True).splitlines()
+                                     'crates/kmipkit-protocol/src'], text=True).splitlines()  # NOSONAR: immutable SHA and static pathspec; no shell is used
     inventory = []
     for path in paths:
         if not path.endswith('.rs'):
@@ -296,6 +300,7 @@ def validate_installed_values(data, language, values):
 
 def build_manifest(root=ROOT, commit='9a16cc90a12205101d22a38501a5e74c665df4dc'):
     """Generate constructor identities from the exact package's public sources."""
+    commit = validate_git_commit(commit)
     categories = ['enums_and_bitmasks', 'attributes', 'object_lifecycle',
         'cryptography_and_rng', 'managed_objects', 'protocol_and_session',
         'version_boundaries', 'server_initiated_operations', 'multipart_crypto',
@@ -468,16 +473,17 @@ def main():
     mode.add_argument('--check', action='store_true', help='verify generated metadata without writing')
     parser.add_argument('--manifest', type=Path, default=COVERAGE / 'route-capabilities.json')
     args = parser.parse_args()
+    manifest_path = resolve_within(args.manifest, (COVERAGE,))
     if args.write:
         generated = validate(build_manifest())
         serialized = serialize_manifest(generated)
         json.loads(serialized)
-        with tempfile.NamedTemporaryFile('w', dir=args.manifest.parent, suffix='.tmp', delete=False) as output:
+        with tempfile.NamedTemporaryFile('w', dir=manifest_path.parent, suffix='.tmp', delete=False) as output:
             output.write(serialized)
             temporary = Path(output.name)
-        temporary.replace(args.manifest)
-    data = validate(json.loads(args.manifest.read_text()))
-    if args.check and args.manifest.read_text() != serialize_manifest(build_manifest()):
+        temporary.replace(manifest_path)  # NOSONAR: CLI destination is canonicalized and confined to interop/shared/coverage
+    data = validate(json.loads(manifest_path.read_text()))  # NOSONAR: resolved beneath the fixed coverage directory above
+    if args.check and manifest_path.read_text() != serialize_manifest(build_manifest()):  # NOSONAR: resolved beneath the fixed coverage directory above
         raise SystemExit('route capability metadata is stale; regenerate with --write')
     print(json.dumps({'library_commit': data['library_commit'], 'routes': len(data['routes'])}, sort_keys=True))
 

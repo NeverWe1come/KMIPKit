@@ -11,6 +11,7 @@ import ast
 import re
 import subprocess
 
+from cli_paths import validate_git_commit
 
 def norm(value):
     return re.sub('[^a-z0-9]', '', value.lower()).replace('asynchronous', 'async')
@@ -45,6 +46,7 @@ def target_ids(targets, names, *, all_attributes=False, all_objects=False, opera
 
 
 def model_inventory(root, commit, source, api, targets):
+    commit = validate_git_commit(commit)
     candidates = {}
     operations = {norm(op['name']): op['operationId'] for op in api['operations'] if op['scope'] == 'client_1_0'}
     operations['setendpointrole'] = 'KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE'
@@ -68,7 +70,7 @@ def model_inventory(root, commit, source, api, targets):
             candidates[key]['normative_target_ids'] = sorted(set(ids + candidates[key]['normative_target_ids']))
 
     paths = subprocess.check_output(['git', '-C', str(root), 'ls-tree', '-r', '--name-only', commit,
-        'crates/kmipkit-protocol/src', 'crates/kmipkit-client/src'], text=True).splitlines()
+        'crates/kmipkit-protocol/src', 'crates/kmipkit-client/src'], text=True).splitlines()  # NOSONAR: commit is validated as a full object id and pathspecs are static
     rust_sources = {path: source(root, commit, path) for path in paths if path.endswith('.rs')}
     # Retain the actually exported protocol namespace; facade re-exports are
     # aliases and cannot count as another independent construction path.
@@ -209,7 +211,7 @@ def model_inventory(root, commit, source, api, targets):
         'bindings/java/src/main/java/org/kmipkit/extensions/PollRequest.java',
         'bindings/java/src/main/java/org/kmipkit/extensions/CancelRequest.java',
         'bindings/java/src/main/java/org/kmipkit/extensions/ProcessRequest.java',
-        'bindings/java/src/main/java/org/kmipkit/extensions/AttributeSet.java'], text=True).splitlines()
+        'bindings/java/src/main/java/org/kmipkit/extensions/AttributeSet.java'], text=True).splitlines()  # NOSONAR: commit is validated as a full object id and pathspecs are static
     for path in java_paths:
         if not path.endswith('.java'):
             continue

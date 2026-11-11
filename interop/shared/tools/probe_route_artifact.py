@@ -16,6 +16,7 @@ import subprocess
 import tarfile
 import tempfile
 
+from cli_paths import resolve_within
 from route_capabilities import ROOT, validate, validate_artifact_identity, validate_installed_symbols, validate_installed_values
 
 
@@ -81,7 +82,10 @@ for symbol in inputs['symbols'] + [row['public_api_symbol'] for row in inputs['v
         break
 print(json.dumps({'symbols':found, 'values':observed_values}))
 '''
-        result = subprocess.run([str(python), '-I', '-c', script, provenance['artifact_sha256'], str(artifact)],
+        # The selected interpreter and arguments are explicit CLI inputs. The
+        # argument vector is passed with shell=False; artifact data is JSON on
+        # stdin and is never interpolated into the executed script.
+        result = subprocess.run([str(python), '-I', '-c', script, provenance['artifact_sha256'], str(artifact)],  # NOSONAR
             input=json.dumps({'symbols': sorted(symbols), 'values': values}), capture_output=True, text=True, check=True)
         observations = json.loads(result.stdout)
         found = set(observations['symbols'])
@@ -146,10 +150,11 @@ print(json.dumps({'symbols':found, 'values':observed_values}))
         (build_dir / 'src').mkdir(exist_ok=True)
         packages = ('kmipkit', 'kmipkit-ttlv', 'kmipkit-protocol', 'kmipkit-client', 'kmipkit-transport')
         manifest = '[package]\nname="kmipkit-route-probe"\nversion="0.0.0"\nedition="2024"\n[workspace]\n[dependencies]\n'
-        manifest += '\n'.join(f'{name} = {{ path = "{artifact}/crates/{name}-1.0.0" }}' for name in packages)
+        toml_path = lambda path: json.dumps(str(path))
+        manifest += '\n'.join(f'{name} = {{ path = {toml_path(artifact / "crates" / f"{name}-1.0.0")} }}' for name in packages)
         manifest += '\n[patch.crates-io]\n'
-        manifest += '\n'.join(f'{name} = {{ path = "{artifact}/crates/{name}-1.0.0" }}' for name in packages)
-        manifest += f'\naws-lc-sys = {{ path = "{artifact}/vendor/aws-lc-sys-0.45.0" }}\n'
+        manifest += '\n'.join(f'{name} = {{ path = {toml_path(artifact / "crates" / f"{name}-1.0.0")} }}' for name in packages)
+        manifest += f'\naws-lc-sys = {{ path = {toml_path(artifact / "vendor" / "aws-lc-sys-0.45.0")} }}\n'
         (build_dir / 'Cargo.toml').write_text(manifest)
         body = []
         for symbol in sorted(symbols):
@@ -194,8 +199,12 @@ def main():
     parser.add_argument('--build-dir', type=Path)
     args = parser.parse_args()
     data = validate(json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text()))
-    print(json.dumps(probe(data, args.language, args.artifact.resolve(),
-        json.loads(args.provenance.read_text()), python=args.python, build_dir=args.build_dir), sort_keys=True))
+    allowed_roots = (ROOT, Path(tempfile.gettempdir()))
+    artifact = resolve_within(args.artifact, allowed_roots, must_exist=True)
+    provenance_path = resolve_within(args.provenance, allowed_roots, must_exist=True)
+    build_dir = resolve_within(args.build_dir, allowed_roots) if args.build_dir else None
+    print(json.dumps(probe(data, args.language, artifact,
+        json.loads(provenance_path.read_text()), python=args.python, build_dir=build_dir), sort_keys=True))  # NOSONAR: provenance path is resolved under the repository or system temp directory
 
 
 if __name__ == '__main__':

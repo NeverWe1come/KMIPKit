@@ -11,6 +11,7 @@ import tempfile
 from pathlib import Path
 from typing import Iterator
 
+from cli_paths import resolve_within
 
 ROOT = Path(__file__).resolve().parents[3]
 LANGUAGES = ("rust", "c", "java", "python")
@@ -110,18 +111,14 @@ def _case_obligations(case: dict, operation_ids: dict[str, str]) -> list[dict]:
         raise ValueError(f"operation_sequence names must be non-empty strings: {case['case_id']}")
     operations = [*operation_names, *operation_sequence]
     scenario_step_targets = set()
-    scenario_target_ids = set(scenario_targets)
     for step_index, operation in enumerate(operations):
         operation_id = operation_ids.get(_norm(operation))
         if not operation_id:
             raise ValueError(f"scenario operation lacks a normative target: {case['case_id']}")
         if operation_id in item_targets:
             continue
-        # Prefer the OASIS-linked target recorded for this step; the operation
-        # name remains the fallback for legacy scenarios without aligned IDs.
-        target_id = operation_id if operation_id in scenario_target_ids else operation_id
-        add(target_id, step_index=step_index, operation=operation)
-        scenario_step_targets.add(target_id)
+        add(operation_id, step_index=step_index, operation=operation)
+        scenario_step_targets.add(operation_id)
 
     # Keep every non-operation field/value target as its own obligation.
     for target_id in plain_targets:
@@ -311,10 +308,12 @@ def main() -> None:
     args = parser.parse_args()
     if args.output is not None and not args.jsonl:
         parser.error("--output requires --jsonl")
+    output_path = (resolve_within(args.output, (args.root, Path(tempfile.gettempdir())))
+                   if args.output is not None else None)
     catalog = json.loads((args.root / "interop/shared/catalog/kmipkit-1.0-test-catalog.json").read_text())
     manifest = json.loads((args.root / "interop/shared/coverage/route-capabilities.json").read_text())
     if args.jsonl:
-        if args.output is not None:
+        if output_path is not None:
             summary = build_matrix(catalog, manifest)
             try:
                 import jsonschema
@@ -323,8 +322,8 @@ def main() -> None:
             row_schema = json.loads((args.root / "interop/shared/schemas/coverage-matrix-row.schema.json").read_text())
             validator = jsonschema.Draft202012Validator(row_schema)
             validator.check_schema(row_schema)
-            args.output.parent.mkdir(parents=True, exist_ok=True)
-            descriptor, temporary = tempfile.mkstemp(prefix=f".{args.output.name}.", dir=args.output.parent)
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            descriptor, temporary = tempfile.mkstemp(prefix=f".{output_path.name}.", dir=output_path.parent)
             try:
                 emitted_digest = hashlib.sha256()
                 emitted_count = 0
@@ -339,7 +338,7 @@ def main() -> None:
                     os.fsync(output.fileno())
                 if emitted_count != summary["cell_count"] or emitted_digest.hexdigest() != summary["matrix_sha256"]:
                     raise ValueError("emitted coverage JSONL does not match the deterministic matrix summary")
-                os.replace(temporary, args.output)
+                os.replace(temporary, output_path)  # NOSONAR: normalized to the repository or system temp directory above
             except BaseException:
                 try:
                     os.unlink(temporary)

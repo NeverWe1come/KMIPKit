@@ -1215,7 +1215,7 @@ def _protocol_scenario_cases(
         bad_parameters,
     ]))
     sign_refs = []
-    sign_error_sections = {"2.0": "6.1.49.1", "2.1": "6.1.55.1"}
+    sign_error_sections = {"2.0": "6.1.49.1", "2.1": "6.1.55.1"}  # NOSONAR: OASIS clause numbers, not IPv4 destinations
     sign_error_tables = {"2.0": "304", "2.1": "336"}
     for version in ("2.0", "2.1"):
         document = f"OASIS KMIP {version} Specification"
