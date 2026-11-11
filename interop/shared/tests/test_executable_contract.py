@@ -12,6 +12,20 @@ CATALOG = ROOT / "interop/shared/catalog/kmipkit-1.0-test-catalog.json"
 
 
 class ExecutableContractTests(unittest.TestCase):
+    def test_negative_modify_attribute_case_exercises_current_value_mismatch(self) -> None:
+        catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
+        case = next(
+            item for item in catalog["test_cases"]
+            if item["case_id"] == "test-neg-modify-attribute-current-mismatch"
+        )
+
+        self.assertIn("Current Attribute value does not match", case["description"])
+        self.assertIn(
+            "Comment='KMIPKit interop test'",
+            case["isolation_recipe"]["setup_steps"][0],
+        )
+        self.assertIn("Current Attribute='old test value'", case["isolation_recipe"]["target_step"])
+
     def test_catalog_declares_versions_and_case_execution_contracts(self) -> None:
         catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
 
