@@ -174,3 +174,37 @@ Pending full binding checks and exact-head CI.
   target/0105-python-binding-exports.json --check` passed with no audit issues.
 - Re-ran the 21 manifest/T102 contracts and all 12 focused Python fluent crypto
   tests after syncing the branch to the final Java base; both passed.
+
+## CI coverage correction
+
+- PR #190 run 43104702058 at head
+  `a9a87d9dd3484bad57ab2508286f26aa4f69a080` failed the changed-production
+  gate at **167/193 (86.5%)**, below 90%.
+- Added real-builder tests for Python input validation, malformed buffer
+  views, size limits, local validation/reuse, and exception-safe lifecycle.
+  A test-first allocation-failure regression exposed that a temporary secret
+  copy was not wiped if CFFI byte-span descriptor allocation failed. Moving
+  descriptor allocation/initialization into the existing wiping `try/finally`
+  fixes that FR-004 defect without changing the ABI or public API.
+- TDD commits: Red `c5d168dd671e403a6ac67a81ebc4b81501ade84d`;
+  Green `527eb1f48bd4fd009cd63f6b1c82cbf28ded5bc3`;
+  Refactor `fe23ba474231147844cd5e3f0778164bbac15bfd`.
+- Focused command: `target/python312-venv/bin/python -m pytest -q bindings/python/tests/test_fluent_crypto.py`
+  — **28 passed** after the fix and after refactoring.
+- Full Python coverage command: `target/python312-venv/bin/python -m pytest -q bindings/python/tests --cov=kmipkit --cov-config=bindings/python/pyproject.toml --cov-report=xml:target/coverage-python-0105-fix.xml`
+  — **1,299 passed, 119 subtests passed, one packaging failure**;
+  coverage **96.79%**. The existing wheel test built its native library but
+  failed writing the wheel because `/tmp` ran out of space.
+- Removed only that run's temporary wheel fixture and retried the exact test
+  on the worktree filesystem:
+  `target/python312-venv/bin/python -m pytest -q bindings/python/tests/test_shared_parity_fixtures.py::test_built_wheel_artifact_contains_py_typed_and_adjacent_native_library --basetemp=target/python105-wheel-retry`
+  — **1 passed**. No test was excluded.
+- Local official gate: `python3 scripts/coverage_gate.py aggregate --workspace . --report-dir target/coverage-0105-fix --base fec2849cc77e123023e913a6301544c1a45eecb4 --merge fe23ba474231147844cd5e3f0778164bbac15bfd --scopes-json '["python"]'`
+  — **passed**, Python adapters **96.80%** after the aggregator's existing
+  documented exclusion; changed production **182/193 (94.30%)** against
+  the unchanged 90% minimum.
+- `git diff --check`, Python syntax compilation of the changed production
+  and test modules, and both `scripts.tests.test_requirement_traceability`
+  contracts passed. No generated files, thresholds, or exclusions changed.
+- The local Python gate is not an authoritative full exact-head CI result;
+  parent review, push, and remote validation remain pending.
