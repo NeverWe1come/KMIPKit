@@ -465,6 +465,26 @@ class RouteMatrixTests(unittest.TestCase):
         ]])
         self.assertIn('kmipkit_key_block_from_fields', result['invoked_symbols'])
 
+    def test_secret_ttlv_value_routes_preserve_only_digest_evidence(self):
+        from artifact_support import INSTALL, ROOT
+        from c_route_models import ModelCases
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        targets = {item['target_id']: item for item in catalog['normative_targets']}
+        cases = [
+            ('KMIPKIT-ELEM-DATA-TYPE-BYTE-STRING', 'kmipkit_secret_bytes_into_ttlv_value', 6),
+            ('KMIPKIT-ELEM-DATA-TYPE-TEXT-STRING', 'kmipkit_secret_text_into_ttlv_value', 6),
+        ]
+        models = ModelCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog)
+        for target_id, symbol, samples in cases:
+            with self.subTest(symbol=symbol):
+                result = models.execute(targets[target_id], '2.1', symbol)
+                self.assertIsNotNone(result)
+                self.assertEqual(result['sample_count'], samples)
+                self.assertRegex(result['tree_sha256'], r'^[0-9a-f]{64}$')
+                self.assertIn(symbol, result['invoked_symbols'])
+                self.assertNotIn('normalized_tree', result)
+                self.assertEqual(result.get('negative_checks'), 1 if 'text' in symbol else 0)
+
     def test_key_block_route_constructs_wrapping_information_and_key_value(self):
         from artifact_support import INSTALL, ROOT
         from c_route_models import ModelCases
