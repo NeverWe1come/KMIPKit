@@ -138,6 +138,10 @@ def request_observation(request: bytes, encoding: str) -> dict[str, object]:
     }
 
 
+def normalized_operation_name(value: str) -> str:
+    return "".join(character for character in value.casefold() if character.isalnum())
+
+
 def text_response(
     operation: str, encoding: str, status: int, reason: int | None, protocol_minor: int = 1
 ) -> bytes:
@@ -345,6 +349,11 @@ class ControlledExchangeTests(unittest.TestCase):
         async_operations = {
             "Poll", "Process", "Cancel", "Query Asynchronous Requests"
         }
+        network_combinations = tuple(
+            (encoding, transport)
+            for encoding in ("TTLV", "JSON", "XML")
+            for transport in ("raw_tls", "https")
+        )
         for protocol_version in ("2.0", "2.1"):
             cases = [
                 case
@@ -356,64 +365,78 @@ class ControlledExchangeTests(unittest.TestCase):
             ]
             self.assertGreater(len(cases), 140)
             for case in cases:
-                with self.subTest(protocol_version=protocol_version, case_id=case["case_id"]):
-                    peer = ControlledTlsPeer(
-                        status=protocol_values.ResultStatus.OPERATION_FAILED,
-                        reason=protocol_values.ResultReason.OPERATION_NOT_SUPPORTED,
+                for encoding, transport in network_combinations:
+                    with self.subTest(
                         protocol_version=protocol_version,
-                    )
-                    connection = {
-                        "server_id": "loopback",
-                        "protocol_version": protocol_version,
-                        "transport": "raw_tls",
-                        "encoding": "TTLV",
-                        "api_level": "typed-protocol",
-                        "endpoints": {"raw_tls": {"host": "127.0.0.1", "port": peer.port}},
-                        "tls": {
-                            "ca_cert_path": str(PKI / "server-cert.pem"),
-                            "client_cert_path": str(PKI / "client-cert.pem"),
-                            "client_key_path": str(PKI / "client-key.pem"),
-                            "server_name_override": "localhost",
-                            "connect_timeout_seconds": 5,
-                            "read_timeout_seconds": 5,
-                        },
-                    }
-                    driver = PythonKmipDriver(connection)
-                    item = None
-                    try:
-                        if case["operation"] in async_operations:
-                            correlation = (
-                                None
-                                if case["operation"] == "Query Asynchronous Requests"
-                                else b"fixture-correlation"
-                            )
-                            observed = driver._async_exchange(case["operation"], correlation)
-                        elif case["operation"] == "Logout":
-                            ticket_type = driver._item(0x0042_014A, "enumeration", 1)
-                            ticket_value = driver._item(0x0042_014B, "bytes", b"fixture-ticket")
-                            ticket = driver._structure([ticket_type, ticket_value])
-                            try:
-                                item = extensions.client_batch_item_logout(ticket)
+                        case_id=case["case_id"],
+                        encoding=encoding,
+                        transport=transport,
+                    ):
+                        peer = ControlledTlsPeer(
+                            status=protocol_values.ResultStatus.OPERATION_FAILED,
+                            reason=protocol_values.ResultReason.OPERATION_NOT_SUPPORTED,
+                            encoding=encoding,
+                            transport=transport,
+                            protocol_version=protocol_version,
+                        )
+                        connection = {
+                            "server_id": "loopback",
+                            "protocol_version": protocol_version,
+                            "transport": transport,
+                            "encoding": encoding,
+                            "api_level": "typed-protocol",
+                            "endpoints": {
+                                "raw_tls": {"host": "127.0.0.1", "port": peer.port},
+                                "https": {"url": f"https://127.0.0.1:{peer.port}/kmip"},
+                            },
+                            "tls": {
+                                "ca_cert_path": str(PKI / "server-cert.pem"),
+                                "client_cert_path": str(PKI / "client-cert.pem"),
+                                "client_key_path": str(PKI / "client-key.pem"),
+                                "server_name_override": "localhost",
+                                "connect_timeout_seconds": 5,
+                                "read_timeout_seconds": 5,
+                            },
+                        }
+                        driver = PythonKmipDriver(connection)
+                        item = None
+                        try:
+                            if case["operation"] in async_operations:
+                                correlation = (
+                                    None
+                                    if case["operation"] == "Query Asynchronous Requests"
+                                    else b"fixture-correlation"
+                                )
+                                observed = driver._async_exchange(case["operation"], correlation)
+                            elif case["operation"] == "Logout":
+                                ticket_type = driver._item(0x0042_014A, "enumeration", 1)
+                                ticket_value = driver._item(0x0042_014B, "bytes", b"fixture-ticket")
+                                ticket = driver._structure([ticket_type, ticket_value])
+                                try:
+                                    item = extensions.client_batch_item_logout(ticket)
+                                    observed = driver._exchange(item)
+                                finally:
+                                    ticket.close()
+                                    ticket_type.close()
+                                    ticket_value.close()
+                            else:
+                                item = driver._build_item(
+                                    case,
+                                    extensions.UniqueIdentifier.text_string("catalog-operation-fixture"),
+                                    name="catalog-operation-fixture",
+                                )
                                 observed = driver._exchange(item)
-                            finally:
-                                ticket.close()
-                                ticket_type.close()
-                                ticket_value.close()
-                        else:
-                            item = driver._build_item(
-                                case,
-                                extensions.UniqueIdentifier.text_string("catalog-operation-fixture"),
-                                name="catalog-operation-fixture",
+                            self.assertEqual("server_unsupported", observed["status"])
+                            self.assertEqual(
+                                normalized_operation_name(case["operation"]),
+                                normalized_operation_name(str(peer.request_observation["operation"])),
                             )
-                            observed = driver._exchange(item)
-                        self.assertEqual("server_unsupported", observed["status"])
-                        self.assertEqual(case["operation"], peer.request_observation["operation"])
-                        self.assertEqual(1, len(peer.requests))
-                    finally:
-                        if item is not None:
-                            item.close()
-                        driver.close()
-                        peer.close()
+                            self.assertEqual(1, len(peer.requests))
+                        finally:
+                            if item is not None:
+                                item.close()
+                            driver.close()
+                            peer.close()
 
     def _execute_attribute_route(
         self, peer: ControlledTlsPeer, *, high_level: bool, case_id: str
@@ -547,6 +570,20 @@ class ControlledExchangeTests(unittest.TestCase):
                     self.assertEqual("passed", observed["library_correctness"])
                     self.assertEqual("Ping", peer.request_observation["operation"])
                     self.assertEqual(1, peer.request_observation["batch_count"])
+
+    def test_text_error_response_uses_encoding_wire_enum_names(self):
+        from kmipkit import protocol_values
+
+        for encoding in ("JSON", "XML"):
+            with self.subTest(encoding=encoding):
+                response = text_response(
+                    "Ping",
+                    encoding,
+                    protocol_values.ResultStatus.OPERATION_FAILED,
+                    protocol_values.ResultReason.OPERATION_NOT_SUPPORTED,
+                )
+                self.assertIn(b"OperationFailed", response)
+                self.assertIn(b"OperationNotSupported", response)
 
     def test_normative_not_supported_response_is_separate_from_library_failure(self):
         from kmipkit import protocol_values
