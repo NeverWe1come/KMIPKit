@@ -96,6 +96,23 @@ class CoverageMatrixTests(unittest.TestCase):
         self.assertEqual({"construct", "send"}, {cell["action"] for cell in network_cells})
         self.assertFalse(any("response" in cell["route_id"] for cell in cells))
 
+    def test_reserved_tag_uses_raw_preservation_routes_not_checked_item_constructors(self):
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest)
+                 if cell["case_id"] == "test-norm-tag-tag-420009"]
+        checked_item_routes = {
+            "rust": {"rust.generic-ttlv.item.new", "rust.generic-ttlv.model.kmipkit.ttlv.structure.try.push"},
+            "c": {"c.generic-ttlv.kmipkit_ttlv_item_create", "c.generic-ttlv.model.kmipkit.ttlv.structure.with.item"},
+            "java": {"java.generic-ttlv.ttlv_item.create", "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem"},
+            "python": {"python.generic-ttlv.ttlv.ttlv_item_create", "python.generic-ttlv.model.kmipkit.ttlv.ttlv.structure.with.item"},
+        }
+        for language, route_ids in checked_item_routes.items():
+            language_cells = [cell for cell in cells if cell["language"] == language]
+            self.assertTrue(language_cells)
+            self.assertFalse(route_ids & {cell["route_id"] for cell in language_cells})
+            self.assertTrue(any("rawtag" in cell["route_id"].replace("_", "").replace(".", "")
+                                and cell["action"] == "construct"
+                                for cell in language_cells))
+
     def test_missing_version_route_fails_even_if_the_case_has_another_version(self):
         case = {
             "case_id": "two-version-case",
