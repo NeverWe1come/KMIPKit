@@ -178,6 +178,59 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "invoked the transport"):
             self.validate(report)
 
+    def test_expected_reserved_tag_decode_rejection_needs_input_hash_not_response_tree(self):
+        self.catalog['test_cases'][0]['requires'] = {
+            'normative_target_id': 'KMIPKIT-ELEM-TAG-420009',
+            'target_kind': 'tag',
+            'allocation': 'reserved',
+            'wire_value': '420009',
+        }
+        self.manifest['routes'].append({
+            'route_id': 'c.local.decode',
+            'language': 'c',
+            'api_level': 'generic-ttlv',
+            'mode': 'local',
+            'public_api_symbol': 'kmipkit_ttlv_decode',
+            'operation_ids': [],
+            'normative_target_ids': ['*'],
+            'case_categories': ['normative_inventory'],
+            'protocol_versions': ['2.0'],
+            'combinations': [{'encoding': 'TTLV', 'transport': None}],
+            'actions': ['decode'],
+            'execution_route_id': None,
+            'artifact_commit': 'a' * 40,
+        })
+        report = copy.deepcopy(self.report)
+        for event in report['events']:
+            event['target_id'] = 'KMIPKIT-ELEM-TAG-420009'
+        report['events'].append({
+            'case_id': 'case-one',
+            'route_id': 'c.local.decode',
+            'target_id': 'KMIPKIT-ELEM-TAG-420009',
+            'public_api_symbol': 'kmipkit_ttlv_decode',
+            'execution_route_id': None,
+            'execution_api_symbol': None,
+            'action': 'decode',
+            'protocol_version': '2.0',
+            'encoding': 'TTLV',
+            'transport': None,
+            'status': 'passed',
+            'invocation_count': 1,
+            'invocation_id': 'c.local.decode:decode',
+            'decode_outcome': 'rejected',
+            'decode_rejection_code': 'tag_not_allocated',
+            'decode_input_sha256': 'e' * 64,
+        })
+        summary = self.validate(report)
+        self.assertTrue(summary['all_invocations_passed'])
+
+        try:
+            import jsonschema
+        except ImportError:
+            self.skipTest('jsonschema dependency is not installed')
+        schema = json.loads((SHARED / 'schemas/route-execution-evidence.schema.json').read_text())
+        jsonschema.validate(report, schema)
+
     def test_network_events_must_name_the_real_separate_execution_entrypoint(self):
         report = copy.deepcopy(self.report)
         report["events"][3]["execution_api_symbol"] = "kmipkit_client_batch_item_create"
