@@ -561,7 +561,11 @@ fn value_to_owned(value: ValueView<'_>) -> Result<Value> {
     })
 }
 
-fn expected_tag_decode_rejection(row: &Json, target: &Json, catalog: &Json) -> Option<u32> {
+fn expected_tag_decode_rejection(
+    row: &Json,
+    target: &Json,
+    catalog: &Json,
+) -> Option<(u32, &'static str)> {
     if row["action"] != "decode" || !row["route_id"].as_str()?.contains("generic-ttlv") {
         return None;
     }
@@ -579,11 +583,14 @@ fn expected_tag_decode_rejection(row: &Json, target: &Json, catalog: &Json) -> O
         .iter()
         .find(|case| case["case_id"] == row["case_id"])?;
     let requires = &case["requires"];
-    if !["tag", "tag_range"].contains(&requires["target_kind"].as_str()?)
-        || !["reserved", "unused"].contains(&requires["allocation"].as_str()?)
-    {
+    if !["tag", "tag_range"].contains(&requires["target_kind"].as_str()?) {
         return None;
     }
+    let rejection_code = match requires["allocation"].as_str()? {
+        "reserved" => "tag_reserved",
+        "unused" => "tag_not_allocated",
+        _ => return None,
+    };
     let wire_value = text(target, "wire_value").ok()?;
     let start = wire_value
         .split(['-', '–', '—'])
@@ -591,7 +598,7 @@ fn expected_tag_decode_rejection(row: &Json, target: &Json, catalog: &Json) -> O
         .trim()
         .trim_start_matches("0x")
         .replace(['X', 'x'], "0");
-    u32::from_str_radix(&start, 16).ok()
+    Some((u32::from_str_radix(&start, 16).ok()?, rejection_code))
 }
 
 fn reserved_tag_ttlv(raw_tag: u32) -> [u8; 16] {
@@ -664,7 +671,9 @@ pub(crate) fn run(matrix: &Path, output: &Path) -> Result<bool> {
             .ok_or("unknown normative target")?;
         let symbol = text(row, "public_api_symbol")?;
         versions.insert(text(row, "protocol_version")?.to_owned());
-        if let Some(raw_tag) = expected_tag_decode_rejection(row, target, &catalog) {
+        if let Some((raw_tag, rejection_code)) =
+            expected_tag_decode_rejection(row, target, &catalog)
+        {
             let wire = reserved_tag_ttlv(raw_tag);
             let result = kmipkit::ttlv::codec::decode(&wire);
             let rejected = matches!(result, Err(error) if matches!(
@@ -677,7 +686,7 @@ pub(crate) fn run(matrix: &Path, output: &Path) -> Result<bool> {
                 "status":if rejected {"passed"} else {"failed"},"invocation_count":1,
                 "decode_outcome":"rejected","decode_input_sha256":hash(&wire)});
             if rejected {
-                event["decode_rejection_code"] = "tag_not_allocated".into();
+                event["decode_rejection_code"] = rejection_code.into();
             } else {
                 event["failure_code"] = "expected_tag_rejection_not_observed".into();
             }
