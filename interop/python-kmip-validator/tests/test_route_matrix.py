@@ -33,6 +33,8 @@ class RouteMatrixTests(unittest.TestCase):
                   'kmipkit.ttlv.ttlv_decode', 'kmipkit.ttlv.ttlv_item_view_from_item'}
         manifest['routes'] = [route for route in manifest['routes']
                               if route['language'] == 'python' and route['public_api_symbol'] in wanted]
+        manifest['routes'].append(next(route for route in self.manifest['routes']
+                                       if route['public_api_symbol'] == 'kmipkit.extensions.client_batch_item_ping'))
         return catalog, manifest
 
     def test_generic_routes_call_named_apis_and_compare_constructed_and_decoded_values(self):
@@ -55,7 +57,7 @@ class RouteMatrixTests(unittest.TestCase):
         route = copy.deepcopy(manifest['routes'][0])
         route['route_id'] = 'python.test.unimplemented.public.route'
         route['public_api_symbol'] = 'kmipkit.ttlv.codec_limits_defaults'
-        manifest['routes'] = [route]
+        manifest['routes'] = [route, manifest['routes'][-1]]
         report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
         self.assertEqual([], report['events'])
         self.assertTrue(gaps)
