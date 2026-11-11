@@ -206,6 +206,39 @@ def test_crypto_builder_accepts_typed_parameters_and_explicit_ttlv_data() -> Non
             parameters.close()
 
 
+def test_crypto_builder_wipes_staging_when_span_allocation_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """KMIPKIT-0105-FR-004: cleanup covers failures before the native setter."""
+    original_ffi = fluent.ffi
+    stages: list[bytearray] = []
+    allocation_error = MemoryError("span allocation failed")
+
+    class FailingSpanAllocator:
+        def __getattr__(self, name: str) -> Any:
+            return getattr(original_ffi, name)
+
+        def from_buffer(self, c_type: str, staged: bytearray) -> Any:
+            stages.append(staged)
+            return original_ffi.from_buffer(c_type, staged)
+
+        def new(self, c_type: str) -> Any:
+            if c_type == "kmipkit_byte_span_v1_t *":
+                raise allocation_error
+            return original_ffi.new(c_type)
+
+    caller_buffer = bytearray(b"caller-owned-secret")
+    with fluent.EncryptBuilder() as builder:
+        monkeypatch.setattr(fluent, "ffi", FailingSpanAllocator())
+        with pytest.raises(MemoryError) as failure:
+            builder.data(caller_buffer)
+
+    assert failure.value is allocation_error
+    assert caller_buffer == b"caller-owned-secret"
+    assert len(stages) == 1
+    assert stages[0] == bytearray(len(caller_buffer))
+
+
 @pytest.mark.parametrize(
     ("factory_name", "operation", "extra_fields", "expected_wire_fields"),
     (
