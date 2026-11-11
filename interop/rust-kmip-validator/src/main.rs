@@ -4,6 +4,8 @@ mod adapters;
 mod driver;
 mod fixtures;
 mod incoming;
+mod local_wire;
+mod matrix;
 mod models;
 mod recipes;
 mod report;
@@ -23,6 +25,13 @@ struct Cli {
 }
 #[derive(Subcommand)]
 enum Command {
+    /// Execute local public model routes from generated coverage JSONL.
+    MatrixLocal {
+        #[arg(long)]
+        matrix: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+    },
     /// Offline catalog planning; profiles never suppress probes.
     Plan {
         #[arg(long)]
@@ -75,6 +84,7 @@ fn emit(value: &Value) -> Result<()> {
 }
 fn dispatch(cli: Cli) -> Result<bool> {
     match cli.command {
+        Command::MatrixLocal { matrix, output } => matrix::run(&matrix, &output),
         Command::Plan {
             capabilities,
             connection,
