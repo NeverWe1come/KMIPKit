@@ -240,17 +240,18 @@ class RouteMatrixTests(unittest.TestCase):
             'test-norm-payload-client-create-request-20-002',
             'test-norm-payload-client-create-request-21-001',
             'test-norm-payload-client-create-request-21-002',
+            'test-norm-payload-client-create-request-21-003',
         }
         selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
                                                 if case['case_id'] in case_ids]}
         events, _, checks = execute_network_cells(
             ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest,
             network_combinations=(('TTLV', 'raw_tls'),))
-        self.assertEqual(len(checks), 4)
+        self.assertEqual(len(checks), 5)
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
         fields = [event for event in events if event['target_id'].startswith(
             'KMIPKIT-PAYLOAD-CLIENT-CREATE-REQUEST-')]
-        self.assertEqual(len(fields), 8)
+        self.assertEqual(len(fields), 10)
         self.assertEqual({event['action'] for event in fields}, {'construct', 'send'})
         self.assertTrue(all(event['public_api_symbol'] == 'kmipkit_client_batch_item_create'
                             for event in fields))
