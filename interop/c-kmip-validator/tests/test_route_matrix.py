@@ -178,6 +178,30 @@ class RouteMatrixTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'fixture_query_function_mismatch'):
             assert_recipe(parse(request), 'test-op-query', '2.1')
 
+    def test_request_payload_target_requires_its_field_inside_the_exact_operation(self):
+        from artifact_support import ROOT
+        from route_peer import parse, request_payload_field_present, tlv
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        targets = {target['target_id']: target for target in catalog['normative_targets']}
+
+        def enum(tag, value):
+            return tlv(tag, 5, value.to_bytes(4, 'big'))
+
+        query_request = parse(tlv(0x42000F, 1,
+            enum(0x42005C, 24) + tlv(0x420079, 1, enum(0x420074, 1))))
+        query_function = targets['KMIPKIT-PAYLOAD-CLIENT-QUERY-REQUEST-20-001']
+        object_groups = targets['KMIPKIT-PAYLOAD-CLIENT-QUERY-REQUEST-21-002']
+        self.assertTrue(request_payload_field_present(query_function, query_request, catalog))
+        self.assertFalse(request_payload_field_present(object_groups, query_request, catalog))
+
+        unrelated_operation = parse(tlv(0x42000F, 1,
+            enum(0x42005C, 10) + tlv(0x420079, 1, tlv(0x420094, 7, b'fixture-id'))))
+        unique_identifier = targets['KMIPKIT-PAYLOAD-CLIENT-GET-ATTRIBUTES-REQUEST-20-001']
+        self.assertFalse(request_payload_field_present(unique_identifier, unrelated_operation, catalog))
+
+        get_attributes = parse(tlv(0x42000F, 1,
+            enum(0x42005C, 11) + tlv(0x420079, 1, tlv(0x420094, 7, b'fixture-id'))))
+        self.assertTrue(request_payload_field_present(unique_identifier, get_attributes, catalog))
 
     def test_lifecycle_peer_requires_cleanup_and_checks_illegal_destroy(self):
         import route_peer
