@@ -71,6 +71,11 @@ def _name(value: str) -> str:
     return re.sub('[^a-z0-9]', '', value.lower())
 
 
+def catalog_tag_values(catalog: dict) -> dict[str, int]:
+    return {target['name']: int(target['wire_value'], 16)
+            for target in catalog['normative_targets'] if target['kind'] == 'tag'}
+
+
 def catalog_enum_value(catalog: dict, enum_name: str, value_name: str,
                       protocol_version: str | None) -> int | None:
     parent_id = _enum_parent_id(enum_name)
@@ -222,8 +227,7 @@ def execute_tag_range_case(tree_abi, target: dict, catalog: dict) -> dict:
     """Exercise both allocation boundaries with construction or decoder rejection."""
     from route_ttlv import digest, encode
 
-    tags = {item['name']: int(item['wire_value'], 16)
-            for item in catalog['normative_targets'] if item['kind'] == 'tag'}
+    tags = catalog_tag_values(catalog)
     if target.get('allocation') == 'extension':
         trees = generic_tree_fixtures(target, catalog, tags, target['protocol_versions'][-1])
         if not trees:
@@ -443,7 +447,7 @@ def run(output: Path, binary: Path | None = None) -> int:
     output.with_suffix('.artifact-probe.json').write_text(json.dumps(availability, indent=2) + '\n')
     targets = {target['target_id']: target for target in catalog['normative_targets']}
     cases = {case['case_id']: case for case in catalog['test_cases']}
-    tags = {target['name']: int(target['wire_value'], 16) for target in targets.values() if target['kind'] == 'tag'}
+    tags = catalog_tag_values(catalog)
     events, pending = [], []
     from route_ttlv import TreeAbi, digest, encode
     tree_abi = TreeAbi(library)
