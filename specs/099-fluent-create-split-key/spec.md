@@ -3,8 +3,8 @@
 **Branch**: `feature/KMIPKIT-0099-fluent-create-split-key`  
 **Base**: `feature/KMIPKIT-0097-fluent-object-api` at
 `45749b62e355ceea1ac6c936ec4a65b085050d60`  
-**Status**: Authorized by the maintainer's direct instruction to implement
-the complete KMIPKIT-0093 plan.  
+**Status**: Approved for implementation by the maintainer's direct request to
+implement the complete KMIPKIT-0093 plan.
 **Owning identifier**: KMIPKIT-0099
 
 ## Purpose
@@ -111,3 +111,13 @@ order.
 - It does not fill absent response fields, retry, Poll, or infer the server's
   object state or capabilities.
 - C, Java, and Python parity is delivered in later KMIPKIT-0093 slices.
+
+## Public Rust trait inventory
+
+The exact Rust standard trait implementations (`Any`, `Borrow`, `BorrowMut`,
+`From`, `Into`, `TryFrom`, and `TryInto`) for the public builder type are
+language-level behavior, not separate KMIPKit product capabilities. The
+manifest may exclude only those exact compiler-visible paths for the root and
+module re-exports; the builder and its named methods remain explicit
+declarations. This exact Rust standard-trait behavior is excluded from the
+separate fluent product capability inventory.
