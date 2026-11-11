@@ -146,7 +146,7 @@ def _generic_samples(case: dict, target: dict, symbol: str) -> list[tuple[int, s
         raise RecipePending
     if symbol.startswith('kmipkit.ttlv.ttlv_value_'):
         suffix = symbol.rsplit('ttlv_value_', 1)[1]
-        type_names = {name for name in type_names if _TTLV_TYPE_KINDS[name] == suffix}
+        type_names = {name for name in type_names if {'bytes': 'byte_string', 'text': 'text_string'}.get(_TTLV_TYPE_KINDS[name], _TTLV_TYPE_KINDS[name]) == suffix}
     samples = {
         'Structure': [None], 'Integer': [-0x80000000, -1, 0, 0x7FFFFFFF],
         'Long Integer': [-(1 << 63), -1, 0, (1 << 63) - 1],
@@ -196,7 +196,9 @@ _GENERIC_SYMBOLS = {
     'kmipkit.ttlv.' + name for name in (
         'ttlv_item_view_from_item', 'raw_tag_from_raw', 'raw_tag_try_checked',
         'ttlv_structure_create', 'ttlv_structure_with_item', 'ttlv_item_create', 'ttlv_decode',
-        *(f'ttlv_value_{name}' for name in _TTLV_TYPE_KINDS.values()),
+        *(f'ttlv_value_{name}' for name in ('structure', 'integer', 'long_integer', 'big_integer',
+                                          'enumeration', 'boolean', 'text_string', 'byte_string',
+                                          'date_time', 'interval', 'date_time_extended')),
     )
 }
 

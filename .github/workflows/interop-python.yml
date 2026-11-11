@@ -48,7 +48,7 @@ jobs:
             exit 0
           fi
           files="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")"
-          if grep -Eq '^(interop/python-kmip-validator/|bindings/python/|crates/|Cargo\.toml$|Cargo\.lock$)' <<< "$files"; then
+          if grep -Eq '^(interop/python-kmip-validator/|interop/shared/|bindings/python/|crates/|Cargo\.toml$|Cargo\.lock$|\.github/workflows/interop-python\.yml$)' <<< "$files"; then
             echo "affected=true" >> "$GITHUB_OUTPUT"
           else
             echo "affected=false" >> "$GITHUB_OUTPUT"
@@ -156,3 +156,28 @@ jobs:
               assert len(plan['cases']) == len(expected)
               assert {case['case_id'] for case in plan['cases']} == {case['case_id'] for case in expected}
           PY
+
+      - name: Execute exhaustive public route matrix with controlled fixtures
+        working-directory: interop/python-kmip-validator
+        env:
+          PYTHONPATH: src
+        run: python -m kmipkit_validator matrix --output-dir build/matrix
+
+      - name: Independently validate every required route execution cell
+        if: ${{ always() && !cancelled() }}
+        run: |
+          digest="$(python -c "import json; print(json.load(open('interop/python-kmip-validator/build/artifact-manifest.json'))['artifact_sha256'])")"
+          python interop/shared/tools/validate_route_evidence.py \
+            --report interop/python-kmip-validator/build/matrix/route-execution-evidence.json \
+            --artifact-sha256 "$digest"
+
+      - name: Retain sanitized matrix evidence and pending coverage
+        if: ${{ always() && !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1
+        with:
+          name: python-route-execution-evidence
+          path: |
+            interop/python-kmip-validator/build/matrix/route-execution-evidence.json
+            interop/python-kmip-validator/build/matrix/pending-coverage.json
+            interop/python-kmip-validator/build/matrix/closure.json
+          if-no-files-found: error
