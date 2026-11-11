@@ -251,7 +251,9 @@ class ControlledPeer:
 class LiveContract(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.temp = tempfile.TemporaryDirectory()
+        fixture_temp = ROOT / "interop/rust-kmip-validator/target/fixture-tmp"
+        fixture_temp.mkdir(parents=True, exist_ok=True)
+        cls.temp = tempfile.TemporaryDirectory(dir=fixture_temp)
         cls.directory = Path(cls.temp.name)
         cls.pki = cls.directory / "pki"
         cls.server = subprocess.Popen([str(SERVER), "--listen", "127.0.0.1:0", "--data-dir", str(cls.directory / "store"), "--export-pki", str(cls.pki), "--json"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE, text=True)

@@ -179,3 +179,18 @@ Generated `route_calls_generated.rs` is rebuilt by
 shared route manifest. Both generated dispatch tables are excluded from raw
 handwritten-source coverage; canonical route execution and freshness gates
 remain required for their behavior.
+
+Keep temporary fixture stores on the workspace disk when Rust, Java and C
+validators run concurrently. CI sets `TMPDIR` to the ignored Rust fixture
+folder before installing or testing. For local commands use:
+
+```sh
+mkdir -p interop/rust-kmip-validator/target/fixture-tmp
+TMPDIR="$PWD/interop/rust-kmip-validator/target/fixture-tmp" python3 interop/rust-kmip-validator/tools/check_coverage.py
+```
+
+Local target hashes project only the exact, uniquely extractable target TTLV
+subtree. The whole containing model must first pass encode/decode comparison;
+a missing, ambiguous, or changed target fails the cell. This allows a model
+builder and a generic value constructor to compare the same normative value
+without substituting the parent model's hash for the target's hash.

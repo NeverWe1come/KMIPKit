@@ -13,6 +13,10 @@ TARGET = ROOT / "interop/rust-kmip-validator/target/coverage-build"
 OUTPUT = ROOT / "interop/rust-kmip-validator/target/coverage.json"
 env = os.environ.copy()
 env["CARGO_TARGET_DIR"] = str(TARGET)
+# Keep fixture artifacts on the workspace volume instead of the shared /tmp tmpfs.
+fixture_temp = TARGET / "fixture-tmp"
+fixture_temp.mkdir(parents=True, exist_ok=True)
+env["TMPDIR"] = str(fixture_temp)
 settings = subprocess.check_output(["cargo", "+1.94", "llvm-cov", "show-env", "--manifest-path", str(MANIFEST), "--sh"], env=env, text=True)
 for line in settings.splitlines():
     if line.startswith("export "):
