@@ -23,6 +23,11 @@ sys.path.insert(0, str(ROOT / 'interop/shared/tools'))
 from coverage_matrix import iter_cells
 from validate_route_evidence import _key, validate_collection
 
+ATTRIBUTE_ROUTE_TARGET_KINDS = frozenset({'attribute', 'tag', 'enumeration_value', 'bitmask_value'})
+ATTRIBUTE_ROUTE_CASE_CATEGORIES = frozenset(
+    {'attributes', 'managed_objects', 'enums_and_bitmasks', 'normative_inventory'}
+)
+
 
 def pending_reason(cell: dict) -> str:
     """An existing public symbol without a recipe is a validator gap."""
@@ -33,8 +38,8 @@ def should_execute_attribute_case(cell: dict, case: dict, target: dict) -> bool:
     """Use local typed attribute routes when no protocol exchange is required."""
     return (
         cell['transport'] is None
-        and target['kind'] in {'attribute', 'tag', 'enumeration_value', 'bitmask_value'}
-        and case['category'] in {'attributes', 'managed_objects', 'enums_and_bitmasks', 'normative_inventory'}
+        and target['kind'] in ATTRIBUTE_ROUTE_TARGET_KINDS
+        and case['category'] in ATTRIBUTE_ROUTE_CASE_CATEGORIES
         and not case.get('requires', {}).get('protocol_scenario')
     )
 
