@@ -309,10 +309,12 @@ class MatrixContract(unittest.TestCase):
             self.assertEqual(summary['gate_failure_code'], 'missing_required_matrix_cells')
 
     def test_query_response_payload_accessor_reconstructs_the_decoded_response(self):
-        cell = self.cell('kmipkit_protocol::QueryResponse::to_ttlv_payload', 'KMIPKIT-ELEM-OP-C2S-QUERY')
-        process, report = self.run_matrix([cell])
-        self.assertEqual(process.returncode, 0, process.stderr)
-        self.assertEqual('passed', report['events'][0]['status'])
+        cells = [cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
+                 if cell['public_api_symbol'] == 'kmipkit_protocol::QueryResponse::to_ttlv_payload']
+        process, report = self.run_matrix(cells)
+        self.assertEqual(process.returncode, 0, process.stderr or process.stdout or report)
+        self.assertEqual(len(cells), len(report['events']))
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
 
     def test_parameter_modifier_projects_the_exact_constructed_target(self):
         cell = self.cell('kmipkit_protocol::CryptographicParametersBuilder::with_padding_method',
