@@ -120,6 +120,23 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(report['events'])
         self.assertEqual({expected}, {event['request_tree_sha256'] for event in report['events']})
 
+    def test_scalar_payload_variants_roundtrip_the_exact_field_type_and_tag(self):
+        catalog = copy.deepcopy(self.catalog)
+        catalog['test_cases'] = [case for case in catalog['test_cases']
+                                 if case['requires'].get('target_kind') == 'operation_payload_value_variant'
+                                 and case['requires'].get('value_type') != 'Structure']
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in manifest['routes'] if route['language'] == 'python'
+                              and route['public_api_symbol'].startswith('kmipkit.ttlv.')]
+        manifest['routes'].append(next(route for route in self.manifest['routes']
+                                       if route['public_api_symbol'] == 'kmipkit.extensions.client_batch_item_ping'))
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+        targets = {target['target_id']: target for target in catalog['normative_targets']}
+        field_gaps = [gap for gap in gaps if targets[gap['target_id']]['kind'] == 'operation_payload_value_variant']
+        self.assertEqual(0, len(field_gaps), f'{len(field_gaps)} exact scalar-field cells lack recipes')
+        self.assertGreater(len(report['events']), 100)
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
     def test_typed_attribute_and_set_routes_preserve_the_named_enum_and_unknown_values(self):
         catalog = copy.deepcopy(self.catalog)
         catalog['test_cases'] = [case for case in catalog['test_cases'] if case['requires'].get('normative_target_id', '')
