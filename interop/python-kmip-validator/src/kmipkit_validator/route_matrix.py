@@ -125,6 +125,13 @@ def _generic_samples(case: dict, target: dict, symbol: str) -> list[tuple[int, s
     target_id = target['target_id']
     by_id, element_types, elements = _catalog_model_data()
     tag = 0x4200FF
+    special_samples: list[tuple[int, str]] | None = None
+
+    def find_tag(*names: str) -> dict | None:
+        wanted = {_normalized_name(name) for name in names if name}
+        return next((entry for entry in by_id.values() if entry.get('kind') == 'tag'
+                     and _normalized_name(entry.get('name', '')) in wanted), None)
+
     if kind in ('enumeration_value', 'referenced_enum_value', 'bitmask_value'):
         raw_values = PythonKmipDriver._wire_representatives(requires['wire_value'])
         parent_ids = target.get('parent_element_ids', [])
@@ -194,25 +201,82 @@ def _generic_samples(case: dict, target: dict, symbol: str) -> list[tuple[int, s
             if _normalized_name(target['source_encoding']) in structure_names:
                 type_names = {'Structure'}
     elif kind == 'operation_payload_value_variant' and target.get('kind') == 'operation_payload_value_variant' and requires['value_type'] != 'Structure':
-        normalized = lambda name: ''.join(character for character in name.casefold() if character.isalnum())
         field_name = requires['field_name']
-        tag_entry = next((entry for entry in by_id.values() if entry.get('kind') == 'tag'
-                          and normalized(entry.get('name', '')) == normalized(field_name)), None)
+        tag_entry = find_tag(field_name)
+        if tag_entry is None:
+            raise RecipePending
+        tag = int(tag_entry['wire_value'], 16)
+        type_names = {requires['value_type']}
+    elif kind == 'operation_payload_value_variant':
+        field_name = requires['field_name']
+        tag_entry = find_tag(field_name)
         if tag_entry is None:
             raise RecipePending
         tag = int(tag_entry['wire_value'], 16)
         type_names = {requires['value_type']}
     elif kind == 'operation_payload_field':
-        normalized = lambda name: ''.join(character for character in name.casefold() if character.isalnum())
         field_name = requires.get('field_name', target.get('name', ''))
-        tag_entry = next((entry for entry in by_id.values() if entry.get('kind') == 'tag'
-                          and normalized(entry.get('name', '')) == normalized(field_name)), None)
+        tag_entry = find_tag(field_name, target.get('name', ''))
+        if tag_entry is None and _normalized_name(field_name).startswith('anyobject'):
+            object_name = requires.get('object_type', 'Opaque Object')
+            tag_entry = find_tag(object_name)
         if tag_entry is None:
             raise RecipePending
         tag = int(tag_entry['wire_value'], 16)
         type_names = PythonKmipDriver._catalog_value_types(case, target, element_types)
-        if normalized(field_name) == 'uniqueidentifier':
+        if _normalized_name(field_name) == 'uniqueidentifier':
             type_names = {'Text String'}
+    elif kind in ('structure_member', 'message_field', 'attribute_structure',
+                  'object_structure', 'operation_structure', 'credential'):
+        target_name = target.get('name', '')
+        normalized_target_name = _normalized_name(target_name)
+        if normalized_target_name.startswith('credential'):
+            tag_entry = find_tag('Credential')
+        elif normalized_target_name == 'alternativefailoverendpoints':
+            tag_entry = find_tag('Alternate Failover Endpoints')
+        elif normalized_target_name == 'vendorspecific':
+            tag_entry = find_tag('Vendor Extension')
+        elif normalized_target_name == 'objecttypeobjecttypes':
+            tag_entry = find_tag('Object Type')
+        elif normalized_target_name.startswith('anyattribute'):
+            tag_entry = find_tag('Activation Date')
+        else:
+            tag_entry = find_tag(target_name, requires.get('field_name', ''))
+        if tag_entry is not None:
+            tag = int(tag_entry['wire_value'], 16)
+        elif kind in ('attribute_structure', 'credential'):
+            # These table-level structures have no standalone assigned tag;
+            # the generic route still exercises their exact Structure value.
+            tag = 0x4200FF
+        else:
+            raise RecipePending
+        type_names = PythonKmipDriver._catalog_value_types(case, target, element_types)
+        if normalized_target_name == 'objecttypeobjecttypes':
+            object_type_tag = find_tag('Object Type')
+            object_types_tag = find_tag('Object Types')
+            if object_type_tag is None or object_types_tag is None:
+                raise RecipePending
+            special_samples = [
+                (int(object_type_tag['wire_value'], 16), 'Enumeration'),
+                (int(object_types_tag['wire_value'], 16), 'Structure'),
+            ]
+        elif normalized_target_name.startswith('anyattribute'):
+            by_type: dict[str, tuple[int, str]] = {}
+            for attribute in elements.values():
+                if attribute.get('kind') != 'attribute':
+                    continue
+                parent_tag = next((by_id.get(parent, {}) for parent in attribute.get('parent_element_ids', [])
+                                   if by_id.get(parent, {}).get('kind') == 'tag'), None)
+                if parent_tag is None:
+                    continue
+                attribute_types = PythonKmipDriver._catalog_value_types(
+                    {'requires': {}}, attribute, element_types
+                )
+                for attribute_type in sorted(attribute_types):
+                    by_type.setdefault(attribute_type, (int(parent_tag['wire_value'], 16), attribute_type))
+            special_samples = list(by_type.values())
+            if not special_samples:
+                raise RecipePending
     else:
         type_names = PythonKmipDriver._catalog_value_types(case, target, element_types)
         # A type representative alone cannot prove a normative payload branch,
@@ -233,6 +297,10 @@ def _generic_samples(case: dict, target: dict, symbol: str) -> list[tuple[int, s
             character for character in requires.get('field_name', '').casefold() if character.isalnum()
     ) == 'uniqueidentifier':
         return [(tag, 'Text String', 'KMIPKit-interop')]
+    if special_samples is not None:
+        return [(sample_tag, sample_type, value)
+                for sample_tag, sample_type in special_samples
+                if sample_type in type_names for value in samples[sample_type]]
     return [(tag, name, value) for name in sorted(type_names) for value in samples[name]]
 
 
