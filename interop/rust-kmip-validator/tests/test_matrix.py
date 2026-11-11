@@ -86,11 +86,23 @@ class MatrixContract(unittest.TestCase):
 
     def test_constructor_cannot_pass_when_it_changes_the_normative_tag(self):
         cell = self.cell('kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::Comment>::new',
-                         'KMIPKIT-ELEM-ATTRIBUTE-DESCRIPTION')
+                         'KMIPKIT-ELEM-ATTRIBUTE-COMMENT')
+        cell['target_id'] = 'KMIPKIT-ELEM-ATTRIBUTE-DESCRIPTION'
         process, report = self.run_matrix([cell])
         self.assertNotEqual(process.returncode, 0)
-        self.assertEqual(report['events'][0]['status'], 'failed')
-        self.assertNotIn('request_tree_sha256', report['events'][0])
+        self.assertIsNone(report)
+
+    def test_shared_gate_rejects_incomplete_and_duplicate_actual_evidence(self):
+        process, report = self.run_matrix([self.cell('kmipkit_ttlv::Item::new')])
+        self.assertEqual(process.returncode, 0, process.stderr)
+        arguments = {'catalog_sha256': hashlib.sha256(CATALOG_PATH.read_bytes()).hexdigest(),
+                     'route_manifest_sha256': hashlib.sha256(ROUTES_PATH.read_bytes()).hexdigest(),
+                     'expected_artifact_sha256': report['artifact_sha256']}
+        with self.assertRaisesRegex(ValueError, 'missing route execution cells'):
+            validate_report(report, CATALOG, ROUTES, **arguments)
+        report['events'].append(dict(report['events'][0]))
+        with self.assertRaisesRegex(ValueError, 'duplicate route execution cell'):
+            validate_report(report, CATALOG, ROUTES, **arguments)
 
     def test_forged_symbol_is_rejected_without_false_positive(self):
         cell = self.cell('kmipkit_ttlv::Item::new')

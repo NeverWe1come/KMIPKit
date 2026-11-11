@@ -71,6 +71,23 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
 
 fn invoke(symbol: &str, sample: &Item) -> Option<Result<Item>> {
     if symbol.starts_with("kmipkit_ttlv::Value::") {
+        let expected = match sample.item_type() {
+            kmipkit::ttlv::ItemType::Structure => "structure",
+            kmipkit::ttlv::ItemType::Integer => "integer",
+            kmipkit::ttlv::ItemType::LongInteger => "long_integer",
+            kmipkit::ttlv::ItemType::BigInteger => "big_integer",
+            kmipkit::ttlv::ItemType::Enumeration => "enumeration",
+            kmipkit::ttlv::ItemType::Boolean => "boolean",
+            kmipkit::ttlv::ItemType::TextString => "text_string",
+            kmipkit::ttlv::ItemType::ByteString => "byte_string",
+            kmipkit::ttlv::ItemType::DateTime => "date_time",
+            kmipkit::ttlv::ItemType::Interval => "interval",
+            kmipkit::ttlv::ItemType::DateTimeExtended => "date_time_extended",
+            _ => return None,
+        };
+        if symbol.rsplit("::").next() != Some(expected) {
+            return None;
+        }
         return Some(
             sample.with_value(value_to_owned).and_then(|value| {
                 Item::new(sample.tag(), value).map_err(|_| "local value rejected")

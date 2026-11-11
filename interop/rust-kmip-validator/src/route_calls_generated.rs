@@ -4,11 +4,15 @@ use kmipkit::protocol::{
     AttributeSet, CurrentAttribute, NewAttribute,
     attribute::{Attribute, typed},
 };
-use kmipkit::ttlv::{Item, ValueView};
+use kmipkit::ttlv::{Item, ItemType, ValueView};
 #[allow(clippy::too_many_lines)] // One explicit public call per installed typed attribute route.
 pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
     match symbol {
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::ActivationDate>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::ActivationDate>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::ActivationDate>::new(sample.with_value(|value| match value {
                     ValueView::DateTime(value) => Ok(*value),
@@ -27,7 +31,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::ActivationDate>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::ActivationDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_00_01)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ActivationDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -39,7 +49,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::ActivationDate>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::ActivationDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_00_01)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ActivationDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -51,7 +67,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::ActivationDate>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::ActivationDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_00_01)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ActivationDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -67,7 +89,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::ApplicationSpecificInformation>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::ApplicationSpecificInformation>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::ApplicationSpecificInformation>::new(
                     sample
@@ -89,7 +115,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::ApplicationSpecificInformation>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::ApplicationSpecificInformation>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_04)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ApplicationSpecificInformation>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -101,7 +133,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::ApplicationSpecificInformation>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::ApplicationSpecificInformation>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_04)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ApplicationSpecificInformation>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -113,7 +151,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::ApplicationSpecificInformation>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::ApplicationSpecificInformation>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_04)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ApplicationSpecificInformation>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -129,7 +173,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::ArchiveDate>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::ArchiveDate>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::ArchiveDate>::new(sample.with_value(|value| match value {
                     ValueView::DateTime(value) => Ok(*value),
@@ -148,7 +196,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::ArchiveDate>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::ArchiveDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_00_05)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ArchiveDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -160,7 +214,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::ArchiveDate>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::ArchiveDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_00_05)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ArchiveDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -172,7 +232,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::ArchiveDate>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::ArchiveDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_00_05)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ArchiveDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -188,7 +254,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::VendorAttribute>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::VendorAttribute>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::VendorAttribute>::new(
                     sample
@@ -210,7 +280,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::VendorAttribute>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::VendorAttribute>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_08)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::VendorAttribute>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -222,7 +298,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::VendorAttribute>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::VendorAttribute>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_08)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::VendorAttribute>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -234,7 +316,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::VendorAttribute>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::VendorAttribute>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_08)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::VendorAttribute>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -250,7 +338,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::CertificateType>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::CertificateType>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::CertificateType>::new(sample.with_value(
                     |value| match value {
@@ -271,7 +363,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::CertificateType>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::CertificateType>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)
+                && sample.tag().raw() == 0x42_00_1D)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::CertificateType>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -283,7 +381,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::CertificateType>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::CertificateType>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)
+                && sample.tag().raw() == 0x42_00_1D)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::CertificateType>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -295,7 +399,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::CertificateType>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::CertificateType>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)
+                && sample.tag().raw() == 0x42_00_1D)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::CertificateType>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -311,7 +421,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::CompromiseDate>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::CompromiseDate>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::CompromiseDate>::new(sample.with_value(|value| match value {
                     ValueView::DateTime(value) => Ok(*value),
@@ -330,7 +444,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::CompromiseDate>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::CompromiseDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_00_20)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::CompromiseDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -342,7 +462,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::CompromiseDate>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::CompromiseDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_00_20)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::CompromiseDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -354,7 +480,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::CompromiseDate>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::CompromiseDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_00_20)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::CompromiseDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -370,7 +502,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::CompromiseOccurrenceDate>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::CompromiseOccurrenceDate>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::CompromiseOccurrenceDate>::new(sample.with_value(|value| {
                     match value {
@@ -391,7 +527,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::CompromiseOccurrenceDate>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::CompromiseOccurrenceDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_00_21)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::CompromiseOccurrenceDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -403,7 +545,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::CompromiseOccurrenceDate>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::CompromiseOccurrenceDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_00_21)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::CompromiseOccurrenceDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -415,7 +563,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::CompromiseOccurrenceDate>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::CompromiseOccurrenceDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_00_21)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::CompromiseOccurrenceDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -431,7 +585,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::ContactInformation>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::ContactInformation>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::TextString)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::ContactInformation>::new(sample.with_value(
                     |value| match value {
@@ -452,7 +610,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::ContactInformation>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::ContactInformation>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::TextString)
+                && sample.tag().raw() == 0x42_00_22)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ContactInformation>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -464,7 +628,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::ContactInformation>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::ContactInformation>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::TextString)
+                && sample.tag().raw() == 0x42_00_22)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ContactInformation>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -476,7 +646,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::ContactInformation>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::ContactInformation>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::TextString)
+                && sample.tag().raw() == 0x42_00_22)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ContactInformation>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -492,7 +668,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::CryptographicAlgorithm>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::CryptographicAlgorithm>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::CryptographicAlgorithm>::new(sample.with_value(|value| {
                     match value {
@@ -513,7 +693,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::CryptographicAlgorithm>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::CryptographicAlgorithm>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)
+                && sample.tag().raw() == 0x42_00_28)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::CryptographicAlgorithm>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -525,7 +711,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::CryptographicAlgorithm>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::CryptographicAlgorithm>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)
+                && sample.tag().raw() == 0x42_00_28)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::CryptographicAlgorithm>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -537,7 +729,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::CryptographicAlgorithm>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::CryptographicAlgorithm>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)
+                && sample.tag().raw() == 0x42_00_28)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::CryptographicAlgorithm>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -553,7 +751,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::CryptographicDomainParameters>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::CryptographicDomainParameters>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::CryptographicDomainParameters>::new(
                     sample
@@ -575,7 +777,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::CryptographicDomainParameters>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::CryptographicDomainParameters>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_29)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::CryptographicDomainParameters>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -587,7 +795,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::CryptographicDomainParameters>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::CryptographicDomainParameters>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_29)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::CryptographicDomainParameters>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -599,7 +813,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::CryptographicDomainParameters>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::CryptographicDomainParameters>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_29)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::CryptographicDomainParameters>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -615,7 +835,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::CryptographicLength>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::CryptographicLength>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Integer)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::CryptographicLength>::new(sample.with_value(
                     |value| match value {
@@ -636,7 +860,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::CryptographicLength>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::CryptographicLength>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Integer)
+                && sample.tag().raw() == 0x42_00_2A)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::CryptographicLength>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -648,7 +878,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::CryptographicLength>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::CryptographicLength>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Integer)
+                && sample.tag().raw() == 0x42_00_2A)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::CryptographicLength>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -660,7 +896,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::CryptographicLength>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::CryptographicLength>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Integer)
+                && sample.tag().raw() == 0x42_00_2A)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::CryptographicLength>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -676,7 +918,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::CryptographicParameters>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::CryptographicParameters>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::CryptographicParameters>::new(
                     sample
@@ -698,7 +944,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::CryptographicParameters>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::CryptographicParameters>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_2B)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::CryptographicParameters>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -710,7 +962,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::CryptographicParameters>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::CryptographicParameters>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_2B)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::CryptographicParameters>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -722,7 +980,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::CryptographicParameters>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::CryptographicParameters>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_2B)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::CryptographicParameters>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -738,7 +1002,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::CryptographicUsageMask>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::CryptographicUsageMask>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Integer)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::CryptographicUsageMask>::new(sample.with_value(|value| {
                     match value {
@@ -759,7 +1027,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::CryptographicUsageMask>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::CryptographicUsageMask>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Integer)
+                && sample.tag().raw() == 0x42_00_2C)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::CryptographicUsageMask>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -771,7 +1045,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::CryptographicUsageMask>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::CryptographicUsageMask>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Integer)
+                && sample.tag().raw() == 0x42_00_2C)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::CryptographicUsageMask>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -783,7 +1063,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::CryptographicUsageMask>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::CryptographicUsageMask>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Integer)
+                && sample.tag().raw() == 0x42_00_2C)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::CryptographicUsageMask>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -799,7 +1085,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::DeactivationDate>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::DeactivationDate>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::DeactivationDate>::new(sample.with_value(
                     |value| match value {
@@ -820,7 +1110,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::DeactivationDate>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::DeactivationDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_00_2F)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::DeactivationDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -832,7 +1128,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::DeactivationDate>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::DeactivationDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_00_2F)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::DeactivationDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -844,7 +1146,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::DeactivationDate>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::DeactivationDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_00_2F)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::DeactivationDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -860,7 +1168,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::DestroyDate>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::DestroyDate>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::DestroyDate>::new(sample.with_value(|value| match value {
                     ValueView::DateTime(value) => Ok(*value),
@@ -879,7 +1191,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::DestroyDate>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::DestroyDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_00_33)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::DestroyDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -891,7 +1209,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::DestroyDate>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::DestroyDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_00_33)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::DestroyDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -903,7 +1227,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::DestroyDate>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::DestroyDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_00_33)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::DestroyDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -919,7 +1249,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::Digest>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::Digest>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::Digest>::new(
                     sample
@@ -941,7 +1275,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::Digest>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::Digest>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_34)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::Digest>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -953,7 +1293,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::Digest>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::Digest>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_34)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::Digest>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -965,7 +1311,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::Digest>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::Digest>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_34)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::Digest>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -981,7 +1333,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::InitialDate>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::InitialDate>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::InitialDate>::new(sample.with_value(|value| match value {
                     ValueView::DateTime(value) => Ok(*value),
@@ -1000,7 +1356,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::InitialDate>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::InitialDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_00_39)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::InitialDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1012,7 +1374,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::InitialDate>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::InitialDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_00_39)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::InitialDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1024,7 +1392,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::InitialDate>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::InitialDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_00_39)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::InitialDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1040,7 +1414,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::KeyFormatType>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::KeyFormatType>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::KeyFormatType>::new(sample.with_value(|value| match value {
                     ValueView::Enumeration(value) => Ok(*value),
@@ -1059,7 +1437,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::KeyFormatType>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::KeyFormatType>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)
+                && sample.tag().raw() == 0x42_00_42)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::KeyFormatType>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1071,7 +1455,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::KeyFormatType>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::KeyFormatType>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)
+                && sample.tag().raw() == 0x42_00_42)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::KeyFormatType>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1083,7 +1473,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::KeyFormatType>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::KeyFormatType>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)
+                && sample.tag().raw() == 0x42_00_42)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::KeyFormatType>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1099,7 +1495,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::LastChangeDate>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::LastChangeDate>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::LastChangeDate>::new(sample.with_value(|value| match value {
                     ValueView::DateTime(value) => Ok(*value),
@@ -1118,7 +1518,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::LastChangeDate>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::LastChangeDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_00_48)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::LastChangeDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1130,7 +1536,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::LastChangeDate>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::LastChangeDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_00_48)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::LastChangeDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1142,7 +1554,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::LastChangeDate>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::LastChangeDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_00_48)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::LastChangeDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1158,7 +1576,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::LeaseTime>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::LeaseTime>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Interval)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::LeaseTime>::new(sample.with_value(|value| match value {
                     ValueView::Interval(value) => Ok(*value),
@@ -1177,7 +1599,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::LeaseTime>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::LeaseTime>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Interval)
+                && sample.tag().raw() == 0x42_00_49)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::LeaseTime>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1189,7 +1617,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::LeaseTime>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::LeaseTime>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Interval)
+                && sample.tag().raw() == 0x42_00_49)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::LeaseTime>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1201,7 +1635,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::LeaseTime>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::LeaseTime>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Interval)
+                && sample.tag().raw() == 0x42_00_49)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::LeaseTime>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1217,7 +1657,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::Link>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::Link>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::Link>::new(
                     sample
@@ -1239,7 +1683,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::Link>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::Link>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_4A)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::Link>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1252,6 +1702,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
             })())
         }
         "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::Link>" => {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_4A)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::Link>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1263,7 +1718,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::Link>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::Link>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_4A)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::Link>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1279,7 +1740,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::Name>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::Name>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::Name>::new(
                     sample
@@ -1301,7 +1766,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::Name>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::Name>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_53)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::Name>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1314,6 +1785,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
             })())
         }
         "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::Name>" => {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_53)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::Name>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1325,7 +1801,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::Name>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::Name>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_53)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::Name>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1341,7 +1823,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::ObjectGroup>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::ObjectGroup>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::TextString)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::ObjectGroup>::new(sample.with_value(|value| match value {
                     ValueView::TextString(value) => Ok(value.to_owned()),
@@ -1360,7 +1846,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::ObjectGroup>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::ObjectGroup>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::TextString)
+                && sample.tag().raw() == 0x42_00_56)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ObjectGroup>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1372,7 +1864,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::ObjectGroup>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::ObjectGroup>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::TextString)
+                && sample.tag().raw() == 0x42_00_56)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ObjectGroup>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1384,7 +1882,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::ObjectGroup>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::ObjectGroup>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::TextString)
+                && sample.tag().raw() == 0x42_00_56)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ObjectGroup>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1400,7 +1904,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::ObjectType>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::ObjectType>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::ObjectType>::new(sample.with_value(|value| match value {
                     ValueView::Enumeration(value) => Ok(*value),
@@ -1419,7 +1927,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::ObjectType>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::ObjectType>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)
+                && sample.tag().raw() == 0x42_00_57)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ObjectType>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1431,7 +1945,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::ObjectType>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::ObjectType>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)
+                && sample.tag().raw() == 0x42_00_57)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ObjectType>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1443,7 +1963,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::ObjectType>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::ObjectType>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)
+                && sample.tag().raw() == 0x42_00_57)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ObjectType>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1459,7 +1985,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::OpaqueDataType>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::OpaqueDataType>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::OpaqueDataType>::new(sample.with_value(|value| match value {
                     ValueView::Enumeration(value) => Ok(*value),
@@ -1478,7 +2008,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::OpaqueDataType>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::OpaqueDataType>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)
+                && sample.tag().raw() == 0x42_00_59)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::OpaqueDataType>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1490,7 +2026,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::OpaqueDataType>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::OpaqueDataType>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)
+                && sample.tag().raw() == 0x42_00_59)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::OpaqueDataType>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1502,7 +2044,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::OpaqueDataType>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::OpaqueDataType>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)
+                && sample.tag().raw() == 0x42_00_59)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::OpaqueDataType>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1518,7 +2066,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::ProcessStartDate>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::ProcessStartDate>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::ProcessStartDate>::new(sample.with_value(
                     |value| match value {
@@ -1539,7 +2091,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::ProcessStartDate>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::ProcessStartDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_00_67)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ProcessStartDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1551,7 +2109,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::ProcessStartDate>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::ProcessStartDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_00_67)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ProcessStartDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1563,7 +2127,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::ProcessStartDate>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::ProcessStartDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_00_67)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ProcessStartDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1579,7 +2149,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::ProtectStopDate>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::ProtectStopDate>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::ProtectStopDate>::new(sample.with_value(
                     |value| match value {
@@ -1600,7 +2174,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::ProtectStopDate>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::ProtectStopDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_00_68)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ProtectStopDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1612,7 +2192,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::ProtectStopDate>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::ProtectStopDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_00_68)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ProtectStopDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1624,7 +2210,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::ProtectStopDate>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::ProtectStopDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_00_68)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ProtectStopDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1640,7 +2232,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::RevocationReason>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::RevocationReason>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::RevocationReason>::new(
                     sample
@@ -1662,7 +2258,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::RevocationReason>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::RevocationReason>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_81)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::RevocationReason>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1674,7 +2276,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::RevocationReason>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::RevocationReason>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_81)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::RevocationReason>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1686,7 +2294,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::RevocationReason>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::RevocationReason>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_81)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::RevocationReason>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1702,7 +2316,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::State>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::State>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::State>::new(sample.with_value(|value| match value {
                     ValueView::Enumeration(value) => Ok(*value),
@@ -1721,7 +2339,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::State>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::State>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)
+                && sample.tag().raw() == 0x42_00_8D)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::State>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1733,7 +2357,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::State>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::State>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)
+                && sample.tag().raw() == 0x42_00_8D)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::State>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1745,7 +2375,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::State>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::State>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)
+                && sample.tag().raw() == 0x42_00_8D)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::State>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1761,7 +2397,14 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::UniqueIdentifier>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::UniqueIdentifier>::new" =>
+        {
+            if !(matches!(
+                sample.item_type(),
+                ItemType::TextString | ItemType::Integer | ItemType::Enumeration
+            )) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::UniqueIdentifier>::new(sample.with_value(
                     |value| match value {
@@ -1794,7 +2437,15 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::UniqueIdentifier>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::UniqueIdentifier>" =>
+        {
+            if !(matches!(
+                sample.item_type(),
+                ItemType::TextString | ItemType::Integer | ItemType::Enumeration
+            ) && sample.tag().raw() == 0x42_00_94)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::UniqueIdentifier>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1806,7 +2457,15 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::UniqueIdentifier>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::UniqueIdentifier>" =>
+        {
+            if !(matches!(
+                sample.item_type(),
+                ItemType::TextString | ItemType::Integer | ItemType::Enumeration
+            ) && sample.tag().raw() == 0x42_00_94)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::UniqueIdentifier>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1818,7 +2477,15 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::UniqueIdentifier>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::UniqueIdentifier>" =>
+        {
+            if !(matches!(
+                sample.item_type(),
+                ItemType::TextString | ItemType::Integer | ItemType::Enumeration
+            ) && sample.tag().raw() == 0x42_00_94)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::UniqueIdentifier>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1834,7 +2501,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::UsageLimits>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::UsageLimits>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::UsageLimits>::new(
                     sample
@@ -1856,7 +2527,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::UsageLimits>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::UsageLimits>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_95)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::UsageLimits>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1868,7 +2545,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::UsageLimits>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::UsageLimits>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_95)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::UsageLimits>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1880,7 +2563,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::UsageLimits>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::UsageLimits>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_95)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::UsageLimits>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1896,7 +2585,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::Fresh>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::Fresh>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::Fresh>::new(sample.with_value(|value| match value {
                     ValueView::Boolean(value) => Ok(*value),
@@ -1915,7 +2608,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::Fresh>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::Fresh>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)
+                && sample.tag().raw() == 0x42_00_A8)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::Fresh>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1927,7 +2626,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::Fresh>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::Fresh>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)
+                && sample.tag().raw() == 0x42_00_A8)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::Fresh>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1939,7 +2644,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::Fresh>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::Fresh>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)
+                && sample.tag().raw() == 0x42_00_A8)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::Fresh>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1955,7 +2666,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::CertificateLength>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::CertificateLength>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Integer)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::CertificateLength>::new(sample.with_value(
                     |value| match value {
@@ -1976,7 +2691,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::CertificateLength>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::CertificateLength>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Integer)
+                && sample.tag().raw() == 0x42_00_AD)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::CertificateLength>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -1988,7 +2709,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::CertificateLength>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::CertificateLength>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Integer)
+                && sample.tag().raw() == 0x42_00_AD)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::CertificateLength>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2000,7 +2727,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::CertificateLength>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::CertificateLength>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Integer)
+                && sample.tag().raw() == 0x42_00_AD)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::CertificateLength>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2016,7 +2749,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::DigitalSignatureAlgorithm>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::DigitalSignatureAlgorithm>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::DigitalSignatureAlgorithm>::new(sample.with_value(|value| {
                     match value {
@@ -2037,7 +2774,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::DigitalSignatureAlgorithm>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::DigitalSignatureAlgorithm>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)
+                && sample.tag().raw() == 0x42_00_AE)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::DigitalSignatureAlgorithm>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2049,7 +2792,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::DigitalSignatureAlgorithm>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::DigitalSignatureAlgorithm>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)
+                && sample.tag().raw() == 0x42_00_AE)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::DigitalSignatureAlgorithm>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2061,7 +2810,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::DigitalSignatureAlgorithm>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::DigitalSignatureAlgorithm>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)
+                && sample.tag().raw() == 0x42_00_AE)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::DigitalSignatureAlgorithm>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2077,7 +2832,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::X509CertificateIdentifier>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::X509CertificateIdentifier>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::X509CertificateIdentifier>::new(
                     sample
@@ -2099,7 +2858,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::X509CertificateIdentifier>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::X509CertificateIdentifier>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_B5)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::X509CertificateIdentifier>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2111,7 +2876,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::X509CertificateIdentifier>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::X509CertificateIdentifier>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_B5)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::X509CertificateIdentifier>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2123,7 +2894,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::X509CertificateIdentifier>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::X509CertificateIdentifier>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_B5)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::X509CertificateIdentifier>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2139,7 +2916,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::X509CertificateIssuer>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::X509CertificateIssuer>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::X509CertificateIssuer>::new(
                     sample
@@ -2161,7 +2942,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::X509CertificateIssuer>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::X509CertificateIssuer>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_B6)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::X509CertificateIssuer>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2173,7 +2960,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::X509CertificateIssuer>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::X509CertificateIssuer>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_B6)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::X509CertificateIssuer>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2185,7 +2978,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::X509CertificateIssuer>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::X509CertificateIssuer>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_B6)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::X509CertificateIssuer>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2201,7 +3000,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::X509CertificateSubject>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::X509CertificateSubject>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::X509CertificateSubject>::new(
                     sample
@@ -2223,7 +3026,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::X509CertificateSubject>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::X509CertificateSubject>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_B7)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::X509CertificateSubject>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2235,7 +3044,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::X509CertificateSubject>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::X509CertificateSubject>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_B7)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::X509CertificateSubject>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2247,7 +3062,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::X509CertificateSubject>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::X509CertificateSubject>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_B7)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::X509CertificateSubject>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2263,7 +3084,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::KeyValueLocation>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::KeyValueLocation>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::KeyValueLocation>::new(
                     sample
@@ -2285,7 +3110,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::KeyValueLocation>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::KeyValueLocation>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_B8)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::KeyValueLocation>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2297,7 +3128,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::KeyValueLocation>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::KeyValueLocation>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_B8)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::KeyValueLocation>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2309,7 +3146,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::KeyValueLocation>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::KeyValueLocation>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_B8)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::KeyValueLocation>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2325,7 +3168,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::KeyValuePresent>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::KeyValuePresent>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::KeyValuePresent>::new(sample.with_value(
                     |value| match value {
@@ -2346,7 +3193,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::KeyValuePresent>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::KeyValuePresent>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)
+                && sample.tag().raw() == 0x42_00_BB)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::KeyValuePresent>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2358,7 +3211,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::KeyValuePresent>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::KeyValuePresent>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)
+                && sample.tag().raw() == 0x42_00_BB)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::KeyValuePresent>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2370,7 +3229,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::KeyValuePresent>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::KeyValuePresent>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)
+                && sample.tag().raw() == 0x42_00_BB)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::KeyValuePresent>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2386,7 +3251,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::OriginalCreationDate>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::OriginalCreationDate>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::OriginalCreationDate>::new(sample.with_value(
                     |value| match value {
@@ -2407,7 +3276,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::OriginalCreationDate>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::OriginalCreationDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_00_BC)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::OriginalCreationDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2419,7 +3294,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::OriginalCreationDate>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::OriginalCreationDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_00_BC)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::OriginalCreationDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2431,7 +3312,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::OriginalCreationDate>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::OriginalCreationDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_00_BC)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::OriginalCreationDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2447,7 +3334,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::AlternativeName>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::AlternativeName>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::AlternativeName>::new(
                     sample
@@ -2469,7 +3360,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::AlternativeName>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::AlternativeName>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_BF)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::AlternativeName>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2481,7 +3378,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::AlternativeName>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::AlternativeName>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_BF)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::AlternativeName>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2493,7 +3396,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::AlternativeName>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::AlternativeName>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_BF)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::AlternativeName>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2509,7 +3418,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::RandomNumberGenerator>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::RandomNumberGenerator>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::RandomNumberGenerator>::new(
                     sample
@@ -2531,7 +3444,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::RandomNumberGenerator>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::RandomNumberGenerator>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_DE)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::RandomNumberGenerator>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2543,7 +3462,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::RandomNumberGenerator>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::RandomNumberGenerator>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_DE)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::RandomNumberGenerator>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2555,7 +3480,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::RandomNumberGenerator>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::RandomNumberGenerator>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_00_DE)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::RandomNumberGenerator>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2571,7 +3502,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::Pkcs12FriendlyName>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::Pkcs12FriendlyName>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::TextString)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::Pkcs12FriendlyName>::new(sample.with_value(
                     |value| match value {
@@ -2592,7 +3527,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::Pkcs12FriendlyName>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::Pkcs12FriendlyName>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::TextString)
+                && sample.tag().raw() == 0x42_00_FB)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::Pkcs12FriendlyName>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2604,7 +3545,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::Pkcs12FriendlyName>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::Pkcs12FriendlyName>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::TextString)
+                && sample.tag().raw() == 0x42_00_FB)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::Pkcs12FriendlyName>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2616,7 +3563,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::Pkcs12FriendlyName>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::Pkcs12FriendlyName>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::TextString)
+                && sample.tag().raw() == 0x42_00_FB)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::Pkcs12FriendlyName>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2632,7 +3585,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::Description>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::Description>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::TextString)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::Description>::new(sample.with_value(|value| match value {
                     ValueView::TextString(value) => Ok(value.to_owned()),
@@ -2651,7 +3608,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::Description>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::Description>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::TextString)
+                && sample.tag().raw() == 0x42_00_FC)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::Description>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2663,7 +3626,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::Description>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::Description>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::TextString)
+                && sample.tag().raw() == 0x42_00_FC)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::Description>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2675,7 +3644,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::Description>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::Description>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::TextString)
+                && sample.tag().raw() == 0x42_00_FC)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::Description>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2691,7 +3666,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::Comment>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::Comment>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::TextString)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::Comment>::new(sample.with_value(|value| match value {
                     ValueView::TextString(value) => Ok(value.to_owned()),
@@ -2710,7 +3689,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::Comment>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::Comment>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::TextString)
+                && sample.tag().raw() == 0x42_00_FD)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::Comment>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2722,7 +3707,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::Comment>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::Comment>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::TextString)
+                && sample.tag().raw() == 0x42_00_FD)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::Comment>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2734,7 +3725,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::Comment>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::Comment>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::TextString)
+                && sample.tag().raw() == 0x42_00_FD)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::Comment>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2750,7 +3747,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::Sensitive>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::Sensitive>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::Sensitive>::new(sample.with_value(|value| match value {
                     ValueView::Boolean(value) => Ok(*value),
@@ -2769,7 +3770,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::Sensitive>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::Sensitive>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)
+                && sample.tag().raw() == 0x42_01_20)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::Sensitive>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2781,7 +3788,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::Sensitive>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::Sensitive>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)
+                && sample.tag().raw() == 0x42_01_20)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::Sensitive>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2793,7 +3806,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::Sensitive>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::Sensitive>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)
+                && sample.tag().raw() == 0x42_01_20)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::Sensitive>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2809,7 +3828,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::AlwaysSensitive>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::AlwaysSensitive>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::AlwaysSensitive>::new(sample.with_value(
                     |value| match value {
@@ -2830,7 +3853,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::AlwaysSensitive>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::AlwaysSensitive>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)
+                && sample.tag().raw() == 0x42_01_21)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::AlwaysSensitive>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2842,7 +3871,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::AlwaysSensitive>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::AlwaysSensitive>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)
+                && sample.tag().raw() == 0x42_01_21)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::AlwaysSensitive>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2854,7 +3889,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::AlwaysSensitive>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::AlwaysSensitive>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)
+                && sample.tag().raw() == 0x42_01_21)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::AlwaysSensitive>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2870,7 +3911,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::Extractable>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::Extractable>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::Extractable>::new(sample.with_value(|value| match value {
                     ValueView::Boolean(value) => Ok(*value),
@@ -2889,7 +3934,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::Extractable>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::Extractable>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)
+                && sample.tag().raw() == 0x42_01_22)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::Extractable>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2901,7 +3952,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::Extractable>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::Extractable>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)
+                && sample.tag().raw() == 0x42_01_22)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::Extractable>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2913,7 +3970,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::Extractable>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::Extractable>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)
+                && sample.tag().raw() == 0x42_01_22)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::Extractable>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2929,7 +3992,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::NeverExtractable>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::NeverExtractable>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::NeverExtractable>::new(sample.with_value(
                     |value| match value {
@@ -2950,7 +4017,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::NeverExtractable>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::NeverExtractable>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)
+                && sample.tag().raw() == 0x42_01_23)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::NeverExtractable>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2962,7 +4035,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::NeverExtractable>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::NeverExtractable>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)
+                && sample.tag().raw() == 0x42_01_23)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::NeverExtractable>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2974,7 +4053,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::NeverExtractable>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::NeverExtractable>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)
+                && sample.tag().raw() == 0x42_01_23)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::NeverExtractable>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -2990,7 +4075,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::ShortUniqueIdentifier>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::ShortUniqueIdentifier>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::ByteString)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::ShortUniqueIdentifier>::new(sample.with_value(|value| {
                     match value {
@@ -3011,7 +4100,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::ShortUniqueIdentifier>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::ShortUniqueIdentifier>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::ByteString)
+                && sample.tag().raw() == 0x42_01_36)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ShortUniqueIdentifier>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3023,7 +4118,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::ShortUniqueIdentifier>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::ShortUniqueIdentifier>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::ByteString)
+                && sample.tag().raw() == 0x42_01_36)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ShortUniqueIdentifier>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3035,7 +4136,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::ShortUniqueIdentifier>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::ShortUniqueIdentifier>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::ByteString)
+                && sample.tag().raw() == 0x42_01_36)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ShortUniqueIdentifier>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3051,7 +4158,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::NistKeyType>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::NistKeyType>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::NistKeyType>::new(sample.with_value(|value| match value {
                     ValueView::Enumeration(value) => Ok(*value),
@@ -3070,7 +4181,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::NistKeyType>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::NistKeyType>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)
+                && sample.tag().raw() == 0x42_01_3A)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::NistKeyType>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3082,7 +4199,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::NistKeyType>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::NistKeyType>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)
+                && sample.tag().raw() == 0x42_01_3A)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::NistKeyType>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3094,7 +4217,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::NistKeyType>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::NistKeyType>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)
+                && sample.tag().raw() == 0x42_01_3A)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::NistKeyType>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3110,7 +4239,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::ProtectionLevel>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::ProtectionLevel>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::ProtectionLevel>::new(sample.with_value(
                     |value| match value {
@@ -3131,7 +4264,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::ProtectionLevel>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::ProtectionLevel>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)
+                && sample.tag().raw() == 0x42_01_45)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ProtectionLevel>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3143,7 +4282,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::ProtectionLevel>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::ProtectionLevel>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)
+                && sample.tag().raw() == 0x42_01_45)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ProtectionLevel>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3155,7 +4300,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::ProtectionLevel>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::ProtectionLevel>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Enumeration)
+                && sample.tag().raw() == 0x42_01_45)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ProtectionLevel>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3171,7 +4322,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::ProtectionPeriod>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::ProtectionPeriod>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Interval)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::ProtectionPeriod>::new(sample.with_value(
                     |value| match value {
@@ -3192,7 +4347,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::ProtectionPeriod>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::ProtectionPeriod>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Interval)
+                && sample.tag().raw() == 0x42_01_46)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ProtectionPeriod>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3204,7 +4365,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::ProtectionPeriod>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::ProtectionPeriod>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Interval)
+                && sample.tag().raw() == 0x42_01_46)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ProtectionPeriod>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3216,7 +4383,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::ProtectionPeriod>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::ProtectionPeriod>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Interval)
+                && sample.tag().raw() == 0x42_01_46)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ProtectionPeriod>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3232,7 +4405,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::QuantumSafe>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::QuantumSafe>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::QuantumSafe>::new(sample.with_value(|value| match value {
                     ValueView::Boolean(value) => Ok(*value),
@@ -3251,7 +4428,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::QuantumSafe>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::QuantumSafe>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)
+                && sample.tag().raw() == 0x42_01_47)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::QuantumSafe>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3263,7 +4446,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::QuantumSafe>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::QuantumSafe>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)
+                && sample.tag().raw() == 0x42_01_47)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::QuantumSafe>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3275,7 +4464,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::QuantumSafe>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::QuantumSafe>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)
+                && sample.tag().raw() == 0x42_01_47)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::QuantumSafe>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3291,7 +4486,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::ProtectionStorageMask>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::ProtectionStorageMask>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Integer)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::ProtectionStorageMask>::new(sample.with_value(|value| {
                     match value {
@@ -3312,7 +4511,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::ProtectionStorageMask>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::ProtectionStorageMask>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Integer)
+                && sample.tag().raw() == 0x42_01_5E)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ProtectionStorageMask>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3324,7 +4529,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::ProtectionStorageMask>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::ProtectionStorageMask>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Integer)
+                && sample.tag().raw() == 0x42_01_5E)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ProtectionStorageMask>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3336,7 +4547,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::ProtectionStorageMask>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::ProtectionStorageMask>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Integer)
+                && sample.tag().raw() == 0x42_01_5E)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::ProtectionStorageMask>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3352,7 +4569,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::RotateInterval>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::RotateInterval>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Interval)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::RotateInterval>::new(sample.with_value(|value| match value {
                     ValueView::Interval(value) => Ok(*value),
@@ -3371,7 +4592,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::RotateInterval>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::RotateInterval>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Interval)
+                && sample.tag().raw() == 0x42_01_6A)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::RotateInterval>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3383,7 +4610,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::RotateInterval>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::RotateInterval>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Interval)
+                && sample.tag().raw() == 0x42_01_6A)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::RotateInterval>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3395,7 +4628,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::RotateInterval>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::RotateInterval>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Interval)
+                && sample.tag().raw() == 0x42_01_6A)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::RotateInterval>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3411,7 +4650,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::RotateAutomatic>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::RotateAutomatic>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::RotateAutomatic>::new(sample.with_value(
                     |value| match value {
@@ -3432,7 +4675,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::RotateAutomatic>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::RotateAutomatic>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)
+                && sample.tag().raw() == 0x42_01_6B)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::RotateAutomatic>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3444,7 +4693,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::RotateAutomatic>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::RotateAutomatic>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)
+                && sample.tag().raw() == 0x42_01_6B)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::RotateAutomatic>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3456,7 +4711,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::RotateAutomatic>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::RotateAutomatic>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)
+                && sample.tag().raw() == 0x42_01_6B)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::RotateAutomatic>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3472,7 +4733,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::RotateOffset>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::RotateOffset>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Interval)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::RotateOffset>::new(sample.with_value(|value| match value {
                     ValueView::Interval(value) => Ok(*value),
@@ -3491,7 +4756,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::RotateOffset>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::RotateOffset>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Interval)
+                && sample.tag().raw() == 0x42_01_6C)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::RotateOffset>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3503,7 +4774,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::RotateOffset>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::RotateOffset>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Interval)
+                && sample.tag().raw() == 0x42_01_6C)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::RotateOffset>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3515,7 +4792,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::RotateOffset>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::RotateOffset>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Interval)
+                && sample.tag().raw() == 0x42_01_6C)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::RotateOffset>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3531,7 +4814,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::RotateDate>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::RotateDate>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::RotateDate>::new(sample.with_value(|value| match value {
                     ValueView::DateTime(value) => Ok(*value),
@@ -3550,7 +4837,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::RotateDate>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::RotateDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_01_6D)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::RotateDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3562,7 +4855,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::RotateDate>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::RotateDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_01_6D)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::RotateDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3574,7 +4873,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::RotateDate>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::RotateDate>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::DateTime)
+                && sample.tag().raw() == 0x42_01_6D)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::RotateDate>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3590,7 +4895,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::RotateGeneration>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::RotateGeneration>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Integer)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::RotateGeneration>::new(sample.with_value(
                     |value| match value {
@@ -3611,7 +4920,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::RotateGeneration>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::RotateGeneration>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Integer)
+                && sample.tag().raw() == 0x42_01_6E)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::RotateGeneration>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3623,7 +4938,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::RotateGeneration>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::RotateGeneration>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Integer)
+                && sample.tag().raw() == 0x42_01_6E)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::RotateGeneration>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3635,7 +4956,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::RotateGeneration>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::RotateGeneration>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Integer)
+                && sample.tag().raw() == 0x42_01_6E)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::RotateGeneration>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3651,7 +4978,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::RotateName>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::RotateName>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::RotateName>::new(
                     sample
@@ -3673,7 +5004,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::RotateName>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::RotateName>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_01_6F)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::RotateName>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3685,7 +5022,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::RotateName>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::RotateName>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_01_6F)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::RotateName>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3697,7 +5040,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::RotateName>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::RotateName>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Structure)
+                && sample.tag().raw() == 0x42_01_6F)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::RotateName>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3713,7 +5062,11 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::RotateLatest>::new" => {
+        "kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::RotateLatest>::new" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)) {
+                return None;
+            }
             Some((|| {
                 Attribute::<typed::RotateLatest>::new(sample.with_value(|value| match value {
                     ValueView::Boolean(value) => Ok(*value),
@@ -3732,7 +5085,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                 .map_err(|_| "typed constructor rejected")
             })())
         }
-        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::RotateLatest>" => {
+        "kmipkit_protocol::CurrentAttribute::from_typed::<kmipkit_protocol::attribute::typed::RotateLatest>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)
+                && sample.tag().raw() == 0x42_01_72)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::RotateLatest>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3744,7 +5103,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::RotateLatest>" => {
+        "kmipkit_protocol::NewAttribute::from_typed::<kmipkit_protocol::attribute::typed::RotateLatest>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)
+                && sample.tag().raw() == 0x42_01_72)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::RotateLatest>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
@@ -3756,7 +5121,13 @@ pub(crate) fn execute(symbol: &str, sample: &Item) -> Option<Result<Item>> {
                     .map_err(|_| "attribute copy failed")
             })())
         }
-        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::RotateLatest>" => {
+        "kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::RotateLatest>" =>
+        {
+            if !(matches!(sample.item_type(), ItemType::Boolean)
+                && sample.tag().raw() == 0x42_01_72)
+            {
+                return None;
+            }
             Some((|| {
                 let attribute = Attribute::<typed::RotateLatest>::from_item(
                     sample.try_clone().map_err(|_| "attribute copy failed")?,
