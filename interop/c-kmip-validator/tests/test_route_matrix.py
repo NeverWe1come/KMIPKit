@@ -62,6 +62,22 @@ class RouteMatrixTests(unittest.TestCase):
                 if item['kind'] == 'tag'}
         self.assertIsNone(self.runner.generic_tree_fixtures(target, catalog, tags, '2.1'))
 
+    def test_enum_extension_and_reserved_ranges_roundtrip_both_boundaries(self):
+        from artifact_support import ROOT
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        targets = {target['target_id']: target for target in catalog['normative_targets']}
+        tags = {target['name']: int(target['wire_value'], 16) for target in catalog['normative_targets']
+                if target['kind'] == 'tag'}
+        enum_extension = targets['KMIPKIT-ELEM-ENUM-VALUE-ADJUSTMENT-TYPE-EXTENSIONS-8XXXXXXX']
+        mask_extension = targets['KMIPKIT-ELEM-BITMASK-VALUE-CRYPTOGRAPHIC-USAGE-MASK-EXTENSIONS-XXX00000']
+        reserved_range = targets['KMIPKIT-ELEM-ENUM-VALUE-PROFILE-NAME-RESERVED-00000001-00000103']
+        self.assertEqual([tree[2] for tree in self.runner.generic_tree_fixtures(
+            enum_extension, catalog, tags, '2.1')], [bytes.fromhex('80000000'), bytes.fromhex('8fffffff')])
+        self.assertEqual([tree[2] for tree in self.runner.generic_tree_fixtures(
+            mask_extension, catalog, tags, '2.1')], [bytes.fromhex('00000000'), bytes.fromhex('fff00000')])
+        self.assertEqual([tree[2] for tree in self.runner.generic_tree_fixtures(
+            reserved_range, catalog, tags, '2.1')], [bytes.fromhex('00000001'), bytes.fromhex('00000103')])
+
     def test_ttlv_encoding_parser_keeps_compound_types_distinct(self):
         self.assertEqual(self.runner._type_codes('Long Integer'), [3])
         self.assertEqual(self.runner._type_codes('Big Integer'), [4])
