@@ -259,6 +259,14 @@ class MatrixContract(unittest.TestCase):
         self.assertEqual(len(report['events']), 4)
         self.assertEqual(report['events'][2]['request_tree_sha256'], report['events'][3]['request_tree_sha256'])
 
+    def test_structure_try_push_inserts_a_normative_member_into_its_parent(self):
+        cell = self.cell('kmipkit_ttlv::Structure::try_push',
+                         'KMIPKIT-ELEM-OBJECT-STRUCTURE-3-10-KEY-MATERIAL')
+        process, report = self.run_matrix([cell])
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual('passed', report['events'][0]['status'])
+        self.assertRegex(report['events'][0]['request_tree_sha256'], r'^[0-9a-f]{64}$')
+
     def test_ci_gate_refuses_a_partial_real_route_run(self):
         with tempfile.TemporaryDirectory() as directory:
             matrix = Path(directory) / 'one-cell.jsonl'
