@@ -86,6 +86,10 @@ pub enum FluentBuildError {
     InvalidAttributeValue,
     /// A KMIP message extension tag was supplied as an Object Attribute.
     MessageExtensionTagNotObjectAttribute,
+    /// More than one expert attribute requested the same final position.
+    DuplicateAttributePosition,
+    /// An expert attribute position is outside the final Object Attributes list.
+    AttributePositionOutOfBounds,
     /// A typed request failed its existing validation rules.
     InvalidRequest,
     /// A local TTLV value could not be copied into the fluent request.
@@ -110,6 +114,10 @@ impl fmt::Display for FluentBuildError {
             Self::MessageExtensionTagNotObjectAttribute => {
                 "KMIP message extension tags are not Object Attributes"
             }
+            Self::DuplicateAttributePosition => "fluent Object Attribute positions must be unique",
+            Self::AttributePositionOutOfBounds => {
+                "fluent Object Attribute position is outside the final attribute list"
+            }
             Self::InvalidRequest => "fluent request failed typed request validation",
             Self::InvalidTtlvValue => "fluent TTLV value could not be represented",
             Self::MissingClientForExecution => {
@@ -120,6 +128,17 @@ impl fmt::Display for FluentBuildError {
 }
 
 impl Error for FluentBuildError {}
+
+/// Explicit parent path and final zero-based position for an expert attribute.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum FluentAttributePosition {
+    /// Insert a direct item into Request Payload / Object Attributes.
+    ObjectAttributes {
+        /// Index in the final Object Attributes sequence after semantic fields
+        /// and append-only expert attributes have been assembled.
+        index: usize,
+    },
+}
 
 /// A scoped fluent namespace borrowed from a mutable client.
 pub struct RequestBuilder<'a> {
@@ -168,6 +187,7 @@ pub struct CreateSymmetricKeyBuilder<'a> {
     usage_mask: Option<CryptographicUsageMask>,
     name: Option<String>,
     attributes: AttributeSet,
+    positioned_attributes: Vec<(usize, Item)>,
     attribute_error: Option<FluentBuildError>,
     options: Option<RequestOptions>,
     asynchronous_indicator: Option<u32>,
@@ -182,6 +202,7 @@ impl<'a> CreateSymmetricKeyBuilder<'a> {
             usage_mask: None,
             name: None,
             attributes: AttributeSet::new(),
+            positioned_attributes: Vec::new(),
             attribute_error: None,
             options: None,
             asynchronous_indicator: None,
@@ -273,6 +294,34 @@ impl<'a> CreateSymmetricKeyBuilder<'a> {
     #[must_use]
     pub fn attribute_item(mut self, item: Item) -> Self {
         self.add_attribute_item(item);
+        self
+    }
+
+    /// Inserts an explicit expert Item at a path and position in the final
+    /// Request Payload / Object Attributes sequence.
+    ///
+    /// The Item's tag and TTLV value type are explicit in `item`. Catalogued
+    /// tags and Vendor Attributes are validated by the same `AttributeSet` and
+    /// typed request checks used for semantic attributes.
+    #[must_use]
+    pub fn attribute_at(mut self, position: FluentAttributePosition, item: Item) -> Self {
+        if self.attribute_error.is_some() {
+            return self;
+        }
+        let FluentAttributePosition::ObjectAttributes { index } = position;
+        if (MESSAGE_EXTENSION_TAG_START..=MESSAGE_EXTENSION_TAG_END).contains(&item.tag().raw()) {
+            self.attribute_error = Some(FluentBuildError::MessageExtensionTagNotObjectAttribute);
+            return self;
+        }
+        if self
+            .positioned_attributes
+            .iter()
+            .any(|(existing, _)| *existing == index)
+        {
+            self.attribute_error = Some(FluentBuildError::DuplicateAttributePosition);
+            return self;
+        }
+        self.positioned_attributes.push((index, item));
         self
     }
 
@@ -446,6 +495,36 @@ impl<'a> CreateSymmetricKeyBuilder<'a> {
                     item.try_clone()
                         .map_err(|_| FluentBuildError::InvalidTtlvValue)?,
                 )
+                .map_err(|_| FluentBuildError::InvalidAttributeValue)?;
+        }
+
+        if !self.positioned_attributes.is_empty() {
+            let final_len = attributes
+                .len()
+                .checked_add(self.positioned_attributes.len())
+                .ok_or(FluentBuildError::AttributePositionOutOfBounds)?;
+            let mut positioned = self.positioned_attributes.iter().collect::<Vec<_>>();
+            positioned.sort_by_key(|(index, _)| *index);
+            if positioned.iter().any(|(index, _)| *index >= final_len) {
+                return Err(FluentBuildError::AttributePositionOutOfBounds);
+            }
+
+            let mut ordered = attributes
+                .as_items()
+                .iter()
+                .map(Item::try_clone)
+                .collect::<Result<Vec<_>, _>>()
+                .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
+            for (index, item) in positioned {
+                let copy = item
+                    .try_clone()
+                    .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
+                if *index > ordered.len() {
+                    return Err(FluentBuildError::AttributePositionOutOfBounds);
+                }
+                ordered.insert(*index, copy);
+            }
+            attributes = AttributeSet::try_new(ordered)
                 .map_err(|_| FluentBuildError::InvalidAttributeValue)?;
         }
 

@@ -9,8 +9,7 @@ use crate::asynchronous_execution_test_support::client_for;
 use crate::execute::{ClientBatchOutcome, ClientOperation, encode_message_for_test};
 use crate::execute_test_support::{test_item, test_structure};
 use crate::fluent::{
-    CreateSymmetricKeyBuilder, CryptographicUsageMask, FluentAttributePosition,
-    FluentBuildError,
+    CreateSymmetricKeyBuilder, CryptographicUsageMask, FluentAttributePosition, FluentBuildError,
 };
 
 fn item(raw_tag: u32, value: Value) -> Item {
@@ -139,6 +138,14 @@ fn fluent_build_errors_have_stable_user_facing_messages() {
         (
             FluentBuildError::MessageExtensionTagNotObjectAttribute,
             "KMIP message extension tags are not Object Attributes",
+        ),
+        (
+            FluentBuildError::DuplicateAttributePosition,
+            "fluent Object Attribute positions must be unique",
+        ),
+        (
+            FluentBuildError::AttributePositionOutOfBounds,
+            "fluent Object Attribute position is outside the final attribute list",
         ),
         (
             FluentBuildError::InvalidRequest,
@@ -342,10 +349,16 @@ fn expert_attribute_positions_apply_to_the_final_ordered_attribute_sequence() {
     let attributes = request.attributes().as_items();
     assert_eq!(attributes.len(), 7);
     assert_eq!(attributes[0].tag().raw(), 0x0042_005C);
-    assert_eq!(attributes[1].tag().raw(), typed::CryptographicAlgorithm::TAG);
+    assert_eq!(
+        attributes[1].tag().raw(),
+        typed::CryptographicAlgorithm::TAG
+    );
     assert_eq!(attributes[2].tag().raw(), 0x0042_005C);
     assert_eq!(attributes[3].tag().raw(), typed::CryptographicLength::TAG);
-    assert_eq!(attributes[4].tag().raw(), typed::CryptographicUsageMask::TAG);
+    assert_eq!(
+        attributes[4].tag().raw(),
+        typed::CryptographicUsageMask::TAG
+    );
     assert_eq!(attributes[5].tag().raw(), typed::Name::TAG);
     assert_eq!(attributes[6].tag().raw(), 0x0042_005C);
     for (position, expected) in [(0, "first"), (2, "middle"), (6, "last")] {
@@ -370,7 +383,10 @@ fn expert_attribute_positions_reject_duplicate_and_out_of_range_indices() {
             item(0x0042_005C, Value::text_string("two".to_owned())),
         )
         .build_request();
-    assert_eq!(duplicate.err(), Some(FluentBuildError::DuplicateAttributePosition));
+    assert_eq!(
+        duplicate.err(),
+        Some(FluentBuildError::DuplicateAttributePosition)
+    );
 
     let out_of_range = CreateSymmetricKeyBuilder::detached()
         .aes_256()
@@ -396,7 +412,10 @@ fn expert_attribute_positions_keep_type_and_extension_validation() {
             item(typed::CryptographicAlgorithm::TAG, Value::integer(3)),
         )
         .build_request();
-    assert_eq!(wrong_type.err(), Some(FluentBuildError::InvalidAttributeValue));
+    assert_eq!(
+        wrong_type.err(),
+        Some(FluentBuildError::InvalidAttributeValue)
+    );
 
     let extension = CreateSymmetricKeyBuilder::detached()
         .aes_256()
@@ -410,6 +429,33 @@ fn expert_attribute_positions_keep_type_and_extension_validation() {
         extension.err(),
         Some(FluentBuildError::MessageExtensionTagNotObjectAttribute)
     );
+}
+
+#[test]
+fn rejected_expert_attribute_position_is_not_sent() {
+    let mut client = failed_request_client();
+    let error = client
+        .request()
+        .create_symmetric_key()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT)
+        .attribute_at(
+            FluentAttributePosition::ObjectAttributes { index: 0 },
+            item(0x0042_005C, Value::text_string("one".to_owned())),
+        )
+        .attribute_at(
+            FluentAttributePosition::ObjectAttributes { index: 0 },
+            item(0x0042_005C, Value::text_string("two".to_owned())),
+        )
+        .execute(&CodecLimits::defaults())
+        .expect_err("duplicate positions fail before exchange");
+
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert!(!error.to_string().contains("one"));
+    assert!(!error.to_string().contains("two"));
 }
 
 #[test]
