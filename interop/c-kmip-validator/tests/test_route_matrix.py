@@ -204,6 +204,16 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(result['unknown_value_preserved'])
         self.assertEqual(result['tag'], 0x42002C)
 
+    def test_item_type_enum_route_uses_named_enumeration_constructor(self):
+        executor = self.value_executor()
+        result = executor.execute({'requires': {'enum_type': 'Item Type'}}, '2.1')
+        self.assertEqual(result['known_values_checked'], 11)
+        expected = sorted(int(target['wire_value'], 16) for target in executor.catalog['normative_targets']
+                          if target['kind'] == 'enumeration_value'
+                          and target['parent_element_ids'] == ['KMIPKIT-ELEM-ENUMERATION-ITEM-TYPE'])
+        self.assertEqual(result['values_checked'], expected)
+        self.assertIn('kmipkit_ttlv_value_enumeration', result['invoked_symbols'])
+
 
     def test_attribute_request_routes_are_independently_executed(self):
         from artifact_support import ROOT
