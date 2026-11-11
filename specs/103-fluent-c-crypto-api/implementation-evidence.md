@@ -25,3 +25,10 @@ will be added here as each Red, Green, and Refactor commit is produced.
   `kmipkit_crypto_operation_builder_set_asynchronous_indicator(..., 2)` returned
   success. The Request Header asynchronous indicator is boolean; invalid values
   must be rejected before any transport call.
+
+- **Red (TLS execution acceptance)**: `cargo test -p kmipkit-ffi --features
+  coverage-c-consumer --test c_api_coverage
+  public_c_fluent_crypto_executes_all_seven_operations_over_mutual_tls --locked`
+  failed at link time because the compiled C consumer did not yet provide
+  `kmipkit_public_crypto_execute_tls_probe`. The test now defines the seven
+  one-operation TLS exchanges and typed Failure metadata it requires.
