@@ -737,6 +737,29 @@ class ControlledTlsPeerTest {
         return structure(0x42007b, header, responseItem);
     }
 
+    private static byte[] getResponse() throws Exception {
+        byte[] protocolVersion = structure(0x420069,
+                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(1)));
+        byte[] header = structure(0x42007a, protocolVersion,
+                item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(1)));
+        byte[] keyMaterial = new byte[32];
+        java.util.Arrays.fill(keyMaterial, (byte) 0x5a);
+        byte[] keyBlock = structure(0x420040,
+                item(0x420042, 5, intBytes(1)),
+                structure(0x420043, item(0x420044, 8, keyMaterial)),
+                item(0x420028, 5, intBytes(3)),
+                item(0x42002a, 2, intBytes(256)));
+        byte[] payload = structure(0x42007c,
+                item(0x420057, 5, intBytes(2)),
+                item(0x420094, 7, CREATED_OBJECT_ID.getBytes(StandardCharsets.UTF_8)),
+                structure(0x42008f, keyBlock));
+        byte[] responseItem = structure(0x42000f,
+                item(0x42005c, 5, intBytes(10)),
+                item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)),
+                item(0x42007f, 5, intBytes(0)), payload);
+        return structure(0x42007b, header, responseItem);
+    }
+
     private static byte[] logResponse() throws Exception {
         byte[] protocolVersion = structure(0x420069,
                 item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(1)));
@@ -773,7 +796,7 @@ class ControlledTlsPeerTest {
 
     private static List<byte[]> serveObjectFixtureAndGet(SSLServerSocket listener) throws Exception {
         var requests = new ArrayList<byte[]>();
-        byte[][] responses = {createResponse(), unsupportedResponse(10), destroyResponse()};
+        byte[][] responses = {createResponse(), getResponse(), destroyResponse()};
         for (byte[] response : responses) {
             try (SSLSocket socket = (SSLSocket) listener.accept()) {
                 socket.setEnabledProtocols(new String[] {"TLSv1.3"});
