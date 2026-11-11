@@ -424,20 +424,24 @@ LOCAL_SYMBOLS = {
 }
 
 
-def event_from_cell(cell: dict, wire: bytes, index: int) -> dict:
+def invoked_event(cell: dict, index: int) -> dict:
     event = cell_fields(cell)
+    event.update(invocation_id=f'c-abi-{index}', status='passed', invocation_count=1)
+    return event
+
+
+def event_from_cell(cell: dict, wire: bytes, index: int) -> dict:
+    event = invoked_event(cell, index)
     tree = {'tag': int.from_bytes(wire[:3], 'big'), 'type': wire[3], 'value': wire[8:12].hex()}
     tree_hash = hashlib.sha256(json.dumps(tree, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
-    event.update(invocation_id=f'c-abi-{index}', status='passed', invocation_count=1,
-                 wire_bytes_deterministic=True, wire_bytes_sha256=hashlib.sha256(wire).hexdigest())
+    event.update(wire_bytes_deterministic=True, wire_bytes_sha256=hashlib.sha256(wire).hexdigest())
     event['response_tree_sha256' if cell['action'] == 'decode' else 'request_tree_sha256'] = tree_hash
     return event
 
 
 def rejected_tag_event(cell: dict, wire: bytes, index: int) -> dict:
-    event = cell_fields(cell)
-    event.update(status='passed', invocation_id=f'c-abi-{index}', invocation_count=1,
-                 decode_outcome='rejected', decode_rejection_code='tag_not_allocated',
+    event = invoked_event(cell, index)
+    event.update(decode_outcome='rejected', decode_rejection_code='tag_not_allocated',
                  decode_input_sha256=hashlib.sha256(wire).hexdigest())
     return event
 
