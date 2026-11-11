@@ -98,6 +98,52 @@ def ping_response(request: bytes, status: int, reason: int | None, protocol_mino
     return structure(0x42007B, header, structure(0x42000F, *payload))
 
 
+def discover_versions_response(
+    request: bytes,
+    status: int,
+    reason: int | None,
+    protocol_minor: int,
+    supported_versions: tuple[tuple[int, int], ...] | None = None,
+) -> bytes:
+    """Return a deterministic, operation-shaped Discover Versions response."""
+    tree = parse_children(request[8:])
+    operation_bytes = find_value(tree, 0x42005C)
+    batch_id = find_value(tree, 0x420093)
+    if operation_bytes is None or int.from_bytes(operation_bytes, "big") != 0x1E:
+        raise AssertionError("request was not Discover Versions")
+    payload = [enumeration(0x42005C, 0x1E)]
+    if batch_id is not None:
+        payload.append(item(0x420093, 8, batch_id))
+    payload.append(enumeration(0x42007F, status))
+    if reason is not None:
+        payload.append(enumeration(0x42007E, reason))
+    if status == 0:
+        # DiscoverVersionsRequest::new advertises KMIP 2.1 regardless of the
+        # negotiated message version used for this request.
+        versions = supported_versions if supported_versions is not None else ((2, 1),)
+        version_items = [
+            structure(
+                0x420069,
+                item(0x42006A, 2, struct.pack(">i", major)),
+                item(0x42006B, 2, struct.pack(">i", minor)),
+            )
+            for major, minor in versions
+        ]
+        payload.append(structure(0x42007C, *version_items))
+    version = structure(
+        0x420069,
+        item(0x42006A, 2, struct.pack(">i", 2)),
+        item(0x42006B, 2, struct.pack(">i", protocol_minor)),
+    )
+    header = structure(
+        0x42007A,
+        version,
+        item(0x420092, 9, struct.pack(">q", 1_794_268_800)),
+        item(0x42000D, 2, struct.pack(">i", 1)),
+    )
+    return structure(0x42007B, header, structure(0x42000F, *payload))
+
+
 def request_observation(request: bytes, encoding: str) -> dict[str, object]:
     if encoding == "TTLV":
         tree = parse_children(request[8:])
@@ -138,7 +184,8 @@ def normalized_operation_name(value: str) -> str:
 
 
 def text_response(
-    operation: str, encoding: str, status: int, reason: int | None, protocol_minor: int = 1
+    operation: str, encoding: str, status: int, reason: int | None, protocol_minor: int = 1,
+    supported_versions: tuple[tuple[int, int], ...] | None = None,
 ) -> bytes:
     from kmipkit import protocol_values
 
@@ -156,7 +203,14 @@ def text_response(
         if reason_name is not None:
             batch_item.append({"tag": "ResultReason", "type": "Enumeration", "value": reason_name})
         if status == protocol_values.ResultStatus.SUCCESS:
-            batch_item.append({"tag": "ResponsePayload", "value": []})
+            versions = [] if supported_versions is None else [
+                {"tag": "ProtocolVersion", "value": [
+                    {"tag": "ProtocolVersionMajor", "type": "Integer", "value": major},
+                    {"tag": "ProtocolVersionMinor", "type": "Integer", "value": minor},
+                ]}
+                for major, minor in supported_versions
+            ]
+            batch_item.append({"tag": "ResponsePayload", "value": versions})
         response = {
             "tag": "ResponseMessage",
             "value": [
@@ -185,7 +239,18 @@ def text_response(
     if reason_name is not None:
         fields.append(f'<ResultReason type="Enumeration" value="{reason_name}"/>')
     if status == protocol_values.ResultStatus.SUCCESS:
-        fields.append("<ResponsePayload/>")
+        if supported_versions is None:
+            fields.append("<ResponsePayload/>")
+        else:
+            versions = "".join(
+                '<ProtocolVersion><ProtocolVersionMajor type="Integer" value="'
+                + str(major)
+                + '"/><ProtocolVersionMinor type="Integer" value="'
+                + str(minor)
+                + '"/></ProtocolVersion>'
+                for major, minor in supported_versions
+            )
+            fields.append("<ResponsePayload>" + versions + "</ResponsePayload>")
     document = (
         "<ResponseMessage><ResponseHeader><ProtocolVersion>"
         '<ProtocolVersionMajor type="Integer" value="2"/>'
@@ -302,9 +367,14 @@ class ControlledTlsPeer:
                 self.requests.append(request)
                 self.request_observation = request_observation(request, self.encoding)
                 if self.encoding == "TTLV":
-                    response = ping_response(
-                        request, self.status, self.reason, self.protocol_minor
-                    )
+                    if normalized_operation_name(str(self.request_observation["operation"])) == "discoverversions":
+                        response = discover_versions_response(
+                            request, self.status, self.reason, self.protocol_minor
+                        )
+                    else:
+                        response = ping_response(
+                            request, self.status, self.reason, self.protocol_minor
+                        )
                 else:
                     response = text_response(
                         str(self.request_observation["operation"]),
@@ -312,6 +382,9 @@ class ControlledTlsPeer:
                         self.status,
                         self.reason,
                         self.protocol_minor,
+                        supported_versions=((2, 1),)
+                        if normalized_operation_name(str(self.request_observation["operation"])) == "discoverversions"
+                        else None,
                     )
                 self.responses.append(response)
                 if self.transport == "https":

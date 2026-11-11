@@ -60,6 +60,10 @@ class CallTrace:
         if event == 'call':
             self.observed.update(self.codes.get(frame.f_code, ()))
 
+    def record_invocation(self, symbol: str) -> None:
+        """Record an exact public data-member read, which has no Python body."""
+        self.observed.add(symbol)
+
     def __enter__(self):
         self.previous = sys.getprofile()
         sys.setprofile(self._profile)
@@ -220,13 +224,17 @@ _GENERIC_SYMBOLS = {
 }
 
 
-def execute_cell(cell: dict, case: dict, target: dict) -> dict:
+def execute_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | None = None) -> dict:
     if cell['transport'] is None:
+        if cell['public_api_symbol'] == 'kmipkit.client.BatchItemResult.supported_versions':
+            return _positive_fixture_cell(cell, case, target, trace=trace)
         if cell['public_api_symbol'] in _TYPED_ATTRIBUTE_SYMBOLS:
             return _typed_attribute_cell(cell, case, target)
         if cell['public_api_symbol'].startswith('kmipkit.cryptographic_parameters.'):
             return _crypto_parameters_cell(cell, case, target)
         return _generic_cell(cell, case, target)
+    if case['case_id'] == 'test-op-discover-versions':
+        return _positive_fixture_cell(cell, case, target, trace=trace)
     return _network_cell(cell, case, target)
 
 
@@ -264,7 +272,7 @@ def run_matrix(catalog: dict, manifest: dict, artifact: dict,
             if cell.get('execution_api_symbol'):
                 symbols.append(cell['execution_api_symbol'])
             with CallTrace(symbols) as trace:
-                observed = execute_cell(cell, cases[cell['case_id']], targets[cell['target_id']])
+                observed = execute_cell(cell, cases[cell['case_id']], targets[cell['target_id']], trace=trace)
             if not set(symbols) <= trace.observed:
                 raise RecipePending
             report['events'].append({**identity, 'invocation_id': str(uuid.uuid4()),
@@ -394,6 +402,91 @@ def _network_cell(cell: dict, case: dict, target: dict) -> dict:
     return {'request_tree_sha256': digest(request), 'response_tree_sha256': digest(response),
             'wire_bytes_deterministic': True,
             'wire_bytes_sha256': hashlib.sha256(peer.responses[0] if cell.get('action') == 'decode' else peer.requests[0]).hexdigest()}
+
+
+def _positive_fixture_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | None) -> dict:
+    """Execute Discover Versions against a positive peer and check typed output."""
+    from .controlled_peer import ControlledTlsPeer, PKI
+    from kmipkit import extensions, protocol_values
+
+    if (case['case_id'] != 'test-op-discover-versions'
+            or cell['protocol_version'] not in ('2.0', '2.1')
+            or cell['public_api_symbol'] not in (
+                'kmipkit.extensions.client_batch_item_discover_versions',
+                'kmipkit.client.BatchItemResult.supported_versions',
+            )):
+        raise RecipePending
+    encoding = cell['encoding'] if cell['transport'] is not None else 'TTLV'
+    transport = cell['transport'] if cell['transport'] is not None else 'raw_tls'
+    major, minor = (int(part) for part in cell['protocol_version'].split('.'))
+    versions = ((2, 1),)
+    peer = ControlledTlsPeer(encoding=encoding, transport=transport,
+                             protocol_version=cell['protocol_version'])
+    connection = {
+        'server_id': 'controlled-fixture', 'protocol_version': cell['protocol_version'],
+        'transport': transport, 'encoding': encoding, 'api_level': 'typed-protocol',
+        'endpoints': {'raw_tls': {'host': '127.0.0.1', 'port': peer.port},
+                      'https': {'url': f'https://127.0.0.1:{peer.port}/kmip'}},
+        'tls': {'ca_cert_path': str(PKI / 'server-cert.pem'),
+                'client_cert_path': str(PKI / 'client-cert.pem'),
+                'client_key_path': str(PKI / 'client-key.pem'), 'server_name_override': 'localhost',
+                'connect_timeout_seconds': 5, 'read_timeout_seconds': 5},
+    }
+    driver = None
+    response = batch = limits = None
+    try:
+        driver = PythonKmipDriver(connection)
+        batch = driver._client_module.Batch.create()
+        limits = driver._client_module.ttlv.codec_limits_defaults()
+        with extensions.client_batch_item_discover_versions() as item:
+            batch.add_item(item)
+        response = driver._client.execute(batch, limits)
+        item_result = response.item_at(0)
+        if (int(item_result.result_status) != protocol_values.ResultStatus.SUCCESS
+                or item_result.result_reason is not None):
+            raise ValueError('Discover Versions fixture did not return Success')
+        supported_versions = getattr(item_result, 'supported_versions')
+        actual_versions = tuple((int(version.major), int(version.minor))
+                                for version in (supported_versions or ()))
+        if supported_versions is None or actual_versions != versions:
+            raise ValueError('Discover Versions response versions did not preserve order')
+        if cell['public_api_symbol'] == 'kmipkit.client.BatchItemResult.supported_versions':
+            if trace is None:
+                raise ValueError('data-member route has no invocation trace')
+            trace.record_invocation(cell['public_api_symbol'])
+    finally:
+        if response is not None:
+            response.close()
+        if limits is not None:
+            limits.close()
+        if batch is not None:
+            batch.close()
+        if driver is not None:
+            driver.close()
+        peer.close()
+    if len(peer.requests) != 1 or len(peer.responses) != 1:
+        raise ValueError('Discover Versions fixture exchange count assertion failed')
+    request = _ping_tree(peer.requests[0], encoding)
+    actual_response = _ping_tree(peer.responses[0], encoding)
+    operation = protocol_values.Operation.DISCOVER_VERSIONS
+    expected_request = [0x420078, 1, [
+        [0x420077, 1, [[0x420069, 1, [[0x42006A, 2, major], [0x42006B, 2, minor]]],
+                       [0x4200D3, 6, True], [0x42000D, 2, 1]]],
+        [0x42000F, 1, [[0x42005C, 5, operation], [0x420079, 1, [
+            [0x420069, 1, [[0x42006A, 2, 2], [0x42006B, 2, 1]]]]]]]]]
+    expected_response = [0x42007B, 1, [
+        [0x42007A, 1, [[0x420069, 1, [[0x42006A, 2, major], [0x42006B, 2, minor]]],
+                       [0x420092, 9, '<normalized-time-stamp>'], [0x42000D, 2, 1]]],
+        [0x42000F, 1, [[0x42005C, 5, operation], [0x42007F, 5, 0],
+                       [0x42007C, 1, [[0x420069, 1, [[0x42006A, 2, version_major],
+                                                           [0x42006B, 2, version_minor]]]
+                                      for version_major, version_minor in versions]]]]]]
+    if request != expected_request or actual_response != expected_response:
+        raise ValueError('Discover Versions request or response shape assertion failed')
+    return {'request_tree_sha256': digest(request), 'response_tree_sha256': digest(actual_response),
+            'wire_bytes_deterministic': True,
+            'wire_bytes_sha256': hashlib.sha256(
+                peer.responses[0] if cell.get('action') == 'decode' else peer.requests[0]).hexdigest()}
 
 
 def verify_installed_artifact(artifact: dict) -> None:
