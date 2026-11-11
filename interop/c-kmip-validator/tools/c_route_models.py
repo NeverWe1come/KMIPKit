@@ -4,7 +4,7 @@ from __future__ import annotations
 import ctypes as C
 from pathlib import Path
 
-from route_ttlv import TreeAbi, digest, normalized
+from route_ttlv import TreeAbi, digest, encode, normalized
 
 
 CERTIFICATE_STRUCTURE = 'KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE'
@@ -85,6 +85,83 @@ class ModelCases:
         if actual != expected:
             raise ValueError(failure_code)
         return actual
+
+    def _execute_secret_ttlv_value(self, target: dict, symbol: str) -> dict | None:
+        routes = {
+            'kmipkit_secret_bytes_into_ttlv_value': {
+                'target_id': 'KMIPKIT-ELEM-DATA-TYPE-BYTE-STRING', 'create': 'kmipkit_secret_bytes_create',
+                'release': 'kmipkit_secret_bytes_release', 'item_type': 8, 'tag': 'Opaque Data Value',
+                'samples': [b'', b'\x00', bytes(range(7)), bytes(range(8)), bytes(range(9)),
+                            b'\x00\xff\x80\xfe'],
+            },
+            'kmipkit_secret_text_into_ttlv_value': {
+                'target_id': 'KMIPKIT-ELEM-DATA-TYPE-TEXT-STRING', 'create': 'kmipkit_secret_text_create',
+                'release': 'kmipkit_secret_text_release', 'item_type': 7, 'tag': 'Unique Batch Item ID',
+                'samples': [b'', b'x', 'abcdeñ'.encode(), 'abcdefñ'.encode(),
+                            'abcdefgñ'.encode(), 'mañana'.encode()],
+            },
+        }
+        route = routes.get(symbol)
+        if route is None or target.get('target_id') != route['target_id']:
+            return None
+        self.abi.bind(route['create'], [C.c_void_p, C.c_uint64, C.POINTER(C.c_void_p)])
+        self.abi.bind(symbol, [C.c_void_p, C.POINTER(C.c_void_p)])
+        release = getattr(self.abi.library, route['release'])
+        release.argtypes, release.restype = [C.c_void_p], None
+        tag_code = self._tag(route['tag'])
+        normalized_samples = []
+        invoked_symbols = set()
+        for sample in route['samples']:
+            limits = C.c_void_p()
+            secret, value, raw_tag, tag, item = (C.c_void_p() for _ in range(5))
+            buffer = C.create_string_buffer(sample) if sample else None
+            pointer = C.cast(buffer, C.c_void_p) if buffer is not None else C.c_void_p()
+            try:
+                self.abi.call('kmipkit_codec_limits_defaults', C.byref(limits))
+                self.abi.call(route['create'], pointer, len(sample), C.byref(secret))
+                self.abi.call(symbol, secret, C.byref(value))
+                secret = C.c_void_p()
+                self.abi.call('kmipkit_ttlv_raw_tag_create', tag_code, C.byref(raw_tag))
+                self.abi.call('kmipkit_ttlv_raw_tag_try_checked', raw_tag, C.byref(tag))
+                self.abi.call('kmipkit_ttlv_item_create', tag, value, limits, C.byref(item))
+                value = C.c_void_p()
+                actual = self.abi.read_item(item)
+                if actual != (tag_code, route['item_type'], sample):
+                    raise ValueError('secret_ttlv_value_mismatch')
+                invoked_symbols.update(self.abi.called)
+                decoded = self.abi.roundtrip(encode(actual))
+                invoked_symbols.update(decoded['invoked_symbols'])
+                expected = normalized(actual)
+                if decoded['normalized_tree'] != expected:
+                    raise ValueError('secret_ttlv_roundtrip_mismatch')
+                normalized_samples.append(expected)
+            finally:
+                self.abi.release('ttlv_item', item)
+                self.abi.release('ttlv_value', value)
+                if secret.value:
+                    release(secret)
+                self.abi.release('tag', tag)
+                self.abi.release('raw_tag', raw_tag)
+                self.abi.release('codec_limits', limits)
+
+        negative_checks = 0
+        if symbol == 'kmipkit_secret_text_into_ttlv_value':
+            invalid_utf8 = C.create_string_buffer(b'\xff')
+            invalid_secret = C.c_void_p()
+            self.abi.called.add(route['create'])
+            status = getattr(self.abi.library, route['create'])(
+                C.cast(invalid_utf8, C.c_void_p), 1, C.byref(invalid_secret))
+            if status == 0 or invalid_secret.value:
+                release(invalid_secret)
+                raise ValueError('secret_text_invalid_utf8_accepted')
+            invoked_symbols.update(self.abi.called)
+            negative_checks = 1
+        result = {'sample_count': len(normalized_samples),
+                  'tree_sha256': digest(normalized_samples),
+                  'invoked_symbols': invoked_symbols}
+        if negative_checks:
+            result['negative_checks'] = negative_checks
+        return result
 
     def _from_fields(self, symbol: str, trees: list[tuple], limits: C.c_void_p,
                      owned: list[C.c_void_p], prefix: tuple = ()) -> C.c_void_p:
@@ -672,6 +749,10 @@ class ModelCases:
 
     def execute(self, target: dict, protocol_version: str,
                 public_api_symbol: str | None = None) -> dict | None:
+        if public_api_symbol in {'kmipkit_secret_bytes_into_ttlv_value',
+                                 'kmipkit_secret_text_into_ttlv_value'}:
+            self.abi.called.clear()
+            return self._execute_secret_ttlv_value(target, public_api_symbol)
         if public_api_symbol in {'kmipkit_key_block_from_fields', 'kmipkit_key_block_from_item'}:
             self.abi.called.clear()
             return self._execute_key_block_target(target, protocol_version)
