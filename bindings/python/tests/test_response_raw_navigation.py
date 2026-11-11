@@ -139,7 +139,8 @@ def test_raw_response_copies_navigate_vendor_extensions_and_outlive_result_close
         item = batch_result.items[1]
         rendered = [item.ttlv_hex(limits), item.json(limits), item.xml(limits)]
         expected = _response_message()
-        assert rendered[0].with_bytes(lambda view: bytes(view)) == expected.hex().upper().encode()
+        identical = rendered[0].with_bytes(lambda view: bytes(view)) == expected.hex().upper().encode()
+        assert identical, "canonical rendering preserves the complete response"
         json_document = rendered[1].with_bytes(lambda view: json.loads(bytes(view)))
         assert json_document["tag"] == "ResponseMessage"
         assert [field["tag"] for field in json_document["value"]] == ["ResponseHeader", "BatchItem", "BatchItem"]
@@ -165,7 +166,8 @@ def test_raw_response_copies_navigate_vendor_extensions_and_outlive_result_close
         batch_result.close()
 
         # The client, transport and source response are closed; owned renderings remain usable.
-        assert rendered[0].with_bytes(lambda view: bytes(view)) == expected.hex().upper().encode()
+        identical = rendered[0].with_bytes(lambda view: bytes(view)) == expected.hex().upper().encode()
+        assert identical, "canonical rendering preserves the complete response"
         assert _integer_at_path(raw_query, (0x420088, 0x540001, 0x540002)) == 0x1234
         assert _integer_at_path(raw_get, (0x42008F, 0x420040, 0x540001, 0x540002)) == 0x5678
         assert failures.empty(), "the TLS 1.3 mTLS peer must complete the response exchange"

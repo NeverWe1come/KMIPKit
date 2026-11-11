@@ -6,16 +6,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
 import org.kmipkit.ResourceLimitException;
-import org.kmipkit.internal.NativeHandle;
-import org.kmipkit.ttlv.TtlvItemView;
-import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.credentials.SecretBytes;
+import org.kmipkit.internal.NativeHandle;
+import org.kmipkit.ttlv.CodecLimits;
+import org.kmipkit.ttlv.TtlvItemView;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.jspecify.annotations.Nullable;
 
@@ -35,39 +36,38 @@ public final class ClientBatchItemResult implements AutoCloseable {
     }
 
     /**
-     * Render the complete retained Response Message in ttlvHex using explicit limits.
+     * Render the complete retained Response Message as canonical uppercase TTLV hex using explicit limits.
      * Close the returned native zeroizing UTF-8 owner. Its scoped callback clears temporary
      * arrays; copies made by callers or retained by the JVM remain caller-owned.
      */
     public SecretBytes ttlvHex(CodecLimits limits) {
-        if (limits == null) throw new InvalidInputException("response codec limits are required");
-        NativeExtensionRegistry.ensureLoaded();
-        return handle.withValue(value -> NativeExtensionRegistry.clientBatchItemResponseTtlvHex(
-                value, new long[] {limits.maxMessageBytes(), limits.maxStructureDepth(), limits.maxElements()}));
+        return renderResponseView(limits, NativeExtensionRegistry::clientBatchItemResponseTtlvHex);
     }
 
     /**
-     * Render the complete retained Response Message in json using explicit limits.
+     * Render the complete retained Response Message as KMIP JSON using explicit limits.
      * Close the returned native zeroizing UTF-8 owner. Its scoped callback clears temporary
      * arrays; copies made by callers or retained by the JVM remain caller-owned.
      */
     public SecretBytes json(CodecLimits limits) {
-        if (limits == null) throw new InvalidInputException("response codec limits are required");
-        NativeExtensionRegistry.ensureLoaded();
-        return handle.withValue(value -> NativeExtensionRegistry.clientBatchItemResponseJson(
-                value, new long[] {limits.maxMessageBytes(), limits.maxStructureDepth(), limits.maxElements()}));
+        return renderResponseView(limits, NativeExtensionRegistry::clientBatchItemResponseJson);
     }
 
     /**
-     * Render the complete retained Response Message in xml using explicit limits.
+     * Render the complete retained Response Message as KMIP XML using explicit limits.
      * Close the returned native zeroizing UTF-8 owner. Its scoped callback clears temporary
      * arrays; copies made by callers or retained by the JVM remain caller-owned.
      */
     public SecretBytes xml(CodecLimits limits) {
+        return renderResponseView(limits, NativeExtensionRegistry::clientBatchItemResponseXml);
+    }
+
+    private SecretBytes renderResponseView(
+            CodecLimits limits, BiFunction<Long, long[], SecretBytes> render) {
         if (limits == null) throw new InvalidInputException("response codec limits are required");
         NativeExtensionRegistry.ensureLoaded();
-        return handle.withValue(value -> NativeExtensionRegistry.clientBatchItemResponseXml(
-                value, new long[] {limits.maxMessageBytes(), limits.maxStructureDepth(), limits.maxElements()}));
+        return handle.withValue(value -> render.apply(value, new long[] {
+                limits.maxMessageBytes(), limits.maxStructureDepth(), limits.maxElements()}));
     }
 
     /** Returns the forward-compatible completed or Pending outcome discriminator. */

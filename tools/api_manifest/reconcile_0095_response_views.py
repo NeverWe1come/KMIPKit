@@ -75,7 +75,7 @@ def reconcile(manifest: dict) -> dict:
                     declarations.append(row)
         exclusion = {"packageId": "java-kmipkit", "exportName": "org.kmipkit.NativeExtensionRegistry." + bridge,
             "reason": "JNI plumbing for the typed response renderer; no independent product capability.",
-            "approvalSource": APPROVAL, "evidence": "Applications use ClientBatchItemResult." + java_method + "(CodecLimits), returning an AutoCloseable native zeroizing owner."}
+            "approvalSource": APPROVAL, "evidence": "Reviewed against KMIPKIT-0043-FR-021 and KMIPKIT-0095-FR-003. Applications use ClientBatchItemResult." + java_method + "(CodecLimits), returning an AutoCloseable native zeroizing owner."}
         result["approvedExclusions"] = [row for row in result["approvedExclusions"] if not (row["packageId"] == exclusion["packageId"] and row["exportName"] == exclusion["exportName"])] + [exclusion]
     for row in declarations:
         if "::ResponseEncodingError" not in row["exportName"]:

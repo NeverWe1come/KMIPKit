@@ -55,5 +55,6 @@ Standard Rust trait implementations for the new error value are Rust language be
 - OASIS KMIP Specification v2.1 §8.5, Table 398: retained Response Header.
 - OASIS KMIP Specification v2.1 §8.6, Table 399: ordered Response Batch Items.
 - OASIS KMIP Specification v2.1 §9.13, Table 418: Message Extension preservation.
+- OASIS KMIP Profiles v2.1 §5.4.1: XML Encoding; §5.5.1: JSON Encoding.
 - Codec-specific normative sources and accepted encoding policies remain owned
   by KMIPKIT-0054 through KMIPKIT-0057; this delivery calls those existing codecs.

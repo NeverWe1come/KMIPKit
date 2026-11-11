@@ -765,8 +765,10 @@ final class ClientFacadeTlsIntegrationTest {
                 try (var hex = queryResult.ttlvHex(CodecLimits.defaults());
                         var json = queryResult.json(CodecLimits.defaults());
                         var xml = queryResult.xml(CodecLimits.defaults())) {
-                    assertArrayEquals(HexFormat.of().withUpperCase().formatHex(pingQueryLogoutResponseMessage())
-                            .getBytes(StandardCharsets.US_ASCII), hex.withBytes(byte[]::clone));
+                    boolean identical = Arrays.equals(HexFormat.of().withUpperCase()
+                            .formatHex(pingQueryLogoutResponseMessage()).getBytes(StandardCharsets.US_ASCII),
+                            hex.withBytes(byte[]::clone));
+                    assertTrue(identical, "canonical rendering preserves the complete response");
                     for (var owner : List.of(json, xml)) {
                         owner.withBytes(bytes -> {
                             String text = new String(bytes, StandardCharsets.UTF_8);

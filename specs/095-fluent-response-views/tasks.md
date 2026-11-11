@@ -13,5 +13,5 @@
   or mark standard trait implementation paths as Rust-language exclusions, and
   pass generated manifest validation.
 - [ ] T008 Pass full PR CI, then remove `[WIP]` and mark ready.
-- [ ] T009 Implement C, Java and Python response views in their dependent
+- [x] T009 Implement C, Java and Python response views in their dependent
   binding deliveries.
