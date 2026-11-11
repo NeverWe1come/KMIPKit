@@ -10,6 +10,10 @@ import org.kmipkit.extensions.ClientBatch;
 import org.kmipkit.extensions.ClientBatchItem;
 import org.kmipkit.extensions.ClientBatchItemResult;
 import org.kmipkit.extensions.ClientBatchResponse;
+import org.kmipkit.extensions.GetAttributesRequest;
+import org.kmipkit.extensions.AttributeReference;
+import org.kmipkit.extensions.UniqueIdentifier;
+import org.kmipkit.extensions.AttributeSet;
 import org.kmipkit.extensions.QueryResponse;
 import org.kmipkit.extensions.QueryResponseField;
 import org.kmipkit.extensions.QueryResponseFieldKind;
@@ -22,6 +26,9 @@ import org.kmipkit.ttlv.TtlvDecodeErrorKind;
 import org.kmipkit.ttlv.TtlvDecodeException;
 import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvItemType;
+import org.kmipkit.ttlv.StandardAttribute;
+import org.kmipkit.ttlv.TtlvStructure;
+import org.kmipkit.ttlv.TypedAttribute;
 import org.kmipkit.ttlv.TtlvValue;
 
 import javax.net.ssl.KeyManagerFactory;
@@ -163,6 +170,7 @@ class ControlledTlsPeerTest {
         for (String protocolVersion : List.of("2.0", "2.1")) {
             appendLocalQueryRouteEvents(events, protocolVersion, requestTreeHash);
             appendTagRangeRouteEvents(events, protocolVersion);
+            appendActivationDateLocalRouteEvents(events, protocolVersion);
 
             byte[] serverCertificatePem = fixture("server-cert.pem");
             byte[] serverPrivateKeyPem = fixture("server-key.pem");
@@ -216,6 +224,7 @@ class ControlledTlsPeerTest {
             String requestHash = normalizedTreeSha256(request);
             String responseHash = normalizedTreeSha256(responseBytes);
             appendNetworkQueryRouteEvents(events, protocolVersion, requestHash, responseHash);
+            appendControlledActivationDateNetworkEvents(events, protocolVersion);
         }
 
         writeRouteExecutionReport(reportPath, mapper, events);
@@ -1075,6 +1084,230 @@ class ControlledTlsPeerTest {
         }
     }
 
+    private static void appendActivationDateLocalRouteEvents(ArrayNode events, String protocolVersion)
+            throws Exception {
+        byte[] activationDateWire = item(0x420001, 9, longBytes(1));
+        byte[] getAttributesOperationWire = item(0x42005c, 5, intBytes(0x0b));
+        String activationDateHash = normalizedTreeSha256(activationDateWire);
+        try (TtlvValue value = TtlvValue.DateTime(1)) {
+            appendRouteEvent(events, "test-attr-activation-date",
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.datetime",
+                    "KMIPKIT-ELEM-ATTRIBUTE-ACTIVATION-DATE", "org.kmipkit.ttlv.TtlvValue.DateTime",
+                    null, null, "construct", protocolVersion, null, activationDateHash, null);
+            appendLocalTtlvRoundtripEvents(events, "test-attr-activation-date",
+                    "KMIPKIT-ELEM-ATTRIBUTE-ACTIVATION-DATE", 0x420001, TtlvItemType.DateTime,
+                    value, activationDateWire, protocolVersion);
+        }
+        try (TtlvValue value = TtlvValue.Enumeration(0x0b)) {
+            appendLocalTtlvRoundtripEvents(events, "test-attr-activation-date",
+                    "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES", 0x42005c, TtlvItemType.Enumeration,
+                    value, getAttributesOperationWire, protocolVersion);
+        }
+
+        CodecLimits limits = CodecLimits.defaults();
+        try (TtlvValue value = TtlvValue.DateTime(1);
+                TypedAttribute typed = TypedAttribute.create(StandardAttribute.ACTIVATION_DATE, value);
+                TtlvItem item = typed.asItem();
+                TypedAttribute decoded = TypedAttribute.fromItem(StandardAttribute.ACTIVATION_DATE, item)) {
+            assertEquals(0x420001, StandardAttribute.ACTIVATION_DATE.tag());
+            try (var view = decoded.view(); var decodedValue = view.value()) {
+                assertEquals(1L, decodedValue.dateTime());
+            }
+            appendRouteEvent(events, "test-attr-activation-date",
+                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                    "KMIPKIT-ELEM-ATTRIBUTE-ACTIVATION-DATE", "org.kmipkit.ttlv.TypedAttribute.create",
+                    null, null, "construct", protocolVersion, null, activationDateHash, null);
+            appendRouteEvent(events, "test-attr-activation-date",
+                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+                    "KMIPKIT-ELEM-ATTRIBUTE-ACTIVATION-DATE", "org.kmipkit.ttlv.TypedAttribute.fromItem",
+                    null, null, "construct", protocolVersion, null, activationDateHash, null);
+
+            try (TtlvStructure empty = TtlvStructure.create();
+                    TtlvStructure attributeItems = TtlvStructure.withItem(empty, item, limits);
+                    AttributeSet attributes = AttributeSet.tryNew(attributeItems)) {
+                assertEquals(1, attributes.len());
+                appendRouteEvent(events, "test-attr-activation-date",
+                        "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
+                        "KMIPKIT-ELEM-ATTRIBUTE-ACTIVATION-DATE", "org.kmipkit.extensions.AttributeSet.tryNew",
+                        null, null, "construct", protocolVersion, null,
+                        normalizedTreeSha256(structure(0x420125, activationDateWire)), null);
+            }
+        }
+
+        UniqueIdentifier identifier = UniqueIdentifier.textString("object-7");
+        byte[] requestPayloadWire = structure(0x42007c,
+                item(0x420094, 7, "object-7".getBytes(StandardCharsets.UTF_8)),
+                item(0x42013b, 5, intBytes(0x420001)));
+        try (GetAttributesRequest request = GetAttributesRequest.create(identifier,
+                        List.of(AttributeReference.tag(0x420001)));
+                TtlvStructure payload = request.toTtlvPayload();
+                var view = payload.view()) {
+            assertEquals(2, view.itemCount());
+            appendRouteEvent(events, "test-attr-activation-date",
+                    "java.typed-protocol.function.attribute_request_get_attributes_to_ttlv_payload",
+                    "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES",
+                    "org.kmipkit.extensions.GetAttributesRequest.toTtlvPayload", null, null,
+                    "encode", protocolVersion, null, normalizedTreeSha256(requestPayloadWire), null);
+        }
+    }
+
+    private static void appendLocalTtlvRoundtripEvents(ArrayNode events, String caseId, String targetId,
+            int rawTag, TtlvItemType expectedType, TtlvValue value, byte[] wire, String protocolVersion)
+            throws Exception {
+        String wireHash = normalizedTreeSha256(wire);
+        try (RawTag raw = RawTag.fromRaw(rawTag);
+                Tag tag = raw.checked();
+                TtlvItem created = TtlvItem.create(tag, value, CodecLimits.defaults());
+                var view = created.view();
+                var viewValue = view.value()) {
+            assertEquals(rawTag, view.tag().raw());
+            assertEquals(expectedType, view.itemType());
+            if (expectedType == TtlvItemType.DateTime) assertEquals(1L, viewValue.dateTime());
+            else assertEquals(0x0bL, viewValue.enumeration());
+        }
+        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_item.create", targetId,
+                "org.kmipkit.ttlv.TtlvItem.create", null, null, "construct", protocolVersion,
+                null, wireHash, null);
+        appendRouteEvent(events, caseId, "java.generic-ttlv.function.ttlv_item_view_from_item", targetId,
+                "org.kmipkit.ttlv.TtlvItem.view", null, null, "decode", protocolVersion,
+                null, null, wireHash);
+        try (TtlvItem decoded = TtlvCodec.decode(wire);
+                var view = decoded.view();
+                var decodedValue = view.value()) {
+            assertEquals(rawTag, view.tag().raw());
+            assertEquals(expectedType, view.itemType());
+            if (expectedType == TtlvItemType.DateTime) assertEquals(1L, decodedValue.dateTime());
+            else assertEquals(0x0bL, decodedValue.enumeration());
+        }
+        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_codec.decode", targetId,
+                "org.kmipkit.ttlv.TtlvCodec.decode", null, null, "decode", protocolVersion,
+                null, null, wireHash);
+    }
+
+    private void appendControlledActivationDateNetworkEvents(ArrayNode events, String protocolVersion)
+            throws Exception {
+        byte[] serverCertificatePem = fixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = fixture("server-key.pem");
+        byte[] clientCertificatePem = fixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = fixture("client-key.pem");
+        int minor = "2.0".equals(protocolVersion) ? 0 : 1;
+        SSLServerSocket listener = listener(certificate(serverCertificatePem),
+                privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+        FutureTask<List<byte[]>> peer = new FutureTask<>(() -> serveActivationDateRequests(listener, minor));
+        Thread peerThread = new Thread(peer, "java-validator-activation-date-peer-" + protocolVersion);
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        Path connectionFile = temporaryDirectory.resolve("activation-date-" + protocolVersion + ".json");
+        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                clientCertificatePem, clientPrivateKeyPem, false, protocolVersion));
+        try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile))) {
+            try (ClientBatchItem request = ClientBatchItem.getAttributes(
+                    UniqueIdentifier.textString("object-7"), List.of(AttributeReference.tag(0x420001)))
+                    .withUniqueBatchItemId("item-0".getBytes(StandardCharsets.US_ASCII))) {
+                executeGetAttributesForEvidence(driver, request, true);
+            }
+            try (GetAttributesRequest request = GetAttributesRequest.create(
+                    UniqueIdentifier.textString("object-7"), List.of(AttributeReference.tag(0x420001)));
+                    ClientBatchItem batchItem = request.toBatchItem()
+                            .withUniqueBatchItemId("item-0".getBytes(StandardCharsets.US_ASCII))) {
+                executeGetAttributesForEvidence(driver, batchItem, false);
+            }
+        } finally {
+            listener.close();
+        }
+
+        List<byte[]> requests = peer.get(15, TimeUnit.SECONDS);
+        assertEquals(2, requests.size());
+        for (int index = 0; index < requests.size(); index++) {
+            byte[] observedRequest = requests.get(index);
+            assertEquals(0x0bL, requestOperation(observedRequest));
+            assertEquals(minor, requestProtocolMinorVersion(observedRequest));
+            assertTrue(contains(observedRequest, item(0x42013b, 5, intBytes(0x420001))),
+                    "The controlled peer must receive the requested Activation Date reference.");
+            String routeId = index == 0 ? "java.typed-protocol.client_batch_item.get_attributes"
+                    : "java.typed-protocol.function.attribute_request_get_attributes_to_batch_item";
+            String symbol = index == 0 ? "org.kmipkit.extensions.ClientBatchItem.getAttributes"
+                    : "org.kmipkit.extensions.GetAttributesRequest.toBatchItem";
+            String requestHash = normalizedTreeSha256(observedRequest);
+            String responseHash = normalizedTreeSha256(activationDateResponse(minor));
+            appendRouteEvent(events, "test-attr-activation-date", routeId,
+                    "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES", symbol, "java.execute.typed-batch",
+                    "org.kmipkit.extensions.Client.execute", "construct", protocolVersion,
+                    "raw_tls", requestHash, null);
+            ObjectNode sent = appendRouteEvent(events, "test-attr-activation-date", routeId,
+                    "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES", symbol, "java.execute.typed-batch",
+                    "org.kmipkit.extensions.Client.execute", "send", protocolVersion,
+                    "raw_tls", requestHash, null);
+            sent.put("request_delivery_state", "response_received");
+            sent.put("transport_invocation_count", 1);
+            appendRouteEvent(events, "test-attr-activation-date", routeId,
+                    "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES", symbol, "java.execute.typed-batch",
+                    "org.kmipkit.extensions.Client.execute", "decode", protocolVersion,
+                    "raw_tls", null, responseHash);
+        }
+        appendRouteEvent(events, "test-attr-activation-date",
+                "java.typed-protocol.function.client_batch_item_response_get_attributes",
+                "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES",
+                "org.kmipkit.extensions.ClientBatchItemResult.getAttributesResponse", null, null,
+                "decode", protocolVersion, null, null,
+                normalizedTreeSha256(activationDateResponse(minor)));
+    }
+
+    private static void executeGetAttributesForEvidence(JavaKmipDriver driver, ClientBatchItem request,
+            boolean readTypedResponse) throws Exception {
+        try (ClientBatch batch = ClientBatch.create()) {
+            batch.add(request);
+            try (ClientBatchResponse response = driver.executeBatchForEvidence(batch);
+                    ClientBatchItemResult result = response.itemAt(0)) {
+                assertEquals(0x0bL, result.operation());
+                assertEquals(0L, result.resultStatus());
+                if (readTypedResponse) {
+                    try (var typed = result.getAttributesResponse().orElseThrow();
+                            TtlvStructure attributes = typed.attributes().orElseThrow();
+                            var view = attributes.view();
+                            var attribute = view.itemAt(0);
+                            var value = attribute.value()) {
+                        assertEquals("object-7", typed.uniqueIdentifier());
+                        assertEquals(1, view.itemCount());
+                        assertEquals(0x420001, attribute.tag().raw());
+                        assertEquals(TtlvItemType.DateTime, attribute.itemType());
+                        assertEquals(1L, value.dateTime());
+                    }
+                }
+            }
+        }
+    }
+
+    private static List<byte[]> serveActivationDateRequests(SSLServerSocket listener, int minor)
+            throws Exception {
+        var observedRequests = new ArrayList<byte[]>();
+        byte[] response = activationDateResponse(minor);
+        for (int index = 0; index < 2; index++) {
+            byte[] request = serveOneAndCapture(listener, response);
+            if (requestOperation(request) != 0x0bL || requestProtocolMinorVersion(request) != minor) {
+                throw new AssertionError("The controlled peer observed an unexpected Get Attributes request.");
+            }
+            observedRequests.add(request);
+        }
+        return List.copyOf(observedRequests);
+    }
+
+    private static byte[] activationDateResponse(int protocolMinorVersion) throws Exception {
+        byte[] protocolVersion = structure(0x420069,
+                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(protocolMinorVersion)));
+        byte[] header = structure(0x42007a, protocolVersion,
+                item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(1)));
+        byte[] attributes = structure(0x420125, item(0x420001, 9, longBytes(1)));
+        byte[] payload = structure(0x42007c,
+                item(0x420094, 7, "object-7".getBytes(StandardCharsets.UTF_8)), attributes);
+        byte[] responseItem = structure(0x42000f,
+                item(0x42005c, 5, intBytes(0x0b)),
+                item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)),
+                item(0x42007f, 5, intBytes(0)), payload);
+        return structure(0x42007b, header, responseItem);
+    }
+
     private static void appendAllocatedTagRangeEvents(ArrayNode events, TagRangeFixture fixture,
             String protocolVersion, byte[] wire, String treeHash) throws Exception {
         try (RawTag raw = RawTag.fromRaw(fixture.rawTag());
@@ -1209,6 +1442,7 @@ class ControlledTlsPeerTest {
         report.put("route_manifest_sha256", ArtifactProvenance.sha256(manifestPath));
         ArrayNode caseIds = report.putArray("case_ids").add("test-op-query");
         TAG_RANGE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
+        caseIds.add("test-attr-activation-date");
         report.putArray("protocol_versions").add("2.0").add("2.1");
         ObjectNode combination = mapper.createObjectNode();
         combination.put("encoding", "TTLV");
