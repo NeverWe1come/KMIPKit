@@ -545,7 +545,7 @@ class ControlledTlsPeerTest {
     }
 
     @Test
-    void cliRunRejectsGetAttributesSuccessWithoutRequestedAttribute() throws Exception {
+    void cliRunRejectsGetAttributesSuccessWithIncorrectAttributeValue() throws Exception {
         byte[] serverCertificatePem = fixture("server-cert.pem");
         byte[] serverPrivateKeyPem = fixture("server-key.pem");
         byte[] clientCertificatePem = fixture("client-cert.pem");
@@ -574,14 +574,14 @@ class ControlledTlsPeerTest {
         Files.writeString(selectedCatalog, mapper.writeValueAsString(catalog));
 
         long requestedAttributeTag = 0x420028L;
-        long returnedAttributeTag = 0x420053L;
+        long returnedAttributeTag = 0x420028L;
         long operation;
         try (ClientBatchItem request = TypedRequestFactory.create("Get Attributes", null, requestedAttributeTag)) {
             operation = request.operation();
         }
         FutureTask<List<byte[]>> peer = new FutureTask<>(
                 () -> serveAttributeReadCases(listener, List.of(operation), List.of(requestedAttributeTag),
-                        List.of(returnedAttributeTag)));
+                        List.of(returnedAttributeTag), List.of(4L)));
         Thread peerThread = new Thread(peer, "java-validator-attribute-mismatch-peer");
         peerThread.setDaemon(true);
         peerThread.start();
@@ -962,40 +962,74 @@ class ControlledTlsPeerTest {
 
     private static List<byte[]> serveAttributeReadCases(SSLServerSocket listener,
             List<Long> targetOperations, List<Long> targetAttributeTags) throws Exception {
-        return serveAttributeReadCases(listener, targetOperations, targetAttributeTags, targetAttributeTags);
+        return serveAttributeReadCases(listener, targetOperations, targetAttributeTags, targetAttributeTags,
+                java.util.Collections.nCopies(targetOperations.size(), 3L));
     }
 
     private static List<byte[]> serveAttributeReadCases(SSLServerSocket listener,
             List<Long> targetOperations, List<Long> targetAttributeTags, List<Long> responseAttributeTags)
             throws Exception {
+        return serveAttributeReadCases(listener, targetOperations, targetAttributeTags, responseAttributeTags,
+                java.util.Collections.nCopies(targetOperations.size(), 3L));
+    }
+
+    private static List<byte[]> serveAttributeReadCases(SSLServerSocket listener,
+            List<Long> targetOperations, List<Long> targetAttributeTags, List<Long> responseAttributeTags,
+            List<Long> responseAlgorithmValues) throws Exception {
         var requests = new ArrayList<byte[]>();
         for (int index = 0; index < targetOperations.size(); index++) {
             long targetOperation = targetOperations.get(index);
-            byte[][] responses = {
-                    createResponse(), getAttributesResponse(targetOperation, responseAttributeTags.get(index)),
-                    destroyResponse()
-            };
-            for (byte[] response : responses) {
-                try (SSLSocket socket = (SSLSocket) listener.accept()) {
-                    socket.setEnabledProtocols(new String[] {"TLSv1.3"});
-                    socket.setSoTimeout(10_000);
-                    socket.startHandshake();
-                    requests.add(readTtlv(socket.getInputStream()));
-                    socket.getOutputStream().write(response);
-                    socket.getOutputStream().flush();
-                }
-            }
+            byte[] createRequest = serveOneAndCapture(listener, createResponse());
+            requests.add(createRequest);
+            String fixtureName = requestTextString(createRequest, 0x420055);
+            requests.add(serveOneAndCapture(listener, getAttributesResponse(targetOperation,
+                    responseAttributeTags.get(index), responseAlgorithmValues.get(index), fixtureName)));
+            requests.add(serveOneAndCapture(listener, destroyResponse()));
         }
         return List.copyOf(requests);
     }
 
-    private static byte[] getAttributesResponse(long operation, long attributeTag) throws Exception {
+    private static byte[] serveOneAndCapture(SSLServerSocket listener, byte[] response) throws Exception {
+        try (SSLSocket socket = (SSLSocket) listener.accept()) {
+            socket.setEnabledProtocols(new String[] {"TLSv1.3"});
+            socket.setSoTimeout(10_000);
+            socket.startHandshake();
+            byte[] request = readTtlv(socket.getInputStream());
+            socket.getOutputStream().write(response);
+            socket.getOutputStream().flush();
+            return request;
+        }
+    }
+
+    private static String requestTextString(byte[] request, int tag) {
+        byte[] header = new byte[] {(byte) ((tag >>> 16) & 0xff), (byte) ((tag >>> 8) & 0xff),
+                (byte) (tag & 0xff), 7, 0, 0, 0, 0};
+        for (int offset = 0; offset <= request.length - header.length; offset++) {
+            boolean matches = true;
+            for (int index = 0; index < 4; index++) {
+                if (request[offset + index] != header[index]) {
+                    matches = false;
+                    break;
+                }
+            }
+            if (!matches) continue;
+            int length = ByteBuffer.wrap(request, offset + 4, 4).getInt();
+            if (length < 0 || offset + 8 + length > request.length) {
+                throw new AssertionError("The Create request contained an invalid Name Value length.");
+            }
+            return new String(request, offset + 8, length, StandardCharsets.UTF_8);
+        }
+        throw new AssertionError("The Create request omitted its Name Value.");
+    }
+
+    private static byte[] getAttributesResponse(long operation, long attributeTag, long algorithm,
+            String fixtureName) throws Exception {
         byte[] value;
         if (attributeTag == 0x420028L) {
-            value = item(0x420028, 5, intBytes(3));
+            value = item(0x420028, 5, intBytes(Math.toIntExact(algorithm)));
         } else if (attributeTag == 0x420053L) {
             value = structure(0x420053,
-                    item(0x420055, 7, "kmipkit-validator-object".getBytes(StandardCharsets.UTF_8)),
+                    item(0x420055, 7, fixtureName.getBytes(StandardCharsets.UTF_8)),
                     item(0x420054, 5, intBytes(1)));
         } else {
             throw new IllegalArgumentException("No controlled attribute fixture is defined.");
