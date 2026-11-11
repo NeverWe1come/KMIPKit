@@ -215,7 +215,7 @@ class ControlledTlsPeerTest {
                 .map(caseId -> catalog.cases().stream().filter(testCase -> testCase.caseId().equals(caseId))
                         .findFirst().orElseThrow())
                 .toList();
-        var peer = new FutureTask<List<byte[]>>(() -> serveAsynchronousResponses(listener, operationCases.size()));
+        var peer = new FutureTask<List<byte[]>>(() -> serveAsynchronousResponses(listener, operationCases.size(), 0));
         Thread peerThread = new Thread(peer, "java-validator-controlled-kmip20-async-peer");
         peerThread.setDaemon(true);
         peerThread.start();
@@ -922,6 +922,11 @@ class ControlledTlsPeerTest {
     }
 
     private static List<byte[]> serveAsynchronousResponses(SSLServerSocket listener, int count) throws Exception {
+        return serveAsynchronousResponses(listener, count, 1);
+    }
+
+    private static List<byte[]> serveAsynchronousResponses(SSLServerSocket listener, int count,
+            int protocolMinorVersion) throws Exception {
         var requests = new ArrayList<byte[]>();
         for (int index = 0; index < count; index++) {
             try (SSLSocket socket = (SSLSocket) listener.accept()) {
@@ -931,16 +936,17 @@ class ControlledTlsPeerTest {
                 byte[] request = readTtlv(socket.getInputStream());
                 requests.add(request);
                 socket.getOutputStream().write(asynchronousResponse(requestOperation(request),
-                        requestCorrelation(request)));
+                        requestCorrelation(request), protocolMinorVersion));
                 socket.getOutputStream().flush();
             }
         }
         return List.copyOf(requests);
     }
 
-    private static byte[] asynchronousResponse(long operation, byte[] correlation) throws Exception {
+    private static byte[] asynchronousResponse(long operation, byte[] correlation, int protocolMinorVersion)
+            throws Exception {
         byte[] version = structure(0x420069,
-                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(1)));
+                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(protocolMinorVersion)));
         byte[] header = structure(0x42007a, version,
                 item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(1)));
         List<byte[]> fields = new ArrayList<>();
