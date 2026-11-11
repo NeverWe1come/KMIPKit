@@ -259,6 +259,8 @@ class ControlledTlsPeerTest {
                 .filter(testCase -> !"server_to_client".equals(testCase.requires().path("workflow_type").asText()))
                 .filter(testCase -> availableOperations.contains(testCase.operation()))
                 .forEach(testCase -> casesByOperation.putIfAbsent(testCase.operation(), testCase));
+        catalog.cases().stream().filter(testCase -> testCase.caseId().equals("test-op-get-attributes"))
+                .findFirst().ifPresent(testCase -> casesByOperation.put("Get Attributes", testCase));
         assertEquals(availableOperations.size(), casesByOperation.size(),
                 "Every public KMIP 2.x client operation must have a catalog exchange case.");
 
@@ -270,8 +272,9 @@ class ControlledTlsPeerTest {
                 certificate(clientCertificatePem));
         MatrixPlan matrixPlan = operationMatrixPlan(casesByOperation, 1);
         var peerTrace = new java.util.concurrent.CopyOnWriteArrayList<Long>();
+        var peerRequests = new java.util.concurrent.CopyOnWriteArrayList<byte[]>();
         FutureTask<List<Long>> peer = new FutureTask<>(() -> serveOperationMatrixResponses(listener,
-                matrixPlan, peerTrace));
+                matrixPlan, peerTrace, peerRequests));
         Thread peerThread = new Thread(peer, "java-validator-controlled-operation-matrix-peer");
         peerThread.setDaemon(true);
         peerThread.start();
@@ -300,6 +303,11 @@ class ControlledTlsPeerTest {
         }
         List<Long> observedOperations = peer.get(60, TimeUnit.SECONDS);
         assertEquals(matrixPlan.expectedOperations().size(), observedOperations.size());
+        byte[] unfilteredGetAttributes = peerRequests.stream()
+                .filter(request -> requestOperation(request) == 0x0b)
+                .findFirst().orElseThrow();
+        assertTrue(!containsTag(unfilteredGetAttributes, 0x42013b),
+                "The operation-level Get Attributes case has no Attribute Reference and must request all attributes.");
         for (var entry : casesByOperation.entrySet()) {
             try (ClientBatchItem expected = TypedRequestFactory.create(entry.getKey())) {
                 assertTrue(observedOperations.contains(expected.operation()), entry.getKey());
@@ -322,6 +330,8 @@ class ControlledTlsPeerTest {
                 .filter(testCase -> !"server_to_client".equals(testCase.requires().path("workflow_type").asText()))
                 .filter(testCase -> availableOperations.contains(testCase.operation()))
                 .forEach(testCase -> casesByOperation.putIfAbsent(testCase.operation(), testCase));
+        catalog.cases().stream().filter(testCase -> testCase.caseId().equals("test-op-get-attributes"))
+                .findFirst().ifPresent(testCase -> casesByOperation.put("Get Attributes", testCase));
         assertTrue(!casesByOperation.isEmpty(), "KMIP 2.0 must have applicable public client operations.");
 
         byte[] serverCertificatePem = fixture("server-cert.pem");
@@ -332,8 +342,9 @@ class ControlledTlsPeerTest {
                 certificate(clientCertificatePem));
         MatrixPlan matrixPlan = operationMatrixPlan(casesByOperation, 0);
         var peerTrace = new java.util.concurrent.CopyOnWriteArrayList<Long>();
+        var peerRequests = new java.util.concurrent.CopyOnWriteArrayList<byte[]>();
         FutureTask<List<Long>> peer = new FutureTask<>(() -> serveOperationMatrixResponses(listener,
-                matrixPlan, peerTrace));
+                matrixPlan, peerTrace, peerRequests));
         Thread peerThread = new Thread(peer, "java-validator-kmip20-operation-matrix-peer");
         peerThread.setDaemon(true);
         peerThread.start();
@@ -362,6 +373,11 @@ class ControlledTlsPeerTest {
         }
         List<Long> observedOperations = peer.get(60, TimeUnit.SECONDS);
         assertEquals(matrixPlan.expectedOperations().size(), observedOperations.size());
+        byte[] unfilteredGetAttributes = peerRequests.stream()
+                .filter(request -> requestOperation(request) == 0x0b)
+                .findFirst().orElseThrow();
+        assertTrue(!containsTag(unfilteredGetAttributes, 0x42013b),
+                "The operation-level Get Attributes case has no Attribute Reference and must request all attributes.");
         for (String operation : casesByOperation.keySet()) {
             try (ClientBatchItem expected = TypedRequestFactory.create(operation)) {
                 assertTrue(observedOperations.contains(expected.operation()), operation);
@@ -740,7 +756,7 @@ class ControlledTlsPeerTest {
     }
 
     private static List<Long> serveOperationMatrixResponses(SSLServerSocket listener,
-            MatrixPlan plan, List<Long> peerTrace) throws Exception {
+            MatrixPlan plan, List<Long> peerTrace, List<byte[]> peerRequests) throws Exception {
         var observedOperations = new ArrayList<Long>();
         for (int index = 0; index < plan.expectedOperations().size(); index++) {
             try (SSLSocket socket = (SSLSocket) listener.accept()) {
@@ -749,6 +765,7 @@ class ControlledTlsPeerTest {
                 socket.setSoTimeout(10_000);
                 socket.startHandshake();
                 byte[] request = readTtlv(socket.getInputStream());
+                peerRequests.add(request);
                 long operation = requestOperation(request);
                 observedOperations.add(operation);
                 peerTrace.add(operation);
@@ -1136,6 +1153,18 @@ class ControlledTlsPeerTest {
                 if (data[index + offset] != target[offset]) continue outer;
             }
             return true;
+        }
+        return false;
+    }
+
+    private static boolean containsTag(byte[] data, int tag) {
+        byte[] tagBytes = new byte[] {(byte) ((tag >>> 16) & 0xff), (byte) ((tag >>> 8) & 0xff),
+                (byte) (tag & 0xff)};
+        outer: for (int offset = 0; offset <= data.length - 4; offset++) {
+            for (int index = 0; index < tagBytes.length; index++) {
+                if (data[offset + index] != tagBytes[index]) continue outer;
+            }
+            if (data[offset + 3] == 5) return true;
         }
         return false;
     }
