@@ -84,6 +84,14 @@ class MatrixContract(unittest.TestCase):
         self.assertNotEqual(process.returncode, 0)
         self.assertIsNone(report)
 
+    def test_constructor_cannot_pass_when_it_changes_the_normative_tag(self):
+        cell = self.cell('kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::Comment>::new',
+                         'KMIPKIT-ELEM-ATTRIBUTE-DESCRIPTION')
+        process, report = self.run_matrix([cell])
+        self.assertNotEqual(process.returncode, 0)
+        self.assertEqual(report['events'][0]['status'], 'failed')
+        self.assertNotIn('request_tree_sha256', report['events'][0])
+
     def test_forged_symbol_is_rejected_without_false_positive(self):
         cell = self.cell('kmipkit_ttlv::Item::new')
         cell['public_api_symbol'] = 'kmipkit_ttlv::Value::boolean'
