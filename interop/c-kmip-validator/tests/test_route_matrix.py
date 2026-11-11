@@ -111,5 +111,34 @@ class RouteMatrixTests(unittest.TestCase):
             route_peer.verify_consumer_provenance(good, 'c' * 64, 'b' * 64)
 
 
+    def tree_abi(self):
+        self.assertIsNotNone(importlib.util.find_spec('route_ttlv'), 'recursive public C TTLV executor is missing')
+        from route_ttlv import TreeAbi
+        from artifact_support import INSTALL
+        return TreeAbi(INSTALL / 'lib/libkmipkit_ffi.so')
+
+    def test_recursive_ttlv_preserves_nested_order_and_values(self):
+        abi = self.tree_abi()
+        wire = bytes.fromhex('42000101000000204200010200000004000000010000000042000205000000040000000200000000')
+        result = abi.roundtrip(wire)
+        self.assertEqual(result['decoded_wire'], wire)
+        self.assertEqual(result['constructed_wire'], wire)
+        self.assertIn('kmipkit_ttlv_value_structure', result['invoked_symbols'])
+
+    def test_every_normative_ttlv_boundary_vector_is_executed(self):
+        from artifact_support import ROOT
+        vectors = json.loads((ROOT / 'interop/shared/vectors/ttlv-boundaries.json').read_text())
+        for vector in vectors['vectors']:
+            with self.subTest(data_type=vector['data_type']):
+                result = self.tree_abi().boundary_case(vector)
+                self.assertEqual(result['sample_count'], len(vector['samples']))
+                self.assertEqual(result['failed_samples'], 0)
+                self.assertIn('kmipkit_ttlv_decode', result['invoked_symbols'])
+
+    def test_boolean_public_constructor_rejects_non_boolean_value(self):
+        abi = self.tree_abi()
+        self.assertTrue(abi.reject_invalid_boolean())
+
+
 if __name__ == '__main__':
     unittest.main()
