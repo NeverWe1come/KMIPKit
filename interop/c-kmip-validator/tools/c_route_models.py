@@ -21,6 +21,32 @@ KEY_BLOCK_STRUCTURE = 'KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-BLOCK'
 KEY_VALUE_STRUCTURE = 'KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE'
 
 
+class _CryptographicParametersFieldsV1(C.Structure):
+    _fields_ = [
+        ('struct_size', C.c_uint32), ('abi_version', C.c_uint32),
+        ('block_cipher_mode_present', C.c_uint8), ('block_cipher_mode', C.c_uint32),
+        ('padding_method_present', C.c_uint8), ('padding_method', C.c_uint32),
+        ('hashing_algorithm_present', C.c_uint8), ('hashing_algorithm', C.c_uint32),
+        ('key_role_type_present', C.c_uint8), ('key_role_type', C.c_uint32),
+        ('digital_signature_algorithm_present', C.c_uint8), ('digital_signature_algorithm', C.c_uint32),
+        ('cryptographic_algorithm_present', C.c_uint8), ('cryptographic_algorithm', C.c_uint32),
+        ('random_iv_present', C.c_uint8), ('random_iv', C.c_uint8),
+        ('iv_length_present', C.c_uint8), ('iv_length', C.c_int32),
+        ('tag_length_present', C.c_uint8), ('tag_length', C.c_int32),
+        ('fixed_field_length_present', C.c_uint8), ('fixed_field_length', C.c_int32),
+        ('invocation_field_length_present', C.c_uint8), ('invocation_field_length', C.c_int32),
+        ('counter_length_present', C.c_uint8), ('counter_length', C.c_int32),
+        ('initial_counter_value_present', C.c_uint8), ('initial_counter_value', C.c_int32),
+        ('salt_length_present', C.c_uint8), ('salt_length', C.c_int32),
+        ('mask_generator_present', C.c_uint8), ('mask_generator', C.c_uint32),
+        ('mask_generator_hashing_algorithm_present', C.c_uint8),
+        ('mask_generator_hashing_algorithm', C.c_uint32),
+        ('p_source_present', C.c_uint8), ('p_source', C.POINTER(C.c_uint8)),
+        ('p_source_length', C.c_uint64), ('trailer_field_present', C.c_uint8),
+        ('trailer_field', C.c_int32),
+    ]
+
+
 class ModelCases:
     """Execute catalog-backed typed object constructors and item conversions."""
 
@@ -125,6 +151,111 @@ class ModelCases:
             for handle in reversed(owned):
                 self.abi.release('ttlv_item', handle)
             self.abi.release('codec_limits', limits)
+
+    def _crypto_enum_field(self, target: dict) -> tuple[str, str] | None:
+        if target.get('kind') != 'enumeration_value':
+            return None
+        parents = set(target.get('parent_element_ids', []))
+        fields = {
+            'KMIPKIT-ELEM-ENUMERATION-BLOCK-CIPHER-MODE': ('block_cipher_mode', 'Block Cipher Mode'),
+            'KMIPKIT-ELEM-ENUMERATION-PADDING-METHOD': ('padding_method', 'Padding Method'),
+            'KMIPKIT-ELEM-ENUMERATION-HASHING-ALGORITHM': ('hashing_algorithm', 'Hashing Algorithm'),
+            'KMIPKIT-ELEM-ENUMERATION-KEY-ROLE-TYPE': ('key_role_type', 'Key Role Type'),
+            'KMIPKIT-ELEM-ENUMERATION-DIGITAL-SIGNATURE-ALGORITHM':
+                ('digital_signature_algorithm', 'Digital Signature Algorithm'),
+            'KMIPKIT-ELEM-ENUMERATION-CRYPTOGRAPHIC-ALGORITHM':
+                ('cryptographic_algorithm', 'Cryptographic Algorithm'),
+            'KMIPKIT-ELEM-ENUMERATION-MASK-GENERATOR': ('mask_generator', 'Mask Generator'),
+        }
+        matches = [value for parent, value in fields.items() if parent in parents]
+        return matches[0] if len(matches) == 1 else None
+
+    def _execute_cryptographic_enum(self, target: dict) -> dict | None:
+        selected = self._crypto_enum_field(target)
+        if selected is None or 'X' in target.get('wire_value', '').upper():
+            return None
+        field_name, tag_name = selected
+        value = int(target['wire_value'], 16)
+        fields = _CryptographicParametersFieldsV1()
+        fields.struct_size = C.sizeof(fields)
+        fields.abi_version = 1
+        setattr(fields, field_name + '_present', 1)
+        setattr(fields, field_name, value)
+        expected = [(self._tag(tag_name), 5, value.to_bytes(4, 'big'))]
+        if field_name == 'block_cipher_mode':
+            iv_required = {
+                self._enum_value('Block Cipher Mode', 'CTR', '2.1'),
+                self._enum_value('Block Cipher Mode', 'CCM', '2.1'),
+                self._enum_value('Block Cipher Mode', 'GCM', '2.1'),
+            }
+            if value in iv_required:
+                fields.iv_length_present = 1
+                fields.iv_length = 12
+                expected.append((self._tag('IV Length'), 2, (12).to_bytes(4, 'big', signed=True)))
+            if value == self._enum_value('Block Cipher Mode', 'GCM', '2.1'):
+                fields.tag_length_present = 1
+                fields.tag_length = 16
+                expected.append((self._tag('Tag Length'), 2, (16).to_bytes(4, 'big', signed=True)))
+        parameters, structure = C.c_void_p(), C.c_void_p()
+        output = _CryptographicParametersFieldsV1()
+        output.struct_size = C.sizeof(output)
+        output.abi_version = 1
+        children = []
+        try:
+            self.abi.bind('kmipkit_cryptographic_parameters_from_fields_v1',
+                          [C.POINTER(_CryptographicParametersFieldsV1), C.POINTER(C.c_void_p)])
+            self.abi.call('kmipkit_cryptographic_parameters_from_fields_v1',
+                          C.byref(fields), C.byref(parameters))
+            self.abi.bind('kmipkit_cryptographic_parameters_read_fields_v1',
+                          [C.c_void_p, C.POINTER(_CryptographicParametersFieldsV1)])
+            self.abi.call('kmipkit_cryptographic_parameters_read_fields_v1',
+                          parameters, C.byref(output))
+            if (getattr(output, field_name + '_present') != 1 or
+                    getattr(output, field_name) != value):
+                raise ValueError('cryptographic_parameters_field_mismatch')
+            if (fields.iv_length_present and
+                    (output.iv_length_present != 1 or output.iv_length != fields.iv_length)):
+                raise ValueError('cryptographic_parameters_iv_length_mismatch')
+            if (fields.tag_length_present and
+                    (output.tag_length_present != 1 or output.tag_length != fields.tag_length)):
+                raise ValueError('cryptographic_parameters_tag_length_mismatch')
+            self.abi.bind('kmipkit_cryptographic_parameters_into_ttlv',
+                          [C.c_void_p, C.POINTER(C.c_void_p)])
+            self.abi.call('kmipkit_cryptographic_parameters_into_ttlv',
+                          parameters, C.byref(structure))
+            parameters = C.c_void_p()
+            self.abi.bind('kmipkit_ttlv_structure_view', [C.c_void_p, C.POINTER(C.c_void_p)])
+            self.abi.bind('kmipkit_ttlv_structure_view_item_count', [C.c_void_p, C.POINTER(C.c_uint64)])
+            self.abi.bind('kmipkit_ttlv_structure_view_item_at',
+                          [C.c_void_p, C.c_uint64, C.POINTER(C.c_void_p)])
+            self.abi.library.kmipkit_ttlv_structure_view_release.argtypes = [C.c_void_p]
+            self.abi.library.kmipkit_ttlv_structure_view_release.restype = None
+            view = C.c_void_p()
+            self.abi.call('kmipkit_ttlv_structure_view', structure, C.byref(view))
+            try:
+                count = C.c_uint64()
+                self.abi.call('kmipkit_ttlv_structure_view_item_count', view, C.byref(count))
+                for index in range(count.value):
+                    item_view = C.c_void_p()
+                    try:
+                        self.abi.call('kmipkit_ttlv_structure_view_item_at',
+                                      view, index, C.byref(item_view))
+                        children.append(self.abi.read_view(item_view))
+                    finally:
+                        self.abi.release('ttlv_item_view', item_view)
+            finally:
+                self.abi.library.kmipkit_ttlv_structure_view_release(view)
+            if children != expected:
+                raise ValueError('cryptographic_parameters_ttlv_mismatch')
+            normalized_tree = [
+                [tag, kind, data.hex() if kind != 1 else data]
+                for tag, kind, data in children
+            ]
+            return {'sample_count': 1, 'normalized_tree': normalized_tree,
+                    'tree_sha256': digest(normalized_tree), 'invoked_symbols': set(self.abi.called)}
+        finally:
+            self.abi.release('ttlv_structure', structure)
+            self.abi.release('cryptographic_parameters', parameters)
 
     def _tag(self, name: str) -> int:
         matches = [item for item in self.catalog['normative_targets']
@@ -256,6 +387,11 @@ class ModelCases:
         return contains_tag(result['normalized_tree'])
 
     def execute(self, target: dict, protocol_version: str) -> dict | None:
+        if target.get('kind') == 'enumeration_value':
+            selected = self._crypto_enum_field(target)
+            if selected is not None:
+                self.abi.called.clear()
+                return self._execute_cryptographic_enum(target)
         parents = set(target.get('parent_element_ids', []))
         if target.get('target_id') == KEY_VALUE_STRUCTURE or KEY_VALUE_STRUCTURE in parents:
             self.abi.called.clear()
