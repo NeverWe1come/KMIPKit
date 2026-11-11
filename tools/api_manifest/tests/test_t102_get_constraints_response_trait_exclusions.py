@@ -1146,7 +1146,10 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             "kmipkit_protocol::ExportResponse::result",
             "kmipkit_protocol::ExportResponse::try_from_response_item",
         }
-        blocked = set()
+        blocked = {
+            "kmipkit_protocol::ExportResponse::key_block",
+            "kmipkit_protocol::ExportResponse::managed_object",
+        }
         rows = {
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
@@ -1246,7 +1249,10 @@ class T102GetConstraintsResponseTraitExclusionTests(unittest.TestCase):
             "kmipkit_protocol::GetResponse::result",
             "kmipkit_protocol::GetResponse::try_from_response_item",
         }
-        blocked = set()
+        blocked = {
+            "kmipkit_protocol::GetResponse::key_block",
+            "kmipkit_protocol::GetResponse::managed_object",
+        }
         rows = {
             row["exportName"]: row
             for row in self.manifest["publicDeclarations"]
