@@ -104,6 +104,24 @@ class MatrixContract(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'duplicate route execution cell'):
             validate_report(report, CATALOG, ROUTES, **arguments)
 
+    def test_named_open_wrappers_preserve_exact_numeric_codes(self):
+        cells = [self.cell('kmipkit_protocol::ResultStatus::from_raw', 'KMIPKIT-ELEM-ENUM-VALUE-RESULT-STATUS-SUCCESS-00000000'),
+                 self.cell('kmipkit_protocol::ObjectType::from_raw', 'KMIPKIT-ELEM-OBJECT-TYPE-CERTIFICATE')]
+        process, report = self.run_matrix(cells)
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual([event['request_tree_sha256'] for event in report['events']],
+                         [hashlib.sha256(value).hexdigest() for value in (b'[[4325503,5,0]]', b'[[4325463,5,1]]')])
+
+    def test_named_tag_and_structure_paths_execute_roundtrips(self):
+        cells = [self.cell('kmipkit_ttlv::RawTag::' + method, 'KMIPKIT-ELEM-TAG-42002A')
+                 for method in ('new', 'try_checked')]
+        cells.extend(self.cell('kmipkit_ttlv::Structure::' + method, 'KMIPKIT-ELEM-DATA-TYPE-STRUCTURE')
+                     for method in ('new', 'try_push'))
+        process, report = self.run_matrix(cells)
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual(len(report['events']), 4)
+        self.assertEqual(report['events'][2]['request_tree_sha256'], report['events'][3]['request_tree_sha256'])
+
     def test_forged_symbol_is_rejected_without_false_positive(self):
         cell = self.cell('kmipkit_ttlv::Item::new')
         cell['public_api_symbol'] = 'kmipkit_ttlv::Value::boolean'
