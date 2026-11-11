@@ -528,10 +528,10 @@ class ControlledTlsPeerTest {
                     CREATED_OBJECT_ID.getBytes(StandardCharsets.UTF_8))),
                     "The request must use the identifier from its setup Create response.");
         }
-        assertEquals(0, exitCode, standardError.toString(StandardCharsets.UTF_8));
         JsonNode report = mapper.readTree(outputDirectory.resolve("results.json").toFile());
-        assertEquals(2, report.path("summary").path("passed").asInt());
-        assertEquals(0, report.path("summary").path("failed").asInt());
+        assertEquals(2, report.path("summary").path("passed").asInt(), report.toString());
+        assertEquals(0, report.path("summary").path("failed").asInt(), report.toString());
+        assertEquals(0, exitCode, standardError.toString(StandardCharsets.UTF_8));
     }
 
     private String connectionJson(int port, byte[] serverCertificate, byte[] clientCertificate,
@@ -822,6 +822,22 @@ class ControlledTlsPeerTest {
         return structure(0x42007b, header, responseItem);
     }
 
+    private static byte[] identifierResponse(long operation) throws Exception {
+        byte[] protocolVersion = structure(0x420069,
+                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(1)));
+        byte[] header = structure(0x42007a, protocolVersion,
+                item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(1)));
+        byte[] identifier = item(0x420094, 7, CREATED_OBJECT_ID.getBytes(StandardCharsets.UTF_8));
+        byte[] payload = operation == 0x0c
+                ? structure(0x42007c, identifier, item(0x42013b, 5, intBytes(0x42002f)))
+                : structure(0x42007c, identifier);
+        byte[] responseItem = structure(0x42000f,
+                item(0x42005c, 5, intBytes(Math.toIntExact(operation))),
+                item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)),
+                item(0x42007f, 5, intBytes(0)), payload);
+        return structure(0x42007b, header, responseItem);
+    }
+
     private static byte[] logResponse() throws Exception {
         byte[] protocolVersion = structure(0x420069,
                 item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(1)));
@@ -867,6 +883,27 @@ class ControlledTlsPeerTest {
                 requests.add(readTtlv(socket.getInputStream()));
                 socket.getOutputStream().write(response);
                 socket.getOutputStream().flush();
+            }
+        }
+        return List.copyOf(requests);
+    }
+
+    private static List<byte[]> serveAttributeReadCases(SSLServerSocket listener,
+            List<Long> targetOperations) throws Exception {
+        var requests = new ArrayList<byte[]>();
+        for (long targetOperation : targetOperations) {
+            byte[][] responses = {
+                    createResponse(), identifierResponse(targetOperation), destroyResponse()
+            };
+            for (byte[] response : responses) {
+                try (SSLSocket socket = (SSLSocket) listener.accept()) {
+                    socket.setEnabledProtocols(new String[] {"TLSv1.3"});
+                    socket.setSoTimeout(10_000);
+                    socket.startHandshake();
+                    requests.add(readTtlv(socket.getInputStream()));
+                    socket.getOutputStream().write(response);
+                    socket.getOutputStream().flush();
+                }
             }
         }
         return List.copyOf(requests);
