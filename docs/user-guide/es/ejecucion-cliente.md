@@ -921,6 +921,76 @@ con su tipo; Revoke rechaza Compromise Occurrence Date si el motivo no es Key
 Compromise o CA Compromise. `RequestOptions` de intercambio se configura por
 separado del Asynchronous Indicator de la cabecera.
 
+## Peticiones criptográficas fluidas en Rust
+
+KMIPKIT-0102 añade builders de Rust para Encrypt, Decrypt, Sign, Signature
+Verify, MAC, MAC Verify y Hash. Construyen las peticiones tipadas existentes,
+validan los campos comprobables localmente y pueden crear un elemento de batch
+o ejecutar un intercambio. Cada entrada de bytes pasa al propietario de
+petición de KMIPKit, que pone a cero su memoria al liberarla. Elige
+`CryptographicParameters` de forma explícita: estos builders no cifran,
+firman, calculan hashes ni MAC localmente, y no eligen un algoritmo o modo.
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, FluentBuildError};
+use kmipkit_protocol::{CryptographicParametersBuilder, UniqueIdentifier};
+use kmipkit_protocol::named_values_generated::values::enumeration::{
+    block_cipher_mode, cryptographic_algorithm, hashing_algorithm,
+};
+
+fn aes_gcm_parameters() -> kmipkit_protocol::CryptographicParameters {
+    CryptographicParametersBuilder::new()
+        .with_cryptographic_algorithm(cryptographic_algorithm::AES)
+        .with_block_cipher_mode(block_cipher_mode::GCM)
+        .with_tag_length(128)
+        .build()
+        .expect("estos parámetros AES-GCM seleccionados por quien llama son válidos")
+}
+
+fn sha256_parameters() -> kmipkit_protocol::CryptographicParameters {
+    CryptographicParametersBuilder::new()
+        .with_hashing_algorithm(hashing_algorithm::SHA_256)
+        .build()
+        .expect("estos parámetros SHA-256 seleccionados por quien llama son válidos")
+}
+
+#[allow(dead_code)]
+fn fluent_crypto_requests(client: &mut Client) -> Result<(), FluentBuildError> {
+    let key_id = UniqueIdentifier::from("application-key");
+    client.request().encrypt()
+        .unique_identifier(key_id.clone())
+        .cryptographic_parameters(aes_gcm_parameters())
+        .iv_counter_nonce(vec![0; 12])
+        .authenticated_encryption_additional_data(b"record metadata".to_vec())
+        .data(b"plaintext".to_vec())
+        .build()?;
+    client.request().decrypt()
+        .unique_identifier(key_id)
+        .cryptographic_parameters(aes_gcm_parameters())
+        .iv_counter_nonce(vec![0; 12])
+        .authenticated_encryption_tag(vec![0; 16])
+        .data(b"ciphertext".to_vec())
+        .build()?;
+    client.request().hash()
+        .cryptographic_parameters(sha256_parameters())
+        .data(b"message".to_vec())
+        .build()?;
+    Ok(())
+}
+
+fn main() {
+    let _ = fluent_crypto_requests;
+}
+```
+
+Sign, Signature Verify, MAC y MAC Verify usan los constructores respectivos
+`sign()`, `signature_verify()`, `mac()` y `mac_verify()`. Sus builders exponen
+los campos de las requests tipadas, incluidos los datos ya resumidos, la firma
+o el MAC, y el framing multipart cuando corresponda. El resultado asíncrono
+`Pending` y su valor de correlación permanecen visibles; el cliente no ejecuta
+Poll ni reintentos automáticos. La entrega 0102 actual solo cubre Rust y no
+afirma paridad de estas operaciones en los bindings.
+
 ## Extensiones de mensaje
 
 KMIP §9.13 exige rechazar una extensión Message Extension crítica que no se

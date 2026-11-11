@@ -6,11 +6,11 @@
   ownership, exclusions, and acceptance criteria.
 - [x] R001 Add failing tests for all seven constructors and operation-specific
   request fields; record the exact Red command and result.
-- [ ] G001 Implement explicit Encrypt, Decrypt, Sign, Signature Verify, MAC,
+- [x] G001 Implement explicit Encrypt, Decrypt, Sign, Signature Verify, MAC,
   MAC Verify, and Hash builders using the typed request models.
-- [ ] G002 Verify local rejection, version gates, secret redaction, batch
+- [x] G002 Verify local rejection, version gates, secret redaction, batch
   conversion, one-exchange execution, and all three outcomes.
-- [ ] D001 Update manifest, Rust documentation, traceability, examples, and
+- [x] D001 Update manifest, Rust documentation, traceability, examples, and
   generated artifacts for exactly the new public exports.
 - [ ] V001 Run format, Clippy, focused and full client suites, coverage,
   manifest generation/audit, traceability, and documentation checks.
