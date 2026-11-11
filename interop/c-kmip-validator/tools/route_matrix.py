@@ -73,7 +73,7 @@ def _name(value: str) -> str:
 
 def catalog_enum_value(catalog: dict, enum_name: str, value_name: str,
                       protocol_version: str | None) -> int | None:
-    parent_id = f'KMIPKIT-ELEM-ENUMERATION-{enum_name.upper().replace(" ", "-")}'
+    parent_id = _enum_parent_id(enum_name)
     matches = [target for target in catalog['normative_targets']
                if target['kind'] == 'enumeration_value'
                and target['name'] == value_name
@@ -84,8 +84,12 @@ def catalog_enum_value(catalog: dict, enum_name: str, value_name: str,
     return int(matches[0]['wire_value'], 16)
 
 
+def _enum_parent_id(enum_name: str) -> str:
+    return f'KMIPKIT-ELEM-ENUMERATION-{enum_name.upper().replace(" ", "-")}'
+
+
 def catalog_enum_values(catalog: dict, enum_name: str, protocol_version: str) -> list[int]:
-    parent_id = f'KMIPKIT-ELEM-ENUMERATION-{enum_name.upper().replace(" ", "-")}'
+    parent_id = _enum_parent_id(enum_name)
     return sorted(int(target['wire_value'], 16) for target in catalog['normative_targets']
                   if target['kind'] == 'enumeration_value'
                   and parent_id in target.get('parent_element_ids', [])
