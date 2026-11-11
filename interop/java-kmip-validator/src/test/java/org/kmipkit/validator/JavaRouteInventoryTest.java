@@ -1,9 +1,11 @@
 package org.kmipkit.validator;
 
 import org.junit.jupiter.api.Test;
+import org.kmipkit.extensions.Client;
 
 import java.nio.file.Path;
 import java.util.Set;
+import java.lang.reflect.Modifier;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -11,6 +13,26 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class JavaRouteInventoryTest {
+    @Test
+    void classifiesInstalledAsynchronousExecutionMethodsAsExecutableRoutes() throws Exception {
+        var catalog = CatalogLoader.load(Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json"));
+        var inventory = JavaRouteInventory.classify(catalog);
+        var executionMethods = java.util.Map.of(
+                "Cancel", "executeCancel",
+                "Poll", "executePoll",
+                "Process", "executeProcess",
+                "Query Asynchronous Requests", "executeQueryAsyncRequests");
+
+        for (var entry : executionMethods.entrySet()) {
+            assertTrue(java.util.Arrays.stream(Client.class.getMethods())
+                    .anyMatch(method -> method.getName().equals(entry.getValue())
+                            && Modifier.isPublic(method.getModifiers())
+                            && !Modifier.isStatic(method.getModifiers())), entry.getValue());
+            assertEquals(JavaRouteInventory.Status.EXECUTABLE_TYPED,
+                    inventory.get(entry.getKey()).status(), entry.getKey());
+        }
+    }
+
     @Test
     void classifiesEveryCatalogOperationAndExplainsPendingRoutes() throws Exception {
         var catalog = CatalogLoader.load(Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json"));
