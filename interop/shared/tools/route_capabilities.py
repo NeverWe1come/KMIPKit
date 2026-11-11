@@ -169,10 +169,27 @@ def _function_route_kind(function_id):
 
 
 def _function_operation_id(function_id, operations):
-    value = normalized(function_id)
-    matches = [operation_id for operation_id, operation in operations.items()
-               if normalized(operation['name']) in value]
-    return max(matches, key=lambda operation_id: len(normalized(operations[operation_id]['name'])), default=None)
+    def tokens(value):
+        value = re.sub(r'([a-z0-9])([A-Z])', r'\1 \2', value)
+        result = re.findall(r'[a-z0-9]+', value.casefold())
+        result = ['async' if token == 'asynchronous' else token for token in result]
+        return tuple('pkcs11' if result[index:index + 2] == ['pkcs', '11'] else token
+                     for index, token in enumerate(result)
+                     if not (token == '11' and index and result[index - 1] == 'pkcs'))
+
+    function_tokens = tokens(function_id)
+    matches = []
+    for operation_id, operation in operations.items():
+        operation_tokens = tokens(operation['name'])
+        variants = [operation_tokens]
+        if len(operation_tokens) > 1 and operation_tokens[0] == 're':
+            variants.append((operation_tokens[0] + operation_tokens[1], *operation_tokens[2:]))
+        width = max(map(len, variants), default=0)
+        if any(variant and any(function_tokens[index:index + len(variant)] == variant
+                               for index in range(len(function_tokens) - len(variant) + 1))
+               for variant in variants):
+            matches.append((width, operation_id))
+    return max(matches, default=(0, None))[1]
 
 
 def _async_execution_entrypoint(api, language, operation_name, package_symbols):
