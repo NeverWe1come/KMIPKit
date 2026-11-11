@@ -118,8 +118,7 @@ class ModelCases:
                 self.abi.release('ttlv_item', handle)
             self.abi.release('codec_limits', limits)
 
-    def _execute_key_block(self, protocol_version: str) -> dict:
-        key_block_tree = self._key_block_tree(protocol_version)
+    def _execute_key_block_tree(self, key_block_tree: tuple) -> dict:
         limits = C.c_void_p()
         owned: list[C.c_void_p] = []
         try:
@@ -132,6 +131,105 @@ class ModelCases:
             for handle in reversed(owned):
                 self.abi.release('ttlv_item', handle)
             self.abi.release('codec_limits', limits)
+
+    def _execute_key_block(self, protocol_version: str) -> dict:
+        return self._execute_key_block_tree(self._key_block_tree(protocol_version))
+
+    def _execute_key_block_target(self, target: dict, protocol_version: str) -> dict | None:
+        kind = target.get('kind')
+        name = target.get('name', '').rstrip(',')
+        key_format = self._enum_value('Key Format Type', 'Raw', protocol_version)
+        fields = []
+        expected_value = None
+        if kind == 'object_structure':
+            if target.get('target_id') == KEY_BLOCK_STRUCTURE:
+                pass
+            elif target.get('target_id') == KEY_VALUE_STRUCTURE:
+                fields.append(self._key_value_tree())
+            else:
+                return None
+        elif kind == 'enumeration_value':
+            parents = set(target.get('parent_element_ids', []))
+            wire_value = target.get('wire_value', '')
+            if 'KMIPKIT-ELEM-ENUMERATION-CRYPTOGRAPHIC-ALGORITHM' in parents:
+                if 'X' in wire_value.upper():
+                    return None
+                expected_value = int(wire_value, 16)
+                fields.append(self._enum_tree('Cryptographic Algorithm', 'Cryptographic Algorithm',
+                                              target['name'], protocol_version))
+                fields.append(self._integer_tree('Cryptographic Length', 128))
+            elif 'KMIPKIT-ELEM-ENUMERATION-KEY-FORMAT-TYPE' in parents:
+                if 'X' in wire_value.upper():
+                    return None
+                key_format = int(wire_value, 16)
+                expected_value = key_format
+            elif 'KMIPKIT-ELEM-ENUMERATION-KEY-COMPRESSION-TYPE' in parents:
+                if 'X' in wire_value.upper():
+                    return None
+                key_format = self._enum_value('Key Format Type', 'Transparent EC Public Key', protocol_version)
+                expected_value = int(wire_value, 16)
+                fields.append(self._enum_tree('Key Compression Type', 'Key Compression Type',
+                                              target['name'], protocol_version))
+            else:
+                return None
+        elif kind in {'tag', 'structure_member', 'attribute'}:
+            if name == 'Key Block':
+                pass
+            elif name == 'Cryptographic Algorithm':
+                expected_value = self._enum_value(name, 'AES', protocol_version)
+                fields.append(self._enum_tree(name, name, 'AES', protocol_version))
+                fields.append(self._integer_tree('Cryptographic Length', 128))
+            elif name == 'Cryptographic Length':
+                expected_value = 128
+                fields.append(self._enum_tree('Cryptographic Algorithm', 'Cryptographic Algorithm',
+                                              'AES', protocol_version))
+                fields.append(self._integer_tree(name, expected_value))
+            elif name == 'Key Format Type':
+                expected_value = key_format
+            elif name == 'Key Value':
+                fields.append(self._key_value_tree())
+            elif name == 'Key Compression Type':
+                key_format = self._enum_value('Key Format Type', 'Transparent EC Public Key', protocol_version)
+                expected_value = self._enum_value(name, 'EC Public Key Type Uncompressed', protocol_version)
+                fields.append(self._enum_tree(name, name, 'EC Public Key Type Uncompressed', protocol_version))
+            else:
+                return None
+        else:
+            return None
+
+        key_block_tree = self._key_block_tree(protocol_version, key_format=key_format,
+                                              extra_fields=fields)
+        result = self._execute_key_block_tree(key_block_tree)
+        if kind == 'object_structure':
+            target_tag = self._tag(name)
+            if not self._tree_contains_tag(result['normalized_tree'], target_tag):
+                return None
+        elif kind == 'enumeration_value':
+            field_name = 'Key Format Type' if 'KEY-FORMAT-TYPE' in ' '.join(target.get('parent_element_ids', [])) else (
+                'Key Compression Type' if 'KEY-COMPRESSION-TYPE' in ' '.join(target.get('parent_element_ids', []))
+                else 'Cryptographic Algorithm')
+            expected_tag = self._tag(field_name)
+            expected_hex = f'{expected_value:08x}'
+            if not self._tree_contains_item(result['normalized_tree'], expected_tag, 5, expected_hex):
+                return None
+        elif kind in {'tag', 'structure_member', 'attribute'}:
+            target_tag = self._tag(name)
+            if not self._tree_contains_tag(result['normalized_tree'], target_tag):
+                return None
+            if expected_value is not None:
+                item_type = 2 if name == 'Cryptographic Length' else 5
+                expected_hex = (int(expected_value).to_bytes(4, 'big', signed=item_type == 2).hex())
+                if not self._tree_contains_item(result['normalized_tree'], target_tag, item_type, expected_hex):
+                    return None
+        return result
+
+    def _tree_contains_tag(self, tree: list, tag: int) -> bool:
+        return tree[0] == tag or (tree[1] == 1 and any(self._tree_contains_tag(child, tag) for child in tree[2]))
+
+    def _tree_contains_item(self, tree: list, tag: int, kind: int, value: str) -> bool:
+        if tree[0] == tag and tree[1] == kind and tree[2] == value:
+            return True
+        return tree[1] == 1 and any(self._tree_contains_item(child, tag, kind, value) for child in tree[2])
 
     def _execute_key_value(self, protocol_version: str) -> dict:
         key_format = self._enum_value('Key Format Type', 'Raw', protocol_version)
@@ -379,9 +477,13 @@ class ModelCases:
         value = self._enum_extension_start(family, protocol_version)
         return self._tag(tag_name), 5, value.to_bytes(4, 'big')
 
-    def _key_block_tree(self, protocol_version: str, *, include_key_value: bool = False) -> tuple:
-        key_format = self._enum_value('Key Format Type', 'Raw', protocol_version)
+    def _key_block_tree(self, protocol_version: str, *, include_key_value: bool = False,
+                        key_format: int | None = None, extra_fields: list[tuple] | None = None) -> tuple:
+        key_format = (self._enum_value('Key Format Type', 'Raw', protocol_version)
+                      if key_format is None else key_format)
         fields = [(KEY_FORMAT_TYPE_TAG, 5, key_format.to_bytes(4, 'big'))]
+        if extra_fields:
+            fields.extend(extra_fields)
         if include_key_value:
             fields.append(self._key_value_tree())
         return (KEY_BLOCK_TAG, 1, fields)
@@ -462,8 +564,15 @@ class ModelCases:
 
         return contains_tag(result['normalized_tree'])
 
-    def execute(self, target: dict, protocol_version: str) -> dict | None:
-        if target.get('kind') in {'enumeration_value', 'tag', 'structure_member', 'attribute'}:
+    def execute(self, target: dict, protocol_version: str,
+                public_api_symbol: str | None = None) -> dict | None:
+        if public_api_symbol in {'kmipkit_key_block_from_fields', 'kmipkit_key_block_from_item'}:
+            self.abi.called.clear()
+            return self._execute_key_block_target(target, protocol_version)
+        if (public_api_symbol in {None, 'kmipkit_cryptographic_parameters_from_fields_v1',
+                                  'kmipkit_cryptographic_parameters_read_fields_v1',
+                                  'kmipkit_cryptographic_parameters_into_ttlv'}
+                and target.get('kind') in {'enumeration_value', 'tag', 'structure_member', 'attribute'}):
             selected = self._crypto_target_field(target, protocol_version)
             if selected is not None:
                 self.abi.called.clear()

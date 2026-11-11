@@ -522,7 +522,7 @@ def run(output: Path, binary: Path | None = None) -> int:
                                         'negative_checks': result['negative_checks'], 'tree_sha256': result['tree_sha256']})
                 continue
         if cell['transport'] is None:
-            result = model_cases.execute(target, cell['protocol_version'])
+            result = model_cases.execute(target, cell['protocol_version'], cell['public_api_symbol'])
             if result is not None and cell['public_api_symbol'] in result['invoked_symbols']:
                 event = cell_fields(cell)
                 event.update(status='passed', invocation_count=1, invocation_id=f'c-model-{index}')
