@@ -14,7 +14,7 @@ or completion of the KMIPKIT-0093 end-to-end journeys.
 | Green | `b7fe8ffca3dee514383937fa08e9d3f57e64a178` | Added the typed builder, local validation, ordered expert attributes, batch conversion, options and one-exchange execution. Focused suite initially: 9 passed. Existing Create Split Key execution: 13 passed. Existing Create Key Pair fluent suite: 20 passed. Implementer Clippy check passed. Independent static review: no actionable findings. |
 | Green boundary follow-up | `a39e1ce76` | Added narrow, exact AST allowlist and regression tests for the explicit expert values this API requires. Full client suite passed (819 unit tests plus integration/doctest groups); full Clippy passed. |
 | Green cardinality follow-up | `eec20f385` | Added direct builder coverage for duplicate singleton rejection through `validate`, `build_request`, and `execute` (`NotSent`, zero exchanges). The focused test passed; the full client suite then passed with 820 unit tests. |
-| Refactor | pending | Bilingual guide, exact API manifest declarations and generated outputs, traceability, and final verification are being completed on this branch. |
+| Refactor | `2ff6529eeceeb6b465674714b5b2d454b9b5f9a3` | Added bilingual guide examples, 50 exact Rust API declarations, 18 scoped trait exclusions, generated outputs, traceability, and manifest tests. Independent final review found no remaining issues after one invalid source reference was removed and a duplicate-singleton builder test was added. |
 
 ## Verification commands
 
