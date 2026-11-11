@@ -343,7 +343,7 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
 }
 
 fn typed_attribute_marker(symbol: &str) -> Option<&str> {
-    let marker = symbol.split("typed::").nth(1)?;
+    let marker = symbol.rsplit("typed::").next()?;
     marker.split(['>', ':']).next()
 }
 
@@ -812,10 +812,9 @@ mod tests {
             "../../shared/catalog/kmipkit-1.0-test-catalog.json"
         ))
         .unwrap();
-        let specification: Json = serde_json::from_str(include_str!(
-            "../../../specification/catalog/kmip-2.1.json"
-        ))
-        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
         let target = cases["normative_targets"]
             .as_array()
             .unwrap()
