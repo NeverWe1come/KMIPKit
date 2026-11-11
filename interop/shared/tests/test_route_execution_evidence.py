@@ -5,7 +5,9 @@ import copy
 import json
 from pathlib import Path
 import sys
+import tempfile
 import unittest
+from unittest.mock import patch
 
 
 SHARED = Path(__file__).resolve().parents[1]
@@ -111,6 +113,25 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
                 self.event("c.network.execute", "c.execute", "kmipkit_client_execute", "decode", "raw_tls", "response_tree_sha256"),
             ],
         }
+
+    def test_ledger_writer_uses_only_the_fixed_java_build_destination(self):
+        writer = getattr(route_evidence, "write_selected_scope_ledger", None)
+        self.assertTrue(callable(writer), "route ledgers must use a fixed repository output")
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            fake_script = repository / "interop/shared/tools/validate_route_evidence.py"
+            fake_script.parent.mkdir(parents=True)
+            fake_script.touch()
+            expected = repository / "interop/java-kmip-validator/build/route-evidence-ledger.json"
+            payload = {"planned_cells": 68_529, "executed_cells": 20}
+
+            with patch.object(route_evidence, "__file__", str(fake_script)):
+                written = writer(payload)
+
+            self.assertEqual(expected, written)
+            self.assertEqual(json.dumps(payload, indent=2, sort_keys=True) + "\n",
+                             written.read_text(encoding="utf-8"))
+            self.assertFalse((Path(directory) / "ledger-outside.json").exists())
 
     @staticmethod
     def event(route_id, execution_route_id, execution_api_symbol, action, transport, tree_field, encoding="TTLV"):
