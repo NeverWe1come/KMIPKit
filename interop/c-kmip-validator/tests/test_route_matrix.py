@@ -100,5 +100,16 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertIn('kmipkit_ttlv_decode', abi.called)
 
 
+    def test_compiled_consumer_provenance_cannot_be_replaced_by_coordinator(self):
+        import route_peer
+        self.assertTrue(hasattr(route_peer, 'verify_consumer_provenance'), 'consumer provenance check is missing')
+        from artifact_support import PIN
+        good = {'execution': {'library_commit': PIN, 'artifact_sha256': 'a' * 64},
+                'catalog_sha256': 'b' * 64}
+        route_peer.verify_consumer_provenance(good, 'a' * 64, 'b' * 64)
+        with self.assertRaisesRegex(ValueError, 'consumer_artifact_provenance_mismatch'):
+            route_peer.verify_consumer_provenance(good, 'c' * 64, 'b' * 64)
+
+
 if __name__ == '__main__':
     unittest.main()
