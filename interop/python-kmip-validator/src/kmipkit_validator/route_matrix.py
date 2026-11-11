@@ -362,3 +362,72 @@ def _network_cell(cell: dict, case: dict, target: dict) -> dict:
     return {'request_tree_sha256': digest(request), 'response_tree_sha256': digest(response),
             'wire_bytes_deterministic': True,
             'wire_bytes_sha256': hashlib.sha256(peer.requests[0]).hexdigest()}
+
+
+def verify_installed_artifact(artifact: dict) -> None:
+    """Compare every installed package file with the verified exact wheel."""
+    from importlib.metadata import distribution
+    import zipfile
+
+    package = distribution('kmipkit')
+    module = importlib.util.find_spec('kmipkit')
+    if (package.version != '1.0.0' or module is None or module.origin is None
+            or not Path(module.origin).resolve().is_relative_to(Path(sys.prefix).resolve())):
+        raise ValueError('pinned wheel is not installed in the isolated environment')
+    checked = 0
+    with zipfile.ZipFile(artifact['artifact_file']) as wheel:
+        for name in wheel.namelist():
+            if not name.startswith('kmipkit/') or name.endswith('/'):
+                continue
+            relative = Path(name)
+            if '..' in relative.parts:
+                raise ValueError('wheel contains an invalid package path')
+            installed = package.locate_file(name).resolve(strict=True)
+            if (not installed.is_relative_to(Path(sys.prefix).resolve())
+                    or hashlib.sha256(installed.read_bytes()).digest() != hashlib.sha256(wheel.read(name)).digest()):
+                raise ValueError('installed package differs from recorded wheel')
+            checked += 1
+    if not checked:
+        raise ValueError('wheel has no installed package files')
+
+
+def run_command(output_dir: Path) -> int:
+    """Write sanitized evidence before failing the incomplete-matrix gate."""
+    from .contract import validate_artifact, _validate
+    from .reporter import resolve_report_directory
+    from validate_route_evidence import validate_collection
+
+    output = resolve_report_directory(output_dir)
+    artifact = validate_artifact()
+    verify_installed_artifact(artifact)
+    catalog_bytes = (SHARED / 'catalog/kmipkit-1.0-test-catalog.json').read_bytes()
+    manifest_bytes = (SHARED / 'coverage/route-capabilities.json').read_bytes()
+    catalog = json.loads(catalog_bytes)
+    manifest = json.loads(manifest_bytes)
+    catalog_sha = hashlib.sha256(catalog_bytes).hexdigest()
+    manifest_sha = hashlib.sha256(manifest_bytes).hexdigest()
+    report, gaps = run_matrix(catalog, manifest, artifact,
+                              catalog_sha256=catalog_sha, route_manifest_sha256=manifest_sha)
+    _validate(report, SHARED / 'schemas/route-execution-evidence.schema.json',
+              'route evidence violates the shared schema')
+    output.mkdir(parents=True, exist_ok=True)
+    (output / 'route-execution-evidence.json').write_text(json.dumps(report, indent=2, sort_keys=True) + '\n')
+    pending = {'schema_version': '1.0', 'language': 'python', 'library_commit': artifact['library_commit'],
+               'artifact_sha256': artifact['artifact_sha256'], 'catalog_sha256': catalog_sha,
+               'route_manifest_sha256': manifest_sha, 'pending_cells': len(gaps), 'cells': gaps}
+    (output / 'pending-coverage.json').write_text(json.dumps(pending, indent=2, sort_keys=True) + '\n')
+    passed = False
+    try:
+        summary = validate_collection([report], catalog, manifest, catalog_sha256=catalog_sha,
+                                      route_manifest_sha256=manifest_sha,
+                                      expected_artifact_sha256=artifact['artifact_sha256'])
+        passed = not gaps and summary['all_invocations_passed'] and summary['complete_matrix']
+    except ValueError:
+        # The shared validator contains only axis identities in its diagnostic,
+        # but this CLI deliberately emits fixed text and numeric counts only.
+        pass
+    closure = {'language': 'python', 'required_cells': len(report['events']) + len(gaps),
+               'verified_cells': len(report['events']), 'pending_cells': len(gaps), 'complete': passed}
+    (output / 'closure.json').write_text(json.dumps(closure, indent=2, sort_keys=True) + '\n')
+    print(json.dumps(closure, sort_keys=True))
+    return 0 if passed else 1

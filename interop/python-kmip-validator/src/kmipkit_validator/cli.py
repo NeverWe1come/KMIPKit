@@ -286,6 +286,9 @@ def main(argv: list[str] | None = None) -> int:
         command.add_argument("--catalog", type=Path, default=DEFAULT_CATALOG)
         command.add_argument("--capabilities", type=Path)
 
+    matrix = commands.add_parser('matrix', help='Execute the installed-package API-route matrix against controlled fixtures')
+    matrix.add_argument('--output-dir', type=Path, default=Path('build/matrix'))
+
     plan = commands.add_parser("plan", help="Plan applicable probes without opening a socket")
     common(plan)
     preflight = commands.add_parser("preflight", help="Check local inputs and installed artifact without network access")
@@ -298,6 +301,9 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     try:
+        if args.command == 'matrix':
+            from .route_matrix import run_command
+            return run_command(args.output_dir)
         connection, connection_bytes = load_connection(args.connection)
         catalog, catalog_bytes = load_contract_catalog(args.catalog)
         profile = _load_profile(args.capabilities, connection["server_id"])
