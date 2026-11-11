@@ -91,3 +91,45 @@ delivery limitation.
 
 Hosted exact-head CI and stack integration remain the parent's responsibility;
 T005/T006 are intentionally left open. No push, PR, or rebase was performed.
+
+## Refactor and final local verification
+
+Red: `e90957edc`. Green: `868e5a179`.
+
+Consolidated the two identical insertion/build validation-error conversions
+into a private fluent-only helper. Non-validation errors continue unchanged;
+the global client status function is unchanged.
+
+Final commands/results:
+
+```sh
+PYTHONPATH=bindings/python/src COVERAGE_FILE=/tmp/KMIPKIT-0096-python.coverage /tmp/kmipkit-0095-py312/bin/python -m coverage run --rcfile=bindings/python/pyproject.toml -m pytest -q bindings/python/tests --tb=short
+COVERAGE_FILE=/tmp/KMIPKIT-0096-python.coverage /tmp/kmipkit-0095-py312/bin/python -m coverage report --rcfile=bindings/python/pyproject.toml
+COVERAGE_FILE=/tmp/KMIPKIT-0096-python.coverage /tmp/kmipkit-0095-py312/bin/python -m coverage json --rcfile=bindings/python/pyproject.toml -o /tmp/KMIPKIT-0096-python-coverage.json
+python3 -B tools/api_manifest/generate.py --check
+/tmp/kmipkit-0095-py312/bin/python -m pytest -q tools/api_manifest/tests/test_0096_c_expert_attribute_positions.py tools/api_manifest/tests/test_0096_python_expert_attribute_positions.py --tb=short
+/tmp/kmipkit-0095-py312/bin/python -m pytest -q tools/api_manifest/tests/test_t102_0052_route_total.py --tb=short
+cargo fmt --all --check
+git diff --check
+```
+
+All exited 0. Full Python: 1,327 passed, 119 subtests passed, 92.32 seconds.
+Coverage: 96.62% aggregate (8,874/9,184 statements), 91.26% for `fluent.py`.
+Intersecting added lines from `git diff 3c48b824e --unified=0` with executable
+lines in the coverage JSON gives 15/16 changed executable lines covered
+(93.75%, above the 90% changed-code gate). The uncovered line is re-raising
+a non-validation native error; validation, input rejection, ownership, and
+successful exchange paths are covered. Generated metadata has no changed
+executable behavior.
+
+Generator check verified all 12 outputs. 0096 C/Python manifest tests:
+2 passed. T102 total snapshot: 2 passed, 5 subtests passed. The final Python
+source export audit was rerun after extracting the private helper and still
+reports complete, matching, 2,597 exact manifest matches and zero issues.
+
+Rust workspace Clippy/tests/llvm-cov and complete C/Java suites were not rerun
+in this Python-only slice; the parent owns stack integration and exact-head
+CI. Rust's generated declaration metadata is the only changed Rust file.
+
+The temporary local native-library symlink used for tests is removed after
+verification; the parent-provided untracked task brief is preserved.
