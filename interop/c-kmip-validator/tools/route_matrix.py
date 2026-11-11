@@ -106,18 +106,26 @@ def catalog_parent_tag(target: dict, tags: dict[str, int]) -> int | None:
     return {_name(tag_name): value for tag_name, value in tags.items()}.get(_name(name))
 
 
-def numeric_boundaries(value: str) -> tuple[int, int] | None:
+def numeric_boundaries(value: str, width: int = 8) -> tuple[int, int] | None:
     endpoints = re.findall(r'[0-9A-Fa-fXx]+', value)
     if not endpoints:
         return None
     lower_text, upper_text = endpoints[0], endpoints[-1]
-    if not re.fullmatch(r'[0-9A-Fa-fXx]{8}', lower_text) or not re.fullmatch(r'[0-9A-Fa-fXx]{8}', upper_text):
+    pattern = rf'[0-9A-Fa-fXx]{{{width}}}'
+    if not re.fullmatch(pattern, lower_text) or not re.fullmatch(pattern, upper_text):
         return None
     lower = int(lower_text.replace('X', '0').replace('x', '0'), 16)
     upper = int(upper_text.replace('X', 'F').replace('x', 'F'), 16)
     if lower > upper:
         return None
     return lower, upper
+
+
+def range_boundary_tags(target: dict) -> tuple[int, int]:
+    boundaries = numeric_boundaries(target.get('wire_value', ''), width=6)
+    if boundaries is None:
+        raise ValueError('catalog_tag_range_boundaries_missing')
+    return boundaries
 
 
 def _type_codes(encoding: str) -> list[int]:
@@ -161,6 +169,8 @@ def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
     """Build item trees only where the pinned catalog identifies tag and type."""
     if target['kind'] == 'tag' and target.get('allocation') in {'reserved', 'unused'}:
         return None
+    if target['kind'] == 'tag_range' and target.get('allocation') == 'extension':
+        return [(tag, 5, (7).to_bytes(4, 'big')) for tag in range_boundary_tags(target)]
     if (target['kind'] in {'enumeration_value', 'bitmask_value', 'referenced_enum_value'}
             and target.get('allocation') in {'extension', 'reserved'}):
         boundaries = numeric_boundaries(target.get('wire_value', ''))
@@ -206,6 +216,29 @@ def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
     if not encodings:
         return None
     return [_fixture_value(target, tag, kind, catalog, protocol_version) for kind in encodings]
+
+
+def execute_tag_range_case(tree_abi, target: dict, catalog: dict) -> dict:
+    """Exercise both allocation boundaries with construction or decoder rejection."""
+    from route_ttlv import digest, encode
+
+    tags = {item['name']: int(item['wire_value'], 16)
+            for item in catalog['normative_targets'] if item['kind'] == 'tag'}
+    if target.get('allocation') == 'extension':
+        trees = generic_tree_fixtures(target, catalog, tags, target['protocol_versions'][-1])
+        if not trees:
+            raise ValueError('extension_tag_range_fixture_missing')
+        results = [tree_abi.roundtrip(encode(tree)) for tree in trees]
+        return {'sample_count': len(results),
+                'invoked_symbols': set().union(*(result['invoked_symbols'] for result in results)),
+                'tree_sha256': digest([result['normalized_tree'] for result in results])}
+
+    results, symbols = [], set()
+    for tag in range_boundary_tags(target):
+        code = tree_abi.reject_wire(encode((tag, 5, (7).to_bytes(4, 'big'))))
+        symbols.update(tree_abi.called)
+        results.append([tag, code])
+    return {'sample_count': len(results), 'invoked_symbols': symbols, 'tree_sha256': digest(results)}
 
 
 def scalar_fixture(target: dict, tags: dict[str, int], catalog: dict | None = None,
@@ -458,6 +491,17 @@ def run(output: Path, binary: Path | None = None) -> int:
                 events.append(event)
                 branch_evidence.append({**cell_fields(cell), 'sample_count': result['sample_count'],
                                         'negative_checks': result['negative_checks'], 'tree_sha256': result['tree_sha256']})
+                continue
+        if (cell['transport'] is None and target['kind'] == 'tag_range'
+                and cell['action'] == 'decode' and cell['public_api_symbol'] == 'kmipkit_ttlv_decode'):
+            result = execute_tag_range_case(tree_abi, target, catalog)
+            if cell['public_api_symbol'] in result['invoked_symbols']:
+                event = cell_fields(cell)
+                event.update(status='passed', invocation_count=1, invocation_id=f'c-tag-range-{index}')
+                event['response_tree_sha256'] = result['tree_sha256']
+                events.append(event)
+                branch_evidence.append({**cell_fields(cell), 'sample_count': result['sample_count'],
+                                        'tree_sha256': result['tree_sha256']})
                 continue
         if target['kind'] == 'data_type' and cell['transport'] is None:
             result = tree_abi.boundary_case(boundary_vectors[int(target['wire_value'], 16)])
