@@ -125,6 +125,18 @@ class ModelCases:
             raise ValueError('model_fixture_enum_value_missing')
         return int(matches[0]['wire_value'], 16)
 
+    def _enum_extension_start(self, family: str, protocol_version: str) -> int:
+        normalized_family = ''.join(character for character in family.lower() if character.isalnum())
+        matches = [item for item in self.catalog['normative_targets']
+                   if item['kind'] == 'enumeration_value' and item.get('allocation') == 'extension'
+                   and protocol_version in item['protocol_versions']
+                   and any(''.join(character for character in parent.removeprefix('KMIPKIT-ELEM-ENUMERATION-').lower()
+                                   if character.isalnum()) == normalized_family
+                           for parent in item.get('parent_element_ids', []))]
+        if len(matches) != 1 or not all(character in '0123456789abcdefABCDEFxX' for character in matches[0]['wire_value']):
+            raise ValueError('model_fixture_enum_extension_missing')
+        return int(matches[0]['wire_value'].replace('X', '0').replace('x', '0'), 16)
+
     def _object_type(self, name: str, protocol_version: str) -> int:
         return self._enum_value('Object Type', name, protocol_version)
 
@@ -159,6 +171,11 @@ class ModelCases:
             ]),
             'Private Key': ('kmipkit_private_key_from_fields', [key_block_tree]),
             'Public Key': ('kmipkit_public_key_from_fields', [key_block_tree]),
+            'Opaque Object': ('kmipkit_opaque_object_from_fields', [
+                (self._tag('Opaque Data Type'), 5,
+                 self._enum_extension_start('Opaque Data Type', protocol_version).to_bytes(4, 'big')),
+                (self._tag('Opaque Data Value'), 8, b'opaque'),
+            ]),
             'Secret Data': ('kmipkit_secret_data_from_fields', [
                 self._enum_tree('Secret Data Type', 'Secret Data Type', 'Password', protocol_version),
                 key_block_tree,
@@ -227,7 +244,8 @@ class ModelCases:
                      and (item['target_id'] == target.get('target_id')
                           or item['target_id'] in parents)), None)
         if root is not None and root['name'] in {
-                'Certificate Request', 'PGP Key', 'Private Key', 'Public Key', 'Secret Data', 'Split Key'}:
+                'Certificate Request', 'PGP Key', 'Private Key', 'Public Key', 'Opaque Object',
+                'Secret Data', 'Split Key'}:
             self.abi.called.clear()
             result = self._execute_named_object(root, protocol_version)
             return result if self._supports_target(target, result) else None
