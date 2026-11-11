@@ -267,6 +267,13 @@ class MatrixContract(unittest.TestCase):
         self.assertEqual('passed', report['events'][0]['status'])
         self.assertRegex(report['events'][0]['request_tree_sha256'], r'^[0-9a-f]{64}$')
 
+    def test_operation_structure_tags_match_case_insensitively(self):
+        cell = self.cell('kmipkit_ttlv::Structure::try_push',
+                         'KMIPKIT-ELEM-OPERATION-STRUCTURE-7-16-INTEROP-IDENTIFIER')
+        process, report = self.run_matrix([cell])
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual('passed', report['events'][0]['status'])
+
     def test_ci_gate_refuses_a_partial_real_route_run(self):
         with tempfile.TemporaryDirectory() as directory:
             matrix = Path(directory) / 'one-cell.jsonl'
