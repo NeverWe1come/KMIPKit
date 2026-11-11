@@ -141,6 +141,14 @@ def test_raw_response_copies_navigate_vendor_extensions_and_outlive_result_close
         expected = _response_message()
         identical = rendered[0].with_bytes(lambda view: bytes(view)) == expected.hex().upper().encode()
         assert identical, "canonical rendering preserves the complete response"
+        with ttlv.codec_limits_create(len(expected), 64, 100_000) as binary_only:
+            with pytest.raises(errors.ResourceLimitError):
+                with item.ttlv_hex(binary_only):
+                    pass
+        hex_length = 2 * len(expected)
+        with ttlv.codec_limits_create(hex_length, 64, 100_000) as exact_limits:
+            with item.ttlv_hex(exact_limits) as exact:
+                assert exact.with_bytes(lambda view: len(view)) == hex_length
         json_document = rendered[1].with_bytes(lambda view: json.loads(bytes(view)))
         assert json_document["tag"] == "ResponseMessage"
         assert [field["tag"] for field in json_document["value"]] == ["ResponseHeader", "BatchItem", "BatchItem"]

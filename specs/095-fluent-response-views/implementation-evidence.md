@@ -80,3 +80,19 @@ and report output, and passed completely. Local analysis projects workspace
 coverage regions because the installed newer Rust toolchain also emits
 standard-library function filenames outside the repository; raw reports and
 all final metric inputs remain available in the task cache.
+
+## FR-005 review follow-up: final hexadecimal output limit
+
+Review confirmed that the inherited inspection writer bounded binary TTLV but
+reserved/emitted twice that size as hexadecimal. The limit must apply to the
+requested rendered output, before its allocation or writes.
+
+### Follow-up Red
+
+- `CARGO_BUILD_JOBS=2 cargo test -p kmipkit-client --all-features --lib ttlv_hex_limits_bound_the_rendered_output_not_only_binary_ttlv`: exit 101; the new assertion fails because binary TTLV fits the cap while the hexadecimal output exceeds it.
+- The regression also checks one byte below the final hex length, exact-boundary acceptance, and that inspection leaves the exchange count at one.
+- Python's native response fixture fails with `DID NOT RAISE ResourceLimitError` for a cap equal to the binary message size.
+- Equivalent C compiled-consumer and Java mTLS regressions are recorded in this Red change before production changes. Java/Python also check exact final-length acceptance.
+
+No response contents are included in failure diagnostics; callers receive only
+the existing payload-free resource-limit category.

@@ -11179,6 +11179,15 @@ int kmipkit_client_abi_c_consumer_response_views(kmipkit_client_batch_item_respo
         if (renderers[index](item, limits, &owner) != 0 || owner == NULL ||
                 kmipkit_secret_bytes_with_bytes(owner, inspect_response_view, &probe) != 0 ||
                 !probe.root_present || probe.length == 0) valid = 0;
+        if (index == 0 && probe.length > 0) {
+            kmipkit_codec_limits_t *binary_only = NULL;
+            kmipkit_secret_bytes_t *oversized = NULL;
+            if (kmipkit_codec_limits_create(probe.length / 2, 64, 100000, &binary_only) != 0 ||
+                    renderers[index](item, binary_only, &oversized) != KMIPKIT_ERROR_RESOURCE_LIMIT ||
+                    oversized != NULL) valid = 0;
+            kmipkit_secret_bytes_release(oversized);
+            kmipkit_codec_limits_release(binary_only);
+        }
         kmipkit_secret_bytes_release(owner);
         owner = (kmipkit_secret_bytes_t *)(uintptr_t)1;
         if (renderers[index](item, restricted, &owner) != KMIPKIT_ERROR_RESOURCE_LIMIT || owner != NULL) valid = 0;
