@@ -411,6 +411,42 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue({'kmipkit_key_block_from_fields', 'kmipkit_key_block_from_item'}
                         .issubset(result['invoked_symbols']))
 
+    def test_key_block_route_roundtrips_each_transparent_key_material_format(self):
+        from artifact_support import INSTALL, ROOT
+        from c_route_models import ModelCases
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        targets = {item['target_id']: item for item in catalog['normative_targets']}
+        tags = {item['name']: int(item['wire_value'], 16) for item in catalog['normative_targets']
+                if item['kind'] == 'tag'}
+        cases = {
+            4: (7, [('Key', 8)]),
+            5: (8, [('P', 4), ('Q', 4), ('G', 4), ('X', 4)]),
+            6: (9, [('P', 4), ('Q', 4), ('G', 4), ('Y', 4)]),
+            7: (10, [('Modulus', 4), ('Public Exponent', 4), ('Private Exponent', 4),
+                     ('P', 4), ('Q', 4), ('Prime Exponent P', 4),
+                     ('Prime Exponent Q', 4), ('CRT Coefficient', 4)]),
+            8: (11, [('Modulus', 4), ('Public Exponent', 4)]),
+            9: (12, [('P', 4), ('Q', 4), ('G', 4), ('J', 4), ('X', 4)]),
+            10: (13, [('P', 4), ('Q', 4), ('G', 4), ('J', 4), ('Y', 4)]),
+            11: (20, [('Recommended Curve', 5), ('D', 4)]),
+            12: (21, [('Recommended Curve', 5), ('Q String', 8)]),
+        }
+        models = ModelCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog)
+        for section, (format_value, members) in cases.items():
+            target = targets[f'KMIPKIT-ELEM-OBJECT-STRUCTURE-3-{section}-KEY-MATERIAL']
+            for version in ('2.0', '2.1'):
+                with self.subTest(section=section, version=version):
+                    result = models.execute(target, version, 'kmipkit_key_block_from_fields')
+                    self.assertIsNotNone(result)
+                    key_block_fields = result['normalized_tree'][2]
+                    self.assertEqual(key_block_fields[0], [tags['Key Format Type'], 5,
+                                                           f'{format_value:08x}'])
+                    material_fields = key_block_fields[1][2][0][2]
+                    self.assertEqual([(field[0], field[1]) for field in material_fields],
+                                     [(tags[name], item_type) for name, item_type in members])
+                    self.assertTrue({'kmipkit_key_block_from_fields', 'kmipkit_key_block_from_item'}
+                                    .issubset(result['invoked_symbols']))
+
     def test_key_block_route_constructs_wrapping_information_and_key_value(self):
         from artifact_support import INSTALL, ROOT
         from c_route_models import ModelCases
