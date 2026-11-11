@@ -1,7 +1,7 @@
 # Rust interoperability consumer
 
 The independent Rust 1.94 workspace consumes installed `.crate` packages built
-from release commit `9692057c9ade474fb0c4e0b7130539da368eb794`, targeting KMIP
+from release commit `9a16cc90a12205101d22a38501a5e74c665df4dc`, targeting KMIP
 2.0 and 2.1. No deployed vendor KMS or vendor compatibility claim is included.
 
 From the repository root:
@@ -90,12 +90,12 @@ because the stock CLI joins stdin on a current-thread runtime. No release
 source is modified. Controlled fixtures establish consumer behavior and request
 reachability, not vendor or cryptographic certification.
 
-`KMIPKIT_EVIDENCE_DIR` saves a redacted 218-row report. The controlled 2.1
-scenario has 107 passes, 99 observed unsupported rejections and 12 non-run
-rows: five incoming channels omitted in that scenario, six 2.0-only probes and
-the State rejection.
-Separate tests execute all five incoming operations and both version probes.
-CI uploads only redacted results and package provenance.
+`KMIPKIT_EVIDENCE_DIR` saves a redacted report with one row for every selected
+catalog case. The shared catalog currently contains 2,689 cases: 2,507 local
+model checks and 182 server exchanges. Counts come from the selected catalog
+and protocol version so catalog growth cannot silently reduce coverage.
+Separate tests execute all five incoming operations and every KMIP 2.0 version
+boundary probe. CI uploads only redacted results and package provenance.
 
 The full controlled inventory and all five incoming operations are verified in
 both 2.0 and 2.1. The current package pin includes the KMIP 2.0 session-tag
@@ -134,5 +134,6 @@ python3 interop/rust-kmip-validator/tools/check_coverage.py
 
 The script isolates compilation/profiles, runs the Rust and controlled subprocess
 suites, and fails below 90 percent. Only `local_cases_generated.rs` is excluded:
-it is a generated data-dispatch table verified by regeneration and all 67 local
-model cases. Fresh measured handwritten coverage is 90.41% (1819/2012 lines).
+it is a generated data-dispatch table verified by regeneration and every
+applicable local-model case. Handwritten-code coverage is measured from the
+current build rather than a fixed catalog count.

@@ -7,38 +7,146 @@ use kmipkit::protocol::{
     AttributeReference, AttributeSet, CertifyRequest, CheckRequest, CreateKeyPairRequest,
     CreateRequest, CreateSplitKeyRequest, CryptographicParameters, CryptographicParametersBuilder,
     DecryptRequest, DelegatedLoginRequest, DeleteAttributeRequest, DerivationMethod,
-    DerivationParameters, DeriveKeyRequest, DestroyRequest, EncryptRequest, ExportRequest,
-    GetAttributeListRequest, GetAttributesRequest, GetRequest, GetUsageAllocationRequest,
-    HashRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest, LocateRequest, LogRequest,
-    LoginRequest, LogoutRequest, MacRequest, MacVerifyRequest, ModifyAttributeRequest,
-    NewAttribute, ObjectType, ObtainLeaseRequest, OperationData, Pkcs11Request, QueryFunction,
-    QueryRequest, ReProvisionRequest, RecertifyRequest, RecoverRequest, RekeyKeyPairRequest,
-    RekeyRequest, RevocationReason, RevokeRequest, RngRetrieveRequest, RngSeedRequest, SecretBytes,
-    SecretText, SetAttributeRequest, SetConstraintsRequest, SetDefaultsRequest, SignRequest,
+    DerivationParameters, DeriveKeyRequest, DestroyRequest, EncryptRequest, EndpointRole,
+    ExportRequest, GetAttributeListRequest, GetAttributesRequest, GetRequest,
+    GetUsageAllocationRequest, HashRequest, ImportRequest, InteropRequest, JoinSplitKeyRequest,
+    LocateRequest, LogRequest, LoginRequest, LogoutRequest, MacRequest, MacVerifyRequest,
+    ModifyAttributeRequest, NewAttribute, ObjectType, ObtainLeaseRequest, OperationData,
+    Pkcs11Request, QueryFunction, QueryRequest, ReProvisionRequest, RecertifyRequest,
+    RecoverRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest,
+    RngRetrieveRequest, RngSeedRequest, SecretBytes, SecretText, SetAttributeRequest,
+    SetConstraintsRequest, SetDefaultsRequest, SetEndpointRoleRequest, SignRequest,
     SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, Ticket, TicketType,
     UniqueIdentifier, ValidateRequest,
 };
-use kmipkit::ttlv::{Value, ValueView};
+use kmipkit::ttlv::{ItemType, RawTag, Structure, Value, ValueView};
 
-pub(crate) fn generic_model_check() -> bool {
-    // OASIS KMIP 2.0/2.1 §10.1: future Enumeration values survive generic navigation.
-    let Ok(value) = item(0x0042_005c, Value::enumeration(0x7fff_fffe)) else {
+pub(crate) fn generic_enumeration_check(raw: u32) -> bool {
+    item(0x0042_005c, Value::enumeration(raw)).is_ok_and(|value| {
+        value.with_value(|view| matches!(view, ValueView::Enumeration(actual) if *actual == raw))
+    })
+}
+
+pub(crate) fn generic_integer_check(raw: u32) -> bool {
+    item(0x0042_002a, Value::integer(raw.cast_signed())).is_ok_and(|value| {
+        value.with_value(
+            |view| matches!(view, ValueView::Integer(actual) if *actual == raw.cast_signed()),
+        )
+    })
+}
+
+pub(crate) fn bitmask_combinations_roundtrip(
+    values: &[u32],
+    name_count: impl Fn(u32) -> usize,
+) -> bool {
+    if values.len() >= usize::BITS as usize {
+        return false;
+    }
+    (0..(1_usize << values.len())).all(|selector| {
+        let mask = values
+            .iter()
+            .enumerate()
+            .filter(|(index, _)| selector & (1 << index) != 0)
+            .fold(0, |combined, (_, value)| combined | value);
+        name_count(mask) == mask.count_ones() as usize && generic_integer_check(mask)
+    })
+}
+
+pub(crate) fn tag_allocation_matches(raw: u32, expected_allocated: bool) -> bool {
+    RawTag::new(raw).is_ok_and(|tag| tag.try_checked().is_ok() == expected_allocated)
+}
+
+pub(crate) fn value_types_roundtrip(expected: &[ItemType]) -> bool {
+    !expected.is_empty()
+        && expected.iter().all(|expected| {
+            let value = match expected {
+                ItemType::Structure => Value::structure(Structure::new()),
+                ItemType::Integer => Value::integer(-17),
+                ItemType::LongInteger => Value::long_integer(-17),
+                ItemType::BigInteger => Value::big_integer(vec![0x01]),
+                ItemType::Enumeration => Value::enumeration(0x7fff_fffe),
+                ItemType::Boolean => Value::boolean(true),
+                ItemType::TextString => Value::text_string("KMIPKit".to_owned()),
+                ItemType::ByteString => Value::byte_string(vec![0x4b]),
+                ItemType::DateTime => Value::date_time(1),
+                ItemType::Interval => Value::interval(1),
+                ItemType::DateTimeExtended => Value::date_time_extended(1),
+                _ => return false,
+            };
+            item(0x0042_0001, value).is_ok_and(|item| item.item_type() == *expected)
+        })
+}
+
+pub(crate) fn ttlv_boundary_vectors_match(expected: ItemType) -> bool {
+    let Ok(document) = serde_json::from_str::<serde_json::Value>(include_str!(
+        "../../shared/vectors/ttlv-boundaries.json"
+    )) else {
         return false;
     };
-    let Ok(tree) = structure(0x0042_0079, vec![value]) else {
+    let Some(vectors) = document
+        .get("vectors")
+        .and_then(serde_json::Value::as_array)
+    else {
         return false;
     };
-    let constructed = tree.view().children().first().is_some_and(|v| {
-        v.with_value(|view| matches!(view, ValueView::Enumeration(value) if *value == 0x7fff_fffe))
-    });
-    // Independently derived §10.1 wire fixture: length=4 and four padding bytes.
-    let wire = [
-        0x42, 0x00, 0x5c, 0x05, 0, 0, 0, 4, 0x7f, 0xff, 0xff, 0xfe, 0, 0, 0, 0,
-    ];
-    let decoded = kmipkit::ttlv::codec::decode(&wire).is_ok_and(|v| {
-        v.with_value(|view| matches!(view, ValueView::Enumeration(value) if *value == 0x7fff_fffe))
-    });
-    constructed && decoded
+    let expected_name = match expected {
+        ItemType::Structure => "Structure",
+        ItemType::Integer => "Integer",
+        ItemType::LongInteger => "Long Integer",
+        ItemType::BigInteger => "Big Integer",
+        ItemType::Enumeration => "Enumeration",
+        ItemType::Boolean => "Boolean",
+        ItemType::TextString => "Text String",
+        ItemType::ByteString => "Byte String",
+        ItemType::DateTime => "Date Time",
+        ItemType::Interval => "Interval",
+        ItemType::DateTimeExtended => "Date Time Extended",
+        _ => return false,
+    };
+    let Some(vector) = vectors.iter().find(|vector| {
+        vector.get("data_type").and_then(serde_json::Value::as_str) == Some(expected_name)
+    }) else {
+        return false;
+    };
+    let Some(samples) = vector.get("samples").and_then(serde_json::Value::as_array) else {
+        return false;
+    };
+    let mut valid_seen = false;
+    for sample in samples {
+        let (Some(hex), Some(valid)) = (
+            sample.get("hex").and_then(serde_json::Value::as_str),
+            sample.get("valid").and_then(serde_json::Value::as_bool),
+        ) else {
+            return false;
+        };
+        let Some(bytes) = decode_hex(hex) else {
+            return false;
+        };
+        match (valid, kmipkit::ttlv::codec::decode(&bytes)) {
+            (true, Ok(item)) if item.item_type() == expected => valid_seen = true,
+            (false, Err(_)) => {}
+            _ => return false,
+        }
+    }
+    valid_seen
+}
+
+fn decode_hex(hex: &str) -> Option<Vec<u8>> {
+    if !hex.len().is_multiple_of(2) {
+        return None;
+    }
+    hex.as_bytes()
+        .chunks_exact(2)
+        .map(|pair| {
+            let digit = |byte: u8| match byte {
+                b'0'..=b'9' => Some(byte - b'0'),
+                b'a'..=b'f' => Some(byte - b'a' + 10),
+                b'A'..=b'F' => Some(byte - b'A' + 10),
+                _ => None,
+            };
+            Some(digit(pair[0])? * 16 + digit(pair[1])?)
+        })
+        .collect()
 }
 
 #[path = "local_cases_generated.rs"]
@@ -256,6 +364,9 @@ pub(crate) fn request(
             Vec::new(),
         )?)),
         "Set Defaults" => ClientRequest::SetDefaults(SetDefaultsRequest::new()),
+        "Set Endpoint Role" => {
+            ClientRequest::set_endpoint_role(SetEndpointRoleRequest::new(EndpointRole::CLIENT))
+        }
         "Re-key" => ClientRequest::Rekey(RekeyRequest::new().with_unique_identifier(id()?)),
         "Re-key Key Pair" => ClientRequest::RekeyKeyPair(
             RekeyKeyPairRequest::new().with_private_key_unique_identifier(id()?),

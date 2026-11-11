@@ -77,6 +77,9 @@ jobs:
           python3 interop/rust-kmip-validator/tools/generate_local_cases.py
           git diff --exit-code -- interop/rust-kmip-validator/src/local_cases_generated.rs
 
+      - name: Verify every local catalog case has generated dispatch
+        run: python3 -m unittest discover -s interop/rust-kmip-validator/tests -p test_local_case_generator.py -v
+
       - name: Lint with Clippy
         run: cargo +1.94 clippy --locked --manifest-path interop/rust-kmip-validator/Cargo.toml --all-targets --all-features -- -D warnings
 

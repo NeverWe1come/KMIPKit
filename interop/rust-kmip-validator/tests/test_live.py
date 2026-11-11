@@ -436,6 +436,8 @@ class LiveContract(unittest.TestCase):
                     payload = [ttlv(0x420094, 7, f"owned-share-{sequence}-1"), ttlv(0x420094, 7, f"owned-share-{sequence}-2")]
                 elif name in ("Login", "Delegated Login"):
                     payload = [ttlv(0x420149, 1, [ttlv(0x42014a, 5, 1), ttlv(0x42014b, 8, b"controlled-ticket")])]
+                elif name == "Query":
+                    payload = []
                 elif name == "Logout":
                     payload = []
                 elif name == "Cancel":
@@ -489,7 +491,16 @@ class LiveContract(unittest.TestCase):
                     self.assertEqual(result["status"], "passed")
                     self.assertEqual(result["server_compatibility"], "supported")
                     self.assertEqual(result["library_correctness"], "passed")
-            self.assertGreater(len(peer.operations), len(cases))
+            outgoing = [
+                c for c in cases
+                if c["execution"]["mode"] == "server_exchange"
+                and c["requires"].get("workflow_type") != "server_to_client"
+                and version in c["execution"]["protocol_versions"]
+            ]
+            self.assertGreaterEqual(
+                len(peer.operations), len(outgoing),
+                "controlled peer did not receive each applicable outbound catalog case",
+            )
             self.assertEqual(report["summary"]["total"], len(CATALOG["test_cases"]))
             evidence = os.environ.get("KMIPKIT_EVIDENCE_DIR")
             if evidence:

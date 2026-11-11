@@ -26,8 +26,8 @@ commands = [
     ["cargo", "+1.94", "build", "--locked", "--manifest-path", str(MANIFEST)],
     ["cargo", "+1.94", "test", "--locked", "--manifest-path", str(MANIFEST), "--all-features"],
     [sys.executable, "-m", "unittest", "discover", "-s", "interop/rust-kmip-validator/tests", "-p", "test_live.py", "-v"],
-    # This exhaustive generated lookup table is verified by all 67 model cases
-    # and regeneration checks; it is excluded from handwritten-code coverage.
+    # This exhaustive generated lookup table is verified against every local
+    # catalog case and regeneration checks; it is excluded from handwritten-code coverage.
     ["cargo", "+1.94", "llvm-cov", "report", "--manifest-path", str(MANIFEST), "--ignore-filename-regex", r"local_cases_generated\.rs", "--json", "--output-path", str(OUTPUT)],
 ]
 for command in commands:

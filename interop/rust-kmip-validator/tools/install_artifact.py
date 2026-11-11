@@ -10,7 +10,7 @@ import subprocess
 import tarfile
 import tempfile
 
-PIN = "9692057c9ade474fb0c4e0b7130539da368eb794"
+PIN = "9a16cc90a12205101d22a38501a5e74c665df4dc"
 ROOT = Path(__file__).resolve().parents[3]
 LOCAL = ROOT / "interop/.local/rust-live"
 CRATES = ["kmipkit-ttlv", "kmipkit-protocol", "kmipkit-transport", "kmipkit-client", "kmipkit"]

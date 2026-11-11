@@ -6,16 +6,155 @@ use kmipkit::protocol::{
     ActivateRequest, ArchiveRequest, CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest,
     CryptographicParameters, CryptographicParametersBuilder, DecryptRequest, DestroyRequest,
     EncryptRequest, HashRequest, JoinSplitKeyRequest, LoginRequest, LogoutRequest, MacRequest,
-    MacVerifyRequest, ObjectType, OperationData, RevocationReason, RevokeRequest, SecretBytes,
-    SignRequest, SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, UniqueIdentifier,
+    MacVerifyRequest, ObjectType, OperationData, QueryFunction, QueryRequest, RevocationReason,
+    RevokeRequest, SecretBytes, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
+    SplitKeyReference, UniqueIdentifier,
 };
-use kmipkit::{Client, ClientRequest};
+use kmipkit::{Client, ClientBatch, ClientBatchItem, ClientRequest};
 
 pub(crate) enum Failure {
     LocalRejection(&'static str),
     Prerequisite(&'static str),
     Library(kmipkit::ClientError),
     Assertion(&'static str),
+}
+
+pub(crate) fn verify_version_boundary(
+    case: &Case,
+    connection: &Connection,
+    client: &mut Client,
+) -> bool {
+    if matches!(
+        case.operation.as_str(),
+        "Process" | "Query Asynchronous Requests"
+    ) {
+        return crate::driver::asynchronous(client, connection, &case.operation, &[0x41])
+            .is_err_and(|error| {
+                error.delivery_state() == Some(kmipkit::RequestDeliveryState::NotSent)
+            });
+    }
+    let Ok(request) = adapters::request(case, None, &case.case_id) else {
+        return false;
+    };
+    driver::execute(client, connection, request)
+        .is_err_and(|error| error.delivery_state() == Some(kmipkit::RequestDeliveryState::NotSent))
+}
+
+#[allow(clippy::too_many_lines)] // Each local protocol scenario keeps its assertions adjacent.
+pub(crate) fn verify_local_batch_model(
+    case_id: &str,
+    case: &Case,
+    _connection: &Connection,
+    client: &mut Client,
+) -> std::result::Result<(), String> {
+    let limits = kmipkit::ttlv::codec::CodecLimits::defaults();
+    match case_id {
+        "test-batch-count-zero-rejected" => match client.execute(ClientBatch::empty(), &limits) {
+            Err(error)
+                if error.delivery_state() == Some(kmipkit::RequestDeliveryState::NotSent) =>
+            {
+                Ok(())
+            }
+            Err(error) => Err(format!(
+                "empty batch rejected with {:?} at {:?}",
+                error.category(),
+                error.delivery_state()
+            )),
+            Ok(_) => Err("empty batch unexpectedly succeeded".to_owned()),
+        },
+        "test-batch-count-mismatch-rejected" => {
+            let batch = ClientBatch::from_items([
+                ClientBatchItem::new(ClientRequest::Query(QueryRequest::new([
+                    QueryFunction::OPERATIONS,
+                ])))
+                .with_unique_batch_item_id(b"first".to_vec()),
+                ClientBatchItem::new(ClientRequest::Query(QueryRequest::new([
+                    QueryFunction::OPERATIONS,
+                ])))
+                .with_unique_batch_item_id(b"second".to_vec()),
+            ]);
+            match client.execute(batch, &limits) {
+                Ok(response)
+                    if response.len() == 2
+                        && response.get(0).is_some()
+                        && response.get(1).is_some() =>
+                {
+                    Ok(())
+                }
+                Ok(response) => Err(format!(
+                    "two-item batch returned {} results",
+                    response.len()
+                )),
+                Err(error) => Err(format!(
+                    "two-item batch failed with {:?} at {:?}",
+                    error.category(),
+                    error.delivery_state()
+                )),
+            }
+        }
+        "test-batch-single-item-options-omitted" => {
+            let batch = ClientBatch::new(ClientBatchItem::new(ClientRequest::Query(
+                QueryRequest::new([QueryFunction::OPERATIONS]),
+            )));
+            match client.execute(batch, &limits) {
+                Ok(response) if response.len() == 1 && response.get(0).is_some() => Ok(()),
+                Ok(response) => Err(format!(
+                    "single-item batch returned {} results",
+                    response.len()
+                )),
+                Err(error) => Err(format!(
+                    "single-item batch failed with {:?} at {:?}",
+                    error.category(),
+                    error.delivery_state()
+                )),
+            }
+        }
+        "test-batch-placeholder-forward-reference-rejected" => {
+            let activate = ClientRequest::Activate(ActivateRequest::new(Some(
+                UniqueIdentifier::Enumeration(1),
+            )));
+            let Ok(create) = adapters::create(&case.case_id) else {
+                return Err("forward-placeholder Create request could not be built".to_owned());
+            };
+            let batch = ClientBatch::from_items([
+                ClientBatchItem::new(activate),
+                ClientBatchItem::new(create),
+            ]);
+            match client.execute(batch, &limits) {
+                Err(error)
+                    if error.delivery_state() == Some(kmipkit::RequestDeliveryState::NotSent) =>
+                {
+                    Ok(())
+                }
+                Err(error) => Err(format!(
+                    "forward placeholder rejected with {:?} at {:?}",
+                    error.category(),
+                    error.delivery_state()
+                )),
+                Ok(_) => Err("forward placeholder unexpectedly succeeded".to_owned()),
+            }
+        }
+        "test-batch-placeholder-without-producer-rejected" => {
+            let activate = ClientRequest::Activate(ActivateRequest::new(Some(
+                UniqueIdentifier::Enumeration(1),
+            )));
+            let batch = ClientBatch::new(ClientBatchItem::new(activate));
+            match client.execute(batch, &limits) {
+                Err(error)
+                    if error.delivery_state() == Some(kmipkit::RequestDeliveryState::NotSent) =>
+                {
+                    Ok(())
+                }
+                Err(error) => Err(format!(
+                    "unbound placeholder rejected with {:?} at {:?}",
+                    error.category(),
+                    error.delivery_state()
+                )),
+                Ok(_) => Err("unbound placeholder unexpectedly succeeded".to_owned()),
+            }
+        }
+        _ => Err("unknown protocol scenario".to_owned()),
+    }
 }
 impl From<kmipkit::ClientError> for Failure {
     fn from(error: kmipkit::ClientError) -> Self {

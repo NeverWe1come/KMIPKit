@@ -22,17 +22,6 @@ pub(crate) fn classify(case: &Case, connection: &Connection) -> Option<CaseResul
             format!("not_applicable: selected version; {}", reference(case)),
         ));
     }
-    if connection.protocol_version == "2.0"
-        && [
-            "Ping",
-            "Process",
-            "Query Asynchronous Requests",
-            "Set Defaults",
-        ]
-        .contains(&case.operation.as_str())
-    {
-        return Some(CaseResult::non_run(case, "not_run", "not_applicable: operation absent from OASIS KMIP 2.0 Specification §§6.1, 11.36 operation inventories".to_owned()));
-    }
     if (case.execution.mutation != "read_only"
         || ["Login", "Logout", "Delegated Login", "Log"].contains(&case.operation.as_str()))
         && !connection.execution_policy.allow_mutations
@@ -54,12 +43,33 @@ pub(crate) fn run_case(case: &Case, connection: &Connection, client: &mut Client
         return result;
     }
     if case.execution.mode == "local_model" {
-        let passed = adapters::local::verify(&case.case_id);
-        let mut result = CaseResult::non_run(
-            case,
-            if passed { "passed" } else { "failed" },
-            "local model validation only; server not checked".to_owned(),
-        );
+        let (passed, diagnostic) = if case.case_id.starts_with("test-v20-reject-") {
+            (
+                crate::recipes::verify_version_boundary(case, connection, client),
+                "KMIP 2.0 request was rejected locally before transport; server not checked"
+                    .to_owned(),
+            )
+        } else if case.requires.get("protocol_scenario").is_some() {
+            match crate::recipes::verify_local_batch_model(&case.case_id, case, connection, client)
+            {
+                Ok(()) => (
+                    true,
+                    "controlled fixture exercised batch construction; external KMS not checked"
+                        .to_owned(),
+                ),
+                Err(reason) => (false, reason),
+            }
+        } else {
+            (
+                adapters::local::verify(&case.case_id),
+                format!(
+                    "local model validation only; server not checked; case {}",
+                    case.case_id
+                ),
+            )
+        };
+        let mut result =
+            CaseResult::non_run(case, if passed { "passed" } else { "failed" }, diagnostic);
         result.library_correctness = if passed { "passed" } else { "failed" };
         return result;
     }
