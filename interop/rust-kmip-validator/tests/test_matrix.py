@@ -324,6 +324,14 @@ class MatrixContract(unittest.TestCase):
         self.assertEqual(len(cells), len(report['events']))
         self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
 
+    def test_check_usage_mask_builder_covers_every_normative_target(self):
+        cells = [cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
+                 if cell['public_api_symbol'] == 'kmipkit_protocol::CheckRequest::with_cryptographic_usage_mask']
+        process, report = self.run_matrix(cells)
+        self.assertEqual(process.returncode, 0, process.stderr or process.stdout or report)
+        self.assertEqual(len(cells), len(report['events']))
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
     def test_parameter_modifier_projects_the_exact_constructed_target(self):
         cell = self.cell('kmipkit_protocol::CryptographicParametersBuilder::with_padding_method',
                          'KMIPKIT-ELEM-ENUM-VALUE-PADDING-METHOD-NONE-00000001')
