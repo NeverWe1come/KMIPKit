@@ -80,3 +80,66 @@ controlled local TLS fixtures. This verifies the consumer and its request
 handling; it is not evidence of interoperability with Cosmian KMS, Thales
 CipherTrust or ESKM. Vendor interoperability remains to be observed by running
 against a deployed KMIP 2.0 or 2.1 endpoint.
+
+## Exhaustive route-matrix closure (KMIPKIT-0092)
+
+Run the public construction-route matrix independently of a vendor connection:
+
+```sh
+PYTHONPATH=src python -m kmipkit_validator matrix --output-dir build/matrix
+python ../shared/tools/validate_route_evidence.py \
+  --report build/matrix/route-execution-evidence.json \
+  --artifact-sha256 <artifact_sha256-from-build/artifact-manifest.json>
+```
+
+The runner expands the shared catalog and capability manifest through the
+shared generator. It verifies the recorded wheel digest and compares every
+installed `kmipkit/` file with that wheel. Each positive row requires observing
+the named installed public function body. Common synchronization wrappers do
+not count as evidence of another public function. Network rows also require
+observing the named executor. Every row retains the target, workflow indices,
+KMIP version, route, encoding, transport and exact artifact provenance.
+
+The runner compares public TTLV constructors and readers with public decoding
+of independently encoded fixture bytes. All eleven TTLV value types and
+numeric enumeration/mask representatives have executable generic recipes.
+The installed package has no public generic encoder: the small fixture encoder
+belongs to the validator and is never labeled as a public library encoder.
+Full positive network evidence currently covers Ping in KMIP 2.1, using
+TLS 1.3/mTLS for TTLV, JSON and XML over raw TLS and HTTPS. The complete parsed
+request and response shapes and numeric Result Status are checked. The
+normalized response excludes only Time Stamp; ordered children, operations,
+versions and result codes remain intact. Reports retain tree and deterministic
+wire hashes, never raw bodies or fixture values.
+
+This is a partial implementation of the exhaustive validator. Typed model,
+attribute/object, stateful positive operation, batch and asynchronous matrix
+recipes remain pending. Earlier controlled Operation Not Supported tests prove
+transport and status handling; they do not satisfy these positive matrix
+obligations. Missing recipes appear in `pending-coverage.json`, with full axes
+and a fixed sanitized failure code. They are never converted into API
+unavailability or a positive row. `closure.json` records the exact verified and
+pending counts. The command and the independent shared gate exit nonzero for
+any missing or duplicate cell, incorrect public symbol, failed invocation or
+incomplete scope. CI uploads these three sanitized artifacts even when the
+completeness gate fails; the PR must remain `[WIP]`.
+
+A shared-contract conflict also remains: the matrix currently requires a peer
+response decode for KMIP 2.0 requests that must be rejected before connecting
+(for example `test-v20-reject-ping`). The validator does not fabricate a
+response for those obligations. Reserved/unused Tag allocation cases similarly
+need expected-rejection semantics for checked constructors. Resolving those
+applicability rules belongs to the common contract; it does not authorize
+changing library behavior or accepting those invalid inputs.
+
+| Requirement | Python evidence and remaining scope |
+|---|---|
+| KMIPKIT-0092-FR-001/002/007 | Shared matrix expansion; strict closure and independent shared validation; missing recipes remain pending. |
+| KMIPKIT-0092-FR-003/004 | Generic numeric/type roundtrips and ordered normalized Ping trees; other named routes remain pending. |
+| KMIPKIT-0092-FR-005 | Positive Ping controlled peers in all six network combinations; stateful positive fixtures remain pending. |
+| KMIPKIT-0092-FR-006 | Exact release wheel digest plus installed-file verification. |
+| KMIPKIT-0092-FR-008/009 | Fixed sanitized diagnostics; separate pending coverage; source-backed encoder/send limitations stay in the shared manifest. |
+
+These controlled fixtures establish no vendor interoperability or certification.
+Python-owned temporary copies cannot be zeroized reliably; use only the
+checked-in deterministic fixture values when running this command.
