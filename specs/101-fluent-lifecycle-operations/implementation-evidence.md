@@ -63,5 +63,5 @@
 - `python3 -B tools/api_manifest/audit_binding_exports.py --check`: C 1,967,
   Java 2,265, and Python 2,445 declarations matched; all three reports were
   complete with no issues.
-- PR #183 exact-head CI passed; its branch remains unmerged. PR #184 and its
-  exact-head CI are pending.
+- PR #183 exact-head CI passed; its branch remains unmerged. Draft PR #184 is open with `[WIP]` and is based on #183. Exact-head CI for
+  `4bcbc23ef0bb33ccd1bf79cb078a4b4879cb4bdc` is pending.
