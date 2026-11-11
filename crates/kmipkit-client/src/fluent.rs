@@ -686,6 +686,9 @@ impl<'a> CreateKeyPairBuilder<'a> {
     #[must_use]
     pub fn common_attributes(mut self, attributes: AttributeSet) -> Self {
         for item in attributes.into_items() {
+            if !self.accept_object_attribute_tag(&item) {
+                continue;
+            }
             if self.common_attributes.try_push(item).is_err() {
                 self.attribute_error
                     .get_or_insert(FluentBuildError::InvalidAttributeValue);
@@ -701,6 +704,9 @@ impl<'a> CreateKeyPairBuilder<'a> {
     #[must_use]
     pub fn private_key_attributes(mut self, attributes: AttributeSet) -> Self {
         for item in attributes.into_items() {
+            if !self.accept_object_attribute_tag(&item) {
+                continue;
+            }
             if self.private_attributes.try_push(item).is_err() {
                 self.attribute_error
                     .get_or_insert(FluentBuildError::InvalidAttributeValue);
@@ -716,6 +722,9 @@ impl<'a> CreateKeyPairBuilder<'a> {
     #[must_use]
     pub fn public_key_attributes(mut self, attributes: AttributeSet) -> Self {
         for item in attributes.into_items() {
+            if !self.accept_object_attribute_tag(&item) {
+                continue;
+            }
             if self.public_attributes.try_push(item).is_err() {
                 self.attribute_error
                     .get_or_insert(FluentBuildError::InvalidAttributeValue);
@@ -843,6 +852,15 @@ impl<'a> CreateKeyPairBuilder<'a> {
             limits,
             &self.options.unwrap_or_default(),
         )
+    }
+
+    fn accept_object_attribute_tag(&mut self, item: &Item) -> bool {
+        if (MESSAGE_EXTENSION_TAG_START..=MESSAGE_EXTENSION_TAG_END).contains(&item.tag().raw()) {
+            self.attribute_error = Some(FluentBuildError::MessageExtensionTagNotObjectAttribute);
+            false
+        } else {
+            true
+        }
     }
 }
 
