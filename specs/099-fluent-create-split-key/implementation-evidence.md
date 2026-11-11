@@ -40,5 +40,15 @@ journeys remain covered by a later end-to-end delivery.
 ## Review and PR
 
 The independent builder review reported no actionable findings. The WIP PR
-number, exact head, hosted CI results, and remaining required check evidence
-will be added after the Refactor commit and PR creation.
+is [PR #181](https://github.com/NeverWe1come/KMIPKit/pull/181), targeting the
+KMIPKIT-0097 branch so work can continue down the stack before that parent is
+merged. It remains a draft with `[WIP]` in its title while hosted CI runs. The
+PR currently covers Rust only; C, Java, and Python parity and the full
+KMIPKIT-0093 journeys remain outstanding.
+
+Hosted CI was still in progress at the time this evidence was updated. The
+current exact head and check results are maintained by GitHub on PR #181; this
+evidence does not claim hosted CI is green. The local verification above is
+scoped to the recorded commands and should not be read as release-wide API
+manifest completeness: the export audit reports the noted unrelated baseline
+gaps.
