@@ -133,6 +133,16 @@ fn nonce(target: Option<&Item>) -> Result<Item> {
     )
 }
 
+fn ticket_item() -> Result<Item> {
+    node(
+        0x0042_0149,
+        vec![
+            item(0x0042_014a, Value::enumeration(1))?,
+            bytes(0x0042_014b)?,
+        ],
+    )
+}
+
 fn value(kind: u32, target: Option<&Item>) -> Result<Item> {
     let fields = match kind {
         2 => vec![
@@ -184,6 +194,18 @@ fn credential(kind: u32, target: Option<&Item>) -> Result<Item> {
 pub(crate) fn fixture(target: &Json) -> Option<Result<Item>> {
     let target_id = target["target_id"].as_str()?;
     let name = target["name"].as_str()?;
+    if target["kind"] == "tag" {
+        return match target_id {
+            "KMIPKIT-ELEM-TAG-420092" => Some(item(0x0042_0092, Value::date_time_extended(1))),
+            "KMIPKIT-ELEM-TAG-420149" => Some(ticket_item()),
+            "KMIPKIT-ELEM-TAG-420156" => Some(text(0x0042_0156)),
+            "KMIPKIT-ELEM-TAG-420157" => Some(bytes(0x0042_0157)),
+            _ => None,
+        };
+    }
+    if target_id == "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-TICKET-TICKET" {
+        return Some(ticket_item());
+    }
     if target["kind"] == "credential" {
         return Some(if target_id == "KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL" {
             credential(1, None)
