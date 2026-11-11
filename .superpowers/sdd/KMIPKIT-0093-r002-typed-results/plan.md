@@ -100,3 +100,19 @@ The new focused test
 `test_operation_response_view_requirement_mapping_is_four_language_parity`
 reproduces the contract error: FR-005 appears on a `ClientResponseView`
 declaration, although FR-005 is reserved for typed result conversion.
+
+### Green evidence for four-language requirement parity
+
+The additional Red test exposed that FR-005 described result conversion but had
+also been attached to `ClientResponseView` field accessors, while FR-008 was
+missing from their mapped C, Java, and Python declarations. Green removes
+FR-005 from those field accessors and maps FR-008 across all four declarations
+for each of the 113 shared response-view entries. The existing T102 parity
+suite now passes after normalizing only these separately pinned 0093 additions.
+Its baseline fingerprints were stale on the unmodified 0096 parent branch; the
+updated snapshots reflect that approved slice and the R002 C caller-copy note.
+
+The focused 0093 and T102 tests pass together (8 tests). The manifest generator
+reports all 12 outputs verified after regeneration. The caller-copy note remains
+in C documentation; Java/Python runtime-copy limitations were already present
+and are covered by their existing binding documentation and tests.

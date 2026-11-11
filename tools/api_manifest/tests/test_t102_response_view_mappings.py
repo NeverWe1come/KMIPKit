@@ -173,8 +173,9 @@ EXPECTED = (
 # It also includes the approved KMIPKIT-0099 Create Split Key and KMIPKIT-0100
 # Register declarations, lifecycle declarations, KMIPKIT-0102 crypto builders,
 # the KMIPKIT-0103 C and KMIPKIT-0104 Java crypto facades, and KMIPKIT-0093
-# inventory reconciliation.
-UNCHANGED_DECLARATIONS_SHA256 = "bd4ad234e001a684543d79c2c48bbeb8238e927552286a1e7a40214080b16ac3"
+# inventory reconciliation. It also includes the approved KMIPKIT-0096 Python
+# expert-position slice; the previous fingerprint predated those declaration updates.
+UNCHANGED_DECLARATIONS_SHA256 = "8413d5b71db408ee4f6baad7851e7fe83ebfc9b111aeb40a566f5cd489b3cf0f"
 UNCHANGED_OPERATIONS_SHA256 = "9ee0f7c51c05a8abd96af7f6d3017f3ffb780c4262f231eaf3cb8c01a38147c7"
 # T098's maintainer-approved reconciliation updates lifecycle approval evidence
 # and inherited requirement links outside the T102 declaration/operation rows.
@@ -182,8 +183,10 @@ UNCHANGED_OPERATIONS_SHA256 = "9ee0f7c51c05a8abd96af7f6d3017f3ffb780c4262f231eaf
 # resulting manifest baseline after the explicit T102 normalizations below.
 # The non-target snapshot includes the async reader routes, exact Python adapter
 # exclusions, KMIPKIT-0101/0102/0103/0104 declarations, and KMIPKIT-0093
-# reconciliation.
-OTHER_MANIFEST_SHA256 = "bf7d4ab2a019e40e656ef9491f5d7512e74d577e82c2cb43d840cc29532e58b5"
+# reconciliation, including the approved KMIPKIT-0096 Python expert-position
+# slice. R002's additive requirement links and C copy caveat are normalized in
+# the snapshot comparison below and tested by the dedicated 0093 contract suite.
+OTHER_MANIFEST_SHA256 = "ca813ff1e1ebbece6749597c8cb979d7e551f9c4f82dc912dc7d1ef399abe23d"
 EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",
@@ -461,6 +464,19 @@ class T102ResponseViewMappingTests(unittest.TestCase):
             if row["declarationId"] not in target_ids
         ])
         for declaration in unchanged_declarations:
+            # KMIPKIT-0093 maps the new master response contract onto existing
+            # response owners. The dedicated 0093 tests pin those additive IDs;
+            # exclude them from this T102 snapshot of unrelated declarations.
+            declaration["requirementIds"] = [
+                requirement_id
+                for requirement_id in declaration["requirementIds"]
+                if requirement_id
+                not in {
+                    "KMIPKIT-0093-FR-005",
+                    "KMIPKIT-0093-FR-008",
+                    "KMIPKIT-0093-FR-009",
+                }
+            ]
             if declaration["declarationId"] in {
                 "rust-observed-e0a06a71290bee987cc7",
                 "rust-observed-5722377217051635233d",
@@ -635,6 +651,9 @@ class T102ResponseViewMappingTests(unittest.TestCase):
             requirement_id
             for requirement_id in other_manifest["requirementIds"]
             if requirement_id not in {
+                "KMIPKIT-0093-FR-005",
+                "KMIPKIT-0093-FR-008",
+                "KMIPKIT-0093-FR-009",
                 LOCATE_REQUEST_REQUIREMENT,
                 "KMIPKIT-REQ-SPEC-6.1.45-002-003",
                 "KMIPKIT-REQ-SPEC-6.1.18-001-001",
@@ -644,6 +663,26 @@ class T102ResponseViewMappingTests(unittest.TestCase):
             }
         ]
         for function in other_manifest["functions"]:
+            function["requirementIds"] = [
+                requirement_id
+                for requirement_id in function["requirementIds"]
+                if requirement_id
+                not in {
+                    "KMIPKIT-0093-FR-005",
+                    "KMIPKIT-0093-FR-008",
+                    "KMIPKIT-0093-FR-009",
+                }
+            ]
+            if function["id"] in {
+                "client_batch_item_response_ttlv_hex",
+                "client_batch_item_response_json",
+                "client_batch_item_response_xml",
+            }:
+                function["c"]["documentation"] = [
+                    sentence
+                    for sentence in function["c"]["documentation"]
+                    if "cannot be zeroized by KMIPKit" not in sentence
+                ]
             if function["id"] == "client_batch_item_recertify":
                 function["c"]["documentation"][0] = (
                     "Creates a typed Re-certify item. Certificate Request Type is present only with "
