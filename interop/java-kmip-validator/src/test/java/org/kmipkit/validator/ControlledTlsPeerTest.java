@@ -1151,8 +1151,7 @@ class ControlledTlsPeerTest {
     }
 
     private static List<EnumerationFixture> genericEnumerationFixtures() throws Exception {
-        Path catalogPath = Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json");
-        JsonNode catalog = new ObjectMapper().readTree(catalogPath.toFile());
+        JsonNode catalog = readRouteEvidenceCatalog();
         Map<String, JsonNode> targets = new HashMap<>();
         for (JsonNode target : catalog.path("normative_targets")) {
             targets.put(target.path("target_id").asText(), target);
@@ -1184,8 +1183,7 @@ class ControlledTlsPeerTest {
             if (wireValue.contains("-")) continue;
             long enumValue = "extension".equals(target.path("allocation").asText())
                     ? 0x8000_0000L : Long.parseUnsignedLong(wireValue.replaceFirst("^0[xX]", ""), 16);
-            String tagWireValue = tagTarget.path("wire_value").asText().replaceFirst("^0[xX]", "");
-            int rawTag = Math.toIntExact(Long.parseLong(tagWireValue, 16));
+            int rawTag = parseWireTag(tagTarget.path("wire_value").asText());
             fixtures.add(new EnumerationFixture(testCase.path("case_id").asText(),
                     target.path("target_id").asText(), rawTag, enumValue, List.copyOf(versions)));
         }
@@ -1211,8 +1209,7 @@ class ControlledTlsPeerTest {
     }
 
     private static List<BitmaskFixture> genericBitmaskFixtures() throws Exception {
-        Path catalogPath = Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json");
-        JsonNode catalog = new ObjectMapper().readTree(catalogPath.toFile());
+        JsonNode catalog = readRouteEvidenceCatalog();
         var fixtures = new ArrayList<BitmaskFixture>();
         for (JsonNode testCase : catalog.path("test_cases")) {
             String bitmaskName = testCase.path("requires").path("bitmask_type").asText();
@@ -1267,6 +1264,14 @@ class ControlledTlsPeerTest {
 
     private static int parseWireTag(String wireValue) {
         return Math.toIntExact(Long.parseUnsignedLong(wireValue.replaceFirst("^0[xX]", ""), 16));
+    }
+
+    private static Path routeEvidenceCatalogPath() {
+        return Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json");
+    }
+
+    private static JsonNode readRouteEvidenceCatalog() throws Exception {
+        return new ObjectMapper().readTree(routeEvidenceCatalogPath().toFile());
     }
 
     private static long parseRepresentativeBitmaskValue(String wireValue) {
@@ -1671,7 +1676,7 @@ class ControlledTlsPeerTest {
 
     private static void writeRouteExecutionReport(Path reportPath, ObjectMapper mapper,
             ArrayNode events) throws Exception {
-        Path catalogPath = Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json");
+        Path catalogPath = routeEvidenceCatalogPath();
         Path manifestPath = Path.of("../shared/coverage/route-capabilities.json");
         Path pinPath = Path.of("library-pin.json");
         String libraryCommit = mapper.readTree(pinPath.toFile()).path("commit").asText();
