@@ -233,6 +233,16 @@ RECIPES = {
     'test-neg-destroy-active-without-revoke': ((1, 18, 20, 19, 20), 'destroy'),
 }
 
+CONTROLLED_PEER_LOCAL_MODEL_CASES = frozenset({
+    'test-norm-payload-client-query-request-20-001',
+    'test-norm-payload-client-query-request-21-001',
+    'test-norm-payload-client-query-request-21-002',
+    'test-norm-payload-client-create-request-20-001',
+    'test-norm-payload-client-create-request-20-002',
+    'test-norm-payload-client-create-request-21-001',
+    'test-norm-payload-client-create-request-21-002',
+})
+
 
 def assert_recipe(node, case_id, version):
     expected, _ = RECIPES[case_id]
@@ -387,16 +397,7 @@ def verify_consumer_provenance(report, artifact_sha256, catalog_sha256):
 
 def case_for_controlled_exchange(case):
     """Run opaque request constructors through the controlled peer."""
-    peer_model_cases = {
-        'test-norm-payload-client-query-request-20-001',
-        'test-norm-payload-client-query-request-21-001',
-        'test-norm-payload-client-query-request-21-002',
-        'test-norm-payload-client-create-request-20-001',
-        'test-norm-payload-client-create-request-20-002',
-        'test-norm-payload-client-create-request-21-001',
-        'test-norm-payload-client-create-request-21-002',
-    }
-    if (case['case_id'] in peer_model_cases
+    if (case['case_id'] in CONTROLLED_PEER_LOCAL_MODEL_CASES
             and case.get('execution', {}).get('mode') == 'local_model'):
         return {**case, 'execution': {**case['execution'], 'mode': 'server_exchange'}}
     return case
