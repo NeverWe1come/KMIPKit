@@ -178,6 +178,9 @@ def tree_digest(node):
 
 
 RECIPES = {
+    'test-op-hash': ((39,), 'hash'),
+    'test-op-rng-retrieve': ((37,), 'rng_retrieve'),
+    'test-op-rng-seed': ((38,), 'rng_seed'),
     'test-v20-reject-get-constraints': ((56,), 'get_constraints'),
     'test-op-create': ((1, 20), 'create'),
     'test-op-get': ((1, 10, 20), 'get'),
@@ -236,6 +239,13 @@ def assert_recipe(node, case_id, version):
         raise ValueError('fixture_locate_bound_missing')
     if case_id == 'test-op-log' and not list(descendants(node, 0x420141)):
         raise ValueError('fixture_log_message_missing')
+    if case_id == 'test-op-hash':
+        if numbers(node, 0x420038) != [6] or [item[2] for item in descendants(node, 0x4200C2)] != [b'abc']:
+            raise ValueError('fixture_hash_input_mismatch')
+    if case_id == 'test-op-rng-retrieve' and numbers(node, 0x4200C4) != [16]:
+        raise ValueError('fixture_rng_length_mismatch')
+    if case_id == 'test-op-rng-seed' and [item[2] for item in descendants(node, 0x4200C2)] != [bytes(range(16))]:
+        raise ValueError('fixture_rng_seed_mismatch')
 
 
 

@@ -1269,6 +1269,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         strcmp(test_case->case_id, "test-attr-cryptographic-algorithm") == 0;
     bool cryptographic_length_attribute_workflow =
         strcmp(test_case->case_id, "test-attr-cryptographic-length") == 0;
+    bool hash_workflow = strcmp(test_case->case_id, "test-op-hash") == 0;
+    bool rng_retrieve_workflow = strcmp(test_case->case_id, "test-op-rng-retrieve") == 0;
+    bool rng_seed_workflow = strcmp(test_case->case_id, "test-op-rng-seed") == 0;
     bool get_attributes_workflow = strcmp(test_case->case_id, "test-op-get-attributes") == 0 ||
         cryptographic_algorithm_attribute_workflow || cryptographic_length_attribute_workflow;
     bool get_attribute_list_workflow = strcmp(test_case->case_id, "test-op-get-attribute-list") == 0;
@@ -1332,6 +1335,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     kmipkit_client_batch_item_t *revoke_item = NULL;
     kmipkit_client_batch_item_t *cleanup_item = NULL;
     kmipkit_ttlv_structure_t *request_attributes = NULL;
+    kmipkit_ttlv_value_t *request_data = NULL;
     int32_t status = 0;
     const char *request_construction_step = "typed request";
     char request_validation_diagnostic[256] = {0};
@@ -1355,6 +1359,24 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         status = kmipkit_client_batch_item_log(message, sizeof(message) - 1, &item);
     } else if (strcmp(test_case->operation, "Login") == 0) {
         status = kmipkit_client_batch_item_login(0, 0, 0, 0, NULL, &item);
+    } else if (hash_workflow) {
+        kmipkit_ttlv_value_t *algorithm = NULL;
+        status = kmipkit_ttlv_structure_create(&request_attributes);
+        if (status == 0) status = kmipkit_ttlv_value_enumeration(
+            KMIPKIT_ENUMERATION_HASHING_ALGORITHM_SHA_256, &algorithm);
+        if (status == 0 && !append_ttlv_value(client, &request_attributes, UINT32_C(0x420038), &algorithm)) {
+            status = KMIPKIT_ERROR_INVALID_INPUT;
+        }
+        if (algorithm) kmipkit_ttlv_value_release(algorithm);
+        static const uint8_t input[] = {0x61, 0x62, 0x63};
+        if (status == 0) status = kmipkit_ttlv_value_byte_string(client->limits, input, sizeof(input), &request_data);
+        if (status == 0) status = kmipkit_client_batch_item_hash(request_attributes, request_data, NULL, 0, 0, &item);
+    } else if (rng_retrieve_workflow) {
+        status = kmipkit_client_batch_item_rng_retrieve(16, &item);
+    } else if (rng_seed_workflow) {
+        static const uint8_t seed[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+        const kmipkit_byte_span_v1_t span = {.data = seed, .length = sizeof(seed)};
+        status = kmipkit_client_batch_item_rng_seed(&span, &item);
     } else if (object_lifecycle_workflow) {
         kmipkit_unique_identifier_v1_t placeholder = {
             .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
@@ -1473,6 +1495,10 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     } else {
         return outcome_not_run("no installed typed C request route is mapped for this case");
     }
+    if (request_data) {
+        kmipkit_ttlv_value_release(request_data);
+        request_data = NULL;
+    }
     if (status != 0) {
         kmip_execution_outcome_t outcome = outcome_not_run("KMIPKit rejected typed request construction");
         int32_t last_status = 0;
@@ -1491,6 +1517,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                      "KMIPKit request construction failed at %s (status %d, category=%u cause=%u)",
                      request_construction_step, status, category, cause);
         }
+        if (request_attributes) kmipkit_ttlv_structure_release(request_attributes);
         return outcome;
     }
 
@@ -1911,6 +1938,45 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             outcome.success = false;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
                      "KMIPKit Query response omitted Operation enumeration fields");
+        }
+    } else if (hash_workflow || rng_retrieve_workflow || rng_seed_workflow) {
+        uint8_t present = 0;
+        uint8_t data_present = 0;
+        kmipkit_byte_span_v1_t data = {0};
+        bool valid = false;
+        if (hash_workflow) {
+            uint8_t correlation_present = 0;
+            kmipkit_byte_span_v1_t correlation = {0};
+            static const uint8_t expected_sha256[] = {
+                0xba, 0x78, 0x16, 0xbf, 0x8f, 0x01, 0xcf, 0xea,
+                0x41, 0x41, 0x40, 0xde, 0x5d, 0xae, 0x22, 0x23,
+                0xb0, 0x03, 0x61, 0xa3, 0x96, 0x17, 0x7a, 0x9c,
+                0xb4, 0x10, 0xff, 0x61, 0xf2, 0x00, 0x15, 0xad
+            };
+            status = kmipkit_client_batch_item_response_hash(response_item, &present, &data_present,
+                &data, &correlation_present, &correlation);
+            valid = status == 0 && present && data_present && !correlation_present &&
+                data.data && data.length == sizeof(expected_sha256) &&
+                memcmp(data.data, expected_sha256, sizeof(expected_sha256)) == 0;
+            if (valid) status = kmipkit_client_batch_item_response_hash_ttlv(response_item, &present, &response_attributes);
+        } else if (rng_retrieve_workflow) {
+            status = kmipkit_client_batch_item_response_rng_retrieve(response_item, &present, &data_present, &data);
+            valid = status == 0 && present && data_present && data.data && data.length == 16;
+            for (uint64_t index = 0; valid && index < data.length; ++index) {
+                valid = data.data[index] == (uint8_t)index;
+            }
+            if (valid) status = kmipkit_client_batch_item_response_rng_retrieve_ttlv(response_item, &present, &response_attributes);
+        } else {
+            int32_t data_length = 0;
+            status = kmipkit_client_batch_item_response_rng_seed(response_item, &present, &data_present, &data_length);
+            valid = status == 0 && present && data_present && data_length == 16;
+            if (valid) status = kmipkit_client_batch_item_response_rng_seed_ttlv(response_item, &present, &response_attributes);
+        }
+        if (!valid || status != 0 || !present || !response_attributes) {
+            outcome.success = false;
+            outcome.library_failed = status != 0;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "typed Hash/RNG response did not match the deterministic fixture");
         }
     } else if (get_constraints_workflow) {
         if (!get_constraints_response_is_typed(response_item, &status)) {

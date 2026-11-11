@@ -82,6 +82,12 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                 + tlv(0x420094, 7, b"fixture-key-1")
                 + symmetric_key
             )
+        elif operation == 39:
+            payload_value = tlv(0x4200C2, 8, hashlib.sha256(b"abc").digest())
+        elif operation == 37:
+            payload_value = tlv(0x4200C2, 8, bytes(range(16)))
+        elif operation == 38:
+            payload_value = integer(0x4200C4, 16)
         elif operation == 45:
             payload_value = tlv(
                 0x420149,
@@ -241,6 +247,8 @@ def main() -> int:
               "test-attr-cryptographic-algorithm", "test-attr-cryptographic-length",
               "test-obj-symmetric-key", "test-obj-private-key", "test-obj-public-key")
     )
+    expected_operations += (37, 38, 39)
+    expected_cases += ("test-op-hash", "test-op-rng-retrieve", "test-op-rng-seed")
     expected_cases += ("test-neg-destroy-active-without-revoke",)
     if protocol_version == "2.0":
         expected_cases += (
