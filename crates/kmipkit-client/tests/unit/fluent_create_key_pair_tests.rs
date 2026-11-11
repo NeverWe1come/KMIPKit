@@ -1,5 +1,5 @@
 //! Fluent Create Key Pair tests derived from KMIP v2.1 §6.1.9,
-//! Tables 189–191, and KMIPKIT-0097-FR-001 through FR-004.
+//! Tables 189–191, and KMIPKIT-0097-FR-001 through FR-007.
 
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -7,8 +7,8 @@ use std::time::Duration;
 
 use kmipkit_protocol::attribute::typed;
 use kmipkit_protocol::{
-    Attribute, AttributeDefinition, CreateKeyPairRequest, CryptographicAlgorithm, ProtocolVersion,
-    RequestMessage, UniqueIdentifier,
+    Attribute, AttributeDefinition, AttributeSet, CreateKeyPairRequest, CryptographicAlgorithm,
+    ProtocolVersion, RequestMessage, UniqueIdentifier,
 };
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::{RequestDeliveryState, RequestOptions, TimeoutLimit, WireEncoding};
@@ -516,4 +516,208 @@ fn key_pair_builder_invalid_async_indicator_is_not_sent() {
     assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
     assert_eq!(transport.borrow().exchange_count(), 0);
     assert!(captured.borrow().is_none());
+}
+
+#[test]
+fn key_pair_validation_is_local_non_consuming_and_matches_construction() {
+    let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let builder = grouped_key_pair(&mut client);
+    assert_eq!(builder.validate(), Ok(()));
+    assert_eq!(builder.validate(), Ok(()));
+    assert_grouped_key_pair(
+        &builder
+            .build_request()
+            .unwrap()
+            .into_ttlv_payload()
+            .unwrap(),
+    );
+    assert_grouped_key_pair(&builder.build().unwrap().into_ttlv_payload().unwrap());
+    assert_eq!(transport.borrow().exchange_count(), 0);
+
+    for (algorithm, length, expected) in [
+        (
+            None,
+            Some(2048),
+            FluentBuildError::MissingCreateKeyPairAlgorithm,
+        ),
+        (
+            Some(RSA),
+            None,
+            FluentBuildError::MissingCreateKeyPairLength,
+        ),
+    ] {
+        let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+        let mut builder = client
+            .request()
+            .create_key_pair()
+            .private_name(PRIVATE_SENTINEL);
+        if let Some(algorithm) = algorithm {
+            builder = builder.algorithm(CryptographicAlgorithm::from_raw(algorithm));
+        }
+        if let Some(length) = length {
+            builder = builder.length(length);
+        }
+        let error = builder.validate().unwrap_err();
+        assert_eq!(error, expected);
+        assert_eq!(builder.build_request().unwrap_err(), error);
+        assert_eq!(builder.build().unwrap_err(), error);
+        assert_eq!(transport.borrow().exchange_count(), 0);
+        assert!(!format!("{error:?} {error}").contains(PRIVATE_SENTINEL));
+    }
+}
+
+fn ordered_prebuilt_attributes(first_tag: u32) -> AttributeSet {
+    AttributeSet::try_new([
+        test_item(first_tag, Value::boolean(true)),
+        test_item(first_tag + 1, Value::boolean(false)),
+    ])
+    .unwrap()
+}
+
+#[test]
+fn key_pair_prebuilt_sets_preserve_group_internal_and_repeated_call_order() {
+    let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let builder = grouped_key_pair(&mut client)
+        .common_attributes(ordered_prebuilt_attributes(0x0054_0001))
+        .private_key_attributes(ordered_prebuilt_attributes(0x0054_0011))
+        .public_key_attributes(ordered_prebuilt_attributes(0x0054_0021))
+        .common_attribute(Attribute::<typed::AlwaysSensitive>::new(true).unwrap())
+        .private_attribute(Attribute::<typed::NeverExtractable>::new(true).unwrap())
+        .public_attribute(Attribute::<typed::NeverExtractable>::new(false).unwrap())
+        .common_attributes(ordered_prebuilt_attributes(0x0054_0003))
+        .private_key_attributes(ordered_prebuilt_attributes(0x0054_0013))
+        .public_key_attributes(ordered_prebuilt_attributes(0x0054_0023));
+    assert_eq!(builder.validate(), Ok(()));
+    let payload = builder.build().unwrap().into_ttlv_payload().unwrap();
+    let groups = payload_groups(&payload);
+    assert_eq!(
+        groups
+            .iter()
+            .map(|group| group.tag().raw())
+            .collect::<Vec<_>>(),
+        [
+            COMMON_ATTRIBUTES,
+            PRIVATE_KEY_ATTRIBUTES,
+            PUBLIC_KEY_ATTRIBUTES
+        ]
+    );
+    for (group, prefix, first_tag, interleaved) in [
+        (
+            groups[0],
+            vec![
+                typed::CryptographicAlgorithm::TAG,
+                typed::CryptographicLength::TAG,
+                typed::Sensitive::TAG,
+            ],
+            0x0054_0001,
+            typed::AlwaysSensitive::TAG,
+        ),
+        (
+            groups[1],
+            vec![
+                typed::CryptographicUsageMask::TAG,
+                typed::Name::TAG,
+                typed::Extractable::TAG,
+            ],
+            0x0054_0011,
+            typed::NeverExtractable::TAG,
+        ),
+        (
+            groups[2],
+            vec![
+                typed::CryptographicUsageMask::TAG,
+                typed::Name::TAG,
+                typed::Extractable::TAG,
+            ],
+            0x0054_0021,
+            typed::NeverExtractable::TAG,
+        ),
+    ] {
+        let mut expected = prefix;
+        expected.extend([
+            first_tag,
+            first_tag + 1,
+            interleaved,
+            first_tag + 2,
+            first_tag + 3,
+        ]);
+        assert_eq!(attribute_tags(group), expected);
+        let items = group.as_structure().unwrap().children();
+        for (index, expected) in [(3, true), (4, false), (6, true), (7, false)] {
+            assert!(items[index].with_value(
+                |value| matches!(value, ValueView::Boolean(value) if *value == expected)
+            ));
+        }
+    }
+    assert_eq!(transport.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn key_pair_prebuilt_duplicates_in_each_group_are_rejected_before_transport() {
+    for group in [
+        COMMON_ATTRIBUTES,
+        PRIVATE_KEY_ATTRIBUTES,
+        PUBLIC_KEY_ATTRIBUTES,
+    ] {
+        let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+        let mut set = AttributeSet::new();
+        set.try_push_typed(Attribute::<typed::Sensitive>::new(true).unwrap())
+            .unwrap();
+        let builder = client
+            .request()
+            .create_key_pair()
+            .algorithm(CryptographicAlgorithm::from_raw(RSA))
+            .length(2048)
+            .private_name(PRIVATE_SENTINEL);
+        let builder = match group {
+            COMMON_ATTRIBUTES => builder
+                .common_attribute(Attribute::<typed::Sensitive>::new(true).unwrap())
+                .common_attributes(set),
+            PRIVATE_KEY_ATTRIBUTES => builder
+                .private_attribute(Attribute::<typed::Sensitive>::new(true).unwrap())
+                .private_key_attributes(set),
+            _ => builder
+                .public_attribute(Attribute::<typed::Sensitive>::new(true).unwrap())
+                .public_key_attributes(set),
+        };
+        assert_eq!(builder.validate(), Err(FluentBuildError::InvalidRequest));
+        assert_eq!(
+            builder.build_request().unwrap_err(),
+            FluentBuildError::InvalidRequest
+        );
+        let error = builder.execute(&CodecLimits::defaults()).unwrap_err();
+        assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+        assert_eq!(transport.borrow().exchange_count(), 0);
+        assert!(!format!("{error:?} {error}").contains(PRIVATE_SENTINEL));
+    }
+}
+
+#[test]
+fn key_pair_prebuilt_conflicting_algorithms_use_the_existing_request_validator() {
+    let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let mut private = AttributeSet::new();
+    private
+        .try_push_typed(Attribute::<typed::CryptographicAlgorithm>::new(RSA).unwrap())
+        .unwrap();
+    let mut public = AttributeSet::new();
+    public
+        .try_push_typed(Attribute::<typed::CryptographicAlgorithm>::new(DSA).unwrap())
+        .unwrap();
+    let builder = client
+        .request()
+        .create_key_pair()
+        .algorithm(CryptographicAlgorithm::from_raw(RSA))
+        .length(2048)
+        .private_name(PRIVATE_SENTINEL)
+        .private_key_attributes(private)
+        .public_key_attributes(public);
+    assert_eq!(builder.validate(), Err(FluentBuildError::InvalidRequest));
+    assert_eq!(
+        builder.build_request().unwrap_err(),
+        FluentBuildError::InvalidRequest
+    );
+    let error = builder.execute(&CodecLimits::defaults()).unwrap_err();
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert_eq!(transport.borrow().exchange_count(), 0);
+    assert!(!format!("{error:?} {error}").contains(PRIVATE_SENTINEL));
 }
