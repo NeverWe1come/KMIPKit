@@ -14,5 +14,5 @@
   traceability, and implementation evidence.
 - [x] V001 Run C ABI and consumer suites, full relevant Rust suites, formatting,
   Clippy, coverage, API export audit, manifest generation, and traceability.
-- [ ] P001 Commit Red, Green, and Refactor separately and open a `[WIP]` draft
+- [x] P001 Commit Red, Green, and Refactor separately and open a `[WIP]` draft
   PR stacked on KMIPKIT-0102; retain WIP until exact-head CI is green.
