@@ -96,7 +96,15 @@ class FluentPythonCryptoManifestTests(unittest.TestCase):
             ("KMIPKIT-0102", "rust-kmipkit-client", "KMIPKIT-0102-FR-"),
             ("KMIPKIT-0104", "java-kmipkit", "KMIPKIT-0104-FR-"),
         ):
-            owned = [row for row in rows if row.get("candidateSpecId") == spec_id]
+            owned = [
+                row
+                for row in rows
+                if row.get("candidateSpecId") == spec_id
+                and row["packageId"] == package_id
+                and row["exportName"].startswith(
+                    "org.kmipkit.fluent." if spec_id == "KMIPKIT-0104" else "kmipkit_client::"
+                )
+            ]
             self.assertTrue(owned)
             for row in owned:
                 with self.subTest(spec=spec_id, export=row["exportName"]):

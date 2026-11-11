@@ -196,7 +196,7 @@ PKCS11_REQUEST_SETTER_IDS = {
 # Register declarations, lifecycle declarations, KMIPKIT-0102 crypto builders,
 # the KMIPKIT-0103 C and KMIPKIT-0104 Java crypto facades, and KMIPKIT-0093
 # inventory reconciliation.
-OTHER_DECLARATIONS_SHA256 = "485593966900425479986a44faef02612af7a1444aef4c193622702b1b53d994"
+OTHER_DECLARATIONS_SHA256 = "0cde3c8f8c0de43bfb4ec93f6ba3fb238830faf48f00f733f81c7dfefaa42ce5"
 OTHER_OPERATIONS_SHA256 = "2ea94003f2877d0e6d84271d67d9add6f48a5c5b7a837c48b22fe40f41022d39"
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(

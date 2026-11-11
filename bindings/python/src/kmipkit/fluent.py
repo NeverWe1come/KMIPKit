@@ -393,7 +393,6 @@ class _CryptoOperationBuilder:
         self._handle = output[0]
         self._client = client
         self._options: RequestOptions | None = None
-        self._asynchronous_indicator: int | None = None
 
     def _ensure_open(self) -> None:
         if self._handle == ffi.NULL:
@@ -637,7 +636,9 @@ class SignBuilder(_CryptoOperationBuilder, _KeyIdentifierInput, _DigestInput):
     _creator = staticmethod(lib.kmipkit_sign_builder_create)
 
 
-class SignatureVerifyBuilder(_CryptoOperationBuilder, _KeyIdentifierInput, _DigestInput, _SignatureInput):
+class SignatureVerifyBuilder(
+    _CryptoOperationBuilder, _KeyIdentifierInput, _DigestInput, _SignatureInput
+):
     """Rust-backed fluent builder for a typed KMIP Signature Verify request."""
 
     _creator = staticmethod(lib.kmipkit_signature_verify_builder_create)
