@@ -192,5 +192,34 @@ class RouteMatrixTests(unittest.TestCase):
             self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_' + name and event['action'] == 'decode' for event in events))
 
 
+    def attribute_executor(self):
+        self.assertIsNotNone(importlib.util.find_spec('route_attributes'), 'typed attribute route executor is missing')
+        from route_attributes import AttributeCases
+        from artifact_support import INSTALL, ROOT
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        return AttributeCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog)
+
+    def test_all_typed_attribute_paths_preserve_value_and_reject_wrong_type(self):
+        executor = self.attribute_executor()
+        target = next(target for target in executor.catalog['normative_targets']
+                      if target['target_id'] == 'KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-ALGORITHM')
+        result = executor.execute(target, '2.1')
+        expected = {'kmipkit_typed_attribute_from_item', 'kmipkit_typed_attribute_from_value',
+                    'kmipkit_attribute_set_create', 'kmipkit_attribute_set_try_push',
+                    'kmipkit_attribute_set_try_push_typed'}
+        self.assertTrue(expected <= result['invoked_symbols'])
+        self.assertEqual(result['negative_checks'], 5)
+        self.assertGreater(result['sample_count'], 1)
+
+    def test_structured_name_attribute_has_both_required_fields(self):
+        executor = self.attribute_executor()
+        target = next(target for target in executor.catalog['normative_targets']
+                      if target['target_id'] == 'KMIPKIT-ELEM-ATTRIBUTE-NAME')
+        trees = executor.fixtures(target, '2.1')
+        self.assertEqual([child[0] for child in trees[0][2]], [0x420055, 0x420054])
+        result = executor.execute(target, '2.1')
+        self.assertTrue(result['invoked_symbols'])
+
+
 if __name__ == '__main__':
     unittest.main()
