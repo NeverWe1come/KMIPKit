@@ -95,3 +95,71 @@ pub(crate) fn roundtrip(item: &Item) -> Result<String> {
         &serde_json::to_vec(&normalized).map_err(|_| "local normalization failed")?,
     ))
 }
+
+/// Verify the entire model, then compare the unique exact target subtree.
+pub(crate) fn target_hash(model: &Item, expected: &Item) -> Result<String> {
+    fn find<'a>(item: &'a Item, tag: u32, output: &mut Vec<&'a Item>) {
+        if item.tag().raw() == tag {
+            output.push(item);
+        }
+        if let Some(children) = item.as_structure() {
+            for child in children.children() {
+                find(child, tag, output);
+            }
+        }
+    }
+    let _full_model = roundtrip(model)?;
+    let mut matches = Vec::new();
+    find(model, expected.tag().raw(), &mut matches);
+    let [target] = matches.as_slice() else {
+        return Err("target extraction is missing or ambiguous");
+    };
+    if encode(target)? != encode(expected)? {
+        return Err("constructor changed the normative value");
+    }
+    roundtrip(target)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::driver::{item, structure};
+    use kmipkit::ttlv::Value;
+
+    #[test]
+    fn target_projection_rejects_ambiguous_repeated_tags() {
+        let expected = item(0x0042_005f, Value::enumeration(1)).unwrap();
+        let model = item(
+            0x0042_002b,
+            Value::structure(
+                structure(
+                    0x0042_002b,
+                    vec![
+                        item(0x0042_005f, Value::enumeration(1)).unwrap(),
+                        item(0x0042_005f, Value::enumeration(1)).unwrap(),
+                    ],
+                )
+                .unwrap(),
+            ),
+        )
+        .unwrap();
+        assert!(target_hash(&model, &expected).is_err());
+    }
+
+    #[test]
+    fn target_projection_rejects_changed_values_inside_a_valid_model() {
+        let expected = item(0x0042_005f, Value::enumeration(1)).unwrap();
+        let model = item(
+            0x0042_002b,
+            Value::structure(
+                structure(
+                    0x0042_002b,
+                    vec![item(0x0042_005f, Value::enumeration(2)).unwrap()],
+                )
+                .unwrap(),
+            ),
+        )
+        .unwrap();
+        assert!(target_hash(&model, &expected).is_err());
+    }
+}

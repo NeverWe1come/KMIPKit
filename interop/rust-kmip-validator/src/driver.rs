@@ -536,14 +536,6 @@ fn execute_batch(
     })
 }
 
-pub(crate) fn options(connection: &Connection) -> RequestOptions {
-    RequestOptions::default().with_wire_encoding(match connection.encoding.as_str() {
-        "JSON" => kmipkit_transport::WireEncoding::Json,
-        "XML" => kmipkit_transport::WireEncoding::Xml,
-        _ => kmipkit_transport::WireEncoding::Ttlv,
-    })
-}
-
 pub(crate) fn batch(
     client: &mut Client,
     connection: &Connection,
@@ -579,7 +571,7 @@ pub(crate) fn batch(
 
 pub(crate) fn asynchronous(
     client: &mut Client,
-    connection: &Connection,
+    _connection: &Connection,
     operation: &str,
     correlation: &[u8],
 ) -> std::result::Result<Observed, kmipkit::ClientError> {
@@ -587,24 +579,13 @@ pub(crate) fn asynchronous(
         CancelRequest, PollRequest, ProcessRequest, QueryAsyncRequestsRequest,
     };
     let limits = kmipkit::ttlv::codec::CodecLimits::defaults();
-    let options = options(connection);
     let response = match operation {
-        "Cancel" => {
-            client.execute_cancel_with_options(CancelRequest::new(correlation), &limits, &options)
+        "Cancel" => client.execute_cancel(CancelRequest::new(correlation), &limits),
+        "Process" => client.execute_process(ProcessRequest::new(correlation), None, &limits),
+        "Query Asynchronous Requests" => {
+            client.execute_query_async_requests(QueryAsyncRequestsRequest::new(), None, &limits)
         }
-        "Process" => client.execute_process_with_options(
-            ProcessRequest::new(correlation),
-            None,
-            &limits,
-            &options,
-        ),
-        "Query Asynchronous Requests" => client.execute_query_async_requests_with_options(
-            QueryAsyncRequestsRequest::new(),
-            None,
-            &limits,
-            &options,
-        ),
-        _ => client.execute_poll_with_options(PollRequest::new(correlation), &limits, &options),
+        _ => client.execute_poll(PollRequest::new(correlation), &limits),
     }?;
     Ok(Observed {
         status: response.result().status().raw(),

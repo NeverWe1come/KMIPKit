@@ -15,6 +15,7 @@ fn text<'a>(value: &'a Json, field: &str) -> Result<&'a str> {
     value[field].as_str().ok_or("matrix field missing")
 }
 
+#[allow(clippy::too_many_lines)] // Exact source tag/type selection remains auditable in one recipe.
 fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
     let kind = text(target, "kind")?;
     let mut name = text(target, "name")?;
@@ -71,6 +72,24 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
                 .find(|element| element["kind"] == "attribute" && element["name"] == name)
                 .and_then(|element| element["source_encoding"].as_str())
         })
+        .or_else(|| {
+            elements
+                .iter()
+                .find(|element| element["name"] == name && element["source_encoding"].is_string())
+                .and_then(|element| element["source_encoding"].as_str())
+        })
+        .or_else(|| {
+            elements.iter().find_map(|element| {
+                if element["name"] != name {
+                    return None;
+                }
+                match element["kind"].as_str() {
+                    Some("enumeration") => Some("Enumeration"),
+                    Some("bitmask") => Some("Integer"),
+                    _ => None,
+                }
+            })
+        })
         .unwrap_or(if kind == "data_type" { name } else { "" });
     let value = if ["enumeration_value", "referenced_enum_value", "object_type"].contains(&kind) {
         Value::enumeration(wire_value)
@@ -90,6 +109,8 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
             "Text String" | "Text String, Enumeration or Integer" => {
                 Value::text_string("KMIPKit".to_owned())
             }
+            // §4.16 Table 59 permits every Cryptographic Parameters member to be absent.
+            "Structure" if tag == 0x0042_002b => Value::structure(kmipkit::ttlv::Structure::new()),
             "Structure" if kind == "data_type" => {
                 let mut structure = kmipkit::ttlv::Structure::new();
                 structure
@@ -163,6 +184,13 @@ fn invoke(symbol: &str, sample: &Item) -> Option<Result<Item>> {
             }
             crate::driver::item(sample.tag().raw(), Value::structure(structure))
         })());
+    }
+    if symbol.contains("typed::CryptographicParameters>") {
+        let context = crate::local_models::parameter_context(sample).ok()?;
+        return generated::execute(symbol, &context);
+    }
+    if let Some(result) = crate::local_models::invoke(symbol, sample) {
+        return Some(result);
     }
     if let Some(result) = generated::execute(symbol, sample) {
         return Some(result);
@@ -316,12 +344,7 @@ pub(crate) fn run(matrix: &Path, output: &Path) -> Result<bool> {
             pending += 1;
             continue;
         };
-        let result = result.and_then(|item| {
-            if crate::local_wire::encode(&item)? != crate::local_wire::encode(&sample)? {
-                return Err("constructor changed the normative value");
-            }
-            crate::local_wire::roundtrip(&item)
-        });
+        let result = result.and_then(|item| crate::local_wire::target_hash(&item, &sample));
         let mut event = json!({"case_id":row["case_id"],"route_id":row["route_id"],"target_id":row["target_id"],
             "public_api_symbol":symbol,"execution_route_id":null,"execution_api_symbol":null,
             "invocation_id":format!("rust-local-{}",events.len()),"action":row["action"],
