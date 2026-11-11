@@ -220,6 +220,9 @@ class ModelCases:
             fields.append((self._tag('Key Value'), 1, [key_material]))
         elif kind in {'tag', 'structure_member'} and name == 'Key Material':
             fields.append(self._key_value_tree())
+        elif (kind in {'tag', 'structure_member'} and name == 'Attributes'
+              and 'KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE' in parents):
+            fields.append(self._key_value_tree(include_attributes=True))
         if kind == 'object_structure':
             if target.get('target_id') == KEY_BLOCK_STRUCTURE:
                 pass
@@ -263,6 +266,8 @@ class ModelCases:
             if name == 'Key Block':
                 pass
             elif key_material_section is not None:
+                pass
+            elif name == 'Attributes' and 'KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE' in parents:
                 pass
             elif name == 'Key Material':
                 pass
@@ -590,9 +595,11 @@ class ModelCases:
             fields.append(self._key_value_tree())
         return (KEY_BLOCK_TAG, 1, fields)
 
-    def _key_value_tree(self) -> tuple:
-        return (self._tag('Key Value'), 1, [
-            (self._tag('Key Material'), 8, b'\xa1')])
+    def _key_value_tree(self, *, include_attributes: bool = False) -> tuple:
+        fields = [(self._tag('Key Material'), 8, b'\xa1')]
+        if include_attributes:
+            fields.append((self._tag('Attributes'), 1, []))
+        return self._tag('Key Value'), 1, fields
 
     def _execute_named_object(self, root: dict, protocol_version: str) -> dict:
         name = root['name']
