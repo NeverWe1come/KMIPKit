@@ -65,6 +65,7 @@ mod wire_codec_common;
 #[allow(dead_code)] // The private codecs are connected by KMIPKIT-0057.
 mod xml_codec;
 
+mod attribute_tags_generated;
 mod error;
 pub mod extension_registry;
 pub mod fluent;

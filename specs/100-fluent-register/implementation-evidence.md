@@ -23,12 +23,16 @@
   existing typed exchange.
 - The builder delegates object, Table 293, version, and context validation to
   `RegisterRequest`; errors and debug representations do not include payloads.
-- Focused Register tests: 14 passed, covering typed and unknown object inputs,
+- Focused Register tests: 19 passed, covering typed and unknown object inputs,
   attribute order and placement, optional fields, payload-free local errors,
   typed batch construction, Success/Failure/Pending outcomes, one exchange,
-  correlation, and sentinel-byte redaction.
-- `cargo test -p kmipkit-client --all-features`: 834 unit tests passed; the
-  remaining integration, UI boundary, and documentation tests also passed.
+  correlation, and sentinel-byte redaction. Additional tests cover all four
+  KMIP 3.0 credential object types, one explicit KMIP 3.0 Register exchange,
+  rejection of the assigned non-attribute Operation tag before transport, and
+  rejection of unassigned tags by the TTLV allocation check. Explicit Items in
+  the allocated `0x54xxxx` extension range remain the same raw tag and TTLV
+  type through Create, Create Key Pair, Create Split Key, and Register; they
+  are never converted into Vendor Attributes.
 - `cargo clippy -p kmipkit-client --all-targets --all-features -- -D warnings`:
   passed.
 - The AST boundary guard initially rejected the newly authorized, explicit
@@ -41,12 +45,18 @@
 - `cargo fmt --all -- --check` and `git diff --check` passed.
 - `python3 tools/api_manifest/generate.py --check` verified 12 generated API
   outputs. `test_0100_fluent_register_manifest.py` passed all 3 tests, including
-  40 exact public declarations and 18 exact standard-trait exclusions.
+  40 exact public declarations and 18 exact standard-trait exclusions. The
+  targeted downstream T102 mapping/snapshot suites passed 20 tests.
+- `python3 tools/normative_catalog/generate_attribute_types.py --check` verified
+  seven generated outputs, including the new private fluent attribute-tag
+  catalog. Its generator suite passed all 11 tests.
 - The bilingual user-guide examples compiled: 22 marked Rust examples from the
   English and Spanish lifecycle guides.
-- `cargo llvm-cov -p kmipkit-client --all-features --json --summary-only` ran
-  the full client suite and reported 95.66% line coverage for the client crate
-  and 94.61% for `src/fluent.rs`.
+- `cargo test -p kmipkit-client --all-features --quiet` passed all 839 unit
+  tests; the remaining integration, UI boundary, and documentation tests also
+  passed. `cargo llvm-cov -p kmipkit-client --all-features --json --summary-only`
+  reported 95.72% line coverage for the client crate and 95.15% for
+  `src/fluent.rs`.
 - Rust export audit snapshot completed with no unsupported issues. All 40
   KMIPKIT-0100 manifest declarations matched exact compiler-observed paths or
   aliases. The repository-wide `--check` remains incomplete on this source
@@ -54,6 +64,27 @@
   declaration); this feature does not reconcile unrelated API inventory.
 - Example compilation emits two existing `dead_code` warnings for private
   helpers in `execute.rs`; the new builder examples themselves compile.
+
+## Shared Manifest Snapshot Update
+
+The Register API intentionally adds 40 public declarations and 18 exact
+standard-trait exclusions. Updated the historical T102 full-manifest totals
+from the #181 base (13,980 declarations / 19,000 exclusions) to 14,020 / 19,018,
+and refreshed the three downstream fingerprint suites that include all
+non-target declarations. The focused T102 tests pass with those new entries
+present; no operation or protocol mapping snapshot changed. Register also
+validates expert attributes against the generated source-backed attribute tag
+catalog, so a known non-attribute tag cannot pass into `AttributeSet` just
+because its TTLV type is valid. The same guard now covers Create, Create Key
+Pair, Create Split Key, and Register fluent builders. The attribute-type
+generator produces and checks the private client-side catalog output.
+
+The KMIP 3.0 credential model already represented Object Types 13–16, but the
+shared object-tag matcher omitted their tags. Added the four mappings so the
+Register validator accepts Password, Device, One Time Password, and Hashed
+Password Credential objects when KMIP 3.0 is explicitly selected. The spec now
+cites §6.1.50 Tables 400–402: Register accepts Any Object (Section 2), which
+includes these system credentials.
 
 ## Commit record
 

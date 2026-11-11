@@ -101,7 +101,8 @@ pub enum FluentBuildError {
     InvalidRegisterObject,
     /// A catalogued attribute has an invalid TTLV type or structure.
     InvalidAttributeValue,
-    /// A KMIP message extension tag was supplied as an Object Attribute.
+    /// Legacy compatibility error; explicit extension Items are retained as
+    /// raw TTLV Object Attribute entries by current fluent builders.
     MessageExtensionTagNotObjectAttribute,
     /// More than one expert attribute requested the same final position.
     DuplicateAttributePosition,
@@ -279,6 +280,10 @@ impl<'a> RegisterBuilder<'a> {
     }
 
     /// Appends an explicit TTLV Item as an expert Object Attribute.
+    ///
+    /// An allocated extension tag remains the exact supplied Item. It is not
+    /// converted into a KMIP Vendor Attribute; use [`Self::vendor_attribute`]
+    /// to build that standard structure.
     #[must_use]
     pub fn attribute_item(mut self, item: Item) -> Self {
         self.add_attribute_item(item);
@@ -527,12 +532,11 @@ impl<'a> RegisterBuilder<'a> {
     }
 
     fn accept_object_attribute_tag(&mut self, item: &Item) -> bool {
-        if (MESSAGE_EXTENSION_TAG_START..=MESSAGE_EXTENSION_TAG_END).contains(&item.tag().raw()) {
-            self.attribute_error = Some(FluentBuildError::MessageExtensionTagNotObjectAttribute);
-            false
-        } else {
-            true
+        if let Err(error) = validate_object_attribute_tag(item) {
+            self.attribute_error = Some(error);
+            return false;
         }
+        true
     }
 }
 
@@ -648,6 +652,10 @@ impl<'a> CreateSymmetricKeyBuilder<'a> {
     }
 
     /// Adds an explicit TTLV Item as an expert Object Attribute.
+    ///
+    /// An allocated extension tag remains the exact supplied Item. It is not
+    /// converted into a KMIP Vendor Attribute; use [`Self::vendor_attribute`]
+    /// to build that standard structure.
     #[must_use]
     pub fn attribute_item(mut self, item: Item) -> Self {
         self.add_attribute_item(item);
@@ -942,6 +950,10 @@ impl<'a> CreateSplitKeyBuilder<'a> {
     }
 
     /// Appends an explicit TTLV Item as an expert Object Attribute.
+    ///
+    /// An allocated extension tag remains the exact supplied Item. It is not
+    /// converted into a KMIP Vendor Attribute; use [`Self::vendor_attribute`]
+    /// to build that standard structure.
     #[must_use]
     pub fn attribute_item(mut self, item: Item) -> Self {
         self.add_attribute_item(item);
@@ -1623,11 +1635,13 @@ fn clone_value(value: ValueView<'_>) -> Result<Value, FluentBuildError> {
 }
 
 fn validate_object_attribute_tag(item: &Item) -> Result<(), FluentBuildError> {
-    if (MESSAGE_EXTENSION_TAG_START..=MESSAGE_EXTENSION_TAG_END).contains(&item.tag().raw()) {
-        Err(FluentBuildError::MessageExtensionTagNotObjectAttribute)
-    } else {
-        Ok(())
+    let raw_tag = item.tag().raw();
+    let is_extension_tag =
+        (MESSAGE_EXTENSION_TAG_START..=MESSAGE_EXTENSION_TAG_END).contains(&raw_tag);
+    if !is_extension_tag && !crate::attribute_tags_generated::is_catalogued_attribute_tag(raw_tag) {
+        return Err(FluentBuildError::InvalidAttributeValue);
     }
+    Ok(())
 }
 
 fn set_positioned_attribute(
