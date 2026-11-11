@@ -39,6 +39,20 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(self.runner.scalar_fixture(object_type, tags, catalog, '2.0'),
                          (tags['Object Type'], 5, bytes.fromhex(object_type['wire_value'])))
 
+    def test_generic_ttlv_fixture_uses_structure_member_tag_and_declared_type(self):
+        from artifact_support import ROOT, INSTALL
+        from route_ttlv import TreeAbi, encode
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        target = next(item for item in catalog['normative_targets']
+                      if item['target_id'] == 'KMIPKIT-ELEM-STRUCTURE-MEMBER-2-1-CERTIFICATE-CERTIFICATE-TYPE')
+        tags = {item['name']: int(item['wire_value'], 16) for item in catalog['normative_targets']
+                if item['kind'] == 'tag'}
+        trees = self.runner.generic_tree_fixtures(target, catalog, tags, '2.1')
+        self.assertEqual(trees, [(tags['Certificate Type'], 5, bytes.fromhex('00000001'))])
+        result = TreeAbi(INSTALL / 'lib/libkmipkit_ffi.so').roundtrip(encode(trees[0]))
+        self.assertEqual(result['constructed_wire'], result['decoded_wire'])
+        self.assertIn('kmipkit_ttlv_item_create', result['invoked_symbols'])
+
     def test_unmapped_structure_branch_is_pending_not_arbitrary_scalar(self):
         target = {'kind': 'operation_payload_field', 'name': 'Unique Identifier'}
         self.assertIsNone(self.runner.scalar_fixture(target, {}))
