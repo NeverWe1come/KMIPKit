@@ -74,4 +74,7 @@ correlation value; the Java package does not classify those routes as absent.
 CI builds the pinned JNI JAR and runs the validator against a local TLS 1.3
 mTLS peer with a controlled KMIP response. This verifies the external package
 and request/response handling; it is not evidence for a commercial or other
-deployed KMS.
+deployed KMS. CI also probes the installed JAR against the shared public-route
+manifest and uploads `route-capability-probe.json`. That report establishes
+package symbol and named-value availability only; it does not claim that every
+catalog route or interoperability case has executed successfully.
