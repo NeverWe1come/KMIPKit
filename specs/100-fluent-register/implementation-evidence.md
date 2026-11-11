@@ -92,3 +92,35 @@ includes these system credentials.
 - Green: `3a8d32d7a` (`feat: add fluent register builder`).
 - Refactor: `6e66f14b1` (`docs: record fluent register API evidence`); this
   follow-up records the rebased commit identities and dependency head.
+
+## Follow-up: explicit extension Item parity
+
+KMIPKIT-0093 and the approved KMIPKIT-0100 contract permit an allocated
+unknown extension tag in Object Attributes only through an explicit TTLV Item.
+The Item remains unchanged and is not reinterpreted as a Vendor Attribute. The
+older KMIPKIT-0096 requirement and the C ABI had inconsistent extension-tag
+rules; this follow-up aligns that requirement, its traceability row, and the
+bilingual guide with KMIPKIT-0093 and KMIPKIT-0100.
+
+- Red commit `2c5b352a8` changes the C, Java, and Python consumers to exercise
+  explicit `0x54xxxx` Items while still requiring the dedicated Vendor
+  Attribute constructor. Before Green, the focused C coverage test failed at
+  `public_c_fluent_builder_covers_expert_attributes_options_and_validation`
+  with result 141 because the C ABI rejected the explicit extension Item.
+- Green commit `1d60c12b2` removes the C-only extension rejection; catalogued
+  attributes still receive their catalogued TTLV type check, and all Items
+  continue through the same typed request validation before sending.
+- Refactor updates `KMIPKIT-0096-FR-001`, its verification mapping, and both
+  client-execution guides. The raw extension Item and Vendor Attribute
+  structure have separate positive and negative coverage.
+- `cargo test -p kmipkit-ffi --all-features --test c_api_coverage
+  public_c_fluent_builder_covers_expert_attributes_options_and_validation --
+  --exact --nocapture`: passed.
+- `cargo test --workspace --all-features --locked`: passed.
+- Python suite: 1,272 passed. Java Maven suite: 698 tests, zero failures, one
+  environment-dependent skip. The focused C, Python, and Java extension cases
+  passed.
+- Workspace format and Clippy passed. The bilingual user-guide example
+  compiler passed 30 examples, and requirement traceability passed 2 tests.
+- The exact-head PR CI remains the final gate; PR #183 stays WIP until it is
+  green.
