@@ -6,12 +6,12 @@
   model, exclusions, and acceptance criteria.
 - [x] R001 Add failing Java consumer and JNI lifetime tests for all seven
   operation builders; record the expected Red result.
-- [ ] G001 Add JNI wrappers over the existing C crypto builder ABI and
+- [x] G001 Add JNI wrappers over the existing C crypto builder ABI and
   operation-specific Java builders with explicit field setters.
-- [ ] G002 Exercise build and one-exchange execution for each operation against
+- [x] G002 Exercise build and one-exchange execution for each operation against
   a controlled TLS fixture; verify options, asynchronous headers, versions,
   outcomes, and no retry or poll.
-- [ ] D001 Update the Rust-owned public API manifest input, regenerate all
+- [x] D001 Update the Rust-owned public API manifest input, regenerate all
   outputs, document secret/runtime ownership in both guides, and complete
   requirement traceability.
 - [ ] V001 Run Java, JNI, native, Rust, C, manifest, export, coverage, format,

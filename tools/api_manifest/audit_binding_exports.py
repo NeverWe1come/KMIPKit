@@ -354,26 +354,67 @@ def inventory_javap_outputs(outputs: dict[str, str], package: str = "java-kmipki
     records: list[dict[str, str]] = []
     issues: list[dict[str, str]] = []
     class_members: dict[str, list[dict[str, Any]]] = {}
-    class_bases: dict[str, str] = {}
+    class_parents: dict[str, list[str]] = {}
     visible_types: set[str] = set()
+
+    def top_level_type_names(value: str) -> list[str]:
+        segments: list[str] = []
+        start = 0
+        generic_depth = 0
+        for index, character in enumerate(value):
+            if character == "<":
+                generic_depth += 1
+            elif character == ">":
+                generic_depth = max(0, generic_depth - 1)
+            elif character == "," and generic_depth == 0:
+                segments.append(value[start:index])
+                start = index + 1
+        segments.append(value[start:])
+        names = []
+        for segment in segments:
+            match = re.match(r"\s*([A-Za-z_$][\w.$]*)", segment)
+            if match is not None:
+                names.append(match.group(1).replace("$", "."))
+        return names
+
     for class_file, output in sorted(outputs.items()):
         header = next((line.strip() for line in output.splitlines()
                        if re.search(r"\b(class|interface|enum|record)\s+[A-Za-z_$][\w.$]*", line)), None)
         if header is None:
             issues.append({"packageId": package, "exportName": class_file, "reason": "unrecognized-javap-header"})
             continue
-        declaration = re.search(r"^(.*?)\b(?:class|interface|enum|record)\s+([A-Za-z_$][\w.$]*)", header)
+        declaration = re.search(
+            r"^(.*?)\b(class|interface|enum|record)\s+([A-Za-z_$][\w.$]*)", header
+        )
         if declaration is None:
             issues.append({"packageId": package, "exportName": class_file, "reason": "unparsed-javap-header"})
             continue
-        owner = declaration.group(2).replace("$", ".")
+        owner = declaration.group(3).replace("$", ".")
         visible = bool({"public", "protected"}.intersection(declaration.group(1).split()))
         if visible:
             visible_types.add(owner)
             records.append(_record(package, owner, "type", class_file))
-        base = re.search(r"\bextends\s+([A-Za-z_$][\w.$]*)", header)
-        if base is not None:
-            class_bases[owner] = base.group(1).replace("$", ".")
+        is_interface = declaration.group(2) == "interface"
+        tail = header[declaration.end():].lstrip()
+        if tail.startswith("<"):
+            generic_depth = 0
+            for index, character in enumerate(tail):
+                if character == "<":
+                    generic_depth += 1
+                elif character == ">":
+                    generic_depth -= 1
+                    if generic_depth == 0:
+                        tail = tail[index + 1:].lstrip()
+                        break
+        parents: list[str] = []
+        extended = re.search(r"\bextends\s+(.+?)(?=\s+implements\s+|\s*\{?$)", tail)
+        if extended is not None:
+            extended_types = top_level_type_names(extended.group(1))
+            parents.extend(extended_types if is_interface else extended_types[:1])
+        implemented = re.search(r"\bimplements\s+(.+?)\s*\{?$", tail)
+        if implemented is not None:
+            parents.extend(top_level_type_names(implemented.group(1)))
+        class_parents[owner] = parents
         members: list[dict[str, Any]] = []
         for line_number, line in enumerate(output.splitlines(), 1):
             text = line.strip()
@@ -412,12 +453,15 @@ def inventory_javap_outputs(outputs: dict[str, str], package: str = "java-kmipki
             for record in class_members.get(owner, [])
             if (identity := member_identity(record)) is not None
         }
-        base = class_bases.get(owner)
+        pending_parents = list(class_parents.get(owner, []))
         visited_bases: set[str] = set()
-        while base is not None and base not in visited_bases:
-            if base in visible_types:
-                break
+        while pending_parents:
+            base = pending_parents.pop(0)
+            if base in visited_bases:
+                continue
             visited_bases.add(base)
+            if base in visible_types:
+                continue
             for inherited in class_members.get(base, []):
                 identity = member_identity(inherited)
                 if identity is None or identity in known_members:
@@ -432,7 +476,7 @@ def inventory_javap_outputs(outputs: dict[str, str], package: str = "java-kmipki
                 )
                 record["signatures"] = inherited["signatures"]
                 records.append(record)
-            base = class_bases.get(base)
+            pending_parents.extend(class_parents.get(base, []))
     return _report(records, issues)
 
 
