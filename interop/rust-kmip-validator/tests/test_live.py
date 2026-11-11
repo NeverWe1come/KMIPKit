@@ -433,6 +433,23 @@ class LiveContract(unittest.TestCase):
                     else:
                         self.assertTrue(normalized == baseline, "full-catalog normalized KMIP request/result parity differs")
 
+    def test_catalog_exchanges_run_every_wire_axis_through_both_api_levels(self):
+        for version in ("2.0", "2.1"):
+            baseline = None
+            for encoding in ("TTLV", "JSON", "XML"):
+                for transport in ("raw_tls", "https"):
+                    for api in ("typed-protocol", "high-level"):
+                        self.fixture_axes = encoding, transport
+                        with self.subTest(version=version, api=api, encoding=encoding, transport=transport):
+                            report, requests, responses = self.catalog_scenario(version, api)
+                            self.assertEqual(report['execution']['encoding'], encoding)
+                            self.assertEqual(report['execution']['transport'], transport)
+                            signature = parity_signature(report, requests, responses)
+                            if baseline is None:
+                                baseline = signature
+                            self.assertEqual(signature, baseline, 'normalized catalog request/response parity differs across axes')
+        del self.fixture_axes
+
     def catalog_scenario(self, version, api="typed-protocol"):
         elements = json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text())["elements"]
         operations = {int(e["wire_value"], 16): e["name"] for e in elements if e["kind"] == "enumeration_value" and e["parent_element_ids"] == ["KMIPKIT-ELEM-ENUMERATION-OPERATION"] and e.get("allocation") == "assigned"}
