@@ -174,7 +174,7 @@ EXPECTED = (
 # Register declarations, lifecycle declarations, KMIPKIT-0102 crypto builders,
 # the KMIPKIT-0103 C and KMIPKIT-0104 Java crypto facades, and KMIPKIT-0093
 # inventory reconciliation.
-UNCHANGED_DECLARATIONS_SHA256 = "89d4c89997dc8450c25d63a036c88c6bb32b121b28e5f3427a10ce0917d342ca"
+UNCHANGED_DECLARATIONS_SHA256 = "d8ec8345c70be868a29f2e06c21c07bffcb89d0d0c722f81677a6681e170a0c1"
 UNCHANGED_OPERATIONS_SHA256 = "9ee0f7c51c05a8abd96af7f6d3017f3ffb780c4262f231eaf3cb8c01a38147c7"
 # T098's maintainer-approved reconciliation updates lifecycle approval evidence
 # and inherited requirement links outside the T102 declaration/operation rows.

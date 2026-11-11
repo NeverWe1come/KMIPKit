@@ -108,3 +108,9 @@
     -Dtest=FluentCryptoApiShapeTest test`: 5 tests passed; build successful.
 - Coverage gate and SonarCloud must be rerun against the updated PR head. The
   PR remains draft until those and every other required exact-head check pass.
+- After rebasing on the corrected KMIPKIT-0103 head, refreshed the three T102
+  declaration fingerprints for the newly declared C expert insertion and the
+  Java expert insertion candidate. The focused Certify, optional-Structure, and
+  response-view snapshot suites pass (17 tests); `generate.py --check` confirms
+  all 12 manifest outputs are current. Hosted checks must run against this
+  rebased Java head before the PR can leave draft.
