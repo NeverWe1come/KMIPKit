@@ -52,8 +52,8 @@ int main(void) {
     kmip_connection_config_t connection;
     assert(kmip_load_connection("../shared/profiles/connection.example.json", &connection));
     assert(strcmp(connection.server_id, "example-kms") == 0);
-    assert(strcmp(connection.server_product, "Example KMIP test server") == 0);
-    assert(strcmp(connection.server_version, "not deployed") == 0);
+    assert(strcmp(connection.server_product, "Unspecified KMIP server") == 0);
+    assert(strcmp(connection.server_version, "not-recorded") == 0);
     assert(strcmp(connection.protocol_version, "2.1") == 0);
     assert(strcmp(connection.transport, "raw_tls") == 0);
     assert(connection.port == 5696);
