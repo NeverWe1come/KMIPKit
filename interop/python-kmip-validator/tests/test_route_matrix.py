@@ -160,6 +160,22 @@ class RouteMatrixTests(unittest.TestCase):
                 pass
         self.assertNotIn('kmipkit.ttlv.ttlv_decode', trace.observed)
 
+    def test_decode_wire_digest_is_the_received_response(self):
+        import hashlib
+        from unittest.mock import patch
+        from kmipkit_validator.controlled_peer import ControlledTlsPeer
+        peers = []
+        def peer_factory(**options):
+            peer = ControlledTlsPeer(**options)
+            peers.append(peer)
+            return peer
+        cell = {'protocol_version': '2.1', 'encoding': 'TTLV', 'transport': 'raw_tls',
+                'public_api_symbol': 'kmipkit.extensions.client_batch_item_ping', 'action': 'decode'}
+        with patch('kmipkit_validator.controlled_peer.ControlledTlsPeer', side_effect=peer_factory):
+            observed = self.runner.execute_cell(cell, {'case_id': 'test-op-ping'}, {})
+        self.assertEqual(hashlib.sha256(peers[0].responses[0]).hexdigest(), observed['wire_bytes_sha256'])
+        self.assertNotEqual(hashlib.sha256(peers[0].requests[0]).hexdigest(), observed['wire_bytes_sha256'])
+
     def test_version_rejections_prove_not_sent_and_zero_transport_attempts(self):
         catalog = copy.deepcopy(self.catalog)
         catalog['test_cases'] = [case for case in catalog['test_cases']
