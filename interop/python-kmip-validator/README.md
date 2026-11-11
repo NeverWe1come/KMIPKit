@@ -44,18 +44,26 @@ PYTHONPATH=src python -m kmipkit_validator run \
 The typed client recipes cover 140 server-exchange catalog rows across the
 two protocol versions, including asynchronous operations. The high-level
 route exercises the package's public attribute and asynchronous request APIs.
-Local tests also build and validate every advertised typed `ClientBatchItem`,
-round-trip catalog enum and bitmask values through the installed TTLV API, and
-exercise controlled TLS exchanges, authentication, status interpretation and
-version-gated requests.
+Local checks cover every applicable catalog row: all TTLV data type
+constructors and readers, enumeration and mask values, tag allocation ranges,
+structure and payload field types, and the checked-in valid and malformed wire
+vectors. They also build every advertised typed `ClientBatchItem` and exercise
+controlled TLS exchanges, authentication, status interpretation and
+version-gated requests. For the seven attribute operations with both public
+routes, tests send the high-level and typed requests through the installed
+client and require identical TTLV request and response bytes for the same
+deterministic input.
 
-The plan marks API gaps explicitly. The pinned Python package has no public
-server-initiated request handler, multipart Init/Update/Final client workflow,
-or Batch ID Placeholder builder. It also has no outbound generic-TTLV client
-request API; the generic-TTLV route is therefore reported as a limitation.
-The Python API does not expose independent high-level request models for the
-full operation catalog. Such cases remain `not_run_documented_api_gap`; they
-are never counted as server incompatibility. Cross-language normalized
+`plan` and `preflight` identify the same unavailable routes and local checks.
+The pinned Python package has no public server-initiated request handler,
+multipart Init/Update/Final client workflow, Batch ID Placeholder builder,
+offline request validator, encoded Request Header view, or outbound
+generic-TTLV client request API. Therefore the version rejection checks under
+KMIP 2.0, empty-batch validation, single-item header-option inspection, and
+placeholder construction are reported as documented API gaps. The Python API
+also does not expose independent high-level request models for the full
+operation catalog. These cases remain `not_run_documented_api_gap`; they are
+never counted as server incompatibility. Cross-language normalized
 request/response parity is not claimed by this validator run.
 
 Report output is written beneath the current working directory. The artifact

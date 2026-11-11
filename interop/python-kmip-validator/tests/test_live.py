@@ -9,6 +9,7 @@ import ssl
 import struct
 import threading
 import unittest
+import xml.etree.ElementTree as ET
 from unittest.mock import patch
 
 from kmipkit_validator.contract import DEFAULT_CATALOG
@@ -102,17 +103,168 @@ def ping_response(request: bytes, status: int, reason: int | None) -> bytes:
     return structure(0x42007B, header, structure(0x42000F, *payload))
 
 
+def request_observation(request: bytes, encoding: str) -> dict[str, object]:
+    if encoding == "TTLV":
+        tree = parse_children(request[8:])
+        operation = int.from_bytes(find_value(tree, 0x42005C), "big")
+        batch_count = int.from_bytes(find_value(tree, 0x42000D), "big", signed=True)
+        from kmipkit import protocol_values
+
+        return {"operation": protocol_values.Operation.name(operation), "batch_count": batch_count}
+    if encoding == "JSON":
+        tree = json.loads(request)
+
+        def find(node, tag):
+            if isinstance(node, dict):
+                if node.get("tag") == tag:
+                    return node.get("value")
+                return find(node.get("value"), tag)
+            if isinstance(node, list):
+                for child in node:
+                    value = find(child, tag)
+                    if value is not None:
+                        return value
+            return None
+
+        return {"operation": find(tree, "Operation"), "batch_count": find(tree, "BatchCount")}
+    root = ET.fromstring(request)
+    operation = root.find(".//Operation")
+    batch_count = root.find(".//BatchCount")
+    if operation is None or batch_count is None:
+        raise AssertionError("XML request omitted Operation or BatchCount")
+    return {
+        "operation": operation.attrib.get("value"),
+        "batch_count": int(batch_count.attrib["value"]),
+    }
+
+
+def text_response(operation: str, encoding: str, status: int, reason: int | None) -> bytes:
+    from kmipkit import protocol_values
+
+    status_name = protocol_values.ResultStatus.name(status)
+    reason_name = None if reason is None else protocol_values.ResultReason.name(reason)
+    if encoding == "JSON":
+        batch_item = [
+            {"tag": "Operation", "type": "Enumeration", "value": operation},
+            {"tag": "ResultStatus", "type": "Enumeration", "value": status_name},
+        ]
+        if reason_name is not None:
+            batch_item.append({"tag": "ResultReason", "type": "Enumeration", "value": reason_name})
+        if status == protocol_values.ResultStatus.SUCCESS:
+            batch_item.append({"tag": "ResponsePayload", "value": []})
+        response = {
+            "tag": "ResponseMessage",
+            "value": [
+                {
+                    "tag": "ResponseHeader",
+                    "value": [
+                        {
+                            "tag": "ProtocolVersion",
+                            "value": [
+                                {"tag": "ProtocolVersionMajor", "type": "Integer", "value": 2},
+                                {"tag": "ProtocolVersionMinor", "type": "Integer", "value": 1},
+                            ],
+                        },
+                        {"tag": "TimeStamp", "type": "DateTime", "value": "1970-01-01T00:00:01Z"},
+                        {"tag": "BatchCount", "type": "Integer", "value": 1},
+                    ],
+                },
+                {"tag": "BatchItem", "value": batch_item},
+            ],
+        }
+        return json.dumps(response, separators=(",", ":")).encode("utf-8")
+    fields = [
+        f'<Operation type="Enumeration" value="{operation}"/>',
+        f'<ResultStatus type="Enumeration" value="{status_name}"/>',
+    ]
+    if reason_name is not None:
+        fields.append(f'<ResultReason type="Enumeration" value="{reason_name}"/>')
+    if status == protocol_values.ResultStatus.SUCCESS:
+        fields.append("<ResponsePayload/>")
+    document = (
+        "<ResponseMessage><ResponseHeader><ProtocolVersion>"
+        '<ProtocolVersionMajor type="Integer" value="2"/>'
+        '<ProtocolVersionMinor type="Integer" value="1"/>'
+        "</ProtocolVersion>"
+        '<TimeStamp type="DateTime" value="1970-01-01T00:00:01Z"/>'
+        '<BatchCount type="Integer" value="1"/>'
+        "</ResponseHeader><BatchItem>"
+        + "".join(fields)
+        + "</BatchItem></ResponseMessage>"
+    )
+    return document.encode("utf-8")
+
+
+def read_raw_document(stream: ssl.SSLSocket, encoding: str) -> bytes:
+    received = bytearray()
+    while True:
+        chunk = stream.recv(4096)
+        if not chunk:
+            raise AssertionError("client closed before a complete KMIP document")
+        received.extend(chunk)
+        if encoding == "JSON":
+            try:
+                _, end = json.JSONDecoder().raw_decode(received.decode("utf-8"))
+            except (UnicodeDecodeError, json.JSONDecodeError):
+                continue
+            return bytes(received[:end])
+        closing = b"</RequestMessage>"
+        if encoding == "XML" and closing in received:
+            end = received.index(closing) + len(closing)
+            return bytes(received[:end])
+
+
+def read_https_request(stream: ssl.SSLSocket) -> tuple[bytes, dict[str, str]]:
+    received = bytearray()
+    delimiter = b"\r\n\r\n"
+    while delimiter not in received:
+        chunk = stream.recv(4096)
+        if not chunk:
+            raise AssertionError("client closed before completing HTTP headers")
+        received.extend(chunk)
+    header_end = received.index(delimiter) + len(delimiter)
+    lines = bytes(received[: header_end - len(delimiter)]).decode("ascii").split("\r\n")
+    headers = {
+        name.strip().lower(): value.strip()
+        for line in lines[1:]
+        if ":" in line
+        for name, value in [line.split(":", 1)]
+    }
+    body_size = int(headers.get("content-length", "-1"))
+    if body_size < 0 or body_size > 16 * 1024 * 1024:
+        raise AssertionError("HTTPS request has no safe Content-Length")
+    while len(received) < header_end + body_size:
+        chunk = stream.recv(min(4096, header_end + body_size - len(received)))
+        if not chunk:
+            raise AssertionError("client closed before completing the HTTPS body")
+        received.extend(chunk)
+    return bytes(received[header_end : header_end + body_size]), headers
+
+
 class ControlledTlsPeer:
-    def __init__(self, status: int = 0, reason: int | None = None, *, expect_no_connection: bool = False) -> None:
+    def __init__(
+        self,
+        status: int = 0,
+        reason: int | None = None,
+        *,
+        expect_no_connection: bool = False,
+        encoding: str = "TTLV",
+        transport: str = "raw_tls",
+    ) -> None:
         self.status = status
         self.reason = reason
         self.expect_no_connection = expect_no_connection
+        self.encoding = encoding
+        self.transport = transport
         self.listener = socket.socket()
         self.listener.bind(("127.0.0.1", 0))
         self.listener.listen(1)
         self.port = self.listener.getsockname()[1]
         self.error: queue.Queue[BaseException] = queue.Queue()
         self.requests: list[bytes] = []
+        self.responses: list[bytes] = []
+        self.request_observation: dict[str, object] = {}
+        self.http_headers: dict[str, str] = {}
         self.thread = threading.Thread(target=self._serve, daemon=True)
         self.thread.start()
 
@@ -134,9 +286,37 @@ class ControlledTlsPeer:
             with raw, context.wrap_socket(raw, server_side=True) as stream:
                 if stream.version() != "TLSv1.3" or not stream.getpeercert(binary_form=True):
                     raise AssertionError("TLS 1.3 mutual authentication was not negotiated")
-                request = frame(stream)
+                if self.transport == "https":
+                    request, self.http_headers = read_https_request(stream)
+                elif self.encoding == "TTLV":
+                    request = frame(stream)
+                else:
+                    request = read_raw_document(stream, self.encoding)
                 self.requests.append(request)
-                stream.sendall(ping_response(request, self.status, self.reason))
+                self.request_observation = request_observation(request, self.encoding)
+                if self.encoding == "TTLV":
+                    response = ping_response(request, self.status, self.reason)
+                else:
+                    response = text_response(
+                        str(self.request_observation["operation"]),
+                        self.encoding,
+                        self.status,
+                        self.reason,
+                    )
+                self.responses.append(response)
+                if self.transport == "https":
+                    content_type = {
+                        "TTLV": "application/octet-stream",
+                        "JSON": "application/json",
+                        "XML": "text/xml",
+                    }[self.encoding]
+                    stream.sendall(
+                        f"HTTP/1.1 200 OK\r\nContent-Type: {content_type}\r\n".encode("ascii")
+                        + f"Content-Length: {len(response)}\r\nConnection: close\r\n\r\n".encode("ascii")
+                        + response
+                    )
+                else:
+                    stream.sendall(response)
         except BaseException as error:  # Captured and surfaced by the owning test.
             self.error.put(error)
         finally:
@@ -151,20 +331,97 @@ class ControlledTlsPeer:
 
 
 class ControlledExchangeTests(unittest.TestCase):
+    def _execute_attribute_route(
+        self, peer: ControlledTlsPeer, *, high_level: bool, case_id: str
+    ) -> dict:
+        from kmipkit import extensions
+
+        connection = {
+            "server_id": "loopback",
+            "protocol_version": "2.1",
+            "transport": "raw_tls",
+            "encoding": "TTLV",
+            "api_level": "typed-protocol",
+            "endpoints": {"raw_tls": {"host": "127.0.0.1", "port": peer.port}},
+            "tls": {
+                "ca_cert_path": str(PKI / "server-cert.pem"),
+                "client_cert_path": str(PKI / "client-cert.pem"),
+                "client_key_path": str(PKI / "client-key.pem"),
+                "server_name_override": "localhost",
+                "connect_timeout_seconds": 5,
+                "read_timeout_seconds": 5,
+            },
+        }
+        catalog = json.loads(DEFAULT_CATALOG.read_text(encoding="utf-8"))
+        case = next(entry for entry in catalog["test_cases"] if entry["case_id"] == case_id)
+        driver = PythonKmipDriver(connection)
+        identifier = extensions.UniqueIdentifier.text_string("same-request-fixture")
+        item = None
+        try:
+            item = (
+                driver._build_high_level_item(case, identifier, name="same-request")
+                if high_level
+                else driver._build_item(case, identifier, name="same-request")
+            )
+            return driver._exchange(item)
+        finally:
+            if item is not None:
+                item.close()
+            driver.close()
+            peer.close()
+
+    def test_high_level_and_typed_attribute_routes_emit_identical_requests_and_responses(self):
+        from kmipkit import protocol_values
+
+        for case_id in (
+            "test-op-add-attribute",
+            "test-op-adjust-attribute",
+            "test-op-delete-attribute",
+            "test-op-get-attributes",
+            "test-op-get-attribute-list",
+            "test-op-modify-attribute",
+            "test-attr-comment",
+        ):
+            sent = []
+            received = []
+            outcomes = []
+            for high_level in (False, True):
+                peer = ControlledTlsPeer(
+                    status=protocol_values.ResultStatus.OPERATION_FAILED,
+                    reason=protocol_values.ResultReason.OPERATION_NOT_SUPPORTED,
+                )
+                outcomes.append(
+                    self._execute_attribute_route(peer, high_level=high_level, case_id=case_id)
+                )
+                sent.append(peer.requests[0])
+                received.append(peer.responses[0])
+            with self.subTest(case_id=case_id):
+                self.assertEqual(sent[0], sent[1])
+                self.assertEqual(received[0], received[1])
+                self.assertEqual(
+                    ["server_unsupported", "server_unsupported"],
+                    [result["status"] for result in outcomes],
+                )
+
     def _execute_ping(
         self,
         peer: ControlledTlsPeer,
         authentication: dict | None = None,
         case_id: str = "test-op-ping",
         protocol_version: str = "2.1",
+        encoding: str = "TTLV",
+        transport: str = "raw_tls",
     ) -> dict:
         connection = {
             "server_id": "loopback",
             "protocol_version": protocol_version,
-            "transport": "raw_tls",
-            "encoding": "TTLV",
+            "transport": transport,
+            "encoding": encoding,
             "api_level": "typed-protocol",
-            "endpoints": {"raw_tls": {"host": "127.0.0.1", "port": peer.port}},
+            "endpoints": {
+                "raw_tls": {"host": "127.0.0.1", "port": peer.port},
+                "https": {"url": f"https://127.0.0.1:{peer.port}/kmip"},
+            },
             "tls": {
                 "ca_cert_path": str(PKI / "server-cert.pem"),
                 "client_cert_path": str(PKI / "client-cert.pem"),
@@ -195,6 +452,17 @@ class ControlledExchangeTests(unittest.TestCase):
         self.assertEqual("passed", observed["status"])
         self.assertEqual(0, observed["result_status_code"])
         self.assertEqual(1, len(peer.requests))
+
+    def test_ping_round_trips_all_encodings_over_raw_tls_and_https(self):
+        for encoding in ("TTLV", "JSON", "XML"):
+            for transport in ("raw_tls", "https"):
+                with self.subTest(encoding=encoding, transport=transport):
+                    peer = ControlledTlsPeer(encoding=encoding, transport=transport)
+                    observed = self._execute_ping(peer, encoding=encoding, transport=transport)
+                    self.assertEqual("passed", observed["status"])
+                    self.assertEqual("passed", observed["library_correctness"])
+                    self.assertEqual("Ping", peer.request_observation["operation"])
+                    self.assertEqual(1, peer.request_observation["batch_count"])
 
     def test_normative_not_supported_response_is_separate_from_library_failure(self):
         from kmipkit import protocol_values

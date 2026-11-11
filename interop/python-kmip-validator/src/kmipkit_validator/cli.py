@@ -137,32 +137,34 @@ def _make_report(
 
 def _plan(connection: dict[str, Any], catalog: dict[str, Any], catalog_bytes: bytes) -> dict[str, Any]:
     cases = applicable_cases(catalog, connection["protocol_version"])
+    planned_cases = []
+    for case in cases:
+        local = case["execution"]["mode"] == "local_model"
+        limitation = (
+            PythonKmipDriver.local_recipe_limitation(case)
+            if local
+            else PythonKmipDriver.route_limitation(case, connection["api_level"])
+        )
+        available = limitation is None and (
+            local or PythonKmipDriver.supports(case, connection["api_level"])
+        )
+        planned_case = {
+            "case_id": case["case_id"],
+            "operation": case["operation"],
+            "mode": case["execution"]["mode"],
+            "route_available": available,
+            "status": "planned" if available else "not_run_documented_api_gap",
+        }
+        if limitation is not None:
+            planned_case["limitation"] = limitation
+        planned_cases.append(planned_case)
     return {
         "language": "python",
         "protocol_version": connection["protocol_version"],
         "catalog_sha256": sha256(catalog_bytes),
         "network_attempted": False,
         "capability_policy": "profiles_are_hypotheses_probe_applicable_cases",
-        "cases": [
-            {
-                "case_id": case["case_id"],
-                "operation": case["operation"],
-                "mode": case["execution"]["mode"],
-                "route_available": case["execution"]["mode"] == "local_model"
-                or PythonKmipDriver.supports(case, connection["api_level"]),
-                "status": "planned"
-                if case["execution"]["mode"] == "local_model"
-                or PythonKmipDriver.supports(case, connection["api_level"])
-                else "not_run_documented_api_gap",
-                **(
-                    {}
-                    if case["execution"]["mode"] == "local_model"
-                    or PythonKmipDriver.supports(case, connection["api_level"])
-                    else {"limitation": PythonKmipDriver.route_limitation(case, connection["api_level"])}
-                ),
-            }
-            for case in cases
-        ],
+        "cases": planned_cases,
     }
 
 
@@ -210,7 +212,7 @@ def _run(
             try:
                 PythonKmipDriver.execute_local_case(case)
                 results.append(
-                    _case_record(case_id, "passed", "passed", "unknown", "local TTLV enum or mask assertions passed")
+                    _case_record(case_id, "passed", "passed", "unknown", "catalog TTLV and API assertions passed")
                 )
             except LocalRecipeUnavailable as error:
                 results.append(
@@ -316,6 +318,7 @@ def main(argv: list[str] | None = None) -> int:
                 "network_attempted": False,
                 "artifact_verified": artifact is not None and package_installed,
                 "diagnostics": local_issues + ([] if package_installed else ["pinned KMIPKit package is not installed in this environment"]),
+                "plan": _plan(connection, catalog, catalog_bytes),
             }
             print(json.dumps(report, indent=2, sort_keys=True))
             return 0 if ready else 1

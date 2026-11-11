@@ -7,7 +7,13 @@ import unittest
 
 from kmipkit_validator.cli import _make_report, _plan, _run, main
 from kmipkit_validator.contract import applicable_cases, load_catalog, load_connection
-from kmipkit_validator.driver import EquivalenceVerifier, NormalizedResponse, PythonKmipDriver, RecipeRunner
+from kmipkit_validator.driver import (
+    EquivalenceVerifier,
+    LocalRecipeUnavailable,
+    NormalizedResponse,
+    PythonKmipDriver,
+    RecipeRunner,
+)
 from kmipkit_validator.reporter import write_interop_reports
 
 
@@ -175,7 +181,7 @@ class ValidatorContractTests(unittest.TestCase):
         server_cases = [case for case in applicable_cases(catalog, "2.1") if case["execution"]["mode"] == "server_exchange"]
         self.assertFalse(any(indexed[case["case_id"]]["status"] == "passed" for case in server_cases))
 
-    def test_local_enum_and_bitmask_catalog_rows_run_through_installed_ttlv_api(self):
+    def test_local_catalog_rows_execute_or_report_a_specific_public_api_gap(self):
         connection, connection_bytes = load_connection(CONNECTION)
         catalog, catalog_bytes = load_catalog(CATALOG)
         artifact = {"library_commit": "52a2be180340e5da3166401a52f652dfd368ad37", "artifact_sha256": "a" * 64}
@@ -194,10 +200,50 @@ class ValidatorContractTests(unittest.TestCase):
             if case["execution"]["mode"] == "local_model"
         }
         indexed = {item["case_id"]: item for item in results}
-        self.assertEqual(67, len(local_ids))
-        self.assertTrue(all(indexed[case_id]["status"] in {"passed", "not_run"} for case_id in local_ids))
-        pending = [indexed[case_id] for case_id in local_ids if indexed[case_id]["status"] == "not_run"]
-        self.assertEqual([], pending)
+        expanded_contract = bool(catalog.get("normative_targets"))
+        self.assertGreater(len(local_ids), 2000 if expanded_contract else 60)
+        gaps = (
+            {
+                "test-batch-count-zero-rejected",
+                "test-batch-single-item-options-omitted",
+                "test-batch-placeholder-forward-reference-rejected",
+                "test-batch-placeholder-without-producer-rejected",
+            }
+            if expanded_contract
+            else set()
+        )
+        self.assertEqual(
+            {case_id for case_id in local_ids if indexed[case_id]["status"] == "not_run"},
+            gaps,
+        )
+        self.assertTrue(
+            all(
+                indexed[case_id]["status"] == "passed"
+                or (
+                    indexed[case_id]["status"] == "not_run"
+                    and indexed[case_id]["diagnostic"].startswith("API gap:")
+                    and indexed[case_id]["library_correctness"] == "not_checked"
+                )
+                for case_id in local_ids
+            ),
+            [indexed[case_id] for case_id in sorted(local_ids) if indexed[case_id]["status"] not in {"passed", "not_run"}][:20],
+        )
+
+    def test_local_kmip_20_version_boundary_cases_have_documented_api_limits_when_catalogued(self):
+        catalog, _ = load_catalog(CATALOG)
+        cases = [
+            case
+            for case in applicable_cases(catalog, "2.0")
+            if case["category"] == "version_boundaries"
+            and case["execution"]["mode"] == "local_model"
+        ]
+        if not cases and not catalog.get("normative_targets"):
+            return
+        self.assertEqual(len(cases), 6)
+        for case in cases:
+            with self.subTest(case_id=case["case_id"]):
+                with self.assertRaisesRegex(LocalRecipeUnavailable, "^API gap:"):
+                    PythonKmipDriver.execute_local_case(case)
 
     def test_result_report_matches_shared_schema_and_writes_all_formats(self):
         connection, connection_bytes = load_connection(CONNECTION)
@@ -228,6 +274,26 @@ class ValidatorContractTests(unittest.TestCase):
         planned = json.loads(output.getvalue())
         self.assertFalse(planned["network_attempted"])
         self.assertGreater(len(planned["cases"]), 0)
+
+    def test_preflight_includes_the_same_offline_plan_and_local_api_gaps(self):
+        output = io.StringIO()
+        with redirect_stdout(output):
+            self.assertEqual(main(["preflight", "--connection", str(CONNECTION)]), 1)
+        report = json.loads(output.getvalue())
+        self.assertFalse(report["network_attempted"])
+        cases = {case["case_id"]: case for case in report["plan"]["cases"]}
+        expected = {
+            "test-batch-count-zero-rejected",
+            "test-batch-single-item-options-omitted",
+            "test-batch-placeholder-forward-reference-rejected",
+            "test-batch-placeholder-without-producer-rejected",
+        }
+        if not load_catalog(CATALOG)[0].get("normative_targets"):
+            return
+        for case_id in expected:
+            with self.subTest(case_id=case_id):
+                self.assertEqual(cases[case_id]["status"], "not_run_documented_api_gap")
+                self.assertTrue(cases[case_id]["limitation"].startswith("API gap:"))
 
     def test_plan_documents_each_route_that_the_pinned_python_api_cannot_emit(self):
         connection, _ = load_connection(CONNECTION)

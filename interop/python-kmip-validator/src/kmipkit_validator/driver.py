@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 import uuid
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Callable, Protocol
 from .isolation import AttemptContext
@@ -23,6 +24,104 @@ class KmipDriver(Protocol):
 
 class LocalRecipeUnavailable(Exception):
     """A documented API-model gap for one local catalog recipe."""
+
+
+_TTLV_TYPE_NAMES = (
+    "Structure",
+    "Integer",
+    "Long Integer",
+    "Big Integer",
+    "Enumeration",
+    "Boolean",
+    "Text String",
+    "Byte String",
+    "Date Time",
+    "Interval",
+    "Date Time Extended",
+)
+_TTLV_TYPE_KINDS = {
+    "Structure": "structure",
+    "Integer": "integer",
+    "Long Integer": "long_integer",
+    "Big Integer": "big_integer",
+    "Enumeration": "enumeration",
+    "Boolean": "boolean",
+    "Text String": "text",
+    "Byte String": "bytes",
+    "Date Time": "date_time",
+    "Interval": "interval",
+    "Date Time Extended": "date_time_extended",
+}
+_FIELD_TYPE_FALLBACKS = {
+    "Any Object (Section 2)": {"Structure"},
+    "All Objects": {"Boolean"},
+    "Adjustment Value": {"Integer"},
+    "Certificate Request Unique Identifier": {"Text String", "Enumeration", "Integer"},
+    "Interop Identifier": {"Text String"},
+    "Private Key Unique Identifier": {"Text String", "Enumeration", "Integer"},
+    "Public Key Unique Identifier": {"Text String", "Enumeration", "Integer"},
+    "Common Protection Storage Masks": {"Structure"},
+    "Private Protection Storage Masks": {"Structure"},
+    "Public Protection Storage Masks": {"Structure"},
+    "Request Count": {"Integer"},
+    "Replaced Unique Identifier": {"Text String", "Enumeration", "Integer"},
+    "Time Stamp": {"Date Time"},
+    "Ephemeral": {"Boolean"},
+    "Request Payload": {"Structure"},
+    "Response Payload": {"Structure"},
+    "Server Hashed Password": {"Structure"},
+    "Vendor-Specific": {"Structure"},
+    "Credential Value": set(_TTLV_TYPE_NAMES),
+    "Attribute Value": set(_TTLV_TYPE_NAMES),
+    "Any attribute in §4 - Object Attributes": set(_TTLV_TYPE_NAMES),
+}
+
+
+@lru_cache(maxsize=1)
+def _catalog_model_data() -> tuple[
+    dict[str, dict[str, Any]], dict[str, set[str]], dict[str, dict[str, Any]]
+]:
+    """Load only checked-in normative test metadata, never KMIPKit source code."""
+    import json
+
+    root = Path(__file__).resolve().parents[4]
+    shared = json.loads(
+        (root / "interop/shared/catalog/kmipkit-1.0-test-catalog.json").read_text(encoding="utf-8")
+    )
+    source = json.loads((root / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))
+    target_by_id = {target["target_id"]: target for target in shared["normative_targets"]}
+    element_types_by_name: dict[str, set[str]] = {}
+
+    def types_in(text: str) -> set[str]:
+        normalized = text.replace("-", " ")
+        found: set[str] = set()
+        for name in sorted(_TTLV_TYPE_NAMES, key=len, reverse=True):
+            pattern = re.escape(name).replace(r"\ ", r"[\s-]+")
+            if re.search(rf"(?<![A-Za-z]){pattern}(?![A-Za-z])", normalized, re.IGNORECASE):
+                found.add(name)
+        return found
+
+    for element in source.get("elements", []):
+        types: set[str] = set()
+        for field in ("source_encoding", "value_type"):
+            if isinstance(element.get(field), str):
+                types.update(types_in(element[field]))
+        for alternative in element.get("value_type_alternatives", []):
+            if isinstance(alternative, str):
+                types.update(types_in(alternative))
+        kind = element.get("kind")
+        if kind in {"attribute_structure", "object_structure", "operation_structure", "credential"}:
+            types.add("Structure")
+        if kind == "enumeration":
+            types.add("Enumeration")
+        elif kind == "bitmask":
+            types.add("Integer")
+        if types:
+            element_types_by_name.setdefault(element.get("name", ""), set()).update(types)
+
+    return target_by_id, element_types_by_name, {
+        element["element_id"]: element for element in source.get("elements", [])
+    }
 
 
 class PythonKmipDriver:
@@ -262,11 +361,47 @@ class PythonKmipDriver:
         )
 
     @staticmethod
+    def local_recipe_limitation(case: dict[str, Any]) -> str | None:
+        """Return the concrete installed-API gap for offline local recipes."""
+        if case["execution"]["mode"] != "local_model":
+            return None
+        if case["category"] == "version_boundaries":
+            return (
+                "API gap: the public client has no offline request validator or serialized-request accessor "
+                "to prove a KMIP 2.1 operation is rejected before transport under KMIP 2.0"
+            )
+        scenario = case.get("requires", {}).get("protocol_scenario", {})
+        scenario_id = scenario.get("scenario_id")
+        limitations = {
+            "test-batch-count-zero-rejected": (
+                "API gap: Batch exposes no offline request validation or serialization result for an empty batch"
+            ),
+            "test-batch-single-item-options-omitted": (
+                "API gap: Batch exposes no encoded Request Header view to assert omission of default options"
+            ),
+            "test-batch-placeholder-forward-reference-rejected": (
+                "API gap: ClientBatchItem has no public ID Placeholder value or batch-reference builder"
+            ),
+            "test-batch-placeholder-without-producer-rejected": (
+                "API gap: ClientBatchItem has no public ID Placeholder value or batch-reference builder"
+            ),
+        }
+        return limitations.get(scenario_id)
+
+    @staticmethod
     def execute_local_case(test_case: dict[str, Any]) -> None:
-        """Exercise raw-preserving enum and mask values through installed TTLV models."""
+        """Execute catalog-driven checks using only the installed package API."""
         from kmipkit import protocol_values, ttlv
 
+        limitation = PythonKmipDriver.local_recipe_limitation(test_case)
+        if limitation is not None:
+            raise LocalRecipeUnavailable(limitation)
         requirements = test_case["requires"]
+        scenario = requirements.get("protocol_scenario")
+        if scenario is not None:
+            PythonKmipDriver._execute_local_batch_case(test_case, scenario)
+            return
+
         enum_type_name = requirements.get("enum_type")
         mask_type_name = requirements.get("bitmask_type")
         if enum_type_name:
@@ -320,7 +455,351 @@ class PythonKmipDriver:
             PythonKmipDriver._round_trip_ttlv(tag, known, enumeration=False)
             PythonKmipDriver._round_trip_ttlv(tag, unknown, enumeration=False)
             return
-        raise LocalRecipeUnavailable("catalog local-model recipe is unavailable")
+
+        target_kind = requirements.get("target_kind")
+        target_id = requirements.get("normative_target_id")
+        target_by_id, element_types_by_name, _ = _catalog_model_data()
+        target = target_by_id.get(target_id, {})
+
+        if target_kind in {"enumeration_value", "referenced_enum_value"}:
+            PythonKmipDriver._execute_catalog_enumeration(test_case, target)
+            return
+        if target_kind == "bitmask_value":
+            PythonKmipDriver._execute_catalog_bitmask(test_case, target, target_by_id)
+            return
+        if target_kind in {"tag", "tag_range"}:
+            PythonKmipDriver._execute_catalog_tag(test_case)
+            return
+        if target_kind == "data_type":
+            PythonKmipDriver._execute_data_type_case(target["name"])
+            PythonKmipDriver._exercise_generic_type(target["name"])
+            return
+        if target_kind is None:
+            raise ValueError("local catalog case has no target kind or supported legacy recipe")
+
+        type_names = PythonKmipDriver._catalog_value_types(
+            test_case, target, element_types_by_name
+        )
+        if not type_names:
+            raise ValueError(f"catalog target {target_id} has no TTLV construction type")
+        for type_name in sorted(type_names):
+            PythonKmipDriver._exercise_generic_type(type_name)
+
+    @staticmethod
+    def _execute_local_batch_case(test_case: dict[str, Any], scenario: dict[str, Any]) -> None:
+        from kmipkit import client, extensions
+
+        scenario_id = scenario["scenario_id"]
+        if scenario_id != "test-batch-count-mismatch-rejected":
+            raise ValueError(f"unsupported local batch scenario {scenario_id}")
+
+        identifier = extensions.UniqueIdentifier.text_string("local-batch-count-fixture")
+        driver = object.__new__(PythonKmipDriver)
+        driver._extensions = extensions
+        batch = client.Batch.create()
+        items = []
+        try:
+            for operation in scenario["operations"]:
+                case = {"operation": operation, "requires": {}}
+                item = driver._build_item(case, identifier, name="local-batch-count-fixture")
+                items.append(item)
+                batch.add_item(item)
+            if batch.item_count != len(scenario["operations"]):
+                raise ValueError("batch item count does not match the constructed items")
+            if hasattr(batch, "set_batch_count"):
+                raise ValueError("public Batch unexpectedly exposes an independently mutable count")
+        finally:
+            batch.close()
+            for item in items:
+                item.close()
+
+    @staticmethod
+    def _wire_integer(value: str) -> int:
+        return int(value.removeprefix("0x").removeprefix("0X"), 16)
+
+    @staticmethod
+    def _wire_representatives(value: str) -> list[int]:
+        range_match = re.fullmatch(r"\s*((?:0x)?[0-9a-fA-F]+)\s*[-–—]\s*((?:0x)?[0-9a-fA-F]+)\s*", value)
+        if range_match:
+            return [PythonKmipDriver._wire_integer(part) for part in range_match.groups()]
+        if "X" in value.upper():
+            return [int(value.upper().replace("X", "0"), 16)]
+        return [PythonKmipDriver._wire_integer(value)]
+
+    @staticmethod
+    def _execute_catalog_enumeration(test_case: dict[str, Any], target: dict[str, Any]) -> None:
+        from kmipkit import protocol_values
+
+        requires = test_case["requires"]
+        values = PythonKmipDriver._wire_representatives(requires["wire_value"])
+        if target.get("kind") == "referenced_enum_value":
+            for raw in values:
+                PythonKmipDriver._round_trip_ttlv(0x0042_005C, raw, enumeration=True)
+            return
+        enum_name = target.get("parent_name") or requires.get("parent_name")
+        if enum_name is None and target.get("kind") == "enumeration_value":
+            _, _, element_by_id = _catalog_model_data()
+            element = element_by_id.get(target["target_id"])
+            if element is not None:
+                parent_ids = element.get("parent_element_ids", [])
+                parent = next(
+                    (
+                        element_by_id[parent_id]
+                        for parent_id in parent_ids
+                        if parent_id in element_by_id
+                        and element_by_id[parent_id].get("kind") == "enumeration"
+                    ),
+                    None,
+                )
+                enum_name = None if parent is None else parent.get("name")
+        value_type = getattr(protocol_values, PythonKmipDriver._class_name(enum_name or ""), None)
+        name_function = getattr(value_type, "name", None)
+        for raw in values:
+            if callable(name_function):
+                mapped = name_function(raw)
+                if requires.get("allocation") == "assigned" and mapped is None:
+                    raise ValueError("an assigned catalog enumeration value is absent from the public mapping")
+                if requires.get("allocation") in {"reserved", "unused"} and mapped is not None:
+                    raise ValueError("a reserved catalog enumeration value is exposed as assigned")
+            PythonKmipDriver._round_trip_ttlv(0x0042_005C, raw, enumeration=True)
+
+    @staticmethod
+    def _class_name(name: str) -> str:
+        return "".join(
+            part[0].upper() + part[1:].lower()
+            for part in re.findall(r"[A-Za-z0-9]+", name)
+        )
+
+    @staticmethod
+    def _execute_catalog_bitmask(
+        test_case: dict[str, Any], target: dict[str, Any], target_by_id: dict[str, dict[str, Any]]
+    ) -> None:
+        requires = test_case["requires"]
+        wire_value = requires["wire_value"]
+        if "X" in wire_value.upper():
+            parent_ids = set(target.get("parent_element_ids", []))
+            assigned = 0
+            for candidate in target_by_id.values():
+                if (
+                    candidate.get("kind") == "bitmask_value"
+                    and parent_ids.intersection(candidate.get("parent_element_ids", []))
+                    and candidate.get("allocation") == "assigned"
+                    and "X" not in candidate.get("wire_value", "").upper()
+                ):
+                    assigned |= PythonKmipDriver._wire_integer(candidate["wire_value"])
+            wildcard_mask = int(wire_value.upper().replace("X", "F"), 16)
+            available = wildcard_mask & ~assigned & 0xFFFF_FFFF
+            if not available:
+                raise ValueError("catalog bitmask extension range has no unassigned representative")
+            raw = available & -available
+        else:
+            raw = PythonKmipDriver._wire_integer(wire_value)
+        parent_ids = target.get("parent_element_ids", [])
+        parent_id = parent_ids[0] if parent_ids else ""
+        mask_name = parent_id.removeprefix("KMIPKIT-ELEM-BITMASK-")
+        tag = {
+            "CRYPTOGRAPHIC-USAGE-MASK": 0x0042_002C,
+            "STORAGE-STATUS-MASK": 0x0042_008E,
+            "PROTECTION-STORAGE-MASK": 0x0042_015E,
+        }.get(mask_name)
+        if tag is None:
+            raise ValueError("catalog bitmask target has no public TTLV tag mapping")
+        PythonKmipDriver._round_trip_ttlv(tag, raw, enumeration=False)
+
+    @staticmethod
+    def _execute_catalog_tag(test_case: dict[str, Any]) -> None:
+        from kmipkit import ttlv
+
+        wire_value = test_case["requires"]["wire_value"]
+        if test_case["requires"]["target_kind"] == "tag_range":
+            match = re.fullmatch(r"\s*([0-9a-fA-FxX]+)\s*[-–—]\s*([0-9a-fA-FxX]+)\s*", wire_value)
+            if match is None:
+                raise ValueError("catalog tag range cannot be parsed")
+            raw_values = [
+                int(match.group(1).upper().replace("X", "0"), 16),
+                int(match.group(2).upper().replace("X", "F"), 16),
+            ]
+        else:
+            raw_values = PythonKmipDriver._wire_representatives(wire_value)
+        for raw in raw_values:
+            with ttlv.raw_tag_from_raw(raw) as raw_tag:
+                if ttlv.raw_tag_value(raw_tag) != raw:
+                    raise ValueError("raw TTLV tag did not preserve its value")
+                if test_case["requires"].get("allocation") in {"assigned", "extension"}:
+                    with ttlv.raw_tag_try_checked(raw_tag) as tag:
+                        if ttlv.tag_value(tag) != raw:
+                            raise ValueError("checked TTLV tag did not preserve its allocated value")
+                else:
+                    try:
+                        invalid_tag = ttlv.raw_tag_try_checked(raw_tag)
+                    except ttlv.errors.InvalidExtensionSchemaError:
+                        continue
+                    invalid_tag.close()
+                    raise ValueError("reserved or unused TTLV tag was accepted as checked")
+
+    @staticmethod
+    def _catalog_value_types(
+        test_case: dict[str, Any],
+        target: dict[str, Any],
+        element_types_by_name: dict[str, set[str]],
+    ) -> set[str]:
+        requires = test_case["requires"]
+        values: set[str] = set()
+        fields = ("source_encoding", "value_type")
+        for source in (requires, target):
+            for field in fields:
+                if isinstance(source.get(field), str):
+                    values.update(PythonKmipDriver._types_in(source[field]))
+            for alternative in source.get("value_type_alternatives", []):
+                if isinstance(alternative, str):
+                    values.update(PythonKmipDriver._types_in(alternative))
+        name = target.get("name") or requires.get("field_name") or ""
+        values.update(element_types_by_name.get(name, set()))
+        values.update(_FIELD_TYPE_FALLBACKS.get(name, set()))
+        if target.get("kind") in {
+            "attribute_structure", "object_structure", "operation_structure", "credential"
+        }:
+            values.add("Structure")
+        if target.get("kind") == "operation_payload_value_variant" and isinstance(
+            target.get("value_type"), str
+        ):
+            values.update(PythonKmipDriver._types_in(target["value_type"]))
+        return values
+
+    @staticmethod
+    def _types_in(text: str) -> set[str]:
+        normalized = text.replace("-", " ")
+        found: set[str] = set()
+        for name in sorted(_TTLV_TYPE_NAMES, key=len, reverse=True):
+            pattern = re.escape(name).replace(r"\ ", r"[\s-]+")
+            if re.search(rf"(?<![A-Za-z]){pattern}(?![A-Za-z])", normalized, re.IGNORECASE):
+                found.add(name)
+        return found
+
+    @staticmethod
+    def _execute_data_type_case(type_name: str) -> None:
+        import json
+
+        from kmipkit import ttlv
+
+        root = Path(__file__).resolve().parents[4]
+        vectors = json.loads(
+            (root / "interop/shared/vectors/ttlv-boundaries.json").read_text(encoding="utf-8")
+        )
+        vector = next((item for item in vectors["vectors"] if item["data_type"] == type_name), None)
+        if vector is None:
+            raise ValueError("catalog data type has no checked-in TTLV boundary vectors")
+        expected_type = type_name.replace(" ", "")
+        for sample in vector["samples"]:
+            wire = bytes.fromhex(sample["hex"])
+            with ttlv.codec_limits_defaults() as limits:
+                if not sample["valid"]:
+                    try:
+                        invalid_item = ttlv.ttlv_decode_with_limits(wire, limits)
+                    except ttlv.errors.TtlvDecodeError:
+                        continue
+                    invalid_item.close()
+                    raise ValueError("malformed TTLV boundary vector was accepted")
+                with ttlv.ttlv_decode_with_limits(wire, limits) as item:
+                    with ttlv.ttlv_item_view_from_item(item) as view:
+                        actual_type = ttlv.ttlv_item_view_type(view).name
+                        if actual_type != expected_type:
+                            raise ValueError("TTLV boundary vector decoded to a different data type")
+                        if type_name == "Structure":
+                            with ttlv.ttlv_item_view_value(view) as value:
+                                with ttlv.ttlv_value_view_structure(value) as structure:
+                                    child_count = ttlv.ttlv_structure_view_item_count(structure)
+                                    if sample["branch"] in {"ordered_children", "reversed_children"}:
+                                        if child_count != 2:
+                                            raise ValueError("structure boundary vector lost a child")
+                                        observed_tags = []
+                                        for index in range(child_count):
+                                            with ttlv.ttlv_structure_view_item_at(structure, index) as child:
+                                                with ttlv.ttlv_item_view_tag(child) as tag:
+                                                    observed_tags.append(ttlv.tag_value(tag))
+                                        expected_tags = (
+                                            [0x00420001, 0x00420002]
+                                            if sample["branch"] == "ordered_children"
+                                            else [0x00420002, 0x00420001]
+                                        )
+                                        if observed_tags != expected_tags:
+                                            raise ValueError("structure child order changed during decoding")
+
+    @staticmethod
+    @lru_cache(maxsize=None)
+    def _exercise_generic_type(type_name: str) -> None:
+        values = {
+            "Structure": [None],
+            "Integer": [-0x8000_0000, -1, 0, 0x7FFF_FFFF],
+            "Long Integer": [-(1 << 63), -1, 0, (1 << 63) - 1],
+            "Big Integer": [bytes.fromhex("0000000000000001"), bytes.fromhex("ffffffffffffffff")],
+            "Enumeration": [0, 1, 0x7FFF_FFFF, 0x8000_0000],
+            "Boolean": [False, True],
+            "Text String": ["", "KMIP-λ"],
+            "Byte String": [b"", b"\x00\x01\x02\x03\x04\x05\x06\x07\x08"],
+            "Date Time": [-1, 0, 1],
+            "Interval": [0, 1, 0x7FFF_FFFF],
+            "Date Time Extended": [-1, 0, 1],
+        }
+        if type_name not in values:
+            raise ValueError(f"unsupported TTLV data type {type_name}")
+        for value in values[type_name]:
+            PythonKmipDriver._round_trip_generic_value(type_name, value)
+
+    @staticmethod
+    def _round_trip_generic_value(type_name: str, value: Any) -> None:
+        from kmipkit import ttlv
+
+        kind = _TTLV_TYPE_KINDS[type_name]
+        if type_name == "Structure":
+            children = [
+                PythonKmipDriver._item(0x0042_0001, "integer", 7),
+                PythonKmipDriver._item(0x0042_0002, "enumeration", 3),
+            ]
+            structure = PythonKmipDriver._structure(children)
+            try:
+                item = PythonKmipDriver._item(0x0042_00FF, kind, structure)
+            finally:
+                structure.close()
+                for child in children:
+                    child.close()
+        else:
+            item = PythonKmipDriver._item(0x0042_00FF, kind, value)
+        try:
+            with ttlv.ttlv_item_view_from_item(item) as item_view:
+                if ttlv.ttlv_item_view_type(item_view).name != type_name.replace(" ", ""):
+                    raise ValueError("generic TTLV constructor produced the wrong item type")
+                with ttlv.ttlv_item_view_value(item_view) as value_view:
+                    if type_name == "Structure":
+                        with ttlv.ttlv_value_view_structure(value_view) as structure_view:
+                            if ttlv.ttlv_structure_view_item_count(structure_view) != 2:
+                                raise ValueError("generic TTLV structure lost a child")
+                            observed = []
+                            for index in range(2):
+                                with ttlv.ttlv_structure_view_item_at(structure_view, index) as child:
+                                    observed.append(ttlv.ttlv_item_view_type(child).name)
+                            if observed != ["Integer", "Enumeration"]:
+                                raise ValueError("generic TTLV structure changed child order or type")
+                    elif type_name == "Big Integer":
+                        if ttlv.ttlv_value_view_type(value_view).name != "BigInteger":
+                            raise ValueError("generic Big Integer constructor changed type")
+                    else:
+                        getter = {
+                            "Integer": ttlv.ttlv_value_view_integer,
+                            "Long Integer": ttlv.ttlv_value_view_long_integer,
+                            "Enumeration": ttlv.ttlv_value_view_enumeration,
+                            "Boolean": ttlv.ttlv_value_view_boolean,
+                            "Text String": ttlv.ttlv_value_view_bytes,
+                            "Byte String": ttlv.ttlv_value_view_bytes,
+                            "Date Time": ttlv.ttlv_value_view_date_time,
+                            "Interval": ttlv.ttlv_value_view_interval,
+                            "Date Time Extended": ttlv.ttlv_value_view_date_time_extended,
+                        }[type_name]
+                        expected = value.encode("utf-8") if isinstance(value, str) else value
+                        if getter(value_view) != expected:
+                            raise ValueError("generic TTLV construction did not preserve its value")
+        finally:
+            item.close()
 
     @staticmethod
     def _round_trip_catalog_enum(name: str) -> None:
@@ -336,6 +815,7 @@ class PythonKmipDriver:
         PythonKmipDriver._round_trip_ttlv(tag, unknown, enumeration=True)
 
     @staticmethod
+    @lru_cache(maxsize=None)
     def _catalog_enum_values(name: str) -> list[int]:
         import json
 
@@ -370,28 +850,28 @@ class PythonKmipDriver:
     def _round_trip_ttlv(tag_value: int, raw_value: int, *, enumeration: bool) -> None:
         from kmipkit import ttlv
 
-        limits = ttlv.codec_limits_defaults()
-        raw_tag = ttlv.raw_tag_from_raw(tag_value)
-        tag = ttlv.raw_tag_try_checked(raw_tag)
-        value = ttlv.ttlv_value_enumeration(raw_value) if enumeration else ttlv.ttlv_value_integer(raw_value)
-        item = ttlv.ttlv_item_create(tag, value, limits)
-        item_view = ttlv.ttlv_item_view_from_item(item)
-        value_view = ttlv.ttlv_item_view_value(item_view)
-        try:
-            observed = (
-                ttlv.ttlv_value_view_enumeration(value_view)
-                if enumeration
-                else ttlv.ttlv_value_view_integer(value_view)
-            )
-            if observed != raw_value:
-                raise ValueError("TTLV model did not preserve the raw enum or mask value")
-        finally:
-            value_view.close()
-            item_view.close()
-            item.close()
-            tag.close()
-            raw_tag.close()
-            limits.close()
+        with ttlv.codec_limits_defaults() as limits:
+            with ttlv.raw_tag_from_raw(tag_value) as raw_tag:
+                with ttlv.raw_tag_try_checked(raw_tag) as tag:
+                    signed_value = (
+                        raw_value if raw_value < 0x8000_0000 else raw_value - 0x1_0000_0000
+                    )
+                    value = (
+                        ttlv.ttlv_value_enumeration(raw_value)
+                        if enumeration
+                        else ttlv.ttlv_value_integer(signed_value)
+                    )
+                    with value:
+                        with ttlv.ttlv_item_create(tag, value, limits) as item:
+                            with ttlv.ttlv_item_view_from_item(item) as item_view:
+                                with ttlv.ttlv_item_view_value(item_view) as value_view:
+                                    observed = (
+                                        ttlv.ttlv_value_view_enumeration(value_view)
+                                        if enumeration
+                                        else ttlv.ttlv_value_view_integer(value_view) & 0xFFFF_FFFF
+                                    )
+                                    if observed != raw_value:
+                                        raise ValueError("TTLV model did not preserve the raw enum or mask value")
 
     @staticmethod
     def _item(tag_value: int, kind: str, value: Any) -> Any:
@@ -410,6 +890,18 @@ class PythonKmipDriver:
                         encoded = ttlv.ttlv_value_byte_string(value, limits)
                     elif kind == "structure":
                         encoded = ttlv.ttlv_value_structure(value, limits)
+                    elif kind == "long_integer":
+                        encoded = ttlv.ttlv_value_long_integer(value)
+                    elif kind == "big_integer":
+                        encoded = ttlv.ttlv_value_big_integer(value, limits)
+                    elif kind == "boolean":
+                        encoded = ttlv.ttlv_value_boolean(value)
+                    elif kind == "date_time":
+                        encoded = ttlv.ttlv_value_date_time(value)
+                    elif kind == "interval":
+                        encoded = ttlv.ttlv_value_interval(value)
+                    elif kind == "date_time_extended":
+                        encoded = ttlv.ttlv_value_date_time_extended(value)
                     else:
                         raise ValueError("unsupported TTLV value type")
                     with encoded:
