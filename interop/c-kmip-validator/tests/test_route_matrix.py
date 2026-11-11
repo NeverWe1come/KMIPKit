@@ -140,5 +140,28 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(abi.reject_invalid_boolean())
 
 
+    def value_executor(self):
+        self.assertIsNotNone(importlib.util.find_spec('route_values'), 'named-value C case executor is missing')
+        from route_values import ValueCases
+        from artifact_support import INSTALL, ROOT
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        return ValueCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog)
+
+    def test_enum_case_uses_its_named_type_and_preserves_unknown_value(self):
+        result = self.value_executor().execute({'requires': {'enum_type': 'Cryptographic Algorithm'}}, '2.1')
+        self.assertEqual(result['tag'], 0x420028)
+        self.assertGreater(result['known_values_checked'], 20)
+        self.assertTrue(result['unknown_value_preserved'])
+        self.assertIn('kmipkit_ttlv_value_enumeration', result['invoked_symbols'])
+
+    def test_bitmask_case_executes_every_flag_combination(self):
+        result = self.value_executor().execute({'requires': {'bitmask_type': 'Cryptographic Usage Mask',
+            'exhaustive_bitmask_combinations': {'flag_wire_values': ['00000001', '00000002', '00000004'],
+                                              'combination_count': 8}}}, '2.1')
+        self.assertEqual(result['combination_count'], 8)
+        self.assertTrue(result['unknown_value_preserved'])
+        self.assertEqual(result['tag'], 0x42002C)
+
+
 if __name__ == '__main__':
     unittest.main()
