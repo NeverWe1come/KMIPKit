@@ -433,10 +433,9 @@ fn assert_fluent_crypto_request(encoded: &[u8], operation: u32) {
             }));
         });
         let expected_byte_strings = match operation {
-            31 | 34 => 3,
-            32 => 4,
-            33 | 35 | 39 => 1,
-            36 => 2,
+            31 | 36 => 3,
+            32 | 34 => 4,
+            33 | 35 | 39 => 2,
             _ => panic!("the fixture operation is one of the seven approved operations"),
         };
         let mut actual_byte_strings = 0;
