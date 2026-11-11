@@ -13,8 +13,8 @@
 
 ## Phase 3 — Operation-specific request construction
 
-- [ ] T006 [US1] Declare the existing crypto builder C ABI in `bindings/python/src/kmipkit/_client_ffi.py`.
-- [ ] T007 [US1] Add Python operation-specific crypto builders and `Request` factories in `bindings/python/src/kmipkit/fluent.py`.
+- [x] T006 [US1] Declare the existing crypto builder C ABI in `bindings/python/src/kmipkit/_client_ffi.py`.
+- [x] T007 [US1] Add Python operation-specific crypto builders and `Request` factories in `bindings/python/src/kmipkit/fluent.py`.
 - [x] T008 [US1] Verify typed Cryptographic Parameters, explicit TTLV structures, Data values, and operation-only fields in `bindings/python/tests/test_fluent_crypto.py`.
 
 ## Phase 4 — TLS execution and Python typing

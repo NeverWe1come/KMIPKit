@@ -39,6 +39,14 @@ def _aes_parameters() -> cryptographic_parameters.CryptographicParameters:
         builder.close()
 
 
+def _hash_parameters() -> cryptographic_parameters.CryptographicParameters:
+    builder = cryptographic_parameters.CryptographicParameters.builder()
+    try:
+        return builder.hashing_algorithm(protocol_values.HashingAlgorithm.SHA_256).build()
+    finally:
+        builder.close()
+
+
 def _items(encoded_structure_value: bytes) -> list[tuple[int, int, bytes]]:
     items: list[tuple[int, int, bytes]] = []
     offset = 0
@@ -269,26 +277,35 @@ def test_crypto_builder_executes_one_mtls_exchange_and_copies_input(
                     parameters = None
                     parameters_structure = None
                     try:
-                        builder.data(caller_buffer)
-                        if factory_name in {"encrypt", "decrypt"}:
-                            parameters = _aes_parameters()
-                            if factory_name == "encrypt":
-                                builder.cryptographic_parameters(parameters)
-                            else:
-                                parameters_structure = parameters.into_ttlv()
-                                builder.cryptographic_parameters_structure(parameters_structure)
-                        if factory_name != "hash":
-                            builder.unique_identifier(
-                                extensions.UniqueIdentifier.text_string("crypto-key")
-                            )
-                        builder.correlation_value(b"correlation")
-                        builder.init_indicator(False).final_indicator(True)
                         builder.with_options(
                             client.RequestOptions(
                                 total_timeout=client.TimeoutLimit.bounded(8)
                             )
                         )
-                        builder.asynchronous_indicator(9)
+                        builder.asynchronous_indicator(1)
+                        if factory_name in {"encrypt", "decrypt"}:
+                            builder.init_indicator(True).final_indicator(True)
+                        else:
+                            builder.correlation_value(b"correlation")
+                            builder.init_indicator(False).final_indicator(False)
+                        builder.data(caller_buffer)
+                        if factory_name in {"encrypt", "decrypt", "hash"}:
+                            parameters = (
+                                _hash_parameters()
+                                if factory_name == "hash"
+                                else _aes_parameters()
+                            )
+                            if factory_name == "encrypt":
+                                builder.cryptographic_parameters(parameters)
+                            elif factory_name == "decrypt":
+                                parameters_structure = parameters.into_ttlv()
+                                builder.cryptographic_parameters_structure(parameters_structure)
+                            else:
+                                builder.cryptographic_parameters(parameters)
+                        if factory_name != "hash":
+                            builder.unique_identifier(
+                                extensions.UniqueIdentifier.text_string("crypto-key")
+                            )
                         extra_fields(builder)
                         caller_buffer[:] = b"modified-data"
                         result = builder.execute(limits)
@@ -311,25 +328,31 @@ def test_crypto_builder_executes_one_mtls_exchange_and_copies_input(
         assert data_item is not None
         assert data_item[1] == 8
         assert data_item[2] == b"original-data"
+        init_indicator = _find_item(request[8:], 0x4200D7)
+        final_indicator = _find_item(request[8:], 0x4200D8)
+        async_indicator = _find_item(request[8:], 0x420007)
+        expected_indicator = struct.pack(">q", int(factory_name in {"encrypt", "decrypt"}))
+        assert init_indicator is not None and init_indicator[2] == expected_indicator
+        assert final_indicator is not None and final_indicator[2] == expected_indicator
+        assert async_indicator is not None
+        assert int.from_bytes(async_indicator[2], "big") == 1
+        correlation = _find_item(request[8:], 0x4200D6)
+        if factory_name in {"encrypt", "decrypt"}:
+            assert correlation is None
+        else:
+            assert correlation is not None and correlation[2] == b"correlation"
         for tag, expected_bytes in expected_wire_fields:
             field = _find_item(request[8:], tag)
             assert field is not None
             assert field[2] == expected_bytes
-        correlation = _find_item(request[8:], 0x4200D6)
-        assert correlation is not None and correlation[2] == b"correlation"
-        assert _find_item(request[8:], 0x4200D7) is not None
-        assert _find_item(request[8:], 0x4200D8) is not None
         if factory_name != "hash":
             identifier = _find_item(request[8:], 0x420094)
             assert identifier is not None
             assert identifier[2] == b"crypto-key"
-        async_indicator = _find_item(request[8:], 0x420007)
-        assert async_indicator is not None
-        assert int.from_bytes(async_indicator[2], "big") == 9
         assert result is not None
         assert result.items[0].operation == operation
         assert result.items[0].result_status == 1
-        if factory_name in {"encrypt", "decrypt"}:
+        if factory_name in {"encrypt", "decrypt", "hash"}:
             assert _find_item(request[8:], 0x42002B) is not None
     finally:
         if result is not None:
