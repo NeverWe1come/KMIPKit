@@ -281,6 +281,17 @@ class MatrixContract(unittest.TestCase):
         self.assertEqual(process.returncode, 0, process.stderr)
         self.assertEqual('passed', report['events'][0]['status'])
 
+    def test_managed_object_route_parses_each_kmip_21_object_fixture(self):
+        names = ('Certificate', 'Certificate Request', 'Opaque Object', 'PGP Key',
+                 'Private Key', 'Public Key', 'Secret Data', 'Split Key', 'Symmetric Key')
+        cells = [self.cell('kmipkit_protocol::ManagedObject::try_from_item',
+                           next(target['target_id'] for target in CATALOG['normative_targets']
+                                if target['kind'] == 'object_structure' and target['name'] == name))
+                 for name in names]
+        process, report = self.run_matrix(cells)
+        self.assertEqual(process.returncode, 0, process.stderr or report)
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
     def test_ci_gate_refuses_a_partial_real_route_run(self):
         with tempfile.TemporaryDirectory() as directory:
             matrix = Path(directory) / 'one-cell.jsonl'
