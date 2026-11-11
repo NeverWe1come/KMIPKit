@@ -96,11 +96,90 @@ class ModelCases:
                 self.abi.release('ttlv_item', handle)
             self.abi.release('codec_limits', limits)
 
+    def _tag(self, name: str) -> int:
+        matches = [item for item in self.catalog['normative_targets']
+                   if item['kind'] == 'tag' and item['name'] == name]
+        if len(matches) != 1:
+            raise ValueError('model_fixture_tag_missing')
+        return int(matches[0]['wire_value'], 16)
+
+    def _enum_value(self, family: str, name: str, protocol_version: str) -> int:
+        normalized_family = ''.join(character for character in family.lower() if character.isalnum())
+        matches = [item for item in self.catalog['normative_targets']
+                   if item['kind'] == 'enumeration_value' and item['name'] == name
+                   and protocol_version in item['protocol_versions']
+                   and any(''.join(character for character in parent.removeprefix('KMIPKIT-ELEM-ENUMERATION-').lower()
+                                   if character.isalnum()) == normalized_family
+                           for parent in item.get('parent_element_ids', []))]
+        if len(matches) != 1:
+            raise ValueError('model_fixture_enum_value_missing')
+        return int(matches[0]['wire_value'], 16)
+
+    def _object_type(self, name: str, protocol_version: str) -> int:
+        return self._enum_value('Object Type', name, protocol_version)
+
+    def _execute_named_object(self, root: dict, protocol_version: str) -> dict:
+        name = root['name']
+        key_format = self._enum_value('Key Format Type', 'Raw', protocol_version)
+        key_block_tree = (KEY_BLOCK_TAG, 1, [
+            (KEY_FORMAT_TYPE_TAG, 5, key_format.to_bytes(4, 'big'))])
+        recipes = {
+            'Certificate Request': ('kmipkit_certificate_request_from_fields', [
+                (self._tag('Certificate Request Type'), 5,
+                 self._enum_value('Certificate Request Type', 'PKCS#10', protocol_version).to_bytes(4, 'big')),
+                (self._tag('Certificate Request Value'), 8, b'request'),
+            ]),
+            'PGP Key': ('kmipkit_pgp_key_from_fields', [
+                (self._tag('PGP Key Version'), 2, (7).to_bytes(4, 'big')),
+                key_block_tree,
+            ]),
+            'Private Key': ('kmipkit_private_key_from_fields', [key_block_tree]),
+            'Public Key': ('kmipkit_public_key_from_fields', [key_block_tree]),
+        }
+        recipe = recipes.get(name)
+        if recipe is None:
+            raise ValueError('model_fixture_not_implemented')
+        constructor, fields = recipe
+        root_tag = self._tag(name)
+        object_type = self._object_type(name, protocol_version)
+        expected = [root_tag, 1, [normalized(tree) for tree in fields]]
+        limits = C.c_void_p()
+        owned: list[C.c_void_p] = []
+        try:
+            self.abi.call('kmipkit_codec_limits_defaults', C.byref(limits))
+            for field in fields:
+                if field[0] != KEY_BLOCK_TAG:
+                    continue
+                key_block = self._from_fields('kmipkit_key_block_from_fields', field[2], limits, owned)
+                key_block_roundtrip = self._from_item('kmipkit_key_block_from_item', key_block, owned)
+                self._read_and_check(key_block_roundtrip, normalized(field), 'key_block_item_tree_mismatch')
+            item = self._from_fields(constructor, fields, limits, owned)
+            normalized_tree = self._read_and_check(item, expected, 'named_object_fields_tree_mismatch')
+            managed = self._from_fields('kmipkit_managed_object_from_fields', fields, limits, owned,
+                                        (object_type,))
+            self._read_and_check(managed, expected, 'managed_object_fields_tree_mismatch')
+            managed_item = self._from_item('kmipkit_managed_object_from_item', item, owned, (object_type,))
+            self._read_and_check(managed_item, expected, 'managed_object_item_tree_mismatch')
+            return {'sample_count': 1, 'normalized_tree': normalized_tree,
+                    'tree_sha256': digest(normalized_tree), 'invoked_symbols': set(self.abi.called)}
+        finally:
+            for handle in reversed(owned):
+                self.abi.release('ttlv_item', handle)
+            self.abi.release('codec_limits', limits)
+
     def execute(self, target: dict, protocol_version: str) -> dict | None:
         parents = set(target.get('parent_element_ids', []))
         if target.get('target_id') == SYMMETRIC_KEY_STRUCTURE or SYMMETRIC_KEY_STRUCTURE in parents:
             self.abi.called.clear()
             return self._execute_symmetric_key(protocol_version)
+        root = next((item for item in self.catalog['normative_targets']
+                     if item['kind'] == 'object_structure'
+                     and (item['target_id'] == target.get('target_id')
+                          or item['target_id'] in parents)), None)
+        if root is not None and root['name'] in {
+                'Certificate Request', 'PGP Key', 'Private Key', 'Public Key'}:
+            self.abi.called.clear()
+            return self._execute_named_object(root, protocol_version)
         if target.get('target_id') != CERTIFICATE_STRUCTURE and CERTIFICATE_STRUCTURE not in parents:
             return None
         certificate_type = next((item for item in self.catalog['normative_targets']
