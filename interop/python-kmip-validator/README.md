@@ -93,8 +93,9 @@ python ../shared/tools/validate_route_evidence.py \
 ```
 
 The runner expands the shared catalog and capability manifest through the
-shared generator. It verifies the recorded wheel digest and compares every
-installed `kmipkit/` file with that wheel. Each positive row requires observing
+shared generator. It verifies the recorded wheel digest, checks the installed
+archive identity, and compares every installed `kmipkit/` file with that wheel.
+Each positive row requires observing
 the named installed public function body. Common synchronization wrappers do
 not count as evidence of another public function. Network rows also require
 observing the named executor. Every row retains the target, workflow indices,
@@ -118,19 +119,20 @@ recipes remain pending. Earlier controlled Operation Not Supported tests prove
 transport and status handling; they do not satisfy these positive matrix
 obligations. Missing recipes appear in `pending-coverage.json`, with full axes
 and a fixed sanitized failure code. They are never converted into API
-unavailability or a positive row. `closure.json` records the exact verified and
-pending counts. The command and the independent shared gate exit nonzero for
+unavailability or a positive row. Failures after an observed public API call
+remain failed execution events, separate from unreached or missing recipes.
+`closure.json` records the exact verified, failed and pending counts. The command and the independent shared gate exit nonzero for
 any missing or duplicate cell, incorrect public symbol, failed invocation or
 incomplete scope. CI uploads these three sanitized artifacts even when the
 completeness gate fails; the PR must remain `[WIP]`.
 
-A shared-contract conflict also remains: the matrix currently requires a peer
-response decode for KMIP 2.0 requests that must be rejected before connecting
-(for example `test-v20-reject-ping`). The validator does not fabricate a
-response for those obligations. Reserved/unused Tag allocation cases similarly
-need expected-rejection semantics for checked constructors. Resolving those
-applicability rules belongs to the common contract; it does not authorize
-changing library behavior or accepting those invalid inputs.
+The six KMIP 2.0 version-boundary recipes prove native `NotSent` delivery
+against a listening endpoint with zero queued connections in every network
+combination. They retain a hash of the explicit public request inputs and emit
+no response tree or wire-byte claim. The common contract distinguishes these
+construct/send obligations from response decoding. Reserved/unused Tag
+allocation cases still need expected-rejection semantics for checked
+constructors; that applicability rule belongs to the common contract.
 
 | Requirement | Python evidence and remaining scope |
 |---|---|
