@@ -164,13 +164,7 @@ class ModelCases:
                           int(wire_value.replace('X', 'F').replace('x', 'f'), 16))
             samples = [self._execute_key_block_target(
                 {**target, 'wire_value': f'{value:08X}'}, protocol_version) for value in boundaries]
-            if any(sample is None for sample in samples):
-                return None
-            normalized_samples = [sample['normalized_tree'] for sample in samples]
-            symbols = set().union(*(sample['invoked_symbols'] for sample in samples))
-            return {'sample_count': sum(sample['sample_count'] for sample in samples),
-                    'normalized_tree': normalized_samples, 'tree_sha256': digest(normalized_samples),
-                    'invoked_symbols': symbols}
+            return self._aggregate_model_samples(samples)
         key_format = self._enum_value('Key Format Type', 'Raw', protocol_version)
         fields = []
         expected_value = None
@@ -470,6 +464,9 @@ class ModelCases:
                                                protocol_version: str) -> dict | None:
         samples = [self._execute_cryptographic_parameters(
             {**target, 'wire_value': f'{value:08X}'}, protocol_version) for value in values]
+        return self._aggregate_model_samples(samples)
+
+    def _aggregate_model_samples(self, samples: list[dict | None]) -> dict | None:
         if any(sample is None for sample in samples):
             return None
         normalized_samples = [sample['normalized_tree'] for sample in samples]
