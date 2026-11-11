@@ -147,6 +147,8 @@ int kmipkit_public_crypto_builders_probe(void) {
             KMIPKIT_ERROR_INVALID_INPUT ||
         kmipkit_crypto_operation_builder_set_init_indicator(builder, UINT8_C(3)) !=
             KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_crypto_operation_builder_set_final_indicator(builder, UINT8_C(3)) !=
+            KMIPKIT_ERROR_INVALID_INPUT ||
         kmipkit_crypto_operation_builder_set_asynchronous_indicator(builder, UINT32_C(0)) !=
             KMIPKIT_ERROR_INVALID_INPUT ||
         kmipkit_crypto_operation_builder_set_asynchronous_indicator(
@@ -168,14 +170,30 @@ int kmipkit_public_crypto_builders_probe(void) {
     kmipkit_cryptographic_parameters_release(parameters);
     kmipkit_codec_limits_release(limits);
 
+    builder = NULL;
+    if (kmipkit_hash_builder_create(&builder) != INT32_C(0) || builder == NULL) {
+        kmipkit_crypto_operation_builder_release(builder);
+        return 7;
+    }
+    kmipkit_client_batch_item_t *missing_hash_parameters = NULL;
+    if (kmipkit_crypto_operation_builder_build_batch_item(builder, &missing_hash_parameters) !=
+            KMIPKIT_ERROR_INVALID_INPUT || missing_hash_parameters != NULL ||
+        kmipkit_crypto_operation_builder_set_unique_identifier(builder, &identifier) !=
+            KMIPKIT_ERROR_INVALID_INPUT) {
+        kmipkit_client_batch_item_release(missing_hash_parameters);
+        kmipkit_crypto_operation_builder_release(builder);
+        return 8;
+    }
+    kmipkit_crypto_operation_builder_release(builder);
+
     if (kmipkit_encrypt_builder_create(&builder) != INT32_C(0) || builder == NULL) {
-        return 5;
+        return 9;
     }
     if (kmipkit_crypto_operation_builder_set_data(builder, &span) != INT32_C(0) ||
         kmipkit_crypto_operation_builder_build_batch_item(builder, NULL) !=
             KMIPKIT_ERROR_INVALID_INPUT) {
         kmipkit_crypto_operation_builder_release(builder);
-        return 6;
+        return 10;
     }
     kmipkit_crypto_operation_builder_release(builder);
     return 0;
@@ -196,48 +214,72 @@ static int execute_crypto_operation(
     kmipkit_client_batch_item_metadata_v2_t metadata = {0};
     kmipkit_request_options_v1_t options = {0};
     kmipkit_byte_span_v1_t correlation = {0};
+    kmipkit_byte_span_v1_t owned_input = {0};
+    uint8_t owned_input_bytes[256] = {0};
     uint64_t item_count = 0;
     uint8_t correlation_present = 0;
     uint32_t expected_status = KMIPKIT_ENUMERATION_RESULT_STATUS_OPERATION_FAILED;
     uint32_t expected_outcome_kind = UINT32_C(1);
+    if (data == NULL || data->length > (uint64_t)sizeof(owned_input_bytes) ||
+        (data->length != 0 && data->data == NULL)) {
+        return 24;
+    }
+    owned_input = *data;
+    owned_input.data = owned_input_bytes;
+    if (data->length != 0) {
+        memcpy(owned_input_bytes, data->data, (size_t)data->length);
+    }
     int32_t status = create(&builder);
     if (status == INT32_C(0) && identifier != NULL) {
         status = kmipkit_crypto_operation_builder_set_unique_identifier(builder, identifier);
     }
     if (status == INT32_C(0)) {
-        status = kmipkit_crypto_operation_builder_set_data(builder, data);
+        static const uint8_t replaced_input[] = "replaced caller value";
+        if (expected_operation != KMIPKIT_ENUMERATION_OPERATION_SIGN) {
+            kmipkit_byte_span_v1_t first_data = {0};
+            first_data.data = replaced_input;
+            first_data.length = (uint64_t)(sizeof(replaced_input) - 1);
+            status = kmipkit_crypto_operation_builder_set_data(builder, &first_data);
+        }
+        if (status == INT32_C(0) && expected_operation != KMIPKIT_ENUMERATION_OPERATION_SIGN) {
+            status = kmipkit_crypto_operation_builder_set_data(builder, &owned_input);
+        }
     }
     if (status == INT32_C(0) && parameters != NULL) {
         status = kmipkit_crypto_operation_builder_set_cryptographic_parameters(
             builder, parameters);
     }
     if (status == INT32_C(0) && special_field == UINT8_C(1)) {
-        status = kmipkit_crypto_operation_builder_set_iv_counter_nonce(builder, data);
+        status = kmipkit_crypto_operation_builder_set_iv_counter_nonce(builder, &owned_input);
         if (status == INT32_C(0)) {
             status = kmipkit_crypto_operation_builder_set_authenticated_encryption_additional_data(
-                builder, data);
+                builder, &owned_input);
         }
     } else if (status == INT32_C(0) && special_field == UINT8_C(2)) {
-        status = kmipkit_crypto_operation_builder_set_iv_counter_nonce(builder, data);
+        status = kmipkit_crypto_operation_builder_set_iv_counter_nonce(builder, &owned_input);
         if (status == INT32_C(0)) {
             status = kmipkit_crypto_operation_builder_set_authenticated_encryption_tag(
-                builder, data);
+                builder, &owned_input);
         }
         if (status == INT32_C(0)) {
             status = kmipkit_crypto_operation_builder_set_authenticated_encryption_additional_data(
-                builder, data);
+                builder, &owned_input);
         }
     } else if (status == INT32_C(0) && special_field == UINT8_C(3)) {
-        status = kmipkit_crypto_operation_builder_set_digested_data(builder, data);
+        status = kmipkit_crypto_operation_builder_set_digested_data(builder, &owned_input);
     } else if (status == INT32_C(0) && special_field == UINT8_C(4)) {
-        status = kmipkit_crypto_operation_builder_set_signature_data(builder, data);
+        status = kmipkit_crypto_operation_builder_set_digested_data(builder, &owned_input);
+        if (status == INT32_C(0)) {
+            status = kmipkit_crypto_operation_builder_set_signature_data(builder, &owned_input);
+        }
     } else if (status == INT32_C(0) && special_field == UINT8_C(5)) {
-        status = kmipkit_crypto_operation_builder_set_mac_data(builder, data);
+        status = kmipkit_crypto_operation_builder_set_mac_data(builder, &owned_input);
     }
     if (status == INT32_C(0) && expected_operation == KMIPKIT_ENUMERATION_OPERATION_ENCRYPT) {
         status = kmipkit_crypto_operation_builder_set_asynchronous_indicator(
             builder, KMIPKIT_ENUMERATION_ASYNCHRONOUS_INDICATOR_OPTIONAL);
     }
+    memset(owned_input_bytes, 0, sizeof(owned_input_bytes));
     options.struct_size = (uint32_t)sizeof(options);
     options.abi_version = UINT32_C(1);
     if (status == INT32_C(0)) {

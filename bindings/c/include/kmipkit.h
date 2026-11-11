@@ -925,6 +925,7 @@ typedef struct kmipkit_validation_issue_view_v1_t kmipkit_validation_issue_view_
 typedef struct kmipkit_mtls_client_config_v1_t kmipkit_mtls_client_config_v1_t;
 typedef struct kmipkit_symmetric_key_builder_t kmipkit_symmetric_key_builder_t;
 typedef struct kmipkit_symmetric_key_request_v1_t kmipkit_symmetric_key_request_v1_t;
+typedef struct kmipkit_crypto_operation_builder_t kmipkit_crypto_operation_builder_t;
 
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
@@ -1383,6 +1384,7 @@ void kmipkit_profile_validation_result_release(kmipkit_profile_validation_result
 void kmipkit_cryptographic_parameters_release(kmipkit_cryptographic_parameters_t *handle);
 void kmipkit_validation_report_release(kmipkit_validation_report_t *handle);
 void kmipkit_symmetric_key_builder_release(kmipkit_symmetric_key_builder_t *handle);
+void kmipkit_crypto_operation_builder_release(kmipkit_crypto_operation_builder_t *handle);
 #define KMIPKIT_ERROR_COMPATIBILITY_MISMATCH ((int32_t)1)
 #define KMIPKIT_ERROR_DUPLICATE_KEY ((int32_t)2)
 #define KMIPKIT_ERROR_INVALID_IDENTITY ((int32_t)3)
@@ -3358,6 +3360,106 @@ int32_t kmipkit_profile_validation_result_validate_response_v1(kmipkit_profile_v
  */
 /* KMIPKIT-0010-FR-005, KMIPKIT-0010-FR-012, KMIPKIT-0010-FR-013, KMIPKIT-0010-FR-014, KMIPKIT-0010-FR-019, KMIPKIT-0043-FR-021 */
 int32_t kmipkit_profile_validation_result_validate_response_with_context_v1(kmipkit_profile_validation_result_t * result, kmipkit_ttlv_structure_t * request, kmipkit_ttlv_structure_t * response, const kmipkit_profile_validation_context_v1_t * context);
+/* Builds a local typed batch item without sending a request.
+ */
+/* KMIPKIT-0103-FR-004, KMIPKIT-0103-FR-005 */
+int32_t kmipkit_crypto_operation_builder_build_batch_item(kmipkit_crypto_operation_builder_t * builder, kmipkit_client_batch_item_t ** out_item);
+/* Executes one typed request exchange and returns the typed batch response.
+ */
+/* KMIPKIT-0103-FR-004, KMIPKIT-0103-FR-005 */
+int32_t kmipkit_crypto_operation_builder_execute_v1(kmipkit_crypto_operation_builder_t * builder, kmipkit_client_t * client, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
+/* Executes one typed request exchange with exchange-local timeout options.
+ */
+/* KMIPKIT-0103-FR-004, KMIPKIT-0103-FR-005 */
+int32_t kmipkit_crypto_operation_builder_execute_with_options_v1(kmipkit_crypto_operation_builder_t * builder, kmipkit_client_t * client, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);
+/* Sets the Request Header Asynchronous Indicator independently of exchange options.
+ */
+/* KMIPKIT-0103-FR-005 */
+int32_t kmipkit_crypto_operation_builder_set_asynchronous_indicator(kmipkit_crypto_operation_builder_t * builder, uint32_t value);
+/* Copies authenticated-encryption additional data.
+ */
+/* KMIPKIT-0103-FR-002, KMIPKIT-0103-FR-003 */
+int32_t kmipkit_crypto_operation_builder_set_authenticated_encryption_additional_data(kmipkit_crypto_operation_builder_t * builder, const kmipkit_byte_span_v1_t * value);
+/* Copies the caller-supplied authenticated-encryption tag.
+ */
+/* KMIPKIT-0103-FR-002, KMIPKIT-0103-FR-003 */
+int32_t kmipkit_crypto_operation_builder_set_authenticated_encryption_tag(kmipkit_crypto_operation_builder_t * builder, const kmipkit_byte_span_v1_t * value);
+/* Copies the caller-supplied multipart correlation value.
+ */
+/* KMIPKIT-0103-FR-002, KMIPKIT-0103-FR-003 */
+int32_t kmipkit_crypto_operation_builder_set_correlation_value(kmipkit_crypto_operation_builder_t * builder, const kmipkit_byte_span_v1_t * value);
+/* Sets validated Cryptographic Parameters selected by the caller.
+ */
+/* KMIPKIT-0103-FR-002, KMIPKIT-0103-FR-003 */
+int32_t kmipkit_crypto_operation_builder_set_cryptographic_parameters(kmipkit_crypto_operation_builder_t * builder, kmipkit_cryptographic_parameters_t * parameters);
+/* Sets an explicitly ordered Cryptographic Parameters Structure after validation.
+ */
+/* KMIPKIT-0103-FR-002, KMIPKIT-0103-FR-003 */
+int32_t kmipkit_crypto_operation_builder_set_cryptographic_parameters_structure(kmipkit_crypto_operation_builder_t * builder, kmipkit_ttlv_structure_t * parameters);
+/* Copies operation data into KMIPKit-owned zeroizing storage.
+ */
+/* KMIPKIT-0103-FR-002, KMIPKIT-0103-FR-003 */
+int32_t kmipkit_crypto_operation_builder_set_data(kmipkit_crypto_operation_builder_t * builder, const kmipkit_byte_span_v1_t * data);
+/* Sets an explicitly typed TTLV Data value for expert operation use.
+ */
+/* KMIPKIT-0103-FR-002, KMIPKIT-0103-FR-003 */
+int32_t kmipkit_crypto_operation_builder_set_data_value(kmipkit_crypto_operation_builder_t * builder, kmipkit_ttlv_value_t * data);
+/* Copies caller-supplied precomputed digest bytes.
+ */
+/* KMIPKIT-0103-FR-002, KMIPKIT-0103-FR-003 */
+int32_t kmipkit_crypto_operation_builder_set_digested_data(kmipkit_crypto_operation_builder_t * builder, const kmipkit_byte_span_v1_t * value);
+/* Sets the caller-controlled multipart Final Indicator: 0 absent, 1 false, 2 true.
+ */
+/* KMIPKIT-0103-FR-002, KMIPKIT-0103-FR-005 */
+int32_t kmipkit_crypto_operation_builder_set_final_indicator(kmipkit_crypto_operation_builder_t * builder, uint8_t value);
+/* Sets the caller-controlled multipart Init Indicator: 0 absent, 1 false, 2 true.
+ */
+/* KMIPKIT-0103-FR-002, KMIPKIT-0103-FR-005 */
+int32_t kmipkit_crypto_operation_builder_set_init_indicator(kmipkit_crypto_operation_builder_t * builder, uint8_t value);
+/* Copies the caller-selected IV, counter, or nonce bytes.
+ */
+/* KMIPKIT-0103-FR-002, KMIPKIT-0103-FR-003 */
+int32_t kmipkit_crypto_operation_builder_set_iv_counter_nonce(kmipkit_crypto_operation_builder_t * builder, const kmipkit_byte_span_v1_t * value);
+/* Copies caller-supplied MAC bytes.
+ */
+/* KMIPKIT-0103-FR-002, KMIPKIT-0103-FR-003 */
+int32_t kmipkit_crypto_operation_builder_set_mac_data(kmipkit_crypto_operation_builder_t * builder, const kmipkit_byte_span_v1_t * value);
+/* Copies caller-supplied signature bytes.
+ */
+/* KMIPKIT-0103-FR-002, KMIPKIT-0103-FR-003 */
+int32_t kmipkit_crypto_operation_builder_set_signature_data(kmipkit_crypto_operation_builder_t * builder, const kmipkit_byte_span_v1_t * value);
+/* Sets the caller-selected key identifier for a cryptographic operation.
+ */
+/* KMIPKIT-0103-FR-001, KMIPKIT-0103-FR-002, KMIPKIT-0103-FR-005 */
+int32_t kmipkit_crypto_operation_builder_set_unique_identifier(kmipkit_crypto_operation_builder_t * builder, const kmipkit_unique_identifier_v1_t * identifier);
+/* Creates an opaque typed builder for one KMIP 2.1 cryptographic operation.
+ */
+/* KMIPKIT-0103-FR-001, KMIPKIT-0103-FR-005, KMIPKIT-0103-FR-006 */
+int32_t kmipkit_decrypt_builder_create(kmipkit_crypto_operation_builder_t ** out_builder);
+/* Creates an opaque typed builder for one KMIP 2.1 cryptographic operation.
+ */
+/* KMIPKIT-0103-FR-001, KMIPKIT-0103-FR-005, KMIPKIT-0103-FR-006 */
+int32_t kmipkit_encrypt_builder_create(kmipkit_crypto_operation_builder_t ** out_builder);
+/* Creates an opaque typed builder for one KMIP 2.1 cryptographic operation.
+ */
+/* KMIPKIT-0103-FR-001, KMIPKIT-0103-FR-005, KMIPKIT-0103-FR-006 */
+int32_t kmipkit_hash_builder_create(kmipkit_crypto_operation_builder_t ** out_builder);
+/* Creates an opaque typed builder for one KMIP 2.1 cryptographic operation.
+ */
+/* KMIPKIT-0103-FR-001, KMIPKIT-0103-FR-005, KMIPKIT-0103-FR-006 */
+int32_t kmipkit_mac_builder_create(kmipkit_crypto_operation_builder_t ** out_builder);
+/* Creates an opaque typed builder for one KMIP 2.1 cryptographic operation.
+ */
+/* KMIPKIT-0103-FR-001, KMIPKIT-0103-FR-005, KMIPKIT-0103-FR-006 */
+int32_t kmipkit_mac_verify_builder_create(kmipkit_crypto_operation_builder_t ** out_builder);
+/* Creates an opaque typed builder for one KMIP 2.1 cryptographic operation.
+ */
+/* KMIPKIT-0103-FR-001, KMIPKIT-0103-FR-005, KMIPKIT-0103-FR-006 */
+int32_t kmipkit_sign_builder_create(kmipkit_crypto_operation_builder_t ** out_builder);
+/* Creates an opaque typed builder for one KMIP 2.1 cryptographic operation.
+ */
+/* KMIPKIT-0103-FR-001, KMIPKIT-0103-FR-005, KMIPKIT-0103-FR-006 */
+int32_t kmipkit_signature_verify_builder_create(kmipkit_crypto_operation_builder_t ** out_builder);
 /* Executes one KMIP batch and returns an owned generic ResponseMessage TTLV only for an approved missing, repeated, or malformed Unique Identifier in a successful MAC, MAC Verify, Sign, or Signature Verify response.
  * The caller owns and must release out_error_response_ttlv when it is non-null; it remains null for all other failures and successful execution.
  * The generic response is preserved without placing raw response bytes in diagnostics.

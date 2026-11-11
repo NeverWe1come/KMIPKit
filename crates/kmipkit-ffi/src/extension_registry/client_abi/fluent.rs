@@ -128,7 +128,8 @@ pub unsafe extern "C" fn kmipkit_client_create_mtls_v1(
             kmipkit_client::extension_registry::ClientConfiguration::from_shared_registry(
                 configuration.shared_extension_registry(),
             )
-            .with_wire_encoding(configuration.wire_encoding());
+            .with_wire_encoding(configuration.wire_encoding())
+            .with_protocol_version(configuration.protocol_version());
         match kmipkit_client::Client::new(client_configuration, transport) {
             Ok(client) => {
                 *out = try_ffi!(try_make_handle(
@@ -142,11 +143,12 @@ pub unsafe extern "C" fn kmipkit_client_create_mtls_v1(
     })
 }
 
-fn execute_fluent_item(
+pub(super) fn execute_fluent_item(
     client: *mut kmipkit_client_t,
     request: ClientRequest,
     limits: *mut kmipkit_codec_limits_t,
     options: &RequestOptions,
+    asynchronous_indicator: Option<u32>,
     out_response: *mut *mut kmipkit_client_batch_response_t,
 ) -> i32 {
     ffi_entrypoint(|| {
@@ -162,11 +164,11 @@ fn execute_fluent_item(
         let Ok(mut client) = client.lock() else {
             return record_ffi_error(ERROR_INTERNAL);
         };
-        match client.execute_with_options(
-            ClientBatch::new(ClientBatchItem::new(request)),
-            limits,
-            options,
-        ) {
+        let mut batch = ClientBatch::new(ClientBatchItem::new(request));
+        if let Some(indicator) = asynchronous_indicator {
+            batch = batch.with_asynchronous_indicator(indicator);
+        }
+        match client.execute_with_options(batch, limits, options) {
             Ok(response) => {
                 *out = try_ffi!(try_make_handle(
                     Kind::ClientBatchResponse,
@@ -242,7 +244,7 @@ fn execute_simple_request(
         },
         None => RequestOptions::default(),
     };
-    execute_fluent_item(client, request, limits, &options, out_response)
+    execute_fluent_item(client, request, limits, &options, None, out_response)
 }
 
 /// Executes one semantic Create Symmetric Key request.

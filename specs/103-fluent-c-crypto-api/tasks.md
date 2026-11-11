@@ -6,11 +6,11 @@
   exclusions, and acceptance criteria.
 - [x] R001 Add failing compiled C-consumer tests for all seven constructors,
   semantic fields, build/execute behavior, and invalid inputs; capture Red.
-- [ ] G001 Implement opaque operation builders and fixed-width exported C ABI
+- [x] G001 Implement opaque operation builders and fixed-width exported C ABI
   constructors, setters, build, execute, options, and release functions.
-- [ ] G002 Prove all seven operation routes over a controlled TLS fixture,
+- [x] G002 Prove all seven operation routes over a controlled TLS fixture,
   including typed outcomes, version checks, and single-exchange behavior.
-- [ ] D001 Update public API manifest, generated header/registries, C guide,
+- [x] D001 Update public API manifest, generated header/registries, bilingual C guide,
   traceability, and implementation evidence.
 - [ ] V001 Run C ABI and consumer suites, full relevant Rust suites, formatting,
   Clippy, coverage, API export audit, manifest generation, and traceability.
