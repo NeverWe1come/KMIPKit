@@ -155,10 +155,26 @@ def _validate_batch_event(event: dict, case: dict, catalog: dict, key: tuple) ->
         raise ValueError(f"controlled peer per-item effects do not match the catalog: {key}")
 
 
+def _selected_case_ids(report: dict, catalog: dict) -> set[str] | None:
+    selected_case_ids = report.get("case_ids")
+    if selected_case_ids is None:
+        return None
+    if not isinstance(selected_case_ids, list) or not selected_case_ids or any(
+            not isinstance(case_id, str) or not case_id for case_id in selected_case_ids):
+        raise ValueError("route evidence case_ids must be a non-empty array of case IDs")
+    if len(set(selected_case_ids)) != len(selected_case_ids):
+        raise ValueError("route evidence case_ids contains duplicates")
+    all_case_ids = {case["case_id"] for case in catalog.get("test_cases", [])}
+    unknown_case_ids = set(selected_case_ids) - all_case_ids
+    if unknown_case_ids:
+        raise ValueError(f"route evidence contains unknown case_ids: {sorted(unknown_case_ids)!r}")
+    return set(selected_case_ids)
+
+
 def _expected_cells(report: dict, catalog: dict, manifest: dict) -> dict[tuple, dict]:
     language = report["language"]
     selected_versions = set(report["protocol_versions"])
-    selected_case_ids = set(report.get("case_ids", ()))
+    selected_case_ids = _selected_case_ids(report, catalog)
     network_combinations = {
         (item["encoding"], item["transport"]) for item in report["network_combinations"]
     }
@@ -166,7 +182,7 @@ def _expected_cells(report: dict, catalog: dict, manifest: dict) -> dict[tuple, 
     for cell in iter_cells(catalog, manifest, languages=(language,)):
         if cell["language"] != language or cell["protocol_version"] not in selected_versions:
             continue
-        if selected_case_ids and cell["case_id"] not in selected_case_ids:
+        if selected_case_ids is not None and cell["case_id"] not in selected_case_ids:
             continue
         if cell["transport"] is not None and (cell["encoding"], cell["transport"]) not in network_combinations:
             continue
@@ -201,17 +217,8 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
     if report.get("route_manifest_sha256") != route_manifest_sha256:
         raise ValueError("route evidence manifest SHA-256 does not match the route manifest")
 
-    selected_case_ids = report.get("case_ids")
     all_case_ids = {case["case_id"] for case in catalog.get("test_cases", [])}
-    if selected_case_ids is not None:
-        if not isinstance(selected_case_ids, list) or not selected_case_ids or any(
-                not isinstance(case_id, str) or not case_id for case_id in selected_case_ids):
-            raise ValueError("route evidence case_ids must be a non-empty array of case IDs")
-        if len(set(selected_case_ids)) != len(selected_case_ids):
-            raise ValueError("route evidence case_ids contains duplicates")
-        unknown_case_ids = set(selected_case_ids) - all_case_ids
-        if unknown_case_ids:
-            raise ValueError(f"route evidence contains unknown case_ids: {sorted(unknown_case_ids)!r}")
+    selected_case_ids = _selected_case_ids(report, catalog)
 
     selected_versions = report.get("protocol_versions")
     if not isinstance(selected_versions, list) or not selected_versions or not set(selected_versions) <= VERSIONS:
@@ -354,7 +361,7 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
         for combination in route["combinations"]
     }
     complete_matrix = (set(selected_versions) == all_versions and seen_combinations == all_network_combinations
-                       and (selected_case_ids is None or set(selected_case_ids) == all_case_ids))
+                       and (selected_case_ids is None or selected_case_ids == all_case_ids))
     return {
         "run_id": report["run_id"],
         "language": language,

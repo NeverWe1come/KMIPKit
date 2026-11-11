@@ -30,12 +30,6 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
                 "operation": "TTLV Roundtrip",
                 "requires": {"normative_target_id": "KMIPKIT-ELEM-TAG-420001"},
                 "execution": {"protocol_versions": ["2.0"]},
-            }, {
-                "case_id": "case-two",
-                "category": "normative_inventory",
-                "operation": "TTLV Roundtrip",
-                "requires": {"normative_target_id": "KMIPKIT-ELEM-TAG-420001"},
-                "execution": {"protocol_versions": ["2.0"]},
             }],
             "normative_targets": [],
         }
@@ -160,6 +154,13 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         jsonschema.validate(self.report, schema)
 
     def test_case_subset_report_requires_only_selected_case_cells_and_is_not_global_complete(self):
+        self.catalog["test_cases"].append({
+            "case_id": "case-two",
+            "category": "normative_inventory",
+            "operation": "TTLV Roundtrip",
+            "requires": {"normative_target_id": "KMIPKIT-ELEM-TAG-420001"},
+            "execution": {"protocol_versions": ["2.0"]},
+        })
         report = copy.deepcopy(self.report)
         report["case_ids"] = ["case-one"]
 
