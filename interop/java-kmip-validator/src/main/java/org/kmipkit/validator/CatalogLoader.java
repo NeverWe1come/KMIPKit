@@ -103,12 +103,13 @@ public final class CatalogLoader {
                     location + " must explain why it is not applicable");
             JsonNode requires = caseNode.get("requires");
             require(requires != null && requires.isObject(), location + ".requires must be an object");
+            long attributeTag = resolveAttributeTag(root.path("normative_targets"), requires, location);
             JsonNode isolation = objectField(caseNode, "isolation_recipe", location);
             String uniquePrefix = requiredText(isolation, "unique_name_prefix", location + ".isolation_recipe");
             List<String> setupSteps = textArray(isolation, "setup_steps", location + ".isolation_recipe");
             String targetStep = requiredText(isolation, "target_step", location + ".isolation_recipe");
             List<String> teardownSteps = textArray(isolation, "teardown_steps", location + ".isolation_recipe");
-            cases.add(new CatalogCase(id, category, operation, description, refs, requires.deepCopy(),
+            cases.add(new CatalogCase(id, category, operation, description, refs, requires.deepCopy(), attributeTag,
                     new IsolationRecipe(uniquePrefix, setupSteps, targetStep, teardownSteps),
                     new Execution(mode, versions, steps, assertions, mutation, status, notApplicableReason)));
         }
@@ -125,6 +126,45 @@ public final class CatalogLoader {
         }
 
         return new Catalog(version, targetVersions, declaredTotal, cases, Map.copyOf(normativeTargets));
+    }
+
+    private static long resolveAttributeTag(JsonNode targets, JsonNode requires, String location) {
+        JsonNode attributeName = requires.get("attribute");
+        if (attributeName == null) return 0x42000aL;
+        require(attributeName.isTextual() && !attributeName.textValue().isBlank(),
+                location + ".requires.attribute must be a non-empty string");
+        String attributeTargetId = requiredText(requires, "normative_target_id", location + ".requires");
+        JsonNode attributeTarget = findTarget(targets, attributeTargetId);
+        require(attributeTarget != null && "attribute".equals(optionalText(attributeTarget, "kind")),
+                location + " references a non-attribute normative target");
+        require(attributeName.textValue().equals(optionalText(attributeTarget, "name")),
+                location + " attribute name differs from its normative target");
+        JsonNode parents = attributeTarget.get("parent_element_ids");
+        if (parents == null || !parents.isArray() || parents.isEmpty()) {
+            // Some KMIP attribute definitions describe a group of certificate fields or
+            // the name-based Vendor Attribute form and have no single Attribute Tag.
+            return 0;
+        }
+        require(parents.get(0).isTextual(), location + " attribute parent ID must be text");
+        JsonNode tagTarget = findTarget(targets, parents.get(0).textValue());
+        require(tagTarget != null && "tag".equals(optionalText(tagTarget, "kind")),
+                location + " attribute parent is not a KMIP tag");
+        String wireValue = requiredText(tagTarget, "wire_value", location + ".attribute_tag");
+        try {
+            String hexadecimal = wireValue.startsWith("0x") || wireValue.startsWith("0X")
+                    ? wireValue.substring(2) : wireValue;
+            return Long.parseUnsignedLong(hexadecimal, 16);
+        } catch (NumberFormatException exception) {
+            throw new IllegalArgumentException(location + " attribute tag is not hexadecimal", exception);
+        }
+    }
+
+    private static JsonNode findTarget(JsonNode targets, String targetId) {
+        if (!targets.isArray()) return null;
+        for (JsonNode target : targets) {
+            if (targetId.equals(optionalText(target, "target_id"))) return target;
+        }
+        return null;
     }
 
     private static JsonNode objectField(JsonNode parent, String field, String location) {
@@ -185,6 +225,6 @@ public final class CatalogLoader {
                             List<String> assertions, String mutation, String status,
                             String notApplicableReason) { }
     public record CatalogCase(String caseId, String category, String operation, String description,
-                              List<NormativeReference> normativeRefs, JsonNode requires,
+                              List<NormativeReference> normativeRefs, JsonNode requires, long attributeTag,
                               IsolationRecipe isolationRecipe, Execution execution) { }
 }

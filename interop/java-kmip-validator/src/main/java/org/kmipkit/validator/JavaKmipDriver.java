@@ -70,7 +70,8 @@ public final class JavaKmipDriver implements AutoCloseable {
 
     private CaseOutcome executeTypedRequest(CatalogLoader.CatalogCase testCase, long start,
                                            UniqueIdentifier fixtureIdentifier) {
-        ClientBatchItem request = TypedRequestFactory.create(testCase.operation(), fixtureIdentifier);
+        ClientBatchItem request = TypedRequestFactory.create(
+                testCase.operation(), fixtureIdentifier, testCase.attributeTag());
         if (request == null) {
             return CaseOutcome.notRun("No Java typed request route is implemented for this catalog operation.",
                     elapsedMillis(start));
@@ -227,7 +228,9 @@ public final class JavaKmipDriver implements AutoCloseable {
 
     private static boolean requiresSymmetricKeyFixture(CatalogLoader.CatalogCase testCase) {
         return testCase.isolationRecipe().setupSteps().stream()
-                .anyMatch(step -> step.startsWith("Create unique SymmetricKey"));
+                .anyMatch(step -> step.startsWith("Create unique SymmetricKey"))
+                || ("Get Attributes".equals(testCase.operation())
+                        && (testCase.attributeTag() == 0x420028L || testCase.attributeTag() == 0x420053L));
     }
 
     private CaseOutcome executeCreateWithCleanup(CatalogLoader.CatalogCase testCase, long start) {

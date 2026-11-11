@@ -32,6 +32,7 @@ import java.util.Map;
 /** Constructs deterministic public Java requests from the installed KMIPKit package. */
 final class TypedRequestFactory {
     private static final CodecLimits LIMITS = CodecLimits.defaults();
+    private static final long DEFAULT_ATTRIBUTE_TAG = 0x42000aL;
     private static final byte[] BATCH_ITEM_ID = "item-0".getBytes(StandardCharsets.US_ASCII);
     private static final byte[] LOG_MESSAGE =
             "KMIPKit interoperability diagnostic".getBytes(StandardCharsets.UTF_8);
@@ -49,6 +50,11 @@ final class TypedRequestFactory {
 
     /** Constructs one operation while replacing generic object identifiers with an owned fixture ID. */
     static ClientBatchItem create(String operation, UniqueIdentifier fixtureIdentifier) {
+        return create(operation, fixtureIdentifier, DEFAULT_ATTRIBUTE_TAG);
+    }
+
+    /** Constructs a case-specific request using its catalogued KMIP attribute tag when needed. */
+    static ClientBatchItem create(String operation, UniqueIdentifier fixtureIdentifier, long attributeTag) {
         String factoryName = FACTORY_METHODS.get(operation);
         if (factoryName == null) return null;
         Method factory = Arrays.stream(ClientBatchItem.class.getMethods())
@@ -57,7 +63,7 @@ final class TypedRequestFactory {
                         && Modifier.isStatic(method.getModifiers()))
                 .max(Comparator.comparingInt(Method::getParameterCount))
                 .orElseThrow(() -> new IllegalStateException("Installed Java package lacks " + factoryName));
-        try (RequestInputs inputs = new RequestInputs(fixtureIdentifier)) {
+        try (RequestInputs inputs = new RequestInputs(fixtureIdentifier, attributeTag)) {
             return invoke(factory, operation, inputs);
         }
     }
@@ -258,9 +264,15 @@ final class TypedRequestFactory {
     private static final class RequestInputs implements AutoCloseable {
         private final List<AutoCloseable> owned = new ArrayList<>();
         private final UniqueIdentifier fixtureIdentifier;
+        private final long attributeTag;
 
         private RequestInputs(UniqueIdentifier fixtureIdentifier) {
+            this(fixtureIdentifier, DEFAULT_ATTRIBUTE_TAG);
+        }
+
+        private RequestInputs(UniqueIdentifier fixtureIdentifier, long attributeTag) {
             this.fixtureIdentifier = fixtureIdentifier;
+            this.attributeTag = attributeTag;
         }
 
         private Object argument(Type type) {
@@ -295,7 +307,9 @@ final class TypedRequestFactory {
             Class<?> elementClass = elementType instanceof Class<?> rawType ? rawType : Object.class;
             if (elementClass == TtlvStructure.class) return List.of(own(TtlvStructure.create()));
             if (elementClass == UniqueIdentifier.class) return List.of(identifier());
-            if (elementClass == AttributeReference.class) return List.of(attributeReference());
+            if (elementClass == AttributeReference.class) {
+                return attributeTag == 0 ? List.of() : List.of(attributeReference());
+            }
             if (elementClass == TtlvItem.class) return List.of(item());
             if (elementClass == SplitKeyReference.class) {
                 return List.of(own(new SplitKeyReference(identifier(), 1)));
@@ -309,7 +323,7 @@ final class TypedRequestFactory {
         }
 
         private AttributeReference attributeReference() {
-            return AttributeReference.tag(0x42000a);
+            return AttributeReference.tag(attributeTag == 0 ? DEFAULT_ATTRIBUTE_TAG : attributeTag);
         }
 
         private RegisterRequest registerRequest() {

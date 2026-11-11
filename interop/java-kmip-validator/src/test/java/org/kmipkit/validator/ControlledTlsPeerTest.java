@@ -488,17 +488,24 @@ class ControlledTlsPeerTest {
         Path sourceCatalog = Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json");
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode catalog = (ObjectNode) mapper.readTree(sourceCatalog.toFile());
-        Set<String> selectedIds = Set.of("test-op-get-attribute-list", "test-op-get-attributes");
+        Set<String> selectedIds = Set.of(
+                "test-attr-cryptographic-algorithm", "test-attr-name");
         ArrayNode selectedCases = mapper.createArrayNode();
         var targetOperations = new ArrayList<Long>();
+        var targetAttributeTags = new ArrayList<Long>();
+        var loadedCases = CatalogLoader.load(sourceCatalog).cases().stream().collect(
+                java.util.stream.Collectors.toMap(CatalogLoader.CatalogCase::caseId, testCase -> testCase));
         for (JsonNode testCase : catalog.path("test_cases")) {
             if (!selectedIds.contains(testCase.path("case_id").asText())) continue;
             selectedCases.add(testCase);
-            try (ClientBatchItem request = TypedRequestFactory.create(testCase.path("operation").asText())) {
+            long attributeTag = loadedCases.get(testCase.path("case_id").asText()).attributeTag();
+            targetAttributeTags.add(attributeTag);
+            try (ClientBatchItem request = TypedRequestFactory.create(
+                    testCase.path("operation").asText(), null, attributeTag)) {
                 targetOperations.add(request.operation());
             }
         }
-        assertEquals(selectedIds.size(), selectedCases.size(), "Both attribute read cases must exist.");
+        assertEquals(selectedIds.size(), selectedCases.size(), "Both attribute-specific read cases must exist.");
         catalog.set("test_cases", selectedCases);
         ((ObjectNode) catalog.path("statistics")).put("total_cases", selectedCases.size());
         Path selectedCatalog = temporaryDirectory.resolve("attribute-read-catalog.json");
@@ -527,6 +534,9 @@ class ControlledTlsPeerTest {
             assertTrue(contains(request, item(0x420094, 7,
                     CREATED_OBJECT_ID.getBytes(StandardCharsets.UTF_8))),
                     "The request must use the identifier from its setup Create response.");
+            assertTrue(contains(request, item(0x42013b, 5,
+                            intBytes(Math.toIntExact(targetAttributeTags.get(index))))),
+                    "Get Attributes must encode the Attribute Reference tag selected by its catalog case.");
         }
         JsonNode report = mapper.readTree(outputDirectory.resolve("results.json").toFile());
         assertEquals(2, report.path("summary").path("passed").asInt(), report.toString());
@@ -694,7 +704,9 @@ class ControlledTlsPeerTest {
 
     private static boolean requiresSymmetricKeyFixture(CatalogLoader.CatalogCase testCase) {
         return testCase.isolationRecipe().setupSteps().stream()
-                .anyMatch(step -> step.startsWith("Create unique SymmetricKey"));
+                .anyMatch(step -> step.startsWith("Create unique SymmetricKey"))
+                || ("Get Attributes".equals(testCase.operation())
+                        && (testCase.attributeTag() == 0x420028L || testCase.attributeTag() == 0x420053L));
     }
 
     private static void assertPeerHealthy(FutureTask<?> peer) throws Exception {
