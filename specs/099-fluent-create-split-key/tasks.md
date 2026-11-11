@@ -54,7 +54,7 @@ closed typed request and execution boundaries.
   never edit generated output by hand.
 - [x] Complete `traceability.md` and `implementation-evidence.md` with exact
   source clauses, tests, Red/Green/Refactor SHAs, commands, and results.
-- [ ] Commit docs and generated-artifact Refactor evidence separately.
+- [x] Commit docs and generated-artifact Refactor evidence separately.
 
 ## Task 5: Review, verify, and publish
 
