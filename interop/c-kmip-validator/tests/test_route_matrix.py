@@ -346,6 +346,16 @@ class RouteMatrixTests(unittest.TestCase):
             'kmipkit_ttlv_structure_view',
         }.issubset(result['invoked_symbols']))
 
+    def test_cryptographic_parameters_recipe_checks_boolean_structure_members(self):
+        from artifact_support import INSTALL, ROOT
+        from c_route_models import ModelCases
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        target = next(item for item in catalog['normative_targets']
+                      if item['target_id'] == 'KMIPKIT-ELEM-STRUCTURE-MEMBER-4-16-RANDOM-IV')
+        result = ModelCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog).execute(target, '2.1')
+        self.assertEqual(result['normalized_tree'], [[0x4200c5, 6, '0000000000000000']])
+        self.assertIn('kmipkit_cryptographic_parameters_from_fields_v1', result['invoked_symbols'])
+
 
     def test_compiled_consumer_provenance_cannot_be_replaced_by_coordinator(self):
         import route_peer
