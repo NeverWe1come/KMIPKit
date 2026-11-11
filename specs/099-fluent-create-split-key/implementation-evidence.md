@@ -52,3 +52,25 @@ evidence does not claim hosted CI is green. The local verification above is
 scoped to the recorded commands and should not be read as release-wide API
 manifest completeness: the export audit reports the noted unrelated baseline
 gaps.
+
+## CI-Driven Refactor
+
+The SonarCloud check for PR #181 head `f27e24a2d3e8f494f500ef791492dd784b2df410`
+reported 6.8444% duplicated new code (77 duplicated lines in
+`crates/kmipkit-client/src/fluent.rs`, above the 3% gate). The duplication
+spanned positioned-attribute insertion, vendor-attribute construction, and
+Message Extension tag validation shared by the Create and Split Key builders.
+The refactor extracts those operations into shared helpers without changing
+the public builder contract. An independent code review found no actionable
+issues.
+
+| Command | Result |
+|---|---|
+| `cargo test -p kmipkit-client --all-features fluent_create_split_key_tests -- --nocapture` | Passed, 10 tests. |
+| `cargo test -p kmipkit-client --all-features fluent_create_key_pair_tests -- --nocapture` | Passed, 20 tests. |
+| `cargo fmt --all -- --check` | Passed. |
+| `cargo clippy -p kmipkit-client --all-features --all-targets -- -D warnings` | Passed. |
+| `git diff --check` | Passed. |
+
+Hosted SonarCloud and CI results for the refactor commit remain pending. The
+PR must remain `[WIP]` until every required check passes on its current head.
