@@ -148,13 +148,12 @@ def model_inventory(root, commit, source, api, targets):
     # satisfy the typed attribute route for another normative target.
     generated = source(root, commit, 'crates/kmipkit-protocol/src/typed_attributes_generated.rs')
     markers = re.findall(r'element_id: "([^"]+)",\s*source_name: "([^"]+)",\s*marker_name: "([^"]+)"', generated)
-    attribute_ids = []
-    for element_id, name, marker in markers:
-        attribute_ids.append(element_id)
+    for element_id, _source_name, marker in markers:
         for method in ('new', 'from_item'):
             symbol = f'kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::{marker}>::{method}'
-            add('rust', symbol, 'crates/kmipkit-protocol/src/typed_attributes.rs', [name, marker])
-        add('rust', f'kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::{marker}>', 'crates/kmipkit-protocol/src/attribute.rs', [name, marker])
+            add('rust', symbol, 'crates/kmipkit-protocol/src/typed_attributes.rs', [element_id, marker])
+        typed_push = f'kmipkit_protocol::AttributeSet::try_push_typed::<kmipkit_protocol::attribute::typed::{marker}>'
+        add('rust', typed_push, 'crates/kmipkit-protocol/src/attribute.rs', [element_id, marker])
     for method in ('try_new', 'try_push'):
         add('rust', f'kmipkit_protocol::AttributeSet::{method}',
             'crates/kmipkit-protocol/src/attribute.rs', [], attributes=True)
@@ -162,9 +161,10 @@ def model_inventory(root, commit, source, api, targets):
     for owner in ('CurrentAttribute', 'NewAttribute'):
         add('rust', f'kmipkit_protocol::{owner}::new',
             'crates/kmipkit-protocol/src/attribute.rs', [], attributes=True)
-        for _, name, marker in markers:
-            add('rust', f'kmipkit_protocol::{owner}::from_typed::<kmipkit_protocol::attribute::typed::{marker}>',
-                'crates/kmipkit-protocol/src/attribute.rs', [name, marker])
+        for element_id, _source_name, marker in markers:
+            symbol = f'kmipkit_protocol::{owner}::from_typed::<kmipkit_protocol::attribute::typed::{marker}>'
+            add('rust', symbol,
+                'crates/kmipkit-protocol/src/attribute.rs', [element_id, marker])
 
     # Inspect binding facades directly: the older function metadata sometimes
     # points at an internal JNI trampoline rather than the installed public API.
