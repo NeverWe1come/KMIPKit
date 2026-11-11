@@ -39,6 +39,19 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(self.runner.scalar_fixture(object_type, tags, catalog, '2.0'),
                          (tags['Object Type'], 5, bytes.fromhex(object_type['wire_value'])))
 
+    def test_version_boundary_operation_item_uses_its_supported_catalog_value(self):
+        from artifact_support import ROOT
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        targets = {target['target_id']: target for target in catalog['normative_targets']}
+        tags = {target['name']: int(target['wire_value'], 16) for target in catalog['normative_targets']
+                if target['kind'] == 'tag'}
+        operation = targets['KMIPKIT-ELEM-OP-C2S-GET-CONSTRAINTS']
+        value = next(target for target in catalog['normative_targets']
+                     if target['kind'] == 'enumeration_value' and target['name'] == 'Get Constraints'
+                     and target['parent_element_ids'] == ['KMIPKIT-ELEM-ENUMERATION-OPERATION'])
+        self.assertEqual(self.runner.scalar_fixture(operation, tags, catalog, '2.0'),
+                         (tags['Operation'], 5, bytes.fromhex(value['wire_value'])))
+
     def test_generic_ttlv_fixture_uses_structure_member_tag_and_declared_type(self):
         from artifact_support import ROOT, INSTALL
         from route_ttlv import TreeAbi, encode
