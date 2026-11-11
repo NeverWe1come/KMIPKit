@@ -288,8 +288,15 @@ class RouteMatrixTests(unittest.TestCase):
                               if route['language'] == 'python' and route['public_api_symbol'] in symbols]
         report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
         self.assertEqual([], gaps)
-        self.assertEqual(3, len(report['events']))
+        self.assertEqual(12, len(report['events']))
         self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+        by_target = {}
+        for event in report['events']:
+            by_target.setdefault(event['target_id'], set()).add(event['request_tree_sha256'])
+        self.assertEqual({'KMIPKIT-ELEM-ATTRIBUTE-ACTIVATION-DATE', 'KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES'}, set(by_target))
+        self.assertEqual({self.runner.digest([[0x420001, 9, -1], [0x420001, 9, 0], [0x420001, 9, 1]])},
+                         by_target['KMIPKIT-ELEM-ATTRIBUTE-ACTIVATION-DATE'])
+        self.assertEqual({self.runner.digest([[0x42005C, 5, 11]])}, by_target['KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTES'])
 
     def test_generic_ttlv_routes_construct_the_catalogued_object_type_enum(self):
         catalog = copy.deepcopy(self.catalog)
@@ -302,8 +309,15 @@ class RouteMatrixTests(unittest.TestCase):
                               if route['language'] == 'python' and route['public_api_symbol'] in symbols]
         report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
         self.assertEqual([], gaps)
-        self.assertEqual(3, len(report['events']))
+        self.assertEqual(12, len(report['events']))
         self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+        by_target = {}
+        for event in report['events']:
+            by_target.setdefault(event['target_id'], set()).add(event['request_tree_sha256'])
+        self.assertEqual({'KMIPKIT-ELEM-OBJECT-TYPE-CERTIFICATE', 'KMIPKIT-ELEM-OP-C2S-REGISTER'}, set(by_target))
+        self.assertEqual({self.runner.digest([[0x420057, 5, 1]])},
+                         by_target['KMIPKIT-ELEM-OBJECT-TYPE-CERTIFICATE'])
+        self.assertEqual({self.runner.digest([[0x42005C, 5, 3]])}, by_target['KMIPKIT-ELEM-OP-C2S-REGISTER'])
 
     def test_ci_requires_shared_changes_and_matrix_completeness(self):
         workflow = (ROOT / '.github/workflows/interop-python.yml').read_text()

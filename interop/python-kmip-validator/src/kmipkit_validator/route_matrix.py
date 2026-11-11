@@ -33,6 +33,10 @@ def digest(value: Any) -> str:
     return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
 
 
+def _normalized_name(value: str) -> str:
+    return ''.join(character for character in value.casefold() if character.isalnum())
+
+
 def public_callable(symbol: str):
     parts = symbol.split('.')
     value = importlib.import_module('.'.join(parts[:2]))
@@ -151,6 +155,13 @@ def _generic_samples(case: dict, target: dict, symbol: str) -> list[tuple[int, s
             raise RecipePending
         return [(int(operation_tag['wire_value'], 16), 'Enumeration',
                  int(operation_enum['wire_value'], 16))]
+    if kind == 'object_type':
+        object_type_tag = next((entry for entry in elements.values()
+                                if entry.get('kind') == 'tag' and _normalized_name(entry.get('name', '')) == 'objecttype'), None)
+        if object_type_tag is None:
+            raise RecipePending
+        values = PythonKmipDriver._wire_representatives(target['wire_value'])
+        return [(int(object_type_tag['wire_value'], 16), 'Enumeration', value) for value in values]
     if kind == 'tag' and requires.get('allocation') in ('assigned', 'extension'):
         return [(raw, 'Integer', 0) for raw in PythonKmipDriver._wire_representatives(requires['wire_value'])]
     if kind == 'tag_range' and requires.get('allocation') == 'extension':
@@ -162,6 +173,13 @@ def _generic_samples(case: dict, target: dict, symbol: str) -> list[tuple[int, s
         raise RecipePending
     if kind == 'data_type':
         type_names = {target['name']}
+    elif kind == 'attribute':
+        parent_tag = next((by_id.get(parent_id, {}) for parent_id in target.get('parent_element_ids', [])
+                           if by_id.get(parent_id, {}).get('kind') == 'tag'), {})
+        if not parent_tag:
+            raise RecipePending
+        tag = int(parent_tag['wire_value'], 16)
+        type_names = PythonKmipDriver._catalog_value_types(case, target, element_types)
     elif kind == 'operation_payload_value_variant' and target.get('kind') == 'operation_payload_value_variant' and requires['value_type'] != 'Structure':
         normalized = lambda name: ''.join(character for character in name.casefold() if character.isalnum())
         field_name = requires['field_name']
