@@ -262,6 +262,10 @@ class RouteMatrixTests(unittest.TestCase):
                 'kmipkit_public_key_from_fields',
                 [0x42006d, 1, [[0x420040, 1, [[0x420042, 5, '00000001']]]]],
             ),
+            'KMIPKIT-ELEM-OBJECT-STRUCTURE-OPAQUE-OBJECT': (
+                'kmipkit_opaque_object_from_fields',
+                [0x42005b, 1, [[0x420059, 5, '80000000'], [0x42005a, 8, '6f7061717565']]],
+            ),
         }
         recipes = ModelCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog)
         for target_id, (constructor, expected_tree) in cases.items():
