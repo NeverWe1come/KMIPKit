@@ -92,9 +92,16 @@ int kmipkit_public_crypto_builders_probe(void) {
     kmipkit_unique_identifier_v1_t identifier = {0};
     kmipkit_cryptographic_parameters_fields_v1_t parameter_fields = {0};
     kmipkit_cryptographic_parameters_t *parameters = NULL;
+    kmipkit_ttlv_structure_t *parameters_ttlv = NULL;
     kmipkit_codec_limits_t *limits = NULL;
     kmipkit_ttlv_value_t *data_value = NULL;
+    kmipkit_ttlv_value_t *enumeration_value = NULL;
+    kmipkit_ttlv_value_t *integer_value = NULL;
+    kmipkit_ttlv_value_t *boolean_value = NULL;
+    kmipkit_client_batch_item_t *item = NULL;
+    kmipkit_client_batch_response_t *response = NULL;
     kmipkit_crypto_operation_builder_t *builder = NULL;
+    int32_t build_status = INT32_C(0);
     span.data = input;
     span.length = (uint64_t)(sizeof(input) - 1);
     identifier.struct_size = (uint32_t)sizeof(identifier);
@@ -138,8 +145,14 @@ int kmipkit_public_crypto_builders_probe(void) {
         kmipkit_codec_limits_release(limits);
         return 3;
     }
-    if (kmipkit_ttlv_value_byte_string(limits, input, (uint64_t)(sizeof(input) - 1),
+    if (kmipkit_cryptographic_parameters_into_ttlv(parameters, &parameters_ttlv) !=
+            INT32_C(0) ||
+        kmipkit_ttlv_value_byte_string(limits, input, (uint64_t)(sizeof(input) - 1),
                                        &data_value) != INT32_C(0) ||
+        kmipkit_ttlv_value_enumeration(KMIPKIT_ENUMERATION_HASHING_ALGORITHM_SHA_256,
+                                       &enumeration_value) != INT32_C(0) ||
+        kmipkit_ttlv_value_integer(INT32_C(7), &integer_value) != INT32_C(0) ||
+        kmipkit_ttlv_value_boolean(UINT8_C(1), &boolean_value) != INT32_C(0) ||
         kmipkit_sign_builder_create(&builder) != INT32_C(0) ||
         kmipkit_crypto_operation_builder_set_data_value(builder, data_value) != INT32_C(0) ||
         kmipkit_crypto_operation_builder_set_data(builder, NULL) != KMIPKIT_ERROR_INVALID_INPUT ||
@@ -160,12 +173,126 @@ int kmipkit_public_crypto_builders_probe(void) {
         kmipkit_crypto_operation_builder_set_asynchronous_indicator(
             builder, UINT32_C(0x80000000)) != INT32_C(0)) {
         kmipkit_ttlv_value_release(data_value);
+        kmipkit_ttlv_value_release(enumeration_value);
+        kmipkit_ttlv_value_release(integer_value);
+        kmipkit_ttlv_value_release(boolean_value);
+        kmipkit_ttlv_structure_release(parameters_ttlv);
         kmipkit_crypto_operation_builder_release(builder);
         kmipkit_cryptographic_parameters_release(parameters);
         kmipkit_codec_limits_release(limits);
         return 4;
     }
+
+    if (kmipkit_crypto_operation_builder_set_data_value(builder, enumeration_value) !=
+        INT32_C(0)) {
+        kmipkit_ttlv_value_release(data_value);
+        kmipkit_ttlv_value_release(enumeration_value);
+        kmipkit_ttlv_value_release(integer_value);
+        kmipkit_ttlv_value_release(boolean_value);
+        kmipkit_ttlv_structure_release(parameters_ttlv);
+        kmipkit_crypto_operation_builder_release(builder);
+        kmipkit_cryptographic_parameters_release(parameters);
+        kmipkit_codec_limits_release(limits);
+        return 5;
+    }
+    build_status = kmipkit_crypto_operation_builder_build_batch_item(builder, &item);
+    if ((build_status != INT32_C(0) && build_status != KMIPKIT_ERROR_INVALID_INPUT) ||
+        ((build_status == INT32_C(0)) != (item != NULL))) {
+        kmipkit_client_batch_item_release(item);
+        kmipkit_ttlv_value_release(data_value);
+        kmipkit_ttlv_value_release(enumeration_value);
+        kmipkit_ttlv_value_release(integer_value);
+        kmipkit_ttlv_value_release(boolean_value);
+        kmipkit_ttlv_structure_release(parameters_ttlv);
+        kmipkit_crypto_operation_builder_release(builder);
+        kmipkit_cryptographic_parameters_release(parameters);
+        kmipkit_codec_limits_release(limits);
+        return 5;
+    }
+    kmipkit_client_batch_item_release(item);
+    item = NULL;
+    if (kmipkit_crypto_operation_builder_set_data_value(builder, integer_value) != INT32_C(0)) {
+        kmipkit_ttlv_value_release(data_value);
+        kmipkit_ttlv_value_release(enumeration_value);
+        kmipkit_ttlv_value_release(integer_value);
+        kmipkit_ttlv_value_release(boolean_value);
+        kmipkit_ttlv_structure_release(parameters_ttlv);
+        kmipkit_crypto_operation_builder_release(builder);
+        kmipkit_cryptographic_parameters_release(parameters);
+        kmipkit_codec_limits_release(limits);
+        return 6;
+    }
+    build_status = kmipkit_crypto_operation_builder_build_batch_item(builder, &item);
+    if ((build_status != INT32_C(0) && build_status != KMIPKIT_ERROR_INVALID_INPUT) ||
+        ((build_status == INT32_C(0)) != (item != NULL))) {
+        kmipkit_client_batch_item_release(item);
+        kmipkit_ttlv_value_release(data_value);
+        kmipkit_ttlv_value_release(enumeration_value);
+        kmipkit_ttlv_value_release(integer_value);
+        kmipkit_ttlv_value_release(boolean_value);
+        kmipkit_ttlv_structure_release(parameters_ttlv);
+        kmipkit_crypto_operation_builder_release(builder);
+        kmipkit_cryptographic_parameters_release(parameters);
+        kmipkit_codec_limits_release(limits);
+        return 6;
+    }
+    kmipkit_client_batch_item_release(item);
+    item = NULL;
+    if (kmipkit_crypto_operation_builder_set_data_value(builder, boolean_value) !=
+        KMIPKIT_ERROR_INVALID_INPUT) {
+        kmipkit_ttlv_value_release(data_value);
+        kmipkit_ttlv_value_release(enumeration_value);
+        kmipkit_ttlv_value_release(integer_value);
+        kmipkit_ttlv_value_release(boolean_value);
+        kmipkit_ttlv_structure_release(parameters_ttlv);
+        kmipkit_crypto_operation_builder_release(builder);
+        kmipkit_cryptographic_parameters_release(parameters);
+        kmipkit_codec_limits_release(limits);
+        return 7;
+    }
+    kmipkit_crypto_operation_builder_release(builder);
+    builder = NULL;
+
+    if (kmipkit_hash_builder_create(&builder) != INT32_C(0) ||
+        kmipkit_crypto_operation_builder_set_cryptographic_parameters_structure(
+            builder, parameters_ttlv) != INT32_C(0) ||
+        kmipkit_crypto_operation_builder_set_data(builder, &span) != INT32_C(0) ||
+        kmipkit_crypto_operation_builder_build_batch_item(builder, &item) != INT32_C(0)) {
+        kmipkit_client_batch_item_release(item);
+        kmipkit_ttlv_value_release(data_value);
+        kmipkit_ttlv_value_release(enumeration_value);
+        kmipkit_ttlv_value_release(integer_value);
+        kmipkit_ttlv_value_release(boolean_value);
+        kmipkit_ttlv_structure_release(parameters_ttlv);
+        kmipkit_crypto_operation_builder_release(builder);
+        kmipkit_cryptographic_parameters_release(parameters);
+        kmipkit_codec_limits_release(limits);
+        return 8;
+    }
+    kmipkit_client_batch_item_release(item);
+    item = NULL;
+    if (kmipkit_crypto_operation_builder_execute_with_options_v1(
+            builder, NULL, limits, NULL, &response) != KMIPKIT_ERROR_INVALID_INPUT ||
+        response != NULL ||
+        kmipkit_crypto_operation_builder_execute_v1(builder, NULL, limits, &response) !=
+            KMIPKIT_ERROR_INVALID_INPUT ||
+        response != NULL) {
+        kmipkit_client_batch_response_release(response);
+        kmipkit_ttlv_value_release(data_value);
+        kmipkit_ttlv_value_release(enumeration_value);
+        kmipkit_ttlv_value_release(integer_value);
+        kmipkit_ttlv_value_release(boolean_value);
+        kmipkit_ttlv_structure_release(parameters_ttlv);
+        kmipkit_crypto_operation_builder_release(builder);
+        kmipkit_cryptographic_parameters_release(parameters);
+        kmipkit_codec_limits_release(limits);
+        return 9;
+    }
     kmipkit_ttlv_value_release(data_value);
+    kmipkit_ttlv_value_release(enumeration_value);
+    kmipkit_ttlv_value_release(integer_value);
+    kmipkit_ttlv_value_release(boolean_value);
+    kmipkit_ttlv_structure_release(parameters_ttlv);
     kmipkit_crypto_operation_builder_release(builder);
     kmipkit_cryptographic_parameters_release(parameters);
     kmipkit_codec_limits_release(limits);
@@ -251,10 +378,6 @@ static int execute_crypto_operation(
     }
     if (status == INT32_C(0) && special_field == UINT8_C(1)) {
         status = kmipkit_crypto_operation_builder_set_iv_counter_nonce(builder, &owned_input);
-        if (status == INT32_C(0)) {
-            status = kmipkit_crypto_operation_builder_set_authenticated_encryption_additional_data(
-                builder, &owned_input);
-        }
     } else if (status == INT32_C(0) && special_field == UINT8_C(2)) {
         status = kmipkit_crypto_operation_builder_set_iv_counter_nonce(builder, &owned_input);
         if (status == INT32_C(0)) {
@@ -275,6 +398,15 @@ static int execute_crypto_operation(
     } else if (status == INT32_C(0) && special_field == UINT8_C(5)) {
         status = kmipkit_crypto_operation_builder_set_mac_data(builder, &owned_input);
     }
+    if (status == INT32_C(0) && expected_operation != KMIPKIT_ENUMERATION_OPERATION_DECRYPT) {
+        status = kmipkit_crypto_operation_builder_set_correlation_value(builder, &owned_input);
+        if (status == INT32_C(0)) {
+            status = kmipkit_crypto_operation_builder_set_init_indicator(builder, UINT8_C(1));
+        }
+        if (status == INT32_C(0)) {
+            status = kmipkit_crypto_operation_builder_set_final_indicator(builder, UINT8_C(2));
+        }
+    }
     if (status == INT32_C(0) && expected_operation == KMIPKIT_ENUMERATION_OPERATION_ENCRYPT) {
         status = kmipkit_crypto_operation_builder_set_asynchronous_indicator(
             builder, KMIPKIT_ENUMERATION_ASYNCHRONOUS_INDICATOR_OPTIONAL);
@@ -283,8 +415,13 @@ static int execute_crypto_operation(
     options.struct_size = (uint32_t)sizeof(options);
     options.abi_version = UINT32_C(1);
     if (status == INT32_C(0)) {
-        status = kmipkit_crypto_operation_builder_execute_with_options_v1(
-            builder, client, limits, &options, &response);
+        if (expected_operation == KMIPKIT_ENUMERATION_OPERATION_HASH) {
+            status = kmipkit_crypto_operation_builder_execute_v1(
+                builder, client, limits, &response);
+        } else {
+            status = kmipkit_crypto_operation_builder_execute_with_options_v1(
+                builder, client, limits, &options, &response);
+        }
     }
     if (status == INT32_C(0) && response != NULL) {
         status = kmipkit_client_batch_response_item_count(response, &item_count);
@@ -442,26 +579,26 @@ int kmipkit_public_crypto_execute_tls_probe(
 
     result = execute_crypto_operation(
         kmipkit_encrypt_builder_create, KMIPKIT_ENUMERATION_OPERATION_ENCRYPT,
-        client, limits, &identifier, &data, NULL, UINT8_C(1));
+        client, limits, &identifier, &data, parameters, UINT8_C(1));
     if (result != INT32_C(0)) {
         goto crypto_cleanup;
     }
     REQUIRE_CRYPTO_C_API(execute_crypto_operation(
         kmipkit_decrypt_builder_create, KMIPKIT_ENUMERATION_OPERATION_DECRYPT,
-        client, limits, &identifier, &data, NULL, UINT8_C(2)), 9);
+        client, limits, &identifier, &data, parameters, UINT8_C(2)), 9);
     REQUIRE_CRYPTO_C_API(execute_crypto_operation(
         kmipkit_sign_builder_create, KMIPKIT_ENUMERATION_OPERATION_SIGN,
-        client, limits, &identifier, &data, NULL, UINT8_C(3)), 10);
+        client, limits, &identifier, &data, parameters, UINT8_C(3)), 10);
     REQUIRE_CRYPTO_C_API(execute_crypto_operation(
         kmipkit_signature_verify_builder_create,
         KMIPKIT_ENUMERATION_OPERATION_SIGNATURE_VERIFY, client, limits,
-        &identifier, &data, NULL, UINT8_C(4)), 11);
+        &identifier, &data, parameters, UINT8_C(4)), 11);
     REQUIRE_CRYPTO_C_API(execute_crypto_operation(
         kmipkit_mac_builder_create, KMIPKIT_ENUMERATION_OPERATION_MAC,
-        client, limits, &identifier, &data, NULL, UINT8_C(0)), 12);
+        client, limits, &identifier, &data, parameters, UINT8_C(0)), 12);
     REQUIRE_CRYPTO_C_API(execute_crypto_operation(
         kmipkit_mac_verify_builder_create, KMIPKIT_ENUMERATION_OPERATION_MAC_VERIFY,
-        client, limits, &identifier, &data, NULL, UINT8_C(5)), 13);
+        client, limits, &identifier, &data, parameters, UINT8_C(5)), 13);
     REQUIRE_CRYPTO_C_API(execute_crypto_operation(
         kmipkit_hash_builder_create, KMIPKIT_ENUMERATION_OPERATION_HASH,
         client, limits, NULL, &data, parameters, UINT8_C(0)), 14);

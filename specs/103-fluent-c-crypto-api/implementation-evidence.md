@@ -72,7 +72,10 @@ will be added here as each Red, Green, and Refactor commit is produced.
   the final value. The compiled C probe also rejects a Hash request without
   Cryptographic Parameters, wrong-operation setters, null pointers, invalid
   multipart flags, and invalid asynchronous indicators while preserving output
-  handles.
+  handles. It exercises both typed and explicit Structure Cryptographic
+  Parameters inputs; TTLV Byte String, Enumeration, and Integer Data values;
+  rejection of an unsupported Boolean Data value; and both the default
+  `execute_v1` path and the options overload's null-options rejection.
 
 ## Refactor
 
@@ -87,3 +90,24 @@ will be added here as each Red, Green, and Refactor commit is produced.
   wrappers enter `ffi_entrypoint` directly before calling internal helpers.
   `cargo test -p kmipkit-ffi --features coverage-c-consumer --locked` passes:
   471 unit tests, 55 C API coverage tests, and the 56-operation parity test.
+
+## Final validation
+
+- **Final FFI suite**: `cargo test -p kmipkit-ffi --features
+  coverage-c-consumer --locked` passes on the current tree: 471 unit tests, 55
+  compiled C API tests, one 56-operation parity test, and doc tests.
+- **Coverage**: `bash scripts/collect_ffi_coverage.sh
+  /tmp/kmipkit-0103-ffi-coverage` passes. `fluent_crypto.rs` has 96.49% line
+  coverage (687/712), above the 90% changed-code gate; the FFI crate totals
+  90.71% lines. The collector required a local ignored profile-data symlink
+  because this managed worktree's directory name differs from the collector's
+  expected profile filename; no tracked source or generated file was changed
+  for that environment workaround.
+- **Static checks**: `cargo fmt --all --check`, `cargo clippy -p kmipkit-ffi
+  --all-targets --all-features -- -D warnings`, and `git diff --check` pass.
+- **Generated API and traceability**: `python3 -B
+  tools/api_manifest/generate.py --check` verifies all 12 generated files;
+  `python3 -B tools/api_manifest/audit_binding_exports.py --check` reports
+  exact complete matches for C (1994), Java (2265), and Python (2445);
+  `python3 -m unittest tools.normative_catalog.tests.test_feature_traceability`
+  passes all 31 tests.
