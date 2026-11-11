@@ -8,7 +8,9 @@ will be added here as each Red, Green, and Refactor commit is produced.
 
 - Branch: `feature/KMIPKIT-0103-fluent-c-crypto-api`.
 - Parent: `feature/KMIPKIT-0102-fluent-crypto-operations` at
-  `e578c1fe027b0232e789d336bad2c72128f71d1a`.
+  `f937b1fbf41858481a11c75d47f74c217af2bba4`.
+- Merge commit `628f6701f` synchronizes the latest 0102 head into this
+  published branch without rewriting the C API commits.
 - Normative operation shapes are owned by the approved KMIPKIT-0102 spec.
 
 ## Verification
@@ -111,6 +113,11 @@ will be added here as each Red, Green, and Refactor commit is produced.
   exact complete matches for C (1994), Java (2265), and Python (2445);
   `python3 -m unittest tools.normative_catalog.tests.test_feature_traceability`
   passes all 31 tests.
+- **Updated base verification**: `cargo test -p kmipkit-ffi --features
+  coverage-c-consumer --locked` passes against the synchronized 0102 head:
+  471 unit tests, 55 compiled C API tests, and the 56-operation parity test.
+  The 28 focused API-manifest tests pass after refreshing the non-target
+  declaration snapshots for the 27 public C crypto declarations.
 - **Publication**: draft PR [#186](https://github.com/NeverWe1come/KMIPKit/pull/186)
   is open as `[WIP]`, based on KMIPKIT-0102. The title remains WIP pending
-  successful exact-head CI.
+  successful exact-head CI on the synchronized head.
