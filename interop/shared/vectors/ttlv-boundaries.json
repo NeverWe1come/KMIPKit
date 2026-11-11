@@ -45,14 +45,14 @@
     {
       "data_type": "Big Integer",
       "type_code": "04",
-      "branch_classes": ["positive_and_negative", "minimum_sign_extension", "length_multiple_of_8", "non_multiple_length_rejected", "multiword_roundtrip"],
+      "branch_classes": ["positive_and_negative", "minimum_sign_extension", "length_multiple_of_8", "non_multiple_length_rejected", "multiword_roundtrip", "alternate_sign_extension_accepted"],
       "samples": [
         {"branch": "positive_one", "hex": "42000104000000080000000000000001", "valid": true},
         {"branch": "negative_one", "hex": "4200010400000008ffffffffffffffff", "valid": true},
         {"branch": "positive_multiword", "hex": "420001040000001000000000000000008000000000000000", "valid": true},
         {"branch": "negative_multiword", "hex": "4200010400000010ffffffffffffffff7fffffffffffffff", "valid": true},
         {"branch": "non_multiple_length_4", "hex": "420001040000000400000001", "valid": false, "error_class": "invalid_big_integer_length"},
-        {"branch": "excessive_sign_extension", "hex": "4200010400000010ffffffffffffffffffffffffffffffff", "valid": false, "error_class": "nonminimal_sign_extension"}
+        {"branch": "alternate_sign_extension", "hex": "4200010400000010ffffffffffffffffffffffffffffffff", "valid": true}
       ]
     },
     {

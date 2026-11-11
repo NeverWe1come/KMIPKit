@@ -42,6 +42,11 @@ results must never be described as vendor interoperability evidence.
 
 - OASIS KMIP Specification 2.0 and 2.1, with exact section references retained
   on every applicable catalog case.
+- For Big Integer, KMIP 2.0 and 2.1 §10.1.2 require minimal sign-extension
+  padding only when the encoded sequence is not already a multiple of eight bytes.
+  Aligned Item Values with redundant sign-extension octets remain valid and
+  are preserved by the decoder under KMIPKIT-0005-FR-005; the shared vectors
+  must not classify them as malformed.
 - Approved specifications KMIPKIT-0083, KMIPKIT-0084, KMIPKIT-0085,
   KMIPKIT-0086, KMIPKIT-0087, and KMIPKIT-0088.
 - `specification/api/public-api.json`, generated public API declarations, and

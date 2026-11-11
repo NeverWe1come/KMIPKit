@@ -523,7 +523,7 @@ TTLV_BOUNDARY_CLASSES = {
     "Structure": ["length_multiple_of_8", "nested_structure_roundtrip", "child_order_preserved", "declared_length_matches_children", "inconsistent_nested_length_rejected"],
     "Integer": ["signed_minimum_and_maximum", "negative_zero_positive", "exact_item_length_4", "invalid_item_length_rejected", "four_byte_padding_consumed"],
     "Long Integer": ["signed_minimum_and_maximum", "negative_zero_positive", "exact_item_length_8", "invalid_item_length_rejected"],
-    "Big Integer": ["positive_and_negative", "minimum_sign_extension", "length_multiple_of_8", "non_multiple_length_rejected", "multiword_roundtrip"],
+    "Big Integer": ["positive_and_negative", "minimum_sign_extension", "length_multiple_of_8", "non_multiple_length_rejected", "multiword_roundtrip", "alternate_sign_extension_accepted"],
     "Enumeration": ["assigned_reserved_extension_and_unknown_values", "exact_item_length_4", "invalid_item_length_rejected"],
     "Boolean": ["false_and_true", "non_boolean_value_rejected", "exact_item_length_8", "invalid_item_length_rejected"],
     "Text String": ["empty_ascii_and_multibyte_utf8", "invalid_utf8_rejected", "length_boundaries_0_1_7_8_9", "minimal_alignment_padding"],

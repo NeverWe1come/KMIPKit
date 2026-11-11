@@ -3873,7 +3873,8 @@
         "minimum_sign_extension",
         "length_multiple_of_8",
         "non_multiple_length_rejected",
-        "multiword_roundtrip"
+        "multiword_roundtrip",
+        "alternate_sign_extension_accepted"
       ],
       "parent_element_ids": [
         "KMIPKIT-ELEM-ENUMERATION-ITEM-TYPE"
@@ -73874,7 +73875,8 @@
           "minimum_sign_extension",
           "length_multiple_of_8",
           "non_multiple_length_rejected",
-          "multiword_roundtrip"
+          "multiword_roundtrip",
+          "alternate_sign_extension_accepted"
         ],
         "boundary_vector_file": "interop/shared/vectors/ttlv-boundaries.json"
       },
