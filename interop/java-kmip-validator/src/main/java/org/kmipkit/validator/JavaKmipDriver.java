@@ -65,11 +65,11 @@ public final class JavaKmipDriver implements AutoCloseable {
         if (requiresSymmetricKeyFixture(testCase)) {
             return executeWithSymmetricKeyFixture(testCase, start);
         }
-        return executeTypedRequest(testCase, start, null);
+        return executeTypedRequest(testCase, start, null, null);
     }
 
     private CaseOutcome executeTypedRequest(CatalogLoader.CatalogCase testCase, long start,
-                                           UniqueIdentifier fixtureIdentifier) {
+                                           UniqueIdentifier fixtureIdentifier, String fixtureObjectName) {
         ClientBatchItem request = TypedRequestFactory.create(
                 testCase.operation(), fixtureIdentifier, testCase.attributeTag());
         if (request == null) {
@@ -93,7 +93,7 @@ public final class JavaKmipDriver implements AutoCloseable {
                     long statusCode = result.resultStatus();
                     long reasonCode = result.resultReason().orElse(-1);
                     if (statusCode == 0) {
-                        if (!verifyTypedResponse(testCase, result, fixtureIdentifier)) {
+                        if (!verifyTypedResponse(testCase, result, fixtureIdentifier, fixtureObjectName)) {
                             return CaseOutcome.failed("The typed response shape did not match the request.",
                                     elapsedMillis(start), statusCode, optionalCode(reasonCode));
                         }
@@ -124,7 +124,7 @@ public final class JavaKmipDriver implements AutoCloseable {
         FixtureSetup setup = createSymmetricKeyFixture(objectName, start);
         if (setup.identifier() == null) return setup.failure();
 
-        CaseOutcome target = executeTypedRequest(testCase, start, setup.identifier());
+        CaseOutcome target = executeTypedRequest(testCase, start, setup.identifier(), objectName);
         if ("Destroy".equals(testCase.operation()) && Long.valueOf(0).equals(target.resultStatusCode())) {
             return target;
         }
@@ -393,7 +393,7 @@ public final class JavaKmipDriver implements AutoCloseable {
     }
 
     private boolean verifyTypedResponse(CatalogLoader.CatalogCase testCase, ClientBatchItemResult result,
-                                       UniqueIdentifier fixtureIdentifier) {
+                                       UniqueIdentifier fixtureIdentifier, String fixtureObjectName) {
         String operation = testCase.operation();
         return switch (operation) {
             case "Ping" -> result.pingResponse().orElse(false);
@@ -423,7 +423,8 @@ public final class JavaKmipDriver implements AutoCloseable {
                 payload.orElseThrow().close();
                 yield true;
             }
-            case "Get Attributes" -> verifyGetAttributesResponse(testCase, result, fixtureIdentifier);
+            case "Get Attributes" -> verifyGetAttributesResponse(
+                    testCase, result, fixtureIdentifier, fixtureObjectName);
             case "Discover Versions" -> JavaResponseChecks.advertisesRequestedVersion(
                     result.supportedVersions().orElse(List.of()), toProtocolVersion(connection.protocolVersion()));
             default -> verifyInstalledTypedResponse(operation, result);
@@ -431,7 +432,7 @@ public final class JavaKmipDriver implements AutoCloseable {
     }
 
     private static boolean verifyGetAttributesResponse(CatalogLoader.CatalogCase testCase,
-            ClientBatchItemResult result, UniqueIdentifier fixtureIdentifier) {
+            ClientBatchItemResult result, UniqueIdentifier fixtureIdentifier, String fixtureObjectName) {
         var payload = result.getAttributesResponse();
         if (payload.isEmpty()) return false;
         try (var response = payload.orElseThrow()) {
@@ -447,12 +448,41 @@ public final class JavaKmipDriver implements AutoCloseable {
                 for (long index = 0; index < view.itemCount(); index++) {
                     try (var item = view.itemAt(index); var tag = item.tag()) {
                         if (Integer.toUnsignedLong(tag.raw()) == testCase.attributeTag()) {
-                            return expectedType == null || item.itemType() == expectedType;
+                            if (expectedType != null && item.itemType() != expectedType) return false;
+                            try (var value = item.value()) {
+                                if (testCase.attributeTag() == 0x420028L) {
+                                    return value.enumeration() == 3;
+                                }
+                                if (testCase.attributeTag() == 0x420053L) {
+                                    return fixtureObjectName != null
+                                            && nameValueMatches(value, fixtureObjectName);
+                                }
+                                return expectedType != null;
+                            }
                         }
                     }
                 }
                 return false;
             }
+        }
+    }
+
+    private static boolean nameValueMatches(org.kmipkit.ttlv.TtlvValueView value, String expectedName) {
+        try (var structure = value.structure()) {
+            boolean nameMatches = false;
+            boolean typeMatches = false;
+            for (long index = 0; index < structure.itemCount(); index++) {
+                try (var item = structure.itemAt(index); var tag = item.tag(); var child = item.value()) {
+                    int rawTag = tag.raw();
+                    if (rawTag == 0x420055 && item.itemType() == org.kmipkit.ttlv.TtlvItemType.TextString) {
+                        nameMatches = expectedName.equals(new String(child.bytes(), java.nio.charset.StandardCharsets.UTF_8));
+                    } else if (rawTag == 0x420054
+                            && item.itemType() == org.kmipkit.ttlv.TtlvItemType.Enumeration) {
+                        typeMatches = child.enumeration() == 1;
+                    }
+                }
+            }
+            return nameMatches && typeMatches;
         }
     }
 
