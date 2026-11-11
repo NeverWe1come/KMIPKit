@@ -21,6 +21,12 @@ class ModelCases:
         self.abi = TreeAbi(library)
         self.catalog = catalog
 
+    def _read_and_check(self, item: C.c_void_p, expected: list, failure_code: str) -> list:
+        actual = normalized(self.abi.read_item(item))
+        if actual != expected:
+            raise ValueError(failure_code)
+        return actual
+
     def execute(self, target: dict, protocol_version: str) -> dict | None:
         parents = set(target.get('parent_element_ids', []))
         if target.get('target_id') != CERTIFICATE_STRUCTURE and CERTIFICATE_STRUCTURE not in parents:
@@ -48,20 +54,17 @@ class ModelCases:
                 'kmipkit_certificate_from_fields',
                 [C.POINTER(C.c_void_p), C.c_uint64, C.POINTER(C.c_void_p)])
             self.abi.call('kmipkit_certificate_from_fields', fields, len(field_items), C.byref(output))
-            normalized_tree = normalized(self.abi.read_item(output))
             expected = [CERTIFICATE_TAG, 1, [
                 [CERTIFICATE_TYPE_TAG, 5, type_value.to_bytes(4, 'big').hex()],
                 [CERTIFICATE_VALUE_TAG, 8, '010203']]]
-            if normalized_tree != expected:
-                raise ValueError('certificate_fields_tree_mismatch')
+            normalized_tree = self._read_and_check(output, expected, 'certificate_fields_tree_mismatch')
 
             self.abi.bind(
                 'kmipkit_managed_object_from_fields',
                 [C.c_uint32, C.POINTER(C.c_void_p), C.c_uint64, C.POINTER(C.c_void_p)])
             self.abi.call('kmipkit_managed_object_from_fields', CERTIFICATE_OBJECT_TYPE,
                           fields, len(field_items), C.byref(generic_output))
-            if normalized(self.abi.read_item(generic_output)) != expected:
-                raise ValueError('managed_certificate_fields_tree_mismatch')
+            self._read_and_check(generic_output, expected, 'managed_certificate_fields_tree_mismatch')
 
             self.abi.bind(
                 'kmipkit_managed_object_from_item',
@@ -70,8 +73,7 @@ class ModelCases:
             try:
                 self.abi.call('kmipkit_managed_object_from_item', CERTIFICATE_OBJECT_TYPE,
                               output, C.byref(item_output))
-                if normalized(self.abi.read_item(item_output)) != expected:
-                    raise ValueError('managed_certificate_item_tree_mismatch')
+                self._read_and_check(item_output, expected, 'managed_certificate_item_tree_mismatch')
             finally:
                 self.abi.release('ttlv_item', item_output)
 
