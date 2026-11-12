@@ -650,6 +650,41 @@ def _managed_object_cell(cell: dict, case: dict, target: dict) -> dict:
     from kmipkit import managed_objects
 
     symbol = cell['public_api_symbol']
+    if symbol.startswith('kmipkit.managed_objects.KeyWrappingData.'):
+        tree = _managed_object_tree(target)
+        key_wrapping_tag = _managed_object_tag(_catalog_model_data()[2], 'Key Wrapping Data')
+
+        def find_wrapping_node(node: list) -> list | None:
+            if node[0] == key_wrapping_tag:
+                return node
+            if node[1] == 1:
+                for child in node[2]:
+                    found = find_wrapping_node(child)
+                    if found is not None:
+                        return found
+            return None
+
+        value_node = find_wrapping_node(tree)
+        if value_node is None or value_node[1] != 1:
+            raise RecipePending
+        with ExitStack() as owned:
+            fields = [owned.enter_context(_credential_item_from_tree(field, owned))
+                      for field in value_node[2]]
+            if symbol.endswith('.from_fields'):
+                result = owned.enter_context(managed_objects.KeyWrappingData.from_fields(fields))
+            elif symbol.endswith('.from_item'):
+                item = owned.enter_context(_credential_item_from_tree(value_node, owned))
+                result = owned.enter_context(managed_objects.KeyWrappingData.from_item(item))
+            else:
+                raise RecipePending
+            observed = item_tree(result)
+            if observed != value_node:
+                raise ValueError('Key Wrapping Data constructor changed ordered fields')
+        if not _credential_tree_has_tag(
+                observed, _managed_object_tag(_catalog_model_data()[2], target.get('name', ''))):
+            raise RecipePending
+        tree_hash = digest(observed)
+        return {'request_tree_sha256': tree_hash, 'response_tree_sha256': tree_hash}
     if symbol.startswith(('kmipkit.managed_objects.KeyValue.',
                           'kmipkit.managed_objects.KeyMaterial.')):
         tree = _managed_object_tree(target)
