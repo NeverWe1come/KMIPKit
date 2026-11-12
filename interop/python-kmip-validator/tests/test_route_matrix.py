@@ -391,6 +391,43 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual('response_received', event['request_delivery_state'])
         self.assertEqual(1, event['transport_invocation_count'])
 
+    def test_cancel_payload_routes_send_cancel_even_when_case_primary_operation_is_create(self):
+        # OASIS KMIP 2.0/2.1 §6.1.5 defines Cancel as a separate request operation.
+        from unittest.mock import patch
+        from kmipkit import protocol_values
+        from kmipkit_validator.controlled_peer import ControlledTlsPeer
+
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-async-cancel-result-canceled')
+        target = next(target for target in self.catalog['normative_targets']
+                      if target['target_id'] == 'KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-20-001')
+        cell = next(cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
+                    if cell['case_id'] == case['case_id'] and cell['target_id'] == target['target_id']
+                    and cell['execution_route_id'] == 'python.execute.cancel'
+                    and cell['protocol_version'] == '2.0' and cell['encoding'] == 'TTLV'
+                    and cell['transport'] == 'raw_tls' and cell['action'] == 'construct')
+        peers = []
+
+        def record_peer(**options):
+            peer = ControlledTlsPeer(**options)
+            peers.append(peer)
+            return peer
+
+        symbols = [cell['public_api_symbol'], cell['execution_api_symbol']]
+        trace = self.runner.CallTrace(symbols)
+        with patch('kmipkit_validator.controlled_peer.ControlledTlsPeer', side_effect=record_peer):
+            with trace:
+                event = self.runner.execute_cell(cell, case, target, trace=trace)
+
+        self.assertEqual({'Cancel'}, {peer.request_observation['operation'] for peer in peers})
+        self.assertTrue(set(symbols) <= trace.observed)
+        self.assertEqual([protocol_values.ResultStatus.OPERATION_FAILED],
+                         event['peer_observed_result_status_codes'])
+        self.assertEqual([protocol_values.ResultReason.OPERATION_NOT_SUPPORTED],
+                         event['peer_observed_result_reason_codes'])
+        self.assertEqual('response_received', event['request_delivery_state'])
+        self.assertEqual(1, event['transport_invocation_count'])
+
     def test_unknown_async_correlation_is_stable_sequentially_and_concurrently(self):
         # OASIS KMIP 2.0/2.1 Specification §6.1.38.1, Table 277 lists Invalid Asynchronous Correlation Value.
         from concurrent.futures import ProcessPoolExecutor
