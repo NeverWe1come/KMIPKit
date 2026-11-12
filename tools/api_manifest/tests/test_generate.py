@@ -339,6 +339,13 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         ]
         self.assertEqual("".join(after), "".join(decoded))
 
+    def test_java_parity_gzip_header_is_platform_independent(self) -> None:
+        compressed = base64.b64decode(
+            generate._compressed_java_parity_chunks(["stable parity data"])[0]
+        )
+
+        self.assertEqual(b"\x1f\x8b\x08\x00\x00\x00\x00\x00\x02\xff", compressed[:10])
+
     def test_generation_fixture_starts_without_generated_outputs(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = _create_repo(Path(directory))
