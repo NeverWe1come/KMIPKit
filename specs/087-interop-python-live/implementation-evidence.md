@@ -116,6 +116,28 @@ Their explicit `#[link(name = "kmipkit_ffi")]` declarations do not receive a
 native search path to the library output directory. This is a test-link setup
 failure, not a KMIP route or validator failure.
 
+## Green: resolve C consumer symbols from the Rust crate dependency
+
+The integration tests now declare the ABI functions without an explicit
+native-library link attribute. The operation parity test uses the crate's
+opaque batch handle type, and the C API coverage test already imports public
+FFI types from the same crate. This makes Cargo link the FFI implementation
+through its Rust crate dependency, while the compiled C consumers still invoke
+the exported `extern "C"` symbols.
+
+On Rust 1.100.0, both focused tests passed after cleaning the `kmipkit-ffi`
+package artifacts:
+
+```sh
+CARGO_BUILD_JOBS=2 CARGO_TARGET_DIR=<target> \
+  cargo +1.100.0 test -p kmipkit-ffi --features coverage-c-consumer \
+    --test operation_parity_0053 --test c_api_coverage --locked
+```
+
+The result was 1/1 operation parity test and 50/50 C API coverage tests. The
+full `cargo +1.100.0 test --workspace --all-features --locked` command then
+passed with the FFI package artifacts cleaned and rebuilt.
+
 ## Remaining limitations
 
 Controlled local TLS results are not vendor interoperability evidence. No Cosmian, CipherTrust or ESKM endpoint was
