@@ -2698,7 +2698,8 @@ def _batch_workflow_cell(cell: dict, case: dict, target: dict,
                          *, trace: CallTrace | None) -> dict:
     """Send the complete catalogued batch and retain its ordered wire evidence."""
     from kmipkit import errors, extensions, protocol_values, ttlv
-    from .controlled_peer import ControlledTlsPeer, PKI, batch_response
+    from .controlled_peer import (ControlledTlsPeer, PKI, batch_response,
+                                  simulated_read_only_batch_response)
 
     scenario = case.get('requires', {}).get('protocol_scenario', {})
     item_specs = _batch_item_specs(case)
@@ -2734,6 +2735,37 @@ def _batch_workflow_cell(cell: dict, case: dict, target: dict,
     reason_defaults = [reason if code == status else None for code in status_codes]
     reason_codes = _batch_result_codes(case, protocol_values.ResultReason, 'reason', len(operations),
                                        reason_defaults)
+    expected_effects = (scenario.get('expected', {}).get('effects')
+                        if isinstance(scenario, dict)
+                        and isinstance(scenario.get('expected', {}), dict) else None)
+    simulate_peer_effects = isinstance(expected_effects, list) and cell.get('action') == 'send'
+    peer_simulation: dict[str, object] = {}
+    identifier_operations = {
+        'activate', 'archive', 'check', 'destroy', 'export', 'get', 'getattributelist',
+        'getattributes', 'getusageallocation', 'obtainlease', 'recover', 'revoke',
+    }
+    initial_object_ids = set()
+    if simulate_peer_effects:
+        for index, spec in enumerate(item_specs):
+            detail = _normalized_name(spec['detail'])
+            operation = spec['operation'].replace(' ', '').casefold()
+            has_prior_create = any(name in {'Create', 'Create Key Pair', 'Create Split Key'}
+                                   for name in operations[:index])
+            if (operation in identifier_operations and 'missing' not in detail
+                    and 'idplaceholder' not in detail and not has_prior_create):
+                initial_object_ids.add(
+                    f"KMIPKit-route-existing-{case['case_id']}-{index}")
+
+    def response_builder(request: bytes, encoding: str, minor: int) -> bytes:
+        if simulate_peer_effects:
+            response_bytes, observation = simulated_read_only_batch_response(
+                request, encoding, minor, initial_object_ids)
+            peer_simulation.update(observation)
+            return response_bytes
+        return batch_response(
+            request, encoding, operations, status, reason, minor,
+            result_statuses=status_codes, result_reasons=reason_codes)
+
     peer = ControlledTlsPeer(
         status=status,
         reason=reason,
@@ -2741,9 +2773,7 @@ def _batch_workflow_cell(cell: dict, case: dict, target: dict,
         encoding=cell['encoding'],
         transport=cell['transport'],
         protocol_version=cell['protocol_version'],
-        response_builder=lambda request, encoding, minor: batch_response(
-            request, encoding, operations, status, reason, minor,
-            result_statuses=status_codes, result_reasons=reason_codes),
+        response_builder=response_builder,
     )
     connection = {
         'server_id': 'controlled-fixture', 'protocol_version': cell['protocol_version'],
@@ -2787,10 +2817,6 @@ def _batch_workflow_cell(cell: dict, case: dict, target: dict,
             item_case = {**case, 'operation': operation}
             detail = _normalized_name(spec['detail'])
             identifier = None
-            identifier_operations = {
-                'activate', 'archive', 'check', 'destroy', 'export', 'get', 'getattributelist',
-                'getattributes', 'getusageallocation', 'obtainlease', 'recover', 'revoke',
-            }
             has_prior_create = any(name in {'Create', 'Create Key Pair', 'Create Split Key'}
                                    for name in operations[:index])
             if (forward_placeholder_send
@@ -2849,7 +2875,8 @@ def _batch_workflow_cell(cell: dict, case: dict, target: dict,
                 raise ValueError('typed batch response count differs from the ordered request')
             native_statuses = [int(response.item_at(index).result_status)
                                for index in range(response.item_count())]
-            if native_statuses != status_codes:
+            response_status_codes = peer_simulation.get('result_status_codes', status_codes)
+            if native_statuses != response_status_codes:
                 raise ValueError('typed batch result accessors changed the ordered item statuses')
     finally:
         if response is not None:
@@ -2899,8 +2926,12 @@ def _batch_workflow_cell(cell: dict, case: dict, target: dict,
                              for item in response_items]
     observed_reason_codes = [next((value for tag, _, value in item if tag == 0x42007E), None)
                              for item in response_items]
-    if observed_status_codes != status_codes or observed_reason_codes != reason_codes:
+    response_status_codes = peer_simulation.get('result_status_codes', status_codes)
+    response_reason_codes = peer_simulation.get('result_reason_codes', reason_codes)
+    if observed_status_codes != response_status_codes or observed_reason_codes != response_reason_codes:
         raise ValueError('controlled batch peer returned unexpected ordered item outcomes')
+    if simulate_peer_effects and peer_simulation.get('effects') != expected_effects:
+        raise ValueError('controlled batch peer state produced unexpected item effects')
     return {
         'request_tree_sha256': digest(request),
         'response_tree_sha256': digest(response_tree),
@@ -2914,6 +2945,10 @@ def _batch_workflow_cell(cell: dict, case: dict, target: dict,
         'batch_operation_sequence': operations,
         'peer_observed_operation_sequence': request_operations,
         'batch_item_count': len(request_items),
+        **({'peer_observed_effects': peer_simulation['effects'],
+            'peer_observed_state_before_sha256': peer_simulation['state_before_sha256'],
+            'peer_observed_state_after_sha256': peer_simulation['state_after_sha256']}
+           if peer_simulation else {}),
     }
 
 

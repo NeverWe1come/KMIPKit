@@ -3,6 +3,7 @@
 Fixture bytes stay in memory; evidence contains normalized tree hashes only.
 """
 from __future__ import annotations
+import hashlib
 import json
 from pathlib import Path
 import queue
@@ -65,6 +66,17 @@ def find_value(tree: list[tuple[int, int, bytes]], tag: int) -> bytes | None:
             return value
         if kind == 1:
             nested = find_value(parse_children(value), tag)
+            if nested is not None:
+                return nested
+    return None
+
+
+def find_item(tree: list[tuple[int, int, bytes]], tag: int) -> tuple[int, bytes] | None:
+    for current_tag, kind, value in tree:
+        if current_tag == tag:
+            return kind, value
+        if kind == 1:
+            nested = find_item(parse_children(value), tag)
             if nested is not None:
                 return nested
     return None
@@ -307,6 +319,168 @@ def batch_response(
         message.extend(items)
         return ET.tostring(message, encoding="utf-8")
     raise AssertionError("controlled batch response has an unsupported encoding")
+
+
+def _batch_request_details(request: bytes, encoding: str) -> tuple[int | None, list[dict[str, object]]]:
+    """Read batch continuation and item identifiers from the received wire message."""
+    from kmipkit import protocol_values
+
+    if encoding == "TTLV":
+        roots = parse_children(request[8:])
+        header = next((parse_children(value) for tag, kind, value in roots
+                       if tag == 0x420077 and kind == 1), [])
+        continuation_bytes = next((value for tag, _, value in header if tag == 0x42000E), None)
+        continuation = (int.from_bytes(continuation_bytes, "big")
+                        if continuation_bytes is not None else None)
+        details = []
+        for tag, kind, value in roots:
+            if tag != 0x42000F or kind != 1:
+                continue
+            fields = parse_children(value)
+            operation_bytes = next((field for field_tag, _, field in fields
+                                    if field_tag == 0x42005C), None)
+            identifier = find_item(fields, 0x420094)
+            if operation_bytes is None:
+                raise AssertionError("batch item omitted its Operation")
+            operation = protocol_values.Operation.name(int.from_bytes(operation_bytes, "big"))
+            if operation is None:
+                raise AssertionError("batch item used an unknown Operation")
+            identifier_value: str | int | None = None
+            if identifier is not None:
+                identifier_kind, raw_identifier = identifier
+                if identifier_kind == 7:
+                    identifier_value = raw_identifier.decode("utf-8")
+                elif identifier_kind == 5:
+                    identifier_value = int.from_bytes(raw_identifier, "big")
+                elif identifier_kind == 2:
+                    identifier_value = int.from_bytes(raw_identifier, "big", signed=True)
+                else:
+                    raise AssertionError("batch Unique Identifier used an unsupported TTLV type")
+            details.append({"operation": operation, "unique_identifier": identifier_value})
+        return continuation, details
+
+    if encoding == "JSON":
+        root = json.loads(request)
+        message = root.get("value", [])
+        header = next((entry.get("value", []) for entry in message
+                       if entry.get("tag") == "RequestHeader"), [])
+        continuation_value = next((entry.get("value") for entry in header
+                                   if entry.get("tag") == "BatchErrorContinuationOption"), None)
+        batch_items = [entry for entry in message if entry.get("tag") == "BatchItem"]
+        operation_name = lambda entry: entry.get("value")
+        item_fields = lambda entry: entry.get("value", [])
+        field_name = lambda entry: entry.get("tag")
+        field_value = lambda entry: entry.get("value")
+    elif encoding == "XML":
+        root = ET.fromstring(request)
+        continuation_field = root.find("./RequestHeader/BatchErrorContinuationOption")
+        continuation_value = (continuation_field.attrib.get("value")
+                              if continuation_field is not None else None)
+        batch_items = root.findall("./BatchItem")
+        operation_name = lambda entry: (entry.find("./Operation").attrib.get("value")
+                                        if entry.find("./Operation") is not None else None)
+        item_fields = lambda entry: list(entry)
+        field_name = lambda entry: entry.tag
+        field_value = lambda entry: entry.attrib.get("value")
+    else:
+        raise AssertionError("batch simulation received an unsupported encoding")
+
+    if isinstance(continuation_value, int):
+        continuation = continuation_value
+    elif isinstance(continuation_value, str):
+        normalized = normalized_operation_name(continuation_value)
+        continuation = {
+            "continue": protocol_values.BatchErrorContinuationOption.CONTINUE,
+            "stop": protocol_values.BatchErrorContinuationOption.STOP,
+            "undo": protocol_values.BatchErrorContinuationOption.UNDO,
+        }.get(normalized)
+    else:
+        continuation = None
+    details = []
+    for batch_item in batch_items:
+        fields = item_fields(batch_item)
+        operation = operation_name(next((entry for entry in fields
+                                         if field_name(entry) == "Operation"), {}))
+        if operation is None:
+            raise AssertionError("batch item omitted its Operation")
+        identifier = next((field_value(entry) for entry in fields
+                           if field_name(entry) == "UniqueIdentifier"), None)
+        details.append({"operation": operation, "unique_identifier": identifier})
+    return continuation, details
+
+
+def simulated_read_only_batch_response(
+    request: bytes,
+    encoding: str,
+    protocol_minor: int,
+    initial_object_ids: set[str],
+) -> tuple[bytes, dict[str, object]]:
+    """Execute Get-family items against controlled peer state and record outcomes."""
+    from kmipkit import protocol_values
+
+    continuation, request_items = _batch_request_details(request, encoding)
+    if continuation not in (protocol_values.BatchErrorContinuationOption.CONTINUE,
+                            protocol_values.BatchErrorContinuationOption.STOP):
+        raise AssertionError("read-only batch fixture requires an observed Continue or Stop option")
+
+    objects = set(initial_object_ids)
+    execution_log: list[dict[str, object]] = []
+    initial_state = sorted(objects)
+    status_values: list[int] = []
+    reason_values: list[int | None] = []
+    effects: list[str] = []
+    prior_failure = False
+    for index, entry in enumerate(request_items):
+        operation = entry["operation"]
+        identifier = entry["unique_identifier"]
+        if prior_failure and continuation == protocol_values.BatchErrorContinuationOption.STOP:
+            result_status = protocol_values.ResultStatus.OPERATION_FAILED
+            result_reason = None
+            executed = False
+        else:
+            if operation not in ("Get", "Get Attribute List") or not isinstance(identifier, str):
+                raise AssertionError("read-only batch fixture received an unsupported request item")
+            executed = True
+            if identifier in objects:
+                result_status = protocol_values.ResultStatus.SUCCESS
+                result_reason = None
+            else:
+                result_status = protocol_values.ResultStatus.OPERATION_FAILED
+                result_reason = protocol_values.ResultReason.ITEM_NOT_FOUND
+            prior_failure = prior_failure or result_status == protocol_values.ResultStatus.OPERATION_FAILED
+
+        execution_log.append({"item_index": index, "operation": operation,
+                              "executed": executed, "result_status": int(result_status)})
+        ordinal = {0: "first", 1: "second", 2: "third", 3: "fourth"}.get(index, f"item_{index + 1}")
+        if not executed:
+            effects.append(f"{ordinal}_item_not_executed")
+        elif result_status == protocol_values.ResultStatus.OPERATION_FAILED:
+            effects.append("first_item_failed" if index == 0 else f"{ordinal}_item_failed")
+        elif index > 0:
+            effects.append(f"{ordinal}_item_executed")
+        status_values.append(int(result_status))
+        reason_values.append(None if result_reason is None else int(result_reason))
+
+    final_state = sorted(objects)
+    state_evidence = {
+        "effects": effects,
+        "result_status_codes": status_values,
+        "result_reason_codes": reason_values,
+        "state_before_sha256": hashlib.sha256(
+            json.dumps(initial_state, sort_keys=True, separators=(",", ":")).encode()).hexdigest(),
+        "state_after_sha256": hashlib.sha256(
+            json.dumps(final_state, sort_keys=True, separators=(",", ":")).encode()).hexdigest(),
+    }
+    operations = [str(entry["operation"]) for entry in request_items]
+    response = batch_response(
+        request, encoding, operations,
+        protocol_values.ResultStatus.OPERATION_FAILED,
+        protocol_values.ResultReason.ITEM_NOT_FOUND,
+        protocol_minor,
+        result_statuses=status_values,
+        result_reasons=reason_values,
+    )
+    return response, state_evidence
 
 
 def request_observation(request: bytes, encoding: str) -> dict[str, object]:
