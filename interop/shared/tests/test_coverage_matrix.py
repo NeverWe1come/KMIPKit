@@ -72,6 +72,9 @@ class CoverageMatrixTests(unittest.TestCase):
             "test-norm-structure-member-structure-member-3-1-key-block-cryptographic-algorithm",
             "test-norm-structure-member-structure-member-3-1-key-block-cryptographic-length",
         }
+        cases = [case for case in self.catalog["test_cases"] if case["case_id"] in case_ids]
+        self.assertEqual(excluded_targets,
+                         {case["requires"]["normative_target_id"] for case in cases})
         cells = [cell for cell in iter_cells(self.catalog, self.manifest)
                  if cell["route_id"] == route_id and cell["case_id"] in case_ids]
         self.assertFalse(cells, "Secret Data is not a key and cannot carry key cryptographic properties")
