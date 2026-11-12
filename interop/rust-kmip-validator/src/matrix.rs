@@ -5844,4 +5844,52 @@ mod tests {
             }
         }
     }
+
+    #[test]
+    fn asynchronous_query_and_derivation_routes_execute_manifest_fixtures() {
+        let catalog: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let routes: Json = serde_json::from_str(include_str!(
+            "../../shared/coverage/route-capabilities.json"
+        ))
+        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        let route_ids = [
+            "rust.typed-protocol.model.kmipkit.protocol.derivationparameters.new",
+            "rust.typed-protocol.model.kmipkit.protocol.queryasyncrequestsrequest.with.operations",
+        ];
+
+        for route_id in route_ids {
+            let route = routes["routes"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|route| route["route_id"] == route_id)
+                .unwrap();
+            let symbol = route["public_api_symbol"].as_str().unwrap();
+            for target_id in route["normative_target_ids"].as_array().unwrap() {
+                let target_id = target_id.as_str().unwrap();
+                let target = catalog["normative_targets"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .find(|target| target["target_id"] == target_id)
+                    .unwrap();
+                let expected = sample_for_route_at_version(symbol, target, elements, "2.1")
+                    .unwrap_or_else(|error| panic!("{symbol} sample failed for {target_id}: {error}"));
+                let result = invoke(symbol, &expected, target, elements, "2.1")
+                    .unwrap_or_else(|| panic!("{symbol} route missing for {target_id}"))
+                    .unwrap_or_else(|error| panic!("{symbol} rejected {target_id}: {error}"));
+                assert!(
+                    crate::local_wire::target_hash(&result, &expected).is_ok(),
+                    "{symbol} changed {target_id}"
+                );
+            }
+        }
+    }
 }
