@@ -2045,6 +2045,13 @@ def _crypto_parameters_cell(cell: dict, case: dict, target: dict) -> dict:
     return {'request_tree_sha256': tree_hash, 'response_tree_sha256': tree_hash}
 
 
+def _tag_decode_rejection_code(allocation: str | None) -> str | None:
+    return {
+        'reserved': 'tag_reserved',
+        'unused': 'tag_not_allocated',
+    }.get(allocation)
+
+
 def _tag_rejection_cell(cell: dict, case: dict, target: dict) -> dict:
     """Check all catalog range endpoints without constructing a nonexistent Item."""
     import re
@@ -2085,10 +2092,7 @@ def _tag_rejection_cell(cell: dict, case: dict, target: dict) -> dict:
                 unexpected.close()
                 raise ValueError('checked tag accepted a reserved or unused allocation')
     if symbol == 'kmipkit.ttlv.ttlv_decode':
-        rejection_code = {
-            'reserved': 'tag_reserved',
-            'unused': 'tag_not_allocated',
-        }.get(target.get('allocation'))
+        rejection_code = _tag_decode_rejection_code(target.get('allocation'))
         if rejection_code is None:
             raise RecipePending
         return {'decode_outcome': 'rejected', 'decode_rejection_code': rejection_code,

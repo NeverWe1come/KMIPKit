@@ -23,6 +23,15 @@ class RouteMatrixTests(unittest.TestCase):
         self.manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
         self.artifact = {'library_commit': self.manifest['library_commit'], 'artifact_sha256': 'a' * 64}
 
+    def test_tag_decode_rejection_code_preserves_reserved_and_unused_classes(self):
+        self.assertEqual(
+            'tag_reserved', self.runner._tag_decode_rejection_code('reserved')
+        )
+        self.assertEqual(
+            'tag_not_allocated', self.runner._tag_decode_rejection_code('unused')
+        )
+        self.assertIsNone(self.runner._tag_decode_rejection_code('assigned'))
+
     def integer_fixture(self):
         catalog = copy.deepcopy(self.catalog)
         catalog['test_cases'] = [next(case for case in catalog['test_cases']
