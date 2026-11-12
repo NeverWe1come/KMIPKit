@@ -404,6 +404,26 @@ class RouteCapabilitiesTests(unittest.TestCase):
                 self.assertEqual(expected, set(route['normative_target_ids']), symbol)
                 self.assertEqual(['decode'], route['actions'], symbol)
 
+    def test_raw_response_ttlv_routes_claim_the_observed_get_response_value(self):
+        # OASIS KMIP 2.0/2.1 §§3.1, 9.7, and 11.25 define this Get response tree and Raw value.
+        expected = {
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM',
+            'KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM',
+            'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-KEY-FORMAT-TYPE',
+            'KMIPKIT-ELEM-TAG-42000F',
+            'KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-RAW-00000001',
+        }
+        symbols = {
+            'c': 'kmipkit_client_batch_item_response_raw_ttlv',
+            'java': 'org.kmipkit.extensions.ClientBatchItemResult.raw',
+            'python': 'kmipkit.client.BatchItemResult.raw',
+        }
+        routes = {(route['language'], route['public_api_symbol']): route for route in self.data['routes']}
+        for language, symbol in symbols.items():
+            route = routes[(language, symbol)]
+            self.assertEqual(expected, set(route['normative_target_ids']), symbol)
+            self.assertEqual(['decode'], route['actions'], symbol)
+
     def test_checked_tag_constructor_exclusions_are_source_backed_and_narrow(self):
         expected = {
             'rust': {'rust.generic-ttlv.item.new', 'rust.generic-ttlv.model.kmipkit.ttlv.structure.try.push'},
