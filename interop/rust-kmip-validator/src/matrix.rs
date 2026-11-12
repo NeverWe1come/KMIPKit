@@ -1796,6 +1796,58 @@ mod tests {
         assert!(crate::local_wire::target_hash(&result, &expected).is_ok());
     }
 
+    /// OASIS KMIP 2.0/2.1 §3.2, Tables 13–14 define Key Value and Key Material.
+    #[test]
+    fn key_block_key_value_setter_executes_every_normative_target() {
+        let catalog: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let manifest: Json = serde_json::from_str(include_str!(
+            "../../shared/coverage/route-capabilities.json"
+        ))
+        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        let route = manifest["routes"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|route| {
+                route["public_api_symbol"] == "kmipkit_protocol::KeyBlock::with_key_value"
+            })
+            .unwrap();
+        for target_id in route["normative_target_ids"].as_array().unwrap() {
+            let target_id = target_id.as_str().unwrap();
+            let target = catalog["normative_targets"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|target| target["target_id"] == target_id)
+                .unwrap();
+            let fixture = sample_for_route(
+                "kmipkit_protocol::KeyBlock::with_key_value",
+                target,
+                elements,
+            );
+            assert!(fixture.is_ok(), "{target_id}: {fixture:?}");
+            let fixture = fixture.unwrap();
+            let result = invoke(
+                "kmipkit_protocol::KeyBlock::with_key_value",
+                &fixture,
+                target,
+                elements,
+                "2.1",
+            );
+            assert!(result.is_some(), "{target_id}: setter route is not invoked");
+            let result = result.unwrap();
+            assert!(result.is_ok(), "{target_id}: {result:?}");
+            assert!(crate::local_wire::target_hash(&result.unwrap(), &fixture).is_ok());
+        }
+    }
+
     #[test]
     fn key_format_type_request_routes_construct_each_normative_value() {
         // OASIS KMIP 2.0/2.1 §11.25 defines Key Format Type values.
