@@ -1275,6 +1275,43 @@ fn metadata_expected_target(model: &Item, target: &Json, elements: &[Json]) -> R
     }
 }
 
+fn ticket_ttlv_fixture() -> Result<Item> {
+    let mut fields = kmipkit::ttlv::Structure::new();
+    fields
+        .try_push(crate::driver::item(
+            0x0042_014a,
+            Value::enumeration(kmipkit::protocol::TicketType::LOGIN.raw()),
+        )?)
+        .map_err(|_| "Ticket fixture rejected")?;
+    fields
+        .try_push(crate::driver::item(
+            0x0042_014b,
+            Value::byte_string(vec![0x41; 16]),
+        )?)
+        .map_err(|_| "Ticket fixture rejected")?;
+    crate::driver::item(0x0042_0149, Value::structure(fields))
+}
+
+fn ticket_credential_fixture(ticket: Item) -> Result<Item> {
+    let mut fields = kmipkit::ttlv::Structure::new();
+    fields
+        .try_push(ticket)
+        .map_err(|_| "Ticket Credential fixture rejected")?;
+    crate::driver::item(0x0042_0025, Value::structure(fields))
+}
+
+fn ticket_fixture_target(target: &Json, elements: &[Json]) -> Result<Item> {
+    let model = ticket_credential_fixture(ticket_ttlv_fixture()?)?;
+    let tag = sample(target, elements)?.tag().raw();
+    let mut candidates = Vec::new();
+    collect_tagged_items(&model, tag, &mut candidates)?;
+    match candidates.as_slice() {
+        [item] => item.try_clone().map_err(|_| "Ticket fixture copy failed"),
+        [] => Err("Ticket fixture target is missing"),
+        _ => Err("Ticket fixture target is ambiguous"),
+    }
+}
+
 fn message_field_tag(target: &Json, elements: &[Json]) -> Result<u32> {
     let name = text(target, "name")?.trim_end_matches(", MAY be repeated");
     elements
@@ -1646,6 +1683,14 @@ fn sample_for_route_at_version(
         return metadata_expected_target(&message, target, elements);
     }
     if [
+        "kmipkit_protocol::Ticket::new",
+        "kmipkit_protocol::Ticket::try_from_ttlv",
+    ]
+    .contains(&symbol)
+    {
+        return ticket_fixture_target(target, elements);
+    }
+    if [
         "kmipkit_protocol::RequestMessage::try_from_ttlv",
         "kmipkit_protocol::ResponseMessage::try_from_ttlv",
     ]
@@ -1994,6 +2039,41 @@ fn invoke(
     elements: &[Json],
     protocol_version: &str,
 ) -> Option<Result<Item>> {
+    if [
+        "kmipkit_protocol::Ticket::new",
+        "kmipkit_protocol::Ticket::try_from_ttlv",
+    ]
+    .contains(&symbol)
+    {
+        return Some((|| {
+            let fixture = ticket_ttlv_fixture()?;
+            let tree = fixture
+                .as_structure()
+                .ok_or("Ticket fixture is not a Structure")?
+                .try_clone()
+                .map_err(|_| "Ticket fixture copy failed")?;
+            let ticket = if symbol == "kmipkit_protocol::Ticket::new" {
+                kmipkit::protocol::Ticket::new(
+                    kmipkit::protocol::TicketType::LOGIN,
+                    kmipkit::protocol::SecretBytes::new(vec![0x41; 16]),
+                )
+                .map_err(|_| "Ticket constructor rejected")?
+            } else {
+                kmipkit::protocol::Ticket::try_from_ttlv(tree)
+                    .map_err(|_| "Ticket parser rejected")?
+            };
+            let item = crate::driver::item(0x0042_0149, Value::structure(ticket.into_ttlv()))?;
+            let model = ticket_credential_fixture(item)?;
+            let tag = sample.tag().raw();
+            let mut candidates = Vec::new();
+            collect_tagged_items(&model, tag, &mut candidates)?;
+            match candidates.as_slice() {
+                [item] => item.try_clone().map_err(|_| "Ticket fixture copy failed"),
+                [] => Err("Ticket fixture target is missing"),
+                _ => Err("Ticket fixture target is ambiguous"),
+            }
+        })());
+    }
     if let Some(result) = invoke_simple_protocol_route(symbol, sample) {
         return Some(result);
     }
