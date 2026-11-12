@@ -1,5 +1,6 @@
 //! C ABI for TLS listeners receiving typed KMIP server-to-client requests.
-#![allow(clippy::missing_safety_doc, clippy::too_many_arguments)]
+// These public C signatures retain their ABI-defined argument lists.
+#![allow(clippy::too_many_arguments)]
 
 use super::*;
 use crate::kmipkit_attribute_reference_v1_t;
