@@ -417,6 +417,49 @@ fn typed_object_root(symbol: &str) -> Option<&'static str> {
     }
 }
 
+fn invoke_typed_object_parser(symbol: &str, object: Item) -> Option<Result<Item>> {
+    let result = match symbol {
+        "kmipkit_protocol::Certificate::try_from_item" => {
+            kmipkit::protocol::Certificate::try_from_item(object)
+                .map(kmipkit::protocol::Certificate::into_item)
+        }
+        "kmipkit_protocol::CertificateRequest::try_from_item" => {
+            kmipkit::protocol::CertificateRequest::try_from_item(object)
+                .map(kmipkit::protocol::CertificateRequest::into_item)
+        }
+        "kmipkit_protocol::OpaqueObject::try_from_item" => {
+            kmipkit::protocol::OpaqueObject::try_from_item(object)
+                .map(kmipkit::protocol::OpaqueObject::into_item)
+        }
+        "kmipkit_protocol::PgpKey::try_from_item" => {
+            kmipkit::protocol::PgpKey::try_from_item(object)
+                .map(kmipkit::protocol::PgpKey::into_item)
+        }
+        "kmipkit_protocol::PrivateKey::try_from_item" => {
+            kmipkit::protocol::PrivateKey::try_from_item(object)
+                .map(kmipkit::protocol::PrivateKey::into_item)
+        }
+        "kmipkit_protocol::PublicKey::try_from_item" => {
+            kmipkit::protocol::PublicKey::try_from_item(object)
+                .map(kmipkit::protocol::PublicKey::into_item)
+        }
+        "kmipkit_protocol::SecretData::try_from_item" => {
+            kmipkit::protocol::SecretData::try_from_item(object)
+                .map(kmipkit::protocol::SecretData::into_item)
+        }
+        "kmipkit_protocol::SplitKey::try_from_item" => {
+            kmipkit::protocol::SplitKey::try_from_item(object)
+                .map(kmipkit::protocol::SplitKey::into_item)
+        }
+        "kmipkit_protocol::SymmetricKey::try_from_item" => {
+            kmipkit::protocol::SymmetricKey::try_from_item(object)
+                .map(kmipkit::protocol::SymmetricKey::into_item)
+        }
+        _ => return None,
+    };
+    Some(result.map_err(|_| "typed object parser rejected"))
+}
+
 fn managed_object_root_name(target: &Json, elements: &[Json]) -> Option<&'static str> {
     let mut pending = target["parent_element_ids"]
         .as_array()?
@@ -576,47 +619,7 @@ fn invoke(
     }
     if let Some(root) = typed_object_root(symbol) {
         let (_, object, _) = crate::fixtures::object(root).ok()?;
-        let result = match symbol {
-            "kmipkit_protocol::Certificate::try_from_item" => {
-                kmipkit::protocol::Certificate::try_from_item(object)
-                    .map(kmipkit::protocol::Certificate::into_item)
-            }
-            "kmipkit_protocol::CertificateRequest::try_from_item" => {
-                kmipkit::protocol::CertificateRequest::try_from_item(object)
-                    .map(kmipkit::protocol::CertificateRequest::into_item)
-            }
-            "kmipkit_protocol::OpaqueObject::try_from_item" => {
-                kmipkit::protocol::OpaqueObject::try_from_item(object)
-                    .map(kmipkit::protocol::OpaqueObject::into_item)
-            }
-            "kmipkit_protocol::PgpKey::try_from_item" => {
-                kmipkit::protocol::PgpKey::try_from_item(object)
-                    .map(kmipkit::protocol::PgpKey::into_item)
-            }
-            "kmipkit_protocol::PrivateKey::try_from_item" => {
-                kmipkit::protocol::PrivateKey::try_from_item(object)
-                    .map(kmipkit::protocol::PrivateKey::into_item)
-            }
-            "kmipkit_protocol::PublicKey::try_from_item" => {
-                kmipkit::protocol::PublicKey::try_from_item(object)
-                    .map(kmipkit::protocol::PublicKey::into_item)
-            }
-            "kmipkit_protocol::SecretData::try_from_item" => {
-                kmipkit::protocol::SecretData::try_from_item(object)
-                    .map(kmipkit::protocol::SecretData::into_item)
-            }
-            "kmipkit_protocol::SplitKey::try_from_item" => {
-                kmipkit::protocol::SplitKey::try_from_item(object)
-                    .map(kmipkit::protocol::SplitKey::into_item)
-            }
-            "kmipkit_protocol::SymmetricKey::try_from_item" => {
-                kmipkit::protocol::SymmetricKey::try_from_item(object)
-                    .map(kmipkit::protocol::SymmetricKey::into_item)
-            }
-            _ => return None,
-        }
-        .map_err(|_| "typed object parser rejected");
-        return Some(result);
+        return invoke_typed_object_parser(symbol, object);
     }
     if symbol.starts_with("kmipkit_ttlv::Value::") {
         let expected = match sample.item_type() {
