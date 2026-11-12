@@ -137,10 +137,17 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertFalse(gaps)
         self.assertEqual(16, len(report['events']))
         self.assertEqual(symbols, {event['public_api_symbol'] for event in report['events']})
-        self.assertEqual({'KMIPKIT-ELEM-ENUM-VALUE-ADJUSTMENT-TYPE-' + name
-                          for name in ('DECREMENT-00000002', 'EXTENSIONS-8XXXXXXX',
-                                       'INCREMENT-00000001', 'NEGATE-00000003')},
-                         {event['target_id'] for event in report['events']})
+        adjustment_targets = [target for target in self.catalog['normative_targets']
+                              if target['target_id'].startswith(
+                                  'KMIPKIT-ELEM-ENUM-VALUE-ADJUSTMENT-TYPE-')]
+        adjustment_tag = next(target for target in self.catalog['normative_targets']
+                              if target['kind'] == 'tag' and target['name'] == 'Adjustment Type')
+        expected_target_ids = {target['target_id'] for target in adjustment_targets}
+        expected_trees = {self.runner.digest([[int(adjustment_tag['wire_value'], 16), 5,
+                                                int(target['wire_value'].replace('X', '0'), 16)]])
+                          for target in adjustment_targets}
+        self.assertEqual(expected_target_ids, {event['target_id'] for event in report['events']})
+        self.assertEqual(expected_trees, {event['request_tree_sha256'] for event in report['events']})
 
     def test_cryptographic_parameter_enum_setters_preserve_exact_values_and_types(self):
         names = ('BLOCK-CIPHER-MODE', 'PADDING-METHOD', 'HASHING-ALGORITHM', 'KEY-ROLE-TYPE',
