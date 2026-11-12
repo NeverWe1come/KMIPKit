@@ -34,6 +34,7 @@ import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvItemType;
 import org.kmipkit.ttlv.StandardAttribute;
 import org.kmipkit.ttlv.TtlvStructure;
+import org.kmipkit.ttlv.TtlvStructureView;
 import org.kmipkit.ttlv.TtlvValue;
 import org.kmipkit.ttlv.TypedAttribute;
 
@@ -282,6 +283,7 @@ class ControlledTlsPeerTest {
             String responseHash = normalizedTreeSha256(responseBytes);
             appendNetworkQueryRouteEvents(events, protocolVersion, requestHash, responseHash);
             appendControlledActivationDateNetworkEvents(events, protocolVersion);
+            appendControlledKeyFormatRawResponseRouteEvents(events, protocolVersion);
         }
 
         writeRouteExecutionReport(reportPath, mapper, events);
@@ -293,7 +295,7 @@ class ControlledTlsPeerTest {
                         "test-norm-enumeration-value-profile-name-reserved-00000001-00000103")),
                 "A finite Profile Name range must remain pending until each named value is represented.");
         assertEquals(2, routeEventCount(report.path("events"),
-                        "test-norm-enumeration-value-key-format-type-raw-00000001",
+                        "test-norm-enumeration-value-enum-value-key-format-type-raw-00000001",
                         "java.typed-protocol.function.client_batch_item_response_raw_ttlv"),
                 "The controlled Get response must exercise raw TTLV access to the named Key Format Type value.");
         for (EnumerationFixture fixture : enumerationFixtures) {
@@ -328,7 +330,7 @@ class ControlledTlsPeerTest {
         int bitmaskEventCount = bitmaskFixtures.stream()
                 .mapToInt(fixture -> fixture.protocolVersions().size() * (4 + (fixture.attribute() == null ? 0 : 3)))
                 .sum();
-        assertEquals(68 + enumerationEventCount + bitmaskEventCount + 92, report.path("events").size());
+        assertEquals(68 + enumerationEventCount + bitmaskEventCount + 94, report.path("events").size());
         long bitmaskEvents = 0;
         for (JsonNode event : report.path("events")) {
             if ("test-bitmask-cryptographic-usage-mask".equals(event.path("case_id").asText())) {
@@ -2010,6 +2012,56 @@ class ControlledTlsPeerTest {
                 normalizedTreeSha256(activationDateResponse(minor)));
     }
 
+    private void appendControlledKeyFormatRawResponseRouteEvents(ArrayNode events, String protocolVersion)
+            throws Exception {
+        byte[] serverCertificatePem = fixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = fixture("server-key.pem");
+        byte[] clientCertificatePem = fixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = fixture("client-key.pem");
+        int minor = "2.0".equals(protocolVersion) ? 0 : 1;
+        SSLServerSocket listener = listener(certificate(serverCertificatePem),
+                privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+        byte[] response = getResponse(minor);
+        FutureTask<byte[]> peer = new FutureTask<>(() -> serveOneResponse(listener, response));
+        Thread peerThread = new Thread(peer, "java-validator-key-format-peer-" + protocolVersion);
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        Path connectionFile = temporaryDirectory.resolve("key-format-" + protocolVersion + ".json");
+        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                clientCertificatePem, clientPrivateKeyPem, false, protocolVersion));
+        try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile));
+                ClientBatch batch = ClientBatch.create();
+                ClientBatchItem request = ClientBatchItem.get(
+                        UniqueIdentifier.textString(CREATED_OBJECT_ID), null, null, null, null)
+                        .withUniqueBatchItemId("item-0".getBytes(StandardCharsets.US_ASCII))) {
+            batch.add(request);
+            try (ClientBatchResponse result = driver.executeBatchForEvidence(batch)) {
+                assertEquals(1, result.itemCount());
+                try (ClientBatchItemResult itemResult = result.itemAt(0);
+                        TtlvStructure raw = itemResult.raw().orElseThrow();
+                        TtlvStructureView view = raw.view()) {
+                    assertEquals(0x0aL, itemResult.operation());
+                    assertEquals(3L, view.itemCount());
+                    appendRouteEvent(events,
+                            "test-norm-enumeration-value-enum-value-key-format-type-raw-00000001",
+                            "java.typed-protocol.function.client_batch_item_response_raw_ttlv",
+                            "KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-RAW-00000001",
+                            "org.kmipkit.extensions.ClientBatchItemResult.raw", null, null,
+                            "decode", protocolVersion, null, null,
+                            normalizedTreeSha256(getResponsePayload()));
+                }
+            }
+        } finally {
+            listener.close();
+        }
+        byte[] request = peer.get(15, TimeUnit.SECONDS);
+        assertEquals(0x0aL, requestOperation(request));
+        assertEquals(minor, requestProtocolMinorVersion(request));
+        assertTrue(contains(response, item(0x420042, 5, intBytes(1))),
+                "The controlled Get response must contain the Raw Key Format Type value.");
+    }
+
     private static void executeGetAttributesForEvidence(JavaKmipDriver driver, ClientBatchItem request,
             boolean readTypedResponse) throws Exception {
         try (ClientBatch batch = ClientBatch.create()) {
@@ -2458,10 +2510,23 @@ class ControlledTlsPeerTest {
     }
 
     private static byte[] getResponse() throws Exception {
+        return getResponse(1);
+    }
+
+    private static byte[] getResponse(int protocolMinorVersion) throws Exception {
         byte[] protocolVersion = structure(0x420069,
-                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(1)));
+                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(protocolMinorVersion)));
         byte[] header = structure(0x42007a, protocolVersion,
                 item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(1)));
+        byte[] payload = getResponsePayload();
+        byte[] responseItem = structure(0x42000f,
+                item(0x42005c, 5, intBytes(10)),
+                item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)),
+                item(0x42007f, 5, intBytes(0)), payload);
+        return structure(0x42007b, header, responseItem);
+    }
+
+    private static byte[] getResponsePayload() throws Exception {
         byte[] keyMaterial = new byte[32];
         java.util.Arrays.fill(keyMaterial, (byte) 0x5a);
         byte[] keyBlock = structure(0x420040,
@@ -2473,11 +2538,7 @@ class ControlledTlsPeerTest {
                 item(0x420057, 5, intBytes(2)),
                 item(0x420094, 7, CREATED_OBJECT_ID.getBytes(StandardCharsets.UTF_8)),
                 structure(0x42008f, keyBlock));
-        byte[] responseItem = structure(0x42000f,
-                item(0x42005c, 5, intBytes(10)),
-                item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)),
-                item(0x42007f, 5, intBytes(0)), payload);
-        return structure(0x42007b, header, responseItem);
+        return payload;
     }
 
     private static byte[] identifierResponse(long operation) throws Exception {
