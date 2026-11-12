@@ -2679,6 +2679,49 @@ mod tests {
     }
 
     #[test]
+    fn client_batch_authentication_and_timestamp_routes_cover_nested_fixtures() {
+        let catalog: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        let routes = [
+            (
+                "kmipkit_client::ClientBatch::with_authentication",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-9-4-CREDENTIAL-MAY-BE-REPEATED",
+            ),
+            (
+                "kmipkit_client::ClientBatch::with_request_time_stamp",
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-TIMESTAMP",
+            ),
+            (
+                "kmipkit_client::ClientBatch::with_request_time_stamp",
+                "KMIPKIT-ELEM-TAG-420092",
+            ),
+        ];
+
+        for (symbol, target_id) in routes {
+            let target = catalog["normative_targets"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|target| target["target_id"] == target_id)
+                .unwrap();
+            let expected = sample_for_route_at_version(symbol, target, elements, "2.1").unwrap();
+            let result = invoke(symbol, &expected, target, elements, "2.1")
+                .unwrap_or_else(|| panic!("{symbol} route is not executable"))
+                .unwrap_or_else(|error| panic!("{symbol} rejected {target_id}: {error}"));
+            assert!(
+                crate::local_wire::target_hash(&result, &expected).is_ok(),
+                "{symbol} changed {target_id}"
+            );
+        }
+    }
+
+    #[test]
     fn attribute_reference_constructors_execute_name_and_raw_tag_forms() {
         let catalog: Json = serde_json::from_str(include_str!(
             "../../shared/catalog/kmipkit-1.0-test-catalog.json"
