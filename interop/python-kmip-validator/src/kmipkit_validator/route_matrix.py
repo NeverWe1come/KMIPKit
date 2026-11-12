@@ -593,12 +593,12 @@ def execute_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | Non
             return _credential_cell(cell, case, target)
         if cell['public_api_symbol'].startswith('kmipkit.async_operations.'):
             return _async_request_cell(cell, case, target)
+        if cell['public_api_symbol'] in _TYPED_ATTRIBUTE_SYMBOLS:
+            return _typed_attribute_cell(cell, case, target)
         if cell['public_api_symbol'].startswith('kmipkit.attribute_operations.'):
             return _attribute_request_cell(cell, case, target)
         if cell['public_api_symbol'].startswith('kmipkit.managed_objects.'):
             return _managed_object_cell(cell, case, target)
-        if cell['public_api_symbol'] in _TYPED_ATTRIBUTE_SYMBOLS:
-            return _typed_attribute_cell(cell, case, target)
         if cell['public_api_symbol'].startswith('kmipkit.cryptographic_parameters.'):
             return _crypto_parameters_cell(cell, case, target)
         return _generic_cell(cell, case, target)
