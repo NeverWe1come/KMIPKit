@@ -8,6 +8,18 @@ import re
 
 
 _SHA256 = re.compile(r"[0-9a-f]{64}\Z")
+VALIDATOR_ROOT = Path(__file__).resolve().parents[1]
+
+
+def _resolve_within_root(path: Path, root: Path) -> Path:
+    """Resolve a CLI path and reject symlink or traversal escapes."""
+    resolved_root = root.resolve()
+    resolved_path = path.resolve(strict=True)
+    try:
+        resolved_path.relative_to(resolved_root)
+    except ValueError as error:
+        raise ValueError("path is outside the allowed directories") from error
+    return resolved_path
 
 
 def _validated_artifact_digest(ledger: dict) -> str:
@@ -35,8 +47,13 @@ def main() -> int:
     parser.add_argument("--reference", type=Path, required=True)
     parser.add_argument("--generated", type=Path, required=True)
     args = parser.parse_args()
-    reference = json.loads(args.reference.read_text(encoding="utf-8"))
-    generated = json.loads(args.generated.read_text(encoding="utf-8"))
+    try:
+        reference_path = _resolve_within_root(args.reference, VALIDATOR_ROOT)
+        generated_path = _resolve_within_root(args.generated, VALIDATOR_ROOT / "build")
+    except (OSError, ValueError) as error:
+        parser.error(str(error))
+    reference = json.loads(reference_path.read_text(encoding="utf-8"))
+    generated = json.loads(generated_path.read_text(encoding="utf-8"))
     compare_ledgers(reference, generated)
     print("Java route coverage matches the checked-in reference.")
     return 0
