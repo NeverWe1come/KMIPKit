@@ -534,9 +534,16 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
         decodes = [event for event in report['events'] if event['action'] == 'decode']
         self.assertTrue(decodes)
+        allocation_codes = {
+            case['case_id']: {
+                'reserved': 'tag_reserved',
+                'unused': 'tag_not_allocated',
+            }[case['requires']['allocation']]
+            for case in catalog['test_cases']
+        }
         for event in decodes:
             self.assertEqual('rejected', event['decode_outcome'])
-            self.assertEqual('tag_not_allocated', event['decode_rejection_code'])
+            self.assertEqual(allocation_codes[event['case_id']], event['decode_rejection_code'])
             self.assertRegex(event['decode_input_sha256'], '^[0-9a-f]{64}$')
             self.assertNotIn('response_tree_sha256', event)
 
