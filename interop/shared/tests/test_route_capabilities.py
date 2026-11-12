@@ -55,6 +55,24 @@ class RouteCapabilitiesTests(unittest.TestCase):
         self.assertTrue(routes)
         self.assertTrue(any('KMIPKIT-ELEM-ATTRIBUTE-ACTIVATION-DATE' in r['normative_target_ids'] for r in routes))
 
+    def test_secret_data_key_property_exclusion_has_oasis_source_evidence(self):
+        route = next(route for route in self.data['routes']
+                     if route['language'] == 'python'
+                     and route['public_api_symbol'] ==
+                     'kmipkit.managed_objects.ManagedObject.secret_data')
+        exclusion = next(exclusion for exclusion in route['case_exclusions']
+                         if 'Cryptographic Algorithm and Cryptographic Length' in exclusion['reason'])
+        self.assertEqual({
+            'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-ALGORITHM',
+            'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-LENGTH',
+        }, set(exclusion['target_ids']))
+        self.assertIn('§2.7 Table 8', exclusion['reason'])
+        self.assertIn('§3.1', exclusion['reason'])
+        self.assertIn('specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html',
+                      exclusion['source_paths'])
+        self.assertIn('specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html',
+                      exclusion['source_paths'])
+
     def test_typed_attribute_marker_does_not_inherit_a_sibling_attribute_name(self):
         routes = [route for route in self.data['routes']
                   if route['language'] == 'rust' and 'typed::Comment>' in route['public_api_symbol']]

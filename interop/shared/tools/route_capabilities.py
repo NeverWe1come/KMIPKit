@@ -96,6 +96,11 @@ _CERTIFICATE_CONTENT_SOURCES = [
     'specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html',
     'specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html',
 ]
+_SECRET_DATA_KEY_PROPERTY_TARGETS = [
+    'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-ALGORITHM',
+    'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-LENGTH',
+]
+_SECRET_DATA_FACTORY = ('python', 'kmipkit.managed_objects.ManagedObject.secret_data')
 
 
 def _case_exclusions(root, commit, language, symbol):
@@ -132,6 +137,17 @@ def _case_exclusions(root, commit, language, symbol):
         exclusions.append({
             'target_ids': [_CERTIFICATE_ATTRIBUTES_TARGET],
             'reason': 'OASIS KMIP 2.0/2.1 §4.6 Table 39 describes X.509 certificate contents, while §2.2 represents a Certificate object through Certificate Value; the §4.6 names are not standalone TTLV tags and cannot be Item targets.',
+            'source_paths': source_paths,
+        })
+    if (language, symbol) == _SECRET_DATA_FACTORY:
+        source_paths = ['bindings/python/src/kmipkit/managed_objects.py',
+                        'specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html',
+                        'specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html']
+        for source_path in source_paths:
+            source(root, commit, source_path)
+        exclusions.append({
+            'target_ids': list(_SECRET_DATA_KEY_PROPERTY_TARGETS),
+            'reason': 'OASIS KMIP 2.0/2.1 §2.7 Table 8 defines Secret Data fields as Secret Data Type and Key Block, while §3.1 defines Cryptographic Algorithm and Cryptographic Length as properties of a key. The Secret Data factory therefore has no valid input for these key-only Key Block member cases.',
             'source_paths': source_paths,
         })
     return exclusions
