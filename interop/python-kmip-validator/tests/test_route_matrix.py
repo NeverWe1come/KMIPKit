@@ -312,6 +312,7 @@ class RouteMatrixTests(unittest.TestCase):
                         'public_api_symbol': symbol, 'transport': None}
                 result = self.runner.execute_cell(cell, case, target)
                 self.assertEqual(result['request_tree_sha256'], result['response_tree_sha256'])
+        self.assert_route_cells_pass(set(routes))
 
     def test_scalar_payload_variants_roundtrip_the_exact_field_type_and_tag(self):
         catalog = copy.deepcopy(self.catalog)

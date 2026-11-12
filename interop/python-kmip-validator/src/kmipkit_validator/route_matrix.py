@@ -470,9 +470,12 @@ def _managed_object_tree(target: dict) -> list:
         raise RecipePending
     kind = target.get('kind')
     target_id = target['target_id']
-    has_wrapping_target = any(marker in target_id for marker in (
-        'KEY-WRAPPING-DATA', 'ENCRYPTION-KEY-INFORMATION',
-        'MAC-SIGNATURE-KEY-INFORMATION'))
+    has_wrapping_target = (
+        element.get('name') == 'Key Wrapping Data'
+        or any(marker in target_id for marker in (
+            'KEY-WRAPPING-DATA', 'ENCRYPTION-KEY-INFORMATION',
+            'MAC-SIGNATURE-KEY-INFORMATION'))
+    )
     key_material_ids = []
     if kind == 'object_structure' and element.get('name') == 'Key Material':
         key_material_ids.append(element['element_id'])
