@@ -38,6 +38,11 @@ The compiled C-consumer tests were added in these distinct failing commits:
 - This refactor commit narrows the new module's lint exception to
   `too_many_arguments` (the C ABI signatures are fixed) and records callback
   and verification boundaries in this evidence file.
+- `aaa8f4903` adds a failing regression test for the C-only record fields
+  omitted by the export auditor.
+- `2bac0464f` teaches the auditor to inventory declared C-only layouts.
+- `d4fb8a4db` documents the writable-pointer safety precondition and factors
+  the shared listener response-builder path to reduce duplicated validation.
 
 ## Verification
 
@@ -50,14 +55,19 @@ The compiled C-consumer tests were added in these distinct failing commits:
   passed: 3 compiled C-consumer tests.
 - `python3 -B tools/api_manifest/generate.py --check` — passed: 12 generated
   outputs verified.
+- `python3 -m unittest tools.api_manifest.tests.test_binding_exports` — passed:
+  60 tests, including the new C-only layout regression.
+- `cargo build --locked -p kmipkit-ffi --features coverage-c-consumer` and
+  `python3 -B tools/api_manifest/audit_binding_exports.py --repo-root .
+  --c-only --c-binary target/debug/libkmipkit_ffi.so --check` — passed; all
+  2,080 declarations were matched, with no missing fields or kind mismatches.
 - Focused generator unit test
   `test_c_only_handle_and_versioned_record_can_be_declared_in_public_header` —
   passed.
 - `git diff --check` — passed.
-- The full generator unittest module was interrupted after its focused C-only
-  test passed; the draft PR CI result remains authoritative for that suite. The
-  repository C FFI AddressSanitizer job will also be evaluated on the draft
-  PR's exact head SHA.
+- The full generator unittest module remains uncompleted; the focused generator
+  test and all 60 binding-export audit tests passed. The C FFI AddressSanitizer
+  job passed on the preceding draft PR head; the updated PR head must rerun CI.
 
 ## Ownership and callback boundary
 
