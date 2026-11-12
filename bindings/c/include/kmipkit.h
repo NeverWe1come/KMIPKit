@@ -3223,22 +3223,22 @@ int32_t kmipkit_client_batch_item_response_json(kmipkit_client_batch_item_respon
  */
 /* KMIPKIT-0093-FR-008, KMIPKIT-0093-FR-009, KMIPKIT-0095-FR-001, KMIPKIT-0095-FR-002, KMIPKIT-0095-FR-003, KMIPKIT-0095-FR-004, KMIPKIT-0095-FR-005 */
 int32_t kmipkit_client_batch_item_response_xml(kmipkit_client_batch_item_response_t * item, kmipkit_codec_limits_t * limits, kmipkit_secret_bytes_t ** out_rendered);
-/* Executes one typed KMIP v2.1 Get Attribute List request. A null Unique Identifier remains omitted in the request payload.
+/* Executes one typed KMIP v2.1 Get Attribute List request. A non-null text Unique Identifier is required for this standalone exchange; use a placeholder-aware batch builder when omitting it.
  */
 /* KMIPKIT-0109-FR-001, KMIPKIT-0109-FR-002, KMIPKIT-0109-FR-003, KMIPKIT-0109-FR-004, KMIPKIT-0109-FR-005, KMIPKIT-0109-FR-006 */
 int32_t kmipkit_client_get_attribute_list_v1(kmipkit_client_t * client, const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
-/* Executes one typed KMIP v2.1 Get Attribute List request. A null Unique Identifier remains omitted in the request payload.
+/* Executes one typed KMIP v2.1 Get Attribute List request. A non-null text Unique Identifier is required for this standalone exchange; use a placeholder-aware batch builder when omitting it.
  */
 /* KMIPKIT-0109-FR-001, KMIPKIT-0109-FR-002, KMIPKIT-0109-FR-003, KMIPKIT-0109-FR-004, KMIPKIT-0109-FR-005, KMIPKIT-0109-FR-006 */
 int32_t kmipkit_client_get_attribute_list_with_options_v1(kmipkit_client_t * client, const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);
-/* Executes one typed KMIP v2.1 Get Attributes request. The optional Text String Unique Identifier and ordered Attribute References are copied for the call; duplicate references are rejected before exchange.
+/* Executes one typed KMIP v2.1 Get Attributes request. The required Text String Unique Identifier and ordered Attribute References are copied for the call; duplicate references are rejected before exchange.
  */
 /* For nullable arrays, NULL is valid only when the linked count is zero.
  * Implementations must check the count before reading elements and return
  * invalid_input when a NULL array has a nonzero count. */
 /* KMIPKIT-0109-FR-001, KMIPKIT-0109-FR-002, KMIPKIT-0109-FR-003, KMIPKIT-0109-FR-004, KMIPKIT-0109-FR-005, KMIPKIT-0109-FR-006 */
 int32_t kmipkit_client_get_attributes_v1(kmipkit_client_t * client, const kmipkit_unique_identifier_v1_t * unique_identifier, const kmipkit_attribute_reference_v1_t * attribute_references, uint64_t attribute_reference_count, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
-/* Executes one typed KMIP v2.1 Get Attributes request. The optional Text String Unique Identifier and ordered Attribute References are copied for the call; duplicate references are rejected before exchange.
+/* Executes one typed KMIP v2.1 Get Attributes request. The required Text String Unique Identifier and ordered Attribute References are copied for the call; duplicate references are rejected before exchange.
  */
 /* For nullable arrays, NULL is valid only when the linked count is zero.
  * Implementations must check the count before reading elements and return

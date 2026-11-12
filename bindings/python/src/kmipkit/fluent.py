@@ -64,13 +64,12 @@ def _execute_direct(client: Client, function: Any, identifier: Any,
                     limits: ttlv.CodecLimits, options: RequestOptions | None) -> BatchResult:
     if not isinstance(client, Client) or not isinstance(limits, ttlv.CodecLimits):
         errors.raise_for_status(4)
-    record, owner = _identifier(identifier) if identifier is not None else (None, None)
+    record, owner = _identifier(identifier)
     options_record = _request_options_record(options) if options is not None else None
     output = ffi.new("kmipkit_client_batch_response_t **")
     with _NATIVE_CALL_LOCK:
         args = [_client_abi_pointer("kmipkit_client_t *", client._pointer())]
-        if record is not None:
-            args.append(record)
+        args.append(record if record is not None else ffi.NULL)
         args.append(
             _client_abi_pointer("kmipkit_codec_limits_t *", limits._pointer())
         )
@@ -85,6 +84,73 @@ def _execute_direct(client: Client, function: Any, identifier: Any,
     if output[0] == ffi.NULL:
         errors.raise_for_status(7)
     return _batch_result(output[0], limits)
+
+
+def _execute_direct_attributes(
+    client: Client,
+    unique_identifier: extensions.UniqueIdentifier,
+    attribute_references: Sequence[extensions.AttributeReference],
+    limits: ttlv.CodecLimits,
+    options: RequestOptions | None,
+) -> BatchResult:
+    if not isinstance(client, Client) or not isinstance(limits, ttlv.CodecLimits):
+        errors.raise_for_status(4)
+    if options is not None and not isinstance(options, RequestOptions):
+        errors.raise_for_status(4)
+    if (
+        not isinstance(unique_identifier, extensions.UniqueIdentifier)
+        or unique_identifier.kind is not extensions.UniqueIdentifierKind.TEXT_STRING
+    ):
+        errors.raise_for_status(4)
+    if not isinstance(attribute_references, Sequence) or isinstance(
+        attribute_references, (str, bytes, bytearray)
+    ):
+        errors.raise_for_status(4)
+    references = extensions._bounded_snapshot(
+        attribute_references, extensions._MAX_ATTRIBUTE_REFERENCES
+    )
+    if any(
+        not isinstance(reference, extensions.AttributeReference)
+        for reference in references
+    ):
+        errors.raise_for_status(4)
+
+    with extensions._staging_buffer_scope() as staging_buffers:
+        identifier_record, identifier_owner = _identifier(unique_identifier)
+        staging_buffers.append(identifier_owner)
+        native_references, reference_count = (
+            extensions._client_native_attribute_reference_array(
+                references, staging_buffers
+            )
+        )
+        options_record = (
+            _request_options_record(options) if options is not None else None
+        )
+        output = ffi.new("kmipkit_client_batch_response_t **")
+        function = (
+            lib.kmipkit_client_get_attributes_with_options_v1
+            if options is not None
+            else lib.kmipkit_client_get_attributes_v1
+        )
+        arguments = [
+            _client_abi_pointer("kmipkit_client_t *", client._pointer()),
+            identifier_record if identifier_record is not None else ffi.NULL,
+            native_references if native_references is not None else ffi.NULL,
+            reference_count,
+            _client_abi_pointer("kmipkit_codec_limits_t *", limits._pointer()),
+        ]
+        if options_record is not None:
+            arguments.append(options_record)
+        arguments.append(output)
+        with _NATIVE_CALL_LOCK:
+            try:
+                status = function(*arguments)
+            except (OverflowError, TypeError, ValueError):
+                errors.raise_for_status(4)
+            _raise_client_status(status)
+        if output[0] == ffi.NULL:
+            errors.raise_for_status(7)
+        return _batch_result(output[0], limits)
 
 
 def _execute_direct_create(client: Client, request: Any, limits: ttlv.CodecLimits,

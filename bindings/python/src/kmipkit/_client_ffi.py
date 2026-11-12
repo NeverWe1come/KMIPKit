@@ -510,6 +510,23 @@ ffi.cdef(
         uint64_t attribute_name_length;
     } kmipkit_attribute_reference_v1_t;
 
+    int32_t kmipkit_client_get_attribute_list_v1(
+        kmipkit_client_t *, const kmipkit_unique_identifier_v1_t *,
+        kmipkit_codec_limits_t *, kmipkit_client_batch_response_t **);
+    int32_t kmipkit_client_get_attribute_list_with_options_v1(
+        kmipkit_client_t *, const kmipkit_unique_identifier_v1_t *,
+        kmipkit_codec_limits_t *, const kmipkit_request_options_v1_t *,
+        kmipkit_client_batch_response_t **);
+    int32_t kmipkit_client_get_attributes_v1(
+        kmipkit_client_t *, const kmipkit_unique_identifier_v1_t *,
+        const kmipkit_attribute_reference_v1_t *, uint64_t,
+        kmipkit_codec_limits_t *, kmipkit_client_batch_response_t **);
+    int32_t kmipkit_client_get_attributes_with_options_v1(
+        kmipkit_client_t *, const kmipkit_unique_identifier_v1_t *,
+        const kmipkit_attribute_reference_v1_t *, uint64_t,
+        kmipkit_codec_limits_t *, const kmipkit_request_options_v1_t *,
+        kmipkit_client_batch_response_t **);
+
     typedef struct {
         int32_t major;
         int32_t minor;

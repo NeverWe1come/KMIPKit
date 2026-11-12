@@ -318639,6 +318639,8 @@
           "kmipkit.client.Client.destroy_by_id",
           "kmipkit.client.Client.execute",
           "kmipkit.client.Client.execute_with_options",
+          "kmipkit.client.Client.get_attribute_list",
+          "kmipkit.client.Client.get_attributes",
           "kmipkit.client.Client.get_by_id",
           "kmipkit.client.Client.request",
           "kmipkit.errors.InvalidInputError",
@@ -369103,7 +369105,7 @@
     {
       "c": {
         "documentation": [
-          "Executes one typed KMIP v2.1 Get Attribute List request. A null Unique Identifier remains omitted in the request payload."
+          "Executes one typed KMIP v2.1 Get Attribute List request. A non-null text Unique Identifier is required for this standalone exchange; use a placeholder-aware batch builder when omitting it."
         ],
         "errorCategories": [
           "invalid_input",
@@ -369165,7 +369167,7 @@
       },
       "ordering": "not-applicable",
       "python": {
-        "cffiSymbol": "kmipkit_client_batch_item_get_attribute_list",
+        "cffiSymbol": "kmipkit_client_get_attribute_list_v1",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
@@ -369173,15 +369175,15 @@
           "protocol",
           "transport"
         ],
-        "function": "Request.get_attribute_list",
-        "module": "kmipkit.fluent",
+        "function": "Client.get_attribute_list",
+        "module": "kmipkit.client",
         "parameters": [
           {
             "name": "unique_identifier",
-            "type": "UniqueIdentifier | None"
+            "type": "UniqueIdentifier"
           }
         ],
-        "returnType": "GetAttributeListBuilder"
+        "returnType": "ClientBatchResponse"
       },
       "requirementIds": [
         "KMIPKIT-0109-FR-001",
@@ -369220,7 +369222,7 @@
     {
       "c": {
         "documentation": [
-          "Executes one typed KMIP v2.1 Get Attribute List request. A null Unique Identifier remains omitted in the request payload."
+          "Executes one typed KMIP v2.1 Get Attribute List request. A non-null text Unique Identifier is required for this standalone exchange; use a placeholder-aware batch builder when omitting it."
         ],
         "errorCategories": [
           "invalid_input",
@@ -369293,7 +369295,7 @@
       },
       "ordering": "not-applicable",
       "python": {
-        "cffiSymbol": "kmipkit_client_batch_item_get_attribute_list",
+        "cffiSymbol": "kmipkit_client_get_attribute_list_with_options_v1",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
@@ -369301,19 +369303,19 @@
           "protocol",
           "transport"
         ],
-        "function": "Request.get_attribute_list",
-        "module": "kmipkit.fluent",
+        "function": "Client.get_attribute_list",
+        "module": "kmipkit.client",
         "parameters": [
           {
             "name": "unique_identifier",
-            "type": "UniqueIdentifier | None"
+            "type": "UniqueIdentifier"
           },
           {
             "name": "options",
             "type": "RequestOptions"
           }
         ],
-        "returnType": "GetAttributeListBuilder"
+        "returnType": "ClientBatchResponse"
       },
       "requirementIds": [
         "KMIPKIT-0109-FR-001",
@@ -369356,7 +369358,7 @@
     {
       "c": {
         "documentation": [
-          "Executes one typed KMIP v2.1 Get Attributes request. The optional Text String Unique Identifier and ordered Attribute References are copied for the call; duplicate references are rejected before exchange."
+          "Executes one typed KMIP v2.1 Get Attributes request. The required Text String Unique Identifier and ordered Attribute References are copied for the call; duplicate references are rejected before exchange."
         ],
         "errorCategories": [
           "invalid_input",
@@ -369436,7 +369438,7 @@
       },
       "ordering": "not-applicable",
       "python": {
-        "cffiSymbol": "kmipkit_client_batch_item_get_attributes",
+        "cffiSymbol": "kmipkit_client_get_attributes_v1",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
@@ -369444,19 +369446,19 @@
           "protocol",
           "transport"
         ],
-        "function": "Request.get_attributes",
-        "module": "kmipkit.fluent",
+        "function": "Client.get_attributes",
+        "module": "kmipkit.client",
         "parameters": [
           {
             "name": "unique_identifier",
-            "type": "UniqueIdentifier | None"
+            "type": "UniqueIdentifier"
           },
           {
             "name": "attribute_references",
             "type": "Sequence[AttributeReference]"
           }
         ],
-        "returnType": "GetAttributesBuilder"
+        "returnType": "ClientBatchResponse"
       },
       "requirementIds": [
         "KMIPKIT-0109-FR-001",
@@ -369503,7 +369505,7 @@
     {
       "c": {
         "documentation": [
-          "Executes one typed KMIP v2.1 Get Attributes request. The optional Text String Unique Identifier and ordered Attribute References are copied for the call; duplicate references are rejected before exchange."
+          "Executes one typed KMIP v2.1 Get Attributes request. The required Text String Unique Identifier and ordered Attribute References are copied for the call; duplicate references are rejected before exchange."
         ],
         "errorCategories": [
           "invalid_input",
@@ -369594,7 +369596,7 @@
       },
       "ordering": "not-applicable",
       "python": {
-        "cffiSymbol": "kmipkit_client_batch_item_get_attributes",
+        "cffiSymbol": "kmipkit_client_get_attributes_with_options_v1",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
@@ -369602,12 +369604,12 @@
           "protocol",
           "transport"
         ],
-        "function": "Request.get_attributes",
-        "module": "kmipkit.fluent",
+        "function": "Client.get_attributes",
+        "module": "kmipkit.client",
         "parameters": [
           {
             "name": "unique_identifier",
-            "type": "UniqueIdentifier | None"
+            "type": "UniqueIdentifier"
           },
           {
             "name": "attribute_references",
@@ -369618,7 +369620,7 @@
             "type": "RequestOptions"
           }
         ],
-        "returnType": "GetAttributesBuilder"
+        "returnType": "ClientBatchResponse"
       },
       "requirementIds": [
         "KMIPKIT-0109-FR-001",
@@ -1058766,6 +1058768,49 @@
       },
       "candidateSpecId": "KMIPKIT-0109",
       "capabilityId": "fluent_dx_api",
+      "declarationId": "KMIPKIT-0109:python:Client.get_attribute_list",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.Client.get_attribute_list",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_get_attribute_list_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.FluentRequest.getAttributeList",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.get_attribute_list",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::get_attribute_list",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0109-FR-001",
+        "KMIPKIT-0109-FR-002",
+        "KMIPKIT-0109-FR-003",
+        "KMIPKIT-0109-FR-004",
+        "KMIPKIT-0109-FR-005",
+        "KMIPKIT-0109-FR-006",
+        "KMIPKIT-0109-FR-007"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan.",
+        "kind": "feature-specification",
+        "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0109",
+      "capabilityId": "fluent_dx_api",
       "declarationId": "KMIPKIT-0109:GetAttributes:java",
       "declarationState": "declared",
       "exportName": "org.kmipkit.fluent.FluentRequest.getAttributes",
@@ -1058824,6 +1058869,49 @@
         },
         "python": {
           "name": "kmipkit.fluent.Request.get_attributes",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::get_attributes",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0109-FR-001",
+        "KMIPKIT-0109-FR-002",
+        "KMIPKIT-0109-FR-003",
+        "KMIPKIT-0109-FR-004",
+        "KMIPKIT-0109-FR-005",
+        "KMIPKIT-0109-FR-006",
+        "KMIPKIT-0109-FR-007"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan.",
+        "kind": "feature-specification",
+        "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
+        "status": "Approved"
+      },
+      "candidateSpecId": "KMIPKIT-0109",
+      "capabilityId": "fluent_dx_api",
+      "declarationId": "KMIPKIT-0109:python:Client.get_attributes",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.Client.get_attributes",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_get_attributes_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.FluentRequest.getAttributes",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.get_attributes",
           "packageId": "python-kmipkit"
         },
         "rust": {
