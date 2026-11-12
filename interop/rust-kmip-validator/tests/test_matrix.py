@@ -340,6 +340,22 @@ class MatrixContract(unittest.TestCase):
         self.assertEqual(len(cells), len(report['events']))
         self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
 
+    def test_typed_object_and_key_model_parsers_cover_every_route_cell(self):
+        symbols = {
+            route['public_api_symbol'] for route in ROUTES['routes']
+            if route['language'] == 'rust' and route['mode'] == 'local'
+            and route['public_api_symbol'].startswith('kmipkit_protocol::')
+            and route['public_api_symbol'].endswith('::try_from_item')
+            and route['public_api_symbol'] != 'kmipkit_protocol::ManagedObject::try_from_item'
+        }
+        cells = [cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
+                 if cell['public_api_symbol'] in symbols]
+        self.assertGreater(len(cells), 0)
+        process, report = self.run_matrix(cells)
+        self.assertEqual(process.returncode, 0, process.stderr or process.stdout or report)
+        self.assertEqual(len(cells), len(report['events']))
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
     def test_parameter_modifier_projects_the_exact_constructed_target(self):
         cell = self.cell('kmipkit_protocol::CryptographicParametersBuilder::with_padding_method',
                          'KMIPKIT-ELEM-ENUM-VALUE-PADDING-METHOD-NONE-00000001')
