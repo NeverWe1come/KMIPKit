@@ -64,6 +64,8 @@ def _request_identity(record: dict) -> tuple:
 
 
 def _expected_batch_operations(case: dict) -> list[str] | None:
+    if case.get("category") != "batch_workflows":
+        return None
     scenario = case.get("requires", {}).get("protocol_scenario", {})
     if not isinstance(scenario, dict):
         return None
