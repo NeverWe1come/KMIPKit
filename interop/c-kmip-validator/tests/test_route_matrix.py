@@ -699,6 +699,29 @@ class RouteMatrixTests(unittest.TestCase):
                                 for event in events), symbol)
 
 
+    def test_vendor_attribute_read_back_uses_vendor_name_reference(self):
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-attr-vendor-attribute'
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases'] if case['case_id'] == case_id]}
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest,
+            protocol_versions=('2.1',), network_combinations=(('TTLV', 'raw_tls'),))
+        self.assertEqual(len(checks), 2, 'vendor attribute must use both Get Attributes constructors')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks))
+        self.assertTrue(all(check['request_attribute_reference_names'] == ['fixture_attribute']
+                            for check in checks))
+        self.assertTrue(all(check['request_vendor_identifications'] == ['fixture_vendor']
+                            for check in checks))
+        self.assertTrue(all(check['response_attribute_tags'] == ['420008'] for check in checks))
+        for symbol in ('kmipkit_client_batch_item_get_attributes',
+                       'kmipkit_client_batch_item_get_attributes_from_request'):
+            self.assertTrue(any(event['public_api_symbol'] == symbol and event['action'] == 'send'
+                                for event in events), symbol)
+
+
     def test_hash_and_rng_cases_call_their_public_routes_and_check_responses(self):
         from artifact_support import ROOT
         from route_peer import RECIPES, execute_network_cells
