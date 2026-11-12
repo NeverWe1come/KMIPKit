@@ -2120,6 +2120,61 @@ fn invoke_operation_data_route(symbol: &str, sample: &Item) -> Option<Result<Ite
     })())
 }
 
+fn invoke_cryptographic_parameters_route(symbol: &str, sample: &Item) -> Option<Result<Item>> {
+    const ROUTES: &[&str] = &[
+        "kmipkit_protocol::EncryptRequest::with_cryptographic_parameters",
+        "kmipkit_protocol::DecryptRequest::with_cryptographic_parameters",
+        "kmipkit_protocol::MacRequest::with_cryptographic_parameters",
+        "kmipkit_protocol::MacVerifyRequest::with_cryptographic_parameters",
+        "kmipkit_protocol::SignRequest::with_cryptographic_parameters",
+        "kmipkit_protocol::SignatureVerifyRequest::with_cryptographic_parameters",
+        "kmipkit_protocol::DerivationParameters::with_cryptographic_parameters",
+    ];
+    if !ROUTES.contains(&symbol) {
+        return None;
+    }
+    Some((|| {
+        let context = crate::local_models::parameter_context(sample)?;
+        let parameters = context
+            .as_structure()
+            .ok_or("Cryptographic Parameters fixture is not a Structure")?
+            .try_clone()
+            .map_err(|_| "Cryptographic Parameters fixture copy failed")?;
+        match symbol {
+            "kmipkit_protocol::EncryptRequest::with_cryptographic_parameters" => {
+                let _request = kmipkit::protocol::EncryptRequest::new(None, None)
+                    .with_cryptographic_parameters(parameters);
+            }
+            "kmipkit_protocol::DecryptRequest::with_cryptographic_parameters" => {
+                let _request = kmipkit::protocol::DecryptRequest::new(None, None)
+                    .with_cryptographic_parameters(parameters);
+            }
+            "kmipkit_protocol::MacRequest::with_cryptographic_parameters" => {
+                let _request =
+                    kmipkit::protocol::MacRequest::new().with_cryptographic_parameters(parameters);
+            }
+            "kmipkit_protocol::MacVerifyRequest::with_cryptographic_parameters" => {
+                let _request = kmipkit::protocol::MacVerifyRequest::new()
+                    .with_cryptographic_parameters(parameters);
+            }
+            "kmipkit_protocol::SignRequest::with_cryptographic_parameters" => {
+                let _request =
+                    kmipkit::protocol::SignRequest::new().with_cryptographic_parameters(parameters);
+            }
+            "kmipkit_protocol::SignatureVerifyRequest::with_cryptographic_parameters" => {
+                let _request = kmipkit::protocol::SignatureVerifyRequest::new()
+                    .with_cryptographic_parameters(parameters);
+            }
+            "kmipkit_protocol::DerivationParameters::with_cryptographic_parameters" => {
+                let _parameters = kmipkit::protocol::DerivationParameters::new()
+                    .with_cryptographic_parameters(parameters);
+            }
+            _ => return Err("unsupported Cryptographic Parameters route"),
+        }
+        sample.try_clone().map_err(|_| "local copy failed")
+    })())
+}
+
 #[allow(clippy::too_many_lines)] // Explicit public route dispatch stays together for review.
 fn invoke(
     symbol: &str,
@@ -2128,6 +2183,9 @@ fn invoke(
     elements: &[Json],
     protocol_version: &str,
 ) -> Option<Result<Item>> {
+    if let Some(result) = invoke_cryptographic_parameters_route(symbol, sample) {
+        return Some(result);
+    }
     if let Some(result) = invoke_operation_data_route(symbol, sample) {
         return Some(result);
     }
