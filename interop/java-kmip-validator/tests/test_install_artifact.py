@@ -1,5 +1,6 @@
 import importlib.util
 from pathlib import Path
+import shlex
 import tempfile
 import unittest
 
@@ -97,7 +98,7 @@ class ReproducibleArtifactBuildEnvironmentTests(unittest.TestCase):
             ("CXXFLAGS", "-O0"),
         ):
             with self.subTest(name=name):
-                flags = INSTALL_ARTIFACT.shlex.split(environment[name])
+                flags = shlex.split(environment[name])
                 self.assertIn(optimization, flags)
                 self.assertIn(
                     "-ffile-prefix-map="
@@ -109,7 +110,22 @@ class ReproducibleArtifactBuildEnvironmentTests(unittest.TestCase):
                     f"{temporary_root.resolve()}=/kmipkit-build",
                     flags,
                 )
-        self.assertIn("-DNAME=two words", INSTALL_ARTIFACT.shlex.split(environment["CFLAGS"]))
+        self.assertIn("-DNAME=two words", shlex.split(environment["CFLAGS"]))
+
+    def test_empty_encoded_rustflags_do_not_create_empty_arguments(self):
+        environment = INSTALL_ARTIFACT.cargo_environment_with_path_remapping(
+            {"CARGO_ENCODED_RUSTFLAGS": "\x1f-C\x1fdebuginfo=0\x1f"},
+            Path("/tmp/kmipkit-java-source-empty-flags"),
+        )
+
+        self.assertEqual(
+            environment["CARGO_ENCODED_RUSTFLAGS"].split("\x1f"),
+            [
+                "-C",
+                "debuginfo=0",
+                "--remap-path-prefix=/tmp/kmipkit-java-source-empty-flags=/kmipkit-build",
+            ],
+        )
 
 
 class InstalledRouteProbeWorkflowTests(unittest.TestCase):
