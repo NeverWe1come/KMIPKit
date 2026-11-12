@@ -1631,6 +1631,9 @@ fn sample_for_route_at_version(
     elements: &[Json],
     protocol_version: &str,
 ) -> Result<Item> {
+    if symbol == "kmipkit_protocol::AttributeReference::tag" {
+        return crate::driver::item(0x0042_013b, Value::enumeration(0x0042_0001));
+    }
     if [
         "kmipkit_protocol::RequestMessage::try_from_ttlv",
         "kmipkit_protocol::ResponseMessage::try_from_ttlv",
@@ -1783,6 +1786,42 @@ fn sample_for_route_at_version(
     crate::driver::item(tag, value)
 }
 
+fn invoke_attribute_reference_route(symbol: &str, sample: &Item) -> Option<Result<Item>> {
+    if ![
+        "kmipkit_protocol::AttributeReference::name",
+        "kmipkit_protocol::AttributeReference::tag",
+    ]
+    .contains(&symbol)
+    {
+        return None;
+    }
+    Some((|| {
+        match symbol {
+            "kmipkit_protocol::AttributeReference::name" => {
+                let reference = kmipkit::protocol::AttributeReference::name(
+                    "KMIPKit.TestVendor_1",
+                    "Opaque.Attribute",
+                );
+                if reference.name_parts() != Some(("KMIPKit.TestVendor_1", "Opaque.Attribute")) {
+                    return Err("Attribute Reference name constructor lost its values");
+                }
+            }
+            "kmipkit_protocol::AttributeReference::tag" => {
+                let raw_tag = sample.with_value(|value| match value {
+                    ValueView::Enumeration(value) => Ok(*value),
+                    _ => Err("Attribute Reference Tag fixture is not an Enumeration"),
+                })?;
+                let reference = kmipkit::protocol::AttributeReference::tag(raw_tag);
+                if reference.tag_value() != Some(raw_tag) {
+                    return Err("Attribute Reference tag constructor lost its value");
+                }
+            }
+            _ => return Err("unsupported Attribute Reference route"),
+        }
+        sample.try_clone().map_err(|_| "local copy failed")
+    })())
+}
+
 fn invoke_client_batch_route(symbol: &str, sample: &Item) -> Option<Result<Item>> {
     const CLIENT_BATCH_ROUTES: &[&str] = &[
         "kmipkit_client::ClientBatch::with_asynchronous_indicator",
@@ -1869,6 +1908,9 @@ fn invoke(
     elements: &[Json],
     protocol_version: &str,
 ) -> Option<Result<Item>> {
+    if let Some(result) = invoke_attribute_reference_route(symbol, sample) {
+        return Some(result);
+    }
     if let Some(result) = invoke_client_batch_route(symbol, sample) {
         return Some(result);
     }
