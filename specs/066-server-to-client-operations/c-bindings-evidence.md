@@ -44,7 +44,8 @@ The compiled C-consumer tests were added in these distinct failing commits:
 - `d4fb8a4db` documents the writable-pointer safety precondition and factors
   the shared listener response-builder path to reduce duplicated validation.
 - `e00ac81f1` uses the established output-slot helper for opaque output handles;
-  the focused listener C-consumer suite and Clippy passed again afterward.
+  the focused listener C-consumer suite, full FFI suite, and Clippy passed
+  again afterward.
 
 ## Verification
 
