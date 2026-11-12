@@ -217,11 +217,18 @@ def applicable_routes(
     case_version = set(case["execution"]["protocol_versions"])
     expected_status = str(case.get("requires", {}).get("expected_status", "")).casefold()
     request_must_not_be_sent = expected_status.replace("_", "") == "notsent"
+    requires = case.get("requires", {})
+    local_tag_case = (case.get("execution", {}).get("mode") == "local_model"
+                      and _norm(requires.get("enum_type", "")) == "tag")
     candidates = []
     for route in manifest["routes"]:
         if route["language"] != language or case["category"] not in route["case_categories"]:
             continue
-        requires = case.get("requires", {})
+        # Tag values are generic TTLV identifiers. Typed protocol constructors
+        # that happen to emit one fixed Tag must be covered by that tag's own
+        # normative inventory case, not cross-multiplied with the whole Tag set.
+        if local_tag_case and route["api_level"] != "generic-ttlv":
+            continue
         if any(requires.get("target_kind") in exclusion["target_kinds"]
                and requires.get("allocation") in exclusion["allocations"]
                for exclusion in route.get("case_exclusions", [])):
