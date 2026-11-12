@@ -90,6 +90,15 @@ fn unsigned_wire_value(value: &str) -> Option<u32> {
     u32::from_str_radix(&digits, 16).ok()
 }
 
+fn target_wire_value(target: &Json) -> Result<u32> {
+    let range = text(target, "wire_value")?;
+    let start = range
+        .split(['-', '–', '—'])
+        .next()
+        .ok_or("target range is empty")?;
+    unsigned_wire_value(start).ok_or("target range needs a concrete fixture recipe")
+}
+
 fn vendor_attribute_value() -> Result<Value> {
     let mut fields = kmipkit::ttlv::Structure::new();
     for field in [
@@ -182,7 +191,7 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
         operation
     } else {
         match target["wire_value"].as_str() {
-            Some(value)
+            Some(_)
                 if [
                     "enumeration_value",
                     "referenced_enum_value",
@@ -191,7 +200,7 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
                 ]
                 .contains(&kind) =>
             {
-                unsigned_wire_value(value).ok_or("target range needs a concrete fixture recipe")?
+                target_wire_value(target)?
             }
             _ => 1,
         }
@@ -1469,6 +1478,13 @@ mod tests {
                 "{}: {fixture:?}",
                 target["target_id"].as_str().unwrap_or("unknown target")
             );
+            let fixture = fixture.unwrap();
+            let expected = target_wire_value(target).unwrap();
+            let raw = fixture.with_value(|value| match value {
+                kmipkit::ttlv::ValueView::Enumeration(raw) => Some(*raw),
+                _ => None,
+            });
+            assert_eq!(raw, Some(expected));
             checked += 1;
         }
         assert!(checked > 0, "catalog has no reserved Enumeration ranges");
