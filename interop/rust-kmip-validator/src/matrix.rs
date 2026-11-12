@@ -1794,6 +1794,12 @@ fn sample_for_route_at_version(
         "kmipkit_protocol::TransparentDsaPrivateKey::try_new",
         "kmipkit_protocol::TransparentDsaPublicKey::try_from_item",
         "kmipkit_protocol::TransparentDsaPublicKey::try_new",
+        "kmipkit_protocol::TransparentEcPrivateKey::try_from_item",
+        "kmipkit_protocol::TransparentEcPrivateKey::try_new",
+        "kmipkit_protocol::TransparentEcPublicKey::try_from_item",
+        "kmipkit_protocol::TransparentEcPublicKey::try_new",
+        "kmipkit_protocol::TransparentRsaPublicKey::try_from_item",
+        "kmipkit_protocol::TransparentRsaPublicKey::try_new",
     ]
     .contains(&symbol)
     {
@@ -2811,6 +2817,12 @@ fn invoke_transparent_key_material_route(
         "kmipkit_protocol::TransparentDsaPrivateKey::try_new",
         "kmipkit_protocol::TransparentDsaPublicKey::try_from_item",
         "kmipkit_protocol::TransparentDsaPublicKey::try_new",
+        "kmipkit_protocol::TransparentEcPrivateKey::try_from_item",
+        "kmipkit_protocol::TransparentEcPrivateKey::try_new",
+        "kmipkit_protocol::TransparentEcPublicKey::try_from_item",
+        "kmipkit_protocol::TransparentEcPublicKey::try_new",
+        "kmipkit_protocol::TransparentRsaPublicKey::try_from_item",
+        "kmipkit_protocol::TransparentRsaPublicKey::try_new",
     ];
     if !ROUTES.contains(&symbol) {
         return None;
@@ -2840,6 +2852,21 @@ fn invoke_transparent_key_material_route(
                 kmipkit::protocol::TransparentDsaPublicKey::try_from_item(item)
                     .map(kmipkit::protocol::TransparentDsaPublicKey::into_item)
                     .map_err(|_| "transparent DSA public key parser rejected")?
+            }
+            "kmipkit_protocol::TransparentEcPrivateKey::try_from_item" => {
+                kmipkit::protocol::TransparentEcPrivateKey::try_from_item(item)
+                    .map(kmipkit::protocol::TransparentEcPrivateKey::into_item)
+                    .map_err(|_| "transparent EC private key parser rejected")?
+            }
+            "kmipkit_protocol::TransparentEcPublicKey::try_from_item" => {
+                kmipkit::protocol::TransparentEcPublicKey::try_from_item(item)
+                    .map(kmipkit::protocol::TransparentEcPublicKey::into_item)
+                    .map_err(|_| "transparent EC public key parser rejected")?
+            }
+            "kmipkit_protocol::TransparentRsaPublicKey::try_from_item" => {
+                kmipkit::protocol::TransparentRsaPublicKey::try_from_item(item)
+                    .map(kmipkit::protocol::TransparentRsaPublicKey::into_item)
+                    .map_err(|_| "transparent RSA public key parser rejected")?
             }
             _ => item,
         };
