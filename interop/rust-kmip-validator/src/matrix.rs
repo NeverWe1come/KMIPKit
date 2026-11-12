@@ -2523,6 +2523,20 @@ fn invoke(
             request_payload_item(payload)
         })());
     }
+    if symbol == "kmipkit_protocol::LocateRequest::with_storage_status_mask" {
+        return Some((|| {
+            let raw = sample.with_value(|value| match value {
+                ValueView::Integer(value) => Ok(u32::from_ne_bytes(value.to_ne_bytes())),
+                _ => Err("Storage Status Mask fixture is not an Integer"),
+            })?;
+            let payload =
+                kmipkit::protocol::LocateRequest::new(kmipkit::protocol::AttributeSet::new())
+                    .with_storage_status_mask(kmipkit::protocol::StorageStatusMask::from_raw(raw))
+                    .to_ttlv_payload()
+                    .map_err(|_| "Locate request fixture rejected")?;
+            metadata_expected_target(&request_payload_item(payload)?, target, elements)
+        })());
+    }
     if KEY_WRAPPING_CONSTRUCTOR_ROUTES.contains(&symbol) {
         return Some(
             key_wrapping_metadata_model(symbol, target).and_then(|model| {
