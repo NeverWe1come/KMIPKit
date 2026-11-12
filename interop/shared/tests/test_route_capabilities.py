@@ -96,6 +96,21 @@ class RouteCapabilitiesTests(unittest.TestCase):
         self.assertTrue(all(target['kind'] == 'tag_range' and target['target_id'] == 'KMIPKIT-RANGE-004'
                             for target in unknown_targets), unknown['normative_target_ids'])
 
+    def test_managed_object_parser_route_only_claims_root_object_structures(self):
+        catalog = json.loads((SHARED / 'catalog/kmipkit-1.0-test-catalog.json').read_text())
+        targets = {target['target_id']: target for target in catalog['normative_targets']}
+        route = next(route for route in self.data['routes']
+                     if route['language'] == 'rust'
+                     and route['public_api_symbol'] == 'kmipkit_protocol::ManagedObject::try_from_item')
+        root_names = {
+            'Certificate', 'Certificate Request', 'Opaque Object', 'PGP Key', 'Private Key',
+            'Public Key', 'Secret Data', 'Split Key', 'Symmetric Key'}
+        expected = {target['target_id'] for target in catalog['normative_targets']
+                    if target['kind'] == 'object_structure' and target['name'] in root_names}
+        actual = set(route['normative_target_ids'])
+        self.assertEqual(expected, actual)
+        self.assertTrue(all(targets[target_id]['kind'] == 'object_structure' for target_id in actual))
+
     def test_object_type_raw_value_route_only_claims_its_own_enum_family(self):
         catalog = json.loads((SHARED / 'catalog/kmipkit-1.0-test-catalog.json').read_text())
         targets = {target['target_id']: target for target in catalog['normative_targets']}
