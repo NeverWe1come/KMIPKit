@@ -29,6 +29,26 @@ generated matrix, invokes every named public route, exchanges requests and
 responses with a controlled peer, and emits validated per-cell evidence. A
 passing shared-contract job does not satisfy those language-level requirements.
 
+## Development evidence: scoped Rust route evidence union
+
+- Red commit `351d9ccfd` added tests that require a route report to validate an
+  exact planned subset without claiming the full matrix. The focused tests
+  failed before scoped validation was implemented. Red commits `1b894a648` and
+  `80ade8a8a` then reproduced incomplete evidence unions, valid events outside
+  a declared scope, and the local runner selecting response routes that need a
+  live peer.
+- Green commit `045f86298` added exact scoped-report validation and collection
+  union checks, rejected events outside each scope, and isolated local
+  constructors from response accessors served by the controlled mTLS fixture.
+- The gate now measures pending local and network cells against the canonical
+  full Rust matrix even when a test supplies a smaller `--matrix` input.
+- Verification on 2026-11-12: all 25 tests in
+  `python3 -m unittest discover -s interop/shared/tests -p test_route_execution_evidence.py -v`
+  passed, and the focused response evidence gate test passed.
+- Full Rust route-gate execution reports 48,792 local cells and 287 controlled
+  response cells invoked, with zero failed invocations. It still correctly
+  exits nonzero with 26,376 network cells pending. T006 and T007 remain open.
+
 ## Development evidence: Secret Data constructor applicability
 
 - Red commit `f7cb47c47`: `python3 -m unittest interop.shared.tests.test_route_capabilities.RouteCapabilitiesTests.test_secret_data_constructor_does_not_claim_inapplicable_key_block_crypto_fields -v` failed because the route included Cryptographic Algorithm and Cryptographic Length.

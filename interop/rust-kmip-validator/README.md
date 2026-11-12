@@ -168,17 +168,19 @@ interop/.local/rust-ci-venv/bin/python interop/rust-kmip-validator/tools/run_rou
 ```
 
 It writes `rust-local-route-evidence.json` and `matrix-summary.json` under
-`interop/rust-kmip-validator/results/routes/`. The gate currently fails while
-operation-specific constructors and accessors, workflow-specific local fixtures,
-and network cell evidence remain unfinished. The Request Message and Response
-Message parser routes execute every inventoried field target for KMIP 2.0 and
-2.1 using complete structurally valid messages. A passing subset is never a
-full-matrix claim. The CI completeness gate deliberately preserves this failure
-while the PR is WIP. The separate live catalog fixture suite covers both API
-levels, both
-protocol versions and all six encoding/transport combinations, comparing
-normalized request and response trees; these are controlled fixtures and do
-not establish deployed vendor interoperability.
+`interop/rust-kmip-validator/results/routes/`. The gate validates local-model
+evidence and controlled response-accessor evidence as separate scopes because
+they use different fixture identities. Its required counts always come from the
+canonical full matrix, even when a test passes a smaller matrix input. The
+current full run invokes 48,792 local cells and 287 response-accessor cells
+with no failures; 26,376 network route cells remain pending, so the CI
+completeness gate exits nonzero while the PR is WIP. The Request Message and
+Response Message parser routes execute every inventoried field target for KMIP
+2.0 and 2.1 using complete structurally valid messages. A passing subset is
+never a full-matrix claim. The separate live catalog fixture suite covers both
+API levels, both protocol versions and all six encoding/transport combinations,
+comparing normalized request and response trees; these are controlled fixtures
+and do not establish deployed vendor interoperability.
 
 Generated `route_calls_generated.rs` is rebuilt by
 `tools/generate_route_calls.py` from installed typed attribute metadata and the
