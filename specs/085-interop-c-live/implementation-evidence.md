@@ -43,3 +43,15 @@ Reproduce the affected executable tests with
 The regression is explicit native-library linkage in tests that must resolve
 C ABI symbols from their instrumented Rust crate, in the same process.
 The complete C matrix remains required and pending recipes must keep failing.
+
+### Green linkage verification
+
+The Red command above was reproduced locally with Cargo 1.100.0 in an isolated
+Linux target directory: `operation_parity_0053` failed to find `-lkmipkit_ffi`.
+After removing native-library linkage from both Rust integration tests and
+explicitly retaining the Rust crate in the operation parity test, the same
+command passes: `c_api_coverage` 50/50 and `operation_parity_0053` 1/1.
+Compiled C consumers still invoke the exported ABI and now resolve it from the
+same Rust rlib as the coverage process. This avoids a second uninstrumented
+native library and its Windows duplicate symbols; Windows requires exact-head
+CI verification. No library API or implementation was changed.
