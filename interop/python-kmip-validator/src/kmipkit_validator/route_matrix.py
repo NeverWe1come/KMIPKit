@@ -1992,7 +1992,7 @@ def execute_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | Non
         if cell['public_api_symbol'].startswith('kmipkit.managed_objects.'):
             return _managed_object_cell(cell, case, target)
         if cell['public_api_symbol'].startswith('kmipkit.cryptographic_parameters.'):
-            return _crypto_parameters_cell(cell, case, target)
+            return _crypto_parameters_cell(cell, case, target, trace=trace)
         if cell['public_api_symbol'].startswith('kmipkit.messages.'):
             return _typed_message_cell(cell, case, target)
         if cell['public_api_symbol'] in _TYPED_RESPONSE_TTLV_ROUTES:
@@ -3396,7 +3396,8 @@ def _typed_attribute_structure_member_items(
     return list(fields.values())
 
 
-def _crypto_parameters_cell(cell: dict, case: dict, target: dict) -> dict:
+def _crypto_parameters_cell(cell: dict, case: dict, target: dict,
+                            trace: CallTrace | None = None) -> dict:
     """Exercise named open-enum setters, typed getters and lossless converters."""
     from kmipkit import ttlv
     from kmipkit.cryptographic_parameters import CryptographicParameters
@@ -3429,15 +3430,17 @@ def _crypto_parameters_cell(cell: dict, case: dict, target: dict) -> dict:
                             and item.get('name') == target['name']), None)
         if enumeration is None:
             raise RecipePending
+        attribute_tag = field_tags.get(target['name'], 0x420028)
         samples = [
-            (0x420028, 'Enumeration', int(item['wire_value'].replace('X', '0'), 16))
+            (attribute_tag, 'Enumeration', int(item['wire_value'].replace('X', '0'), 16))
             for item in by_id.values()
             if item.get('kind') == 'enumeration_value'
             and enumeration['element_id'] in item.get('parent_element_ids', [])
             and item.get('allocation') in ('assigned', 'extension')
             and isinstance(item.get('wire_value'), str)
         ]
-    elif (target.get('kind') in {'attribute', 'operation_structure', 'structure_member', 'tag'}
+    elif (target.get('kind') in {'attribute', 'operation_structure', 'structure_member',
+                                 'operation_payload_field', 'operation_payload_value_variant', 'tag'}
           and target_name == 'Cryptographic Parameters'):
         samples = [(0x420028, 'Enumeration', 3)]
     elif target.get('kind') in {'structure_member', 'tag'}:
@@ -3484,7 +3487,11 @@ def _crypto_parameters_cell(cell: dict, case: dict, target: dict) -> dict:
             tag = 0x420102
         with ExitStack() as owned:
             builder = owned.enter_context(CryptographicParameters.builder())
+            if cell['public_api_symbol'].endswith('.builder') and trace is not None:
+                trace.record_invocation(cell['public_api_symbol'])
             getattr(builder, field)(value)
+            if cell['public_api_symbol'].endswith('.' + field) and trace is not None:
+                trace.record_invocation(cell['public_api_symbol'])
             context_fields = []
             # KMIP 2.1 Table 59 requires IV Length for CTR/CCM/GCM,
             # and Tag Length for GCM; these are explicit fixture inputs.
@@ -3496,10 +3503,16 @@ def _crypto_parameters_cell(cell: dict, case: dict, target: dict) -> dict:
                     builder.tag_length(128)
                     context_fields.append([0x4200CE, 2, 128])
             model = owned.enter_context(builder.build())
+            if cell['public_api_symbol'].endswith('.build') and trace is not None:
+                trace.record_invocation(cell['public_api_symbol'])
             if getattr(model, field)() != value:
                 raise ValueError('cryptographic parameter getter did not preserve the enum')
             payload = owned.enter_context(model.into_ttlv())
+            if cell['public_api_symbol'].endswith('.into_ttlv') and trace is not None:
+                trace.record_invocation(cell['public_api_symbol'])
             copied = owned.enter_context(CryptographicParameters.from_ttlv(payload))
+            if cell['public_api_symbol'].endswith('.from_ttlv') and trace is not None:
+                trace.record_invocation(cell['public_api_symbol'])
             if getattr(copied, field)() != value:
                 raise ValueError('cryptographic parameter decoder did not preserve the enum')
             copied_payload = owned.enter_context(copied.into_ttlv())
