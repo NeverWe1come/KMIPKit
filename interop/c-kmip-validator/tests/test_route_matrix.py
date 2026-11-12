@@ -813,6 +813,13 @@ class RouteMatrixTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'fixture_id_placeholder_explicit_target'):
             assert_placeholder_usage(request_with_explicit_target, 'test-batch-create-activate-destroy')
 
+    def test_placeholder_chain_case_maps_create_activate_get_recipe(self):
+        from route_peer import recipe_for_case
+
+        recipe = recipe_for_case({'case_id': 'test-batch-placeholder-chain-resolves'}, None)
+
+        self.assertEqual(recipe, ((1, 18, 10), 'create_activate_get_placeholder_chain'))
+
 
     def test_two_item_batch_continuation_and_id_correlation(self):
         from artifact_support import ROOT
