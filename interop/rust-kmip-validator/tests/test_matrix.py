@@ -308,6 +308,13 @@ class MatrixContract(unittest.TestCase):
             self.assertEqual(summary['invoked_local_cells'], 1)
             self.assertEqual(summary['gate_failure_code'], 'missing_required_matrix_cells')
 
+    def test_route_matrix_runner_does_not_accept_a_caller_selected_executable(self):
+        process = subprocess.run([sys.executable,
+            str(ROOT / 'interop/rust-kmip-validator/tools/run_route_matrix.py'), '--help'],
+            capture_output=True, text=True, timeout=30)
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertNotIn('--validator', process.stdout)
+
     def test_query_response_payload_accessor_reconstructs_the_decoded_response(self):
         cells = [cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
                  if cell['public_api_symbol'] == 'kmipkit_protocol::QueryResponse::to_ttlv_payload']
@@ -360,6 +367,20 @@ class MatrixContract(unittest.TestCase):
                  and next(target for target in CATALOG['normative_targets']
                           if target['target_id'] == cell['target_id'])['kind'] in ('tag', 'object_structure')]
         self.assertGreater(len(cells), 0)
+        process, report = self.run_matrix(cells)
+        self.assertEqual(process.returncode, 0, process.stderr or process.stdout or report)
+        self.assertEqual(len(cells), len(report['events']))
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
+    def test_key_wrapping_metadata_parsers_cover_every_normative_route_cell(self):
+        # OASIS KMIP 2.0/2.1 §3.3, Tables 14–17 define these metadata structures.
+        symbols = {
+            'kmipkit_protocol::EncryptionKeyInformation::try_from_item',
+            'kmipkit_protocol::MacSignatureKeyInformation::try_from_item',
+            'kmipkit_protocol::KeyWrappingData::try_from_item',
+        }
+        cells = [cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
+                 if cell['public_api_symbol'] in symbols]
         process, report = self.run_matrix(cells)
         self.assertEqual(process.returncode, 0, process.stderr or process.stdout or report)
         self.assertEqual(len(cells), len(report['events']))
