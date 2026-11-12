@@ -749,6 +749,15 @@ class NormativeInventoryTests(unittest.TestCase):
         self.assertEqual(2, scenario["expected"]["response_count"])
         self.assertIn("second_item_not_executed", scenario["expected"]["effects"])
 
+    def test_continue_batch_records_that_the_later_operation_executes(self) -> None:
+        case = next(item for item in self.catalog["test_cases"]
+                    if item["case_id"] == "test-batch-continue-after-failure")
+        scenario = case["requires"]["protocol_scenario"]
+        self.assertEqual("Continue", scenario["parameters"]["batch_error_continuation_option"])
+        self.assertEqual("Success", scenario["expected"]["second"])
+        self.assertEqual(2, scenario["expected"]["response_count"])
+        self.assertIn("second_item_executed", scenario["expected"]["effects"])
+
     def test_every_assigned_bitmask_combination_is_a_required_local_case(self) -> None:
         expected_counts = {
             "Cryptographic Usage Mask": 1 << 16,
