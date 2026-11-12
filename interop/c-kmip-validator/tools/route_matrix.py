@@ -18,6 +18,7 @@ import uuid
 
 from artifact_support import INSTALL, PIN, ROOT, sha256, verify_installed_artifact
 from route_evidence import cell_fields, pending_cell
+from safe_paths import resolve_within_root
 
 sys.path.insert(0, str(ROOT / 'interop/shared/tools'))
 from coverage_matrix import iter_cells
@@ -27,6 +28,12 @@ ATTRIBUTE_ROUTE_TARGET_KINDS = frozenset({'attribute', 'tag', 'enumeration_value
 ATTRIBUTE_ROUTE_CASE_CATEGORIES = frozenset(
     {'attributes', 'managed_objects', 'enums_and_bitmasks', 'normative_inventory'}
 )
+OUTPUT_ROOT = ROOT / 'interop/c-kmip-validator/build'
+
+
+def resolve_output_path(path: Path) -> Path:
+    """Keep route reports and sidecars within the validator build directory."""
+    return resolve_within_root(path, OUTPUT_ROOT)
 TTLV_TYPE_PATTERNS = (
     (r'\bstructure\b', 1),
     (r'\bbig[\s-]*integer\b', 4),
@@ -658,7 +665,7 @@ def main() -> int:
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--binary', type=Path)
     args = parser.parse_args()
-    return run(args.output, args.binary)
+    return run(resolve_output_path(args.output), args.binary)
 
 
 if __name__ == '__main__':
