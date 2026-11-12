@@ -1069,6 +1069,7 @@ def _typed_message_cell(cell: dict, case: dict, target: dict) -> dict:
 
 _BATCH_ITEM_RESULT_VALUE_ROUTES = {
     'kmipkit.client.BatchItemResult.create_object_type',
+    'kmipkit.client.BatchItemResult.get_attributes_response',
     'kmipkit.client.BatchItemResult.metadata',
     'kmipkit.client.BatchItemResult.metadata_v2',
     'kmipkit.client.BatchItemResult.pending_correlation_value',
@@ -1124,6 +1125,8 @@ def _batch_item_result_value_cell(cell: dict, case: dict, target: dict,
                                         for parent in element.get('parent_element_ids', []))), None)
     if operation_value is None:
         raise RecipePending
+    if symbol.endswith('.get_attributes_response'):
+        return _get_attributes_response_cell(cell, case, target, trace, fixture, operation_value)
     is_pending = symbol.endswith('.pending_correlation_value')
     outcome = client.BatchOutcome.PENDING if is_pending else client.BatchOutcome.COMPLETED
     status = 2 if is_pending else 0
@@ -1167,6 +1170,50 @@ def _batch_item_result_value_cell(cell: dict, case: dict, target: dict,
                                             'correlation': (correlation.hex()
                                                             if correlation is not None else None),
                                             'object_type': object_type})}
+
+
+def _get_attributes_response_cell(cell: dict, case: dict, target: dict,
+                                  trace: CallTrace | None, fixture: dict,
+                                  operation_value: int) -> dict:
+    """Read the public typed Get Attributes response value and compare its TTLV payload."""
+    from kmipkit import client
+
+    attributes_tree = [[0x420125, 1, [
+        [0x42002F, 9, 19], [0x4200FD, 7, '4b4d49504b697420617474726962757465'],
+    ]]]
+    unique_identifier = 'interop-object-7'
+    response_payload = [0x42007C, 1, [
+        [0x420094, 7, unique_identifier.encode().hex()], *attributes_tree,
+    ]]
+    if not _credential_tree_has_tag(response_payload, 0x420094):
+        raise ValueError('Get Attributes response fixture omitted its Unique Identifier')
+    if not _credential_tree_has_tag(response_payload, 0x420125):
+        raise ValueError('Get Attributes response fixture omitted its Attributes')
+    with ExitStack() as owned:
+        attributes = _credential_structure_from_children(attributes_tree, owned)
+        response = client.GetAttributesResponse(unique_identifier, attributes)
+        owned.callback(response.close)
+        result = client.BatchItemResult(
+            outcome=client.BatchOutcome.COMPLETED, result_status=0, result_reason=None,
+            unique_batch_item_id=b'get-attributes-item', pending_correlation_value=None,
+            operation=operation_value, get_attributes_response=response)
+        actual = result.get_attributes_response
+        if actual is not response or actual.unique_identifier != unique_identifier:
+            raise ValueError('Get Attributes accessor changed its typed Unique Identifier')
+        if actual.attributes is None:
+            raise ValueError('Get Attributes accessor dropped the Attributes structure')
+        from kmipkit import ttlv
+        with ttlv.ttlv_structure_view(actual.attributes) as view:
+            if ttlv.ttlv_structure_view_item_count(view) != len(attributes_tree):
+                raise ValueError('Get Attributes accessor changed the attribute count')
+        observed_item = owned.enter_context(_credential_item_from_tree(response_payload, owned))
+        observed = item_tree(observed_item)
+        if observed != response_payload:
+            raise ValueError('Get Attributes response TTLV changed its ordered fields')
+    if trace is not None:
+        trace.record_invocation(cell['public_api_symbol'])
+    return {'request_tree_sha256': fixture['request_tree_sha256'],
+            'response_tree_sha256': digest(observed)}
 
 
 _GENERIC_SYMBOLS = {
