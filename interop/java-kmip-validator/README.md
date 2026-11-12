@@ -92,7 +92,9 @@ typed request bytes are instead checked as captured by the controlled peer.
 CI validates these per-cell events against the shared matrix,
 uploads `route-execution-evidence.json` with the generated ledger, and compares
 stable coverage fields with the checked-in `route-evidence-ledger.json` using
-`tools/compare_route_ledger.py`. The generated ledger retains the artifact
+`tools/compare_route_ledger.py`. The comparer reads the checked-in reference and
+the generated ledger from fixed project paths, and accepts no path overrides.
+The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
 baseline. These recipes execute 8,398 of 71,503 planned Java route cells, with
 no failed cells; the ledger keeps the other 63,105 pending and does not imply

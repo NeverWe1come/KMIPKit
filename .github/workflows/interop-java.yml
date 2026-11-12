@@ -140,9 +140,7 @@ jobs:
             --report build/route-execution-evidence.json \
             --artifact-sha256 "$JAVA_ARTIFACT_SHA256" \
             --write-ledger
-          python3 tools/compare_route_ledger.py \
-            --reference route-evidence-ledger.json \
-            --generated build/route-evidence-ledger.json
+          python3 tools/compare_route_ledger.py
 
       - name: Upload Java route execution evidence and coverage ledger
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1
