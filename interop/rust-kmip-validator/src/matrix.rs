@@ -2056,25 +2056,144 @@ fn invoke_client_batch_outcome_response_route(
     elements: &[Json],
     protocol_version: &str,
 ) -> Option<Result<Item>> {
-    if symbol != "kmipkit_client::ClientBatchOutcome::encrypt_response" {
+    const RESPONSE_ACCESSOR_ROUTES: &[&str] = &[
+        "kmipkit_client::ClientBatchOutcome::certify_response",
+        "kmipkit_client::ClientBatchOutcome::check_response",
+        "kmipkit_client::ClientBatchOutcome::decrypt_response",
+        "kmipkit_client::ClientBatchOutcome::delegated_login_response",
+        "kmipkit_client::ClientBatchOutcome::encrypt_response",
+        "kmipkit_client::ClientBatchOutcome::hash_response",
+        "kmipkit_client::ClientBatchOutcome::join_split_key_response",
+        "kmipkit_client::ClientBatchOutcome::login_response",
+        "kmipkit_client::ClientBatchOutcome::logout_response",
+        "kmipkit_client::ClientBatchOutcome::mac_response",
+        "kmipkit_client::ClientBatchOutcome::mac_verify_response",
+        "kmipkit_client::ClientBatchOutcome::recertify_response",
+        "kmipkit_client::ClientBatchOutcome::register_response",
+        "kmipkit_client::ClientBatchOutcome::rekey_response",
+        "kmipkit_client::ClientBatchOutcome::rekey_key_pair_response",
+        "kmipkit_client::ClientBatchOutcome::reprovision_response",
+        "kmipkit_client::ClientBatchOutcome::revoke_response",
+        "kmipkit_client::ClientBatchOutcome::sign_response",
+        "kmipkit_client::ClientBatchOutcome::signature_verify_response",
+        "kmipkit_client::ClientBatchOutcome::rng_retrieve_response",
+        "kmipkit_client::ClientBatchOutcome::rng_seed_response",
+    ];
+    if !RESPONSE_ACCESSOR_ROUTES.contains(&symbol) {
         return None;
     }
-    Some((|| {
-        let message =
-            failed_response_message_fixture("Encrypt", target, elements, protocol_version)?;
-        let item = message
-            .batch_items()
-            .next()
-            .ok_or("Encrypt response fixture has no batch item")?;
-        let response = kmipkit::protocol::EncryptResponse::try_from_response_item(item)
-            .map_err(|_| "Encrypt response fixture rejected")?;
-        let outcome = kmipkit::ClientBatchOutcome::Encrypt(response);
-        if outcome.operation() != kmipkit::ClientOperation::Encrypt
-            || outcome.encrypt_response().is_none()
-        {
-            return Err("Encrypt outcome accessor did not return its typed response");
+
+    macro_rules! invoke_response_accessor {
+        ($operation:literal, $response:ident, $variant:ident, $accessor:ident) => {{
+            let message =
+                failed_response_message_fixture($operation, target, elements, protocol_version)?;
+            let item = message
+                .batch_items()
+                .next()
+                .ok_or("typed operation response fixture has no batch item")?;
+            let response = kmipkit::protocol::$response::try_from_response_item(item)
+                .map_err(|_| "typed operation response fixture rejected")?;
+            let outcome = kmipkit::ClientBatchOutcome::$variant(response);
+            if outcome.result().status().raw() != 1 || outcome.$accessor().is_none() {
+                return Err("ClientBatchOutcome accessor did not return its typed response");
+            }
+            sample.try_clone().map_err(|_| "local copy failed")
+        }};
+    }
+
+    Some((|| match symbol {
+        "kmipkit_client::ClientBatchOutcome::certify_response" => {
+            invoke_response_accessor!("Certify", CertifyResponse, Certify, certify_response)
         }
-        sample.try_clone().map_err(|_| "local copy failed")
+        "kmipkit_client::ClientBatchOutcome::check_response" => {
+            invoke_response_accessor!("Check", CheckResponse, Check, check_response)
+        }
+        "kmipkit_client::ClientBatchOutcome::decrypt_response" => {
+            invoke_response_accessor!("Decrypt", DecryptResponse, Decrypt, decrypt_response)
+        }
+        "kmipkit_client::ClientBatchOutcome::delegated_login_response" => {
+            invoke_response_accessor!(
+                "Delegated Login",
+                DelegatedLoginResponse,
+                DelegatedLogin,
+                delegated_login_response
+            )
+        }
+        "kmipkit_client::ClientBatchOutcome::encrypt_response" => {
+            invoke_response_accessor!("Encrypt", EncryptResponse, Encrypt, encrypt_response)
+        }
+        "kmipkit_client::ClientBatchOutcome::hash_response" => {
+            invoke_response_accessor!("Hash", HashResponse, Hash, hash_response)
+        }
+        "kmipkit_client::ClientBatchOutcome::join_split_key_response" => invoke_response_accessor!(
+            "Join Split Key",
+            JoinSplitKeyResponse,
+            JoinSplitKeyCompleted,
+            join_split_key_response
+        ),
+        "kmipkit_client::ClientBatchOutcome::login_response" => {
+            invoke_response_accessor!("Login", LoginResponse, Login, login_response)
+        }
+        "kmipkit_client::ClientBatchOutcome::logout_response" => {
+            invoke_response_accessor!("Logout", LogoutResponse, Logout, logout_response)
+        }
+        "kmipkit_client::ClientBatchOutcome::mac_response" => {
+            invoke_response_accessor!("MAC", MacResponse, Mac, mac_response)
+        }
+        "kmipkit_client::ClientBatchOutcome::mac_verify_response" => invoke_response_accessor!(
+            "MAC Verify",
+            MacVerifyResponse,
+            MacVerify,
+            mac_verify_response
+        ),
+        "kmipkit_client::ClientBatchOutcome::recertify_response" => invoke_response_accessor!(
+            "Re-certify",
+            RecertifyResponse,
+            Recertify,
+            recertify_response
+        ),
+        "kmipkit_client::ClientBatchOutcome::register_response" => {
+            invoke_response_accessor!("Register", RegisterResponse, Register, register_response)
+        }
+        "kmipkit_client::ClientBatchOutcome::rekey_response" => {
+            invoke_response_accessor!("Re-key", RekeyResponse, Rekey, rekey_response)
+        }
+        "kmipkit_client::ClientBatchOutcome::rekey_key_pair_response" => invoke_response_accessor!(
+            "Re-key Key Pair",
+            RekeyKeyPairResponse,
+            RekeyKeyPair,
+            rekey_key_pair_response
+        ),
+        "kmipkit_client::ClientBatchOutcome::reprovision_response" => invoke_response_accessor!(
+            "Re-Provision",
+            ReProvisionResponse,
+            ReProvision,
+            reprovision_response
+        ),
+        "kmipkit_client::ClientBatchOutcome::revoke_response" => {
+            invoke_response_accessor!("Revoke", RevokeResponse, Revoke, revoke_response)
+        }
+        "kmipkit_client::ClientBatchOutcome::sign_response" => {
+            invoke_response_accessor!("Sign", SignResponse, Sign, sign_response)
+        }
+        "kmipkit_client::ClientBatchOutcome::signature_verify_response" => {
+            invoke_response_accessor!(
+                "Signature Verify",
+                SignatureVerifyResponse,
+                SignatureVerify,
+                signature_verify_response
+            )
+        }
+        "kmipkit_client::ClientBatchOutcome::rng_retrieve_response" => invoke_response_accessor!(
+            "RNG Retrieve",
+            RngRetrieveResponse,
+            RngRetrieve,
+            rng_retrieve_response
+        ),
+        "kmipkit_client::ClientBatchOutcome::rng_seed_response" => {
+            invoke_response_accessor!("RNG Seed", RngSeedResponse, RngSeed, rng_seed_response)
+        }
+        _ => Err("unsupported ClientBatchOutcome response accessor"),
     })())
 }
 
@@ -3146,15 +3265,18 @@ mod tests {
         let elements = specification["elements"].as_array().unwrap();
         let targets = catalog["normative_targets"].as_array().unwrap();
 
-        for route in manifest["routes"].as_array().unwrap().iter().filter(|route| {
-            route["language"] == "rust"
-                && route["public_api_symbol"]
-                    .as_str()
-                    .is_some_and(|symbol| {
+        for route in manifest["routes"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|route| {
+                route["language"] == "rust"
+                    && route["public_api_symbol"].as_str().is_some_and(|symbol| {
                         symbol.starts_with("kmipkit_client::ClientBatchOutcome::")
                             && symbol.ends_with("_response")
                     })
-        }) {
+            })
+        {
             let symbol = route["public_api_symbol"].as_str().unwrap();
             let target = route["normative_target_ids"]
                 .as_array()
@@ -3173,8 +3295,13 @@ mod tests {
             let result = invoke(symbol, &expected, target, elements, "2.1");
 
             assert!(result.is_some(), "{symbol} route is not executable");
-            let result = result.unwrap().unwrap_or_else(|error| panic!("{symbol}: {error}"));
-            assert!(crate::local_wire::target_hash(&result, &expected).is_ok(), "{symbol}");
+            let result = result
+                .unwrap()
+                .unwrap_or_else(|error| panic!("{symbol}: {error}"));
+            assert!(
+                crate::local_wire::target_hash(&result, &expected).is_ok(),
+                "{symbol}"
+            );
         }
     }
 
