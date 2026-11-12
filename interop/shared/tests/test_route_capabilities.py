@@ -372,6 +372,58 @@ class RouteCapabilitiesTests(unittest.TestCase):
             self.assertEqual(expected, set(route['normative_target_ids']), symbol)
             self.assertIn('construct', route['actions'], symbol)
 
+    def test_response_message_extension_readers_only_claim_the_extension_field(self):
+        # OASIS KMIP 2.0/2.1 §§8.6, 9.13, and 11.56 define response Message Extension.
+        expected = {
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION',
+            'KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION',
+            'KMIPKIT-ELEM-TAG-420051',
+        }
+        symbols = {
+            'rust': {
+                'count': 'kmipkit_client::ClientBatchItemResponse::extensions',
+                'at': 'kmipkit_client::ClientMessageExtension::with_ttlv',
+            },
+            'c': {
+                'count': 'kmipkit_client_batch_item_response_extension_count',
+                'at': 'kmipkit_client_batch_item_response_extension_ttlv_at',
+            },
+            'java': {
+                'count': 'org.kmipkit.extensions.ClientBatchItemResult.extensionCount',
+                'at': 'org.kmipkit.extensions.ClientBatchItemResult.extensionTtlvAt',
+            },
+            'python': {
+                'count': 'kmipkit.client.BatchItemResult.extension_count',
+                'at': 'kmipkit.client.BatchItemResult.extension_ttlv_at',
+            },
+        }
+        routes = {(route['language'], route['public_api_symbol']): route for route in self.data['routes']}
+        for language, readers in symbols.items():
+            for reader, symbol in readers.items():
+                route = routes[(language, symbol)]
+                self.assertEqual(expected, set(route['normative_target_ids']), symbol)
+                self.assertEqual(['decode'], route['actions'], symbol)
+
+    def test_raw_response_ttlv_routes_claim_the_observed_get_response_value(self):
+        # OASIS KMIP 2.0/2.1 §§3.1, 9.7, and 11.25 define this Get response tree and Raw value.
+        expected = {
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM',
+            'KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM',
+            'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-KEY-FORMAT-TYPE',
+            'KMIPKIT-ELEM-TAG-42000F',
+            'KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-RAW-00000001',
+        }
+        symbols = {
+            'c': 'kmipkit_client_batch_item_response_raw_ttlv',
+            'java': 'org.kmipkit.extensions.ClientBatchItemResult.raw',
+            'python': 'kmipkit.client.BatchItemResult.raw',
+        }
+        routes = {(route['language'], route['public_api_symbol']): route for route in self.data['routes']}
+        for language, symbol in symbols.items():
+            route = routes[(language, symbol)]
+            self.assertEqual(expected, set(route['normative_target_ids']), symbol)
+            self.assertEqual(['decode'], route['actions'], symbol)
+
     def test_checked_tag_constructor_exclusions_are_source_backed_and_narrow(self):
         expected = {
             'rust': {'rust.generic-ttlv.item.new', 'rust.generic-ttlv.model.kmipkit.ttlv.structure.try.push'},
