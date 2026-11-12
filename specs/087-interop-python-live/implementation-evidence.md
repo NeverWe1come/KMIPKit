@@ -164,6 +164,48 @@ was generated from its own clean instrumented target, and normalization
 succeeded. Cross-platform confirmation remains the PR CI run on Linux,
 Windows, and macOS.
 
+## Red: C FFI coverage collector assumes the old Cargo output directory
+
+The `Coverage / ubuntu` job exposed a second Rust 1.100 layout assumption in
+`scripts/collect_ffi_coverage.sh`. The collector ran all 471 FFI unit tests, 50
+C consumer coverage tests, and the operation parity test, then exited because
+it looked for the instrumented library and test executables under
+`debug/deps`. Rust 1.100 emitted them under
+`debug/build/kmipkit-ffi/<hash>/out`. A local checkout name also showed that
+the merged `.profdata` filename follows Cargo's target-directory name and
+cannot be assumed to be `KMIPKit.profdata`.
+
+The clean failure was reproduced with the CI Rust 1.100 toolchain and
+`scripts/collect_ffi_coverage.sh`; setting `TMPDIR` on the root filesystem
+avoided the host's full 3.8 GiB `/tmp` tmpfs during AWS-LC compilation. The
+missing-artifact result occurred after the FFI tests passed and the files
+existed in Cargo's hashed `build/.../out` directories.
+
+## Green: discover instrumented Cargo artifacts and use reported test paths
+
+The collector now locates the newest `.profdata`, shared library, and static
+library in the target tree. It extracts the complete test executable paths
+from Cargo's `Running ...` output instead of reconstructing them under
+`debug/deps`. The new workflow contract test failed before the fix and passes
+after it.
+
+The collector completed on Rust 1.100 with a dedicated target directory and
+produced `coverage.json`. The workflow contract suite passed all 96 tests:
+
+```sh
+python3 -B -m unittest scripts.tests.test_workflow -v
+bash -n scripts/collect_ffi_coverage.sh
+RUSTUP_TOOLCHAIN=1.100.0 TMPDIR=<root-filesystem-temp-dir> CARGO_BUILD_JOBS=2 \
+  CARGO_TARGET_DIR=<dedicated-target-dir> \
+  bash scripts/collect_ffi_coverage.sh <report-dir>
+```
+
+## Refactor: share the collector reader in workflow tests
+
+The workflow tests now use one helper to read the collector source, keeping
+the collector contracts consistent across the related checks. The 96-test
+workflow suite and shell syntax check passed after this extraction.
+
 ## Remaining limitations
 
 Controlled local TLS results are not vendor interoperability evidence. No Cosmian, CipherTrust or ESKM endpoint was
