@@ -823,6 +823,7 @@ class RouteMatrixTests(unittest.TestCase):
                 self.assertIn('request_tree_sha256', result)
                 self.assertEqual(result['request_tree_sha256'], result['response_tree_sha256'])
 
+    # OASIS KMIP 2.0/2.1 §§8.1–8.6 and 9.1–9.21 define these message fields.
     def test_typed_message_parsers_execute_every_catalogued_message_field(self):
         catalog = copy.deepcopy(self.catalog)
         message_target_ids = {target['target_id'] for target in self.catalog['normative_targets']
