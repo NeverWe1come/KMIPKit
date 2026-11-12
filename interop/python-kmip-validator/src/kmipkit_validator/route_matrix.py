@@ -1067,6 +1067,108 @@ def _typed_message_cell(cell: dict, case: dict, target: dict) -> dict:
     return {'request_tree_sha256': tree_hash, 'response_tree_sha256': tree_hash}
 
 
+_BATCH_ITEM_RESULT_VALUE_ROUTES = {
+    'kmipkit.client.BatchItemResult.create_object_type',
+    'kmipkit.client.BatchItemResult.metadata',
+    'kmipkit.client.BatchItemResult.metadata_v2',
+    'kmipkit.client.BatchItemResult.pending_correlation_value',
+    'kmipkit.client.BatchItemResult.unique_batch_item_id',
+}
+
+
+def _batch_item_result_value_cell(cell: dict, case: dict, target: dict,
+                                  trace: CallTrace | None) -> dict:
+    """Invoke copied BatchItemResult fields and metadata against deterministic values."""
+    from kmipkit import client
+
+    symbol = cell['public_api_symbol']
+    if target.get('kind') == 'message_field':
+        target_id = target.get('target_id', '')
+        direction = _catalog_model_data()[2].get(target_id, {}).get('direction')
+        if (any(section in target_id for section in ('-8-2-', '-8-3-'))
+                or direction == 'client_to_server'):
+            message_symbol = 'kmipkit.messages.RequestMessage.from_ttlv'
+        elif any(section in target_id for section in ('-8-5-', '-8-6-')):
+            message_symbol = 'kmipkit.messages.ResponseMessage.from_ttlv'
+        else:
+            message_symbol = 'kmipkit.messages.ResponseMessage.from_ttlv'
+        fixture = _typed_message_cell(
+            {'public_api_symbol': message_symbol, 'transport': None}, case, target)
+    else:
+        fixture = _generic_cell(
+            {'action': 'construct', 'public_api_symbol': 'kmipkit.ttlv.ttlv_item_create',
+             'transport': None}, case, target)
+
+    operation_name = _cell_operation(cell, case)
+    _, _, elements = _catalog_model_data()
+    operation_value = next((int(element['wire_value'].replace('X', '0'), 16)
+                            for element in elements.values()
+                            if element.get('kind') == 'enumeration_value'
+                            and _normalized_name(element.get('name', '')) ==
+                            _normalized_name(operation_name)
+                            and any(elements.get(parent, {}).get('name') == 'Operation'
+                                    for parent in element.get('parent_element_ids', []))), None)
+    if operation_value is None and target.get('kind') != 'operation':
+        operation_value = next((int(element['wire_value'].replace('X', '0'), 16)
+                                for element in elements.values()
+                                if element.get('kind') == 'enumeration_value'
+                                and element.get('name') == 'Ping'
+                                and any(elements.get(parent, {}).get('name') == 'Operation'
+                                        for parent in element.get('parent_element_ids', []))), None)
+    if operation_value is None and target.get('kind') == 'message_field':
+        operation_value = next((int(element['wire_value'].replace('X', '0'), 16)
+                                for element in elements.values()
+                                if element.get('kind') == 'enumeration_value'
+                                and element.get('name') == 'Ping'
+                                and any(elements.get(parent, {}).get('name') == 'Operation'
+                                        for parent in element.get('parent_element_ids', []))), None)
+    if operation_value is None:
+        raise RecipePending
+    is_pending = symbol.endswith('.pending_correlation_value')
+    outcome = client.BatchOutcome.PENDING if is_pending else client.BatchOutcome.COMPLETED
+    status = 2 if is_pending else 0
+    identifier = b'\x00\xffbatch-item'
+    correlation = b'\x80pending-correlation' if is_pending else None
+    object_type = 2 if symbol.endswith('.create_object_type') else None
+    result = client.BatchItemResult(
+        outcome=outcome, result_status=status, result_reason=None,
+        unique_batch_item_id=identifier, pending_correlation_value=correlation,
+        operation=operation_value, create_object_type=object_type)
+    if symbol.endswith('.metadata'):
+        if result.metadata() != (int(outcome), status, 0, 0):
+            raise ValueError('BatchItemResult metadata changed copied result fields')
+    elif symbol.endswith('.metadata_v2'):
+        metadata = result.metadata_v2
+        if (metadata.operation != operation_value or metadata.outcome != outcome
+                or metadata.result_status != status or metadata.result_reason is not None
+                or metadata.result_message is not None):
+            raise ValueError('BatchItemResult v2 metadata changed copied result fields')
+    elif symbol.endswith('.unique_batch_item_id'):
+        if result.unique_batch_item_id != identifier:
+            raise ValueError('BatchItemResult unique ID changed its bytes')
+        if trace is not None:
+            trace.record_invocation(symbol)
+    elif symbol.endswith('.pending_correlation_value'):
+        if result.pending_correlation_value != correlation:
+            raise ValueError('BatchItemResult correlation changed its bytes')
+        if trace is not None:
+            trace.record_invocation(symbol)
+    elif symbol.endswith('.create_object_type'):
+        if result.create_object_type != 2:
+            raise ValueError('BatchItemResult Create Object Type changed its raw value')
+        if trace is not None:
+            trace.record_invocation(symbol)
+    else:
+        raise RecipePending
+    return {'request_tree_sha256': fixture['request_tree_sha256'],
+            'response_tree_sha256': digest({'operation': operation_value,
+                                            'outcome': int(outcome), 'status': status,
+                                            'reason': None, 'unique_id': identifier.hex(),
+                                            'correlation': (correlation.hex()
+                                                            if correlation is not None else None),
+                                            'object_type': object_type})}
+
+
 _GENERIC_SYMBOLS = {
     'kmipkit.ttlv.' + name for name in (
         'ttlv_item_view_from_item', 'raw_tag_from_raw', 'raw_tag_try_checked',
@@ -1113,6 +1215,8 @@ def execute_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | Non
             return _crypto_parameters_cell(cell, case, target)
         if cell['public_api_symbol'].startswith('kmipkit.messages.'):
             return _typed_message_cell(cell, case, target)
+        if cell['public_api_symbol'] in _BATCH_ITEM_RESULT_VALUE_ROUTES:
+            return _batch_item_result_value_cell(cell, case, target, trace)
         return _generic_cell(cell, case, target)
     if case['case_id'] == 'test-op-discover-versions':
         return _positive_fixture_cell(cell, case, target, trace=trace)
