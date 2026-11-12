@@ -327,9 +327,19 @@ class ControlledTlsPeerTest {
                         assertEquals(1, response.itemCount());
                         try (ClientBatchItemResult result = response.itemAt(0)) {
                             assertEquals(1, result.extensionCount());
-                            appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
+                            appendRouteEvent(events, "test-norm-message-field-message-field-8-6-message-extension",
                                     "java.typed-protocol.function.client_batch_item_response_extension_count",
-                                    RESPONSE_BATCH_ITEM_TARGET_ID,
+                                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION",
+                                    "org.kmipkit.extensions.ClientBatchItemResult.extensionCount",
+                                    null, null, "decode", protocolVersion, null, null, responseHash);
+                            appendRouteEvent(events, "test-norm-message-field-message-field-9-13-message-extension",
+                                    "java.typed-protocol.function.client_batch_item_response_extension_count",
+                                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION",
+                                    "org.kmipkit.extensions.ClientBatchItemResult.extensionCount",
+                                    null, null, "decode", protocolVersion, null, null, responseHash);
+                            appendRouteEvent(events, "test-norm-tag-tag-420051",
+                                    "java.typed-protocol.function.client_batch_item_response_extension_count",
+                                    "KMIPKIT-ELEM-TAG-420051",
                                     "org.kmipkit.extensions.ClientBatchItemResult.extensionCount",
                                     null, null, "decode", protocolVersion, null, null, responseHash);
                             assertBatchItemResponseRouteEvidence(events, result, protocolVersion, responseHash);
@@ -532,9 +542,9 @@ class ControlledTlsPeerTest {
                 .mapToInt(fixture -> fixture.protocolVersions().size() * (4 + (fixture.attribute() == null ? 0 : 3)))
                 .sum();
         int batchItemAccessorEventCount = List.of("2.0", "2.1").size() * 4;
-        int batchItemExtensionCountEventCount = List.of("2.0", "2.1").size();
+        int batchItemExtensionCountEventCount = List.of("2.0", "2.1").size() * 3;
         int batchItemGenericRouteEventCount = List.of("2.0", "2.1").size() * 4;
-        int batchItemAdditionalResponseRouteEventCount = List.of("2.0", "2.1").size() * 8;
+        int batchItemAdditionalResponseRouteEventCount = List.of("2.0", "2.1").size() * 11;
         int credentialGenericRouteEventCount = CREDENTIAL_TYPE_MODEL_CASE_IDS.size()
                 * List.of("2.0", "2.1").size() * 4;
         int credentialEnvelopeEventCount = CREDENTIAL_TYPE_MODEL_CASE_IDS.size()
@@ -562,7 +572,7 @@ class ControlledTlsPeerTest {
                 "Every TTLV data type needs its installed constructor, item view, and decoder routes.");
         long bitmaskCaseCount = bitmaskFixtures.stream().map(BitmaskFixture::caseId).distinct().count();
         long dataTypeCaseCount = dataTypeFixtures.stream().map(DataTypeFixture::caseId).distinct().count();
-        assertEquals(12 + enumerationFixtures.size() + bitmaskCaseCount + dataTypeCaseCount
+        assertEquals(15 + enumerationFixtures.size() + bitmaskCaseCount + dataTypeCaseCount
                         + CREDENTIAL_TYPE_MODEL_CASE_IDS.size(),
                 report.path("case_ids").size());
         List<String> expectedCredentialCaseIds = CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().toList();
@@ -2625,6 +2635,9 @@ class ControlledTlsPeerTest {
         caseIds.add("test-norm-message-field-message-field-9-5-batch-count");
         caseIds.add("test-norm-message-field-message-field-8-6-batch-item");
         caseIds.add("test-norm-message-field-message-field-9-7-batch-item");
+        caseIds.add("test-norm-message-field-message-field-8-6-message-extension");
+        caseIds.add("test-norm-message-field-message-field-9-13-message-extension");
+        caseIds.add("test-norm-tag-tag-420051");
         CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().forEach(caseIds::add);
         report.putArray("protocol_versions").add("2.0").add("2.1");
         ObjectNode combination = mapper.createObjectNode();
@@ -2981,18 +2994,35 @@ class ControlledTlsPeerTest {
         try (TtlvStructure raw = result.raw().orElseThrow(); var view = raw.view()) {
             assertEquals(2, view.itemCount());
         }
-        appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
+        appendRouteEvent(events, "test-norm-message-field-message-field-8-6-batch-item",
                 "java.typed-protocol.function.client_batch_item_response_raw_ttlv",
-                RESPONSE_BATCH_ITEM_TARGET_ID, "org.kmipkit.extensions.ClientBatchItemResult.raw",
-                null, null, "decode", protocolVersion, null, null, responseHash);
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM",
+                "org.kmipkit.extensions.ClientBatchItemResult.raw", null, null, "decode",
+                protocolVersion, null, null, responseHash);
+        appendRouteEvent(events, "test-norm-message-field-message-field-9-7-batch-item",
+                "java.typed-protocol.function.client_batch_item_response_raw_ttlv",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM",
+                "org.kmipkit.extensions.ClientBatchItemResult.raw", null, null, "decode",
+                protocolVersion, null, null, responseHash);
 
         try (TtlvStructure extension = result.extensionTtlvAt(0); var view = extension.view()) {
             assertEquals(3, view.itemCount());
         }
-        appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
+        appendRouteEvent(events, "test-norm-message-field-message-field-8-6-message-extension",
                 "java.typed-protocol.function.client_batch_item_response_extension_ttlv_at",
-                RESPONSE_BATCH_ITEM_TARGET_ID, "org.kmipkit.extensions.ClientBatchItemResult.extensionTtlvAt",
-                null, null, "decode", protocolVersion, null, null, responseHash);
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION",
+                "org.kmipkit.extensions.ClientBatchItemResult.extensionTtlvAt", null, null, "decode",
+                protocolVersion, null, null, responseHash);
+        appendRouteEvent(events, "test-norm-message-field-message-field-9-13-message-extension",
+                "java.typed-protocol.function.client_batch_item_response_extension_ttlv_at",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION",
+                "org.kmipkit.extensions.ClientBatchItemResult.extensionTtlvAt", null, null, "decode",
+                protocolVersion, null, null, responseHash);
+        appendRouteEvent(events, "test-norm-tag-tag-420051",
+                "java.typed-protocol.function.client_batch_item_response_extension_ttlv_at",
+                "KMIPKIT-ELEM-TAG-420051",
+                "org.kmipkit.extensions.ClientBatchItemResult.extensionTtlvAt", null, null, "decode",
+                protocolVersion, null, null, responseHash);
 
         try (TtlvStructure header = result.responseHeaderTtlv(); var view = header.view()) {
             assertTrue(view.itemCount() >= 3);
