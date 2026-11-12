@@ -6350,6 +6350,7 @@ mod tests {
                 .unwrap();
         let elements = specification["elements"].as_array().unwrap();
         let route_ids = [
+            "rust.typed-protocol.model.kmipkit.protocol.attribute.attribute.kmipkit.protocol.attribute.typed.vendorattribute.new",
             "rust.typed-protocol.model.kmipkit.protocol.attribute.attribute.kmipkit.protocol.attribute.typed.vendorattribute.from.item",
             "rust.typed-protocol.model.kmipkit.protocol.attributeset.try.push.typed.kmipkit.protocol.attribute.typed.vendorattribute",
             "rust.typed-protocol.model.kmipkit.protocol.currentattribute.from.typed.kmipkit.protocol.attribute.typed.vendorattribute",
