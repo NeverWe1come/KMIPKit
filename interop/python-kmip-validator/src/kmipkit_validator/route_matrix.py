@@ -665,13 +665,18 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
     final_async_failure = (
         case['case_id'] == 'test-async-poll-final-operation-failure' and operation == 'Poll'
     )
-    peer_status = (protocol_values.ResultStatus.SUCCESS if positive_ping
-                   else protocol_values.ResultStatus.OPERATION_FAILED)
-    peer_reason = (
-        None if positive_ping
-        else protocol_values.ResultReason.INVALID_OBJECT_TYPE if final_async_failure
-        else protocol_values.ResultReason.OPERATION_NOT_SUPPORTED
-    )
+    if positive_ping:
+        peer_status = protocol_values.ResultStatus.SUCCESS
+        peer_reason = None
+        expected_driver_status = 'passed'
+    elif final_async_failure:
+        peer_status = protocol_values.ResultStatus.OPERATION_FAILED
+        peer_reason = protocol_values.ResultReason.INVALID_OBJECT_TYPE
+        expected_driver_status = 'failed'
+    else:
+        peer_status = protocol_values.ResultStatus.OPERATION_FAILED
+        peer_reason = protocol_values.ResultReason.OPERATION_NOT_SUPPORTED
+        expected_driver_status = 'server_unsupported'
     peer = ControlledTlsPeer(status=peer_status, reason=peer_reason,
                              encoding=cell['encoding'], transport=cell['transport'],
                              protocol_version=cell['protocol_version'])
@@ -712,11 +717,6 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
             else:
                 item = driver._build_item(case, identifier, name=name)
             result = driver._exchange(item)
-        expected_driver_status = (
-            'passed' if positive_ping
-            else 'failed' if final_async_failure
-            else 'server_unsupported'
-        )
         if (result['status'] != expected_driver_status or result['result_status_code'] != peer_status
                 or result.get('result_reason_code') != peer_reason):
             raise ValueError('controlled peer response status did not match the expected route outcome')
