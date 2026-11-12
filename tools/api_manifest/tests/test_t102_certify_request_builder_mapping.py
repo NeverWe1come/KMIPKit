@@ -168,7 +168,7 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
 # Register declarations, KMIPKIT-0101 lifecycle declarations, and KMIPKIT-0102
 # fluent cryptographic operation builders.
 # Includes the approved KMIPKIT-0093 inventory reconciliation.
-DECLARATIONS_SHA256 = "c806948eb352f4c613ef183e9c2d57cd203e779425e5114718192ab7ee67677c"
+DECLARATIONS_SHA256 = "f7135798e5dda09e972d28ef5608c87cd89c986873ea56986422cdfcbe56c25f"
 OPERATIONS_SHA256 = "2a6eb9fb6823b3456b3fb10b6d4af8477be9f1a1f68c06c252bb4873b272f3bc"
 
 
