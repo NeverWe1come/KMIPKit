@@ -316,6 +316,31 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(symbols, {event['public_api_symbol'] for event in report['events']})
         self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
 
+    def test_attribute_set_routes_use_the_typed_attribute_recipe(self):
+        catalog = copy.deepcopy(self.catalog)
+        catalog['test_cases'] = [case for case in self.catalog['test_cases']
+                                 if case['case_id'] == 'test-attr-activation-date']
+        symbols = {'kmipkit.attribute_operations.AttributeSet.try_new',
+                   'kmipkit.attribute_operations.AttributeSet.try_push',
+                   'kmipkit.attribute_operations.AttributeSet.try_push_typed'}
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in self.manifest['routes']
+                              if route['language'] == 'python'
+                              and route['public_api_symbol'] in symbols]
+        manifest['routes'].append(next(route for route in self.manifest['routes']
+                                       if route['language'] == 'python'
+                                       and route['public_api_symbol'] ==
+                                       'kmipkit.extensions.client_batch_item_get_attributes'))
+
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+
+        typed_events = [event for event in report['events'] if event['public_api_symbol'] in symbols]
+        typed_gaps = [gap for gap in gaps if gap['public_api_symbol'] in symbols]
+        self.assertEqual(0, len(typed_gaps), f'{len(typed_gaps)} AttributeSet cells have no recipe')
+        self.assertEqual(6, len(typed_events))
+        self.assertEqual(symbols, {event['public_api_symbol'] for event in typed_events})
+        self.assertTrue(all(event['status'] == 'passed' for event in typed_events))
+
     def test_typed_attribute_routes_cover_nested_attribute_fields_and_direct_tags(self):
         # OASIS KMIP §§4.2, 4.4, 4.14, 4.16, 4.21, 4.27, 4.31, 4.32,
         # 4.46–4.63 define the containing attribute structures and their fields.
