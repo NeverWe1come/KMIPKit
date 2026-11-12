@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[3]
 DOC = ROOT / "docs" / "architecture" / "ffi-and-bindings.md"
 AUDIT_GUIDE = ROOT / "tools" / "api_manifest" / "binding-export-audit.md"
 AUDIT_REPORT_PATH = Path(
-    "specs/043-public-api-bindings/reports/binding-export-report-2026-11-11-response-views.json"
+    "specs/043-public-api-bindings/reports/binding-export-report-2026-11-12-fluent-attribute-reads.json"
 )
 AUDIT_REPORT = ROOT / AUDIT_REPORT_PATH
 
