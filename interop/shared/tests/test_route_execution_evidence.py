@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -177,14 +178,17 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
             self.skipTest("jsonschema dependency is not installed")
         report = copy.deepcopy(self.report)
         send_event = next(event for event in report["events"] if event["action"] == "send")
+        peer_state = json.dumps({"objects": ["controlled-fixture-key"]},
+                                sort_keys=True, separators=(",", ":")).encode()
+        peer_state_sha256 = hashlib.sha256(peer_state).hexdigest()
         send_event.update({
             "batch_operation_sequence": ["Get", "Get"],
             "peer_observed_operation_sequence": ["Get", "Get"],
             "batch_item_count": 2,
             "peer_observed_response_count": 2,
             "peer_observed_effects": ["first_item_failed", "second_item_executed"],
-            "peer_observed_state_before_sha256": "a" * 64,
-            "peer_observed_state_after_sha256": "a" * 64,
+            "peer_observed_state_before_sha256": peer_state_sha256,
+            "peer_observed_state_after_sha256": peer_state_sha256,
         })
         schema = json.loads((SHARED / "schemas/route-execution-evidence.schema.json").read_text())
         jsonschema.validate(report, schema)
@@ -193,7 +197,7 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         with self.assertRaises(jsonschema.ValidationError):
             jsonschema.validate(report, schema)
 
-        send_event["peer_observed_state_before_sha256"] = "a" * 64
+        send_event["peer_observed_state_before_sha256"] = peer_state_sha256
         send_event["peer_observed_state_after_sha256"] = "not-a-sha256"
         with self.assertRaises(jsonschema.ValidationError):
             jsonschema.validate(report, schema)
@@ -538,8 +542,11 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "controlled peer state hashes"):
             _validate_batch_event(event, case, {}, ("batch-get-continue", "send"))
 
-        event["peer_observed_state_before_sha256"] = "a" * 64
-        event["peer_observed_state_after_sha256"] = "a" * 64
+        peer_state = json.dumps({"objects": ["controlled-fixture-key"]},
+                                sort_keys=True, separators=(",", ":")).encode()
+        peer_state_sha256 = hashlib.sha256(peer_state).hexdigest()
+        event["peer_observed_state_before_sha256"] = peer_state_sha256
+        event["peer_observed_state_after_sha256"] = peer_state_sha256
         _validate_batch_event(event, case, {}, ("batch-get-continue", "send"))
 
         event["peer_observed_state_after_sha256"] = "invalid"
