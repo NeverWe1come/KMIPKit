@@ -1408,6 +1408,28 @@ mod tests {
     }
 
     #[test]
+    fn transparent_key_material_fixture_uses_its_normative_structure_type() {
+        let catalog: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        let target = catalog["normative_targets"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|target| {
+                target["target_id"] == "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-4-KEY-MATERIAL"
+            })
+            .unwrap();
+        let (_, _, expected) = object_root_fixture("PGP Key", target, elements).unwrap();
+        assert_eq!(expected.item_type(), kmipkit::ttlv::ItemType::Structure);
+    }
+
+    #[test]
     fn key_block_constructor_route_builds_the_normative_key_material_target() {
         // OASIS KMIP 2.0/2.1 §3.10 and §3.11 define Key Material and Key Block.
         let catalog: Json = serde_json::from_str(include_str!(
