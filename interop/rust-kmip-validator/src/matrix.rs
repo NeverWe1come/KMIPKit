@@ -14,6 +14,7 @@ mod generated;
 const KEY_BLOCK_TAG: u32 = 0x0042_0040;
 const KEY_WRAPPING_CONSTRUCTOR_ROUTES: &[&str] = &[
     "kmipkit_protocol::EncryptionKeyInformation::try_new",
+    "kmipkit_protocol::EncryptionKeyInformation::try_from_unique_identifier",
     "kmipkit_protocol::EncryptionKeyInformation::with_cryptographic_parameters",
     "kmipkit_protocol::EncryptionKeyInformation::with_typed_cryptographic_parameters",
     "kmipkit_protocol::KeyWrappingData::try_new",
@@ -23,6 +24,7 @@ const KEY_WRAPPING_CONSTRUCTOR_ROUTES: &[&str] = &[
     "kmipkit_protocol::KeyWrappingData::with_mac_signature",
     "kmipkit_protocol::KeyWrappingData::with_mac_signature_key_information",
     "kmipkit_protocol::MacSignatureKeyInformation::try_new",
+    "kmipkit_protocol::MacSignatureKeyInformation::try_from_unique_identifier",
     "kmipkit_protocol::MacSignatureKeyInformation::with_cryptographic_parameters",
     "kmipkit_protocol::MacSignatureKeyInformation::with_typed_cryptographic_parameters",
 ];
@@ -3110,6 +3112,40 @@ fn invoke(
             }
         })());
     }
+    if symbol == "kmipkit_protocol::EncryptionKeyInformation::try_from_unique_identifier" {
+        return Some((|| {
+            let mut information =
+                kmipkit::protocol::EncryptionKeyInformation::try_from_unique_identifier(
+                    kmipkit::protocol::UniqueIdentifier::from("kmipkit-encryption-key"),
+                )
+                .map_err(|_| "encryption key information fixture rejected")?;
+            if target["name"] == "Cryptographic Parameters" {
+                information = information
+                    .with_cryptographic_parameters(kmipkit::ttlv::Structure::new())
+                    .map_err(|_| "encryption key information parameters rejected")?;
+            }
+            let model = information.into_item();
+            crate::local_wire::roundtrip(&model)?;
+            metadata_expected_target(&model, target, elements)
+        })());
+    }
+    if symbol == "kmipkit_protocol::MacSignatureKeyInformation::try_from_unique_identifier" {
+        return Some((|| {
+            let mut information =
+                kmipkit::protocol::MacSignatureKeyInformation::try_from_unique_identifier(
+                    kmipkit::protocol::UniqueIdentifier::from("kmipkit-mac-key"),
+                )
+                .map_err(|_| "MAC key information fixture rejected")?;
+            if target["name"] == "Cryptographic Parameters" {
+                information = information
+                    .with_cryptographic_parameters(kmipkit::ttlv::Structure::new())
+                    .map_err(|_| "MAC key information parameters rejected")?;
+            }
+            let model = information.into_item();
+            crate::local_wire::roundtrip(&model)?;
+            metadata_expected_target(&model, target, elements)
+        })());
+    }
     if KEY_WRAPPING_CONSTRUCTOR_ROUTES.contains(&symbol) {
         return Some(
             key_wrapping_metadata_model(symbol, target).and_then(|model| {
@@ -6047,7 +6083,9 @@ mod tests {
                     .find(|target| target["target_id"] == target_id)
                     .unwrap();
                 let expected = sample_for_route_at_version(symbol, target, elements, "2.1")
-                    .unwrap_or_else(|error| panic!("{symbol} sample failed for {target_id}: {error}"));
+                    .unwrap_or_else(|error| {
+                        panic!("{symbol} sample failed for {target_id}: {error}")
+                    });
                 let result = invoke(symbol, &expected, target, elements, "2.1")
                     .unwrap_or_else(|| panic!("{symbol} route missing for {target_id}"))
                     .unwrap_or_else(|error| panic!("{symbol} rejected {target_id}: {error}"));
