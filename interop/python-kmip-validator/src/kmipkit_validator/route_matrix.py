@@ -634,6 +634,50 @@ def _managed_object_cell(cell: dict, case: dict, target: dict) -> dict:
     from kmipkit import managed_objects
 
     symbol = cell['public_api_symbol']
+    if symbol.startswith(('kmipkit.managed_objects.KeyValue.',
+                          'kmipkit.managed_objects.KeyMaterial.')):
+        tree = _managed_object_tree(target)
+        key_format = next((value for tag, _, value in tree[2] if tag == 0x420042), None)
+
+        def find_node(node: list, raw_tag: int) -> list | None:
+            if node[0] == raw_tag:
+                return node
+            if node[1] == 1:
+                for child in node[2]:
+                    found = find_node(child, raw_tag)
+                    if found is not None:
+                        return found
+            return None
+
+        if key_format is None:
+            raise RecipePending
+        key_value = find_node(tree, 0x420045)
+        is_key_value = symbol.startswith('kmipkit.managed_objects.KeyValue.')
+        value_node = key_value if is_key_value else find_node(key_value, 0x420043) if key_value else None
+        if value_node is None or value_node[1] != 1:
+            raise RecipePending
+        fields_tree = value_node[2]
+        with ExitStack() as owned:
+            fields = [owned.enter_context(_credential_item_from_tree(field, owned))
+                      for field in fields_tree]
+            if symbol.endswith('.from_fields'):
+                constructor = managed_objects.KeyValue if is_key_value else managed_objects.KeyMaterial
+                result = owned.enter_context(constructor.from_fields(key_format, fields))
+            elif symbol.endswith('.from_item'):
+                item = owned.enter_context(_credential_item_from_tree(value_node, owned))
+                constructor = managed_objects.KeyValue if is_key_value else managed_objects.KeyMaterial
+                result = owned.enter_context(constructor.from_item(key_format, item))
+            else:
+                raise RecipePending
+            observed = item_tree(result)
+            if observed != value_node:
+                raise ValueError('key value or material constructor changed ordered fields')
+        target_tag = (int(target['wire_value'], 16) if target.get('kind') == 'tag'
+                      else _managed_object_tag(_catalog_model_data()[2], target.get('name', '')))
+        if not _credential_tree_has_tag(observed, target_tag):
+            raise RecipePending
+        tree_hash = digest(observed)
+        return {'request_tree_sha256': tree_hash, 'response_tree_sha256': tree_hash}
     if symbol.startswith('kmipkit.managed_objects.KeyBlock.'):
         tree = _managed_object_tree(target)
         if tree[0] != 0x420040 or tree[1] != 1:
