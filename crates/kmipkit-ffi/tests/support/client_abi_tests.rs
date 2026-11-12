@@ -1,6 +1,7 @@
+use std::ffi::c_void;
 use std::fs::{self, OpenOptions};
 use std::io::{self, Read, Write};
-use std::net::TcpListener;
+use std::net::{TcpListener, TcpStream};
 use std::path::{Path, PathBuf};
 use std::ptr;
 use std::sync::Arc;
@@ -40,6 +41,363 @@ use rustls::{RootCertStore, ServerConfig, ServerConnection, StreamOwned};
 use super::*;
 use crate::extension_registry::credential_secrets::kmipkit_secret_bytes_release;
 use crate::kmipkit_byte_span_v1_t;
+
+#[cfg(feature = "coverage-c-consumer")]
+unsafe extern "C" {
+    fn kmipkit_s2c_consumer_rejects_invalid_handles() -> i32;
+    fn kmipkit_s2c_consumer_binds_tls_listener(
+        leaf: *const u8,
+        leaf_length: u64,
+        root: *const u8,
+        root_length: u64,
+        key: *const u8,
+        key_length: u64,
+        out_port: *mut u16,
+    ) -> i32;
+    fn kmipkit_s2c_consumer_binds_https_listener(
+        leaf: *const u8,
+        leaf_length: u64,
+        root: *const u8,
+        root_length: u64,
+        key: *const u8,
+        key_length: u64,
+        out_port: *mut u16,
+    ) -> i32;
+    fn kmipkit_s2c_consumer_receives_put_and_sends_response(
+        leaf: *const u8,
+        leaf_length: u64,
+        root: *const u8,
+        root_length: u64,
+        key: *const u8,
+        key_length: u64,
+        start_client: unsafe extern "C" fn(u16, *mut c_void),
+        context: *mut c_void,
+    ) -> i32;
+}
+
+#[test]
+#[cfg(feature = "coverage-c-consumer")]
+fn s2c_c_consumer_rejects_invalid_listener_and_typed_request_handles() {
+    // SAFETY: the compiled C consumer passes only null handles and writable local outputs.
+    let status = unsafe { kmipkit_s2c_consumer_rejects_invalid_handles() };
+    assert_eq!(status, 0);
+}
+
+#[test]
+#[cfg(feature = "coverage-c-consumer")]
+fn s2c_c_consumer_binds_a_tls13_mtls_listener() {
+    let pki = EphemeralPki::generate().expect("ephemeral test PKI generation succeeds");
+    let identity = pki.server_identity();
+    let [leaf, root] = identity.certificate_chain_der();
+    let key = identity.private_key_der();
+    let mut port = 0;
+    // SAFETY: certificate and key spans borrow live test-owned buffers; port is writable.
+    let status = unsafe {
+        kmipkit_s2c_consumer_binds_tls_listener(
+            leaf.as_ptr(),
+            leaf.len() as u64,
+            root.as_ptr(),
+            root.len() as u64,
+            key.as_ptr(),
+            key.len() as u64,
+            &raw mut port,
+        )
+    };
+    assert_eq!(status, SUCCESS);
+    assert_ne!(port, 0);
+}
+
+#[test]
+#[cfg(feature = "coverage-c-consumer")]
+fn s2c_c_consumer_binds_an_https_listener() {
+    let pki = EphemeralPki::generate().expect("ephemeral test PKI generation succeeds");
+    let identity = pki.server_identity();
+    let [leaf, root] = identity.certificate_chain_der();
+    let key = identity.private_key_der();
+    let mut port = 0;
+    // SAFETY: certificate and key spans borrow live test-owned buffers; port is writable.
+    let status = unsafe {
+        kmipkit_s2c_consumer_binds_https_listener(
+            leaf.as_ptr(),
+            leaf.len() as u64,
+            root.as_ptr(),
+            root.len() as u64,
+            key.as_ptr(),
+            key.len() as u64,
+            &raw mut port,
+        )
+    };
+    assert_eq!(status, SUCCESS);
+    assert_ne!(port, 0);
+}
+
+struct S2cClientStartContext {
+    config: Arc<rustls::ClientConfig>,
+    request: Vec<u8>,
+    worker: Option<thread::JoinHandle<Result<Vec<u8>, String>>>,
+    spawn_error: Option<String>,
+}
+
+unsafe extern "C" fn s2c_start_tls_client(port: u16, opaque_context: *mut c_void) {
+    // SAFETY: the C consumer receives a pointer to the live context below and invokes it once.
+    let context = unsafe { &mut *opaque_context.cast::<S2cClientStartContext>() };
+    let config = Arc::clone(&context.config);
+    let request = context.request.clone();
+    match thread::Builder::new()
+        .name("kmipkit-s2c-c-test-client".to_owned())
+        .spawn(move || {
+            let socket =
+                TcpStream::connect(("127.0.0.1", port)).map_err(|error| error.to_string())?;
+            let server_name = rustls::pki_types::ServerName::try_from("server.kmipkit.test")
+                .map_err(|error| error.to_string())?;
+            let connection = rustls::ClientConnection::new(config, server_name)
+                .map_err(|error| error.to_string())?;
+            let mut tls = rustls::StreamOwned::new(connection, socket);
+            tls.write_all(&request).map_err(|error| error.to_string())?;
+            tls.flush().map_err(|error| error.to_string())?;
+            let mut header = [0u8; 8];
+            tls.read_exact(&mut header)
+                .map_err(|error| error.to_string())?;
+            let value_length =
+                u32::from_be_bytes([header[4], header[5], header[6], header[7]]) as usize;
+            let padded_length = value_length
+                .checked_add((8 - value_length % 8) % 8)
+                .ok_or_else(|| "response size overflow".to_owned())?;
+            let mut body = vec![0u8; padded_length];
+            tls.read_exact(&mut body)
+                .map_err(|error| error.to_string())?;
+            let mut response = header.to_vec();
+            response.extend_from_slice(&body);
+            Ok(response)
+        }) {
+        Ok(worker) => context.worker = Some(worker),
+        Err(error) => context.spawn_error = Some(error.to_string()),
+    }
+}
+
+fn encode_test_ttlv(tag: u32, item_type: u8, value: &[u8]) -> Vec<u8> {
+    let mut encoded = Vec::with_capacity(8 + value.len() + 7);
+    encoded.extend_from_slice(&tag.to_be_bytes()[1..]);
+    encoded.push(item_type);
+    encoded.extend_from_slice(
+        &u32::try_from(value.len())
+            .expect("test TTLV value length fits u32")
+            .to_be_bytes(),
+    );
+    encoded.extend_from_slice(value);
+    encoded.resize(8 + value.len().div_ceil(8) * 8, 0);
+    encoded
+}
+
+fn encode_test_structure(tag: u32, children: &[u8]) -> Vec<u8> {
+    encode_test_ttlv(tag, 1, children)
+}
+
+fn s2c_test_notify_item(
+    unique_identifier: &[u8],
+    request_id: u8,
+    include_changes: bool,
+) -> Vec<u8> {
+    const ENUMERATION: u8 = 5;
+    const TEXT_STRING: u8 = 7;
+    let mut payload = encode_test_ttlv(0x0042_0094, TEXT_STRING, unique_identifier);
+    if include_changes {
+        let changed_object_type = encode_test_ttlv(0x0042_0057, ENUMERATION, &2u32.to_be_bytes());
+        payload.extend(encode_test_structure(0x0042_0125, &changed_object_type));
+        let deleted_attribute_name =
+            encode_test_ttlv(0x0042_000A, ENUMERATION, &0x0042_0028u32.to_be_bytes());
+        payload.extend(encode_test_structure(0x0042_0126, &deleted_attribute_name));
+        let mut vendor_attribute_name =
+            encode_test_ttlv(0x0042_009D, TEXT_STRING, b"KMIPKit test vendor");
+        vendor_attribute_name.extend(encode_test_ttlv(
+            0x0042_000A,
+            TEXT_STRING,
+            b"Vendor Attribute",
+        ));
+        payload.extend(encode_test_structure(0x0042_0126, &vendor_attribute_name));
+    }
+    let mut item = encode_test_ttlv(0x0042_005C, ENUMERATION, &0x1Bu32.to_be_bytes());
+    item.extend(encode_test_ttlv(0x0042_0093, 8, &[request_id]));
+    item.extend(encode_test_structure(0x0042_0079, &payload));
+    encode_test_structure(0x0042_000F, &item)
+}
+
+fn s2c_test_put_batch() -> Vec<u8> {
+    const INTEGER: u8 = 2;
+    const ENUMERATION: u8 = 5;
+    const TEXT_STRING: u8 = 7;
+    const BYTE_STRING: u8 = 8;
+    let mut protocol_version = Vec::new();
+    protocol_version.extend(encode_test_ttlv(0x0042_006A, INTEGER, &2i32.to_be_bytes()));
+    protocol_version.extend(encode_test_ttlv(0x0042_006B, INTEGER, &1i32.to_be_bytes()));
+    let mut request_header = encode_test_structure(0x0042_0069, &protocol_version);
+    request_header.extend(encode_test_ttlv(
+        0x0042_004F,
+        INTEGER,
+        &65536i32.to_be_bytes(),
+    ));
+    request_header.extend(encode_test_ttlv(0x0042_000D, INTEGER, &8i32.to_be_bytes()));
+
+    let key_value = encode_test_ttlv(0x0042_0043, BYTE_STRING, &[0x11, 0x22, 0x33, 0x44]);
+    let key_value = encode_test_structure(0x0042_0045, &key_value);
+    let mut key_block = encode_test_ttlv(0x0042_0042, ENUMERATION, &1u32.to_be_bytes());
+    key_block.extend(key_value);
+    key_block.extend(encode_test_ttlv(
+        0x0042_0028,
+        ENUMERATION,
+        &3u32.to_be_bytes(),
+    ));
+    key_block.extend(encode_test_ttlv(
+        0x0042_002A,
+        INTEGER,
+        &128i32.to_be_bytes(),
+    ));
+    let managed_object =
+        encode_test_structure(0x0042_008F, &encode_test_structure(0x0042_0040, &key_block));
+
+    let mut request_payload = encode_test_ttlv(0x0042_0070, ENUMERATION, &1u32.to_be_bytes());
+    request_payload.extend(encode_test_ttlv(0x0042_0094, TEXT_STRING, b"s2c-key-1"));
+    request_payload.extend(managed_object);
+    let mut batch_item = encode_test_ttlv(0x0042_005C, ENUMERATION, &0x1Cu32.to_be_bytes());
+    batch_item.extend(encode_test_ttlv(0x0042_0093, BYTE_STRING, &[0xA1, 0xB2]));
+    batch_item.extend(encode_test_structure(0x0042_0079, &request_payload));
+    let mut root = encode_test_structure(0x0042_0077, &request_header);
+    root.extend(encode_test_structure(0x0042_000F, &batch_item));
+    let password = encode_test_structure(
+        0x0042_01A1,
+        &encode_test_ttlv(0x0042_00A1, TEXT_STRING, b"s3cr3t"),
+    );
+    let mut password_payload = encode_test_ttlv(0x0042_0070, ENUMERATION, &1u32.to_be_bytes());
+    password_payload.extend(encode_test_ttlv(
+        0x0042_0094,
+        TEXT_STRING,
+        b"s2c-password-1",
+    ));
+    password_payload.extend(password);
+    let mut password_batch_item =
+        encode_test_ttlv(0x0042_005C, ENUMERATION, &0x1Cu32.to_be_bytes());
+    password_batch_item.extend(encode_test_ttlv(0x0042_0093, BYTE_STRING, &[0xC3, 0xD4]));
+    password_batch_item.extend(encode_test_structure(0x0042_0079, &password_payload));
+    root.extend(encode_test_structure(0x0042_000F, &password_batch_item));
+    let unknown_object = encode_test_structure(
+        0x0054_0001,
+        &encode_test_ttlv(0x0054_0002, ENUMERATION, &0xA1B2_C3D4u32.to_be_bytes()),
+    );
+    let mut unknown_payload = encode_test_ttlv(0x0042_0070, ENUMERATION, &1u32.to_be_bytes());
+    unknown_payload.extend(encode_test_ttlv(
+        0x0042_0094,
+        TEXT_STRING,
+        b"unknown-object-1",
+    ));
+    unknown_payload.extend(unknown_object);
+    let mut unknown_batch_item = encode_test_ttlv(0x0042_005C, ENUMERATION, &0x1Cu32.to_be_bytes());
+    unknown_batch_item.extend(encode_test_ttlv(0x0042_0093, BYTE_STRING, &[0xE5, 0xF6]));
+    unknown_batch_item.extend(encode_test_structure(0x0042_0079, &unknown_payload));
+    root.extend(encode_test_structure(0x0042_000F, &unknown_batch_item));
+    let mut discover_version = Vec::new();
+    discover_version.extend(encode_test_ttlv(0x0042_006A, INTEGER, &2i32.to_be_bytes()));
+    discover_version.extend(encode_test_ttlv(0x0042_006B, INTEGER, &1i32.to_be_bytes()));
+    let discover_payload = encode_test_structure(0x0042_0069, &discover_version);
+    let mut discover_item = encode_test_ttlv(0x0042_005C, ENUMERATION, &0x1Eu32.to_be_bytes());
+    discover_item.extend(encode_test_ttlv(0x0042_0093, BYTE_STRING, &[0x31]));
+    discover_item.extend(encode_test_structure(0x0042_0079, &discover_payload));
+    root.extend(encode_test_structure(0x0042_000F, &discover_item));
+
+    root.extend(s2c_test_notify_item(b"notify-object", 0x32, true));
+
+    let query_payload = encode_test_ttlv(0x0042_0074, ENUMERATION, &1u32.to_be_bytes());
+    let mut query_item = encode_test_ttlv(0x0042_005C, ENUMERATION, &0x18u32.to_be_bytes());
+    query_item.extend(encode_test_ttlv(0x0042_0093, BYTE_STRING, &[0x33]));
+    query_item.extend(encode_test_structure(0x0042_0079, &query_payload));
+    root.extend(encode_test_structure(0x0042_000F, &query_item));
+
+    let role_payload = encode_test_ttlv(0x0042_0151, ENUMERATION, &1u32.to_be_bytes());
+    let mut role_item = encode_test_ttlv(0x0042_005C, ENUMERATION, &0x32u32.to_be_bytes());
+    role_item.extend(encode_test_ttlv(0x0042_0093, BYTE_STRING, &[0x34]));
+    role_item.extend(encode_test_structure(0x0042_0079, &role_payload));
+    root.extend(encode_test_structure(0x0042_000F, &role_item));
+
+    root.extend(s2c_test_notify_item(b"notify-no-attributes", 0x35, false));
+    encode_test_structure(0x0042_0078, &root)
+}
+
+#[test]
+#[cfg(feature = "coverage-c-consumer")]
+fn s2c_c_consumer_receives_put_material_as_a_secret_and_sends_typed_response() {
+    let pki = EphemeralPki::generate().expect("ephemeral test PKI generation succeeds");
+    let identity = pki.server_identity();
+    let [leaf, _chain_root] = identity.certificate_chain_der();
+    let root = pki.authority_certificate_der();
+    let key = identity.private_key_der();
+    let client_identity = pki.client_identity();
+    let mut roots = RootCertStore::empty();
+    roots
+        .add(CertificateDer::from(root.to_vec()))
+        .expect("test authority cert is valid");
+    let config = rustls::ClientConfig::builder_with_provider(Arc::new(
+        rustls::crypto::aws_lc_rs::default_provider(),
+    ))
+    .with_protocol_versions(&[&rustls::version::TLS13])
+    .expect("test client is TLS 1.3 only")
+    .with_root_certificates(roots)
+    .with_client_auth_cert(
+        vec![CertificateDer::from(
+            client_identity.certificate_der().to_vec(),
+        )],
+        PrivateKeyDer::Pkcs8(PrivatePkcs8KeyDer::from(
+            client_identity.private_key_der().to_vec(),
+        )),
+    )
+    .expect("test client identity is valid");
+    let mut context = S2cClientStartContext {
+        config: Arc::new(config),
+        request: s2c_test_put_batch(),
+        worker: None,
+        spawn_error: None,
+    };
+    // SAFETY: certificate/key vectors and callback context remain live until the synchronous C
+    // consumer finishes; the callback starts one owned client thread and returns before accept.
+    let status = unsafe {
+        kmipkit_s2c_consumer_receives_put_and_sends_response(
+            leaf.as_ptr(),
+            leaf.len() as u64,
+            root.as_ptr(),
+            root.len() as u64,
+            key.as_ptr(),
+            key.len() as u64,
+            s2c_start_tls_client,
+            (&raw mut context).cast(),
+        )
+    };
+    assert_eq!(status, SUCCESS);
+    assert!(context.spawn_error.is_none());
+    let response = context
+        .worker
+        .take()
+        .expect("C callback started client thread")
+        .join()
+        .expect("client thread does not panic")
+        .expect("TLS client receives a response");
+    assert_eq!(&response[..4], &[0x42, 0x00, 0x7B, 0x01]);
+}
+
+#[test]
+fn server_put_secret_byte_and_text_values_are_redacted_in_debug_output() {
+    let bytes = kmipkit_protocol::ManagedFieldValue::ByteString(zeroize::Zeroizing::new(
+        b"symmetric-key-material".to_vec(),
+    ));
+    let text = kmipkit_protocol::ManagedFieldValue::TextString(zeroize::Zeroizing::new(
+        b"credential-password".to_vec(),
+    ));
+    let secret_text = SecretText::new("credential-password".to_owned());
+
+    assert_eq!(format!("{bytes:?}"), "ByteString([REDACTED])");
+    assert_eq!(format!("{text:?}"), "TextString([REDACTED])");
+    assert_eq!(format!("{secret_text:?}"), "SecretText([REDACTED])");
+    assert!(!format!("{bytes:?}").contains("symmetric-key-material"));
+    assert!(!format!("{text:?}").contains("credential-password"));
+    assert!(!format!("{secret_text:?}").contains("credential-password"));
+}
 
 fn coverage_authentication_handle() -> *mut kmipkit_authentication_t {
     let mut tree = Structure::new();

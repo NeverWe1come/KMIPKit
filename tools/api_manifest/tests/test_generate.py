@@ -280,6 +280,106 @@ def _apply_input_array_contract(manifest: dict[str, object]) -> None:
 
 
 class ManifestGeneratorCliTests(unittest.TestCase):
+    def test_c_only_handle_and_versioned_record_can_be_declared_in_public_header(self) -> None:
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        requirement = "KMIPKIT-0091-FR-009"
+        approval = {
+            "kind": "feature-specification",
+            "path": "specs/091-fluent-dx-foundation/spec.md",
+            "status": "Approved",
+            "evidence": "Approved C-only ABI generator test fixture.",
+        }
+        for export_name in (
+            "kmipkit_test_listener_t",
+            "kmipkit_test_listener_config_v1_t",
+        ):
+            manifest["publicDeclarations"].append(
+                {
+                    "declarationId": f"test:{export_name}",
+                    "packageId": "c-kmipkit",
+                    "kind": "type",
+                    "exportName": export_name,
+                    "capabilityId": "fluent_dx_c_abi",
+                    "requirementIds": [requirement],
+                    "declarationState": "declared",
+                    "parityScope": "c-only",
+                    "approvalSource": approval,
+                    "languageMappings": {
+                        "c": {"packageId": "c-kmipkit", "name": export_name}
+                    },
+                }
+            )
+        manifest["publicDeclarations"][-1]["cTypeLayout"] = {
+            "name": "kmipkit_test_listener_config_v1_t",
+            "kind": "fixed-width-value",
+            "versioned": True,
+            "fields": [
+                {"name": "struct_size", "type": "uint32_t"},
+                {"name": "abi_version", "type": "uint32_t"},
+                {"name": "bind_port", "type": "uint16_t"},
+            ],
+        }
+        manifest["publicDeclarations"].append(
+            {
+                "declarationId": "test:kmipkit_test_listener_open",
+                "packageId": "c-kmipkit",
+                "kind": "c-symbol",
+                "exportName": "kmipkit_test_listener_open",
+                "capabilityId": "fluent_dx_c_abi",
+                "requirementIds": [requirement],
+                "declarationState": "declared",
+                "parityScope": "c-only",
+                "approvalSource": approval,
+                "languageMappings": {
+                    "c": {
+                        "packageId": "c-kmipkit",
+                        "name": "kmipkit_test_listener_open",
+                    }
+                },
+                "cSignature": {
+                    "parameters": [
+                        {
+                            "name": "configuration",
+                            "kind": "versioned-value-pointer",
+                            "type": "const kmipkit_test_listener_config_v1_t *",
+                            "direction": "input",
+                            "ownership": "borrowed",
+                        },
+                        {
+                            "name": "out_listener",
+                            "kind": "output",
+                            "type": "kmipkit_test_listener_t **",
+                            "ownership": "library-owned",
+                            "nullable": False,
+                        },
+                    ],
+                    "returnType": "int32_t",
+                    "errorCategories": ["invalid_input"],
+                },
+            }
+        )
+
+        source_schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
+        declaration_schema = {
+            "$schema": source_schema["$schema"],
+            "$defs": source_schema["$defs"],
+            "$ref": "#/$defs/publicDeclaration",
+        }
+        for declaration in manifest["publicDeclarations"][-3:]:
+            errors = list(Draft202012Validator(declaration_schema).iter_errors(declaration))
+            self.assertEqual(errors, [])
+
+        header = generate.render_c_header(manifest)
+
+        self.assertIn(
+            "typedef struct kmipkit_test_listener_t kmipkit_test_listener_t;", header
+        )
+        self.assertIn("struct kmipkit_test_listener_config_v1_t {", header)
+        self.assertIn(
+            "int32_t kmipkit_test_listener_open(const kmipkit_test_listener_config_v1_t * configuration, kmipkit_test_listener_t ** out_listener);",
+            header,
+        )
+
     def test_temporary_repository_copies_candidate_spec_sources(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = _create_repo(Path(directory))

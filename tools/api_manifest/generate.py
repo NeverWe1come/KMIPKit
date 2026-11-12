@@ -2253,6 +2253,14 @@ def _validate_references(manifest: dict[str, Any]) -> None:
         for record in manifest["types"]
         if record["c"]["kind"] == "opaque-handle"
     }
+    c_handle_names.update(
+        (declaration["exportName"], {"c": {"kind": "opaque-handle"}})
+        for declaration in manifest.get("publicDeclarations", [])
+        if declaration.get("packageId") == "c-kmipkit"
+        and declaration.get("kind") == "type"
+        and declaration.get("parityScope") == "c-only"
+        and "cTypeLayout" not in declaration
+    )
     excluded_c_functions = [
         exclusion["cFunction"]
         for exclusion in manifest.get("approvedExclusions", [])
@@ -2329,6 +2337,17 @@ def _validate_references(manifest: dict[str, Any]) -> None:
         *(record["c"]["name"] for record in manifest["types"]),
         *(layout["name"] for layout in approved_c_layouts),
     }
+    c_type_names.update(
+        declaration["exportName"]
+        for declaration in manifest.get("publicDeclarations", [])
+        if declaration.get("packageId") == "c-kmipkit"
+        and declaration.get("kind") == "type"
+        and declaration.get("parityScope") == "c-only"
+    )
+    for declaration in manifest.get("publicDeclarations", []):
+        c_type = declaration.get("cTypeLayout")
+        if c_type is not None:
+            _validate_c_value_layout(c_type, c_type_names)
     for type_record in manifest["types"]:
         _validate_c_value_layout(type_record["c"], c_type_names)
     c_record_names = {
@@ -2930,6 +2949,25 @@ def _ordered_approved_c_type_layouts(
             raise ManifestError("manifest contains a duplicate approved C carrier layout")
         layouts[name] = c_type
 
+    for declaration in manifest.get("publicDeclarations", []):
+        c_type = declaration.get("cTypeLayout")
+        if c_type is None:
+            continue
+        name = c_type.get("name")
+        if (
+            declaration.get("packageId") != "c-kmipkit"
+            or declaration.get("kind") != "type"
+            or declaration.get("parityScope") != "c-only"
+            or name != declaration.get("exportName")
+            or not isinstance(name, str)
+            or re.fullmatch(r"kmipkit_[a-z0-9_]+_t", name) is None
+            or c_type.get("kind") != "fixed-width-value"
+        ):
+            raise ManifestError("c-only public record layout must match its C type declaration")
+        if name in layouts:
+            raise ManifestError("manifest contains a duplicate C-only public record layout")
+        layouts[name] = c_type
+
     regular_types = {
         record.get("c", {}).get("name"): record
         for record in manifest.get("types", [])
@@ -3158,6 +3196,21 @@ def render_c_header(
         ):
             lines.append(f"typedef struct {name} {name};")
             emitted.add(name)
+    for declaration in manifest.get("publicDeclarations", []):
+        if (
+            declaration.get("packageId") == "c-kmipkit"
+            and declaration.get("kind") == "type"
+            and declaration.get("parityScope") == "c-only"
+            and "cTypeLayout" not in declaration
+            and (
+                ready_c_exports is None
+                or declaration["exportName"] in ready_c_exports
+            )
+        ):
+            lines.append(
+                f"typedef struct {declaration['exportName']} {declaration['exportName']};"
+            )
+            emitted.add(declaration["exportName"])
     if emitted:
         lines.append("")
 
