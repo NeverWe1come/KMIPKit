@@ -168,8 +168,8 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
 # Register declarations, KMIPKIT-0101 lifecycle declarations, and KMIPKIT-0102
 # fluent cryptographic operation builders.
 # Includes the approved KMIPKIT-0093 inventory reconciliation and narrowed
-# T101 mappings, plus the KMIPKIT-0108 attribute-read declarations.
-DECLARATIONS_SHA256 = "6de945965f8a0ba4b0f659da7ac63c8fcca623fb1787ab7a6d1ab8883ff5ffc4"
+# T101 mappings, plus the KMIPKIT-0108 and KMIPKIT-0109 attribute builders.
+DECLARATIONS_SHA256 = "d352e77f19412296afeaab5981b0465b8469133be8d69262d20cb5b7dd85c402"
 OPERATIONS_SHA256 = "2a6eb9fb6823b3456b3fb10b6d4af8477be9f1a1f68c06c252bb4873b272f3bc"
 
 

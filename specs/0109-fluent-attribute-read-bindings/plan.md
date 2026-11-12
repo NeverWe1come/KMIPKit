@@ -1,8 +1,8 @@
 # Implementation Plan: Fluent Attribute Read Bindings
 
-**Branch**: `feature/KMIPKIT-0109-fluent-attribute-read-bindings`  
-**Date**: 2026-11-12  
-**Spec**: `specs/0109-fluent-attribute-read-bindings/spec.md`
+- **Branch**: `feature/KMIPKIT-0109-fluent-attribute-read-bindings`
+- **Date**: 2026-11-12
+- **Spec**: `specs/0109-fluent-attribute-read-bindings/spec.md`
 
 ## Summary
 

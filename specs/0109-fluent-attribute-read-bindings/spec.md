@@ -1,8 +1,11 @@
 # Fluent Attribute Read Bindings (KMIPKIT-0109)
 
-**Feature Branch**: `feature/KMIPKIT-0109-fluent-attribute-read-bindings`  
-**Base**: `feature/KMIPKIT-0108-fluent-attribute-ops` at `79a2141ee08ce9df503345c5afaeadee694ecd9a`  
-**Status**: Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan.  
+**Feature Branch**: `feature/KMIPKIT-0109-fluent-attribute-read-bindings`
+
+**Base**: `feature/KMIPKIT-0108-fluent-attribute-ops` at `79a2141ee08ce9df503345c5afaeadee694ecd9a`
+
+**Status**: Approved.
+
 **Owning identifier**: KMIPKIT-0109
 
 ## Purpose
