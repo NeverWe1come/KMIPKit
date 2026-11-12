@@ -65,7 +65,7 @@ class CoverageMatrixTests(unittest.TestCase):
         case = next(case for case in self.catalog["test_cases"]
                     if case["case_id"] == "test-batch-create-activate-destroy")
         target_ids = case["requires"]["protocol_scenario"]["target_ids"]
-        self.assertEqual(4, len(target_ids))
+        self.assertEqual(5, len(target_ids))
         cells = [cell for cell in iter_cells(self.catalog, self.manifest)
                  if cell["case_id"] == case["case_id"] and cell["action"] == "construct"]
         self.assertTrue(all("target_id" in cell for cell in cells))

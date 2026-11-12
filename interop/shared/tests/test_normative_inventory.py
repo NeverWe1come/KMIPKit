@@ -400,8 +400,10 @@ class NormativeInventoryTests(unittest.TestCase):
 
     def test_legacy_batch_and_async_lifecycles_list_every_ordered_operation(self) -> None:
         expected_operations = {
-            "test-batch-create-activate-destroy": ["Create", "Activate", "Get Attribute List", "Destroy"],
-            "test-batch-register-encrypt-decrypt-destroy": ["Register", "Activate", "Encrypt", "Decrypt", "Destroy"],
+            "test-batch-create-activate-destroy": [
+                "Create", "Activate", "Get Attribute List", "Revoke", "Destroy"],
+            "test-batch-register-encrypt-decrypt-destroy": [
+                "Register", "Activate", "Encrypt", "Decrypt", "Revoke", "Destroy"],
             "test-async-lifecycle-poll": ["Create", "Query Asynchronous Requests", "Poll"],
         }
         cases = {case["case_id"]: case for case in self.catalog["test_cases"]}
