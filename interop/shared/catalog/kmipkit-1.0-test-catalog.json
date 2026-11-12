@@ -199344,7 +199344,11 @@
           "expected": {
             "first": "OperationFailed",
             "second": "Success",
-            "response_count": 2
+            "response_count": 2,
+            "effects": [
+              "first_item_failed",
+              "second_item_executed"
+            ]
           },
           "mode": "server_exchange",
           "mutation": "read_only",

@@ -1016,7 +1016,8 @@ def _protocol_scenario_cases(
     add("test-batch-continue-after-failure", "batch_workflows", ["Get", "Get Attribute List"],
         [batch_count, continuation, request_item, response_item, get, get_attribute_list, continue_after_error],
         parameters={"batch_count": 2, "batch_error_continuation_option": "Continue", "items": ["Get(missing)", "Get Attribute List"]},
-        expected={"first": "OperationFailed", "second": "Success", "response_count": 2},
+        expected={"first": "OperationFailed", "second": "Success", "response_count": 2,
+                  "effects": ["first_item_failed", "second_item_executed"]},
         steps=["send_failing_and_independent_items", "inspect_each_result_status", "verify_later_item_effect"],
         assertions=["first_failure_is_reported", "later_item_is_executed", "all_request_items_have_correlated_results"],
         sections=batch_base, mutation="read_only")
