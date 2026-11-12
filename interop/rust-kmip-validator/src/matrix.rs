@@ -11,6 +11,8 @@ use std::{
 #[path = "route_calls_generated.rs"]
 mod generated;
 
+const KEY_BLOCK_TAG: u32 = 0x0042_0040;
+
 fn text<'a>(value: &'a Json, field: &str) -> Result<&'a str> {
     value[field].as_str().ok_or("matrix field missing")
 }
@@ -670,7 +672,7 @@ fn managed_object_fixture(target: &Json, elements: &[Json]) -> Result<(u32, Item
 fn key_block_fixture(target: &Json, elements: &[Json]) -> Result<(Item, Item)> {
     let (_, object, expected) = managed_object_fixture(target, elements)?;
     let mut key_blocks = Vec::new();
-    collect_tagged_items(&object, 0x0042_0040, &mut key_blocks)?;
+    collect_tagged_items(&object, KEY_BLOCK_TAG, &mut key_blocks)?;
     match key_blocks.as_slice() {
         [key_block] => Ok((
             key_block
@@ -1376,9 +1378,7 @@ mod tests {
             .as_array()
             .unwrap()
             .iter()
-            .find(|target| {
-                target["target_id"] == "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-10-KEY-MATERIAL"
-            })
+            .find(|target| target["target_id"] == "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-10-KEY-MATERIAL")
             .unwrap();
         let symbol = "kmipkit_protocol::KeyBlock::try_from_item";
         let expected = sample_for_route(symbol, target, elements).unwrap();
