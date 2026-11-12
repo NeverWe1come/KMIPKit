@@ -136,7 +136,7 @@ fn decode_hex(hex: &str) -> Option<Vec<u8>> {
         return None;
     }
     hex.as_bytes()
-        .chunks_exact(2)
+        .chunks(2)
         .map(|pair| {
             let digit = |byte: u8| match byte {
                 b'0'..=b'9' => Some(byte - b'0'),

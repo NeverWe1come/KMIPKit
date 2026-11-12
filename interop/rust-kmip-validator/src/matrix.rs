@@ -988,7 +988,7 @@ fn object_root_fixture(
             let mut parents = Vec::new();
             collect_tagged_items(&object, parent_tag, &mut parents)?;
             for parent in &parents {
-                collect_direct_tagged_items(&parent, target_item.tag().raw(), &mut matching_items)?;
+                collect_direct_tagged_items(parent, target_item.tag().raw(), &mut matching_items)?;
             }
         } else {
             collect_tagged_items(&object, target_item.tag().raw(), &mut matching_items)?;
@@ -1103,8 +1103,8 @@ fn key_wrapping_metadata_model(symbol: &str, target: &Json) -> Result<Item> {
     let full_wrapping_root = target_name == "Key Wrapping Data";
     let generic_unique_identifier_tag = target_id == "KMIPKIT-ELEM-TAG-420094";
     let include_encryption = !wrapping_root || !mac_target || full_wrapping_root;
-    let include_mac = (!wrapping_root || mac_target || full_wrapping_root)
-        && !(generic_unique_identifier_tag && !mac_target && !full_wrapping_root);
+    let include_mac =
+        mac_target || full_wrapping_root || !wrapping_root && !generic_unique_identifier_tag;
     let include_parameters = target_name == "Cryptographic Parameters";
     if symbol.starts_with("kmipkit_protocol::EncryptionKeyInformation::") {
         return metadata_key_information(
@@ -1157,8 +1157,12 @@ fn key_wrapping_metadata_model(symbol: &str, target: &Json) -> Result<Item> {
 }
 
 fn metadata_expected_target(model: &Item, target: &Json, elements: &[Json]) -> Result<Item> {
-    let expected = sample(target, elements)?;
-    if model.tag().raw() == expected.tag().raw() {
+    let expected_tag = if target["kind"] == "message_field" {
+        message_field_tag(target, elements)?
+    } else {
+        sample(target, elements)?.tag().raw()
+    };
+    if model.tag().raw() == expected_tag {
         return model
             .try_clone()
             .map_err(|_| "metadata fixture copy failed");
@@ -1170,10 +1174,10 @@ fn metadata_expected_target(model: &Item, target: &Json, elements: &[Json]) -> R
         let mut parents = Vec::new();
         collect_tagged_items(model, parent_tag, &mut parents)?;
         for parent in &parents {
-            collect_direct_tagged_items(parent, expected.tag().raw(), &mut tagged_items)?;
+            collect_direct_tagged_items(parent, expected_tag, &mut tagged_items)?;
         }
     } else {
-        collect_tagged_items(model, expected.tag().raw(), &mut tagged_items)?;
+        collect_tagged_items(model, expected_tag, &mut tagged_items)?;
     }
     match tagged_items.as_slice() {
         [found_item] => found_item
@@ -1184,7 +1188,378 @@ fn metadata_expected_target(model: &Item, target: &Json, elements: &[Json]) -> R
     }
 }
 
+fn message_field_tag(target: &Json, elements: &[Json]) -> Result<u32> {
+    let name = text(target, "name")?.trim_end_matches(", MAY be repeated");
+    elements
+        .iter()
+        .find(|element| element["kind"] == "tag" && element["name"] == name)
+        .and_then(|element| element["wire_value"].as_str())
+        .and_then(unsigned_wire_value)
+        .ok_or("message field has no assigned TTLV tag")
+}
+
+fn message_item(tag: u32, value: Value) -> Result<Item> {
+    crate::driver::item(tag, value)
+}
+
+fn message_structure(tag: u32, children: Vec<Item>) -> Result<Item> {
+    let structure = crate::driver::structure(tag, children)?;
+    message_item(tag, Value::structure(structure))
+}
+
+fn message_scalar(tag: u32, value: Value, target: &Json, elements: &[Json]) -> Result<Item> {
+    if target["kind"] == "message_field" && message_field_tag(target, elements)? == tag {
+        // Some §8 targets omit an explicit encoding in the inventory; the
+        // field table already supplies its type through this fixture recipe.
+        sample(target, elements).or_else(|_| message_item(tag, value))
+    } else {
+        message_item(tag, value)
+    }
+}
+
+fn message_extension(target: &Json, elements: &[Json]) -> Result<Item> {
+    let vendor_id = message_field_tag(target, elements).ok() == Some(0x0042_009D);
+    let criticality = message_field_tag(target, elements).ok() == Some(0x0042_0026);
+    let vendor_identification = message_item(
+        0x0042_009D,
+        if vendor_id {
+            sample(target, elements)?.with_value(value_to_owned)?
+        } else {
+            Value::text_string("KMIPKit".to_owned())
+        },
+    )?;
+    let criticality_indicator = message_item(
+        0x0042_0026,
+        if criticality {
+            sample(target, elements)?.with_value(value_to_owned)?
+        } else {
+            Value::boolean(true)
+        },
+    )?;
+    let vendor_extension_item = message_structure(
+        0x0042_009C,
+        vec![message_item(
+            0x0054_0001,
+            Value::text_string("fixture".to_owned()),
+        )?],
+    )?;
+    let extension = message_structure(
+        0x0042_0051,
+        vec![
+            vendor_identification,
+            criticality_indicator,
+            vendor_extension_item,
+        ],
+    )?;
+    Ok(extension)
+}
+
+fn message_protocol_version(
+    target: &Json,
+    elements: &[Json],
+    protocol_version: &str,
+) -> Result<Item> {
+    let (major, minor) = match protocol_version {
+        "2.0" => (2, 0),
+        "2.1" => (2, 1),
+        _ => return Err("unsupported protocol version in message fixture"),
+    };
+    message_structure(
+        0x0042_0069,
+        vec![
+            message_scalar(0x0042_006A, Value::integer(major), target, elements)?,
+            message_scalar(0x0042_006B, Value::integer(minor), target, elements)?,
+        ],
+    )
+}
+
+fn message_authentication() -> Result<Item> {
+    let credential_type = message_item(0x0042_0024, Value::enumeration(1))?;
+    let credential_value = message_structure(
+        0x0042_0025,
+        vec![
+            message_item(0x0042_0099, Value::text_string("interop-user".to_owned()))?,
+            message_item(
+                0x0042_00A1,
+                Value::text_string("fixture-password".to_owned()),
+            )?,
+        ],
+    )?;
+    let credential = message_structure(0x0042_0023, vec![credential_type, credential_value])?;
+    message_structure(0x0042_000C, vec![credential])
+}
+
+fn message_nonce(target: &Json, elements: &[Json]) -> Result<Item> {
+    message_structure(
+        0x0042_00C8,
+        vec![
+            message_scalar(
+                0x0042_00C9,
+                Value::byte_string(vec![0x4e]),
+                target,
+                elements,
+            )?,
+            message_scalar(
+                0x0042_00CA,
+                Value::byte_string(vec![0x56]),
+                target,
+                elements,
+            )?,
+        ],
+    )
+}
+
+fn message_batch_extension(target: &Json, elements: &[Json]) -> Result<Option<Item>> {
+    let target_tag = if target["kind"] == "message_field" {
+        Some(message_field_tag(target, elements)?)
+    } else {
+        None
+    };
+    if target_tag
+        .is_some_and(|tag| [0x0042_0051, 0x0042_0026, 0x0042_009C, 0x0042_009D].contains(&tag))
+    {
+        Ok(Some(message_extension(target, elements)?))
+    } else {
+        Ok(None)
+    }
+}
+
+fn request_batch_item(index: usize, target: &Json, elements: &[Json]) -> Result<Item> {
+    let operation_tag = 0x0042_005C;
+    let operation = message_scalar(
+        operation_tag,
+        Value::enumeration(operation_value("Query").ok_or("Query operation is unavailable")?),
+        target,
+        elements,
+    )?;
+    let ephemeral = message_scalar(0x0042_0154, Value::boolean(false), target, elements)?;
+    let unique_id = if target["kind"] == "message_field"
+        && message_field_tag(target, elements)? == 0x0042_0093
+    {
+        sample(target, elements)?
+    } else {
+        let identifier = u8::try_from(index + 1).map_err(|_| "too many request batch items")?;
+        message_item(0x0042_0093, Value::byte_string(vec![0x4b, identifier]))?
+    };
+    let payload = message_structure(0x0042_0079, Vec::new())?;
+    let mut fields = vec![operation, ephemeral, unique_id, payload];
+    if let Some(extension) = message_batch_extension(target, elements)? {
+        fields.push(extension);
+    }
+    message_structure(0x0042_000F, fields)
+}
+
+fn request_message_fixture(
+    target: &Json,
+    elements: &[Json],
+    protocol_version: &str,
+) -> Result<Item> {
+    let target_tag = if target["kind"] == "message_field" {
+        Some(message_field_tag(target, elements)?)
+    } else if target["kind"] == "tag" {
+        Some(sample(target, elements)?.tag().raw())
+    } else {
+        None
+    };
+    let multiple = target_tag.is_some_and(|tag| [0x0042_000E, 0x0042_0010].contains(&tag));
+    let count: usize = if multiple { 2 } else { 1 };
+    let version = message_protocol_version(target, elements, protocol_version)?;
+    let mut header = vec![version];
+    header.push(message_scalar(
+        0x0042_0050,
+        Value::integer(4096),
+        target,
+        elements,
+    )?);
+    header.push(message_scalar(
+        0x0042_0105,
+        Value::text_string("client-correlation".to_owned()),
+        target,
+        elements,
+    )?);
+    header.push(message_scalar(
+        0x0042_0106,
+        Value::text_string("server-correlation".to_owned()),
+        target,
+        elements,
+    )?);
+    header.push(message_scalar(
+        0x0042_0007,
+        Value::enumeration(1),
+        target,
+        elements,
+    )?);
+    header.push(message_scalar(
+        0x0042_00D3,
+        Value::boolean(true),
+        target,
+        elements,
+    )?);
+    header.push(message_scalar(
+        0x0042_00C7,
+        Value::enumeration(1),
+        target,
+        elements,
+    )?);
+    header.push(message_authentication()?);
+    if target_tag == Some(0x0042_000E) {
+        header.push(sample(target, elements)?);
+    }
+    if target_tag == Some(0x0042_0010) {
+        header.push(sample(target, elements)?);
+    }
+    header.push(message_scalar(
+        0x0042_0092,
+        Value::date_time(1),
+        target,
+        elements,
+    )?);
+    header.push(message_item(
+        0x0042_000D,
+        Value::integer(i32::try_from(count).map_err(|_| "too many request batch items")?),
+    )?);
+    let request_header = message_structure(0x0042_0077, header)?;
+    let mut children = vec![request_header];
+    for index in 0..count {
+        children.push(request_batch_item(index, target, elements)?);
+    }
+    message_structure(0x0042_0078, children)
+}
+
+fn response_batch_item(target: &Json, elements: &[Json]) -> Result<Item> {
+    let target_tag = if target["kind"] == "message_field" {
+        Some(message_field_tag(target, elements)?)
+    } else {
+        None
+    };
+    let pending = target_tag == Some(0x0042_0006);
+    let failed = matches!(target_tag, Some(0x0042_007D | 0x0042_007E));
+    let operation = if pending {
+        operation_value("Poll").ok_or("Poll operation is unavailable")?
+    } else {
+        operation_value("Query").ok_or("Query operation is unavailable")?
+    };
+    let mut fields = vec![
+        message_scalar(0x0042_005C, Value::enumeration(operation), target, elements)?,
+        message_scalar(
+            0x0042_0093,
+            Value::byte_string(vec![0x4b, 1]),
+            target,
+            elements,
+        )?,
+        message_item(
+            0x0042_007F,
+            Value::enumeration(if pending { 2 } else { u32::from(failed) }),
+        )?,
+    ];
+    if failed {
+        fields.push(message_scalar(
+            0x0042_007E,
+            Value::enumeration(1),
+            target,
+            elements,
+        )?);
+        fields.push(message_scalar(
+            0x0042_007D,
+            Value::text_string("controlled fixture failure".to_owned()),
+            target,
+            elements,
+        )?);
+    } else if pending {
+        fields.push(message_scalar(
+            0x0042_0006,
+            Value::byte_string(vec![0x41, 0x53, 0x59, 0x4e, 0x43]),
+            target,
+            elements,
+        )?);
+    } else {
+        fields.push(message_structure(0x0042_007C, Vec::new())?);
+    }
+    if let Some(extension) = message_batch_extension(target, elements)? {
+        fields.push(extension);
+    }
+    message_structure(0x0042_000F, fields)
+}
+
+fn response_message_fixture(
+    target: &Json,
+    elements: &[Json],
+    protocol_version: &str,
+) -> Result<Item> {
+    let version = message_protocol_version(target, elements, protocol_version)?;
+    let nonce = message_nonce(target, elements)?;
+    let response_header = message_structure(
+        0x0042_007A,
+        vec![
+            version,
+            message_scalar(0x0042_0092, Value::date_time(1), target, elements)?,
+            nonce,
+            message_scalar(
+                0x0042_0155,
+                Value::byte_string(vec![0x50]),
+                target,
+                elements,
+            )?,
+            message_scalar(0x0042_00C7, Value::enumeration(1), target, elements)?,
+            message_scalar(
+                0x0042_0105,
+                Value::text_string("client-correlation".to_owned()),
+                target,
+                elements,
+            )?,
+            message_scalar(
+                0x0042_0106,
+                Value::text_string("server-correlation".to_owned()),
+                target,
+                elements,
+            )?,
+            message_item(0x0042_000D, Value::integer(1))?,
+        ],
+    )?;
+    message_structure(
+        0x0042_007B,
+        vec![response_header, response_batch_item(target, elements)?],
+    )
+}
+
+fn message_fixture_model(
+    symbol: &str,
+    target: &Json,
+    elements: &[Json],
+    protocol_version: &str,
+) -> Result<Item> {
+    match symbol {
+        "kmipkit_protocol::RequestMessage::try_from_ttlv" => {
+            request_message_fixture(target, elements, protocol_version)
+        }
+        "kmipkit_protocol::ResponseMessage::try_from_ttlv" => {
+            response_message_fixture(target, elements, protocol_version)
+        }
+        _ => Err("unsupported message parser route"),
+    }
+}
+
+#[cfg(test)]
 fn sample_for_route(symbol: &str, target: &Json, elements: &[Json]) -> Result<Item> {
+    sample_for_route_at_version(symbol, target, elements, "2.1")
+}
+
+#[allow(clippy::too_many_lines)] // Keep explicit public route-to-fixture dispatch auditable.
+fn sample_for_route_at_version(
+    symbol: &str,
+    target: &Json,
+    elements: &[Json],
+    protocol_version: &str,
+) -> Result<Item> {
+    if [
+        "kmipkit_protocol::RequestMessage::try_from_ttlv",
+        "kmipkit_protocol::ResponseMessage::try_from_ttlv",
+    ]
+    .contains(&symbol)
+    {
+        let model = message_fixture_model(symbol, target, elements, protocol_version)?;
+        return metadata_expected_target(&model, target, elements);
+    }
     if KEY_WRAPPING_CONSTRUCTOR_ROUTES.contains(&symbol) {
         let model = key_wrapping_metadata_model(symbol, target)?;
         return metadata_expected_target(&model, target, elements);
@@ -1329,6 +1704,37 @@ fn invoke(
 ) -> Option<Result<Item>> {
     if let Some(result) = crate::local_credentials::invoke(symbol, sample, target, elements) {
         return Some(result);
+    }
+    if [
+        "kmipkit_protocol::RequestMessage::try_from_ttlv",
+        "kmipkit_protocol::ResponseMessage::try_from_ttlv",
+    ]
+    .contains(&symbol)
+    {
+        return Some((|| {
+            let model = message_fixture_model(symbol, target, elements, protocol_version)?;
+            let structure = model
+                .as_structure()
+                .ok_or("message fixture root is not a Structure")?
+                .try_clone()
+                .map_err(|_| "message fixture copy failed")?;
+            let (tag, tree) = match symbol {
+                "kmipkit_protocol::RequestMessage::try_from_ttlv" => (
+                    0x0042_0078,
+                    kmipkit::protocol::RequestMessage::try_from_ttlv(structure)
+                        .map(kmipkit::protocol::RequestMessage::into_ttlv)
+                        .map_err(|_| "Request Message parser rejected"),
+                ),
+                "kmipkit_protocol::ResponseMessage::try_from_ttlv" => (
+                    0x0042_007B,
+                    kmipkit::protocol::ResponseMessage::try_from_ttlv(structure)
+                        .map(kmipkit::protocol::ResponseMessage::into_ttlv)
+                        .map_err(|_| "Response Message parser rejected"),
+                ),
+                _ => return Err("unsupported message parser route"),
+            };
+            message_item(tag, Value::structure(tree?))
+        })());
     }
     if [
         "kmipkit_protocol::GetRequest::with_key_format_type",
@@ -1856,7 +2262,12 @@ pub(crate) fn run(matrix: &Path, output: &Path) -> Result<bool> {
             events.push(event);
             continue;
         }
-        let sample = match sample_for_route(symbol, target, elements) {
+        let sample = match sample_for_route_at_version(
+            symbol,
+            target,
+            elements,
+            text(row, "protocol_version")?,
+        ) {
             Ok(sample) => sample,
             Err(error) => {
                 pending += 1;
@@ -2470,7 +2881,8 @@ mod tests {
                         .iter()
                         .find(|target| target["target_id"] == target_id)
                         .unwrap();
-                    let fixture = sample_for_route(symbol, target, elements);
+                    let fixture =
+                        sample_for_route_at_version(symbol, target, elements, protocol_version);
                     assert!(
                         fixture.is_ok(),
                         "{symbol} {protocol_version} {target_id}: {fixture:?}"

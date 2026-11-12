@@ -168,11 +168,14 @@ interop/.local/rust-ci-venv/bin/python interop/rust-kmip-validator/tools/run_rou
 ```
 
 It writes `rust-local-route-evidence.json` and `matrix-summary.json` under
-`interop/rust-kmip-validator/results/routes/`. The gate currently fails:
-request-model, response-accessor, workflow-specific local fixtures, and network
-cell evidence are unfinished. A passing subset is never a full-matrix claim.
-The CI completeness gate deliberately preserves this failure while the PR is
-WIP. The separate live catalog fixture suite covers both API levels, both
+`interop/rust-kmip-validator/results/routes/`. The gate currently fails while
+operation-specific constructors and accessors, workflow-specific local fixtures,
+and network cell evidence remain unfinished. The Request Message and Response
+Message parser routes execute every inventoried field target for KMIP 2.0 and
+2.1 using complete structurally valid messages. A passing subset is never a
+full-matrix claim. The CI completeness gate deliberately preserves this failure
+while the PR is WIP. The separate live catalog fixture suite covers both API
+levels, both
 protocol versions and all six encoding/transport combinations, comparing
 normalized request and response trees; these are controlled fixtures and do
 not establish deployed vendor interoperability.
