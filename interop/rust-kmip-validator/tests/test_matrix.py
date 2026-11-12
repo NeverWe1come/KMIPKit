@@ -416,6 +416,27 @@ class MatrixContract(unittest.TestCase):
         self.assertEqual(len(cells), len(report['events']))
         self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
 
+    def test_managed_object_constructors_cover_every_local_route_cell(self):
+        constructors = {
+            'kmipkit_protocol::Certificate::try_new',
+            'kmipkit_protocol::CertificateRequest::try_new',
+            'kmipkit_protocol::OpaqueObject::try_new',
+            'kmipkit_protocol::PgpKey::try_new',
+            'kmipkit_protocol::PrivateKey::try_new',
+            'kmipkit_protocol::PublicKey::try_new',
+            'kmipkit_protocol::SecretData::try_new',
+            'kmipkit_protocol::SplitKey::try_new',
+            'kmipkit_protocol::SymmetricKey::try_new',
+        }
+        cells = [cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
+                 if cell['mode'] == 'local' and cell['action'] == 'construct'
+                 and cell['public_api_symbol'] in constructors]
+        self.assertGreater(len(cells), 0)
+        process, report = self.run_matrix(cells)
+        self.assertEqual(process.returncode, 0, process.stderr or process.stdout or report)
+        self.assertEqual(len(cells), len(report['events']))
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
     def test_key_wrapping_metadata_parsers_cover_every_normative_route_cell(self):
         # OASIS KMIP 2.0/2.1 §3.3, Tables 14–17 define these metadata structures.
         symbols = {
