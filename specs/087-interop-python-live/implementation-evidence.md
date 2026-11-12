@@ -147,6 +147,23 @@ the extraction, `cargo +1.100.0 fmt --all --check` and the same two focused
 Rust 1.100.0 tests passed again (50 C API coverage tests and one operation
 parity test).
 
+The post-refactor Rust 1.100.0 workspace and coverage checks also passed:
+
+```sh
+cargo +1.100.0 fmt --all --check
+cargo +1.100.0 test --workspace --all-features --locked
+cargo +1.100.0 llvm-cov --workspace --all-features --locked --json \
+  --output-path target-rust100-red/coverage-raw.json
+python3 scripts/coverage_gate.py normalize --workspace . \
+  --input target-rust100-red/coverage-raw.json \
+  --output target-rust100-red/coverage.json
+```
+
+The workspace run rebuilt the cleaned FFI package, the LLVM coverage report
+was generated from its own clean instrumented target, and normalization
+succeeded. Cross-platform confirmation remains the PR CI run on Linux,
+Windows, and macOS.
+
 ## Remaining limitations
 
 Controlled local TLS results are not vendor interoperability evidence. No Cosmian, CipherTrust or ESKM endpoint was
