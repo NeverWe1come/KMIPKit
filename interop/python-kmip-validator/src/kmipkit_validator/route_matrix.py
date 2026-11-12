@@ -405,29 +405,6 @@ def _managed_object_field_tree(element: dict, element_types: dict[str, set[str]]
     return [_managed_object_tag(elements, element.get('name', '')), kind, value]
 
 
-def _managed_object_context(structure_id: str, children: list, elements: dict[str, dict]) -> list:
-    """Place a nested Key Value/Key Material/Key Wrapping structure in Key Block."""
-    structure = elements.get(structure_id)
-    if structure is None or structure.get('kind') != 'object_structure':
-        raise RecipePending
-    if structure.get('name') == 'Key Block':
-        return [0x420040, 1, children]
-    parents = [parent for parent in structure.get('parent_element_ids', [])
-               if elements.get(parent, {}).get('kind') == 'object_structure']
-    if len(parents) != 1:
-        raise RecipePending
-    parent_id = parents[0]
-    member = next((item for item in elements.values()
-                   if item.get('kind') == 'structure_member'
-                   and parent_id in item.get('parent_element_ids', [])
-                   and _normalized_name(item.get('name', '')) ==
-                   _normalized_name(structure.get('name', ''))), None)
-    if member is None:
-        raise RecipePending
-    nested = [_managed_object_tag(elements, member['name']), 1, children]
-    return _managed_object_context(parent_id, [nested], elements)
-
-
 def _managed_object_key_material(element_id: str, elements: dict[str, dict],
                                  include_member_id: str | None = None) -> tuple[int, list]:
     """Create valid Key Material for the target's transparent format table."""
@@ -470,11 +447,10 @@ def _managed_object_wrapping_data(elements: dict[str, dict]) -> list:
                   'encryption-fixture'.encode().hex()]
     mac = [_managed_object_tag(elements, 'Unique Identifier'), 7,
            'mac-fixture'.encode().hex()]
-    parameters = [_managed_object_tag(elements, 'Cryptographic Parameters'), 1, []]
     encryption_info = [_managed_object_tag(elements, 'Encryption Key Information'), 1,
-                       [encryption, parameters]]
+                       [encryption, [_managed_object_tag(elements, 'Cryptographic Parameters'), 1, []]]]
     mac_info = [_managed_object_tag(elements, 'MAC/Signature Key Information'), 1,
-                [mac, parameters]]
+                [mac, [_managed_object_tag(elements, 'Cryptographic Parameters'), 1, []]]]
     fields = [
         [_managed_object_tag(elements, 'Wrapping Method'), 5, 1],
         encryption_info,
@@ -486,7 +462,7 @@ def _managed_object_wrapping_data(elements: dict[str, dict]) -> list:
     return [_managed_object_tag(elements, 'Key Wrapping Data'), 1, fields]
 
 
-def _managed_object_tree(target: dict, case: dict) -> list:
+def _managed_object_tree(target: dict) -> list:
     """Construct a minimal nested Key Block carrying the exact normative target."""
     _, element_types, elements = _catalog_model_data()
     element = elements.get(target['target_id'])
@@ -548,7 +524,7 @@ def _managed_object_cell(cell: dict, case: dict, target: dict) -> dict:
     symbol = cell['public_api_symbol']
     if not symbol.startswith('kmipkit.managed_objects.KeyBlock.'):
         raise RecipePending
-    tree = _managed_object_tree(target, case)
+    tree = _managed_object_tree(target)
     if tree[0] != 0x420040 or tree[1] != 1:
         raise ValueError('managed-object fixture did not produce a Key Block Structure')
     with ExitStack() as owned:
