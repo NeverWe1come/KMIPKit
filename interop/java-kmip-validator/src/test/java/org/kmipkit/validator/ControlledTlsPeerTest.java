@@ -298,6 +298,14 @@ class ControlledTlsPeerTest {
         }
         assertEquals(350, bitmaskEvents,
                 "Every named Cryptographic Usage Mask bit needs all seven local routes in both versions.");
+        long dataTypeEvents = 0;
+        for (JsonNode event : report.path("events")) {
+            if (event.path("case_id").asText().startsWith("test-norm-data-type-data-type-")) {
+                dataTypeEvents++;
+            }
+        }
+        assertEquals(92, dataTypeEvents,
+                "Every TTLV data type needs its installed constructor, item view, and decoder routes.");
         long bitmaskCaseCount = bitmaskFixtures.stream().map(BitmaskFixture::caseId).distinct().count();
         assertEquals(7 + enumerationFixtures.size() + bitmaskCaseCount, report.path("case_ids").size());
         assertEquals("test-op-query", report.path("case_ids").get(0).asText());
