@@ -69,6 +69,9 @@ class RouteCapabilitiesTests(unittest.TestCase):
     def test_attribute_container_routes_do_not_claim_managed_object_structures(self):
         catalog = json.loads((SHARED / 'catalog/kmipkit-1.0-test-catalog.json').read_text())
         targets = {target['target_id']: target for target in catalog['normative_targets']}
+        managed_object_type_values = {target_id for target_id, target in targets.items()
+            if target['kind'] == 'object_type' or
+            'KMIPKIT-ELEM-ENUMERATION-OBJECT-TYPE' in target.get('parent_element_ids', [])}
         routes = [route for route in self.data['routes']
                   if route['api_level'] == 'typed-protocol'
                   and any(token in route['public_api_symbol'].casefold()
@@ -79,6 +82,8 @@ class RouteCapabilitiesTests(unittest.TestCase):
                              if target_id in targets]
             self.assertFalse(any(target['kind'] in {'object_structure', 'operation_structure'}
                                  for target in route_targets), route['public_api_symbol'])
+            self.assertFalse(managed_object_type_values.intersection(route['normative_target_ids']),
+                             route['public_api_symbol'])
 
     def test_object_item_constructors_do_not_claim_object_type_values_or_sibling_structures(self):
         catalog = json.loads((SHARED / 'catalog/kmipkit-1.0-test-catalog.json').read_text())
