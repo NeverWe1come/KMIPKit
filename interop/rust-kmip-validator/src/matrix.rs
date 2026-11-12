@@ -1312,6 +1312,27 @@ fn ticket_fixture_target(target: &Json, elements: &[Json]) -> Result<Item> {
     }
 }
 
+fn extension_information_ttlv_fixture() -> Result<Item> {
+    let mut fields = kmipkit::ttlv::Structure::new();
+    for field in [
+        crate::driver::item(
+            0x0042_00a5,
+            Value::text_string("KMIPKit.Validator".to_owned()),
+        )?,
+        crate::driver::item(0x0042_00a6, Value::integer(0x0054_0000))?,
+        crate::driver::item(0x0042_00a7, Value::enumeration(7))?,
+    ] {
+        fields
+            .try_push(field)
+            .map_err(|_| "Extension Information fixture rejected")?;
+    }
+    crate::driver::item(0x0042_00a4, Value::structure(fields))
+}
+
+fn extension_information_fixture_target(target: &Json, elements: &[Json]) -> Result<Item> {
+    metadata_expected_target(&extension_information_ttlv_fixture()?, target, elements)
+}
+
 fn message_field_tag(target: &Json, elements: &[Json]) -> Result<u32> {
     let name = text(target, "name")?.trim_end_matches(", MAY be repeated");
     elements
@@ -1696,6 +1717,9 @@ fn sample_for_route_at_version(
         let raw_tag = sample(target, elements)?.tag().raw();
         return crate::driver::item(raw_tag, Value::structure(kmipkit::ttlv::Structure::new()));
     }
+    if symbol == "kmipkit_protocol::extension::to_ttlv" {
+        return extension_information_fixture_target(target, elements);
+    }
     if [
         "kmipkit_protocol::RequestMessage::try_from_ttlv",
         "kmipkit_protocol::ResponseMessage::try_from_ttlv",
@@ -2059,6 +2083,24 @@ fn invoke(
     elements: &[Json],
     protocol_version: &str,
 ) -> Option<Result<Item>> {
+    if symbol == "kmipkit_protocol::extension::to_ttlv" {
+        return Some((|| {
+            let information =
+                kmipkit::protocol::extension::extension_information("KMIPKit.Validator")
+                    .map_err(|_| "Extension Information constructor rejected")?;
+            let information = kmipkit::protocol::extension::with_tag(information, 0x0054_0000)
+                .map_err(|_| "Extension Information tag rejected")?;
+            let information = kmipkit::protocol::extension::with_type(
+                information,
+                kmipkit::ttlv::ItemType::TextString,
+            )
+            .map_err(|_| "Extension Information type rejected")?;
+            let structure = kmipkit::protocol::extension::to_ttlv(information)
+                .map_err(|_| "Extension Information serializer rejected")?;
+            let model = crate::driver::item(0x0042_00a4, Value::structure(structure))?;
+            metadata_expected_target(&model, target, elements)
+        })());
+    }
     if [
         "kmipkit_protocol::Ticket::new",
         "kmipkit_protocol::Ticket::try_from_ttlv",
