@@ -275,6 +275,36 @@ class RouteCapabilitiesTests(unittest.TestCase):
         }
         self.assertEqual(expected, set(route['normative_target_ids']))
 
+    def test_register_and_revoke_batch_item_constructors_are_network_routes(self):
+        expected = {
+            ('rust', 'kmipkit_client::ClientBatchItem::register'),
+            ('c', 'kmipkit_client_batch_item_register'),
+            ('java', 'org.kmipkit.extensions.ClientBatchItem.register'),
+            ('python', 'kmipkit.extensions.client_batch_item_register'),
+            ('rust', 'kmipkit_client::ClientBatchItem::revoke'),
+            ('c', 'kmipkit_client_batch_item_revoke'),
+            ('java', 'org.kmipkit.extensions.ClientBatchItem.revoke'),
+            ('python', 'kmipkit.extensions.client_batch_item_revoke'),
+        }
+        routes = {(route['language'], route['public_api_symbol']): route for route in self.data['routes']}
+        self.assertTrue(expected <= set(routes), sorted(expected - set(routes)))
+        operation_ids = {
+            ('rust', 'kmipkit_client::ClientBatchItem::register'): 'KMIPKIT-ELEM-OP-C2S-REGISTER',
+            ('c', 'kmipkit_client_batch_item_register'): 'KMIPKIT-ELEM-OP-C2S-REGISTER',
+            ('java', 'org.kmipkit.extensions.ClientBatchItem.register'): 'KMIPKIT-ELEM-OP-C2S-REGISTER',
+            ('python', 'kmipkit.extensions.client_batch_item_register'): 'KMIPKIT-ELEM-OP-C2S-REGISTER',
+            ('rust', 'kmipkit_client::ClientBatchItem::revoke'): 'KMIPKIT-ELEM-OP-C2S-REVOKE',
+            ('c', 'kmipkit_client_batch_item_revoke'): 'KMIPKIT-ELEM-OP-C2S-REVOKE',
+            ('java', 'org.kmipkit.extensions.ClientBatchItem.revoke'): 'KMIPKIT-ELEM-OP-C2S-REVOKE',
+            ('python', 'kmipkit.extensions.client_batch_item_revoke'): 'KMIPKIT-ELEM-OP-C2S-REVOKE',
+        }
+        for key, operation_id in operation_ids.items():
+            route = routes[key]
+            self.assertEqual('network', route['mode'], key)
+            self.assertEqual([operation_id], route['operation_ids'], key)
+            self.assertEqual(6, len(route['combinations']), key)
+            self.assertEqual('construct', route['actions'][0], key)
+
     def test_checked_tag_constructor_exclusions_are_source_backed_and_narrow(self):
         expected = {
             'rust': {'rust.generic-ttlv.item.new', 'rust.generic-ttlv.model.kmipkit.ttlv.structure.try.push'},
