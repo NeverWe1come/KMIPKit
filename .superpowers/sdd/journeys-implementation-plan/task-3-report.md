@@ -225,3 +225,20 @@ The remaining concerns are the explicit scope limits and unrelated baseline
 candidate-exclusion test failure above. The pre-existing
 untracked Python lockfile is still preserved. Tasks 4, 5 and final PR closeout
 were not included in either Task 3 commit.
+
+## Review fix round 1: explicit P-256 and Java crypto ownership
+
+Verified reviewer findings against the approved Task 3 ledger: ECDSA/256 does
+not uniquely select P-256, and the Java Sign/Signature Verify builder handles
+were not closed by the consumer. Recommended Curve P-256 is already catalogued
+(KMIP 2.1 section 11.45, enumeration value 7) and belongs in the typed
+Cryptographic Domain Parameters attribute (section 4.14). The existing Rust
+common-attribute route supports this exact representation. The C v1 input layout
+will remain unchanged.
+
+Red: `sh tests/consumers/0093-journeys/verify.sh` exited 1. After the Rust
+lifecycle and AES-GCM exchanges, the listener rejected the Rust Create Key
+Pair because the explicit P-256 domain parameters were absent. Log:
+`/tmp/kmipkit-task3-fix1-red.log`. The fixture also has two passing focused
+contracts that require exact P-256 and reject missing, wrong-type, empty and
+secp256k1 domain selections.

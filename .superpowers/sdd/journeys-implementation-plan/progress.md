@@ -34,3 +34,10 @@
 - Refactor: Python attribute groups now use scoped ownership, with two injected-allocation regression cases that failed before the cleanup and pass afterward. The full Python fluent suite passes 29 tests; the 40-exchange journey passes again. The manifest describes the actual staged-options execution signatures; 30 focused Python 3.12 contracts pass.
 - Audit snapshot: regenerated the dated key-pair journey binding report through the audit tool; all four current documentation/report contracts pass. A separately reproduced 0053 candidate-exclusion contract fails identically on the original Red manifest and the current tree; its unrelated test/policy discrepancy is recorded in the report.
 - Status: Task 3 Red, Green and Refactor are complete in separate commits. Commands, logs, scope limits and self-review are recorded in `task-3-report.md`; exact-head CI remains outside this local task.
+
+## Task 3 review fix round 1
+
+- Confirmed missing explicit curve and unclosed Java crypto builders.
+- Red: the tightened fixture rejects the current Rust key-pair request for
+  missing Cryptographic Domain Parameters / Recommended Curve P-256.
+- Evidence and final verification are recorded in `task-3-report.md`.

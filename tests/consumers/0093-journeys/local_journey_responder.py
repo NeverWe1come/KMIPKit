@@ -255,7 +255,12 @@ def _validate_operation(
         payload = _children(payloads[0])
         groups = {tag: (kind, value) for tag, kind, value in payload}
         expected_attributes = {
-            0x420126: {0x420028: (5, struct.pack(">I", 6)), 0x42002A: (2, struct.pack(">i", 256))},
+            0x420126: {
+                0x420028: (5, struct.pack(">I", 6)),
+                0x42002A: (2, struct.pack(">i", 256)),
+                # KMIP 2.1 sections 4.14 and 11.45: explicitly choose P-256.
+                0x420029: (1, _item(0x420075, 5, struct.pack(">I", 7))),
+            },
             0x420127: {0x42002C: (2, struct.pack(">i", 1))},
             0x420128: {0x42002C: (2, struct.pack(">i", 2))},
         }
@@ -264,7 +269,7 @@ def _validate_operation(
         for group_tag, expected in expected_attributes.items():
             actual = {tag: (kind, value) for tag, kind, value in _children(groups[group_tag][1])}
             if actual != expected:
-                raise RuntimeError("Create Key Pair algorithm, length, or usage masks were not explicit")
+                raise RuntimeError("Create Key Pair algorithm, length, P-256 curve, or usage masks were not explicit")
     elif operation in (0x21, 0x22):
         payload = _children(payloads[0])
         flattened_payload = _flatten(payload)
