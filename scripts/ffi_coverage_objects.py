@@ -10,6 +10,10 @@ import shlex
 import subprocess
 import sys
 
+_LIBRARY_NAMES = ('libkmipkit_ffi.so', 'libkmipkit_ffi.a')
+_CONSUMER_PREFIXES = {'unittests src/lib.rs': 'kmipkit_ffi-',
+                      'tests/c_api_coverage.rs': 'c_api_coverage-'}
+
 
 def _unique_object(candidates, root, label, *, executable=False):
     objects = {}
@@ -32,7 +36,7 @@ def _unique_object(candidates, root, label, *, executable=False):
 def collect_ffi_objects(target_root: Path, cargo_log: Path, artifacts_json: Path) -> list[Path]:
     """Keep both complete libraries and the actual unit/C-consumer executables."""
     root = target_root.resolve(strict=True)
-    libraries = {'libkmipkit_ffi.so': [], 'libkmipkit_ffi.a': []}
+    libraries = {name: [] for name in _LIBRARY_NAMES}
     for line in artifacts_json.read_text(encoding='utf-8').splitlines():
         artifact = json.loads(line)
         if (artifact.get('reason') != 'compiler-artifact'
@@ -44,13 +48,13 @@ def collect_ffi_objects(target_root: Path, cargo_log: Path, artifacts_json: Path
             if path.name in libraries:
                 libraries[path.name].append(path)
     objects = [_unique_object(paths, root, name) for name, paths in libraries.items()]
-    roles = {'unittests src/lib.rs': [], 'tests/c_api_coverage.rs': []}
+    roles = {role: [] for role in _CONSUMER_PREFIXES}
     pattern = re.compile(r'\bRunning (unittests src/lib\.rs|tests/c_api_coverage\.rs) \((.+)\)$')
     for line in cargo_log.read_text(encoding='utf-8').splitlines():
         match = pattern.search(line.strip())
         if match is not None:
             role, path = match.groups()
-            expected = 'kmipkit_ffi-' if role.startswith('unittests') else 'c_api_coverage-'
+            expected = _CONSUMER_PREFIXES[role]
             if not Path(path).name.startswith(expected):
                 raise ValueError(f'{role} names an unexpected coverage executable')
             roles[role].append(Path(path))
