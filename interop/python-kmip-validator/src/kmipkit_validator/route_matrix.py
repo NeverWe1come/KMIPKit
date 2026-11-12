@@ -2612,12 +2612,29 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
         raise ValueError('controlled peer request or unsupported response shape mismatch')
     if trace is None:
         raise ValueError('network cell has no public-call trace')
+    batch_evidence = {}
+    if case.get('category') == 'batch_workflows':
+        expected_operations = case.get('requires', {}).get('protocol_scenario', {}).get('operations')
+        if not isinstance(expected_operations, list) or not expected_operations:
+            raise ValueError('batch workflow has no catalogued operation order')
+        request_operations = _batch_message_operations(request)
+        response_operations = _batch_message_operations(response)
+        if request_operations != expected_operations or response_operations != expected_operations:
+            raise ValueError('controlled peer did not observe the catalogued batch operation order')
+        if peer.request_observation.get('batch_count') != len(expected_operations):
+            raise ValueError('controlled peer observed a different catalogued batch count')
+        batch_evidence = {
+            'batch_operation_sequence': request_operations,
+            'peer_observed_operation_sequence': request_operations,
+            'batch_item_count': len(request_operations),
+        }
     return {'request_tree_sha256': digest(request), 'response_tree_sha256': digest(response),
             'wire_bytes_sha256': hashlib.sha256(
                 peer.responses[0] if cell.get('action') == 'decode' else peer.requests[0]).hexdigest(),
             'request_delivery_state': 'response_received', 'transport_invocation_count': 1,
             'peer_observed_response_count': 1,
             'peer_observed_result_status_codes': [peer_status],
+            **batch_evidence,
             **({'peer_observed_result_reason_codes': [peer_reason]} if peer_reason is not None else {})}
 
 
