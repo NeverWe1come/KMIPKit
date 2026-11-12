@@ -1316,6 +1316,26 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(len(operation_order), event['peer_observed_response_count'])
         self.assertTrue(set(symbols) <= trace.observed)
 
+    def test_batch_workflow_invokes_get_attribute_list_request_builder(self):
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-batch-create-activate-destroy')
+        cell = next(cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
+                    if cell['case_id'] == case['case_id']
+                    and cell['public_api_symbol'] ==
+                    'kmipkit.attribute_operations.GetAttributeListRequest.to_batch_item'
+                    and cell['workflow_operation'] == 'Get Attribute List'
+                    and cell['protocol_version'] == '2.0'
+                    and cell['encoding'] == 'TTLV'
+                    and cell['transport'] == 'raw_tls'
+                    and cell['action'] == 'construct')
+        target = next(target for target in self.catalog['normative_targets']
+                      if target['target_id'] == cell['target_id'])
+        kind, event = self.runner._execute_matrix_cell(cell, case, target)
+        self.assertEqual('event', kind, event)
+        self.assertEqual('passed', event['status'])
+        self.assertEqual(['Create', 'Activate', 'Get Attribute List', 'Revoke', 'Destroy'],
+                         event['batch_operation_sequence'])
+
     def test_batch_workflow_uses_compact_operation_enums_for_json_and_xml(self):
         case = next(case for case in self.catalog['test_cases']
                     if case['case_id'] == 'test-batch-create-activate-destroy')
