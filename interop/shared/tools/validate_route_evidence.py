@@ -404,10 +404,10 @@ def validate_collection(reports: list[dict], catalog: dict, manifest: dict, *,
     if not reports:
         raise ValueError("route evidence collection must include at least one report")
     run_ids = [report.get("run_id") for report in reports]
+    if len(run_ids) != len(set(run_ids)):
+        raise ValueError("route evidence collection contains duplicate run_id values")
     if scope_cells_by_run is not None and (
-        not isinstance(scope_cells_by_run, dict)
-        or set(scope_cells_by_run) != set(run_ids)
-        or len(run_ids) != len(set(run_ids))
+        not isinstance(scope_cells_by_run, dict) or set(scope_cells_by_run) != set(run_ids)
     ):
         raise ValueError("scoped route evidence requires one explicit cell scope per unique run")
     summaries = []
@@ -422,8 +422,6 @@ def validate_collection(reports: list[dict], catalog: dict, manifest: dict, *,
     languages = {summary["language"] for summary in summaries}
     if len(languages) != 1:
         raise ValueError("route evidence collection must contain one language")
-    if len(run_ids) != len(set(run_ids)):
-        raise ValueError("route evidence collection contains duplicate run_id values")
     network_reports = [
         report for report in reports
         if any(event.get("transport") is not None for event in report["events"])
