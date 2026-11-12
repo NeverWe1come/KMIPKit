@@ -700,6 +700,19 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertIn('request_tree_sha256', result)
         self.assertEqual(result['request_tree_sha256'], result['response_tree_sha256'])
 
+    def test_managed_object_from_fields_resolves_deep_key_block_ancestor(self):
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] ==
+                    'test-norm-structure-member-structure-member-3-1-key-block-cryptographic-algorithm')
+        target = next(target for target in self.catalog['normative_targets']
+                      if target['target_id'] ==
+                      'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-ALGORITHM')
+        cell = {'action': 'construct', 'public_api_symbol':
+                'kmipkit.managed_objects.ManagedObject.from_fields', 'transport': None}
+        result = self.runner.execute_cell(cell, case, target)
+        self.assertIn('request_tree_sha256', result)
+        self.assertEqual(result['request_tree_sha256'], result['response_tree_sha256'])
+
     def test_query_routes_record_the_peer_rejection_without_calling_it_success(self):
         catalog = copy.deepcopy(self.catalog)
         catalog['test_cases'] = [case for case in self.catalog['test_cases']
