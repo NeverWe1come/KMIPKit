@@ -3271,6 +3271,7 @@ def _crypto_parameters_cell(cell: dict, case: dict, target: dict) -> dict:
     field_tags = {name: int(item['wire_value'], 16) for item in by_id.values()
                   if item.get('kind') == 'tag' and item.get('name') in names
                   for name in (item['name'],)}
+    target_name = target.get('name', '').removesuffix(', MAY be repeated').rstrip(',')
     if target.get('kind') == 'enumeration_value':
         samples = _generic_samples(case, target, 'kmipkit.ttlv.ttlv_item_create')
     elif (target.get('kind') == 'attribute' and target.get('name') in names
@@ -3289,13 +3290,13 @@ def _crypto_parameters_cell(cell: dict, case: dict, target: dict) -> dict:
             and isinstance(item.get('wire_value'), str)
         ]
     elif (target.get('kind') in {'attribute', 'operation_structure', 'structure_member', 'tag'}
-          and target.get('name', '').removesuffix(', MAY be repeated') == 'Cryptographic Parameters'):
+          and target_name == 'Cryptographic Parameters'):
         samples = [(0x420028, 'Enumeration', 3)]
     elif target.get('kind') in {'structure_member', 'tag'}:
-        name = target.get('name', '').removesuffix(', MAY be repeated')
-        field = names.get(name)
+        field = names.get(target_name)
         if field is None:
             raise RecipePending
+        name = target_name
         if target.get('kind') == 'tag':
             tag = int(target['wire_value'], 16)
             value_type = {
@@ -3321,7 +3322,7 @@ def _crypto_parameters_cell(cell: dict, case: dict, target: dict) -> dict:
         raise RecipePending
     observed = []
     for tag, value_type, value in samples:
-        field = methods.get(tag, names.get(target.get('name', '').removesuffix(', MAY be repeated')))
+        field = methods.get(tag, names.get(target_name))
         if field is None and cell['public_api_symbol'].endswith(('.builder', '.build', '.from_ttlv', '.into_ttlv')):
             field = 'cryptographic_algorithm'
             tag = 0x420028
