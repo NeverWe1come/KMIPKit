@@ -390,6 +390,25 @@ fn typed_item_route(symbol: &str) -> bool {
         || symbol.contains("Attribute::from_typed::<")
 }
 
+fn key_format_type_request_payload(symbol: &str, raw: u32) -> Result<kmipkit::ttlv::Structure> {
+    let key_format_type = kmipkit::protocol::KeyFormatType::from_raw(raw);
+    match symbol {
+        "kmipkit_protocol::GetRequest::with_key_format_type" => {
+            kmipkit::protocol::GetRequest::new()
+                .with_key_format_type(key_format_type)
+                .to_ttlv_payload()
+                .map_err(|_| "Key Format Type request fixture rejected")
+        }
+        "kmipkit_protocol::ExportRequest::with_key_format_type" => {
+            kmipkit::protocol::ExportRequest::new()
+                .with_key_format_type(key_format_type)
+                .into_ttlv_payload()
+                .map_err(|_| "Key Format Type request fixture rejected")
+        }
+        _ => Err("unsupported Key Format Type request route"),
+    }
+}
+
 const MANAGED_OBJECT_ROOTS: [&str; 9] = [
     "Certificate",
     "Certificate Request",
@@ -732,17 +751,7 @@ fn invoke(
                 ValueView::Enumeration(value) => Ok(*value),
                 _ => Err("Key Format Type fixture is not an Enumeration"),
             })?;
-            let key_format_type = kmipkit::protocol::KeyFormatType::from_raw(raw);
-            let payload = if symbol == "kmipkit_protocol::GetRequest::with_key_format_type" {
-                kmipkit::protocol::GetRequest::new()
-                    .with_key_format_type(key_format_type)
-                    .to_ttlv_payload()
-            } else {
-                kmipkit::protocol::ExportRequest::new()
-                    .with_key_format_type(key_format_type)
-                    .into_ttlv_payload()
-            }
-            .map_err(|_| "Key Format Type request fixture rejected")?;
+            let payload = key_format_type_request_payload(symbol, raw)?;
             crate::driver::item(0x0042_0079, Value::structure(payload))
         })());
     }
