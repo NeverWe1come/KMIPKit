@@ -215,6 +215,22 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertIn('request_tree_sha256', result)
         self.assertEqual(result['request_tree_sha256'], result['response_tree_sha256'])
 
+    def test_cryptographic_parameter_builder_executes_targeted_enum_value(self):
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-enum-cryptographic-algorithm')
+        target = next(target for target in self.catalog['normative_targets']
+                      if target['target_id'] ==
+                      'KMIPKIT-ELEM-ENUM-VALUE-CRYPTOGRAPHIC-ALGORITHM-3DES-00000002')
+        cell = {
+            'action': 'construct', 'encoding': 'TTLV', 'protocol_version': '2.1',
+            'public_api_symbol': ('kmipkit.cryptographic_parameters.'
+                                  'CryptographicParametersBuilder.cryptographic_algorithm'),
+            'transport': None,
+        }
+        result = self.runner.execute_cell(cell, case, target)
+        self.assertIn('request_tree_sha256', result)
+        self.assertEqual(result['request_tree_sha256'], result['response_tree_sha256'])
+
     def test_scalar_payload_variants_roundtrip_the_exact_field_type_and_tag(self):
         catalog = copy.deepcopy(self.catalog)
         catalog['test_cases'] = [case for case in catalog['test_cases']
