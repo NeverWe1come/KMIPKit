@@ -818,13 +818,13 @@ class RouteMatrixTests(unittest.TestCase):
         request_with_explicit_target = parse(tlv(
             0x420078, 1, b''.join([items[0], items[1], batch_item(
                 12, tlv(0x420094, 7, b'fixture-key')), *items[3:]])))
-        with self.assertRaisesRegex(ValueError, 'fixture_id_placeholder_explicit_target'):
+        with self.assertRaisesRegex(ValueError, 'fixture_id_placeholder_identifier_mismatch'):
             assert_placeholder_usage(request_with_explicit_target, 'test-batch-create-activate-destroy')
 
         request_with_invalid_enumeration = parse(tlv(
             0x420078, 1, b''.join([items[0], batch_item(
                 18, tlv(0x420094, 5, (2).to_bytes(4, 'big'))), *items[2:]])))
-        with self.assertRaisesRegex(ValueError, 'fixture_id_placeholder_explicit_target'):
+        with self.assertRaisesRegex(ValueError, 'fixture_id_placeholder_identifier_mismatch'):
             assert_placeholder_usage(request_with_invalid_enumeration, 'test-batch-create-activate-destroy')
 
     def test_placeholder_chain_case_maps_create_activate_get_recipe(self):
@@ -832,7 +832,7 @@ class RouteMatrixTests(unittest.TestCase):
 
         recipe = recipe_for_case({'case_id': 'test-batch-placeholder-chain-resolves'}, None)
 
-        self.assertEqual(recipe, ((1, 18, 10), 'create_activate_get_placeholder_chain'))
+        self.assertEqual(recipe, ((1, 18, 10, 19, 20), 'create_activate_get_placeholder_chain'))
 
     def test_placeholder_chain_executes_typed_create_activate_get_batch(self):
         from artifact_support import ROOT
@@ -858,8 +858,15 @@ class RouteMatrixTests(unittest.TestCase):
             'KMIPKIT-ELEM-OP-C2S-CREATE',
             'KMIPKIT-ELEM-OP-C2S-ACTIVATE',
             'KMIPKIT-ELEM-OP-C2S-GET',
+            'KMIPKIT-ELEM-OP-C2S-REVOKE',
+            'KMIPKIT-ELEM-OP-C2S-DESTROY',
         }
         self.assertTrue(expected_operations <= {event['target_id'] for event in events})
+        create_send = next(event for event in events
+                           if event['target_id'] == 'KMIPKIT-ELEM-OP-C2S-CREATE'
+                           and event['action'] == 'send')
+        self.assertEqual(create_send['peer_observed_operation_sequence'],
+                         ['Create', 'Activate', 'Get', 'Revoke', 'Destroy'])
         for symbol in ('kmipkit_client_batch_item_create', 'kmipkit_client_batch_item_activate',
                        'kmipkit_client_batch_item_get'):
             self.assertTrue(any(event['public_api_symbol'] == symbol and event['action'] == 'send'
