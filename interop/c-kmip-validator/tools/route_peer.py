@@ -253,6 +253,7 @@ RECIPES = {
     'test-v20-reject-get-constraints': ((56,), 'get_constraints'),
     'test-op-create': ((1, 20), 'create'),
     'test-batch-create-activate-destroy': ((1, 18, 12, 19, 20), 'create_activate_attribute_list_revoke_destroy'),
+    'test-batch-placeholder-chain-resolves': ((1, 18, 10), 'create_activate_get_placeholder_chain'),
     'test-batch-single-item-options-omitted': ((10,), 'batch_single_item_options_omitted'),
     'test-batch-count-matches-items': ((10, 12), 'batch_count_two_read_items'),
     'test-batch-unique-item-id-response-correlation': ((10, 12), 'batch_count_two_read_items'),
@@ -323,7 +324,9 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None):
         implicit_target = case_id in ('test-op-get-attributes', 'test-op-get-attribute-list',
             'test-batch-create-activate-destroy', 'test-attr-cryptographic-algorithm',
             'test-attr-cryptographic-length', 'test-op-get-constraints') or attribute_fixture is not None
-        if len(numbers(node, 0x420094)) < len(expected) - 1 - int(implicit_target):
+        minimum_unique_identifiers = 0 if case_id == 'test-batch-placeholder-chain-resolves' else (
+            len(expected) - 1 - int(implicit_target))
+        if len(numbers(node, 0x420094)) < minimum_unique_identifiers:
             raise ValueError('fixture_id_placeholder_missing')
         if len(list(descendants(node, 0x420093))) != len(expected):
             raise ValueError('fixture_batch_item_identity_missing')
@@ -430,7 +433,8 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None):
 
 def assert_placeholder_usage(node, case_id):
     """Require ID Placeholder batches to omit Unique Identifier after Create."""
-    if case_id != 'test-batch-create-activate-destroy':
+    if case_id not in ('test-batch-create-activate-destroy',
+                       'test-batch-placeholder-chain-resolves'):
         return
     batch_items = [child for child in node[2]
                    if child[0] == BATCH_ITEM_TAG and child[1] == 1]
