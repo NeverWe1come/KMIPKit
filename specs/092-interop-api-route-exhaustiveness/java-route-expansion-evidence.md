@@ -15,8 +15,9 @@ because the expected installed RawTag calls were absent. Integration with
 the shared gate established that each selected case must complete every
 applicable route. This phase therefore selects the 264 Tag cases whose
 approved Java surface is entirely generic, including all 20 reserved tags.
-The other 110 tags retain their generic and typed obligations as pending;
-their absence does not change the manifest or full-matrix gate.
+Another 110 tags have additional typed obligations. The existing Message
+Extension fixture already completes one of those cases; the other 109 remain
+pending. Their absence does not change the manifest or full-matrix gate.
 
 Each assigned tag is constructed with `RawTag.fromRaw`, allocation-checked,
 used in `TtlvItem.create`, read through an item view, and decoded from a
@@ -36,7 +37,7 @@ python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
   --write-ledger
 ```
 
-The focused Java test passes. The shared validator accepts 10,958 executed
+Green commit `fd78236aa` passes the focused Java test. The shared validator accepts 10,958 executed
 cells, zero failed cells, and 60,497 pending out of 71,455 planned cells.
 This adds 2,560 validated cells to the 8,398-cell baseline.
 
@@ -60,8 +61,36 @@ including `CKR_VENDOR_DEFINED`'s high bit. The four routes must produce the
 same normalized tree hash for each case and protocol version. This does not
 invoke PKCS#11 functions or claim support for a vendor extension.
 
-The same focused Java test and shared validation commands pass with 12,470
+Green commit `de4ad991a` passes the same focused Java test and shared validation commands with 12,470
 executed cells, zero failures and 58,985 pending out of 71,455 planned cells.
 PKCS#11 adds 1,512 validated cells; the two blocks together add 4,072 cells
 to the 8,398-cell baseline. The selected cases are complete; the full Java
 matrix remains incomplete.
+
+## Refactor and final verification
+
+The two local fixture categories share one scalar readback assertion. The
+assertion checks the exact tag, TTLV type, and scalar value for both created
+and decoded Items and releases each borrowed handle. Event publication stays
+separate from invocation, and only sanitized hashes enter the report.
+
+The full installed-consumer suite and regenerated ledger are verified after
+the refactor. README and FR-003 traceability report the same planned,
+executed and pending cell counts as the generated ledger; no common manifest
+or matrix limitation is changed by this phase.
+
+Final checks after the refactor:
+
+- Full Java consumer suite: 51 tests passed, no failures or skips.
+- Shared interoperability suite: 178 tests passed.
+- Java installer/ledger tooling: 12 tests passed.
+- Requirement and feature traceability: 33 tests passed.
+- Shared route evidence validator: 12,470 executed cells, zero failed cells,
+  58,985 pending cells, and `selected_scope_complete=true`.
+- `python3 tools/compare_route_ledger.py`: generated coverage matches the
+  checked-in reference.
+- `git diff --check`: passed.
+
+Python tooling tests use an external, disk-backed task temporary directory
+when `/tmp` is full so that their outside-project path validation fixtures
+retain their intended meaning.

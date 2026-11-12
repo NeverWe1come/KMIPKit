@@ -52,21 +52,16 @@ final class LocalCatalogRouteChecks {
                 if (reserved) {
                     assertThrows(InvalidExtensionSchemaException.class, raw::checked,
                             "A reserved allocation cannot become an allocation-checked Tag.");
+                    emit(sink, caseId, targetId, "model.org.kmipkit.ttlv.rawtag.checked",
+                            "org.kmipkit.ttlv.RawTag.checked", "construct", wire);
                 } else {
-                    try (Tag checked = raw.checked()) {
-                        assertEquals(tagCode, checked.raw());
-                    }
-                }
-                emit(sink, caseId, targetId, "model.org.kmipkit.ttlv.rawtag.checked",
-                        "org.kmipkit.ttlv.RawTag.checked", "construct", wire);
-                if (!reserved) {
                     try (Tag checked = raw.checked(); TtlvValue value = TtlvValue.Integer(TAG_VALUE_SENTINEL);
-                            TtlvItem item = TtlvItem.create(checked, value, CodecLimits.defaults());
-                            var view = item.view(); var viewedTag = view.tag(); var viewedValue = view.value()) {
-                        assertEquals(tagCode, viewedTag.raw());
-                        assertEquals(TtlvItemType.Integer, view.itemType());
-                        assertEquals(TAG_VALUE_SENTINEL, viewedValue.integer());
+                            TtlvItem item = TtlvItem.create(checked, value, CodecLimits.defaults())) {
+                        assertEquals(tagCode, checked.raw());
+                        assertScalarItem(item, tagCode, TtlvItemType.Integer, TAG_VALUE_SENTINEL);
                     }
+                    emit(sink, caseId, targetId, "model.org.kmipkit.ttlv.rawtag.checked",
+                            "org.kmipkit.ttlv.RawTag.checked", "construct", wire);
                     emit(sink, caseId, targetId, "ttlv_item.create", "org.kmipkit.ttlv.TtlvItem.create",
                             "construct", wire);
                     emit(sink, caseId, targetId, "function.ttlv_item_view_from_item",
@@ -80,11 +75,8 @@ final class LocalCatalogRouteChecks {
                 sink.record(new Invocation(caseId, targetId, "java.generic-ttlv.ttlv_codec.decode",
                         "org.kmipkit.ttlv.TtlvCodec.decode", "decode", wire, "tag_reserved"));
             } else {
-                try (TtlvItem decoded = TtlvCodec.decode(wire); var view = decoded.view();
-                        var viewedTag = view.tag(); var value = view.value()) {
-                    assertEquals(tagCode, viewedTag.raw());
-                    assertEquals(TtlvItemType.Integer, view.itemType());
-                    assertEquals(TAG_VALUE_SENTINEL, value.integer());
+                try (TtlvItem decoded = TtlvCodec.decode(wire)) {
+                    assertScalarItem(decoded, tagCode, TtlvItemType.Integer, TAG_VALUE_SENTINEL);
                 }
                 emit(sink, caseId, targetId, "ttlv_codec.decode", "org.kmipkit.ttlv.TtlvCodec.decode",
                         "decode", wire);
@@ -117,12 +109,8 @@ final class LocalCatalogRouteChecks {
             byte[] wire = scalarWire(tagCode, 5, (int) expected);
             try (RawTag raw = RawTag.fromRaw(tagCode); Tag tag = raw.checked();
                     TtlvValue value = TtlvValue.Enumeration(expected);
-                    TtlvItem item = TtlvItem.create(tag, value, CodecLimits.defaults());
-                    var view = item.view(); var viewedTag = view.tag(); var viewedValue = view.value()) {
-                assertEquals(tagCode, viewedTag.raw());
-                assertEquals(TtlvItemType.Enumeration, view.itemType());
-                assertEquals(expected, viewedValue.enumeration(),
-                        "The installed constructor must preserve each exact unsigned PKCS#11 value.");
+                    TtlvItem item = TtlvItem.create(tag, value, CodecLimits.defaults())) {
+                assertScalarItem(item, tagCode, TtlvItemType.Enumeration, expected);
             }
             emit(sink, caseId, targetId, "model.org.kmipkit.ttlv.ttlvvalue.enumeration",
                     "org.kmipkit.ttlv.TtlvValue.Enumeration", "construct", wire);
@@ -130,15 +118,20 @@ final class LocalCatalogRouteChecks {
                     "construct", wire);
             emit(sink, caseId, targetId, "function.ttlv_item_view_from_item",
                     "org.kmipkit.ttlv.TtlvItem.view", "decode", wire);
-            try (TtlvItem decoded = TtlvCodec.decode(wire); var view = decoded.view();
-                    var viewedTag = view.tag(); var value = view.value()) {
-                assertEquals(tagCode, viewedTag.raw());
-                assertEquals(TtlvItemType.Enumeration, view.itemType());
-                assertEquals(expected, value.enumeration(),
-                        "The decoder must preserve assigned values and the vendor-defined high bit.");
+            try (TtlvItem decoded = TtlvCodec.decode(wire)) {
+                assertScalarItem(decoded, tagCode, TtlvItemType.Enumeration, expected);
             }
             emit(sink, caseId, targetId, "ttlv_codec.decode", "org.kmipkit.ttlv.TtlvCodec.decode",
                     "decode", wire);
+        }
+    }
+
+    private static void assertScalarItem(TtlvItem item, int tag, TtlvItemType type, long expected) {
+        try (var view = item.view(); var viewedTag = view.tag(); var value = view.value()) {
+            assertEquals(tag, viewedTag.raw());
+            assertEquals(type, view.itemType());
+            assertEquals(expected, type == TtlvItemType.Enumeration ? value.enumeration() : value.integer(),
+                    "The installed API must preserve the exact tag, type, and scalar wire value.");
         }
     }
 

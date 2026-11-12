@@ -96,8 +96,8 @@ stable coverage fields with the checked-in `route-evidence-ledger.json` using
 the generated ledger from fixed project paths, and accepts no path overrides.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
-baseline. These recipes execute 8,398 of 71,503 planned Java route cells, with
-no failed cells; the ledger keeps the other 63,105 pending and does not imply
+baseline. These recipes execute 12,470 of 71,455 planned Java route cells, with
+no failed cells; the ledger keeps the other 58,985 pending and does not imply
 vendor interoperability or full-matrix completion. Local TTLV recipes exercise 41
 enumeration families and all six bitmask catalog cases through the applicable
 installed constructors, item views, decoders, and typed attribute wrappers.
@@ -108,3 +108,23 @@ Other enum families, attribute routes, and operations remain pending. The
 Activation Date recipe exercises generic and typed TTLV routes, both public
 Get Attributes constructors, the typed response reader, and both protocol
 versions against the controlled peer. No vendor KMS is deployed.
+
+The local catalog recipes also complete 264 Tag cases whose approved Java
+surface is entirely generic, including 20 reserved tags. Each assigned tag
+checks its exact identity through raw and checked construction, Item creation,
+the Item view, and decoding; reserved tags check the actual constructor and
+decoder rejections. Another 110 Tag cases have additional typed model
+obligations: Message Extension was already covered by its controlled fixture,
+and the other 109 remain pending. These tag-identity fixtures do not
+assert that arbitrary scalar values satisfy a tag's operation-specific schema.
+
+All 189 referenced PKCS#11 values (92 Function and 97 Return Code values)
+exercise the installed Enumeration constructor, Item constructor, Item view,
+and decoder in both protocol versions. They preserve each exact unsigned
+value and its Function or Return Code tag and compare normalized tree hashes
+across those routes. This includes the normative vendor-defined allocation
+boundary; it does not execute vendor commands or claim vendor interoperability.
+
+The recorded [development evidence](../../specs/092-interop-api-route-exhaustiveness/java-route-expansion-evidence.md)
+keeps the Red/Green/Refactor commands and the distinction between this completed
+local scope and the pending complete matrix.
