@@ -249,6 +249,7 @@ RECIPES = {
     'test-op-rng-seed': ((38,), 'rng_seed'),
     'test-v20-reject-get-constraints': ((56,), 'get_constraints'),
     'test-op-create': ((1, 20), 'create'),
+    'test-batch-create-activate-destroy': ((1, 18, 12, 19, 20), 'create_activate_attribute_list_revoke_destroy'),
     'test-batch-single-item-options-omitted': ((10,), 'batch_single_item_options_omitted'),
     'test-norm-payload-client-create-request-20-001': ((1, 20), 'create'),
     'test-norm-payload-client-create-request-20-002': ((1, 20), 'create'),
@@ -312,8 +313,8 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None):
         if numbers(node, 0x42000E) != [1]:
             raise ValueError('fixture_cleanup_continuation_missing')
         implicit_target = case_id in ('test-op-get-attributes', 'test-op-get-attribute-list',
-            'test-attr-cryptographic-algorithm', 'test-attr-cryptographic-length', 'test-op-get-constraints') or \
-            attribute_fixture is not None
+            'test-batch-create-activate-destroy', 'test-attr-cryptographic-algorithm',
+            'test-attr-cryptographic-length', 'test-op-get-constraints') or attribute_fixture is not None
         if len(numbers(node, 0x420094)) < len(expected) - 1 - int(implicit_target):
             raise ValueError('fixture_id_placeholder_missing')
         if len(list(descendants(node, 0x420093))) != len(expected):
@@ -810,7 +811,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     elif not field_present:
                                         continue
                                 elif target['kind'] == 'operation':
-                                    if target['name'] != operation_name:
+                                    operation_value = codec.values.get(
+                                        (codec.tag('Operation'), normalize(target['name'])))
+                                    if operation_value is None or operation_value not in numbers(
+                                            request_tree, 0x42005C):
                                         continue
                                 elif target['kind'] == 'operation_payload_field':
                                     # Request fields are proved from the actual
@@ -826,10 +830,15 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                 event = cell_fields(cell)
                                 event.update(status='passed', invocation_count=1, invocation_id=f'c-peer-{len(events)}')
                                 digest_tree = response_tree if cell['action'] == 'decode' else request_tree
-                                if cell['action'] == 'encode':
-                                    target_operation = 11 if operation_name == 'Get Attributes' else 12
-                                    target_item = next(item for item in request_tree[2] if item[0] == 0x42000F and numbers(item, 0x42005C) == [target_operation])
-                                    digest_tree = next(descendants(target_item, 0x420079))
+                                if cell['action'] == 'encode' and target['kind'] == 'operation':
+                                    target_operation = codec.values.get(
+                                        (codec.tag('Operation'), normalize(target['name'])))
+                                    target_item = next(item for item in request_tree[2]
+                                                       if item[0] == 0x42000F and
+                                                       numbers(item, 0x42005C) == [target_operation])
+                                    payload = next((child for child in target_item[2]
+                                                    if child[0] == 0x420079 and child[1] == 1), None)
+                                    digest_tree = payload or target_item
                                 event['response_tree_sha256' if cell['action'] == 'decode' else 'request_tree_sha256'] = tree_digest(digest_tree)
                                 if boundary and cell['action'] == 'send':
                                     event.update(request_delivery_state='not_sent', transport_invocation_count=0)

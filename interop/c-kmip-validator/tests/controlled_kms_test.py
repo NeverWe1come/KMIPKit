@@ -254,8 +254,10 @@ def main() -> int:
               "test-obj-symmetric-key", "test-obj-private-key", "test-obj-public-key")
     )
     expected_operations += (37, 38, 39)
+    expected_operations += (1, 18, 12, 19, 20)
     expected_cases += ("test-op-hash", "test-op-rng-retrieve", "test-op-rng-seed")
     expected_cases += ("test-neg-destroy-active-without-revoke",)
+    expected_cases += ("test-batch-create-activate-destroy",)
     if protocol_version == "2.0":
         expected_cases += (
             "test-op-get", "test-op-get-attributes", "test-op-get-attribute-list", "test-op-check",
