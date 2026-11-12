@@ -574,7 +574,6 @@ class RouteCapabilitiesTests(unittest.TestCase):
         excluded_targets = {
             'KMIPKIT-ELEM-MESSAGE-FIELD-8-5-TIME-STAMP',
             'KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-TIMESTAMP',
-            'KMIPKIT-ELEM-TAG-420092',
         }
         for language, symbol in (
             ('c', 'kmipkit_client_batch_set_request_time_stamp'),
@@ -587,6 +586,7 @@ class RouteCapabilitiesTests(unittest.TestCase):
             exclusion = exclusions[0]
             self.assertEqual(excluded_targets, set(exclusion['target_ids']))
             self.assertIn('OASIS KMIP 2.0/2.1 §§8.2, 8.5, 9.11, and 9.20', exclusion['reason'])
+            self.assertNotIn('KMIPKIT-ELEM-TAG-420092', exclusion['target_ids'])
             self.assertIn('specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html',
                           exclusion['source_paths'])
             self.assertIn('specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html',
