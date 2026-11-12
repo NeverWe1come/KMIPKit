@@ -243,7 +243,7 @@ class MatrixContract(unittest.TestCase):
 
     def test_named_open_wrappers_preserve_exact_numeric_codes(self):
         cells = [self.cell('kmipkit_protocol::ResultStatus::from_raw', 'KMIPKIT-ELEM-ENUM-VALUE-RESULT-STATUS-SUCCESS-00000000'),
-                 self.cell('kmipkit_protocol::ObjectType::from_raw', 'KMIPKIT-ELEM-OBJECT-TYPE-CERTIFICATE')]
+                 self.cell('kmipkit_protocol::ObjectType::from_raw', 'KMIPKIT-ELEM-ENUM-VALUE-OBJECT-TYPE-CERTIFICATE-00000001')]
         process, report = self.run_matrix(cells)
         self.assertEqual(process.returncode, 0, process.stderr)
         self.assertEqual([event['request_tree_sha256'] for event in report['events']],
