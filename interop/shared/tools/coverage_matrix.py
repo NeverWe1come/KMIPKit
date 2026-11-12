@@ -52,6 +52,11 @@ def _case_targets(case: dict, operation_ids: dict[str, str], normative_targets: 
     return {item["target_id"] for item in _case_obligations(case, operation_ids, normative_targets)}
 
 
+def _is_generic_tag_inventory_case(case: dict) -> bool:
+    return (case.get("execution", {}).get("mode") == "local_model"
+            and _norm(case.get("requires", {}).get("enum_type", "")) == "tag")
+
+
 def _case_obligations(
     case: dict,
     operation_ids: dict[str, str],
@@ -218,8 +223,7 @@ def applicable_routes(
     expected_status = str(case.get("requires", {}).get("expected_status", "")).casefold()
     request_must_not_be_sent = expected_status.replace("_", "") == "notsent"
     requires = case.get("requires", {})
-    local_tag_case = (case.get("execution", {}).get("mode") == "local_model"
-                      and _norm(requires.get("enum_type", "")) == "tag")
+    local_tag_case = _is_generic_tag_inventory_case(case)
     candidates = []
     for route in manifest["routes"]:
         if route["language"] != language or case["category"] not in route["case_categories"]:
