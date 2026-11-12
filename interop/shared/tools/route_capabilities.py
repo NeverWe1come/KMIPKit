@@ -36,6 +36,17 @@ _FUNCTION_TARGET_OVERRIDES = {
         'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM',
         'KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM',
     ],
+    # OASIS KMIP 2.0/2.1 §§8.6, 9.13, and 11.56 define response Message Extension.
+    'client_batch_item_response_extension_count': [
+        'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION',
+        'KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION',
+        'KMIPKIT-ELEM-TAG-420051',
+    ],
+    'client_batch_item_response_extension_ttlv_at': [
+        'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION',
+        'KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION',
+        'KMIPKIT-ELEM-TAG-420051',
+    ],
     'client_batch_add_error_continuation_value': [
         'KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-CONTINUE-00000001',
         'KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-EXTENSIONS-8XXXXXXX',
