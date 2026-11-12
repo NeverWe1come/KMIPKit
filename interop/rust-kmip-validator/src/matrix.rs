@@ -3016,6 +3016,31 @@ mod tests {
     }
 
     #[test]
+    fn client_batch_encrypt_response_accessor_is_executable() {
+        // OASIS KMIP 2.0/2.1 §6.1.17 defines the Encrypt operation response.
+        let catalog: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        let target = catalog["normative_targets"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|target| target["target_id"] == "KMIPKIT-ELEM-OP-C2S-ENCRYPT")
+            .unwrap();
+        let symbol = "kmipkit_client::ClientBatchOutcome::encrypt_response";
+        let expected = sample_for_route_at_version(symbol, target, elements, "2.1").unwrap();
+
+        let result = invoke(symbol, &expected, target, elements, "2.1");
+
+        assert!(result.is_some(), "Encrypt response accessor is not executable");
+    }
+
+    #[test]
     fn client_batch_authentication_and_timestamp_routes_cover_nested_fixtures() {
         let catalog: Json = serde_json::from_str(include_str!(
             "../../shared/catalog/kmipkit-1.0-test-catalog.json"
