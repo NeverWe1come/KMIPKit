@@ -778,7 +778,12 @@ fn metadata_expected_target(model: &Item, target: &Json, elements: &[Json]) -> R
 }
 
 fn sample_for_route(symbol: &str, target: &Json, elements: &[Json]) -> Result<Item> {
-    if symbol == "kmipkit_protocol::KeyBlock::try_from_item" {
+    if [
+        "kmipkit_protocol::KeyBlock::try_from_item",
+        "kmipkit_protocol::KeyBlock::try_new",
+    ]
+    .contains(&symbol)
+    {
         return key_block_fixture(target, elements).map(|(_, expected)| expected);
     }
     if symbol == "kmipkit_protocol::ManagedObject::try_from_item"
@@ -928,6 +933,13 @@ fn invoke(
                 .and_then(kmipkit::protocol::KeyBlock::try_into_item)
                 .map_err(|_| "Key Block parser rejected"),
         );
+    }
+    if symbol == "kmipkit_protocol::KeyBlock::try_new" {
+        return Some(crate::fixtures::key_block(false).and_then(|key_block| {
+            key_block
+                .try_into_item()
+                .map_err(|_| "Key Block constructor rejected")
+        }));
     }
     if let Some(root) = typed_object_root(symbol) {
         let (_, object, _) = object_root_fixture(root, target, elements).ok()?;
@@ -1403,14 +1415,15 @@ mod tests {
             .as_array()
             .unwrap()
             .iter()
-            .find(|target| {
-                target["target_id"] == "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-10-KEY-MATERIAL"
-            })
+            .find(|target| target["target_id"] == "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-10-KEY-MATERIAL")
             .unwrap();
         let symbol = "kmipkit_protocol::KeyBlock::try_new";
         let expected = sample_for_route(symbol, target, elements).unwrap();
         let result = invoke(symbol, &expected, target, elements, "2.1");
-        assert!(result.is_some(), "KeyBlock constructor route is not executable");
+        assert!(
+            result.is_some(),
+            "KeyBlock constructor route is not executable"
+        );
         let result = result.unwrap().unwrap();
         assert!(crate::local_wire::target_hash(&result, &expected).is_ok());
     }
