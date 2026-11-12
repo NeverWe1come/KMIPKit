@@ -555,6 +555,126 @@ cleanup:
     return status;
 }
 
+static int32_t execute_expert_attribute_journey(
+    kmipkit_client_t *client, kmipkit_codec_limits_t *limits) {
+    static const uint8_t name[] = "fluent-expert-attributes";
+    static const uint8_t group[] = "fluent-expert-group";
+    kmipkit_symmetric_key_builder_t *invalid_builder = NULL;
+    kmipkit_symmetric_key_builder_t *builder = NULL;
+    kmipkit_ttlv_value_t *wrong_value = NULL;
+    kmipkit_ttlv_value_t *group_value = NULL;
+    kmipkit_client_batch_response_t *created = NULL;
+    kmipkit_client_batch_response_t *destroyed = NULL;
+    kmipkit_client_batch_item_response_t *create_item = NULL;
+    kmipkit_client_batch_item_response_t *destroy_item = NULL;
+    kmipkit_client_batch_item_metadata_v1_t metadata = {0};
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    uint32_t object_type = 0;
+    uint32_t error_category = 0;
+    uint32_t error_cause = 0;
+    uint32_t error_delivery = 0;
+    int32_t error_status = 0;
+    uint8_t present = 0;
+    int32_t status = 1;
+
+    status = kmipkit_symmetric_key_builder_create(&invalid_builder);
+    if (status != 0 || invalid_builder == NULL ||
+        kmipkit_symmetric_key_builder_set_algorithm(
+            invalid_builder, KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES) != 0 ||
+        kmipkit_symmetric_key_builder_set_length(invalid_builder, INT32_C(256)) != 0 ||
+        kmipkit_symmetric_key_builder_set_usage_mask(
+            invalid_builder, (int32_t)(KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_ENCRYPT |
+                                       KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_DECRYPT)) != 0 ||
+        kmipkit_ttlv_value_integer(INT32_C(1), &wrong_value) != 0 ||
+        kmipkit_symmetric_key_builder_add_catalogued_attribute(
+            invalid_builder, KMIPKIT_STANDARD_ATTRIBUTE_OBJECT_GROUP, wrong_value) !=
+            KMIPKIT_ERROR_TYPED_ATTRIBUTE_VALUE_TYPE_MISMATCH ||
+        kmipkit_last_error_get(&error_status, &error_category, &error_cause,
+                               &error_delivery) != 0 ||
+        error_status != KMIPKIT_ERROR_TYPED_ATTRIBUTE_VALUE_TYPE_MISMATCH ||
+        error_category != UINT32_C(1) || error_cause != UINT32_C(1) ||
+        error_delivery != UINT32_C(1)) {
+        status = 91;
+        goto cleanup;
+    }
+    kmipkit_ttlv_value_release(wrong_value);
+    wrong_value = NULL;
+    kmipkit_symmetric_key_builder_release(invalid_builder);
+    invalid_builder = NULL;
+
+    status = kmipkit_symmetric_key_builder_create(&builder);
+    if (status != 0 || builder == NULL ||
+        kmipkit_symmetric_key_builder_set_algorithm(
+            builder, KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES) != 0 ||
+        kmipkit_symmetric_key_builder_set_length(builder, INT32_C(256)) != 0 ||
+        kmipkit_symmetric_key_builder_set_usage_mask(
+            builder, (int32_t)(KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_ENCRYPT |
+                               KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_DECRYPT)) != 0 ||
+        kmipkit_symmetric_key_builder_set_name(builder, name, sizeof(name) - 1) != 0 ||
+        kmipkit_ttlv_value_text_string(limits, group, sizeof(group) - 1, &group_value) != 0 ||
+        kmipkit_symmetric_key_builder_add_catalogued_attribute(
+            builder, KMIPKIT_STANDARD_ATTRIBUTE_OBJECT_GROUP, group_value) != 0) {
+        status = 92;
+        goto cleanup;
+    }
+    kmipkit_ttlv_value_release(group_value);
+    group_value = NULL;
+    status = kmipkit_symmetric_key_builder_execute_v1(builder, client, limits, &created);
+    if (status != 0 || created == NULL ||
+        kmipkit_client_batch_response_item_at(created, 0, &create_item) != 0 ||
+        create_item == NULL) {
+        status = 93;
+        goto cleanup;
+    }
+    metadata.struct_size = (uint32_t)sizeof(metadata);
+    metadata.abi_version = UINT32_C(1);
+    initialize_identifier_v1(&identifier);
+    if (kmipkit_client_batch_item_response_metadata_v1(create_item, &metadata) != 0 ||
+        metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS ||
+        kmipkit_client_batch_item_response_create(
+            create_item, &present, &object_type, &identifier) != 0 ||
+        !present || object_type != KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY ||
+        identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
+        identifier.text_data == NULL || identifier.text_length != sizeof(name) - 1 ||
+        memcmp(identifier.text_data, name, sizeof(name) - 1) != 0) {
+        status = 94;
+        goto cleanup;
+    }
+
+    status = kmipkit_client_destroy_by_id_v1(client, &identifier, limits, &destroyed);
+    if (status != 0 || destroyed == NULL ||
+        kmipkit_client_batch_response_item_at(destroyed, 0, &destroy_item) != 0 ||
+        destroy_item == NULL) {
+        status = 95;
+        goto cleanup;
+    }
+    metadata = (kmipkit_client_batch_item_metadata_v1_t){0};
+    metadata.struct_size = (uint32_t)sizeof(metadata);
+    metadata.abi_version = UINT32_C(1);
+    present = UINT8_C(0);
+    if (kmipkit_client_batch_item_response_metadata_v1(destroy_item, &metadata) != 0 ||
+        metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS ||
+        kmipkit_client_batch_item_response_destroy(destroy_item, &present, &identifier) != 0 ||
+        !present || identifier.text_data == NULL || identifier.text_length != sizeof(name) - 1 ||
+        memcmp(identifier.text_data, name, sizeof(name) - 1) != 0) {
+        status = 96;
+        goto cleanup;
+    }
+    status = 0;
+
+cleanup:
+    kmipkit_client_batch_item_response_release(destroy_item);
+    kmipkit_client_batch_response_release(destroyed);
+    kmipkit_client_batch_item_response_release(create_item);
+    kmipkit_client_batch_response_release(created);
+    kmipkit_ttlv_value_release(group_value);
+    kmipkit_ttlv_value_release(wrong_value);
+    kmipkit_symmetric_key_builder_release(builder);
+    kmipkit_symmetric_key_builder_release(invalid_builder);
+    if (status == 0) puts("c: fluent catalogued expert-attribute journey verified");
+    return status;
+}
+
 int main(void) {
     kmipkit_codec_limits_t *limits = 0;
     kmipkit_extension_registry_limits_v1_t registry_limits = {0};
@@ -642,6 +762,7 @@ int main(void) {
     if (status == 0) status = execute_key_lifecycle(client, limits);
     if (status == 0) status = execute_aes_gcm_journey(client, limits);
     if (status == 0) status = execute_key_pair_signature_journey(client, limits);
+    if (status == 0) status = execute_expert_attribute_journey(client, limits);
 
     kmipkit_client_release(client);
     kmipkit_transport_config_release(transport_configuration);
