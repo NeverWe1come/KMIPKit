@@ -1203,6 +1203,51 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual([protocol_values.ResultStatus.OPERATION_FAILED],
                          event['peer_observed_result_status_codes'])
 
+    def test_batch_workflow_send_executes_the_complete_ordered_placeholder_batch(self):
+        from unittest.mock import patch
+        from kmipkit import protocol_values
+        from kmipkit_validator.controlled_peer import ControlledTlsPeer
+
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-batch-create-activate-destroy')
+        cell = next(cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
+                    if cell['case_id'] == case['case_id']
+                    and cell.get('workflow_operation') == 'Activate'
+                    and cell['action'] == 'send'
+                    and cell['protocol_version'] == '2.0'
+                    and cell['encoding'] == 'TTLV'
+                    and cell['transport'] == 'raw_tls')
+        target = next(target for target in self.catalog['normative_targets']
+                      if target['target_id'] == cell['target_id'])
+        operation_order = case['requires']['protocol_scenario']['operations']
+        observed_peers = []
+
+        def record_peer(**options):
+            peer = ControlledTlsPeer(**options)
+            observed_peers.append(peer)
+            return peer
+
+        symbols = [cell['public_api_symbol'], cell['execution_api_symbol']]
+        trace = self.runner.CallTrace(symbols)
+        with patch('kmipkit_validator.controlled_peer.ControlledTlsPeer', side_effect=record_peer):
+            with trace:
+                event = self.runner.execute_cell(cell, case, target, trace=trace)
+
+        self.assertEqual(1, len(observed_peers))
+        request_tree = self.runner._network_tree(observed_peers[0].requests[0], 'TTLV')
+        request_items = [value for tag, _, value in request_tree[0][2] if tag == 0x42000F]
+        observed_operations = [
+            protocol_values.Operation.name(next(value for field, _, value in item
+                                                 if field == 0x42005C))
+            for item in request_items
+        ]
+        self.assertEqual(operation_order, observed_operations)
+        self.assertEqual(operation_order, event['batch_operation_sequence'])
+        self.assertEqual(operation_order, event['peer_observed_operation_sequence'])
+        self.assertEqual(len(operation_order), event['batch_item_count'])
+        self.assertEqual(len(operation_order), event['peer_observed_response_count'])
+        self.assertTrue(set(symbols) <= trace.observed)
+
     def test_create_routes_validate_peer_rejection_and_all_wire_encodings(self):
         catalog = copy.deepcopy(self.catalog)
         catalog['test_cases'] = [case for case in self.catalog['test_cases']
