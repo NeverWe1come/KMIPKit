@@ -332,6 +332,14 @@ class MatrixContract(unittest.TestCase):
             with self.assertRaises(ValueError):
                 contained_output_path(escape, output_dir)
 
+    def test_generated_route_arm_parser_handles_long_nonmatching_input(self):
+        sys.path.insert(0, str(ROOT / 'interop/rust-kmip-validator/tools'))
+        from route_call_parser import parse_route_arm
+
+        self.assertEqual(('kmipkit_protocol::CheckRequest::new', 'CheckRequest::new()'),
+                         parse_route_arm('"kmipkit_protocol::CheckRequest::new" => CheckRequest::new(),'))
+        self.assertIsNone(parse_route_arm('x' * 1_000_000))
+
     def test_query_response_payload_accessor_reconstructs_the_decoded_response(self):
         cells = [cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
                  if cell['public_api_symbol'] == 'kmipkit_protocol::QueryResponse::to_ttlv_payload']
