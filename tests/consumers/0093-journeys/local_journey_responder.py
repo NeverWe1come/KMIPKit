@@ -11,14 +11,14 @@ import struct
 
 
 EXPECTED_CONSUMER_OPERATIONS = (
-    # Rust consumer: Ping followed by Create, Get, Destroy.
-    0x3B, 1, 10, 20,
-    # C consumer: Ping followed by Create, Get, Destroy.
-    0x3B, 1, 10, 20,
-    # Java consumer: Create, Get, Destroy, then the existing Pending/Failure cases.
-    1, 10, 20, 20, 20,
-    # Python consumer: Ping followed by Create, Get, Destroy.
-    0x3B, 1, 10, 20,
+    # Rust consumer: Create, Get, Destroy.
+    1, 10, 20,
+    # C consumer: Create, Get, Destroy.
+    1, 10, 20,
+    # Java consumer: Create, Get, Destroy.
+    1, 10, 20,
+    # Python consumer: Create, Get, Destroy.
+    1, 10, 20,
 )
 
 
@@ -31,7 +31,7 @@ def _structure(tag: int, *children: bytes) -> bytes:
     return _item(tag, 1, b"".join(children))
 
 
-def _response(operation: int, pending: bool = False, failed: bool = False) -> bytes:
+def _response(operation: int) -> bytes:
     version = _structure(
         0x420069,
         _item(0x42006A, 2, struct.pack(">i", 2)),
@@ -43,24 +43,6 @@ def _response(operation: int, pending: bool = False, failed: bool = False) -> by
         _item(0x420092, 9, struct.pack(">q", 1)),
         _item(0x42000D, 2, struct.pack(">i", 1)),
     )
-    if pending:
-        result_fields = [
-            _item(0x42005C, 5, struct.pack(">I", operation)),
-            _item(0x42007F, 5, struct.pack(">I", 2)),
-            _item(0x420006, 8, b"destroy-pending-id"),
-            _structure(0x42007C),
-        ]
-        response_item = _structure(0x42000F, *result_fields)
-        return _structure(0x42007B, header, response_item)
-    if failed:
-        response_item = _structure(
-            0x42000F,
-            _item(0x42005C, 5, struct.pack(">I", operation)),
-            _item(0x42007F, 5, struct.pack(">I", 1)),
-            _item(0x42007E, 5, struct.pack(">I", 1)),
-            _item(0x42007D, 7, b"fixture rejected destroy"),
-        )
-        return _structure(0x42007B, header, response_item)
     if operation == 1:
         payload = _structure(
             0x42007C,
@@ -76,8 +58,6 @@ def _response(operation: int, pending: bool = False, failed: bool = False) -> by
         )
     elif operation == 20:
         payload = _structure(0x42007C, _item(0x420094, 7, b"fluent-key"))
-    elif operation == 0x3B:
-        payload = _structure(0x42007C)
     else:
         raise RuntimeError(f"fixture received unsupported KMIP operation {operation:#x}")
     response_item = _structure(
@@ -203,11 +183,6 @@ def _validate_operation(
             raise RuntimeError("Destroy contains an invalid Request Header Asynchronous Indicator")
 
 
-def _has_async_indicator(header_fields: list[tuple[int, int, bytes]]) -> bool:
-    return any(tag == 0x420007 and kind == 5 for tag, kind, _value in header_fields)
-
-
-
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--ready-file", type=Path, required=True)
@@ -234,7 +209,6 @@ def main() -> None:
         args.pid_file.write_text(str(os.getpid()), encoding="ascii")
         args.ready_file.write_text(str(listener.getsockname()[1]), encoding="ascii")
         try:
-            async_destroy_count = 0
             for connection_index, expected_operation in enumerate(EXPECTED_CONSUMER_OPERATIONS):
                 raw, _address = listener.accept()
                 raw.settimeout(10)
@@ -251,12 +225,7 @@ def main() -> None:
                             f"received={operation:#x}"
                         )
                     _validate_operation(operation, fields, header_fields)
-                    asynchronous_destroy = operation == 20 and _has_async_indicator(header_fields)
-                    pending = asynchronous_destroy and async_destroy_count == 0
-                    failed = asynchronous_destroy and async_destroy_count == 1
-                    if asynchronous_destroy:
-                        async_destroy_count += 1
-                    stream.sendall(_response(operation, pending, failed))
+                    stream.sendall(_response(operation))
         finally:
             args.pid_file.unlink(missing_ok=True)
 

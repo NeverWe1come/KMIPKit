@@ -15,4 +15,4 @@ add_executable(kmipkit_0093_c_consumer main.c)
 target_compile_features(kmipkit_0093_c_consumer PRIVATE c_std_11)
 target_include_directories(kmipkit_0093_c_consumer PRIVATE
     "${KMIPKIT_ROOT}/bindings/c/include")
-target_link_libraries(kmipkit_0053_c_consumer PRIVATE "${KMIPKIT_FFI_LIBRARY}")
+target_link_libraries(kmipkit_0093_c_consumer PRIVATE "${KMIPKIT_FFI_LIBRARY}")
