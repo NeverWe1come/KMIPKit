@@ -115,6 +115,15 @@ class CoverageMatrixTests(unittest.TestCase):
         self.assertTrue(expected <= {cell['target_id'] for cell in cells})
         self.assertFalse(any(cell['mode'] == 'network' for cell in cells))
 
+    def test_tag_enumeration_case_uses_only_generic_ttlv_routes(self):
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest)
+                 if cell['case_id'] == 'test-enum-tag']
+        routes = {route['route_id']: route for route in self.manifest['routes']}
+        self.assertTrue(cells)
+        self.assertEqual({'generic-ttlv'},
+                         {routes[cell['route_id']]['api_level'] for cell in cells})
+        self.assertFalse(any(cell['mode'] == 'network' for cell in cells))
+
     def test_explicit_server_initiated_operation_target_is_not_overridden(self):
         operation_ids = _operation_ids(self.catalog)
         case = next(case for case in self.catalog['test_cases']
