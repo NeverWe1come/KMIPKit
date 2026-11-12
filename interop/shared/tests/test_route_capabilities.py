@@ -538,6 +538,31 @@ class RouteCapabilitiesTests(unittest.TestCase):
                                  'crates/kmipkit-ttlv/src/tag.rs'],
             }], route['case_exclusions'])
 
+    def test_certificate_contents_are_excluded_from_generic_item_routes_with_oasis_sources(self):
+        expected_symbols = {
+            'rust': ['kmipkit_ttlv::Item::new', 'kmipkit_ttlv::Item::with_value',
+                     'kmipkit_ttlv::codec::decode'],
+            'c': ['kmipkit_ttlv_item_create', 'kmipkit_ttlv_decode'],
+            'java': ['org.kmipkit.ttlv.TtlvItem.create', 'org.kmipkit.ttlv.TtlvCodec.decode'],
+            'python': ['kmipkit.ttlv.ttlv_item_create', 'kmipkit.ttlv.ttlv_decode'],
+        }
+        target_id = 'KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES'
+        routes = {(route['language'], route['public_api_symbol']): route
+                  for route in self.data['routes']}
+        for language, symbols in expected_symbols.items():
+            for symbol in symbols:
+                route = routes[(language, symbol)]
+                exclusions = [exclusion for exclusion in route.get('case_exclusions', [])
+                              if target_id in exclusion.get('target_ids', [])]
+                self.assertEqual(1, len(exclusions), (language, symbol))
+                exclusion = exclusions[0]
+                self.assertIn('OASIS KMIP 2.0/2.1 §4.6 Table 39', exclusion['reason'])
+                self.assertIn('§2.2', exclusion['reason'])
+                self.assertIn('specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html',
+                              exclusion['source_paths'])
+                self.assertIn('specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html',
+                              exclusion['source_paths'])
+
     def test_async_request_routes_use_the_exact_public_operation_executor(self):
         expected = {
             'rust': 'kmipkit_client::Client::execute_{operation}',
