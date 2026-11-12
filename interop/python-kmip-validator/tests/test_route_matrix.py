@@ -823,6 +823,25 @@ class RouteMatrixTests(unittest.TestCase):
                 self.assertIn('request_tree_sha256', result)
                 self.assertEqual(result['request_tree_sha256'], result['response_tree_sha256'])
 
+    def test_typed_message_parsers_execute_every_catalogued_message_field(self):
+        catalog = copy.deepcopy(self.catalog)
+        message_target_ids = {target['target_id'] for target in self.catalog['normative_targets']
+                              if target['kind'] == 'message_field'}
+        catalog['test_cases'] = [case for case in self.catalog['test_cases']
+                                 if case['requires'].get('normative_target_id') in message_target_ids]
+        manifest = copy.deepcopy(self.manifest)
+        message_symbols = {'kmipkit.messages.RequestMessage.from_ttlv',
+                          'kmipkit.messages.ResponseMessage.from_ttlv'}
+        manifest['routes'] = [route for route in self.manifest['routes']
+                              if route['language'] == 'python'
+                              and route['public_api_symbol'] in message_symbols]
+
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+
+        self.assertEqual([], gaps)
+        self.assertTrue(report['events'])
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
     def test_query_routes_record_the_peer_rejection_without_calling_it_success(self):
         catalog = copy.deepcopy(self.catalog)
         catalog['test_cases'] = [case for case in self.catalog['test_cases']
