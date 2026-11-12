@@ -3401,6 +3401,7 @@ def _crypto_parameters_cell(cell: dict, case: dict, target: dict) -> dict:
     from kmipkit import ttlv
     from kmipkit.cryptographic_parameters import CryptographicParameters
 
+    target_name = target.get('name', '').removesuffix(', MAY be repeated').rstrip(',').strip()
     names = {
         'Block Cipher Mode': 'block_cipher_mode', 'Padding Method': 'padding_method',
         'Hashing Algorithm': 'hashing_algorithm', 'Key Role Type': 'key_role_type',
@@ -3437,10 +3438,10 @@ def _crypto_parameters_cell(cell: dict, case: dict, target: dict) -> dict:
             and isinstance(item.get('wire_value'), str)
         ]
     elif (target.get('kind') in {'attribute', 'operation_structure', 'structure_member', 'tag'}
-          and target.get('name', '').removesuffix(', MAY be repeated') == 'Cryptographic Parameters'):
+          and target_name == 'Cryptographic Parameters'):
         samples = [(0x420028, 'Enumeration', 3)]
     elif target.get('kind') in {'structure_member', 'tag'}:
-        name = target.get('name', '').removesuffix(', MAY be repeated')
+        name = target_name
         field = names.get(name)
         if field is None:
             raise RecipePending
@@ -3469,7 +3470,7 @@ def _crypto_parameters_cell(cell: dict, case: dict, target: dict) -> dict:
         raise RecipePending
     observed = []
     for tag, value_type, value in samples:
-        field = methods.get(tag, names.get(target.get('name', '').removesuffix(', MAY be repeated')))
+        field = methods.get(tag, names.get(target_name))
         if field is None and cell['public_api_symbol'].endswith(('.builder', '.build', '.from_ttlv', '.into_ttlv')):
             field = 'cryptographic_algorithm'
             tag = 0x420028
