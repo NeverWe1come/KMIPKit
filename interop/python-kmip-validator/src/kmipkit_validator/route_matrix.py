@@ -2085,6 +2085,12 @@ def _tag_rejection_cell(cell: dict, case: dict, target: dict) -> dict:
                 unexpected.close()
                 raise ValueError('checked tag accepted a reserved or unused allocation')
     if symbol == 'kmipkit.ttlv.ttlv_decode':
-        return {'decode_outcome': 'rejected', 'decode_rejection_code': 'tag_not_allocated',
+        rejection_code = {
+            'reserved': 'tag_reserved',
+            'unused': 'tag_not_allocated',
+        }.get(target.get('allocation'))
+        if rejection_code is None:
+            raise RecipePending
+        return {'decode_outcome': 'rejected', 'decode_rejection_code': rejection_code,
                 'decode_input_sha256': hashlib.sha256(encode_fixture(inputs[0])).hexdigest()}
     return {'request_tree_sha256': digest(inputs)}
