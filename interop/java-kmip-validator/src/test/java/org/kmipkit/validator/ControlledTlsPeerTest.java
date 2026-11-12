@@ -104,6 +104,22 @@ class ControlledTlsPeerTest {
             "KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-RAW-00000001";
     private static final String CLIENT_BATCH_ITEM_RAW_TTLV_ROUTE =
             "java.typed-protocol.function.client_batch_item_response_raw_ttlv";
+    private static final String ENDPOINT_ROLE_CLIENT_CASE_ID =
+            "test-norm-enumeration-value-enum-value-endpoint-role-client-00000001";
+    private static final String ENDPOINT_ROLE_CLIENT_TARGET_ID =
+            "KMIPKIT-ELEM-ENUM-VALUE-ENDPOINT-ROLE-CLIENT-00000001";
+    private static final List<String> ENDPOINT_ROLE_RESPONSE_ROUTES = List.of(
+            "java.typed-protocol.function.client_async_operation_outcome_response_payload_ttlv",
+            "java.typed-protocol.function.client_batch_item_response_extension_count",
+            "java.typed-protocol.function.client_batch_item_response_extension_ttlv_at",
+            "java.typed-protocol.function.client_batch_item_response_header_ttlv",
+            "java.typed-protocol.function.client_batch_item_response_metadata_v1",
+            "java.typed-protocol.function.client_batch_item_response_metadata_v2",
+            "java.typed-protocol.function.client_batch_item_response_pending_correlation_value",
+            "java.typed-protocol.function.client_batch_item_response_raw_ttlv",
+            "java.typed-protocol.function.client_batch_item_response_unique_batch_item_id",
+            "java.typed-protocol.function.client_batch_response_item_at",
+            "java.typed-protocol.function.client_batch_response_item_count");
     private static final Map<String, String> CREDENTIAL_TYPE_MODEL_ROUTES = Map.of(
             "KMIPKIT-ELEM-ENUM-VALUE-CREDENTIAL-TYPE-USERNAME-AND-PASSWORD-00000001",
             "java.typed-protocol.model.org.kmipkit.credentials.usernameandpasswordcredential.fromttlv",
@@ -312,6 +328,12 @@ class ControlledTlsPeerTest {
         assertEquals(2, routeEventCount(report.path("events"),
                         KEY_FORMAT_RAW_CASE_ID, CLIENT_BATCH_ITEM_RAW_TTLV_ROUTE),
                 "The controlled Get response must exercise raw TTLV access to the named Key Format Type value.");
+        for (String routeId : ENDPOINT_ROLE_RESPONSE_ROUTES) {
+            assertEquals(2, routeEventCount(report.path("events"),
+                            ENDPOINT_ROLE_CLIENT_CASE_ID, routeId),
+                    "Every Endpoint Role response route must run against a controlled response for both versions: "
+                            + routeId);
+        }
         for (EnumerationFixture fixture : enumerationFixtures) {
             String builderRoute = CRYPTOGRAPHIC_PARAMETER_BUILDER_ROUTES.get(fixture.parentName());
             if (builderRoute != null) {
