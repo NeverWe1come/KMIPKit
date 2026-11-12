@@ -766099,7 +766099,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -766427,7 +766427,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -767593,7 +767593,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -767640,7 +767640,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -767683,7 +767683,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -767726,7 +767726,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -767769,7 +767769,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -767812,7 +767812,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -767854,7 +767854,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "c": {
@@ -767884,7 +767884,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "c": {
@@ -767914,7 +767914,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "c": {
@@ -767944,7 +767944,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "c": {
@@ -767973,7 +767973,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -768013,7 +768013,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -768053,7 +768053,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -768093,7 +768093,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "**Status**: Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -768134,7 +768134,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -768178,7 +768178,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -768222,7 +768222,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -768266,7 +768266,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -768310,7 +768310,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -768354,7 +768354,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -768398,7 +768398,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -768439,7 +768439,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -768480,7 +768480,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -768521,7 +768521,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -768562,7 +768562,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -768603,7 +768603,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -768644,7 +768644,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -768685,7 +768685,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -768729,7 +768729,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -768773,7 +768773,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -768817,7 +768817,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -768861,7 +768861,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -768905,7 +768905,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -768949,7 +768949,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -768990,7 +768990,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -769031,7 +769031,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -769072,7 +769072,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -769113,7 +769113,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -769154,7 +769154,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
@@ -769195,7 +769195,7 @@
         "kind": "feature-specification",
         "path": "specs/0109-fluent-attribute-read-bindings/spec.md",
         "status": "Approved",
-        "evidence": "Approved for implementation under the maintainer-authorized complete KMIPKIT-0093 plan."
+        "evidence": "**Status**: Approved."
       },
       "languageMappings": {
         "rust": {
