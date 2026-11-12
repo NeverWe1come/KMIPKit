@@ -246,6 +246,31 @@ class RouteMatrixTests(unittest.TestCase):
         ]])
         self.assertEqual({expected}, {event['request_tree_sha256'] for event in typed_events})
 
+    def test_credential_type_enum_routes_preserve_each_normative_value(self):
+        # OASIS KMIP 2.0/2.1 §11.11 defines the Credential Type discriminator values.
+        catalog = copy.deepcopy(self.catalog)
+        catalog['test_cases'] = [case for case in self.catalog['test_cases']
+                                 if case['case_id'] == 'test-enum-credential-type']
+        symbols = {'kmipkit.credentials.CredentialType.from_raw',
+                   'kmipkit.credentials.Credential.into_ttlv'}
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in self.manifest['routes']
+                              if route['language'] == 'python'
+                              and route['public_api_symbol'] in symbols]
+
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+
+        self.assertEqual(0, len(gaps), f'{len(gaps)} Credential Type targets lack typed recipes')
+        self.assertEqual(24, len(report['events']))
+        self.assertEqual(symbols, {event['public_api_symbol'] for event in report['events']})
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+        credential_type_targets = {target['target_id'] for target in self.catalog['normative_targets']
+                                   if target['kind'] == 'enumeration_value'
+                                   and 'KMIPKIT-ELEM-ENUMERATION-CREDENTIAL-TYPE'
+                                   in target.get('parent_element_ids', [])}
+        self.assertEqual(credential_type_targets,
+                         {event['target_id'] for event in report['events']})
+
     def test_reserved_tag_routes_check_rejection_without_a_fabricated_item(self):
         catalog = copy.deepcopy(self.catalog)
         catalog['test_cases'] = [case for case in catalog['test_cases']
