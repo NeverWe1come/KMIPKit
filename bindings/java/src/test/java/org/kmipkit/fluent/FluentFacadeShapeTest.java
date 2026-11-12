@@ -54,6 +54,15 @@ final class FluentFacadeShapeTest {
         assertNotNull(OperationBuilder.class.getMethod("asynchronousIndicator", long.class));
         assertNotNull(OperationBuilder.class.getMethod("execute",
                 org.kmipkit.ttlv.CodecLimits.class));
+        assertNotNull(Class.forName("org.kmipkit.fluent.GetAttributesBuilder")
+                .getMethod("execute", org.kmipkit.ttlv.CodecLimits.class));
+        assertNotNull(Class.forName("org.kmipkit.fluent.GetAttributeListBuilder")
+                .getMethod("execute", org.kmipkit.ttlv.CodecLimits.class));
+        assertNotNull(Class.forName("org.kmipkit.fluent.FluentRequest")
+                .getMethod("getAttributes", org.kmipkit.extensions.UniqueIdentifier.class,
+                        java.util.List.class));
+        assertNotNull(Class.forName("org.kmipkit.fluent.FluentRequest")
+                .getMethod("getAttributeList", org.kmipkit.extensions.UniqueIdentifier.class));
     }
 
     @Test

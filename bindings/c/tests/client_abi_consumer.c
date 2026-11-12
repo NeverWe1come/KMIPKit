@@ -8624,6 +8624,17 @@ int kmipkit_client_abi_c_consumer_build_get_attribute_list_request(void) {
     return 1;
 }
 
+int kmipkit_client_abi_c_consumer_checks_fluent_attribute_read_entrypoints(void) {
+    kmipkit_client_batch_response_t *response = 0;
+    if (kmipkit_client_get_attributes_v1(0, 0, 0, 0, 0, &response) == 0 || response != 0) {
+        return 0;
+    }
+    if (kmipkit_client_get_attribute_list_v1(0, 0, 0, &response) == 0 || response != 0) {
+        return 0;
+    }
+    return 1;
+}
+
 int kmipkit_client_abi_c_consumer_validate_get_attribute_list_response(
     kmipkit_client_batch_item_response_t *item,
     uint8_t expected_present) {

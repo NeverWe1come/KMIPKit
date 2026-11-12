@@ -269,6 +269,23 @@ def test_destroy_operation_builds_typed_batch_item() -> None:
         assert item.operation == 20
 
 
+def test_request_exposes_named_attribute_read_builders() -> None:
+    request = fluent.Request(object())
+    unique_identifier = extensions.UniqueIdentifier.text_string("key-1")
+    references = [extensions.AttributeReference.tag(0x0042_002F)]
+
+    get_attributes = request.get_attributes(
+        unique_identifier=unique_identifier,
+        attribute_references=references,
+    )
+    get_attribute_list = request.get_attribute_list(unique_identifier=None)
+
+    with get_attributes.build() as attributes_item:
+        assert attributes_item.operation == 11
+    with get_attribute_list.build() as list_item:
+        assert list_item.operation == 12
+
+
 def test_operation_sets_batch_level_asynchronous_indicator() -> None:
     operation = fluent.Operation(
         object(), "get", extensions.UniqueIdentifier.text_string("key-1")

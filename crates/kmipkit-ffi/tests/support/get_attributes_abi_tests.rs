@@ -23,6 +23,7 @@ fn response_fixture_request() -> ClientRequest {
 #[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
 unsafe extern "C" {
     fn kmipkit_client_abi_c_consumer_build_get_attributes_request() -> i32;
+    fn kmipkit_client_abi_c_consumer_checks_fluent_attribute_read_entrypoints() -> i32;
     fn kmipkit_client_abi_c_consumer_validate_get_attributes_response(
         item: *mut kmipkit_client_batch_item_response_t,
         expected_present: u8,
@@ -33,6 +34,15 @@ unsafe extern "C" {
     fn kmipkit_client_abi_c_consumer_validate_get_attributes_empty_response(
         item: *mut kmipkit_client_batch_item_response_t,
     ) -> i32;
+}
+
+#[test]
+fn c_consumer_calls_task_oriented_attribute_read_entrypoints() {
+    assert_eq!(
+        unsafe { kmipkit_client_abi_c_consumer_checks_fluent_attribute_read_entrypoints() },
+        1,
+        "the C consumer can call the semantic Get Attributes and Get Attribute List APIs"
+    );
 }
 
 #[test]
