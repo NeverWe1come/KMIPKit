@@ -361,6 +361,31 @@ def _generic_cell(cell: dict, case: dict, target: dict) -> dict:
         return _tag_rejection_cell(cell, case, target)
     if symbol not in _GENERIC_SYMBOLS:
         raise RecipePending
+    if (symbol in {'kmipkit.ttlv.ttlv_structure_create',
+                   'kmipkit.ttlv.ttlv_structure_with_item'}
+            and target.get('target_id') == 'KMIPKIT-ELEM-OPERATION-STRUCTURE-7-16-INTEROP-IDENTIFIER'):
+        by_id, _, _ = _catalog_model_data()
+        tag = next((item for item in by_id.values()
+                    if item.get('kind') == 'tag'
+                    and _normalized_name(item.get('name', '')) == 'interopidentifier'), None)
+        if tag is None or target.get('source_encoding') != 'TextString':
+            raise RecipePending
+        field_tag = int(tag['wire_value'], 16)
+        with ExitStack() as owned:
+            child = owned.enter_context(PythonKmipDriver._item(field_tag, 'text', 'KMIP-λ'))
+            empty = owned.enter_context(ttlv.ttlv_structure_create())
+            limits = owned.enter_context(ttlv.codec_limits_defaults())
+            value = owned.enter_context(ttlv.ttlv_structure_with_item(empty, child, limits))
+            item = owned.enter_context(PythonKmipDriver._item(0x4200FF, 'structure', value))
+            tree = item_tree(item)
+            expected = [0x4200FF, 1, [[field_tag, 7, 'KMIP-λ'.encode().hex()]]]
+            if tree != expected:
+                raise ValueError('generic Structure builder changed the Interop Identifier field')
+            decoded = owned.enter_context(ttlv.ttlv_decode(encode_fixture(tree)))
+            if item_tree(decoded) != expected:
+                raise ValueError('generic Structure builder TTLV roundtrip changed the field')
+        tree_hash = digest([expected])
+        return {'request_tree_sha256': tree_hash, 'response_tree_sha256': tree_hash}
     samples = _generic_samples(case, target, symbol)
     if not samples:
         raise RecipePending
@@ -2024,6 +2049,126 @@ def _cell_operation(cell: dict, case: dict) -> str:
             or _EXECUTION_ROUTE_OPERATIONS.get(cell.get('execution_route_id'), case['operation']))
 
 
+def _batch_operations_for_case(cell: dict, case: dict) -> list[str] | None:
+    """Read the catalog's explicit ordered single-message batch recipe."""
+    if cell.get('execution_route_id') != 'python.execute.typed-batch':
+        return None
+    scenario = case.get('requires', {}).get('protocol_scenario', {})
+    parameters = scenario.get('parameters', {}) if isinstance(scenario, dict) else {}
+    operations = parameters.get('operations_in_request_order', []) if isinstance(parameters, dict) else []
+    if not operations and isinstance(scenario, dict):
+        expected = scenario.get('expected', {})
+        operations = expected.get('operation_order', []) if isinstance(expected, dict) else []
+    if not operations and isinstance(scenario, dict):
+        operations = scenario.get('operations', [])
+    if not operations:
+        return None
+    if not isinstance(operations, list):
+        raise RecipePending
+    if len(operations) < 2:
+        return None
+    if any(not isinstance(operation, str) or not operation for operation in operations):
+        raise RecipePending
+    return list(operations)
+
+
+def _execute_typed_batch(driver: PythonKmipDriver, case: dict, cell: dict,
+                         operations: list[str], identifier, name: str,
+                         expected_status: int, expected_reason: int | None) -> dict:
+    """Build the catalogued ordered Batch and verify each controlled result."""
+    from kmipkit import protocol_values, ttlv
+
+    batch = driver._client_module.Batch.create()
+    limits = ttlv.codec_limits_defaults()
+    items = []
+    authentication = None
+    response = None
+    try:
+        batch.set_ordered(True)
+        batch.add_error_continuation_value(
+            protocol_values.BatchErrorContinuationOption.CONTINUE
+        )
+        for index, operation in enumerate(operations, start=1):
+            route_case = {**case, 'operation': operation}
+            symbol = cell['public_api_symbol']
+            if (operation == _cell_operation(cell, case)
+                    and symbol.endswith('.to_batch_item')
+                    and symbol.startswith('kmipkit.attribute_operations.')):
+                item = driver._build_high_level_item(route_case, identifier, name=name)
+            else:
+                item = driver._build_item(route_case, identifier, name=name)
+            # KMIP requires a distinct Unique Batch Item ID on each item in a
+            # multi-item request. Keep these fixture IDs deterministic so the
+            # request remains reproducible without exposing any user data.
+            item = driver._extensions.with_unique_batch_item_id(
+                item, f'kmipkit-interop-item-{index:02d}'.encode('ascii')
+            )
+            items.append(item)
+            batch.add_item(item)
+        if batch.item_count != len(operations):
+            raise ValueError('typed Batch did not retain each ordered request item')
+        authentication = driver._authentication()
+        if authentication is not None:
+            batch.set_authentication(authentication)
+            authentication = None
+        response = driver._client.execute(batch, limits)
+        response_count = response.item_count()
+        if response_count != len(operations):
+            raise ValueError(
+                f'typed Batch response item count {response_count} did not match '
+                f'the request count {len(operations)}'
+            )
+        for index in range(response_count):
+            result = response.item_at(index)
+            if (int(result.result_status) != expected_status
+                    or result.result_reason != expected_reason):
+                raise ValueError('controlled peer returned an unexpected ordered Batch result')
+        status_code = expected_status
+        reason_code = expected_reason
+        unsupported = (
+            status_code == protocol_values.ResultStatus.OPERATION_FAILED
+            and reason_code in (protocol_values.ResultReason.OPERATION_NOT_SUPPORTED,
+                                protocol_values.ResultReason.FEATURE_NOT_SUPPORTED)
+        )
+        return {
+            'status': 'server_unsupported' if unsupported else 'passed',
+            'library_correctness': 'passed',
+            'server_compatibility': 'unsupported' if unsupported else 'supported',
+            'parity': 'not_compared',
+            'result_status_code': status_code,
+            'result_reason_code': None if reason_code is None else int(reason_code),
+        }
+    finally:
+        if response is not None:
+            response.close()
+        if authentication is not None:
+            authentication.close()
+        limits.close()
+        batch.close()
+        for item in items:
+            item.close()
+
+
+def _tree_batch_operation_values(tree: list) -> list[int]:
+    """Read direct Operation enumerations from the ordered Batch Item nodes."""
+    children = tree
+    if (len(tree) == 1 and len(tree[0]) == 3
+            and tree[0][0] in (0x420078, 0x42007B) and tree[0][1] == 1):
+        children = tree[0][2]
+    if not any(child[0] in (0x420077, 0x42007A) and child[1] == 1
+               for child in children):
+        raise ValueError('KMIP message tree has no recognized message root')
+    batch_items = [child for child in children if child[0] == 0x42000F and child[1] == 1]
+    operations = []
+    for batch_item in batch_items:
+        operation = next((child[2] for child in batch_item[2]
+                          if child[0] == 0x42005C and child[1] == 5), None)
+        if not isinstance(operation, int):
+            raise ValueError('KMIP Batch Item has no Operation enumeration')
+        operations.append(operation)
+    return operations
+
+
 def execute_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | None = None) -> dict:
     if cell['transport'] is None:
         if (cell['public_api_symbol'] == 'kmipkit.client.BatchItemResult.supported_versions'
@@ -2357,6 +2502,7 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
     positive_ping = (case['case_id'] == 'test-op-ping'
                      and cell['public_api_symbol'] == 'kmipkit.extensions.client_batch_item_ping')
     operation = _cell_operation(cell, case)
+    batch_operations = _batch_operations_for_case(cell, case)
     final_async_failure = (
         case['case_id'] == 'test-async-poll-final-operation-failure' and operation == 'Poll'
     )
@@ -2401,6 +2547,11 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
         if symbol.startswith('kmipkit.client.Client.execute_'):
             correlation = None if operation == 'Query Asynchronous Requests' else b'kmipkit-route-correlation'
             result = driver._async_exchange(operation, correlation)
+        elif batch_operations is not None:
+            identifier = extensions.UniqueIdentifier.text_string('KMIPKit-python-route')
+            name = 'KMIPKit-python-route'
+            result = _execute_typed_batch(driver, case, cell, batch_operations,
+                                          identifier, name, peer_status, peer_reason)
         else:
             route_case = case if case['operation'] == operation else {**case, 'operation': operation}
             identifier = extensions.UniqueIdentifier.text_string('KMIPKit-python-route')
@@ -2431,10 +2582,18 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
         peer.close()
     if len(peer.requests) != 1 or len(peer.responses) != 1:
         raise ValueError('fixture exchange count assertion failed')
-    if (normalized_operation_name := ''.join(character for character in operation.casefold() if character.isalnum())):
+    normalized_operation_name = ''.join(character for character in operation.casefold() if character.isalnum())
+    if batch_operations is None:
         if ''.join(character for character in str(peer.request_observation.get('operation', '')).casefold()
                    if character.isalnum()) != normalized_operation_name:
             raise ValueError('peer did not receive the exact requested operation')
+    else:
+        observed_operations = peer.request_observation.get('operations')
+        if (not isinstance(observed_operations, list)
+                or [_normalized_name(str(value)) for value in observed_operations]
+                != [_normalized_name(value) for value in batch_operations]
+                or peer.request_observation.get('batch_count') != len(batch_operations)):
+            raise ValueError('peer did not receive the exact ordered typed Batch')
     request = _network_tree(peer.requests[0], cell['encoding'])
     response = _network_tree(peer.responses[0], cell['encoding'])
     operation_codes = [raw for name, raw in vars(protocol_values.Operation).items()
@@ -2444,10 +2603,31 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
     if len(operation_codes) != 1:
         raise ValueError('catalog operation is absent from the public enum table')
     expected_operation = operation_codes[0]
-    request_operation = _find_tree_value(request, 0x42005C)
-    response_operation = _find_tree_value(response, 0x42005C)
-    if (request_operation != expected_operation
-            or response_operation != request_operation
+    if batch_operations is None:
+        request_operation = _find_tree_value(request, 0x42005C)
+        response_operation = _find_tree_value(response, 0x42005C)
+        request_matches = request_operation == expected_operation
+        response_matches = response_operation == request_operation
+    else:
+        expected_batch_codes = []
+        for batch_operation in batch_operations:
+            normalized_batch_operation = _normalized_name(batch_operation)
+            matches = [raw for name, raw in vars(protocol_values.Operation).items()
+                       if isinstance(raw, int) and _normalized_name(
+                           protocol_values.Operation.name(raw) or name) == normalized_batch_operation]
+            if len(matches) != 1:
+                raise ValueError('catalog batch operation is absent from the public enum table')
+            expected_batch_codes.append(matches[0])
+        request_codes = _tree_batch_operation_values(request)
+        response_codes = _tree_batch_operation_values(response)
+        batch_index = cell.get('workflow_step_index', batch_operations.index(operation))
+        request_matches = (request_codes == expected_batch_codes
+                           and isinstance(batch_index, int)
+                           and 0 <= batch_index < len(request_codes)
+                           and request_codes[batch_index] == expected_operation)
+        response_matches = response_codes == expected_batch_codes
+    if (not request_matches
+            or not response_matches
             or _find_tree_value(response, 0x42007F) != peer_status
             or _find_tree_value(response, 0x42007E) != peer_reason
             or (positive_ping and _find_tree_value(response, 0x42007C) != [])
@@ -2455,13 +2635,26 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
         raise ValueError('controlled peer request or unsupported response shape mismatch')
     if trace is None:
         raise ValueError('network cell has no public-call trace')
-    return {'request_tree_sha256': digest(request), 'response_tree_sha256': digest(response),
+    observed = {'request_tree_sha256': digest(request), 'response_tree_sha256': digest(response),
             'wire_bytes_sha256': hashlib.sha256(
                 peer.responses[0] if cell.get('action') == 'decode' else peer.requests[0]).hexdigest(),
             'request_delivery_state': 'response_received', 'transport_invocation_count': 1,
-            'peer_observed_response_count': 1,
-            'peer_observed_result_status_codes': [peer_status],
-            **({'peer_observed_result_reason_codes': [peer_reason]} if peer_reason is not None else {})}
+            'peer_observed_response_count': len(batch_operations) if batch_operations is not None else 1,
+            'peer_observed_result_status_codes': (
+                [peer_status] * len(batch_operations) if batch_operations is not None else [peer_status]
+            ),
+            **({'peer_observed_result_reason_codes': (
+                [peer_reason] * len(batch_operations) if batch_operations is not None else [peer_reason]
+            )} if peer_reason is not None else {})}
+    if batch_operations is not None:
+        observed['batch_operation_sequence'] = [
+            protocol_values.Operation.name(value) for value in request_codes
+        ]
+        observed['peer_observed_operation_sequence'] = [
+            protocol_values.Operation.name(value) for value in response_codes
+        ]
+        observed['batch_item_count'] = len(batch_operations)
+    return observed
 
 
 def _positive_fixture_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | None) -> dict:
