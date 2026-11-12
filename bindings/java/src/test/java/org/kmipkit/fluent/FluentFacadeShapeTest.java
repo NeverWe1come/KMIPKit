@@ -30,7 +30,9 @@ import org.kmipkit.ttlv.RawTag;
 import org.kmipkit.ttlv.StandardAttribute;
 import org.kmipkit.ttlv.Tag;
 import org.kmipkit.ttlv.TtlvItem;
+import org.kmipkit.ttlv.TtlvStructure;
 import org.kmipkit.ttlv.TtlvValue;
+import org.kmipkit.ttlv.TypedAttribute;
 import org.kmipkit.protocol.KmipValues.CryptographicUsageMask;
 import org.junit.jupiter.api.Test;
 
@@ -51,6 +53,10 @@ final class FluentFacadeShapeTest {
         assertThrows(InvalidInputException.class, () -> builder.commonAttribute(null));
         assertThrows(InvalidInputException.class, () -> builder.withOptions(null));
         assertThrows(InvalidInputException.class, () -> builder.asynchronousIndicator(-1));
+        assertThrows(InvalidInputException.class,
+                () -> new CreateKeyPairBuilder(null).execute(null));
+        assertThrows(InvalidInputException.class,
+                () -> new CreateKeyPairBuilder(null).execute(CodecLimits.defaults()));
     }
 
     @Test
@@ -297,6 +303,22 @@ final class FluentFacadeShapeTest {
             assertThrows(ClientOperationException.class,
                     () -> client.request().createSymmetricKey().aes256()
                             .usageMask((int) CryptographicUsageMask.ENCRYPT)
+                            .withOptions(RequestOptions.defaults()).execute(limits));
+            TtlvStructure parameters = TtlvStructure.create();
+            try (TtlvValue value = TtlvValue.structure(parameters, limits);
+                    TypedAttribute attribute = TypedAttribute.create(
+                            StandardAttribute.CRYPTOGRAPHIC_DOMAIN_PARAMETERS, value);
+                    ClientBatchItem keyPair = client.request().createKeyPair()
+                            .algorithm(6).length(256).privateUsageMask(1).publicUsageMask(2)
+                            .commonAttribute(attribute).withOptions(RequestOptions.defaults())
+                            .asynchronousIndicator(1).build()) {
+                assertEquals(2, keyPair.operation());
+            }
+            assertThrows(ClientOperationException.class,
+                    () -> client.request().createKeyPair().algorithm(6).length(256)
+                            .asynchronousIndicator(1).execute(limits));
+            assertThrows(ClientOperationException.class,
+                    () -> client.request().createKeyPair().algorithm(6).length(256)
                             .withOptions(RequestOptions.defaults()).execute(limits));
             assertThrows(ClientOperationException.class,
                     () -> client.request().get(id).asynchronousIndicator(1).execute(limits));

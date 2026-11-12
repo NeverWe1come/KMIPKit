@@ -16,7 +16,7 @@ from _test_support import (
     start_tls13_mtls_peer,
 )
 from kmipkit import client, errors, extensions, fluent, ttlv
-from kmipkit.typed_attributes import StandardAttribute
+from kmipkit.typed_attributes import StandardAttribute, TypedAttribute
 
 _FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
 
@@ -69,6 +69,41 @@ def test_key_pair_builder_releases_earlier_groups_when_later_allocation_fails(
     finally:
         for structure in allocated:
             structure.close()
+
+
+def test_key_pair_builder_covers_common_attributes_and_execution_options() -> None:
+    with socket.socket() as reservation:
+        reservation.bind(("127.0.0.1", 0))
+        unused_port = reservation.getsockname()[1]
+    registry = extensions.create_client_extension_registry(
+        (), extensions.default_extension_registry_limits()
+    )
+    configuration = extensions.create_client_configuration(registry)
+    with configuration, client.Client.create(
+        configuration, mtls_transport_config(unused_port, _FIXTURES)
+    ) as kmip_client:
+        with ttlv.codec_limits_defaults() as limits:
+            parameters = ttlv.ttlv_structure_create()
+            value = ttlv.ttlv_value_structure(parameters, limits)
+            with value, TypedAttribute.create(
+                StandardAttribute.CRYPTOGRAPHIC_DOMAIN_PARAMETERS, value
+            ) as common_attribute:
+                builder = (
+                    kmip_client.request()
+                    .create_key_pair()
+                    .algorithm(6)
+                    .length(256)
+                    .private_usage_mask(1)
+                    .public_usage_mask(2)
+                    .common_attribute(common_attribute)
+                    .asynchronous_indicator(1)
+                )
+                with builder.build() as item:
+                    assert item.operation == 2
+                with pytest.raises(errors.KmipKitError):
+                    builder.execute(limits)
+                with pytest.raises(errors.KmipKitError):
+                    builder.with_options(client.RequestOptions()).execute(limits)
 
 
 def _item(tag: int, item_type: int, value: bytes) -> bytes:

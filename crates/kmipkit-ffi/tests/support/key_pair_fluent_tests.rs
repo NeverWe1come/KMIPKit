@@ -105,3 +105,93 @@ fn key_pair_v1_rejects_invalid_record_fields_before_execution() {
         Err(ERROR_INVALID_INPUT)
     ));
 }
+
+#[test]
+fn key_pair_v1_execution_entrypoints_validate_inputs_before_missing_client() {
+    let input = request();
+    let mut response = std::ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_create_key_pair_v1(
+            std::ptr::null_mut(),
+            &raw const input,
+            std::ptr::null_mut(),
+            &raw mut response,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    assert!(response.is_null());
+
+    let mut invalid_input = request();
+    invalid_input.abi_version = 2;
+    assert_eq!(
+        kmipkit_client_create_key_pair_v1(
+            std::ptr::null_mut(),
+            &raw const invalid_input,
+            std::ptr::null_mut(),
+            &raw mut response,
+        ),
+        ERROR_INVALID_INPUT
+    );
+
+    let inherited_timeout = || kmipkit_timeout_limit_v1_t {
+        kind: 0,
+        reserved: 0,
+        seconds: 0,
+        nanoseconds: 0,
+        reserved2: 0,
+    };
+    let options = kmipkit_request_options_v1_t {
+        struct_size: u32::try_from(std::mem::size_of::<kmipkit_request_options_v1_t>())
+            .expect("the ABI options record fits uint32"),
+        abi_version: 1,
+        connect_timeout: inherited_timeout(),
+        write_timeout: inherited_timeout(),
+        read_timeout: inherited_timeout(),
+        total_timeout: inherited_timeout(),
+    };
+    // SAFETY: both input records and the output slot are live, aligned, and non-overlapping.
+    assert_eq!(
+        unsafe {
+            kmipkit_client_create_key_pair_with_options_v1(
+                std::ptr::null_mut(),
+                &raw const input,
+                std::ptr::null_mut(),
+                std::ptr::null(),
+                &raw mut response,
+            )
+        },
+        ERROR_INVALID_INPUT
+    );
+    // SAFETY: both input records and the output slot are live, aligned, and non-overlapping.
+    assert_eq!(
+        unsafe {
+            kmipkit_client_create_key_pair_with_options_v1(
+                std::ptr::null_mut(),
+                &raw const input,
+                std::ptr::null_mut(),
+                &raw const options,
+                &raw mut response,
+            )
+        },
+        ERROR_INVALID_INPUT
+    );
+
+    let source = make_handle(Kind::Structure, HandleValue::Structure(Structure::new()));
+    let mut attributes = std::ptr::null_mut();
+    assert_eq!(
+        kmipkit_attribute_set_create(source, &raw mut attributes),
+        SUCCESS
+    );
+    assert_eq!(
+        kmipkit_client_create_key_pair_with_common_attributes_v1(
+            std::ptr::null_mut(),
+            &raw const input,
+            attributes,
+            std::ptr::null_mut(),
+            &raw mut response,
+        ),
+        ERROR_INVALID_INPUT
+    );
+    kmipkit_attribute_set_release(attributes);
+    kmipkit_ttlv_structure_release(source);
+}
