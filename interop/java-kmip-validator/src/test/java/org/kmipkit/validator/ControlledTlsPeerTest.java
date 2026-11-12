@@ -265,6 +265,18 @@ class ControlledTlsPeerTest {
     }
 
     @Test
+    void objectTypeEnumerationDoesNotUseTypedAttributeRoutes() throws Exception {
+        List<EnumerationFixture> objectTypeFixtures = genericEnumerationFixtures().stream()
+                .filter(fixture -> "OBJECT-TYPE".equals(fixture.parentName()))
+                .toList();
+
+        assertTrue(!objectTypeFixtures.isEmpty(),
+                "The normative Object Type enumeration values must have generic TTLV fixtures.");
+        assertTrue(objectTypeFixtures.stream().allMatch(fixture -> fixture.attribute() == null),
+                "KMIP 2.x §11.34 Object Type values are distinct from the §4.36 Object Type Attribute.");
+    }
+
+    @Test
     void controlledQueryProducesPerRouteEvidenceForBothProtocolVersions() throws Exception {
         Path reportPath = Path.of(System.getProperty("kmipkit.routeEvidenceOutput",
                 "build/route-execution-evidence.json"));
