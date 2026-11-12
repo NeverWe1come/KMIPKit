@@ -81,49 +81,14 @@ class ControlledTlsPeerTest {
             new TagRangeFixture("test-norm-tag-range-kmipkit-range-003", "KMIPKIT-RANGE-003", 0x430000, "unused"),
             new TagRangeFixture("test-norm-tag-range-kmipkit-range-004", "KMIPKIT-RANGE-004", 0x540001, "extension"),
             new TagRangeFixture("test-norm-tag-range-kmipkit-range-005", "KMIPKIT-RANGE-005", 0x550000, "unused"));
-    private static final Set<String> GENERIC_ENUMERATION_PARENTS = Set.of(
-            "KMIPKIT-ELEM-ENUMERATION-ADJUSTMENT-TYPE",
-            "KMIPKIT-ELEM-ENUMERATION-ALTERNATIVE-NAME-TYPE",
-            "KMIPKIT-ELEM-ENUMERATION-ASYNCHRONOUS-INDICATOR",
-            "KMIPKIT-ELEM-ENUMERATION-ATTESTATION-TYPE",
-            "KMIPKIT-ELEM-ENUMERATION-BATCH-ERROR-CONTINUATION-OPTION",
-            "KMIPKIT-ELEM-ENUMERATION-CANCELLATION-RESULT",
-            "KMIPKIT-ELEM-ENUMERATION-CERTIFICATE-REQUEST-TYPE",
-            "KMIPKIT-ELEM-ENUMERATION-CLIENT-REGISTRATION-METHOD",
-            "KMIPKIT-ELEM-ENUMERATION-DATA",
-            "KMIPKIT-ELEM-ENUMERATION-DERIVATION-METHOD",
-            "KMIPKIT-ELEM-ENUMERATION-DESTROY-ACTION",
-            "KMIPKIT-ELEM-ENUMERATION-DRBG-ALGORITHM",
-            "KMIPKIT-ELEM-ENUMERATION-ENCODING-OPTION",
-            "KMIPKIT-ELEM-ENUMERATION-FIPS186-VARIATION",
-            "KMIPKIT-ELEM-ENUMERATION-INTEROP-FUNCTION",
-            "KMIPKIT-ELEM-ENUMERATION-KEY-COMPRESSION-TYPE",
-            "KMIPKIT-ELEM-ENUMERATION-KEY-VALUE-LOCATION-TYPE",
-            "KMIPKIT-ELEM-ENUMERATION-KEY-WRAP-TYPE",
-            "KMIPKIT-ELEM-ENUMERATION-LINK-TYPE",
-            "KMIPKIT-ELEM-ENUMERATION-NAME-TYPE",
-            "KMIPKIT-ELEM-ENUMERATION-OBJECT-GROUP-MEMBER",
-            "KMIPKIT-ELEM-ENUMERATION-OPERATION",
-            "KMIPKIT-ELEM-ENUMERATION-PROCESSING-STAGE",
-            "KMIPKIT-ELEM-ENUMERATION-PROFILE-NAME",
-            "KMIPKIT-ELEM-ENUMERATION-PUT-FUNCTION",
-            "KMIPKIT-ELEM-ENUMERATION-QUERY-FUNCTION",
-            "KMIPKIT-ELEM-ENUMERATION-RECOMMENDED-CURVE",
-            "KMIPKIT-ELEM-ENUMERATION-RESULT-STATUS",
-            "KMIPKIT-ELEM-ENUMERATION-REVOCATION-REASON-CODE",
-            "KMIPKIT-ELEM-ENUMERATION-RNG-ALGORITHM",
-            "KMIPKIT-ELEM-ENUMERATION-RNG-MODE",
-            "KMIPKIT-ELEM-ENUMERATION-ROTATE-NAME-TYPE",
-            "KMIPKIT-ELEM-ENUMERATION-SECRET-DATA-TYPE",
-            "KMIPKIT-ELEM-ENUMERATION-SPLIT-KEY-METHOD",
-            "KMIPKIT-ELEM-ENUMERATION-TICKET-TYPE",
-            "KMIPKIT-ELEM-ENUMERATION-UNWRAP-MODE",
-            "KMIPKIT-ELEM-ENUMERATION-USAGE-LIMITS-UNIT",
-            "KMIPKIT-ELEM-ENUMERATION-VALIDATION-AUTHORITY-TYPE",
-            "KMIPKIT-ELEM-ENUMERATION-VALIDATION-TYPE",
-            "KMIPKIT-ELEM-ENUMERATION-VALIDITY-INDICATOR",
-            "KMIPKIT-ELEM-ENUMERATION-WRAPPING-METHOD");
-
+    private static final Map<String, String> CRYPTOGRAPHIC_PARAMETER_BUILDER_ROUTES = Map.of(
+            "BLOCK-CIPHER-MODE", "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.blockciphermode",
+            "CRYPTOGRAPHIC-ALGORITHM", "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.cryptographicalgorithm",
+            "DIGITAL-SIGNATURE-ALGORITHM", "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.digitalsignaturealgorithm",
+            "HASHING-ALGORITHM", "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.hashingalgorithm",
+            "KEY-ROLE-TYPE", "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.keyroletype",
+            "MASK-GENERATOR", "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.maskgenerator",
+            "PADDING-METHOD", "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.paddingmethod");
     @TempDir
     Path temporaryDirectory;
 
@@ -320,7 +285,8 @@ class ControlledTlsPeerTest {
                         "test-norm-enumeration-value-profile-name-reserved-00000001-00000103")),
                 "A finite Profile Name range must remain pending until each named value is represented.");
         int enumerationEventCount = enumerationFixtures.stream()
-                .mapToInt(fixture -> fixture.protocolVersions().size() * 4).sum();
+                .mapToInt(fixture -> fixture.protocolVersions().size()
+                        * (4 + (fixture.attribute() == null ? 0 : 3))).sum();
         int bitmaskEventCount = bitmaskFixtures.stream()
                 .mapToInt(fixture -> fixture.protocolVersions().size() * (4 + (fixture.attribute() == null ? 0 : 3)))
                 .sum();
@@ -1210,7 +1176,6 @@ class ControlledTlsPeerTest {
             if (target == null || !target.path("parent_element_ids").isArray()
                     || target.path("parent_element_ids").isEmpty()) continue;
             String parentId = target.path("parent_element_ids").get(0).asText();
-            if (!GENERIC_ENUMERATION_PARENTS.contains(parentId)) continue;
             String parentName = parentId.replace("KMIPKIT-ELEM-ENUMERATION-", "");
             JsonNode tagTarget = targets.values().stream()
                     .filter(candidate -> "tag".equals(candidate.path("kind").asText()))
@@ -1218,6 +1183,17 @@ class ControlledTlsPeerTest {
                             .equals(normalizeTargetName(parentName)))
                     .findFirst().orElse(null);
             if (tagTarget == null) continue;
+            JsonNode attributeTarget = targets.values().stream()
+                    .filter(candidate -> "attribute".equals(candidate.path("kind").asText()))
+                    .filter(candidate -> normalizeTargetName(candidate.path("name").asText())
+                            .equals(normalizeTargetName(parentName)))
+                    .findFirst().orElse(null);
+            int rawTag = parseWireTag(tagTarget.path("wire_value").asText());
+            StandardAttribute attribute = attributeTarget == null ? null : standardAttributeForTag(rawTag);
+            if (attributeTarget != null && attribute == null) {
+                throw new IllegalStateException("Catalog attribute has no installed StandardAttribute route: "
+                        + parentName);
+            }
 
             var versions = new ArrayList<String>();
             for (JsonNode version : testCase.path("execution").path("protocol_versions")) {
@@ -1228,9 +1204,9 @@ class ControlledTlsPeerTest {
             if (wireValue.contains("-")) continue;
             long enumValue = "extension".equals(target.path("allocation").asText())
                     ? 0x8000_0000L : Long.parseUnsignedLong(wireValue.replaceFirst("^0[xX]", ""), 16);
-            int rawTag = parseWireTag(tagTarget.path("wire_value").asText());
             fixtures.add(new EnumerationFixture(testCase.path("case_id").asText(),
-                    target.path("target_id").asText(), rawTag, enumValue, List.copyOf(versions)));
+                    target.path("target_id").asText(), parentName, rawTag, enumValue,
+                    attribute, List.copyOf(versions)));
         }
         return List.copyOf(fixtures);
     }
@@ -1249,6 +1225,39 @@ class ControlledTlsPeerTest {
                 appendLocalTtlvRoundtripEvents(events, fixture.caseId(), fixture.targetId(),
                         fixture.rawTag(), TtlvItemType.Enumeration, value, wire,
                         protocolVersion, fixture.value());
+                appendTypedEnumerationRouteEvents(events, fixture, wire, protocolVersion, treeHash);
+            }
+        }
+    }
+
+    private static void appendTypedEnumerationRouteEvents(ArrayNode events, EnumerationFixture fixture,
+            byte[] wire, String protocolVersion, String treeHash) throws Exception {
+        if (fixture.attribute() == null) return;
+        try (TtlvValue value = TtlvValue.Enumeration(fixture.value());
+                TypedAttribute typed = TypedAttribute.create(fixture.attribute(), value);
+                TtlvItem item = typed.asItem();
+                TypedAttribute decoded = TypedAttribute.fromItem(fixture.attribute(), item)) {
+            try (var view = decoded.view(); var decodedValue = view.value()) {
+                assertEquals(fixture.rawTag(), view.tag().raw());
+                assertEquals(fixture.value(), decodedValue.enumeration());
+            }
+            appendRouteEvent(events, fixture.caseId(),
+                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                    fixture.targetId(), "org.kmipkit.ttlv.TypedAttribute.create", null, null,
+                    "construct", protocolVersion, null, treeHash, null);
+            appendRouteEvent(events, fixture.caseId(),
+                    "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+                    fixture.targetId(), "org.kmipkit.ttlv.TypedAttribute.fromItem", null, null,
+                    "construct", protocolVersion, null, treeHash, null);
+            try (TtlvStructure empty = TtlvStructure.create();
+                    TtlvStructure attributeItems = TtlvStructure.withItem(empty, item, CodecLimits.defaults());
+                    AttributeSet attributes = AttributeSet.tryNew(attributeItems)) {
+                assertEquals(1, attributes.len());
+                appendRouteEvent(events, fixture.caseId(),
+                        "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
+                        fixture.targetId(), "org.kmipkit.extensions.AttributeSet.tryNew", null, null,
+                        "construct", protocolVersion, null,
+                        normalizedTreeSha256(structure(0x420125, wire)), null);
             }
         }
     }
@@ -2494,8 +2503,8 @@ class ControlledTlsPeerTest {
 
     private record TagRangeFixture(String caseId, String targetId, int rawTag, String allocation) {}
 
-    private record EnumerationFixture(String caseId, String targetId, int rawTag, long value,
-            List<String> protocolVersions) {}
+    private record EnumerationFixture(String caseId, String targetId, String parentName, int rawTag, long value,
+            StandardAttribute attribute, List<String> protocolVersions) {}
 
     private record BitmaskFixture(String caseId, String targetId, int rawTag, long value,
             StandardAttribute attribute, List<String> protocolVersions) {}
