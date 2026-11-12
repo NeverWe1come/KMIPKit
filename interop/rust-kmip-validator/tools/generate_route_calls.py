@@ -5,6 +5,8 @@ from pathlib import Path
 import re
 import subprocess
 
+from route_call_parser import parse_route_arm
+
 ROOT = Path(__file__).resolve().parents[3]
 INSTALLED = ROOT / 'interop/.local/rust-live/install/crates/kmipkit-protocol-1.0.0/src'
 ROUTES = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
@@ -55,9 +57,9 @@ for route in ROUTES['routes']:
     lines.append(f'"{symbol}" => {{ let raw = sample.with_value(|value| match value {{ ValueView::Integer(v) => v.cast_unsigned(), ValueView::Enumeration(v) => *v, _ => 0 }}); let parsed = {owner}::from_raw(raw); let value = if sample.item_type() == ItemType::Integer {{ Value::integer(parsed.raw().cast_signed()) }} else {{ Value::enumeration(parsed.raw()) }}; crate::driver::item(sample.tag().raw(), value) }},')
 wrapped = []
 for line in lines:
-    match = re.fullmatch(r'"(.+)" => (.*),', line)
-    if match:
-        symbol, body = match.groups()
+    parsed = parse_route_arm(line)
+    if parsed:
+        symbol, body = parsed
         guard = f'if !({preconditions[symbol]}) {{ return None; }} ' if symbol in preconditions else ''
         expression = f'Some((|| {{ {body} }})())' if '?' in body else f'Some({body})'
         line = f'"{symbol}" => {{ {guard}{expression} }},'
