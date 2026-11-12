@@ -5523,4 +5523,69 @@ mod tests {
             }
         }
     }
+
+    #[test]
+    fn request_attribute_builders_execute_manifest_fixtures() {
+        let catalog: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let routes: Json = serde_json::from_str(include_str!(
+            "../../shared/coverage/route-capabilities.json"
+        ))
+        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        let route_symbols = [
+            (
+                "rust.typed-protocol.model.kmipkit.protocol.certifyrequest.with.attributes",
+                "kmipkit_protocol::CertifyRequest::with_attributes",
+            ),
+            (
+                "rust.typed-protocol.model.kmipkit.protocol.createsplitkeyrequest.with.attributes",
+                "kmipkit_protocol::CreateSplitKeyRequest::with_attributes",
+            ),
+            (
+                "rust.typed-protocol.model.kmipkit.protocol.joinsplitkeyrequest.with.attributes",
+                "kmipkit_protocol::JoinSplitKeyRequest::with_attributes",
+            ),
+            (
+                "rust.typed-protocol.model.kmipkit.protocol.recertifyrequest.with.attributes",
+                "kmipkit_protocol::RecertifyRequest::with_attributes",
+            ),
+            (
+                "rust.typed-protocol.model.kmipkit.protocol.rekeyrequest.with.attributes",
+                "kmipkit_protocol::RekeyRequest::with_attributes",
+            ),
+        ];
+
+        for (route_id, symbol) in route_symbols {
+            let route = routes["routes"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|route| route["route_id"] == route_id)
+                .unwrap();
+            for target_id in route["normative_target_ids"].as_array().unwrap() {
+                let target_id = target_id.as_str().unwrap();
+                let target = catalog["normative_targets"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .find(|target| target["target_id"] == target_id)
+                    .unwrap();
+                let expected = sample_for_route_at_version(symbol, target, elements, "2.1")
+                    .unwrap_or_else(|error| panic!("{symbol} sample failed for {target_id}: {error}"));
+                let result = invoke(symbol, &expected, target, elements, "2.1")
+                    .unwrap_or_else(|| panic!("{symbol} route missing for {target_id}"))
+                    .unwrap_or_else(|error| panic!("{symbol} rejected {target_id}: {error}"));
+                assert!(
+                    crate::local_wire::target_hash(&result, &expected).is_ok(),
+                    "{symbol} changed {target_id}"
+                );
+            }
+        }
+    }
 }
