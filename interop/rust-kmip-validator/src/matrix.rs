@@ -2313,6 +2313,63 @@ mod tests {
         }
     }
 
+    /// OASIS KMIP 2.0/2.1 §3.3 Tables 14–17 define key wrapping metadata.
+    #[test]
+    fn key_wrapping_constructors_execute_every_normative_target() {
+        let catalog: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let manifest: Json = serde_json::from_str(include_str!(
+            "../../shared/coverage/route-capabilities.json"
+        ))
+        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        for symbol in [
+            "kmipkit_protocol::EncryptionKeyInformation::try_new",
+            "kmipkit_protocol::EncryptionKeyInformation::with_cryptographic_parameters",
+            "kmipkit_protocol::KeyWrappingData::try_new",
+            "kmipkit_protocol::KeyWrappingData::with_encoding_option",
+            "kmipkit_protocol::KeyWrappingData::with_encryption_key_information",
+            "kmipkit_protocol::KeyWrappingData::with_iv_counter_nonce",
+            "kmipkit_protocol::KeyWrappingData::with_mac_signature",
+            "kmipkit_protocol::KeyWrappingData::with_mac_signature_key_information",
+            "kmipkit_protocol::MacSignatureKeyInformation::try_new",
+            "kmipkit_protocol::MacSignatureKeyInformation::with_cryptographic_parameters",
+        ] {
+            let route = manifest["routes"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|route| route["public_api_symbol"] == symbol)
+                .unwrap();
+            for target_id in route["normative_target_ids"].as_array().unwrap() {
+                let target_id = target_id.as_str().unwrap();
+                let target = catalog["normative_targets"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .find(|target| target["target_id"] == target_id)
+                    .unwrap();
+                let fixture = key_wrapping_metadata_model(symbol, target)
+                    .and_then(|model| metadata_expected_target(&model, target, elements));
+                assert!(fixture.is_ok(), "{symbol} {target_id}: {fixture:?}");
+                let fixture = fixture.unwrap();
+                let result = invoke(symbol, &fixture, target, elements, "2.1");
+                assert!(
+                    result.is_some(),
+                    "{symbol} {target_id}: route is not invoked"
+                );
+                let result = result.unwrap();
+                assert!(result.is_ok(), "{symbol} {target_id}: {result:?}");
+                assert!(crate::local_wire::target_hash(&result.unwrap(), &fixture).is_ok());
+            }
+        }
+    }
+
     #[test]
     fn vendor_attribute_target_uses_a_table_150_structure_fixture() {
         let cases: Json = serde_json::from_str(include_str!(
