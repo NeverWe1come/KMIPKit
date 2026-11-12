@@ -1241,6 +1241,30 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all(event.get('peer_observed_response_count') == len(expected)
                             for event in report['events']))
 
+    def test_register_crypto_batch_executes_its_six_catalogued_operations(self):
+        catalog = copy.deepcopy(self.catalog)
+        case = next(value for value in self.catalog['test_cases']
+                    if value['case_id'] == 'test-batch-register-encrypt-decrypt-destroy')
+        catalog['test_cases'] = [case]
+        operations = case['requires']['protocol_scenario']['parameters']['operations_in_request_order']
+        symbols = {'kmipkit.extensions.client_batch_item_' + operation.casefold().replace(' ', '_')
+                   for operation in operations}
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in manifest['routes']
+                              if route['language'] == 'python'
+                              and route['public_api_symbol'] in symbols]
+
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+
+        self.assertEqual([], gaps)
+        self.assertEqual(216, len(report['events']))
+        self.assertTrue(all(event['status'] == 'passed'
+                            and event.get('batch_operation_sequence') == operations
+                            and event.get('peer_observed_operation_sequence') == operations
+                            and event.get('batch_item_count') == len(operations)
+                            and event.get('peer_observed_response_count') == len(operations)
+                            for event in report['events']))
+
     def test_single_operation_client_execute_route_uses_a_single_batch_item(self):
         ping = next(case for case in self.catalog['test_cases']
                     if case['case_id'] == 'test-op-ping')
