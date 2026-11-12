@@ -294,6 +294,14 @@ def _generic_samples(case: dict, target: dict, symbol: str) -> list[tuple[int, s
         # A type representative alone cannot prove a normative payload branch,
         # managed object shape, attribute persistence or protocol workflow.
         raise RecipePending
+    if isinstance(target.get('source_encoding'), str):
+        source_type = target['source_encoding'].split(',', 1)[0].strip()
+        encoded_types = {
+            name for name in _TTLV_TYPE_KINDS
+            if _normalized_name(name) == _normalized_name(source_type)
+        }
+        if encoded_types:
+            type_names = encoded_types
     if symbol.startswith('kmipkit.ttlv.ttlv_value_'):
         suffix = symbol.rsplit('ttlv_value_', 1)[1]
         type_names = {name for name in type_names if {'bytes': 'byte_string', 'text': 'text_string'}.get(_TTLV_TYPE_KINDS[name], _TTLV_TYPE_KINDS[name]) == suffix}
