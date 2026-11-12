@@ -93,6 +93,16 @@ class FluentCreateKeyPairManifestTests(unittest.TestCase):
                     "kmipkit_client_batch_item_create_key_pair",
                 )
 
+    def test_key_pair_execution_maps_to_existing_builder_signatures(self) -> None:
+        functions = {row["id"]: row for row in self.manifest["functions"]}
+        for function_id in ("client_create_key_pair_v1", "client_create_key_pair_with_options_v1"):
+            for language in ("java", "python"):
+                with self.subTest(function=function_id, language=language):
+                    self.assertEqual(
+                        functions[function_id][language]["parameters"],
+                        [{"name": "limits", "type": "CodecLimits"}],
+                    )
+
     def test_local_validation_and_prebuilt_sets_have_exact_requirement_owners(self) -> None:
         for row in self.manifest["publicDeclarations"]:
             if "KMIPKIT-0097-FR-005" not in row.get("requirementIds", []):

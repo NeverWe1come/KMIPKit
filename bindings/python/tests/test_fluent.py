@@ -46,6 +46,30 @@ def test_key_pair_builder_rejects_invalid_semantic_fields(method: str, value: ob
         getattr(fluent.CreateKeyPairBuilder(), method)(value)
 
 
+@pytest.mark.parametrize("fail_on", [2, 3])
+def test_key_pair_builder_releases_earlier_groups_when_later_allocation_fails(
+    monkeypatch: pytest.MonkeyPatch, fail_on: int
+) -> None:
+    original = fluent.CreateKeyPairBuilder._attribute_structure
+    allocated: list[ttlv.Structure] = []
+
+    def allocate(attributes, limits):
+        if len(allocated) + 1 == fail_on:
+            raise MemoryError("injected allocation failure")
+        structure = original(attributes, limits)
+        allocated.append(structure)
+        return structure
+
+    monkeypatch.setattr(fluent.CreateKeyPairBuilder, "_attribute_structure", staticmethod(allocate))
+    try:
+        with pytest.raises(MemoryError, match="injected allocation failure"):
+            fluent.CreateKeyPairBuilder().algorithm(6).length(256).build()
+        assert all(structure.closed for structure in allocated)
+    finally:
+        for structure in allocated:
+            structure.close()
+
+
 def _item(tag: int, item_type: int, value: bytes) -> bytes:
     return tag.to_bytes(3, "big") + bytes((item_type,)) + len(value).to_bytes(4, "big") + value + bytes((-len(value)) % 8)
 

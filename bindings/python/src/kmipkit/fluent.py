@@ -238,32 +238,29 @@ class CreateKeyPairBuilder:
         """Create a local typed request; sending still requires explicit execute."""
         if self._algorithm is None or self._length is None:
             errors.raise_for_status(4)
-        with ttlv.codec_limits_defaults() as limits:
-            common = self._attribute_structure(
+        with (
+            ttlv.codec_limits_defaults() as limits,
+            self._attribute_structure(
                 [
                     (StandardAttribute.CRYPTOGRAPHIC_ALGORITHM, self._algorithm, True),
                     (StandardAttribute.CRYPTOGRAPHIC_LENGTH, self._length, False),
                 ],
                 limits,
-            )
-            private = self._attribute_structure(
+            ) as common,
+            self._attribute_structure(
                 [(StandardAttribute.CRYPTOGRAPHIC_USAGE_MASK, self._private_usage_mask, False)]
                 if self._private_usage_mask is not None
                 else [],
                 limits,
-            )
-            public = self._attribute_structure(
+            ) as private,
+            self._attribute_structure(
                 [(StandardAttribute.CRYPTOGRAPHIC_USAGE_MASK, self._public_usage_mask, False)]
                 if self._public_usage_mask is not None
                 else [],
                 limits,
-            )
-            try:
-                return extensions.client_batch_item_create_key_pair(common, private, public)
-            finally:
-                common.close()
-                private.close()
-                public.close()
+            ) as public,
+        ):
+            return extensions.client_batch_item_create_key_pair(common, private, public)
 
     to_batch_item = build
 

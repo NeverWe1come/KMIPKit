@@ -368833,10 +368833,6 @@
           {
             "name": "limits",
             "type": "CodecLimits"
-          },
-          {
-            "name": "options",
-            "type": "RequestOptions"
           }
         ],
         "returnType": "ClientBatchResponse"
@@ -368858,10 +368854,6 @@
           {
             "name": "limits",
             "type": "CodecLimits"
-          },
-          {
-            "name": "options",
-            "type": "RequestOptions"
           }
         ],
         "returnType": "BatchResult"

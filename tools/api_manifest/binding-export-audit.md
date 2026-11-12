@@ -194,3 +194,22 @@ after KMIPKIT-0095 T009. Earlier dated reports remain historical snapshots.
 | C | yes | 2,058 | 1,998 | 1,998 | 60 | 0 | 0 | 0 | 0 | yes |
 | Java | yes | 3,090 | 2,390 | 2,390 | 700 | 0 | 0 | 0 | 0 | yes |
 | Python | yes | 3,605 | 2,596 | 2,596 | 1,009 | 0 | 0 | 0 | 0 | yes |
+
+## Key-pair journey binding snapshot (2026-11-12)
+
+The current report includes the KMIPKIT-0107 Task 3 semantic C entry points
+and Java/Python Create Key Pair builders. It was generated with:
+
+```text
+python3 tools/api_manifest/audit_binding_exports.py --report specs/043-public-api-bindings/reports/binding-export-report-2026-11-12-key-pair-journeys.json --check
+```
+
+The prior response-view report remains historical evidence. This declaration
+audit complements the 40-exchange controlled TLS journey; it does not establish
+complete builder parity or external-KMS interoperability.
+
+| Package | Scanner complete | Observed | Manifest declarations | Exact matches | Exact exclusions | Missing | Stale | Kind mismatches | Issues | `matchesManifest` |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| C | yes | 2,071 | 2,011 | 2,011 | 60 | 0 | 0 | 0 | 0 | yes |
+| Java | yes | 3,101 | 2,401 | 2,401 | 700 | 0 | 0 | 0 | 0 | yes |
+| Python | yes | 3,619 | 2,610 | 2,610 | 1,009 | 0 | 0 | 0 | 0 | yes |

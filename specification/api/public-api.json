@@ -55414,10 +55414,6 @@
           {
             "name": "limits",
             "type": "CodecLimits"
-          },
-          {
-            "name": "options",
-            "type": "RequestOptions"
           }
         ],
         "errorCategories": [
@@ -55436,10 +55432,6 @@
           {
             "name": "limits",
             "type": "CodecLimits"
-          },
-          {
-            "name": "options",
-            "type": "RequestOptions"
           }
         ],
         "cffiSymbol": "kmipkit_client_create_key_pair_with_options_v1",
