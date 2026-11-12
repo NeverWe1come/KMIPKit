@@ -10,6 +10,32 @@ import json
 from pathlib import Path
 import re
 
+from safe_paths import resolve_within_root
+
+ROOT = Path(__file__).resolve().parents[3]
+MANIFEST_ROOT = ROOT / 'interop/shared/coverage'
+OUTPUT_ROOT = ROOT / 'interop/c-kmip-validator/build'
+
+
+def resolve_manifest_path(path: Path) -> Path:
+    """Accept only the checked-in route manifest tree as a generator input."""
+    return resolve_within_root(path, MANIFEST_ROOT)
+
+
+def resolve_output_path(path: Path) -> Path:
+    """Keep generated wrapper code inside the C validator build directory."""
+    return resolve_within_root(path, OUTPUT_ROOT)
+
+
+def parameter_name(parameter: str) -> str:
+    """Return a simple C parameter identifier without regex backtracking."""
+    declaration = parameter.split('[', 1)[0].replace('*', ' ').strip()
+    tokens = declaration.split()
+    name = tokens[-1] if tokens else ''
+    if not name.isidentifier():
+        raise ValueError('unsupported_installed_signature')
+    return name
+
 
 def generate(header: str, symbols: list[str]) -> str:
     result = ['/* Generated from installed kmipkit.h; do not edit. */',
@@ -29,10 +55,11 @@ def generate(header: str, symbols: list[str]) -> str:
         parameters = [] if arguments.strip() in ('', 'void') else arguments.split(',')
         names = []
         for parameter in parameters:
-            name = re.search(r'(\w+)\s*$', parameter)
-            if not name:
+            try:
+                name = parameter_name(parameter)
+            except ValueError:
                 raise ValueError(f'unsupported_installed_signature:{symbol}')
-            names.append(name[1])
+            names.append(name)
         result.extend([f'int32_t __real_{symbol}({arguments});',
                        f'int32_t __wrap_{symbol}({arguments}) {{',
                        f'  int32_t status = __real_{symbol}({", ".join(names)});',
@@ -46,9 +73,11 @@ def main():
     parser.add_argument('--manifest', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
-    manifest = json.loads(args.manifest.read_text())
+    manifest_path = resolve_manifest_path(args.manifest)
+    output_path = resolve_output_path(args.output)
+    manifest = json.loads(manifest_path.read_text())
     symbols = [r['public_api_symbol'] for r in manifest['routes'] + manifest['execution_routes'] if r['language'] == 'c']
-    args.output.write_text(generate(args.header.read_text(), symbols))
+    output_path.write_text(generate(args.header.read_text(), symbols))
 
 
 if __name__ == '__main__':

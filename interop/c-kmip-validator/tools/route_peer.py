@@ -33,6 +33,11 @@ from validate_route_evidence import _key
 
 TYPES = ('', 'Structure', 'Integer', 'LongInteger', 'BigInteger', 'Enumeration',
          'Boolean', 'TextString', 'ByteString', 'DateTime', 'Interval', 'DateTimeExtended')
+BATCH_ITEM_TAG = 0x42000F
+REQUEST_PAYLOAD_TAG = 0x420079
+UNIQUE_IDENTIFIER_TAG = 0x420094
+ENUMERATION_TTLV_TYPE = 5
+ID_PLACEHOLDER_ENUMERATION = 1
 
 CERTIFICATE_ATTRIBUTE_FIELDS = (
     'Certificate Subject CN', 'Certificate Subject O', 'Certificate Subject OU',
@@ -250,7 +255,8 @@ RECIPES = {
     'test-v20-reject-get-constraints': ((56,), 'get_constraints'),
     'test-op-create': ((1, 20), 'create'),
     'test-batch-create-activate-destroy': ((1, 18, 12, 19, 20), 'create_activate_attribute_list_revoke_destroy'),
-    'test-batch-placeholder-chain-resolves': ((1, 18, 10), 'batch_placeholder_chain'),
+    'test-batch-placeholder-chain-resolves': (
+        (1, 18, 10, 19, 20), 'create_activate_get_placeholder_chain'),
     'test-batch-single-item-options-omitted': ((10,), 'batch_single_item_options_omitted'),
     'test-batch-count-matches-items': ((10, 12), 'batch_count_two_read_items'),
     'test-batch-unique-item-id-response-correlation': ((10, 12), 'batch_count_two_read_items'),
@@ -302,6 +308,7 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None):
     expected, _ = selected_recipe
     if tuple(numbers(node, 0x42005C)) != expected:
         raise ValueError('fixture_operation_order_mismatch')
+    assert_placeholder_usage(node, case_id)
     header = next(descendants(node, 0x420077), node)
     if numbers(header, 0x42006A) != [2] or numbers(header, 0x42006B) != [int(version[-1])]:
         raise ValueError('fixture_protocol_version_mismatch')
@@ -320,19 +327,12 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None):
         implicit_target = case_id in ('test-op-get-attributes', 'test-op-get-attribute-list',
             'test-batch-create-activate-destroy', 'test-attr-cryptographic-algorithm',
             'test-attr-cryptographic-length', 'test-op-get-constraints') or attribute_fixture is not None
-        if len(numbers(node, 0x420094)) < len(expected) - 1 - int(implicit_target):
+        minimum_unique_identifiers = 0 if case_id == 'test-batch-placeholder-chain-resolves' else (
+            len(expected) - 1 - int(implicit_target))
+        if len(numbers(node, 0x420094)) < minimum_unique_identifiers:
             raise ValueError('fixture_id_placeholder_missing')
         if len(list(descendants(node, 0x420093))) != len(expected):
             raise ValueError('fixture_batch_item_identity_missing')
-        if selected_recipe[1] == 'batch_placeholder_chain':
-            items = [child for child in node[2] if child[0] == 0x42000F and child[1] == 1]
-            if ([numbers(item, 0x42005C) for item in items] != [[1], [18], [10]] or
-                    [numbers(item, 0x420094) for item in items] != [[], [1], [1]] or
-                    [byte_string_values(item, 0x420093) for item in items] !=
-                    [[b'placeholder-create'], [b'placeholder-activate'], [b'placeholder-get']]):
-                raise ValueError('fixture_placeholder_chain_shape_mismatch')
-            if numbers(node, 0x42000E) != [1]:
-                raise ValueError('fixture_placeholder_chain_continue_option_missing')
     if expected[0] == 3:
         register_item = next(item for item in node[2]
                              if item[0] == 0x42000F and numbers(item, 0x42005C) == [3])
@@ -434,33 +434,32 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None):
         raise ValueError('fixture_rng_seed_mismatch')
 
 
-def assert_placeholder_cleanup_request(node, version):
-    items = [child for child in node[2] if child[0] == 0x42000F and child[1] == 1]
-    if numbers(node, 0x42000D) != [2] or [numbers(item, 0x42005C) for item in items] != [[19], [20]]:
-        raise ValueError('fixture_placeholder_chain_cleanup_operation_mismatch')
-    header = next(descendants(node, 0x420077), node)
-    if numbers(header, 0x42006A) != [2] or numbers(header, 0x42006B) != [int(version[-1])]:
-        raise ValueError('fixture_placeholder_chain_cleanup_version_mismatch')
-    if numbers(node, 0x42000E) != [1] or numbers(node, 0x420010) != [1]:
-        raise ValueError('fixture_placeholder_chain_cleanup_option_mismatch')
-    if [text_values(item, 0x420094) for item in items] != [['fixture-key-1'], ['fixture-key-1']]:
-        raise ValueError('fixture_placeholder_chain_cleanup_identifier_mismatch')
-    if [byte_string_values(item, 0x420093) for item in items] != [
-            [b'placeholder-revoke-cleanup'], [b'placeholder-destroy-cleanup']]:
-        raise ValueError('fixture_placeholder_chain_cleanup_item_id_mismatch')
+def assert_placeholder_usage(node, case_id):
+    """Accept omitted or explicit ID Placeholder identifiers after Create."""
+    if case_id not in ('test-batch-create-activate-destroy',
+                       'test-batch-placeholder-chain-resolves'):
+        return
+    batch_items = [child for child in node[2]
+                   if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if len(batch_items) < 2:
+        raise ValueError('fixture_id_placeholder_batch_shape_mismatch')
+    for batch_item in batch_items[1:]:
+        payloads = [child for child in batch_item[2]
+                    if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+        if len(payloads) != 1:
+            raise ValueError('fixture_id_placeholder_payload_mismatch')
+        identifiers = [child for child in payloads[0][2]
+                       if child[0] == UNIQUE_IDENTIFIER_TAG]
+        if len(identifiers) > 1:
+            raise ValueError('fixture_id_placeholder_identifier_mismatch')
+        if identifiers and not is_id_placeholder_identifier(identifiers[0]):
+            raise ValueError('fixture_id_placeholder_identifier_mismatch')
 
 
-def verify_placeholder_chain_response(node, operations):
-    items = [child for child in node[2] if child[0] == 0x42000F and child[1] == 1]
-    if ([numbers(item, 0x42005C) for item in items] != [[value] for value in operations] or
-            [numbers(item, 0x42007F) for item in items] != [[0] for _ in operations] or
-            [text_values(item, 0x420094) for item in items] !=
-            [['fixture-key-1'] for _ in operations]):
-        raise ValueError('fixture_placeholder_chain_response_mismatch')
-    if tuple(operations) == (1, 18, 10):
-        get_item = items[2]
-        if not list(descendants(get_item, 0x42008F)):
-            raise ValueError('fixture_placeholder_chain_get_object_missing')
+def is_id_placeholder_identifier(node):
+    """Check the TTLV type and enumeration value for ID Placeholder."""
+    return (node[1] == ENUMERATION_TTLV_TYPE and len(node[2]) == 4 and
+            int.from_bytes(node[2], 'big') == ID_PLACEHOLDER_ENUMERATION)
 
 
 def fixture_wire(node):
@@ -589,8 +588,8 @@ def verify_lifecycle(operations, response_tree):
     return effects
 
 
-def read_request(stream, encoding, transport, initial=b''):
-    data = bytearray(initial)
+def read_request(stream, encoding, transport):
+    data = bytearray()
     if transport == 'https':
         while not data.endswith(b'\r\n\r\n'):
             data.extend(stream.recv(1))
@@ -705,7 +704,6 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                         recipe = recipe_for_case(case, attribute_fixture)
                         if recipe is None:
                             continue
-                        placeholder_chain_recipe = recipe[1] == 'batch_placeholder_chain'
                         if version == '2.0' and case_id in ('test-op-discover-versions', 'test-op-login', 'test-op-get-constraints', 'test-op-ping'):
                             continue
                         observation, errors = [], []
@@ -717,50 +715,22 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                             port = server.getsockname()[1]
                             def serve():
                                 try:
-                                    exchange_count = 2 if placeholder_chain_recipe else 1
                                     accepted, _ = server.accept()
-                                    stream = context.wrap_socket(accepted, server_side=True)
-                                    for exchange_index in range(exchange_count):
-                                        initial = b''
-                                        if exchange_index > 0:
-                                            ready, _, _ = select.select([stream, server], [], [], 5)
-                                            if not ready:
-                                                raise TimeoutError()
-                                            if server in ready:
-                                                stream.close()
-                                                accepted, _ = server.accept()
-                                                stream = context.wrap_socket(accepted, server_side=True)
-                                            else:
-                                                initial = stream.recv(1)
-                                                if not initial:
-                                                    stream.close()
-                                                    accepted, _ = server.accept()
-                                                    stream = context.wrap_socket(accepted, server_side=True)
-                                                    initial = b''
+                                    with context.wrap_socket(accepted, server_side=True) as stream:
                                         stream.settimeout(5)
-                                        wire = read_request(stream, encoding, transport, initial)
+                                        wire = read_request(stream, encoding, transport)
                                         request_tree = codec.decode(wire, encoding)
-                                        cleanup_exchange = placeholder_chain_recipe and exchange_index == 1
-                                        if cleanup_exchange:
-                                            assert_placeholder_cleanup_request(request_tree, version)
-                                            response_operations = (19, 20)
-                                        else:
-                                            assert_recipe(request_tree, case_id, version, recipe, attribute_fixture)
-                                            response_operations = recipe[0]
+                                        assert_recipe(request_tree, case_id, version, recipe, attribute_fixture)
                                         selected_tag = {'test-attr-cryptographic-algorithm': 0x420028,
                                                         'test-attr-cryptographic-length': 0x42002A}.get(
                                                             case_id, int(attribute_fixture.get(
                                                                 'attribute_response_tag', '000000'), 16)
                                                             if attribute_fixture else 0)
                                         object_type = 4 if case_id == 'test-obj-private-key' else 3 if case_id == 'test-obj-public-key' else 2
+                                        response_operations = recipe[0]
                                         response_item_ids = None
                                         response_statuses = None
                                         response_reasons = None
-                                        if placeholder_chain_recipe:
-                                            response_item_ids = (
-                                                (b'placeholder-revoke-cleanup', b'placeholder-destroy-cleanup')
-                                                if cleanup_exchange else
-                                                (b'placeholder-create', b'placeholder-activate', b'placeholder-get'))
                                         if recipe[1] in ('batch_count_two_read_items',
                                                          'batch_order_false_two_read_items',
                                                          'batch_continue_after_failure'):
@@ -776,17 +746,13 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             attribute_fixture['attribute_response_wire'] if attribute_fixture else None,
                                             response_item_ids, response_statuses, response_reasons)
                                         response_tree = parse(response_wire)
-                                        if placeholder_chain_recipe:
-                                            verify_placeholder_chain_response(response_tree, response_operations)
-                                        else:
-                                            verify_lifecycle(recipe[0], response_tree)
+                                        verify_lifecycle(recipe[0], response_tree)
                                         encoded_response = codec.encode(response_wire, encoding)
                                         if transport == 'https':
                                             content_type = {'TTLV': 'application/octet-stream', 'JSON': 'application/json', 'XML': 'text/xml'}[encoding]
                                             encoded_response = (f'HTTP/1.1 200 OK\r\nContent-Type: {content_type}\r\nContent-Length: {len(encoded_response)}\r\nConnection: close\r\n\r\n'.encode() + encoded_response)
                                         stream.sendall(encoded_response)
                                         observation.append((request_tree, response_tree))
-                                    stream.close()
                                 except TimeoutError:
                                     errors.append('fixture_peer_accept_timeout')
                                 except ssl.SSLError:
@@ -893,16 +859,6 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                    'test-batch-unique-item-id-response-correlation',
                                                    'test-batch-order-false-correlates-response-items',
                                                    'test-batch-continue-after-failure'} else {}),
-                                           **({'peer_request_operations': [
-                                               numbers(item, 0x42005C)[0]
-                                               for item in observation[0][0][2]
-                                               if item[0] == 0x42000F],
-                                               'peer_cleanup_operations': [
-                                               numbers(item, 0x42005C)[0]
-                                               for item in observation[1][0][2]
-                                               if item[0] == 0x42000F]}
-                                               if observation and len(observation) > 1 and
-                                               placeholder_chain_recipe else {}),
                                            **attribute_check,
                                            **({'failure_code': code or 'peer_observation_missing'} if code or not observation else {})})
                             if not observation or code or run.returncode != 0:
@@ -984,14 +940,11 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     event.update(request_delivery_state='response_received', transport_invocation_count=1)
                                 if cell['action'] == 'send' and len(recipe[0]) > 1:
                                     operations = [next(t['name'] for t in catalog['normative_targets'] if t['kind'] == 'enumeration_value' and t.get('wire_value') == f'{op:08X}' and any(p.endswith('ENUMERATION-OPERATION') for p in t.get('parent_element_ids', []))) for op in recipe[0]]
-                                    effects = (['created', 'activated', 'object_retrieved']
-                                               if placeholder_chain_recipe else
-                                               verify_lifecycle(recipe[0], response_tree))
                                     event.update(batch_operation_sequence=operations, batch_item_count=len(operations),
                                         peer_observed_operation_sequence=operations,
                                         peer_observed_response_count=len(operations),
                                         peer_observed_result_status_codes=numbers(response_tree, 0x42007F),
-                                        peer_observed_effects=effects)
+                                        peer_observed_effects=verify_lifecycle(recipe[0], response_tree))
                                 events.append(event)
                                 keys.add(_key(cell))
     return events, keys, checks

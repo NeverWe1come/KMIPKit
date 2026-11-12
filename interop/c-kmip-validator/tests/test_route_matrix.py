@@ -4,6 +4,7 @@ import importlib.util
 import hashlib
 import json
 import sys
+import tempfile
 import unittest
 
 TOOLS = Path(__file__).resolve().parents[1] / 'tools'
@@ -20,6 +21,29 @@ class RouteMatrixTests(unittest.TestCase):
     def test_nonexistent_recipe_is_pending_and_never_library_unavailable(self):
         self.assertEqual(self.runner.pending_reason({'public_api_symbol': 'kmipkit_client_batch_item_sign'}),
                          'validator_recipe_pending')
+
+    def test_route_evidence_output_cannot_escape_its_build_directory(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaisesRegex(ValueError, 'path_outside_allowed_root'):
+                self.runner.resolve_output_path(Path(directory) / 'outside.json')
+
+    def test_route_wrapper_inputs_and_output_are_confined_to_their_workspace_roots(self):
+        import generate_route_wrappers
+
+        with tempfile.TemporaryDirectory() as directory:
+            outside = Path(directory) / 'outside.json'
+            with self.assertRaisesRegex(ValueError, 'path_outside_allowed_root'):
+                generate_route_wrappers.resolve_manifest_path(outside)
+            with self.assertRaisesRegex(ValueError, 'path_outside_allowed_root'):
+                generate_route_wrappers.resolve_output_path(outside)
+
+    def test_route_wrapper_parameter_names_parse_without_regular_expressions(self):
+        import generate_route_wrappers
+
+        self.assertEqual(generate_route_wrappers.parameter_name('const char *label'), 'label')
+        self.assertEqual(generate_route_wrappers.parameter_name('uint8_t output[32]'), 'output')
+        with self.assertRaisesRegex(ValueError, 'unsupported_installed_signature'):
+            generate_route_wrappers.parameter_name('void (*callback)(void)')
 
     def test_known_enum_fixture_preserves_exact_named_target_value(self):
         target = {'kind': 'enumeration_value', 'wire_value': '00000003',
@@ -793,6 +817,85 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all('kmipkit_client_execute' in check['public_api_trace_symbols']
                             for check in checks))
 
+    def test_id_placeholder_accepts_omission_or_reserved_enumeration_only(self):
+        from route_peer import assert_placeholder_usage, parse, tlv
+
+        def enumeration(tag, value):
+            return tlv(tag, 5, value.to_bytes(4, 'big'))
+
+        def batch_item(operation, unique_identifier=None):
+            payload = b'' if unique_identifier is None else unique_identifier
+            return tlv(0x42000F, 1, enumeration(0x42005C, operation)
+                       + tlv(0x420079, 1, payload))
+
+        items = [batch_item(1)] + [batch_item(operation) for operation in (18, 12, 19, 20)]
+        request = parse(tlv(0x420078, 1, b''.join(items)))
+        assert_placeholder_usage(request, 'test-batch-create-activate-destroy')
+
+        reserved_placeholder = tlv(0x420094, 5, (1).to_bytes(4, 'big'))
+        explicit_placeholder_items = [batch_item(1)] + [
+            batch_item(operation, reserved_placeholder) for operation in (18, 12, 19, 20)
+        ]
+        explicit_placeholder_request = parse(tlv(0x420078, 1, b''.join(explicit_placeholder_items)))
+        assert_placeholder_usage(explicit_placeholder_request, 'test-batch-create-activate-destroy')
+
+        request_with_explicit_target = parse(tlv(
+            0x420078, 1, b''.join([items[0], items[1], batch_item(
+                12, tlv(0x420094, 7, b'fixture-key')), *items[3:]])))
+        with self.assertRaisesRegex(ValueError, 'fixture_id_placeholder_identifier_mismatch'):
+            assert_placeholder_usage(request_with_explicit_target, 'test-batch-create-activate-destroy')
+
+        request_with_invalid_enumeration = parse(tlv(
+            0x420078, 1, b''.join([items[0], batch_item(
+                18, tlv(0x420094, 5, (2).to_bytes(4, 'big'))), *items[2:]])))
+        with self.assertRaisesRegex(ValueError, 'fixture_id_placeholder_identifier_mismatch'):
+            assert_placeholder_usage(request_with_invalid_enumeration, 'test-batch-create-activate-destroy')
+
+    def test_placeholder_chain_case_maps_create_activate_get_recipe(self):
+        from route_peer import recipe_for_case
+
+        recipe = recipe_for_case({'case_id': 'test-batch-placeholder-chain-resolves'}, None)
+
+        self.assertEqual(recipe, ((1, 18, 10, 19, 20), 'create_activate_get_placeholder_chain'))
+
+    def test_placeholder_chain_executes_typed_create_activate_get_batch(self):
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-batch-placeholder-chain-resolves'
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12, 'placeholder chain must run over both versions and six wire transports')
+        failed_checks = [
+            {key: check.get(key) for key in
+             ('protocol_version', 'encoding', 'transport', 'status', 'reason', 'result_reason')}
+            for check in checks if check['status'] != 'passed'
+        ]
+        self.assertFalse(failed_checks, f'controlled placeholder-chain failures: {failed_checks[:3]}')
+        expected_operations = {
+            'KMIPKIT-ELEM-OP-C2S-CREATE',
+            'KMIPKIT-ELEM-OP-C2S-ACTIVATE',
+            'KMIPKIT-ELEM-OP-C2S-GET',
+        }
+        self.assertTrue(expected_operations <= {event['target_id'] for event in events})
+        create_send = next(event for event in events
+                           if event['target_id'] == 'KMIPKIT-ELEM-OP-C2S-CREATE'
+                           and event['action'] == 'send')
+        self.assertEqual(create_send['peer_observed_operation_sequence'],
+                         ['Create', 'Activate', 'Get', 'Revoke', 'Destroy'])
+        for symbol in ('kmipkit_client_batch_item_create', 'kmipkit_client_batch_item_activate',
+                       'kmipkit_client_batch_item_get'):
+            self.assertTrue(any(event['public_api_symbol'] == symbol and event['action'] == 'send'
+                                for event in events), symbol)
+        self.assertTrue(all('kmipkit_client_execute' in check['public_api_trace_symbols']
+                            for check in checks))
+
 
     def test_two_item_batch_continuation_and_id_correlation(self):
         from artifact_support import ROOT
@@ -839,7 +942,7 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertIn(case_id, RECIPES, 'placeholder-chain peer recipe is missing')
         operations, workflow = RECIPES[case_id]
         self.assertEqual((1, 18, 10), operations[:3])
-        self.assertEqual('batch_placeholder_chain', workflow)
+        self.assertEqual('create_activate_get_placeholder_chain', workflow)
 
 
     def test_batch_placeholder_chain_resolves_the_same_object_and_cleans_up(self):
@@ -854,8 +957,11 @@ class RouteMatrixTests(unittest.TestCase):
             ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
         self.assertEqual(len(checks), 12, 'placeholder chain must pass both versions over all wire transports')
         self.assertTrue(all(check['status'] == 'passed' for check in checks))
-        self.assertTrue(all(check['peer_request_operations'] == [1, 18, 10] for check in checks))
-        self.assertTrue(all(check['peer_cleanup_operations'] == [19, 20] for check in checks))
+        self.assertTrue(all(event['peer_observed_operation_sequence'] ==
+                            ['Create', 'Activate', 'Get', 'Revoke', 'Destroy']
+                            for event in events if event['action'] == 'send'))
+        self.assertTrue(all('destroyed' in event['peer_observed_effects']
+                            for event in events if event['action'] == 'send'))
         for symbol in ('kmipkit_client_batch_item_create', 'kmipkit_client_batch_item_activate',
                        'kmipkit_client_batch_item_get'):
             self.assertTrue(any(event['public_api_symbol'] == symbol and event['action'] == 'send'
