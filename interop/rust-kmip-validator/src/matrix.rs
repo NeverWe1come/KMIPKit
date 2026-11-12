@@ -402,6 +402,21 @@ const MANAGED_OBJECT_ROOTS: [&str; 9] = [
     "Symmetric Key",
 ];
 
+fn typed_object_root(symbol: &str) -> Option<&'static str> {
+    match symbol {
+        "kmipkit_protocol::Certificate::try_from_item" => Some("Certificate"),
+        "kmipkit_protocol::CertificateRequest::try_from_item" => Some("Certificate Request"),
+        "kmipkit_protocol::OpaqueObject::try_from_item" => Some("Opaque Object"),
+        "kmipkit_protocol::PgpKey::try_from_item" => Some("PGP Key"),
+        "kmipkit_protocol::PrivateKey::try_from_item" => Some("Private Key"),
+        "kmipkit_protocol::PublicKey::try_from_item" => Some("Public Key"),
+        "kmipkit_protocol::SecretData::try_from_item" => Some("Secret Data"),
+        "kmipkit_protocol::SplitKey::try_from_item" => Some("Split Key"),
+        "kmipkit_protocol::SymmetricKey::try_from_item" => Some("Symmetric Key"),
+        _ => None,
+    }
+}
+
 fn managed_object_root_name(target: &Json, elements: &[Json]) -> Option<&'static str> {
     let mut pending = target["parent_element_ids"]
         .as_array()?
@@ -467,7 +482,9 @@ fn managed_object_fixture(target: &Json, elements: &[Json]) -> Result<(u32, Item
 }
 
 fn sample_for_route(symbol: &str, target: &Json, elements: &[Json]) -> Result<Item> {
-    if symbol == "kmipkit_protocol::ManagedObject::try_from_item" {
+    if symbol == "kmipkit_protocol::ManagedObject::try_from_item"
+        || typed_object_root(symbol).is_some()
+    {
         return managed_object_fixture(target, elements).map(|(_, _, expected)| expected);
     }
     if symbol == "kmipkit_protocol::QueryResponse::to_ttlv_payload"
@@ -556,6 +573,50 @@ fn invoke(
             .map(kmipkit::protocol::ManagedObject::into_item)
             .map_err(|_| "managed object parser rejected"),
         );
+    }
+    if let Some(root) = typed_object_root(symbol) {
+        let (_, object, _) = crate::fixtures::object(root).ok()?;
+        let result = match symbol {
+            "kmipkit_protocol::Certificate::try_from_item" => {
+                kmipkit::protocol::Certificate::try_from_item(object)
+                    .map(kmipkit::protocol::Certificate::into_item)
+            }
+            "kmipkit_protocol::CertificateRequest::try_from_item" => {
+                kmipkit::protocol::CertificateRequest::try_from_item(object)
+                    .map(kmipkit::protocol::CertificateRequest::into_item)
+            }
+            "kmipkit_protocol::OpaqueObject::try_from_item" => {
+                kmipkit::protocol::OpaqueObject::try_from_item(object)
+                    .map(kmipkit::protocol::OpaqueObject::into_item)
+            }
+            "kmipkit_protocol::PgpKey::try_from_item" => {
+                kmipkit::protocol::PgpKey::try_from_item(object)
+                    .map(kmipkit::protocol::PgpKey::into_item)
+            }
+            "kmipkit_protocol::PrivateKey::try_from_item" => {
+                kmipkit::protocol::PrivateKey::try_from_item(object)
+                    .map(kmipkit::protocol::PrivateKey::into_item)
+            }
+            "kmipkit_protocol::PublicKey::try_from_item" => {
+                kmipkit::protocol::PublicKey::try_from_item(object)
+                    .map(kmipkit::protocol::PublicKey::into_item)
+            }
+            "kmipkit_protocol::SecretData::try_from_item" => {
+                kmipkit::protocol::SecretData::try_from_item(object)
+                    .map(kmipkit::protocol::SecretData::into_item)
+            }
+            "kmipkit_protocol::SplitKey::try_from_item" => {
+                kmipkit::protocol::SplitKey::try_from_item(object)
+                    .map(kmipkit::protocol::SplitKey::into_item)
+            }
+            "kmipkit_protocol::SymmetricKey::try_from_item" => {
+                kmipkit::protocol::SymmetricKey::try_from_item(object)
+                    .map(kmipkit::protocol::SymmetricKey::into_item)
+            }
+            _ => return None,
+        }
+        .map_err(|_| "typed object parser rejected");
+        return Some(result);
     }
     if symbol.starts_with("kmipkit_ttlv::Value::") {
         let expected = match sample.item_type() {

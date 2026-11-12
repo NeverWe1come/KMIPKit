@@ -341,6 +341,7 @@ class MatrixContract(unittest.TestCase):
         self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
 
     def test_typed_object_and_key_model_parsers_cover_every_route_cell(self):
+        # OASIS KMIP 2.0/2.1 §§2.1–2.9 define the nine managed-object root structures.
         roots = {
             'kmipkit_protocol::Certificate::try_from_item': 'Certificate',
             'kmipkit_protocol::CertificateRequest::try_from_item': 'Certificate Request',
