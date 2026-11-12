@@ -736,6 +736,25 @@ class RouteMatrixTests(unittest.TestCase):
         expected = self.runner.digest([[0x4200FF, 1, [[0x4200FF, 2, 7]]]])
         self.assertEqual({expected}, {event['request_tree_sha256'] for event in report['events']})
 
+    def test_structure_builder_routes_preserve_the_catalogued_interop_identifier(self):
+        catalog = copy.deepcopy(self.catalog)
+        catalog['test_cases'] = [case for case in self.catalog['test_cases']
+                                 if case['case_id'] == 'test-norm-operation-structure-operation-structure-7-16-interop-identifier']
+        symbols = {'kmipkit.ttlv.ttlv_structure_create',
+                   'kmipkit.ttlv.ttlv_structure_with_item'}
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in self.manifest['routes']
+                              if route['language'] == 'python'
+                              and route['public_api_symbol'] in symbols]
+
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+
+        self.assertEqual([], gaps)
+        self.assertEqual(4, len(report['events']))
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+        expected = self.runner.digest([[0x4200FF, 1, [[0x420161, 7, '4b4d49502dcebb']]]])
+        self.assertEqual({expected}, {event['request_tree_sha256'] for event in report['events']})
+
     def test_managed_object_routes_construct_and_parse_catalogued_object_fields(self):
         catalog = copy.deepcopy(self.catalog)
         manifest = copy.deepcopy(self.manifest)
@@ -1183,6 +1202,39 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(set(symbols) <= trace.observed)
         self.assertEqual([protocol_values.ResultStatus.OPERATION_FAILED],
                          event['peer_observed_result_status_codes'])
+
+    def test_typed_batch_workflow_executes_and_reports_the_complete_ordered_request(self):
+        catalog = copy.deepcopy(self.catalog)
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-batch-create-activate-destroy')
+        case['execution']['protocol_versions'] = ['2.0']
+        case['requires']['protocol_scenario']['protocol_versions'] = ['2.0']
+        catalog['test_cases'] = [case]
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in self.manifest['routes']
+                              if route['language'] == 'python'
+                              and route['public_api_symbol'].startswith(
+                                  'kmipkit.extensions.client_batch_item_')]
+        for route in manifest['routes']:
+            route['protocol_versions'] = ['2.0']
+
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+
+        expected = ['Create', 'Activate', 'Get Attribute List', 'Revoke', 'Destroy']
+        self.assertEqual([], gaps)
+        self.assertEqual(90, len(report['events']))
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+        self.assertTrue(all(event.get('batch_operation_sequence') == expected
+                            for event in report['events']))
+        self.assertTrue(all(event.get('batch_item_count') == len(expected)
+                            for event in report['events']))
+
+    def test_single_operation_client_execute_route_uses_a_single_batch_item(self):
+        ping = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-op-ping')
+        route = {'execution_route_id': 'python.execute.typed-batch'}
+
+        self.assertIsNone(self.runner._batch_operations_for_case(route, ping))
 
     def test_create_routes_validate_peer_rejection_and_all_wire_encodings(self):
         catalog = copy.deepcopy(self.catalog)
