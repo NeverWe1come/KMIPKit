@@ -1309,6 +1309,7 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual([protocol_values.ResultStatus.OPERATION_FAILED,
                           protocol_values.ResultStatus.SUCCESS],
                          event['peer_observed_result_status_codes'])
+        self.assertNotIn('peer_observed_result_reason_codes', event)
         self.assertEqual(2, event['batch_item_count'])
         self.assertTrue(set(symbols) <= trace.observed)
 
