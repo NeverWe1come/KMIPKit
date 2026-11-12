@@ -68,3 +68,20 @@ Revoke/Destroy separately, using the returned identifier. The five focused
 placeholder tests pass across both KMIP versions and all six wire pairs.
 The peer still rejects arbitrary identifiers and accepts the normative omitted
 or explicit ID Placeholder representation.
+
+### Controlled peer state evidence
+
+The approved shared base at `1f6f73f0c` requires before/after SHA-256 state
+observations whenever batch effects are emitted. The C peer now owns a small
+fixture object-state map, resolves each actual request identifier, and applies
+Create/Register/Activate/Revoke/Destroy and read operations before generating
+their response statuses. Only public fixture identifiers and lifecycle states
+enter the redacted digest; request bodies and key material do not.
+
+The Continue regression verifies that a missing-key failure is followed by
+an executed read of the existing object, while its object state remains
+unchanged. The ID Placeholder regression verifies an empty initial store, an
+active object after the three-item scenario, and deletion after independent
+cleanup. Both tests first failed for missing effects/state hashes; four
+focused state, lifecycle, and correlation tests now pass. The shared schema
+and completeness validator retain all of their existing requirements.

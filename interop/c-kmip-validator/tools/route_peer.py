@@ -574,6 +574,68 @@ def recipe_for_case(case, attribute_fixture):
 
 
 
+class PeerState:
+    """Maintain the public object lifecycle represented by the controlled peer."""
+
+    def __init__(self, *, existing_object=False):
+        self.objects = {'fixture-key-1': 'pre_active'} if existing_object else {}
+
+    def digest(self):
+        state = json.dumps({'objects': self.objects}, sort_keys=True, separators=(',', ':'))
+        return hashlib.sha256(state.encode()).hexdigest()
+
+    def execute(self, request_tree, *, continued_batch=False):
+        before = self.digest()
+        effects, statuses, reasons = [], [], []
+        placeholder = None
+        labels = {9: 'checked', 10: 'object_retrieved', 11: 'attributes_retrieved',
+                  12: 'attribute_list_retrieved', 56: 'constraints_retrieved'}
+        items = [item for item in request_tree[2] if item[0] == BATCH_ITEM_TAG]
+        for index, item in enumerate(items):
+            operation = numbers(item, 0x42005C)[0]
+            identifiers = text_values(item, UNIQUE_IDENTIFIER_TAG)
+            identifier = identifiers[0] if identifiers else placeholder
+            status, reason = 0, 0
+            if operation in (1, 3):
+                identifier = 'fixture-key-1'
+                if identifier in self.objects:
+                    raise ValueError('fixture_duplicate_create')
+                self.objects[identifier] = 'pre_active'
+                placeholder = identifier
+                effect = 'created'
+            elif operation in (9, 10, 11, 12, 18, 19, 20, 56):
+                state = self.objects.get(identifier)
+                if state is None:
+                    status, reason, effect = 1, 55, 'object_not_found'
+                elif operation == 18:
+                    if state != 'pre_active':
+                        raise ValueError('fixture_activate_state_mismatch')
+                    self.objects[identifier] = 'active'
+                    effect = 'activated'
+                elif operation == 19:
+                    self.objects[identifier] = 'revoked'
+                    effect = 'revoked'
+                elif operation == 20:
+                    if state == 'active':
+                        status, reason, effect = 1, 67, 'illegal_destroy_rejected'
+                    else:
+                        del self.objects[identifier]
+                        effect = 'destroyed'
+                else:
+                    effect = labels[operation]
+            else:
+                effect = 'operation_executed'
+            if continued_batch:
+                effect = ('first_item_failed' if index == 0 and status != 0 else
+                          'second_item_executed' if index == 1 and status == 0 else effect)
+            effects.append(effect)
+            statuses.append(status)
+            reasons.append(reason)
+        return {'effects': effects, 'statuses': statuses, 'reasons': reasons,
+                'peer_observed_state_before_sha256': before,
+                'peer_observed_state_after_sha256': self.digest()}
+
+
 def verify_lifecycle(operations, response_tree):
     """Check the fixture state machine against every ordered response item."""
     if not operations or operations[0] not in (1, 3):
@@ -747,6 +809,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                         if version == '2.0' and case_id in ('test-op-discover-versions', 'test-op-login', 'test-op-get-constraints', 'test-op-ping'):
                             continue
                         observation, errors = [], []
+                        peer_state = PeerState(existing_object=recipe[0][0] not in (1, 3))
                         boundary = case_id == 'test-v20-reject-get-constraints'
                         with socket.socket() as server:
                             server.bind(('127.0.0.1', 0))
@@ -809,6 +872,14 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             elif recipe[1] == 'batch_continue_after_failure':
                                                 response_statuses = (1, 0)
                                                 response_reasons = (55, None)
+                                        state_evidence = peer_state.execute(
+                                            request_tree,
+                                            continued_batch=recipe[1] == 'batch_continue_after_failure')
+                                        response_statuses = tuple(state_evidence['statuses'])
+                                        response_reasons = tuple(reason or None for reason in state_evidence['reasons'])
+                                        if response_operations != recipe[0] and not cleanup_exchange:
+                                            response_statuses = tuple(reversed(response_statuses))
+                                            response_reasons = tuple(reversed(response_reasons))
                                         response_wire = response(
                                             response_operations, int(version[-1]), selected_tag, object_type,
                                             attribute_fixture['attribute_response_wire'] if attribute_fixture else None,
@@ -823,7 +894,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             content_type = {'TTLV': 'application/octet-stream', 'JSON': 'application/json', 'XML': 'text/xml'}[encoding]
                                             encoded_response = (f'HTTP/1.1 200 OK\r\nContent-Type: {content_type}\r\nContent-Length: {len(encoded_response)}\r\nConnection: close\r\n\r\n'.encode() + encoded_response)
                                         stream.sendall(encoded_response)
-                                        observation.append((request_tree, response_tree))
+                                        observation.append((request_tree, response_tree, state_evidence))
                                     stream.close()
                                 except TimeoutError:
                                     errors.append('fixture_peer_accept_timeout')
@@ -882,7 +953,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     (0x42006B, 2, bytes(4))])
                                 attempted = (0x420078, 1, [(0x420077, 1, [version_node]),
                                     (0x42000F, 1, [(0x42005C, 5, (56).to_bytes(4, 'big')), (0x420079, 1, [])])])
-                                observation.append((attempted, None))
+                                observation.append((attempted, None, {}))
                             code = errors[0] if errors else 'consumer_check_failed' if not case_passed else 'public_api_trace_missing' if not called_symbols else None
                             attribute_check = {}
                             if observation and attribute_fixture:
@@ -935,6 +1006,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                numbers(item, 0x42005C)[0]
                                                for item in observation[0][0][2]
                                                if item[0] == 0x42000F],
+                                               'peer_cleanup_state_after_sha256': observation[1][2][
+                                                   'peer_observed_state_after_sha256'],
                                                'peer_cleanup_operations': [
                                                numbers(item, 0x42005C)[0]
                                                for item in observation[1][0][2]
@@ -945,7 +1018,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                            **({'failure_code': code or 'peer_observation_missing'} if code or not observation else {})})
                             if not observation or code or run.returncode != 0:
                                 continue
-                            request_tree, response_tree = observation[0]
+                            request_tree, response_tree, state_evidence = observation[0]
                             operation_name = case['operation']
                             for cell in cells_by_case[case_id]:
                                 if _key(cell) in keys:
@@ -1022,14 +1095,15 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     event.update(request_delivery_state='response_received', transport_invocation_count=1)
                                 if cell['action'] == 'send' and len(recipe[0]) > 1:
                                     operations = [next(t['name'] for t in catalog['normative_targets'] if t['kind'] == 'enumeration_value' and t.get('wire_value') == f'{op:08X}' and any(p.endswith('ENUMERATION-OPERATION') for p in t.get('parent_element_ids', []))) for op in recipe[0]]
-                                    effects = (['created', 'activated', 'object_retrieved']
-                                               if placeholder_chain_recipe else
-                                               verify_lifecycle(recipe[0], response_tree))
                                     event.update(batch_operation_sequence=operations, batch_item_count=len(operations),
                                         peer_observed_operation_sequence=operations,
                                         peer_observed_response_count=len(operations),
                                         peer_observed_result_status_codes=numbers(response_tree, 0x42007F),
-                                        peer_observed_effects=effects)
+                                        peer_observed_effects=state_evidence['effects'],
+                                        peer_observed_state_before_sha256=state_evidence[
+                                            'peer_observed_state_before_sha256'],
+                                        peer_observed_state_after_sha256=state_evidence[
+                                            'peer_observed_state_after_sha256'])
                                 events.append(event)
                                 keys.add(_key(cell))
     return events, keys, checks
