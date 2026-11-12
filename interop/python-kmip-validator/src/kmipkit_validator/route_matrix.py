@@ -1054,6 +1054,13 @@ def _credential_type_value(target: dict) -> int:
     return 1
 
 
+def _credential_envelope_tree(credential_type: int) -> list:
+    return [0x420023, 1, [
+        [0x420024, 5, credential_type],
+        [0x420025, 1, [[0x42002A, 2, 0x13579]]],
+    ]]
+
+
 def _credential_cell(cell: dict, case: dict, target: dict) -> dict:
     """Roundtrip a raw-preserving Credential Type or generic Credential envelope."""
     from kmipkit import credentials
@@ -1076,10 +1083,7 @@ def _credential_cell(cell: dict, case: dict, target: dict) -> dict:
             result = owned.enter_context(credential.into_ttlv())
             result_item = owned.enter_context(PythonKmipDriver._item(0x420023, 'structure', result))
             tree = item_tree(result_item)
-            expected = [0x420023, 1, [
-                [0x420024, 5, credential_type],
-                [0x420025, 1, [[0x42002A, 2, 0x13579]]],
-            ]]
+            expected = _credential_envelope_tree(credential_type)
             if tree != expected:
                 raise ValueError('generic Credential envelope did not preserve its exact fields')
             observed = tree
