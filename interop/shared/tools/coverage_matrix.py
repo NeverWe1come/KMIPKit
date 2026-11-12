@@ -208,8 +208,10 @@ def _case_obligations(
     for target_id in plain_targets:
         if target_id not in item_targets and target_id not in scenario_step_targets:
             add(target_id)
-    # Cases authored before individual operation target IDs were attached can
-    # still be matched to the normative operation by its exact catalog name.
+    # Cases without an explicit multi-operation scenario can still be matched
+    # to the normative operation by its exact catalog name. Once a scenario
+    # lists its operations, that ordered list is the complete workflow; the
+    # case's legacy primary operation must not add an unrelated obligation.
     operation_id = operation_ids.get(_norm(case.get("operation", "")))
     explicit_operation_names = {
         operation_name for target_id in plain_targets
