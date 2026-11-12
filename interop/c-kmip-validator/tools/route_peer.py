@@ -33,6 +33,9 @@ from validate_route_evidence import _key
 
 TYPES = ('', 'Structure', 'Integer', 'LongInteger', 'BigInteger', 'Enumeration',
          'Boolean', 'TextString', 'ByteString', 'DateTime', 'Interval', 'DateTimeExtended')
+BATCH_ITEM_TAG = 0x42000F
+REQUEST_PAYLOAD_TAG = 0x420079
+UNIQUE_IDENTIFIER_TAG = 0x420094
 
 CERTIFICATE_ATTRIBUTE_FIELDS = (
     'Certificate Subject CN', 'Certificate Subject O', 'Certificate Subject OU',
@@ -430,15 +433,15 @@ def assert_placeholder_usage(node, case_id):
     if case_id != 'test-batch-create-activate-destroy':
         return
     batch_items = [child for child in node[2]
-                   if child[0] == 0x42000F and child[1] == 1]
+                   if child[0] == BATCH_ITEM_TAG and child[1] == 1]
     if len(batch_items) < 2:
         raise ValueError('fixture_id_placeholder_batch_shape_mismatch')
     for batch_item in batch_items[1:]:
         payloads = [child for child in batch_item[2]
-                    if child[0] == 0x420079 and child[1] == 1]
+                    if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
         if len(payloads) != 1:
             raise ValueError('fixture_id_placeholder_payload_mismatch')
-        if any(child[0] == 0x420094 for child in payloads[0][2]):
+        if any(child[0] == UNIQUE_IDENTIFIER_TAG for child in payloads[0][2]):
             raise ValueError('fixture_id_placeholder_explicit_target')
 
 
