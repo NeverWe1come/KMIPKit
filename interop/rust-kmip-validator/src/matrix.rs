@@ -649,6 +649,57 @@ fn transparent_key_material(format: u32) -> Result<Item> {
     }
 }
 
+fn key_material_item_for_target(target: &Json, default_format: u32) -> Result<(u32, Item)> {
+    use kmipkit::protocol::{KeyFormatType, KeyMaterial};
+
+    let format = key_material_format_for_target(target).unwrap_or(default_format);
+    let item = if matches!(format, 7..=13 | 20..=21) {
+        transparent_key_material(format)?
+    } else {
+        KeyMaterial::byte_string(format, vec![0x41; 32])
+            .map(KeyMaterial::into_item)
+            .map_err(|_| "raw Key Material fixture rejected")?
+    };
+    let parsed = KeyMaterial::try_from_item(item, KeyFormatType::from_raw(format))
+        .map_err(|_| "Key Material fixture rejected")?
+        .into_item();
+    Ok((format, parsed))
+}
+
+fn key_material_structure_item_for_target(target: &Json) -> Result<(u32, Item)> {
+    use kmipkit::protocol::{KeyFormatType, KeyMaterial};
+
+    let format = key_material_format_for_target(target).unwrap_or(7);
+    let transparent = transparent_key_material(format)?;
+    let structure = transparent.with_value(|value| match value {
+        ValueView::Structure(structure) => structure
+            .try_clone()
+            .map_err(|_| "Key Material structure fixture copy failed"),
+        _ => Err("transparent Key Material fixture is not a Structure"),
+    })?;
+    let item = KeyMaterial::structure(format, structure)
+        .map(KeyMaterial::into_item)
+        .map_err(|_| "Key Material structure fixture rejected")?;
+    let parsed = KeyMaterial::try_from_item(item, KeyFormatType::from_raw(format))
+        .map(KeyMaterial::into_item)
+        .map_err(|_| "Key Material structure fixture rejected")?;
+    Ok((format, parsed))
+}
+
+fn key_value_item_for_target(target: &Json) -> Result<Item> {
+    use kmipkit::protocol::{AttributeSet, KeyFormatType, KeyMaterial, KeyValue};
+
+    let (format, item) = key_material_item_for_target(target, 1)?;
+    let material = KeyMaterial::try_from_item(item, KeyFormatType::from_raw(format))
+        .map_err(|_| "Key Material fixture rejected")?;
+    let has_attributes = target["target_id"]
+        .as_str()
+        .is_some_and(|id| id.contains("KEY-VALUE-ATTRIBUTES"));
+    KeyValue::try_new(material, has_attributes.then(AttributeSet::new))
+        .map(KeyValue::into_item)
+        .map_err(|_| "Key Value fixture rejected")
+}
+
 fn key_block_for_target(target: &Json, secret_data: bool) -> Result<kmipkit::protocol::KeyBlock> {
     use kmipkit::protocol::{
         AttributeSet, EncryptionKeyInformation, KeyBlock, KeyBlockValue, KeyCompressionType,
@@ -1081,6 +1132,30 @@ fn metadata_expected_target(model: &Item, target: &Json, elements: &[Json]) -> R
 }
 
 fn sample_for_route(symbol: &str, target: &Json, elements: &[Json]) -> Result<Item> {
+    if [
+        "kmipkit_protocol::KeyValue::try_new",
+        "kmipkit_protocol::KeyValue::try_from_item",
+    ]
+    .contains(&symbol)
+    {
+        let model = key_value_item_for_target(target)?;
+        return metadata_expected_target(&model, target, elements);
+    }
+    if symbol == "kmipkit_protocol::KeyMaterial::byte_string" {
+        let (format, _) = key_material_item_for_target(target, 1)?;
+        let model = kmipkit::protocol::KeyMaterial::byte_string(format, vec![0x41; 32])
+            .map(kmipkit::protocol::KeyMaterial::into_item)
+            .map_err(|_| "byte-string Key Material fixture rejected")?;
+        return metadata_expected_target(&model, target, elements);
+    }
+    if symbol == "kmipkit_protocol::KeyMaterial::structure" {
+        let (_, model) = key_material_structure_item_for_target(target)?;
+        return metadata_expected_target(&model, target, elements);
+    }
+    if symbol == "kmipkit_protocol::KeyMaterial::try_from_item" {
+        let (_, model) = key_material_item_for_target(target, 1)?;
+        return metadata_expected_target(&model, target, elements);
+    }
     if symbol == "kmipkit_protocol::KeyBlock::try_from_item" {
         return key_block_fixture(target, elements).map(|(_, expected)| expected);
     }
@@ -1224,6 +1299,63 @@ fn invoke(
             let payload = unique_identifier_request_payload(symbol, identifier)?;
             request_payload_item(payload)
         })());
+    }
+    if symbol == "kmipkit_protocol::KeyValue::try_new" {
+        return Some(key_value_item_for_target(target).and_then(|model| {
+            crate::local_wire::roundtrip(&model)?;
+            metadata_expected_target(&model, target, elements)
+        }));
+    }
+    if symbol == "kmipkit_protocol::KeyValue::try_from_item" {
+        return Some(key_value_item_for_target(target).and_then(|item| {
+            let format = key_material_format_for_target(target).unwrap_or(1);
+            kmipkit::protocol::KeyValue::try_from_item(
+                item,
+                kmipkit::protocol::KeyFormatType::from_raw(format),
+            )
+            .map(kmipkit::protocol::KeyValue::into_item)
+            .map_err(|_| "Key Value parser rejected")
+            .and_then(|model| {
+                crate::local_wire::roundtrip(&model)?;
+                metadata_expected_target(&model, target, elements)
+            })
+        }));
+    }
+    if symbol == "kmipkit_protocol::KeyMaterial::byte_string" {
+        let format = key_material_format_for_target(target).unwrap_or(1);
+        return Some(
+            kmipkit::protocol::KeyMaterial::byte_string(format, vec![0x41; 32])
+                .map(kmipkit::protocol::KeyMaterial::into_item)
+                .map_err(|_| "byte-string Key Material constructor rejected")
+                .and_then(|model| {
+                    crate::local_wire::roundtrip(&model)?;
+                    metadata_expected_target(&model, target, elements)
+                }),
+        );
+    }
+    if symbol == "kmipkit_protocol::KeyMaterial::structure" {
+        return Some(
+            key_material_structure_item_for_target(target).and_then(|(_, model)| {
+                crate::local_wire::roundtrip(&model)?;
+                metadata_expected_target(&model, target, elements)
+            }),
+        );
+    }
+    if symbol == "kmipkit_protocol::KeyMaterial::try_from_item" {
+        return Some(
+            key_material_item_for_target(target, 1).and_then(|(format, item)| {
+                kmipkit::protocol::KeyMaterial::try_from_item(
+                    item,
+                    kmipkit::protocol::KeyFormatType::from_raw(format),
+                )
+                .map(kmipkit::protocol::KeyMaterial::into_item)
+                .map_err(|_| "Key Material parser rejected")
+                .and_then(|model| {
+                    crate::local_wire::roundtrip(&model)?;
+                    metadata_expected_target(&model, target, elements)
+                })
+            }),
+        );
     }
     if symbol == "kmipkit_protocol::ManagedObject::try_from_item" {
         let (object_type, object, _) = managed_object_fixture(target, elements).ok()?;
@@ -1611,6 +1743,7 @@ pub(crate) fn run(matrix: &Path, output: &Path) -> Result<bool> {
     let mut events = Vec::new();
     let mut versions = std::collections::BTreeSet::new();
     let mut pending = 0;
+    let mut pending_routes = std::collections::BTreeMap::<(String, String), usize>::new();
     for row in &rows {
         let target = catalog["normative_targets"]
             .as_array()
@@ -1646,9 +1779,15 @@ pub(crate) fn run(matrix: &Path, output: &Path) -> Result<bool> {
             events.push(event);
             continue;
         }
-        let Ok(sample) = sample_for_route(symbol, target, elements) else {
-            pending += 1;
-            continue;
+        let sample = match sample_for_route(symbol, target, elements) {
+            Ok(sample) => sample,
+            Err(error) => {
+                pending += 1;
+                *pending_routes
+                    .entry((symbol.to_owned(), error.to_owned()))
+                    .or_default() += 1;
+                continue;
+            }
         };
         let Some(result) = invoke(
             symbol,
@@ -1658,6 +1797,9 @@ pub(crate) fn run(matrix: &Path, output: &Path) -> Result<bool> {
             text(row, "protocol_version")?,
         ) else {
             pending += 1;
+            *pending_routes
+                .entry((symbol.to_owned(), "no invocation route".to_owned()))
+                .or_default() += 1;
             continue;
         };
         let result = result.and_then(|item| crate::local_wire::target_hash(&item, &sample));
@@ -1699,6 +1841,9 @@ pub(crate) fn run(matrix: &Path, output: &Path) -> Result<bool> {
     .map_err(|_| "matrix output unavailable")?;
     if pending > 0 {
         eprintln!("pending_recipe: {pending} matrix cells have no executable Rust recipe");
+        for ((symbol, reason), count) in pending_routes {
+            eprintln!("pending_recipe_detail: {count} {symbol}: {reason}");
+        }
     }
     Ok(success)
 }
@@ -1898,7 +2043,10 @@ mod tests {
                 assert!(fixture.is_ok(), "{symbol} {target_id}: {fixture:?}");
                 let fixture = fixture.unwrap();
                 let result = invoke(symbol, &fixture, target, elements, "2.1");
-                assert!(result.is_some(), "{symbol} {target_id}: route is not invoked");
+                assert!(
+                    result.is_some(),
+                    "{symbol} {target_id}: route is not invoked"
+                );
                 let result = result.unwrap();
                 assert!(result.is_ok(), "{symbol} {target_id}: {result:?}");
                 assert!(crate::local_wire::target_hash(&result.unwrap(), &fixture).is_ok());
