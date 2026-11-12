@@ -148,8 +148,8 @@ def credential_function_target_ids(function_id, targets):
     return sorted(selected)
 
 
-def secret_data_parser_target_ids(targets, names, operation_id, object_item, object_type_targets):
-    """Return the Secret Data parser subtree without Key Block-inapplicable fields."""
+def secret_data_model_target_ids(targets, names, operation_id, object_item, object_type_targets):
+    """Return the Secret Data model subtree without Key Block-inapplicable fields."""
     candidates = target_ids(targets, names, all_objects=object_item, operation_id=operation_id,
         exclude_target_ids=object_type_targets if object_item else ())
     return sorted(set(candidates) - _SECRET_DATA_INAPPLICABLE_KEY_BLOCK_FIELDS)
@@ -268,9 +268,9 @@ def model_inventory(root, commit, source, api, targets):
                 'Private Key', 'Public Key', 'Secret Data', 'Split Key', 'Symmetric Key'}
             exact_targets = [target['target_id'] for target in targets
                 if target['kind'] == 'object_structure' and target['name'] in root_object_names]
-        if owner == 'SecretData' and method == 'try_from_item':
-            # OASIS KMIP 2.1 §3.1 Table 11 excludes these Key Block fields for Secret Data.
-            exact_targets = secret_data_parser_target_ids(
+        if owner == 'SecretData' and method in {'try_from_item', 'try_new'}:
+            # OASIS KMIP 2.0/2.1 §3.1 Table 11 excludes these Key Block fields for Secret Data.
+            exact_targets = secret_data_model_target_ids(
                 targets, names, operation_id, is_object_item, object_type_targets)
         credential_targets = credential_function_target_ids(
             f'{_snake_case(owner)}_{method}', targets) \

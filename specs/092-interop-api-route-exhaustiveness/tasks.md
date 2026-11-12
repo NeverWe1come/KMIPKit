@@ -28,3 +28,10 @@ T006 and T007 remain open until each separate language validator consumes the
 generated matrix, invokes every named public route, exchanges requests and
 responses with a controlled peer, and emits validated per-cell evidence. A
 passing shared-contract job does not satisfy those language-level requirements.
+
+## Development evidence: Secret Data constructor applicability
+
+- Red commit `f7cb47c47`: `python3 -m unittest interop.shared.tests.test_route_capabilities.RouteCapabilitiesTests.test_secret_data_constructor_does_not_claim_inapplicable_key_block_crypto_fields -v` failed because the route included Cryptographic Algorithm and Cryptographic Length.
+- Green commit `81a51297a`: the source-backed target mapping now applies the KMIP 2.0/2.1 §3.1 Table 11 exclusions to both `SecretData::try_new` and `SecretData::try_from_item`; focused route tests and `route_capabilities.py --check` passed.
+- Refactor/documentation commit: records the applicability rule in requirement traceability and preserves the exact Red/Green evidence here.
+- Verification: `python3 -m unittest discover -s interop/shared/tests -v` passed all 161 tests on 2026-11-12.
