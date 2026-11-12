@@ -1782,6 +1782,15 @@ fn sample_for_route_at_version(
         return metadata_expected_target(&model, target, elements);
     }
     if [
+        "kmipkit_protocol::TransparentRsaPrivateKey::try_from_components",
+        "kmipkit_protocol::TransparentRsaPrivateKey::try_from_item",
+    ]
+    .contains(&symbol)
+    {
+        let (_, model) = key_material_item_for_target(target, 10)?;
+        return metadata_expected_target(&model, target, elements);
+    }
+    if [
         "kmipkit_protocol::KeyValue::try_new",
         "kmipkit_protocol::KeyValue::try_from_item",
     ]
@@ -2916,6 +2925,40 @@ fn invoke(
                 metadata_expected_target(&model, target, elements)
             })
         }));
+    }
+    if [
+        "kmipkit_protocol::TransparentRsaPrivateKey::try_from_components",
+        "kmipkit_protocol::TransparentRsaPrivateKey::try_from_item",
+    ]
+    .contains(&symbol)
+    {
+        use kmipkit::protocol::TransparentRsaPrivateKey;
+
+        return Some((|| {
+            let components = || vec![0x31, 0x41];
+            let result =
+                if symbol == "kmipkit_protocol::TransparentRsaPrivateKey::try_from_components" {
+                    TransparentRsaPrivateKey::try_from_components(
+                        components(),
+                        Some(components()),
+                        Some(components()),
+                        Some(components()),
+                        Some(components()),
+                        Some(components()),
+                        Some(components()),
+                        Some(components()),
+                    )
+                    .map(TransparentRsaPrivateKey::into_item)
+                    .map_err(|_| "transparent RSA private key fixture rejected")?
+                } else {
+                    let (_, item) = key_material_item_for_target(target, 10)?;
+                    TransparentRsaPrivateKey::try_from_item(item)
+                        .map(TransparentRsaPrivateKey::into_item)
+                        .map_err(|_| "transparent RSA private key parser rejected")?
+                };
+            crate::local_wire::roundtrip(&result)?;
+            metadata_expected_target(&result, target, elements)
+        })());
     }
     if symbol == "kmipkit_protocol::KeyMaterial::byte_string" {
         let format = key_material_format_for_target(target).unwrap_or(1);
@@ -5467,7 +5510,9 @@ mod tests {
                 .unwrap();
             for symbol in symbols {
                 let expected = sample_for_route_at_version(symbol, target, elements, "2.1")
-                    .unwrap_or_else(|error| panic!("{symbol} sample failed for {target_id}: {error}"));
+                    .unwrap_or_else(|error| {
+                        panic!("{symbol} sample failed for {target_id}: {error}")
+                    });
                 let result = invoke(symbol, &expected, target, elements, "2.1")
                     .unwrap_or_else(|| panic!("{symbol} route missing for {target_id}"))
                     .unwrap_or_else(|error| panic!("{symbol} rejected {target_id}: {error}"));
