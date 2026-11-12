@@ -273,6 +273,143 @@ fn execute_simple_request(
     execute_fluent_item(client, request, limits, &options, None, out_response)
 }
 
+fn fluent_get_attributes_request(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    attribute_references: *const crate::kmipkit_attribute_reference_v1_t,
+    attribute_reference_count: u64,
+) -> FfiResult<ClientRequest> {
+    let unique_identifier = super::super::copy_optional_text_identifier(unique_identifier)?;
+    let source = input_array(
+        attribute_references,
+        attribute_reference_count,
+        MAX_GET_ATTRIBUTES_REFERENCES,
+    )?;
+    let mut references = Vec::new();
+    references
+        .try_reserve_exact(source.len())
+        .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    for reference in source {
+        references.push(super::super::copy_attribute_reference(ptr::from_ref(
+            reference,
+        ))?);
+    }
+    let request = GetAttributesRequest::try_new(unique_identifier, references)
+        .map_err(|_| ERROR_INVALID_INPUT)?;
+    Ok(ClientRequest::get_attributes(request))
+}
+
+fn fluent_get_attribute_list_request(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+) -> FfiResult<ClientRequest> {
+    let unique_identifier = super::super::copy_optional_text_identifier(unique_identifier)?;
+    Ok(ClientRequest::get_attribute_list(
+        GetAttributeListRequest::new(unique_identifier),
+    ))
+}
+
+/// Executes one typed Get Attributes request with ordered references.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_get_attributes_v1(
+    client: *mut kmipkit_client_t,
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    attribute_references: *const crate::kmipkit_attribute_reference_v1_t,
+    attribute_reference_count: u64,
+    limits: *mut kmipkit_codec_limits_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let request = match fluent_get_attributes_request(
+            unique_identifier,
+            attribute_references,
+            attribute_reference_count,
+        ) {
+            Ok(request) => request,
+            Err(status) => return record_ffi_error(status),
+        };
+        execute_simple_request(client, request, limits, None, out_response)
+    })
+}
+
+/// Executes Get Attributes with explicit exchange-local timeout options.
+///
+/// # Safety
+///
+/// `options` must point to a readable, aligned v1 options record. All input
+/// spans and arrays must remain readable for this call, and `out_response`
+/// must be a writable aligned output slot that does not overlap the inputs.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_client_get_attributes_with_options_v1(
+    client: *mut kmipkit_client_t,
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    attribute_references: *const crate::kmipkit_attribute_reference_v1_t,
+    attribute_reference_count: u64,
+    limits: *mut kmipkit_codec_limits_t,
+    options: *const kmipkit_request_options_v1_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if options.is_null() || !options.is_aligned() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        // SAFETY: the aligned, non-null pointer is borrowed for this call.
+        let options = unsafe { &*options };
+        let request = match fluent_get_attributes_request(
+            unique_identifier,
+            attribute_references,
+            attribute_reference_count,
+        ) {
+            Ok(request) => request,
+            Err(status) => return record_ffi_error(status),
+        };
+        execute_simple_request(client, request, limits, Some(options), out_response)
+    })
+}
+
+/// Executes one typed Get Attribute List request, preserving an omitted identifier.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_get_attribute_list_v1(
+    client: *mut kmipkit_client_t,
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    limits: *mut kmipkit_codec_limits_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let request = match fluent_get_attribute_list_request(unique_identifier) {
+            Ok(request) => request,
+            Err(status) => return record_ffi_error(status),
+        };
+        execute_simple_request(client, request, limits, None, out_response)
+    })
+}
+
+/// Executes Get Attribute List with explicit exchange-local timeout options.
+///
+/// # Safety
+///
+/// `options` must point to a readable, aligned v1 options record. `out_response`
+/// must be a writable aligned output slot that does not overlap any input.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_client_get_attribute_list_with_options_v1(
+    client: *mut kmipkit_client_t,
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    limits: *mut kmipkit_codec_limits_t,
+    options: *const kmipkit_request_options_v1_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if options.is_null() || !options.is_aligned() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        // SAFETY: the aligned, non-null pointer is borrowed for this call.
+        let options = unsafe { &*options };
+        let request = match fluent_get_attribute_list_request(unique_identifier) {
+            Ok(request) => request,
+            Err(status) => return record_ffi_error(status),
+        };
+        execute_simple_request(client, request, limits, Some(options), out_response)
+    })
+}
+
 /// Executes one semantic Create Symmetric Key request.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_create_symmetric_key_v1(
