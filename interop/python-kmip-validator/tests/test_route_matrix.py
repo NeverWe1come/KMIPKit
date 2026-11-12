@@ -789,6 +789,20 @@ class RouteMatrixTests(unittest.TestCase):
                 self.assertIn('request_tree_sha256', result)
                 self.assertEqual(result['request_tree_sha256'], result['response_tree_sha256'])
 
+    def test_key_wrapping_data_routes_construct_the_complete_nested_value(self):
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] ==
+                    'test-norm-object-structure-object-structure-key-wrapping-data')
+        target = next(target for target in self.catalog['normative_targets']
+                      if target['target_id'] == 'KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-WRAPPING-DATA')
+        for symbol in ('kmipkit.managed_objects.KeyWrappingData.from_fields',
+                       'kmipkit.managed_objects.KeyWrappingData.from_item'):
+            with self.subTest(symbol=symbol):
+                cell = {'action': 'construct', 'public_api_symbol': symbol, 'transport': None}
+                result = self.runner.execute_cell(cell, case, target)
+                self.assertIn('request_tree_sha256', result)
+                self.assertEqual(result['request_tree_sha256'], result['response_tree_sha256'])
+
     def test_query_routes_record_the_peer_rejection_without_calling_it_success(self):
         catalog = copy.deepcopy(self.catalog)
         catalog['test_cases'] = [case for case in self.catalog['test_cases']
