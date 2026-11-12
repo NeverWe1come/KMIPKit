@@ -867,6 +867,23 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(events)
         self.assertTrue(all(event['status'] == 'passed' for event in events))
 
+    # OASIS KMIP 2.0/2.1 §6.1.20 defines the Get Attributes response payload.
+    def test_get_attributes_response_accessor_preserves_identifier_and_attributes(self):
+        symbol = 'kmipkit.client.BatchItemResult.get_attributes_response'
+        cases = {case['case_id']: case for case in self.catalog['test_cases']}
+        targets = {target['target_id']: target for target in self.catalog['normative_targets']}
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
+                 if cell['public_api_symbol'] == symbol]
+        outcomes = [self.runner._execute_matrix_cell(cell, cases[cell['case_id']],
+                                                     targets[cell['target_id']])
+                    for cell in cells]
+
+        gaps = [value for kind, value in outcomes if kind == 'gap']
+        events = [value for kind, value in outcomes if kind == 'event']
+        self.assertEqual([], gaps)
+        self.assertTrue(events)
+        self.assertTrue(all(event['status'] == 'passed' for event in events))
+
     def test_query_routes_record_the_peer_rejection_without_calling_it_success(self):
         catalog = copy.deepcopy(self.catalog)
         catalog['test_cases'] = [case for case in self.catalog['test_cases']
