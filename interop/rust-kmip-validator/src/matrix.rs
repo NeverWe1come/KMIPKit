@@ -2625,6 +2625,20 @@ fn invoke(
             metadata_expected_target(&request_payload_item(payload)?, target, elements)
         })());
     }
+    if symbol == "kmipkit_protocol::LocateRequest::with_object_group_member" {
+        return Some((|| {
+            let raw = sample.with_value(|value| match value {
+                ValueView::Enumeration(value) => Ok(*value),
+                _ => Err("Object Group Member fixture is not an Enumeration"),
+            })?;
+            let payload =
+                kmipkit::protocol::LocateRequest::new(kmipkit::protocol::AttributeSet::new())
+                    .with_object_group_member(kmipkit::protocol::ObjectGroupMember::from_raw(raw))
+                    .to_ttlv_payload()
+                    .map_err(|_| "Locate request fixture rejected")?;
+            metadata_expected_target(&request_payload_item(payload)?, target, elements)
+        })());
+    }
     if KEY_WRAPPING_CONSTRUCTOR_ROUTES.contains(&symbol) {
         return Some(
             key_wrapping_metadata_model(symbol, target).and_then(|model| {
