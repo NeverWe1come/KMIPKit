@@ -23,6 +23,20 @@ class RouteMatrixTests(unittest.TestCase):
         self.manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
         self.artifact = {'library_commit': self.manifest['library_commit'], 'artifact_sha256': 'a' * 64}
 
+    def _assert_routes_execute(self, symbols):
+        cases = {case['case_id']: case for case in self.catalog['test_cases']}
+        targets = {target['target_id']: target for target in self.catalog['normative_targets']}
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
+                 if cell['public_api_symbol'] in symbols]
+        outcomes = [self.runner._execute_matrix_cell(cell, cases[cell['case_id']],
+                                                     targets[cell['target_id']])
+                    for cell in cells]
+        gaps = [value for kind, value in outcomes if kind == 'gap']
+        events = [value for kind, value in outcomes if kind == 'event']
+        self.assertEqual([], gaps)
+        self.assertTrue(events)
+        self.assertTrue(all(event['status'] == 'passed' for event in events))
+
     def test_tag_decode_rejection_code_preserves_reserved_and_unused_classes(self):
         self.assertEqual(
             'tag_reserved', self.runner._tag_decode_rejection_code('reserved')
@@ -929,20 +943,7 @@ class RouteMatrixTests(unittest.TestCase):
 
     # OASIS KMIP 2.0/2.1 §6.1.20 defines the Get Attributes response payload.
     def test_get_attributes_response_accessor_preserves_identifier_and_attributes(self):
-        symbol = 'kmipkit.client.BatchItemResult.get_attributes_response'
-        cases = {case['case_id']: case for case in self.catalog['test_cases']}
-        targets = {target['target_id']: target for target in self.catalog['normative_targets']}
-        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
-                 if cell['public_api_symbol'] == symbol]
-        outcomes = [self.runner._execute_matrix_cell(cell, cases[cell['case_id']],
-                                                     targets[cell['target_id']])
-                    for cell in cells]
-
-        gaps = [value for kind, value in outcomes if kind == 'gap']
-        events = [value for kind, value in outcomes if kind == 'event']
-        self.assertEqual([], gaps)
-        self.assertTrue(events)
-        self.assertTrue(all(event['status'] == 'passed' for event in events))
+        self._assert_routes_execute({'kmipkit.client.BatchItemResult.get_attributes_response'})
 
     # OASIS KMIP 2.0/2.1 §6.1 operation response tables define these typed response fields.
     def test_batch_item_result_typed_response_accessors_execute(self):
@@ -952,19 +953,7 @@ class RouteMatrixTests(unittest.TestCase):
                   and route['public_api_symbol'].startswith('kmipkit.client.BatchItemResult.')
                   and (route['public_api_symbol'].rsplit('.', 1)[1].endswith('_response')
                        or route['public_api_symbol'].rsplit('.', 1)[1] in suffixes)}
-        cases = {case['case_id']: case for case in self.catalog['test_cases']}
-        targets = {target['target_id']: target for target in self.catalog['normative_targets']}
-        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
-                 if cell['public_api_symbol'] in symbols]
-        outcomes = [self.runner._execute_matrix_cell(cell, cases[cell['case_id']],
-                                                     targets[cell['target_id']])
-                    for cell in cells]
-
-        gaps = [value for kind, value in outcomes if kind == 'gap']
-        events = [value for kind, value in outcomes if kind == 'event']
-        self.assertEqual([], gaps)
-        self.assertTrue(events)
-        self.assertTrue(all(event['status'] == 'passed' for event in events))
+        self._assert_routes_execute(symbols)
 
     def test_typed_response_ttlv_accessors_preserve_complete_structures(self):
         suffixes = {'.response_ttlv', '.response_payload_ttlv'}
@@ -974,38 +963,14 @@ class RouteMatrixTests(unittest.TestCase):
                    and any(route['public_api_symbol'].endswith(suffix) for suffix in suffixes)
                    and not route['public_api_symbol'].startswith(
                        'kmipkit.client.AsyncOperationOutcome.')}
-        cases = {case['case_id']: case for case in self.catalog['test_cases']}
-        targets = {target['target_id']: target for target in self.catalog['normative_targets']}
-        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
-                 if cell['public_api_symbol'] in symbols]
-        outcomes = [self.runner._execute_matrix_cell(cell, cases[cell['case_id']],
-                                                     targets[cell['target_id']])
-                    for cell in cells]
-
-        gaps = [value for kind, value in outcomes if kind == 'gap']
-        events = [value for kind, value in outcomes if kind == 'event']
-        self.assertEqual([], gaps)
-        self.assertTrue(events)
-        self.assertTrue(all(event['status'] == 'passed' for event in events))
+        self._assert_routes_execute(symbols)
 
     def test_query_response_field_accessors_preserve_wire_order(self):
         symbols = {
             'kmipkit.client.QueryResponse.field_at',
             'kmipkit.client.QueryResponse.field_count',
         }
-        cases = {case['case_id']: case for case in self.catalog['test_cases']}
-        targets = {target['target_id']: target for target in self.catalog['normative_targets']}
-        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
-                 if cell['public_api_symbol'] in symbols]
-        outcomes = [self.runner._execute_matrix_cell(cell, cases[cell['case_id']],
-                                                     targets[cell['target_id']])
-                    for cell in cells]
-
-        gaps = [value for kind, value in outcomes if kind == 'gap']
-        events = [value for kind, value in outcomes if kind == 'event']
-        self.assertEqual([], gaps)
-        self.assertTrue(events)
-        self.assertTrue(all(event['status'] == 'passed' for event in events))
+        self._assert_routes_execute(symbols)
 
     def test_response_identifier_and_pkcs11_fields_preserve_values(self):
         symbols = {
@@ -1018,19 +983,7 @@ class RouteMatrixTests(unittest.TestCase):
             'kmipkit.client.Pkcs11Response.output_parameters_ttlv',
             'kmipkit.client.Pkcs11Response.return_code_ttlv',
         }
-        cases = {case['case_id']: case for case in self.catalog['test_cases']}
-        targets = {target['target_id']: target for target in self.catalog['normative_targets']}
-        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
-                 if cell['public_api_symbol'] in symbols]
-        outcomes = [self.runner._execute_matrix_cell(cell, cases[cell['case_id']],
-                                                     targets[cell['target_id']])
-                    for cell in cells]
-
-        gaps = [value for kind, value in outcomes if kind == 'gap']
-        events = [value for kind, value in outcomes if kind == 'event']
-        self.assertEqual([], gaps)
-        self.assertTrue(events)
-        self.assertTrue(all(event['status'] == 'passed' for event in events))
+        self._assert_routes_execute(symbols)
 
     def test_ticket_ttlv_and_get_attribute_list_response_routes_execute(self):
         symbols = {
@@ -1038,35 +991,10 @@ class RouteMatrixTests(unittest.TestCase):
             'kmipkit.client.GetAttributeListResponse',
             'kmipkit.client.LoginResponse.ticket_ttlv',
         }
-        cases = {case['case_id']: case for case in self.catalog['test_cases']}
-        targets = {target['target_id']: target for target in self.catalog['normative_targets']}
-        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
-                 if cell['public_api_symbol'] in symbols]
-        outcomes = [self.runner._execute_matrix_cell(cell, cases[cell['case_id']],
-                                                     targets[cell['target_id']])
-                    for cell in cells]
-
-        gaps = [value for kind, value in outcomes if kind == 'gap']
-        events = [value for kind, value in outcomes if kind == 'event']
-        self.assertEqual([], gaps)
-        self.assertTrue(events)
-        self.assertTrue(all(event['status'] == 'passed' for event in events))
+        self._assert_routes_execute(symbols)
 
     def test_batch_error_continuation_builder_route_executes(self):
-        symbol = 'kmipkit.client.Batch.add_error_continuation_value'
-        cases = {case['case_id']: case for case in self.catalog['test_cases']}
-        targets = {target['target_id']: target for target in self.catalog['normative_targets']}
-        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
-                 if cell['public_api_symbol'] == symbol]
-        outcomes = [self.runner._execute_matrix_cell(cell, cases[cell['case_id']],
-                                                     targets[cell['target_id']])
-                    for cell in cells]
-
-        gaps = [value for kind, value in outcomes if kind == 'gap']
-        events = [value for kind, value in outcomes if kind == 'event']
-        self.assertEqual([], gaps)
-        self.assertTrue(events)
-        self.assertTrue(all(event['status'] == 'passed' for event in events))
+        self._assert_routes_execute({'kmipkit.client.Batch.add_error_continuation_value'})
 
     def test_async_outcome_response_accessors_execute_against_controlled_peer(self):
         symbols = {
@@ -1076,19 +1004,7 @@ class RouteMatrixTests(unittest.TestCase):
             'kmipkit.client.AsyncOperationOutcome.query_async_requests_response',
             'kmipkit.client.AsyncOperationOutcome.response_payload_ttlv',
         }
-        cases = {case['case_id']: case for case in self.catalog['test_cases']}
-        targets = {target['target_id']: target for target in self.catalog['normative_targets']}
-        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
-                 if cell['public_api_symbol'] in symbols]
-        outcomes = [self.runner._execute_matrix_cell(cell, cases[cell['case_id']],
-                                                     targets[cell['target_id']])
-                    for cell in cells]
-
-        gaps = [value for kind, value in outcomes if kind == 'gap']
-        events = [value for kind, value in outcomes if kind == 'event']
-        self.assertEqual([], gaps)
-        self.assertTrue(events)
-        self.assertTrue(all(event['status'] == 'passed' for event in events))
+        self._assert_routes_execute(symbols)
 
     def test_query_routes_record_the_peer_rejection_without_calling_it_success(self):
         catalog = copy.deepcopy(self.catalog)
