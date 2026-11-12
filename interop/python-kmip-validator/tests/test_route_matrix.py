@@ -1393,18 +1393,11 @@ class RouteMatrixTests(unittest.TestCase):
             'kmipkit.ttlv.ttlv_structure_create',
             'kmipkit.ttlv.ttlv_structure_with_item',
         }
-        target_names = {
-            'Authenticated Encryption Additional Data', 'Authenticated Encryption Tag',
-            'Correlation Value', 'Data', 'Data Length', 'Final Indicator',
-            'Init Indicator', 'Interop Function', 'Interop identifier', 'Log Message',
-            'MAC Data', 'Signature Data',
-        }
         targets = {target['target_id']: target for target in self.catalog['normative_targets']}
         cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
                  if cell['public_api_symbol'] in symbols
-                 and targets[cell['target_id']].get('kind') == 'operation_structure'
-                 and targets[cell['target_id']].get('name') in target_names]
-        self.assertEqual(48, len(cells))
+                 and targets[cell['target_id']].get('kind') == 'operation_structure']
+        self.assertEqual(152, len(cells))
         cases = {case['case_id']: case for case in self.catalog['test_cases']}
         for cell in cells:
             with self.subTest(target=cell['target_id'], symbol=cell['public_api_symbol'],
