@@ -2359,6 +2359,7 @@ mod tests {
         for symbol in [
             "kmipkit_protocol::EncryptionKeyInformation::try_new",
             "kmipkit_protocol::EncryptionKeyInformation::with_cryptographic_parameters",
+            "kmipkit_protocol::EncryptionKeyInformation::with_typed_cryptographic_parameters",
             "kmipkit_protocol::KeyWrappingData::try_new",
             "kmipkit_protocol::KeyWrappingData::with_encoding_option",
             "kmipkit_protocol::KeyWrappingData::with_encryption_key_information",
@@ -2367,6 +2368,7 @@ mod tests {
             "kmipkit_protocol::KeyWrappingData::with_mac_signature_key_information",
             "kmipkit_protocol::MacSignatureKeyInformation::try_new",
             "kmipkit_protocol::MacSignatureKeyInformation::with_cryptographic_parameters",
+            "kmipkit_protocol::MacSignatureKeyInformation::with_typed_cryptographic_parameters",
         ] {
             let route = manifest["routes"]
                 .as_array()
