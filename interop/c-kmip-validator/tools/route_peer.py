@@ -36,6 +36,8 @@ TYPES = ('', 'Structure', 'Integer', 'LongInteger', 'BigInteger', 'Enumeration',
 BATCH_ITEM_TAG = 0x42000F
 REQUEST_PAYLOAD_TAG = 0x420079
 UNIQUE_IDENTIFIER_TAG = 0x420094
+ENUMERATION_TTLV_TYPE = 5
+ID_PLACEHOLDER_ENUMERATION = 1
 
 CERTIFICATE_ATTRIBUTE_FIELDS = (
     'Certificate Subject CN', 'Certificate Subject O', 'Certificate Subject OU',
@@ -450,11 +452,14 @@ def assert_placeholder_usage(node, case_id):
                        if child[0] == UNIQUE_IDENTIFIER_TAG]
         if len(identifiers) > 1:
             raise ValueError('fixture_id_placeholder_identifier_mismatch')
-        if identifiers:
-            identifier = identifiers[0]
-            if (identifier[1] != 5 or len(identifier[2]) != 4 or
-                    int.from_bytes(identifier[2], 'big') != 1):
-                raise ValueError('fixture_id_placeholder_identifier_mismatch')
+        if identifiers and not is_id_placeholder_identifier(identifiers[0]):
+            raise ValueError('fixture_id_placeholder_identifier_mismatch')
+
+
+def is_id_placeholder_identifier(node):
+    """Check the TTLV type and enumeration value for ID Placeholder."""
+    return (node[1] == ENUMERATION_TTLV_TYPE and len(node[2]) == 4 and
+            int.from_bytes(node[2], 'big') == ID_PLACEHOLDER_ENUMERATION)
 
 
 def fixture_wire(node):
