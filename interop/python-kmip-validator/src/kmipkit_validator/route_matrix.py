@@ -400,9 +400,8 @@ def _operation_structure_ttlv_cell(cell: dict, case: dict, target: dict,
         'Date Time Extended': 1,
         'Interval': 1,
     }
-    if type_name not in neutral_values:
+    if type_name != 'Structure' and type_name not in neutral_values:
         raise RecipePending
-    value = neutral_values[type_name]
     kind_name = _TTLV_TYPE_KINDS.get(type_name)
     if kind_name is None:
         raise RecipePending
@@ -414,6 +413,8 @@ def _operation_structure_ttlv_cell(cell: dict, case: dict, target: dict,
                 if ttlv.ttlv_structure_view_item_count(empty_view) != 0:
                     raise ValueError('new generic Structure unexpectedly contains children')
         limits = owned.enter_context(ttlv.codec_limits_defaults())
+        value = (owned.enter_context(ttlv.ttlv_structure_create()) if type_name == 'Structure'
+                 else neutral_values[type_name])
         child = owned.enter_context(PythonKmipDriver._item(tag, kind_name, value))
         expected_child = item_tree(child)
         populated = owned.enter_context(ttlv.ttlv_structure_with_item(structure, child, limits))
@@ -427,6 +428,11 @@ def _operation_structure_ttlv_cell(cell: dict, case: dict, target: dict,
                 with ttlv.ttlv_item_view_value(child_view) as observed_value:
                     if observed_kind in (4, 7, 8):
                         decoded_value = ttlv.ttlv_value_view_bytes(observed_value).hex()
+                    elif observed_kind == 1:
+                        with ttlv.ttlv_value_view_structure(observed_value) as nested_view:
+                            if ttlv.ttlv_structure_view_item_count(nested_view) != 0:
+                                raise ValueError('generic nested Structure unexpectedly has children')
+                            decoded_value = []
                     else:
                         getter = {2: 'integer', 3: 'long_integer', 5: 'enumeration',
                                   6: 'boolean', 9: 'date_time', 10: 'interval',
