@@ -69542,7 +69542,7 @@
       "category": "batch_workflows",
       "operation": "Create",
       "oasis_section": "§5.1",
-      "description": "Single-message batch workflow: Create -> Activate (IDPlaceholder) -> GetAttributes -> Destroy",
+      "description": "Single-message batch workflow: Create -> Activate -> GetAttributes -> Revoke (Cessation of Operation) -> Destroy",
       "requires": {
         "operation": "Create",
         "workflow_type": "batch_id_placeholder",
@@ -69552,12 +69552,14 @@
             "KMIPKIT-ELEM-OP-C2S-CREATE",
             "KMIPKIT-ELEM-OP-C2S-ACTIVATE",
             "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST",
+            "KMIPKIT-ELEM-OP-C2S-REVOKE",
             "KMIPKIT-ELEM-OP-C2S-DESTROY"
           ],
           "operations": [
             "Create",
             "Activate",
             "Get Attribute List",
+            "Revoke",
             "Destroy"
           ],
           "protocol_versions": [
@@ -69569,14 +69571,17 @@
               "Create",
               "Activate",
               "Get Attribute List",
+              "Revoke",
               "Destroy"
-            ]
+            ],
+            "revocation_reason_code": "Cessation of Operation"
           },
           "expected": {
             "operation_order": [
               "Create",
               "Activate",
               "Get Attribute List",
+              "Revoke",
               "Destroy"
             ]
           },
@@ -69586,6 +69591,7 @@
             "construct_ordered_batch_items",
             "execute_single_batch_request",
             "verify_each_operation_response",
+            "revoke_active_object_before_destroy",
             "cleanup_created_object"
           ],
           "assertions": [
@@ -69608,6 +69614,10 @@
             },
             {
               "document": "OASIS KMIP 2.0 Specification",
+              "section": "6.1.40"
+            },
+            {
+              "document": "OASIS KMIP 2.0 Specification",
               "section": "6.1.15"
             },
             {
@@ -69641,6 +69651,10 @@
             {
               "document": "OASIS KMIP 2.0 Specification",
               "section": "9.8"
+            },
+            {
+              "document": "OASIS KMIP 2.0 Specification",
+              "section": "4.50"
             },
             {
               "document": "OASIS KMIP 2.1 Specification",
@@ -69656,6 +69670,10 @@
             },
             {
               "document": "OASIS KMIP 2.1 Specification",
+              "section": "6.1.44"
+            },
+            {
+              "document": "OASIS KMIP 2.1 Specification",
               "section": "6.1.15"
             },
             {
@@ -69689,6 +69707,10 @@
             {
               "document": "OASIS KMIP 2.1 Specification",
               "section": "9.8"
+            },
+            {
+              "document": "OASIS KMIP 2.1 Specification",
+              "section": "4.57"
             }
           ]
         }
@@ -69723,6 +69745,10 @@
         },
         {
           "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.40"
+        },
+        {
+          "document": "OASIS KMIP 2.0 Specification",
           "section": "6.1.15"
         },
         {
@@ -69756,6 +69782,10 @@
         {
           "document": "OASIS KMIP 2.0 Specification",
           "section": "9.8"
+        },
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.50"
         },
         {
           "document": "OASIS KMIP 2.1 Specification",
@@ -69771,6 +69801,10 @@
         },
         {
           "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.44"
+        },
+        {
+          "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.15"
         },
         {
@@ -69804,6 +69838,10 @@
         {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "9.8"
+        },
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4.57"
         }
       ],
       "execution": {
@@ -69817,6 +69855,7 @@
           "construct_ordered_batch_items",
           "execute_single_batch_request",
           "verify_each_operation_response",
+          "revoke_active_object_before_destroy",
           "cleanup_created_object"
         ],
         "assertions": [
@@ -69833,7 +69872,7 @@
       "category": "batch_workflows",
       "operation": "Create",
       "oasis_section": "§5.1",
-      "description": "Single-message batch workflow: Register -> Activate -> Encrypt -> Decrypt -> Destroy",
+      "description": "Single-message batch workflow: Register -> Activate -> Encrypt -> Decrypt -> Revoke (Cessation of Operation) -> Destroy",
       "requires": {
         "operation": "Create",
         "workflow_type": "batch_id_placeholder",
@@ -69844,6 +69883,7 @@
             "KMIPKIT-ELEM-OP-C2S-ACTIVATE",
             "KMIPKIT-ELEM-OP-C2S-ENCRYPT",
             "KMIPKIT-ELEM-OP-C2S-DECRYPT",
+            "KMIPKIT-ELEM-OP-C2S-REVOKE",
             "KMIPKIT-ELEM-OP-C2S-DESTROY"
           ],
           "operations": [
@@ -69851,6 +69891,7 @@
             "Activate",
             "Encrypt",
             "Decrypt",
+            "Revoke",
             "Destroy"
           ],
           "protocol_versions": [
@@ -69863,8 +69904,10 @@
               "Activate",
               "Encrypt",
               "Decrypt",
+              "Revoke",
               "Destroy"
-            ]
+            ],
+            "revocation_reason_code": "Cessation of Operation"
           },
           "expected": {
             "operation_order": [
@@ -69872,6 +69915,7 @@
               "Activate",
               "Encrypt",
               "Decrypt",
+              "Revoke",
               "Destroy"
             ]
           },
@@ -69881,6 +69925,7 @@
             "construct_ordered_batch_items",
             "execute_single_batch_request",
             "verify_each_operation_response",
+            "revoke_active_object_before_destroy",
             "cleanup_registered_object"
           ],
           "assertions": [
@@ -69907,6 +69952,10 @@
             },
             {
               "document": "OASIS KMIP 2.0 Specification",
+              "section": "6.1.40"
+            },
+            {
+              "document": "OASIS KMIP 2.0 Specification",
               "section": "6.1.15"
             },
             {
@@ -69940,6 +69989,10 @@
             {
               "document": "OASIS KMIP 2.0 Specification",
               "section": "9.8"
+            },
+            {
+              "document": "OASIS KMIP 2.0 Specification",
+              "section": "4.50"
             },
             {
               "document": "OASIS KMIP 2.1 Specification",
@@ -69959,6 +70012,10 @@
             },
             {
               "document": "OASIS KMIP 2.1 Specification",
+              "section": "6.1.44"
+            },
+            {
+              "document": "OASIS KMIP 2.1 Specification",
               "section": "6.1.15"
             },
             {
@@ -69992,6 +70049,10 @@
             {
               "document": "OASIS KMIP 2.1 Specification",
               "section": "9.8"
+            },
+            {
+              "document": "OASIS KMIP 2.1 Specification",
+              "section": "4.57"
             }
           ]
         }
@@ -70030,6 +70091,10 @@
         },
         {
           "document": "OASIS KMIP 2.0 Specification",
+          "section": "6.1.40"
+        },
+        {
+          "document": "OASIS KMIP 2.0 Specification",
           "section": "6.1.15"
         },
         {
@@ -70063,6 +70128,10 @@
         {
           "document": "OASIS KMIP 2.0 Specification",
           "section": "9.8"
+        },
+        {
+          "document": "OASIS KMIP 2.0 Specification",
+          "section": "4.50"
         },
         {
           "document": "OASIS KMIP 2.1 Specification",
@@ -70082,6 +70151,10 @@
         },
         {
           "document": "OASIS KMIP 2.1 Specification",
+          "section": "6.1.44"
+        },
+        {
+          "document": "OASIS KMIP 2.1 Specification",
           "section": "6.1.15"
         },
         {
@@ -70115,6 +70188,10 @@
         {
           "document": "OASIS KMIP 2.1 Specification",
           "section": "9.8"
+        },
+        {
+          "document": "OASIS KMIP 2.1 Specification",
+          "section": "4.57"
         }
       ],
       "execution": {
@@ -70128,6 +70205,7 @@
           "construct_ordered_batch_items",
           "execute_single_batch_request",
           "verify_each_operation_response",
+          "revoke_active_object_before_destroy",
           "cleanup_registered_object"
         ],
         "assertions": [

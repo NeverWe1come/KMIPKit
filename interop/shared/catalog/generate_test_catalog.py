@@ -1287,19 +1287,21 @@ def _add_legacy_lifecycle_scenarios(
     """Attach complete operation sequences and per-version OASIS refs to legacy workflows."""
     workflows = {
         "test-batch-create-activate-destroy": {
-            "operations": ["Create", "Activate", "Get Attribute List", "Destroy"],
+            "operations": ["Create", "Activate", "Get Attribute List", "Revoke", "Destroy"],
             "versions": ["2.0", "2.1"],
             "sections": ["8.2", "8.3", "8.4", "8.6", "9.5", "9.6", "9.7", "9.8"],
+            "versioned_sections": {"2.0": ["4.50"], "2.1": ["4.57"]},
             "category": "batch_workflows",
-            "steps": ["construct_ordered_batch_items", "execute_single_batch_request", "verify_each_operation_response", "cleanup_created_object"],
+            "steps": ["construct_ordered_batch_items", "execute_single_batch_request", "verify_each_operation_response", "revoke_active_object_before_destroy", "cleanup_created_object"],
             "assertions": ["batch_request_contains_complete_ordered_operation_list", "each_operation_has_a_normative_request_constructor", "batch_response_corresponds_to_each_ordered_operation"],
         },
         "test-batch-register-encrypt-decrypt-destroy": {
-            "operations": ["Register", "Activate", "Encrypt", "Decrypt", "Destroy"],
+            "operations": ["Register", "Activate", "Encrypt", "Decrypt", "Revoke", "Destroy"],
             "versions": ["2.0", "2.1"],
             "sections": ["8.2", "8.3", "8.4", "8.6", "9.5", "9.6", "9.7", "9.8"],
+            "versioned_sections": {"2.0": ["4.50"], "2.1": ["4.57"]},
             "category": "batch_workflows",
-            "steps": ["construct_ordered_batch_items", "execute_single_batch_request", "verify_each_operation_response", "cleanup_registered_object"],
+            "steps": ["construct_ordered_batch_items", "execute_single_batch_request", "verify_each_operation_response", "revoke_active_object_before_destroy", "cleanup_registered_object"],
             "assertions": ["batch_request_contains_complete_ordered_operation_list", "each_operation_has_a_normative_request_constructor", "batch_response_corresponds_to_each_ordered_operation"],
         },
         "test-async-lifecycle-poll": {
@@ -1349,13 +1351,23 @@ def _add_legacy_lifecycle_scenarios(
                     reference = {"document": document, "section": section}
                     if reference not in refs:
                         refs.append(reference)
+            for section in definition.get("versioned_sections", {}).get(version, []):
+                if section not in indexes[version]:
+                    raise ValueError(f"Unknown KMIP {version} section {section} in {case_id}")
+                reference = {"document": document, "section": section}
+                if reference not in refs:
+                    refs.append(reference)
+
+        parameters = {"operations_in_request_order": operations}
+        if "Revoke" in operations:
+            parameters["revocation_reason_code"] = "Cessation of Operation"
 
         scenario = {
             "scenario_id": case_id,
             "target_ids": [target["target_id"] for target in operation_targets],
             "operations": operations,
             "protocol_versions": versions,
-            "parameters": {"operations_in_request_order": operations},
+            "parameters": parameters,
             "expected": {"operation_order": operations},
             "mode": "server_exchange",
             "mutation": "mutating",
@@ -1651,15 +1663,15 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
     batch_workflows = [
         {
             "id": "test-batch-create-activate-destroy",
-            "desc": "Single-message batch workflow: Create -> Activate (IDPlaceholder) -> GetAttributes -> Destroy",
+            "desc": "Single-message batch workflow: Create -> Activate -> GetAttributes -> Revoke (Cessation of Operation) -> Destroy",
             "recipe_prefix": "kmipkit-batch-cad",
-            "steps": ["Create AES-256 SymmetricKey", "Activate with IDPlaceholder", "GetAttributes with IDPlaceholder", "Destroy with IDPlaceholder"]
+            "steps": ["Create AES-256 SymmetricKey", "Activate with IDPlaceholder", "GetAttributes with IDPlaceholder", "Revoke using Cessation of Operation", "Destroy with IDPlaceholder"]
         },
         {
             "id": "test-batch-register-encrypt-decrypt-destroy",
-            "desc": "Single-message batch workflow: Register -> Activate -> Encrypt -> Decrypt -> Destroy",
+            "desc": "Single-message batch workflow: Register -> Activate -> Encrypt -> Decrypt -> Revoke (Cessation of Operation) -> Destroy",
             "recipe_prefix": "kmipkit-batch-crypto",
-            "steps": ["Register AES-128 SymmetricKey", "Activate", "Encrypt", "Decrypt", "Destroy"]
+            "steps": ["Register AES-128 SymmetricKey", "Activate", "Encrypt", "Decrypt", "Revoke using Cessation of Operation", "Destroy"]
         }
     ]
     for bw in batch_workflows:
