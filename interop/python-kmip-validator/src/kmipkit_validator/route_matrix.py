@@ -802,6 +802,271 @@ def _managed_object_cell(cell: dict, case: dict, target: dict) -> dict:
     return {'request_tree_sha256': tree_hash, 'response_tree_sha256': tree_hash}
 
 
+def _typed_message_cell(cell: dict, case: dict, target: dict) -> dict:
+    """Parse a deterministic generic request/response through the public message API."""
+    from kmipkit import messages
+
+    symbol = cell['public_api_symbol']
+    fixtures = {
+        'kmipkit.messages.RequestMessage.from_ttlv': (
+            messages.RequestMessage, 0x420078,
+            [0x420078, 1, [
+                [0x420077, 1, [
+                    [0x420069, 1, [[0x42006A, 2, 2], [0x42006B, 2, 1]]],
+                    [0x42000D, 2, 1],
+                ]],
+                [0x42000F, 1, [
+                    [0x42005C, 5, 0x3B], [0x420079, 1, []],
+                ]],
+            ]],
+        ),
+        'kmipkit.messages.ResponseMessage.from_ttlv': (
+            messages.ResponseMessage, 0x42007B,
+            [0x42007B, 1, [
+                [0x42007A, 1, [
+                    [0x420069, 1, [[0x42006A, 2, 2], [0x42006B, 2, 1]]],
+                    [0x420092, 9, 1_234_567], [0x42000D, 2, 1],
+                ]],
+                [0x42000F, 1, [
+                    [0x42005C, 5, 0x3B], [0x42007F, 5, 0], [0x42007C, 1, []],
+                ]],
+            ]],
+        ),
+    }
+    fixture = fixtures.get(symbol)
+    if fixture is None:
+        raise RecipePending
+    message_type, root_tag, original = fixture
+    import copy
+    expected = copy.deepcopy(original)
+    by_id, _, elements = _catalog_model_data()
+    tag_elements = [element for element in elements.values() if element.get('kind') == 'tag']
+
+    def field_name(element: dict) -> str:
+        name = element.get('name', '')
+        if name.startswith('Credential,'):
+            return 'Credential'
+        return name
+
+    def tag_value(element: dict) -> int:
+        name = field_name(element)
+        normalized = _normalized_name(name)
+        tag = next((item for item in tag_elements
+                    if _normalized_name(item.get('name', '')) == normalized), None)
+        if tag is None:
+            raise RecipePending
+        return int(tag['wire_value'], 16)
+
+    def field_encoding(element: dict) -> str | None:
+        name = _normalized_name(field_name(element))
+        return next((item['source_encoding'] for item in elements.values()
+                     if item.get('kind') == 'message_field'
+                     and _normalized_name(field_name(item)) == name
+                     and item.get('source_encoding')), None)
+
+    def field_node(element: dict) -> list:
+        name = field_name(element)
+        encoding = field_encoding(element)
+        structures = {'Authentication', 'Batch Item', 'Credential', 'Credential Value',
+                      'Message Extension', 'Nonce', 'Protocol Version', 'Request Header',
+                      'Request Message', 'Request Payload', 'Response Header',
+                      'Response Message', 'Response Payload', 'Vendor Extension'}
+        if encoding == 'Structure' or name in structures:
+            defaults = {
+                'Authentication': [[0x420023, 1, [
+                    [0x420024, 5, 1], [0x420025, 1, [
+                        [0x420026, 7, '696e7465726f702d75736572'],
+                        [0x420027, 7, '66697874757265'],
+                    ]],
+                ]]],
+                'Credential': [[0x420024, 5, 1], [0x420025, 1, [
+                    [0x420026, 7, '696e7465726f702d75736572'],
+                    [0x420027, 7, '66697874757265'],
+                ]]],
+                'Credential Value': [[0x420026, 7, '696e7465726f702d75736572'],
+                                     [0x420027, 7, '66697874757265']],
+                'Message Extension': [[0x42009D, 7, '4b4d49504b6974'],
+                                      [0x420026, 6, False],
+                                      [0x42009C, 1, [[0x540001, 8, '76616c7565']]]],
+                'Nonce': [[0x4200C9, 8, '6e6f6e63652d6964'],
+                          [0x4200CA, 8, '6e6f6e63652d76616c7565']],
+                'Protocol Version': [[0x42006A, 2, 2], [0x42006B, 2, 1]],
+                'Vendor Extension': [[0x540001, 8, '76616c7565']],
+            }
+            return [tag_value(element), 1, copy.deepcopy(defaults.get(name, []))]
+        kind_by_encoding = {'Boolean': 6, 'Byte String': 8, 'Date-Time': 9,
+                            'Enumeration': 5, 'Integer': 2, 'Text String': 7}
+        kind = kind_by_encoding.get(encoding or '')
+        samples = {
+            'Asynchronous Correlation Value': (8, '6173796e632d636f7272'),
+            'Asynchronous Indicator': (5, 2),
+            'Attestation Capable Indicator': (6, False),
+            'Attestation Type': (5, 1),
+            'Batch Count': (2, 1),
+            'Batch Error Continuation Option': (5, 1),
+            'Batch Order Option': (6, True),
+            'Client Correlation Value': (7, '636c69656e742d636f7272'),
+            'Criticality Indicator': (6, False),
+            'Ephemeral': (6, False),
+            'Maximum Response Size': (2, 4096),
+            'Nonce ID': (8, '6e6f6e63652d6964'),
+            'Nonce Value': (8, '6e6f6e63652d76616c7565'),
+            'Operation': (5, 0x3B),
+            'Protocol Version Major': (2, 2),
+            'Protocol Version Minor': (2, 1),
+            'Result Message': (7, '666978747572652d726573756c74'),
+            'Result Reason': (5, 5),
+            'Result Status': (5, 1),
+            'Server Correlation Value': (7, '7365727665722d636f7272'),
+            'Server Hashed Password': (8, '686173682d66697874757265'),
+            'Time Stamp': (9, 1_234_567),
+            'Unique Batch Item ID': (8, '6974656d2d31'),
+            'Vendor Identification': (7, '4b4d49504b6974'),
+        }
+        if name in samples:
+            kind, value = samples[name]
+        if kind is None:
+            raise RecipePending
+        return [tag_value(element), kind, value]
+
+    def path_to_root(element_id: str, root_id: str, seen: set[str] | None = None) -> list[dict] | None:
+        if element_id == root_id:
+            return [elements[element_id]]
+        visited = seen or set()
+        if element_id in visited or element_id not in elements:
+            return None
+        visited = {*visited, element_id}
+        element = elements[element_id]
+        for parent_id in element.get('parent_element_ids', []):
+            path = path_to_root(parent_id, root_id, visited)
+            if path is not None:
+                return [*path, element]
+        return None
+
+    target_tag = None
+    if target.get('kind') == 'tag':
+        target_tag = int(target['wire_value'], 16)
+    elif target.get('kind') == 'message_field':
+        wanted_name = _normalized_name(field_name(target))
+        tag_element = next((item for item in tag_elements
+                            if _normalized_name(item.get('name', '')) == wanted_name), None)
+        if tag_element is None:
+            raise RecipePending
+        target_tag = int(tag_element['wire_value'], 16)
+        root_id = ('KMIPKIT-ELEM-MESSAGE-FIELD-8-1-REQUEST-MESSAGE'
+                   if message_type is messages.RequestMessage
+                   else 'KMIPKIT-ELEM-MESSAGE-FIELD-8-4-RESPONSE-MESSAGE')
+        path = path_to_root(target['target_id'], root_id)
+        if path is None:
+            raise RecipePending
+
+        def find_tree_node(node: list, raw_tag: int) -> list | None:
+            if node[0] == raw_tag:
+                return node
+            if node[1] == 1:
+                for child in node[2]:
+                    found = find_tree_node(child, raw_tag)
+                    if found is not None:
+                        return found
+            return None
+
+        anchor_index = -1
+        for index, element in enumerate(path):
+            try:
+                existing = find_tree_node(expected, tag_value(element))
+            except RecipePending:
+                existing = None
+            if existing is not None:
+                anchor_index = index
+        if anchor_index < 0:
+            raise RecipePending
+        anchor = find_tree_node(expected, tag_value(path[anchor_index]))
+        if anchor is None:
+            raise RecipePending
+        for element in path[anchor_index + 1:]:
+            raw_tag = tag_value(element)
+            if raw_tag == anchor[0]:
+                # Sections 8 and 9 inventory the same semantic field twice.
+                continue
+            child = next((item for item in anchor[2] if item[0] == raw_tag), None) if anchor[1] == 1 else None
+            if child is None:
+                if anchor[1] != 1:
+                    raise RecipePending
+                child = field_node(element)
+                if anchor[0] in (0x420077, 0x42007A):
+                    count_index = next((index for index, item in enumerate(anchor[2])
+                                        if item[0] == 0x42000D), len(anchor[2]))
+                    anchor[2].insert(count_index, child)
+                elif anchor[0] == 0x42000F:
+                    request_item = any(item[0] == 0x420079 for item in anchor[2])
+                    ranks = ({0x42005C: 0, 0x420154: 1, 0x420093: 2, 0x420079: 3,
+                              0x420051: 4} if request_item else
+                             {0x42005C: 0, 0x420093: 1, 0x42007F: 2, 0x42007E: 3,
+                              0x42007D: 4, 0x420006: 5, 0x42007C: 6, 0x420051: 7})
+                    child_rank = ranks.get(raw_tag, len(ranks))
+                    position = next((index for index, item in enumerate(anchor[2])
+                                     if ranks.get(item[0], len(ranks)) > child_rank), len(anchor[2]))
+                    anchor[2].insert(position, child)
+                else:
+                    anchor[2].append(child)
+            anchor = child
+        name = field_name(target)
+        if message_type is messages.ResponseMessage and name in {
+                'Asynchronous Correlation Value', 'Result Message', 'Result Reason'}:
+            response_item = find_tree_node(expected, 0x42000F)
+            if response_item is not None:
+                status = find_tree_node(response_item, 0x42007F)
+                if status is not None:
+                    status[2] = 2 if name == 'Asynchronous Correlation Value' else 1
+                if name in {'Result Message', 'Result Reason'}:
+                    response_item[2][:] = [item for item in response_item[2] if item[0] != 0x42007C]
+                if name == 'Result Message' and not find_tree_node(response_item, 0x42007E):
+                    reason = [0x42007E, 5, 5]
+                    status_index = next(index for index, item in enumerate(response_item[2])
+                                        if item[0] == 0x42007F)
+                    response_item[2].insert(status_index + 1, reason)
+        if message_type is messages.ResponseMessage and name == 'Asynchronous Correlation Value':
+            response_item = find_tree_node(expected, 0x42000F)
+            operation = find_tree_node(response_item, 0x42005C) if response_item else None
+            if operation is not None:
+                operation[2] = 0x1A  # Poll has the normative pending response shape.
+            if response_item is not None:
+                response_item[2][:] = [item for item in response_item[2] if item[0] != 0x42007C]
+        if (message_type is messages.RequestMessage and name in {
+                'Batch Error Continuation Option', 'Batch Order Option'}):
+            request_header = find_tree_node(expected, 0x420077)
+            batch_item = find_tree_node(expected, 0x42000F)
+            if request_header is not None and batch_item is not None:
+                batch_count = find_tree_node(request_header, 0x42000D)
+                if batch_count is not None:
+                    batch_count[2] = 2
+                second_batch_item = copy.deepcopy(batch_item)
+                for index, current in enumerate((batch_item, second_batch_item), start=1):
+                    if not any(item[0] == 0x420093 for item in current[2]):
+                        identifier = [0x420093, 8, f'6974656d2d{index:02x}']
+                        payload_index = next((position for position, item in enumerate(current[2])
+                                              if item[0] == 0x420079), len(current[2]))
+                        current[2].insert(payload_index, identifier)
+                expected[2].append(second_batch_item)
+    if target_tag is None or not _credential_tree_has_tag(expected, target_tag):
+        raise RecipePending
+    with ExitStack() as owned:
+        fields = [owned.enter_context(_credential_item_from_tree(field, owned))
+                  for field in expected[2]]
+        source = owned.enter_context(PythonKmipDriver._structure(fields))
+        message = owned.enter_context(message_type.from_ttlv(source))
+        expected_count = sum(1 for field in expected[2] if field[0] == 0x42000F)
+        if message.batch_item_count != expected_count:
+            raise ValueError('typed message parser changed the batch item count')
+        parsed = owned.enter_context(message.to_ttlv())
+        observed = owned.enter_context(PythonKmipDriver._item(root_tag, 'structure', parsed))
+        actual = item_tree(observed)
+    if actual != expected:
+        raise ValueError('typed message parser changed the ordered TTLV tree')
+    tree_hash = digest(actual)
+    return {'request_tree_sha256': tree_hash, 'response_tree_sha256': tree_hash}
+
+
 _GENERIC_SYMBOLS = {
     'kmipkit.ttlv.' + name for name in (
         'ttlv_item_view_from_item', 'raw_tag_from_raw', 'raw_tag_try_checked',
@@ -846,6 +1111,8 @@ def execute_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | Non
             return _managed_object_cell(cell, case, target)
         if cell['public_api_symbol'].startswith('kmipkit.cryptographic_parameters.'):
             return _crypto_parameters_cell(cell, case, target)
+        if cell['public_api_symbol'].startswith('kmipkit.messages.'):
+            return _typed_message_cell(cell, case, target)
         return _generic_cell(cell, case, target)
     if case['case_id'] == 'test-op-discover-versions':
         return _positive_fixture_cell(cell, case, target, trace=trace)
