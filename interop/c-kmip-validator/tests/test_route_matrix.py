@@ -994,6 +994,61 @@ class RouteMatrixTests(unittest.TestCase):
             except ValueError as error:
                 self.fail(str(error))
 
+    def test_continued_batch_evidence_has_observed_unchanged_fixture_state(self):
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+        from validate_route_evidence import _key, _validate_batch_event
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case = next(case for case in catalog['test_cases']
+                    if case['case_id'] == 'test-batch-continue-after-failure')
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c',
+            {**catalog, 'test_cases': [case]}, manifest,
+            protocol_versions=('2.1',), network_combinations=(('TTLV', 'raw_tls'),))
+        self.assertEqual(len(checks), 1)
+        self.assertEqual(checks[0]['status'], 'passed')
+        expected_state = hashlib.sha256(json.dumps(
+            {'objects': {'fixture-key-1': 'pre_active'}},
+            sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+        send_events = [event for event in events if event['action'] == 'send']
+        self.assertTrue(send_events)
+        for event in send_events:
+            self.assertEqual(event.get('peer_observed_effects'),
+                             ['first_item_failed', 'second_item_executed'])
+            self.assertEqual(event.get('peer_observed_state_before_sha256'), expected_state)
+            self.assertEqual(event.get('peer_observed_state_after_sha256'), expected_state)
+            try:
+                _validate_batch_event(event, case, catalog, _key(event))
+            except ValueError as error:
+                self.fail(str(error))
+
+    def test_placeholder_state_records_activation_and_independent_deletion(self):
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case = next(case for case in catalog['test_cases']
+                    if case['case_id'] == 'test-batch-placeholder-chain-resolves')
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c',
+            {**catalog, 'test_cases': [case]}, manifest,
+            protocol_versions=('2.1',), network_combinations=(('TTLV', 'raw_tls'),))
+        self.assertEqual(len(checks), 1)
+        self.assertEqual(checks[0]['status'], 'passed')
+        empty_state = hashlib.sha256(b'{"objects":{}}').hexdigest()
+        active_state = hashlib.sha256(json.dumps(
+            {'objects': {'fixture-key-1': 'active'}},
+            sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+        send_events = [event for event in events if event['action'] == 'send']
+        self.assertTrue(send_events)
+        for event in send_events:
+            self.assertEqual(event.get('peer_observed_state_before_sha256'), empty_state)
+            self.assertEqual(event.get('peer_observed_state_after_sha256'), active_state)
+        self.assertEqual(checks[0].get('peer_cleanup_state_after_sha256'), empty_state)
+
     def test_single_item_batch_omits_optional_batch_options(self):
         from artifact_support import ROOT
         from route_peer import RECIPES, execute_network_cells
