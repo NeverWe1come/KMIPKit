@@ -18,10 +18,12 @@ import org.kmipkit.extensions.QueryResponse;
 import org.kmipkit.extensions.QueryResponseField;
 import org.kmipkit.extensions.QueryResponseFieldKind;
 import org.kmipkit.credentials.AttestationCredential;
+import org.kmipkit.credentials.Credential;
 import org.kmipkit.credentials.CredentialType;
 import org.kmipkit.credentials.DeviceCredential;
 import org.kmipkit.credentials.HashedPasswordCredential;
 import org.kmipkit.credentials.UsernameAndPasswordCredential;
+import org.kmipkit.message.ResponseMessage;
 import org.kmipkit.protocol.CryptographicParameters;
 import org.kmipkit.protocol.KmipValues;
 import org.kmipkit.ttlv.CodecLimits;
@@ -291,6 +293,10 @@ class ControlledTlsPeerTest {
             SSLServerSocket listener = listener(certificate(serverCertificatePem),
                     privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
             byte[] responseBytes = queryResponse("2.0".equals(protocolVersion) ? 0 : 1);
+            assertTrue(contains(responseBytes, new byte[] {0x42, 0x00, 0x0f, 0x01}),
+                    "The controlled Query response must contain an 8.4 Batch Item Structure.");
+            String responseHash = normalizedTreeSha256(responseBytes);
+            appendBatchItemGenericRouteEvents(events, protocolVersion);
             FutureTask<byte[]> peer = new FutureTask<>(() -> serveOneResponse(listener, responseBytes));
             Thread peerThread = new Thread(peer, "java-validator-query-route-evidence-peer-" + protocolVersion);
             peerThread.setDaemon(true);
@@ -307,7 +313,22 @@ class ControlledTlsPeerTest {
                     batch.add(request);
                     try (ClientBatchResponse response = driver.executeBatchForEvidence(batch)) {
                         assertEquals(1, response.itemCount());
+                        appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
+                                "java.typed-protocol.function.client_batch_response_item_count",
+                                RESPONSE_BATCH_ITEM_TARGET_ID, "org.kmipkit.extensions.ClientBatchResponse.itemCount",
+                                null, null, "decode", protocolVersion, null, null, responseHash);
                         try (ClientBatchItemResult result = response.itemAt(0)) {
+                            assertEquals(1, result.extensionCount());
+                            appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
+                                    "java.typed-protocol.function.client_batch_item_response_extension_count",
+                                    RESPONSE_BATCH_ITEM_TARGET_ID,
+                                    "org.kmipkit.extensions.ClientBatchItemResult.extensionCount",
+                                    null, null, "decode", protocolVersion, null, null, responseHash);
+                            assertBatchItemResponseRouteEvidence(events, result, protocolVersion, responseHash);
+                            appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
+                                    "java.typed-protocol.function.client_batch_response_item_at",
+                                    RESPONSE_BATCH_ITEM_TARGET_ID, "org.kmipkit.extensions.ClientBatchResponse.itemAt",
+                                    null, null, "decode", protocolVersion, null, null, responseHash);
                             assertEquals(0x18L, result.operation());
                             assertEquals(0L, result.resultStatus());
                             try (var genericPayload = result.queryResponse().orElseThrow()) {
@@ -334,7 +355,6 @@ class ControlledTlsPeerTest {
                     "The controlled peer must observe the Query Operations function.");
             assertEquals("2.0".equals(protocolVersion) ? 0 : 1, requestProtocolMinorVersion(request));
             String requestHash = normalizedTreeSha256(request);
-            String responseHash = normalizedTreeSha256(responseBytes);
             appendNetworkQueryRouteEvents(events, protocolVersion, requestHash, responseHash);
             appendControlledActivationDateNetworkEvents(events, protocolVersion);
             appendControlledKeyFormatRawResponseRouteEvents(events, protocolVersion);
@@ -388,6 +408,15 @@ class ControlledTlsPeerTest {
                                         credentialRoute, version, credentialTargetId)
                                         .path("target_id").asText(),
                                 "Credential Value conversion evidence must use its structural catalog case.");
+                        for (String genericRoute : List.of(
+                                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
+                                "java.generic-ttlv.ttlv_item.create",
+                                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                                "java.generic-ttlv.ttlv_codec.decode")) {
+                            JsonNode genericEvent = findRouteEvent(report.path("events"), credentialCaseId,
+                                    genericRoute, version, credentialTargetId);
+                            assertEquals("passed", genericEvent.path("status").asText());
+                        }
                     }
                 }
             }
@@ -397,7 +426,19 @@ class ControlledTlsPeerTest {
         int bitmaskEventCount = bitmaskFixtures.stream()
                 .mapToInt(fixture -> fixture.protocolVersions().size() * (4 + (fixture.attribute() == null ? 0 : 3)))
                 .sum();
-        assertEquals(68 + enumerationEventCount + bitmaskEventCount + 94, report.path("events").size());
+        int batchItemAccessorEventCount = List.of("2.0", "2.1").size() * 2;
+        int batchItemExtensionCountEventCount = List.of("2.0", "2.1").size();
+        int batchItemGenericRouteEventCount = List.of("2.0", "2.1").size() * 4;
+        int batchItemAdditionalResponseRouteEventCount = List.of("2.0", "2.1").size() * 8;
+        int credentialGenericRouteEventCount = CREDENTIAL_TYPE_MODEL_CASE_IDS.size()
+                * List.of("2.0", "2.1").size() * 4;
+        int credentialEnvelopeEventCount = CREDENTIAL_TYPE_MODEL_CASE_IDS.size()
+                * List.of("2.0", "2.1").size();
+        assertEquals(68 + enumerationEventCount + bitmaskEventCount + 94 + batchItemAccessorEventCount
+                        + batchItemExtensionCountEventCount + batchItemGenericRouteEventCount
+                        + batchItemAdditionalResponseRouteEventCount + credentialGenericRouteEventCount
+                        + credentialEnvelopeEventCount,
+                report.path("events").size());
         long bitmaskEvents = 0;
         for (JsonNode event : report.path("events")) {
             if ("test-bitmask-cryptographic-usage-mask".equals(event.path("case_id").asText())) {
@@ -416,7 +457,7 @@ class ControlledTlsPeerTest {
                 "Every TTLV data type needs its installed constructor, item view, and decoder routes.");
         long bitmaskCaseCount = bitmaskFixtures.stream().map(BitmaskFixture::caseId).distinct().count();
         long dataTypeCaseCount = dataTypeFixtures.stream().map(DataTypeFixture::caseId).distinct().count();
-        assertEquals(7 + enumerationFixtures.size() + bitmaskCaseCount + dataTypeCaseCount
+        assertEquals(8 + enumerationFixtures.size() + bitmaskCaseCount + dataTypeCaseCount
                         + CREDENTIAL_TYPE_MODEL_CASE_IDS.size(),
                 report.path("case_ids").size());
         assertEquals("test-op-query", report.path("case_ids").get(0).asText());
@@ -1429,6 +1470,97 @@ class ControlledTlsPeerTest {
         }
         appendRouteEvent(events, modelCaseId, modelRoute, modelTargetId, modelSymbol,
                 null, null, "construct", protocolVersion, null, credentialTreeHash, null);
+        appendCredentialGenericStructureRouteEvents(events, modelCaseId, modelTargetId, modelRoute,
+                protocolVersion, credentialTreeHash);
+        appendCredentialEnvelopeRouteEvent(events, modelCaseId, modelTargetId, modelRoute,
+                fixture.value(), protocolVersion);
+    }
+
+    private static void appendCredentialEnvelopeRouteEvent(ArrayNode events, String caseId,
+            String targetId, String modelRoute, long credentialTypeRaw, String protocolVersion) throws Exception {
+        String route = "java.typed-protocol.model.org.kmipkit.credentials.credential.fromttlv";
+        String treeHash = normalizedTreeSha256(credentialEnvelopeWire(modelRoute, credentialTypeRaw));
+        try (TtlvStructure structure = credentialEnvelopeStructure(modelRoute, credentialTypeRaw);
+                Credential credential = Credential.fromTtlv(structure)) {
+            assertEquals(credentialTypeRaw, credential.credentialTypeRaw());
+            assertTrue(Boolean.TRUE.equals(credential.withTtlv(view -> view.itemCount() == 2)),
+                    "The generic Credential decoder must retain both envelope fields.");
+        }
+        appendRouteEvent(events, caseId, route, targetId,
+                "org.kmipkit.credentials.Credential.fromTtlv", null, null, "construct", protocolVersion,
+                null, treeHash, null);
+    }
+
+    private static TtlvStructure credentialEnvelopeStructure(String modelRoute, long credentialTypeRaw)
+            throws Exception {
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvStructure envelope = TtlvStructure.create();
+        try (RawTag rawTag = RawTag.fromRaw(0x420024);
+                Tag tag = rawTag.checked();
+                TtlvValue value = TtlvValue.Enumeration(credentialTypeRaw);
+                TtlvItem item = TtlvItem.create(tag, value, limits)) {
+            envelope = TtlvStructure.withItem(envelope, item, limits);
+        }
+        try (TtlvStructure credentialValue = credentialValueStructure(modelRoute);
+                TtlvValue value = TtlvValue.structure(credentialValue, limits);
+                RawTag rawTag = RawTag.fromRaw(0x420025);
+                Tag tag = rawTag.checked();
+                TtlvItem item = TtlvItem.create(tag, value, limits)) {
+            envelope = TtlvStructure.withItem(envelope, item, limits);
+        }
+        return envelope;
+    }
+
+    private static byte[] credentialEnvelopeWire(String modelRoute, long credentialTypeRaw) throws Exception {
+        return structure(0x420023,
+                item(0x420024, 5, intBytes((int) credentialTypeRaw)), credentialValueWire(modelRoute));
+    }
+
+    private static void appendCredentialGenericStructureRouteEvents(ArrayNode events, String caseId,
+            String targetId, String modelRoute, String protocolVersion, String treeHash) throws Exception {
+        CodecLimits limits = CodecLimits.defaults();
+        try (TtlvStructure structure = credentialValueStructure(modelRoute);
+                TtlvValue value = TtlvValue.structure(structure, limits);
+                RawTag rawTag = RawTag.fromRaw(0x420025);
+                Tag tag = rawTag.checked();
+                TtlvItem item = TtlvItem.create(tag, value, limits);
+                var itemView = item.view();
+                var itemValue = itemView.value();
+                var valueStructureView = itemValue.structure()) {
+            assertEquals(TtlvItemType.Structure, itemView.itemType());
+            assertEquals(0x420025, itemView.tag().raw());
+            assertTrue(valueStructureView.itemCount() > 0,
+                    "The generic Structure constructor must preserve the Credential Value fields.");
+        }
+        appendRouteEvent(events, caseId,
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure", targetId,
+                "org.kmipkit.ttlv.TtlvValue.structure", null, null, "construct", protocolVersion,
+                null, treeHash, null);
+        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_item.create", targetId,
+                "org.kmipkit.ttlv.TtlvItem.create", null, null, "construct", protocolVersion,
+                null, treeHash, null);
+        appendRouteEvent(events, caseId, "java.generic-ttlv.function.ttlv_item_view_from_item", targetId,
+                "org.kmipkit.ttlv.TtlvItem.view", null, null, "decode", protocolVersion,
+                null, null, treeHash);
+        TtlvItem decodedItem;
+        try {
+            decodedItem = TtlvCodec.decode(credentialValueWire(modelRoute));
+        } catch (RuntimeException error) {
+            throw new AssertionError("The controlled generic Credential fixture must decode: " + modelRoute,
+                    error);
+        }
+        try (TtlvItem decoded = decodedItem;
+                var view = decoded.view();
+                var decodedValue = view.value();
+                var decodedStructureView = decodedValue.structure()) {
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertEquals(0x420025, view.tag().raw());
+            assertTrue(decodedStructureView.itemCount() > 0,
+                    "The generic decoder must preserve the Credential Value fields.");
+        }
+        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_codec.decode", targetId,
+                "org.kmipkit.ttlv.TtlvCodec.decode", null, null, "decode", protocolVersion,
+                null, null, treeHash);
     }
 
     private static byte[] credentialValueWire(String modelRoute) throws Exception {
@@ -1457,7 +1589,7 @@ class ControlledTlsPeerTest {
         if (modelRoute.endsWith("hashedpasswordcredential.fromttlv")) {
             return structure(0x420025,
                     textItem(0x420099, "validator-user"),
-                    item(0x420092, 10, longBytes(1_800_000_000L)),
+                    item(0x420092, 11, longBytes(1_800_000_000L)),
                     item(0x420038, 5, intBytes(6)),
                     item(0x420157, 8, new byte[] {0x11, 0x22, 0x33, 0x44}));
         }
@@ -2373,6 +2505,7 @@ class ControlledTlsPeerTest {
         genericEnumerationFixtures().forEach(fixture -> caseIds.add(fixture.caseId()));
         genericBitmaskFixtures().stream().map(BitmaskFixture::caseId).distinct().forEach(caseIds::add);
         genericDataTypeFixtures().forEach(fixture -> caseIds.add(fixture.caseId()));
+        caseIds.add(RESPONSE_BATCH_ITEM_CASE_ID);
         CREDENTIAL_TYPE_MODEL_CASE_IDS.values().forEach(caseIds::add);
         report.putArray("protocol_versions").add("2.0").add("2.1");
         ObjectNode combination = mapper.createObjectNode();
@@ -2624,14 +2757,178 @@ class ControlledTlsPeerTest {
                 item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(protocolMinorVersion)));
         byte[] header = structure(0x42007a, protocolVersion,
                 item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(1)));
-        byte[] responseItem = structure(0x42000f,
+        return structure(0x42007b, header, queryResponseBatchItem());
+    }
+
+    private static byte[] queryResponseBatchItem() throws Exception {
+        return structure(0x42000f,
                 item(0x42005c, 5, intBytes(0x18)),
                 item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)),
                 item(0x42007f, 5, intBytes(0)),
                 structure(0x42007c,
                         item(0x42005c, 5, intBytes(0x3b)),
-                        structure(0x42015f)));
-        return structure(0x42007b, header, responseItem);
+                        structure(0x42015f)),
+                messageExtensionWire());
+    }
+
+    private static byte[] messageExtensionWire() throws Exception {
+        return structure(0x420051,
+                textItem(0x42009d, "KMIPKit.fixture"),
+                item(0x420026, 6, new byte[8]),
+                structure(0x42009c, textItem(0x540001, "fixture-extension")));
+    }
+
+    private static void appendBatchItemGenericRouteEvents(ArrayNode events, String protocolVersion)
+            throws Exception {
+        String treeHash = normalizedTreeSha256(queryResponseBatchItem());
+        CodecLimits limits = CodecLimits.defaults();
+        try (TtlvStructure structure = batchItemStructure();
+                TtlvValue value = TtlvValue.structure(structure, limits);
+                RawTag rawTag = RawTag.fromRaw(0x42000f);
+                Tag tag = rawTag.checked();
+                TtlvItem item = TtlvItem.create(tag, value, limits);
+                var view = item.view();
+                var itemValue = view.value();
+                var structureView = itemValue.structure()) {
+            assertEquals(0x42000f, view.tag().raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertEquals(5, structureView.itemCount());
+        }
+        appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
+                RESPONSE_BATCH_ITEM_TARGET_ID, "org.kmipkit.ttlv.TtlvValue.structure", null, null,
+                "construct", protocolVersion, null, treeHash, null);
+        appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID, "java.generic-ttlv.ttlv_item.create",
+                RESPONSE_BATCH_ITEM_TARGET_ID, "org.kmipkit.ttlv.TtlvItem.create", null, null,
+                "construct", protocolVersion, null, treeHash, null);
+        appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
+                "java.generic-ttlv.function.ttlv_item_view_from_item", RESPONSE_BATCH_ITEM_TARGET_ID,
+                "org.kmipkit.ttlv.TtlvItem.view", null, null, "decode", protocolVersion,
+                null, null, treeHash);
+        try (TtlvItem decoded = TtlvCodec.decode(queryResponseBatchItem());
+                var view = decoded.view();
+                var value = view.value();
+                var structureView = value.structure()) {
+            assertEquals(0x42000f, view.tag().raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertEquals(5, structureView.itemCount());
+        }
+        appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID, "java.generic-ttlv.ttlv_codec.decode",
+                RESPONSE_BATCH_ITEM_TARGET_ID, "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
+                "decode", protocolVersion, null, null, treeHash);
+    }
+
+    private static void assertBatchItemResponseRouteEvidence(ArrayNode events,
+            ClientBatchItemResult result, String protocolVersion, String responseHash) throws Exception {
+        try (TtlvStructure raw = result.raw().orElseThrow(); var view = raw.view()) {
+            assertEquals(2, view.itemCount());
+        }
+        appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
+                "java.typed-protocol.function.client_batch_item_response_raw_ttlv",
+                RESPONSE_BATCH_ITEM_TARGET_ID, "org.kmipkit.extensions.ClientBatchItemResult.raw",
+                null, null, "decode", protocolVersion, null, null, responseHash);
+
+        try (TtlvStructure extension = result.extensionTtlvAt(0); var view = extension.view()) {
+            assertEquals(3, view.itemCount());
+        }
+        appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
+                "java.typed-protocol.function.client_batch_item_response_extension_ttlv_at",
+                RESPONSE_BATCH_ITEM_TARGET_ID, "org.kmipkit.extensions.ClientBatchItemResult.extensionTtlvAt",
+                null, null, "decode", protocolVersion, null, null, responseHash);
+
+        try (TtlvStructure header = result.responseHeaderTtlv(); var view = header.view()) {
+            assertTrue(view.itemCount() >= 3);
+        }
+        appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
+                "java.typed-protocol.function.client_batch_item_response_header_ttlv",
+                RESPONSE_BATCH_ITEM_TARGET_ID, "org.kmipkit.extensions.ClientBatchItemResult.responseHeaderTtlv",
+                null, null, "decode", protocolVersion, null, null, responseHash);
+
+        assertEquals(4, result.metadata().length);
+        appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
+                "java.typed-protocol.function.client_batch_item_response_metadata_v1",
+                RESPONSE_BATCH_ITEM_TARGET_ID, "org.kmipkit.extensions.ClientBatchItemResult.metadata",
+                null, null, "decode", protocolVersion, null, null, responseHash);
+        assertEquals(0x18L, result.metadataV2().operation());
+        appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
+                "java.typed-protocol.function.client_batch_item_response_metadata_v2",
+                RESPONSE_BATCH_ITEM_TARGET_ID, "org.kmipkit.extensions.ClientBatchItemResult.metadataV2",
+                null, null, "decode", protocolVersion, null, null, responseHash);
+        assertTrue(result.pendingCorrelationValue().isEmpty());
+        appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
+                "java.typed-protocol.function.client_batch_item_response_pending_correlation_value",
+                RESPONSE_BATCH_ITEM_TARGET_ID,
+                "org.kmipkit.extensions.ClientBatchItemResult.pendingCorrelationValue",
+                null, null, "decode", protocolVersion, null, null, responseHash);
+        assertArrayEquals("item-0".getBytes(StandardCharsets.US_ASCII),
+                result.uniqueBatchItemId().orElseThrow());
+        appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
+                "java.typed-protocol.function.client_batch_item_response_unique_batch_item_id",
+                RESPONSE_BATCH_ITEM_TARGET_ID, "org.kmipkit.extensions.ClientBatchItemResult.uniqueBatchItemId",
+                null, null, "decode", protocolVersion, null, null, responseHash);
+
+        try (ResponseMessage message = ResponseMessage.fromTtlv(responseMessageStructure(
+                "2.0".equals(protocolVersion) ? 0 : 1)); var item = message.batchItemAt(0)) {
+            assertEquals(1, message.batchItemCount());
+            assertEquals(0x18L, item.operation().orElseThrow());
+        }
+        appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
+                "java.typed-protocol.model.org.kmipkit.message.responsemessage.fromttlv",
+                RESPONSE_BATCH_ITEM_TARGET_ID, "org.kmipkit.message.ResponseMessage.fromTtlv",
+                null, null, "construct", protocolVersion, null, responseHash, null);
+    }
+
+    private static TtlvStructure batchItemStructure() {
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvStructure payload = TtlvStructure.create();
+        payload = appendTtlvItem(payload, 0x42005c, TtlvValue.Enumeration(0x3b), limits);
+        payload = appendTtlvItem(payload, 0x42015f,
+                TtlvValue.structure(TtlvStructure.create(), limits), limits);
+        TtlvStructure item = TtlvStructure.create();
+        item = appendTtlvItem(item, 0x42005c, TtlvValue.Enumeration(0x18), limits);
+        item = appendTtlvItem(item, 0x420093,
+                TtlvValue.ByteString("item-0".getBytes(StandardCharsets.US_ASCII), limits), limits);
+        item = appendTtlvItem(item, 0x42007f, TtlvValue.Enumeration(0), limits);
+        item = appendTtlvItem(item, 0x42007c, TtlvValue.structure(payload, limits), limits);
+        return appendTtlvItem(item, 0x420051, TtlvValue.structure(messageExtensionStructure(), limits), limits);
+    }
+
+    private static TtlvStructure messageExtensionStructure() {
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvStructure vendorExtension = TtlvStructure.create();
+        vendorExtension = appendTtlvItem(vendorExtension, 0x540001,
+                TtlvValue.TextString("fixture-extension".getBytes(StandardCharsets.UTF_8), limits), limits);
+        TtlvStructure extension = TtlvStructure.create();
+        extension = appendTtlvItem(extension, 0x42009d,
+                TtlvValue.TextString("KMIPKit.fixture".getBytes(StandardCharsets.US_ASCII), limits), limits);
+        extension = appendTtlvItem(extension, 0x420026, TtlvValue.Boolean(false), limits);
+        return appendTtlvItem(extension, 0x42009c,
+                TtlvValue.structure(vendorExtension, limits), limits);
+    }
+
+    private static TtlvStructure responseMessageStructure(int protocolMinorVersion) {
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvStructure protocolVersion = TtlvStructure.create();
+        protocolVersion = appendTtlvItem(protocolVersion, 0x42006a, TtlvValue.Integer(2), limits);
+        protocolVersion = appendTtlvItem(protocolVersion, 0x42006b,
+                TtlvValue.Integer(protocolMinorVersion), limits);
+        TtlvStructure header = TtlvStructure.create();
+        header = appendTtlvItem(header, 0x420069, TtlvValue.structure(protocolVersion, limits), limits);
+        header = appendTtlvItem(header, 0x420092, TtlvValue.DateTime(1), limits);
+        header = appendTtlvItem(header, 0x42000d, TtlvValue.Integer(1), limits);
+        TtlvStructure message = TtlvStructure.create();
+        message = appendTtlvItem(message, 0x42007a, TtlvValue.structure(header, limits), limits);
+        return appendTtlvItem(message, 0x42000f, TtlvValue.structure(batchItemStructure(), limits), limits);
+    }
+
+    private static TtlvStructure appendTtlvItem(TtlvStructure structure, int rawTag,
+            TtlvValue value, CodecLimits limits) {
+        try (RawTag raw = RawTag.fromRaw(rawTag);
+                Tag tag = raw.checked();
+                value;
+                TtlvItem item = TtlvItem.create(tag, value, limits)) {
+            return TtlvStructure.withItem(structure, item, limits);
+        }
     }
 
     private static byte[] getResponse() throws Exception {
