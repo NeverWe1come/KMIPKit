@@ -400,6 +400,8 @@ def execute_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | Non
             return _credential_cell(cell, case, target)
         if cell['public_api_symbol'].startswith('kmipkit.async_operations.'):
             return _async_request_cell(cell, case, target)
+        if cell['public_api_symbol'].startswith('kmipkit.attribute_operations.'):
+            return _attribute_request_cell(cell, case, target)
         if cell['public_api_symbol'] in _TYPED_ATTRIBUTE_SYMBOLS:
             return _typed_attribute_cell(cell, case, target)
         if cell['public_api_symbol'].startswith('kmipkit.cryptographic_parameters.'):
@@ -1472,6 +1474,72 @@ def _async_request_cell(cell: dict, case: dict, target: dict) -> dict:
         if tree != [0x4200FF, 1, expected]:
             raise ValueError('asynchronous request emitted different TTLV fields')
     _assert_async_request_target(operation, target, tree)
+    tree_hash = digest([operation, tree])
+    return {'request_tree_sha256': tree_hash, 'response_tree_sha256': tree_hash}
+
+
+_ATTRIBUTE_REQUEST_OPERATIONS = {
+    'AddAttributeRequest': 'Add Attribute',
+    'AdjustAttributeRequest': 'Adjust Attribute',
+    'DeleteAttributeRequest': 'Delete Attribute',
+    'GetAttributeListRequest': 'Get Attribute List',
+    'GetAttributesRequest': 'Get Attributes',
+    'ModifyAttributeRequest': 'Modify Attribute',
+    'SetAttributeRequest': 'Set Attribute',
+}
+_ATTRIBUTE_PAYLOAD_TAGS = {
+    'Unique Identifier': 0x420094,
+    'New Attribute': 0x42013D,
+    'Current Attribute': 0x42013C,
+    'Attribute Reference': 0x42013B,
+    'Adjustment Type': 0x420158,
+    'Adjustment Value': 0x420162,
+}
+
+
+def _attribute_request_cell(cell: dict, case: dict, target: dict) -> dict:
+    """Invoke one standalone typed attribute request constructor or encoder."""
+    from kmipkit import attribute_operations, extensions, ttlv
+
+    symbol = cell['public_api_symbol']
+    class_name = symbol.split('.')[2]
+    operation = _ATTRIBUTE_REQUEST_OPERATIONS.get(class_name)
+    if operation is None or not (symbol.endswith('.create') or symbol.endswith('.to_ttlv_payload')):
+        raise RecipePending
+    identifier = extensions.UniqueIdentifier.text_string('KMIPKit-route-object')
+    reference = extensions.AttributeReference.name('KMIPKit', 'Contact Information')
+    by_tag = extensions.AttributeReference.tag(0x420022)
+    with ExitStack() as owned:
+        current = owned.enter_context(PythonKmipDriver._item(0x420022, 'text', 'old-value'))
+        new = owned.enter_context(PythonKmipDriver._item(0x420022, 'text', 'new-value'))
+        if class_name == 'AddAttributeRequest':
+            request = attribute_operations.AddAttributeRequest.create(identifier, new)
+        elif class_name == 'SetAttributeRequest':
+            request = attribute_operations.SetAttributeRequest.create(identifier, new)
+        elif class_name == 'ModifyAttributeRequest':
+            request = attribute_operations.ModifyAttributeRequest.create(identifier, current, new)
+        elif class_name == 'DeleteAttributeRequest':
+            request = attribute_operations.DeleteAttributeRequest.create(identifier, current, reference)
+        elif class_name == 'AdjustAttributeRequest':
+            adjustment = owned.enter_context(ttlv.ttlv_value_integer(1))
+            request = attribute_operations.AdjustAttributeRequest.create(identifier, reference, 1, adjustment)
+        elif class_name == 'GetAttributesRequest':
+            request = attribute_operations.GetAttributesRequest.create(identifier, (by_tag, reference))
+        else:
+            request = attribute_operations.GetAttributeListRequest.create(identifier)
+        request = owned.enter_context(request)
+        payload = owned.enter_context(request.to_ttlv_payload())
+        item = owned.enter_context(PythonKmipDriver._item(0x4200FF, 'structure', payload))
+        tree = item_tree(item)
+    if tree[0:2] != [0x4200FF, 1]:
+        raise ValueError('typed attribute request payload is not a Structure')
+    if target.get('kind') == 'operation':
+        if _normalized_name(target.get('name', '')) != _normalized_name(operation):
+            raise ValueError('attribute request class does not match its operation target')
+    else:
+        tag = _ATTRIBUTE_PAYLOAD_TAGS.get(target.get('name', ''))
+        if tag is None or not _credential_tree_has_tag([0, 1, tree[2]], tag):
+            raise ValueError('attribute request payload omitted its exact normative field')
     tree_hash = digest([operation, tree])
     return {'request_tree_sha256': tree_hash, 'response_tree_sha256': tree_hash}
 

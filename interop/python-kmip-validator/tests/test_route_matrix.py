@@ -460,6 +460,7 @@ class RouteMatrixTests(unittest.TestCase):
         report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
 
         self.assertEqual(0, len(gaps), f'{len(gaps)} attribute request cells lack recipes')
+        self.assertTrue(symbols)
         self.assertEqual(len(list(iter_cells(catalog, manifest, languages=('python',)))),
                          len(report['events']))
         self.assertEqual(symbols, {event['public_api_symbol'] for event in report['events']})
