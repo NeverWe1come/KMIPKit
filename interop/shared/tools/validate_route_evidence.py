@@ -179,8 +179,13 @@ def _validate_batch_event(event: dict, case: dict, catalog: dict, key: tuple) ->
         if expected_codes is not None and event.get(evidence_field) != expected_codes:
             raise ValueError(f"controlled peer per-item {field} outcomes do not match the catalog: {key}")
     expected_effects = expected.get("effects")
-    if expected_effects is not None and event.get("peer_observed_effects") != expected_effects:
-        raise ValueError(f"controlled peer per-item effects do not match the catalog: {key}")
+    if expected_effects is not None:
+        if event.get("peer_observed_effects") != expected_effects:
+            raise ValueError(f"controlled peer per-item effects do not match the catalog: {key}")
+        for field in ("peer_observed_state_before_sha256", "peer_observed_state_after_sha256"):
+            if (not isinstance(event.get(field), str)
+                    or not re.fullmatch(r"[0-9a-f]{64}", event[field])):
+                raise ValueError(f"controlled peer state hashes are missing or invalid: {key}")
 
 
 def _expected_cells(report: dict, catalog: dict, manifest: dict) -> dict[tuple, dict]:
