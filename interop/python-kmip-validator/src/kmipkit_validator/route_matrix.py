@@ -1107,6 +1107,10 @@ _TYPED_RESPONSE_TTLV_ROUTES = {
     )
     for member in ('response_ttlv', 'response_payload_ttlv')
 }
+_QUERY_RESPONSE_FIELD_ROUTES = {
+    'kmipkit.client.QueryResponse.field_at',
+    'kmipkit.client.QueryResponse.field_count',
+}
 
 
 def _batch_item_result_value_cell(cell: dict, case: dict, target: dict,
@@ -1430,6 +1434,42 @@ def _typed_response_ttlv_cell(cell: dict, target: dict,
             'response_tree_sha256': response_digest}
 
 
+def _query_response_field_cell(cell: dict, target: dict,
+                               trace: CallTrace | None) -> dict:
+    """Read QueryResponse field count and indexed values in their original order."""
+    from kmipkit import client
+
+    expected = ((0x42005C, 1), (0x420057, 2))
+    with ExitStack() as owned:
+        payload = _credential_structure_from_children(
+            [[tag, 5, value] for tag, value in expected], owned)
+        fields = [client._QueryFieldData(tag, client.QueryFieldKind.ENUMERATION, value)
+                  for tag, value in expected]
+        response = client.QueryResponse(payload, fields)
+        owned.callback(response.close)
+
+        symbol = cell['public_api_symbol']
+        if symbol.endswith('.field_count'):
+            observed_count = response.field_count
+            if observed_count != len(expected):
+                raise ValueError('QueryResponse field count changed the payload field count')
+            observed = {'count': observed_count}
+        else:
+            field = response.field_at(1)
+            if (field.index != 1 or field.tag != expected[1][0]
+                    or field.kind is not client.QueryFieldKind.ENUMERATION
+                    or field.enumeration != expected[1][1]):
+                raise ValueError('QueryResponse field_at changed ordered field metadata')
+            observed = {'index': field.index, 'tag': field.tag,
+                        'kind': int(field.kind), 'enumeration': field.enumeration}
+        if trace is not None:
+            trace.record_invocation(symbol)
+        request_digest = digest({'fields': expected, 'target': target.get('target_id')})
+        response_digest = digest(observed)
+    return {'request_tree_sha256': request_digest,
+            'response_tree_sha256': response_digest}
+
+
 _GENERIC_SYMBOLS = {
     'kmipkit.ttlv.' + name for name in (
         'ttlv_item_view_from_item', 'raw_tag_from_raw', 'raw_tag_try_checked',
@@ -1478,6 +1518,8 @@ def execute_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | Non
             return _typed_message_cell(cell, case, target)
         if cell['public_api_symbol'] in _TYPED_RESPONSE_TTLV_ROUTES:
             return _typed_response_ttlv_cell(cell, target, trace)
+        if cell['public_api_symbol'] in _QUERY_RESPONSE_FIELD_ROUTES:
+            return _query_response_field_cell(cell, target, trace)
         if cell['public_api_symbol'] in _BATCH_ITEM_RESULT_VALUE_ROUTES:
             return _batch_item_result_value_cell(cell, case, target, trace)
         return _generic_cell(cell, case, target)
