@@ -928,6 +928,25 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(events)
         self.assertTrue(all(event['status'] == 'passed' for event in events))
 
+    def test_query_response_field_accessors_preserve_wire_order(self):
+        symbols = {
+            'kmipkit.client.QueryResponse.field_at',
+            'kmipkit.client.QueryResponse.field_count',
+        }
+        cases = {case['case_id']: case for case in self.catalog['test_cases']}
+        targets = {target['target_id']: target for target in self.catalog['normative_targets']}
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
+                 if cell['public_api_symbol'] in symbols]
+        outcomes = [self.runner._execute_matrix_cell(cell, cases[cell['case_id']],
+                                                     targets[cell['target_id']])
+                    for cell in cells]
+
+        gaps = [value for kind, value in outcomes if kind == 'gap']
+        events = [value for kind, value in outcomes if kind == 'event']
+        self.assertEqual([], gaps)
+        self.assertTrue(events)
+        self.assertTrue(all(event['status'] == 'passed' for event in events))
+
     def test_query_routes_record_the_peer_rejection_without_calling_it_success(self):
         catalog = copy.deepcopy(self.catalog)
         catalog['test_cases'] = [case for case in self.catalog['test_cases']
