@@ -1198,6 +1198,14 @@ fn message_field_tag(target: &Json, elements: &[Json]) -> Result<u32> {
         .ok_or("message field has no assigned TTLV tag")
 }
 
+fn message_target_tag(target: &Json, elements: &[Json]) -> Result<Option<u32>> {
+    match target["kind"].as_str() {
+        Some("message_field") => message_field_tag(target, elements).map(Some),
+        Some("tag") => sample(target, elements).map(|item| Some(item.tag().raw())),
+        _ => Ok(None),
+    }
+}
+
 fn message_item(tag: u32, value: Value) -> Result<Item> {
     crate::driver::item(tag, value)
 }
@@ -1208,7 +1216,7 @@ fn message_structure(tag: u32, children: Vec<Item>) -> Result<Item> {
 }
 
 fn message_scalar(tag: u32, value: Value, target: &Json, elements: &[Json]) -> Result<Item> {
-    if target["kind"] == "message_field" && message_field_tag(target, elements)? == tag {
+    if message_target_tag(target, elements)? == Some(tag) {
         // Some §8 targets omit an explicit encoding in the inventory; the
         // field table already supplies its type through this fixture recipe.
         sample(target, elements).or_else(|_| message_item(tag, value))
@@ -1218,8 +1226,9 @@ fn message_scalar(tag: u32, value: Value, target: &Json, elements: &[Json]) -> R
 }
 
 fn message_extension(target: &Json, elements: &[Json]) -> Result<Item> {
-    let vendor_id = message_field_tag(target, elements).ok() == Some(0x0042_009D);
-    let criticality = message_field_tag(target, elements).ok() == Some(0x0042_0026);
+    let target_tag = message_target_tag(target, elements)?;
+    let vendor_id = target_tag == Some(0x0042_009D);
+    let criticality = target_tag == Some(0x0042_0026);
     let vendor_identification = message_item(
         0x0042_009D,
         if vendor_id {
@@ -1310,11 +1319,7 @@ fn message_nonce(target: &Json, elements: &[Json]) -> Result<Item> {
 }
 
 fn message_batch_extension(target: &Json, elements: &[Json]) -> Result<Option<Item>> {
-    let target_tag = if target["kind"] == "message_field" {
-        Some(message_field_tag(target, elements)?)
-    } else {
-        None
-    };
+    let target_tag = message_target_tag(target, elements)?;
     if target_tag
         .is_some_and(|tag| [0x0042_0051, 0x0042_0026, 0x0042_009C, 0x0042_009D].contains(&tag))
     {
@@ -1333,9 +1338,7 @@ fn request_batch_item(index: usize, target: &Json, elements: &[Json]) -> Result<
         elements,
     )?;
     let ephemeral = message_scalar(0x0042_0154, Value::boolean(false), target, elements)?;
-    let unique_id = if target["kind"] == "message_field"
-        && message_field_tag(target, elements)? == 0x0042_0093
-    {
+    let unique_id = if message_target_tag(target, elements)? == Some(0x0042_0093) {
         sample(target, elements)?
     } else {
         let identifier = u8::try_from(index + 1).map_err(|_| "too many request batch items")?;
@@ -1354,13 +1357,7 @@ fn request_message_fixture(
     elements: &[Json],
     protocol_version: &str,
 ) -> Result<Item> {
-    let target_tag = if target["kind"] == "message_field" {
-        Some(message_field_tag(target, elements)?)
-    } else if target["kind"] == "tag" {
-        Some(sample(target, elements)?.tag().raw())
-    } else {
-        None
-    };
+    let target_tag = message_target_tag(target, elements)?;
     let multiple = target_tag.is_some_and(|tag| [0x0042_000E, 0x0042_0010].contains(&tag));
     let count: usize = if multiple { 2 } else { 1 };
     let version = message_protocol_version(target, elements, protocol_version)?;
@@ -1427,11 +1424,7 @@ fn request_message_fixture(
 }
 
 fn response_batch_item(target: &Json, elements: &[Json]) -> Result<Item> {
-    let target_tag = if target["kind"] == "message_field" {
-        Some(message_field_tag(target, elements)?)
-    } else {
-        None
-    };
+    let target_tag = message_target_tag(target, elements)?;
     let pending = target_tag == Some(0x0042_0006);
     let failed = matches!(target_tag, Some(0x0042_007D | 0x0042_007E));
     let operation = if pending {
