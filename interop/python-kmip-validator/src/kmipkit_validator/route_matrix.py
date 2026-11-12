@@ -579,11 +579,33 @@ def _managed_object_root_name(target: dict, elements: dict[str, dict]) -> str:
     roots = {element['element_id']: element['name'] for element in elements.values()
              if element.get('kind') == 'object_structure'
              and element.get('name') in _MANAGED_OBJECT_TYPES}
-    if target.get('target_id') in roots:
-        return roots[target['target_id']]
-    for parent in target.get('parent_element_ids', []):
-        if parent in roots:
-            return roots[parent]
+    pending = [target.get('target_id'), *target.get('parent_element_ids', [])]
+    visited = set()
+    ancestor_roots = set()
+    while pending:
+        element_id = pending.pop(0)
+        if not element_id or element_id in visited:
+            continue
+        visited.add(element_id)
+        if element_id in roots:
+            ancestor_roots.add(roots[element_id])
+            continue
+        element = elements.get(element_id)
+        if element is not None:
+            pending.extend(element.get('parent_element_ids', []))
+    if ancestor_roots:
+        for preferred in ('Certificate', 'Certificate Request', 'Opaque Object',
+                          'Private Key', 'Public Key', 'Symmetric Key', 'Secret Data',
+                          'PGP Key', 'Split Key'):
+            if preferred in ancestor_roots:
+                return preferred
+    target_id = target.get('target_id', '')
+    if any(f'-3-{index}-KEY-MATERIAL' in target_id for index in (5, 7, 9, 11)):
+        return 'Private Key'
+    if any(f'-3-{index}-KEY-MATERIAL' in target_id for index in (6, 8, 10, 12)):
+        return 'Public Key'
+    if target.get('kind') in {'object_structure', 'structure_member'}:
+        return 'Symmetric Key'
     if target.get('kind') == 'tag':
         for name in _MANAGED_OBJECT_TYPES:
             if _managed_object_tag(elements, name) == int(target.get('wire_value', '0'), 16):
