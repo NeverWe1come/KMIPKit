@@ -13,7 +13,7 @@ later, and the platform's native symbol reader (`nm` on Unix):
 
 ```text
 python -B -m unittest tools.api_manifest.tests.test_binding_exports -v
-python -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-11-07.json --check
+python -B tools/api_manifest/audit_binding_exports.py --repo-root . --report specs/043-public-api-bindings/reports/binding-export-report-2026-11-12-fluent-attribute-reads.json --check
 ```
 
 The runner builds `kmipkit-ffi` with `cargo build --locked --offline` into a new
@@ -182,15 +182,15 @@ or inventory issues. No binding capability is promoted by this audit; typed
 parameters and Authentication execution parity remain assigned to KMIPKIT-0053.
 
 
-## Response-view binding delivery snapshot (2026-11-11)
+## Fluent attribute read binding delivery snapshot (2026-11-12)
 
 The current audit report is
-`specs/043-public-api-bindings/reports/binding-export-report-2026-11-11-response-views.json`.
+`specs/043-public-api-bindings/reports/binding-export-report-2026-11-12-fluent-attribute-reads.json`.
 It was generated from the built C DSO and complete Java/Python inventories
-after KMIPKIT-0095 T009. Earlier dated reports remain historical snapshots.
+after KMIPKIT-0109. Earlier dated reports remain historical snapshots.
 
 | Package | Scanner complete | Observed | Manifest declarations | Exact matches | Exact exclusions | Missing | Stale | Kind mismatches | Issues | `matchesManifest` |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| C | yes | 2,058 | 1,998 | 1,998 | 60 | 0 | 0 | 0 | 0 | yes |
-| Java | yes | 3,090 | 2,390 | 2,390 | 700 | 0 | 0 | 0 | 0 | yes |
-| Python | yes | 3,605 | 2,596 | 2,596 | 1,009 | 0 | 0 | 0 | 0 | yes |
+| C | yes | 2,062 | 2,002 | 2,002 | 60 | 0 | 0 | 0 | 0 | yes |
+| Java | yes | 3,106 | 2,406 | 2,406 | 700 | 0 | 0 | 0 | 0 | yes |
+| Python | yes | 3,626 | 2,617 | 2,617 | 1,009 | 0 | 0 | 0 | 0 | yes |
