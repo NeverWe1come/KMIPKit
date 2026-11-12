@@ -10,20 +10,22 @@ import re
 _SHA256 = re.compile(r"[0-9a-f]{64}\Z")
 
 
+def _validated_artifact_digest(ledger: dict) -> str:
+    artifact_sha256 = ledger.get("artifact_sha256")
+    if not isinstance(artifact_sha256, str) or not _SHA256.fullmatch(artifact_sha256):
+        raise ValueError("route ledger has an invalid artifact digest")
+    return artifact_sha256
+
+
+def _coverage_projection(ledger: dict) -> dict:
+    return {key: value for key, value in ledger.items() if key != "artifact_sha256"}
+
+
 def compare_ledgers(reference: dict, generated: dict) -> bool:
     """Require equal coverage and provenance while allowing build-specific artifacts."""
-    for ledger in (reference, generated):
-        artifact_sha256 = ledger.get("artifact_sha256")
-        if not isinstance(artifact_sha256, str) or not _SHA256.fullmatch(artifact_sha256):
-            raise ValueError("route ledger has an invalid artifact digest")
-
-    reference_coverage = {
-        key: value for key, value in reference.items() if key != "artifact_sha256"
-    }
-    generated_coverage = {
-        key: value for key, value in generated.items() if key != "artifact_sha256"
-    }
-    if reference_coverage != generated_coverage:
+    _validated_artifact_digest(reference)
+    _validated_artifact_digest(generated)
+    if _coverage_projection(reference) != _coverage_projection(generated):
         raise ValueError("generated route ledger differs from the checked-in coverage reference")
     return True
 
