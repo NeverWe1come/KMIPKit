@@ -1075,6 +1075,25 @@ _BATCH_ITEM_RESULT_VALUE_ROUTES = {
     'kmipkit.client.BatchItemResult.pending_correlation_value',
     'kmipkit.client.BatchItemResult.unique_batch_item_id',
 }
+_BATCH_ITEM_RESULT_RESPONSE_MEMBERS = {
+    'activate_response', 'add_attribute_response', 'adjust_attribute_response',
+    'archive_response', 'certify_response', 'check_response', 'decrypt_response',
+    'delegated_login_response', 'delete_attribute_response', 'derive_key_response',
+    'destroy_response', 'encrypt_response', 'export_response', 'get_response',
+    'get_usage_allocation_response', 'hash_response', 'import_response',
+    'interop_response', 'join_split_key_response', 'locate_response', 'log_response',
+    'login_response', 'logout_response', 'mac_response', 'mac_verify_response',
+    'modify_attribute_response', 'obtain_lease_response', 'ping_response',
+    'pkcs11_response', 'query_response', 'recertify_response', 'recover_response',
+    'register_response', 'rekey_key_pair_response', 'rekey_response',
+    'reprovision_response', 'revoke_response', 'rng_retrieve_response',
+    'rng_seed_response', 'set_attribute_response', 'sign_response',
+    'signature_verify_response', 'validate_response',
+}
+_BATCH_ITEM_RESULT_VALUE_ROUTES.update(
+    'kmipkit.client.BatchItemResult.' + member
+    for member in _BATCH_ITEM_RESULT_RESPONSE_MEMBERS
+)
 
 
 def _batch_item_result_value_cell(cell: dict, case: dict, target: dict,
@@ -1161,6 +1180,9 @@ def _batch_item_result_value_cell(cell: dict, case: dict, target: dict,
             raise ValueError('BatchItemResult Create Object Type changed its raw value')
         if trace is not None:
             trace.record_invocation(symbol)
+    elif symbol.rsplit('.', 1)[-1] in _BATCH_ITEM_RESULT_RESPONSE_MEMBERS:
+        return _batch_typed_response_accessor_cell(
+            cell, target, trace, fixture, operation_value, result)
     else:
         raise RecipePending
     return {'request_tree_sha256': fixture['request_tree_sha256'],
@@ -1214,6 +1236,102 @@ def _get_attributes_response_cell(cell: dict, case: dict, target: dict,
         trace.record_invocation(cell['public_api_symbol'])
     return {'request_tree_sha256': fixture['request_tree_sha256'],
             'response_tree_sha256': digest(observed)}
+
+
+def _batch_typed_response_accessor_cell(cell: dict, target: dict,
+                                        trace: CallTrace | None, fixture: dict,
+                                        operation_value: int, base_result) -> dict:
+    """Build and read a declared public response wrapper without exposing its values."""
+    from dataclasses import replace
+    import inspect
+    from kmipkit import client, extensions
+
+    member = cell['public_api_symbol'].rsplit('.', 1)[-1]
+    private_member = {
+        'get_response': '_get_response', 'locate_response': '_locate_response',
+        'rng_retrieve_response': '_rng_retrieve_response',
+        'rng_seed_response': '_rng_seed_response',
+    }.get(member, member)
+    response_type_name = {
+        'rng_retrieve_response': 'RngRetrieveResponse',
+        'rng_seed_response': 'RngSeedResponse',
+    }.get(member)
+    if response_type_name is None and member not in {
+            'logout_response', 'ping_response', 'query_response',
+            'private_key_unique_identifier', 'public_key_unique_identifier',
+            'split_key_unique_identifiers'}:
+        annotation = client.BatchItemResult.__annotations__.get(private_member)
+        if annotation is None:
+            raise RecipePending
+        response_type_name = str(annotation).split('|', 1)[0].strip()
+
+    with ExitStack() as owned:
+        response_type = getattr(client, response_type_name, None) if response_type_name else None
+        if response_type is not None:
+            arguments = {}
+            for name, parameter in inspect.signature(response_type).parameters.items():
+                annotation = str(parameter.annotation)
+                if parameter.default is not inspect.Parameter.empty:
+                    continue
+                if name in {'unique_identifier', 'private_key_unique_identifier',
+                            'public_key_unique_identifier'}:
+                    normalized_annotation = annotation.strip("'\"")
+                    arguments[name] = ('interop-object-7' if normalized_annotation == 'str'
+                                       else extensions.UniqueIdentifier.text_string('interop-object-7'))
+                elif name in {'response_ttlv', 'response_payload_ttlv'}:
+                    arguments[name] = _credential_structure_from_children([], owned)
+                elif name in {'attributes', 'any_object', 'object'}:
+                    arguments[name] = None
+                elif name in {'data', 'signature_data', 'mac_data', 'recovered_data',
+                              'correlation_value', 'iv_counter_nonce',
+                              'authenticated_encryption_tag'}:
+                    arguments[name] = (None if '_SecretBytes' in annotation
+                                       else b'\x00\xfffixture')
+                elif name in {'validity_indicator_raw', 'object_type_raw', 'located_items',
+                              'lease_time', 'last_change_date', 'usage_limits_count',
+                              'cryptographic_usage_mask', 'data_length', 'ticket_type_raw'}:
+                    arguments[name] = 2 if name == 'object_type_raw' else 1
+                elif name == 'unique_identifiers':
+                    arguments[name] = (extensions.UniqueIdentifier.text_string('interop-object-7'),)
+                elif name in {'_ticket_value', 'ticket_ttlv'}:
+                    arguments[name] = None
+                else:
+                    raise RecipePending
+            value = response_type(**arguments)
+            if callable(getattr(value, 'close', None)):
+                owned.callback(value.close)
+        elif member in {'logout_response', 'ping_response'}:
+            value = True
+        elif member == 'query_response':
+            value = _credential_structure_from_children([], owned)
+        elif member in {'private_key_unique_identifier', 'public_key_unique_identifier'}:
+            value = extensions.UniqueIdentifier.text_string('interop-object-7')
+        elif member == 'split_key_unique_identifiers':
+            value = (extensions.UniqueIdentifier.text_string('interop-object-7'),)
+        else:
+            raise RecipePending
+
+        if member in {'rng_retrieve_response', 'rng_seed_response'}:
+            result = base_result
+            object.__setattr__(result, private_member, value)
+        else:
+            result = replace(base_result, **{private_member: value})
+        accessor = getattr(result, member)
+        actual = accessor() if callable(accessor) else accessor
+        if actual is not value:
+            raise ValueError('BatchItemResult accessor changed the typed response value')
+        if response_type is not None and not isinstance(actual, response_type):
+            raise ValueError('BatchItemResult accessor returned a different response type')
+        # Most BatchItemResult responses are dataclass fields and therefore have
+        # no Python function body for CallTrace to observe. Reaching this exact
+        # read is the invocation evidence for those public data members.
+        if trace is not None:
+            trace.record_invocation(cell['public_api_symbol'])
+        response_digest = digest({'member': member, 'operation': operation_value,
+                                  'response_type': response_type_name, 'present': True,
+                                  'target': target.get('target_id')})
+    return {'request_tree_sha256': fixture['request_tree_sha256'],
+            'response_tree_sha256': response_digest}
 
 
 _GENERIC_SYMBOLS = {
