@@ -2202,10 +2202,19 @@ def _crypto_parameters_cell(cell: dict, case: dict, target: dict) -> dict:
         'Hashing Algorithm': 'hashing_algorithm', 'Key Role Type': 'key_role_type',
         'Digital Signature Algorithm': 'digital_signature_algorithm',
         'Cryptographic Algorithm': 'cryptographic_algorithm', 'Mask Generator': 'mask_generator',
+        'Mask Generator Hashing Algorithm': 'mask_generator_hashing_algorithm',
+        'Random IV': 'random_iv', 'IV Length': 'iv_length', 'Tag Length': 'tag_length',
+        'Fixed Field Length': 'fixed_field_length',
+        'Invocation Field Length': 'invocation_field_length',
+        'Counter Length': 'counter_length', 'Initial Counter Value': 'initial_counter_value',
+        'Salt Length': 'salt_length', 'P Source': 'p_source', 'Trailer Field': 'trailer_field',
     }
     by_id, _, _ = _catalog_model_data()
     methods = {int(item['wire_value'], 16): names[item['name']] for item in by_id.values()
                if item.get('kind') == 'tag' and item.get('name') in names}
+    field_tags = {name: int(item['wire_value'], 16) for item in by_id.values()
+                  if item.get('kind') == 'tag' and item.get('name') in names
+                  for name in (item['name'],)}
     if target.get('kind') == 'enumeration_value':
         samples = _generic_samples(case, target, 'kmipkit.ttlv.ttlv_item_create')
     elif (target.get('kind') == 'attribute' and target.get('name') in names
@@ -2223,13 +2232,46 @@ def _crypto_parameters_cell(cell: dict, case: dict, target: dict) -> dict:
             and item.get('allocation') in ('assigned', 'extension')
             and isinstance(item.get('wire_value'), str)
         ]
+    elif (target.get('kind') in {'attribute', 'operation_structure', 'structure_member', 'tag'}
+          and target.get('name', '').removesuffix(', MAY be repeated') == 'Cryptographic Parameters'):
+        samples = [(0x420028, 'Enumeration', 3)]
+    elif target.get('kind') in {'structure_member', 'tag'}:
+        name = target.get('name', '').removesuffix(', MAY be repeated')
+        field = names.get(name)
+        if field is None:
+            raise RecipePending
+        if target.get('kind') == 'tag':
+            tag = int(target['wire_value'], 16)
+            value_type = {
+                **{name: 'Enumeration' for name in (
+                    'Block Cipher Mode', 'Padding Method', 'Hashing Algorithm', 'Key Role Type',
+                    'Digital Signature Algorithm', 'Cryptographic Algorithm', 'Mask Generator',
+                    'Mask Generator Hashing Algorithm')},
+                'Random IV': 'Boolean', 'P Source': 'Byte String',
+            }.get(name, 'Integer')
+        else:
+            tag = field_tags.get(name)
+            value_types = PythonKmipDriver._catalog_value_types(case, target, _catalog_model_data()[1])
+            value_type = next(iter(value_types), None)
+        if tag is None or value_type not in {
+                'Enumeration', 'Integer', 'Boolean', 'Byte String'}:
+            raise RecipePending
+        value = {'Enumeration': 1, 'Integer': 32, 'Boolean': True,
+                 'Byte String': b'PSource-fixture'}[value_type]
+        samples = [(tag, value_type, value)]
     else:
         raise RecipePending
-    if not samples or any(tag not in methods or kind != 'Enumeration' for tag, kind, _ in samples):
+    if not samples or any(kind == 'Enumeration' and tag not in methods for tag, kind, _ in samples):
         raise RecipePending
     observed = []
-    for tag, _, value in samples:
-        field = methods[tag]
+    for tag, value_type, value in samples:
+        field = methods.get(tag, names.get(target.get('name', '').removesuffix(', MAY be repeated')))
+        if field is None and cell['public_api_symbol'].endswith(('.builder', '.build', '.from_ttlv', '.into_ttlv')):
+            field = 'cryptographic_algorithm'
+            tag = 0x420028
+            value_type, value = 'Enumeration', 3
+        if field is None:
+            raise RecipePending
         # Hashing Algorithm also supplies Mask Generator Hashing Algorithm;
         # choose the exact public setter required by this route.
         if cell['public_api_symbol'].endswith('.mask_generator_hashing_algorithm'):
@@ -2258,7 +2300,9 @@ def _crypto_parameters_cell(cell: dict, case: dict, target: dict) -> dict:
             copied_payload = owned.enter_context(copied.into_ttlv())
             item = owned.enter_context(PythonKmipDriver._item(0x42002B, 'structure', payload))
             copied_item = owned.enter_context(PythonKmipDriver._item(0x42002B, 'structure', copied_payload))
-            expected = [0x42002B, 1, [[tag, 5, value], *context_fields]]
+            value_kind = {'Enumeration': 5, 'Integer': 2, 'Boolean': 6, 'Byte String': 8}[value_type]
+            expected_value = value.hex() if value_kind == 8 else value
+            expected = [0x42002B, 1, [[tag, value_kind, expected_value], *context_fields]]
             if item_tree(item) != expected or item_tree(copied_item) != expected:
                 raise ValueError('cryptographic parameter typed/generic tree assertion failed')
             decoded = owned.enter_context(ttlv.ttlv_decode(encode_fixture(expected)))
