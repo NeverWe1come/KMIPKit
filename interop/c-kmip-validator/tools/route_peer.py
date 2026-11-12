@@ -250,6 +250,7 @@ RECIPES = {
     'test-v20-reject-get-constraints': ((56,), 'get_constraints'),
     'test-op-create': ((1, 20), 'create'),
     'test-batch-create-activate-destroy': ((1, 18, 12, 19, 20), 'create_activate_attribute_list_revoke_destroy'),
+    'test-batch-placeholder-chain-resolves': ((1, 18, 10), 'batch_placeholder_chain'),
     'test-batch-single-item-options-omitted': ((10,), 'batch_single_item_options_omitted'),
     'test-batch-count-matches-items': ((10, 12), 'batch_count_two_read_items'),
     'test-batch-unique-item-id-response-correlation': ((10, 12), 'batch_count_two_read_items'),
@@ -323,6 +324,15 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None):
             raise ValueError('fixture_id_placeholder_missing')
         if len(list(descendants(node, 0x420093))) != len(expected):
             raise ValueError('fixture_batch_item_identity_missing')
+        if selected_recipe[1] == 'batch_placeholder_chain':
+            items = [child for child in node[2] if child[0] == 0x42000F and child[1] == 1]
+            if ([numbers(item, 0x42005C) for item in items] != [[1], [18], [10]] or
+                    [numbers(item, 0x420094) for item in items] != [[], [1], [1]] or
+                    [byte_string_values(item, 0x420093) for item in items] !=
+                    [[b'placeholder-create'], [b'placeholder-activate'], [b'placeholder-get']]):
+                raise ValueError('fixture_placeholder_chain_shape_mismatch')
+            if numbers(node, 0x42000E) != [1]:
+                raise ValueError('fixture_placeholder_chain_continue_option_missing')
     if expected[0] == 3:
         register_item = next(item for item in node[2]
                              if item[0] == 0x42000F and numbers(item, 0x42005C) == [3])
