@@ -398,6 +398,8 @@ def execute_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | Non
             return _positive_fixture_cell(cell, case, target, trace=trace)
         if cell['public_api_symbol'].startswith('kmipkit.credentials.'):
             return _credential_cell(cell, case, target)
+        if cell['public_api_symbol'].startswith('kmipkit.async_operations.'):
+            return _async_request_cell(cell, case, target)
         if cell['public_api_symbol'] in _TYPED_ATTRIBUTE_SYMBOLS:
             return _typed_attribute_cell(cell, case, target)
         if cell['public_api_symbol'].startswith('kmipkit.cryptographic_parameters.'):
@@ -1378,6 +1380,98 @@ def _credential_cell(cell: dict, case: dict, target: dict) -> dict:
         raise ValueError('Credential Type route changed the normative raw value')
     tree_hash = digest(observed if not isinstance(observed, int) else [0x420024, 5, observed])
     return {'request_tree_sha256': tree_hash, 'response_tree_sha256': tree_hash}
+
+
+_ASYNC_OPERATION_CLASSES = {
+    'CancelRequest': 'Cancel',
+    'PollRequest': 'Poll',
+    'ProcessRequest': 'Process',
+    'QueryAsyncRequestsRequest': 'Query Asynchronous Requests',
+}
+_ASYNC_CORRELATION = b'\x00\x7f\x80\xff'
+_ASYNC_CORRELATION_VALUES = (_ASYNC_CORRELATION, b'\x10\x20\x30')
+_ASYNC_OPERATION_FILTER = (0x0000001A, 0xF1234567)
+
+
+def _async_target_tag(target: dict) -> int | None:
+    """Map an exact asynchronous field target to its normative TTLV tag."""
+    if target.get('kind') == 'tag':
+        wire_value = target.get('wire_value')
+        if isinstance(wire_value, str):
+            return int(wire_value.removeprefix('0x'), 16)
+        return None
+    target_name = _normalized_name(target.get('name', ''))
+    if target_name == 'asynchronouscorrelationvalue':
+        return 0x420006
+    if target_name == 'asynchronouscorrelationvalues':
+        return 0x420176
+    if target_name == 'operation':
+        return 0x42005C
+    if target_name == 'operations':
+        return 0x42014F
+    return None
+
+
+def _async_request_fields(operation: str, *, correlation_filter: bool, operation_filter: bool) -> list:
+    if operation != 'Query Asynchronous Requests':
+        return [[0x420006, 8, _ASYNC_CORRELATION.hex()]]
+    fields = []
+    if correlation_filter:
+        fields.append([0x420176, 1, [
+            [0x420006, 8, value.hex()] for value in _ASYNC_CORRELATION_VALUES
+        ]])
+    if operation_filter:
+        fields.append([0x42014F, 1, [
+            [0x42005C, 5, value] for value in _ASYNC_OPERATION_FILTER
+        ]])
+    return fields
+
+
+def _async_request_cell(cell: dict, case: dict, target: dict) -> dict:
+    """Invoke one public asynchronous request constructor or TTLV encoder."""
+    from kmipkit import async_operations
+
+    symbol = cell['public_api_symbol']
+    class_name = symbol.split('.')[2]
+    operation = _ASYNC_OPERATION_CLASSES.get(class_name)
+    if operation is None:
+        raise RecipePending
+    correlation_filter = (class_name != 'QueryAsyncRequestsRequest'
+                          or symbol.endswith('.with_correlation_values')
+                          or symbol.endswith('.create') or symbol.endswith('.to_ttlv_payload'))
+    operation_filter = (class_name != 'QueryAsyncRequestsRequest'
+                        or symbol.endswith('.with_operations')
+                        or symbol.endswith('.create') or symbol.endswith('.to_ttlv_payload'))
+    expected = _async_request_fields(operation, correlation_filter=correlation_filter,
+                                     operation_filter=operation_filter)
+    with ExitStack() as owned:
+        if class_name == 'QueryAsyncRequestsRequest':
+            request = owned.enter_context(async_operations.QueryAsyncRequestsRequest.create())
+            if (symbol.endswith('.with_correlation_values') or symbol.endswith('.create')
+                    or symbol.endswith('.to_ttlv_payload')):
+                request = owned.enter_context(request.with_correlation_values(_ASYNC_CORRELATION_VALUES))
+            if (symbol.endswith('.with_operations') or symbol.endswith('.create')
+                    or symbol.endswith('.to_ttlv_payload')):
+                request = owned.enter_context(request.with_operations(_ASYNC_OPERATION_FILTER))
+        else:
+            request_type = getattr(async_operations, class_name)
+            request = owned.enter_context(request_type.create(_ASYNC_CORRELATION))
+        payload = owned.enter_context(request.to_ttlv_payload())
+        payload_item = owned.enter_context(PythonKmipDriver._item(0x4200FF, 'structure', payload))
+        tree = item_tree(payload_item)
+        if tree != [0x4200FF, 1, expected]:
+            raise ValueError('asynchronous request emitted different TTLV fields')
+    if target.get('kind') == 'operation':
+        if _normalized_name(target.get('name', '')) != _normalized_name(operation):
+            raise ValueError('asynchronous request class does not match its operation target')
+    else:
+        tag = _async_target_tag(target)
+        if tag is None or not _credential_tree_has_tag([0, 1, tree[2]], tag):
+            raise ValueError('asynchronous TTLV output did not contain the exact target')
+    tree_hash = digest([operation, tree])
+    return {'request_tree_sha256': tree_hash, 'response_tree_sha256': tree_hash}
+
+
 def _typed_attribute_cell(cell: dict, case: dict, target: dict) -> dict:
     """Check exact direct-attribute identity, value copies and collection reads."""
     from kmipkit import ttlv
