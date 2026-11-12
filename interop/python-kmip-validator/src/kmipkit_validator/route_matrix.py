@@ -1497,6 +1497,16 @@ _ATTRIBUTE_PAYLOAD_TAGS = {
 }
 
 
+def _assert_attribute_request_target(operation: str, target: dict, tree: list) -> None:
+    if target.get('kind') == 'operation':
+        if _normalized_name(target.get('name', '')) != _normalized_name(operation):
+            raise ValueError('attribute request class does not match its operation target')
+        return
+    tag = _ATTRIBUTE_PAYLOAD_TAGS.get(target.get('name', ''))
+    if tag is None or not _credential_tree_has_tag([0, 1, tree[2]], tag):
+        raise ValueError('attribute request payload omitted its exact normative field')
+
+
 def _attribute_request_cell(cell: dict, case: dict, target: dict) -> dict:
     """Invoke one standalone typed attribute request constructor or encoder."""
     from kmipkit import attribute_operations, extensions, ttlv
@@ -1533,13 +1543,7 @@ def _attribute_request_cell(cell: dict, case: dict, target: dict) -> dict:
         tree = item_tree(item)
     if tree[0:2] != [0x4200FF, 1]:
         raise ValueError('typed attribute request payload is not a Structure')
-    if target.get('kind') == 'operation':
-        if _normalized_name(target.get('name', '')) != _normalized_name(operation):
-            raise ValueError('attribute request class does not match its operation target')
-    else:
-        tag = _ATTRIBUTE_PAYLOAD_TAGS.get(target.get('name', ''))
-        if tag is None or not _credential_tree_has_tag([0, 1, tree[2]], tag):
-            raise ValueError('attribute request payload omitted its exact normative field')
+    _assert_attribute_request_target(operation, target, tree)
     tree_hash = digest([operation, tree])
     return {'request_tree_sha256': tree_hash, 'response_tree_sha256': tree_hash}
 
