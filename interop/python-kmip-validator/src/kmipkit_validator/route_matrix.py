@@ -1120,6 +1120,11 @@ _RESPONSE_DATA_FIELD_ROUTES = {
     'kmipkit.client.Pkcs11Response.output_parameters_ttlv',
     'kmipkit.client.Pkcs11Response.return_code_ttlv',
 }
+_TICKET_TTLV_ROUTES = {
+    'kmipkit.client.DelegatedLoginResponse.ticket_ttlv',
+    'kmipkit.client.LoginResponse.ticket_ttlv',
+}
+_GET_ATTRIBUTE_LIST_RESPONSE_ROUTE = 'kmipkit.client.GetAttributeListResponse'
 _BATCH_ITEM_RESULT_VALUE_ROUTES.update(
     'kmipkit.client.BatchItemResult.' + member
     for member in ('private_key_unique_identifier', 'split_key_unique_identifiers')
@@ -1501,6 +1506,56 @@ def _response_data_field_cell(cell: dict, target: dict,
             'response_tree_sha256': response_digest}
 
 
+def _ticket_ttlv_cell(cell: dict, target: dict,
+                      trace: CallTrace | None) -> dict:
+    """Read the optional ticket TTLV while keeping ticket value bytes absent."""
+    from kmipkit import client, ttlv
+
+    _, response_name, member = cell['public_api_symbol'].rsplit('.', 2)
+    response_type = getattr(client, response_name)
+    with ExitStack() as owned:
+        ticket = _credential_structure_from_children([], owned)
+        value = response_type(ticket_type_raw=1, _ticket_value=None, ticket_ttlv=ticket)
+        if callable(getattr(value, 'close', None)):
+            owned.callback(value.close)
+        observed = getattr(value, member)
+        if observed is not ticket or not isinstance(observed, ttlv.Structure):
+            raise ValueError('typed login response changed its ticket TTLV handle')
+        with ttlv.ttlv_structure_view(observed) as view:
+            if ttlv.ttlv_structure_view_item_count(view) != 0:
+                raise ValueError('empty ticket TTLV fixture acquired unexpected items')
+        if trace is not None:
+            trace.record_invocation(cell['public_api_symbol'])
+        response_digest = digest({'response_type': response_name, 'ticket_ttlv_items': 0,
+                                 'target': target.get('target_id')})
+    return {'request_tree_sha256': response_digest,
+            'response_tree_sha256': response_digest}
+
+
+def _get_attribute_list_response_constructor_cell(cell: dict, target: dict,
+                                                  trace: CallTrace | None) -> dict:
+    """Construct Get Attribute List response metadata and retain its generic payload."""
+    from kmipkit import client, extensions
+
+    unique_identifier = extensions.UniqueIdentifier.text_string('interop-object-7')
+    with ExitStack() as owned:
+        payload = _credential_structure_from_children(
+            [[0x420094, 7, '696e7465726f702d6f626a6563742d37']], owned)
+        response = client.GetAttributeListResponse(unique_identifier, (), payload)
+        owned.callback(response.close)
+        if (response.unique_identifier is not unique_identifier
+                or response.attribute_references != ()
+                or response.response_payload_ttlv is not payload):
+            raise ValueError('Get Attribute List response constructor changed its fields')
+        if trace is not None:
+            trace.record_invocation(cell['public_api_symbol'])
+        response_digest = digest({'unique_identifier_kind': int(unique_identifier.kind),
+                                  'attribute_reference_count': 0, 'payload_item_count': 1,
+                                  'target': target.get('target_id')})
+    return {'request_tree_sha256': response_digest,
+            'response_tree_sha256': response_digest}
+
+
 def _query_response_field_cell(cell: dict, target: dict,
                                trace: CallTrace | None) -> dict:
     """Read QueryResponse field count and indexed values in their original order."""
@@ -1589,6 +1644,10 @@ def execute_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | Non
             return _query_response_field_cell(cell, target, trace)
         if cell['public_api_symbol'] in _RESPONSE_DATA_FIELD_ROUTES:
             return _response_data_field_cell(cell, target, trace)
+        if cell['public_api_symbol'] in _TICKET_TTLV_ROUTES:
+            return _ticket_ttlv_cell(cell, target, trace)
+        if cell['public_api_symbol'] == _GET_ATTRIBUTE_LIST_RESPONSE_ROUTE:
+            return _get_attribute_list_response_constructor_cell(cell, target, trace)
         if cell['public_api_symbol'] in _BATCH_ITEM_RESULT_VALUE_ROUTES:
             return _batch_item_result_value_cell(cell, case, target, trace)
         return _generic_cell(cell, case, target)
