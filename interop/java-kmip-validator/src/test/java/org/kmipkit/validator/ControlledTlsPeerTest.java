@@ -313,10 +313,6 @@ class ControlledTlsPeerTest {
                     batch.add(request);
                     try (ClientBatchResponse response = driver.executeBatchForEvidence(batch)) {
                         assertEquals(1, response.itemCount());
-                        appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
-                                "java.typed-protocol.function.client_batch_response_item_count",
-                                RESPONSE_BATCH_ITEM_TARGET_ID, "org.kmipkit.extensions.ClientBatchResponse.itemCount",
-                                null, null, "decode", protocolVersion, null, null, responseHash);
                         try (ClientBatchItemResult result = response.itemAt(0)) {
                             assertEquals(1, result.extensionCount());
                             appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
@@ -325,9 +321,25 @@ class ControlledTlsPeerTest {
                                     "org.kmipkit.extensions.ClientBatchItemResult.extensionCount",
                                     null, null, "decode", protocolVersion, null, null, responseHash);
                             assertBatchItemResponseRouteEvidence(events, result, protocolVersion, responseHash);
-                            appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
+                            appendRouteEvent(events, "test-norm-message-field-message-field-8-5-batch-count",
+                                    "java.typed-protocol.function.client_batch_response_item_count",
+                                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT",
+                                    "org.kmipkit.extensions.ClientBatchResponse.itemCount",
+                                    null, null, "decode", protocolVersion, null, null, responseHash);
+                            appendRouteEvent(events, "test-norm-message-field-message-field-9-5-batch-count",
+                                    "java.typed-protocol.function.client_batch_response_item_count",
+                                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT",
+                                    "org.kmipkit.extensions.ClientBatchResponse.itemCount",
+                                    null, null, "decode", protocolVersion, null, null, responseHash);
+                            appendRouteEvent(events, "test-norm-message-field-message-field-8-6-batch-item",
                                     "java.typed-protocol.function.client_batch_response_item_at",
-                                    RESPONSE_BATCH_ITEM_TARGET_ID, "org.kmipkit.extensions.ClientBatchResponse.itemAt",
+                                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM",
+                                    "org.kmipkit.extensions.ClientBatchResponse.itemAt",
+                                    null, null, "decode", protocolVersion, null, null, responseHash);
+                            appendRouteEvent(events, "test-norm-message-field-message-field-9-7-batch-item",
+                                    "java.typed-protocol.function.client_batch_response_item_at",
+                                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM",
+                                    "org.kmipkit.extensions.ClientBatchResponse.itemAt",
                                     null, null, "decode", protocolVersion, null, null, responseHash);
                             assertEquals(0x18L, result.operation());
                             assertEquals(0L, result.resultStatus());
@@ -393,6 +405,38 @@ class ControlledTlsPeerTest {
                         "test-norm-message-field-message-field-9-7-batch-item",
                         "java.typed-protocol.function.client_batch_response_item_at"),
                 "The installed batch item accessor must read the KMIP 2.1 response Batch Item field.");
+        assertEquals(0, routeEventCount(report.path("events"), RESPONSE_BATCH_ITEM_CASE_ID,
+                        "java.typed-protocol.function.client_batch_response_item_count"),
+                "Batch Count access must not be attributed to the structural Batch Item case.");
+        assertEquals(0, routeEventCount(report.path("events"), RESPONSE_BATCH_ITEM_CASE_ID,
+                        "java.typed-protocol.function.client_batch_response_item_at"),
+                "The response item accessor must use its exact normative Batch Item cases.");
+        for (String protocolVersion : List.of("2.0", "2.1")) {
+            assertEquals("KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT",
+                    findRouteEvent(report.path("events"),
+                            "test-norm-message-field-message-field-8-5-batch-count",
+                            "java.typed-protocol.function.client_batch_response_item_count",
+                            protocolVersion, "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT")
+                            .path("target_id").asText());
+            assertEquals("KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT",
+                    findRouteEvent(report.path("events"),
+                            "test-norm-message-field-message-field-9-5-batch-count",
+                            "java.typed-protocol.function.client_batch_response_item_count",
+                            protocolVersion, "KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT")
+                            .path("target_id").asText());
+            assertEquals("KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM",
+                    findRouteEvent(report.path("events"),
+                            "test-norm-message-field-message-field-8-6-batch-item",
+                            "java.typed-protocol.function.client_batch_response_item_at",
+                            protocolVersion, "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM")
+                            .path("target_id").asText());
+            assertEquals("KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM",
+                    findRouteEvent(report.path("events"),
+                            "test-norm-message-field-message-field-9-7-batch-item",
+                            "java.typed-protocol.function.client_batch_response_item_at",
+                            protocolVersion, "KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM")
+                            .path("target_id").asText());
+        }
         assertEquals(2, routeEventCount(report.path("events"), RESPONSE_BATCH_ITEM_CASE_ID,
                         "java.typed-protocol.function.client_batch_item_response_pending_correlation_value"),
                 "A controlled Pending response must expose its server-issued correlation value.");
@@ -441,7 +485,7 @@ class ControlledTlsPeerTest {
         int bitmaskEventCount = bitmaskFixtures.stream()
                 .mapToInt(fixture -> fixture.protocolVersions().size() * (4 + (fixture.attribute() == null ? 0 : 3)))
                 .sum();
-        int batchItemAccessorEventCount = List.of("2.0", "2.1").size() * 2;
+        int batchItemAccessorEventCount = List.of("2.0", "2.1").size() * 4;
         int batchItemExtensionCountEventCount = List.of("2.0", "2.1").size();
         int batchItemGenericRouteEventCount = List.of("2.0", "2.1").size() * 4;
         int batchItemAdditionalResponseRouteEventCount = List.of("2.0", "2.1").size() * 8;
@@ -472,7 +516,7 @@ class ControlledTlsPeerTest {
                 "Every TTLV data type needs its installed constructor, item view, and decoder routes.");
         long bitmaskCaseCount = bitmaskFixtures.stream().map(BitmaskFixture::caseId).distinct().count();
         long dataTypeCaseCount = dataTypeFixtures.stream().map(DataTypeFixture::caseId).distinct().count();
-        assertEquals(8 + enumerationFixtures.size() + bitmaskCaseCount + dataTypeCaseCount
+        assertEquals(12 + enumerationFixtures.size() + bitmaskCaseCount + dataTypeCaseCount
                         + CREDENTIAL_TYPE_MODEL_CASE_IDS.size(),
                 report.path("case_ids").size());
         List<String> expectedCredentialCaseIds = CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().toList();
@@ -2529,6 +2573,10 @@ class ControlledTlsPeerTest {
         genericBitmaskFixtures().stream().map(BitmaskFixture::caseId).distinct().forEach(caseIds::add);
         genericDataTypeFixtures().forEach(fixture -> caseIds.add(fixture.caseId()));
         caseIds.add(RESPONSE_BATCH_ITEM_CASE_ID);
+        caseIds.add("test-norm-message-field-message-field-8-5-batch-count");
+        caseIds.add("test-norm-message-field-message-field-9-5-batch-count");
+        caseIds.add("test-norm-message-field-message-field-8-6-batch-item");
+        caseIds.add("test-norm-message-field-message-field-9-7-batch-item");
         CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().forEach(caseIds::add);
         report.putArray("protocol_versions").add("2.0").add("2.1");
         ObjectNode combination = mapper.createObjectNode();
