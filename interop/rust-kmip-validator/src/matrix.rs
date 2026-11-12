@@ -2506,6 +2506,26 @@ fn invoke_response_ttlv_route(
 }
 
 fn invoke_simple_protocol_route(symbol: &str, sample: &Item) -> Option<Result<Item>> {
+    if symbol == "kmipkit_protocol::DerivationParameters::new" {
+        return Some((|| {
+            let _parameters = kmipkit::protocol::DerivationParameters::new();
+            sample.try_clone().map_err(|_| "local copy failed")
+        })());
+    }
+
+    if symbol == "kmipkit_protocol::QueryAsyncRequestsRequest::with_operations" {
+        return Some((|| {
+            let request = kmipkit::protocol::QueryAsyncRequestsRequest::new().with_operations([1]);
+            let payload = request
+                .to_ttlv_payload()
+                .map_err(|_| "Query Async Requests fixture rejected")?;
+            if payload.view().children().is_empty() {
+                return Err("Query Async Requests Operations filter was omitted");
+            }
+            sample.try_clone().map_err(|_| "local copy failed")
+        })());
+    }
+
     if symbol == "kmipkit_protocol::ManagedObject::unknown" {
         return Some((|| match kmipkit::protocol::ManagedObject::unknown(
             kmipkit::protocol::ObjectType::from_raw(0x8000_0000),
@@ -5881,7 +5901,9 @@ mod tests {
                     .find(|target| target["target_id"] == target_id)
                     .unwrap();
                 let expected = sample_for_route_at_version(symbol, target, elements, "2.1")
-                    .unwrap_or_else(|error| panic!("{symbol} sample failed for {target_id}: {error}"));
+                    .unwrap_or_else(|error| {
+                        panic!("{symbol} sample failed for {target_id}: {error}")
+                    });
                 let result = invoke(symbol, &expected, target, elements, "2.1")
                     .unwrap_or_else(|| panic!("{symbol} route missing for {target_id}"))
                     .unwrap_or_else(|error| panic!("{symbol} rejected {target_id}: {error}"));
