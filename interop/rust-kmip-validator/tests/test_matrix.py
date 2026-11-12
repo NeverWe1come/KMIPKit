@@ -318,6 +318,67 @@ class MatrixContract(unittest.TestCase):
             self.assertEqual(summary['invoked_local_cells'], 1)
             self.assertEqual(summary['gate_failure_code'], 'missing_required_matrix_cells')
 
+    def test_route_gate_consumes_controlled_response_accessor_evidence(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            matrix = root / 'one-cell.jsonl'
+            matrix.write_text(json.dumps(self.cell('kmipkit_ttlv::Item::new')) + '\n')
+            evidence_dir = root / 'response-evidence'
+            evidence_dir.mkdir()
+            response_cell = next(
+                cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
+                if cell['public_api_symbol'] == 'kmipkit_client::ClientBatchResponse::len'
+                and cell['protocol_version'] == '2.1'
+            )
+            provenance = json.loads((ROOT / 'interop/.local/rust-live/provenance.json').read_bytes())
+            event = {
+                key: response_cell.get(key)
+                for key in (
+                    'case_id', 'route_id', 'target_id', 'workflow_step_index',
+                    'workflow_item_index', 'public_api_symbol', 'execution_route_id',
+                    'execution_api_symbol', 'action', 'protocol_version', 'encoding',
+                    'transport',
+                )
+                if key in response_cell or key in ('execution_route_id', 'execution_api_symbol')
+            }
+            event.update({
+                'invocation_id': 'controlled-response-cell',
+                'status': 'passed',
+                'invocation_count': 1,
+                'response_tree_sha256': 'a' * 64,
+            })
+            report = {
+                'schema_version': '1.0',
+                'run_id': 'controlled-response-run',
+                'language': 'rust',
+                'server': {
+                    'id': 'controlled-fixture',
+                    'product': 'controlled-fixture',
+                    'version': 'offline-1',
+                    'configuration_fingerprint': 'b' * 64,
+                },
+                'library_commit': provenance['library_commit'],
+                'artifact_sha256': provenance['artifact_sha256'],
+                'catalog_sha256': hashlib.sha256(CATALOG_PATH.read_bytes()).hexdigest(),
+                'route_manifest_sha256': hashlib.sha256(ROUTES_PATH.read_bytes()).hexdigest(),
+                'protocol_versions': ['2.1'],
+                'network_combinations': [{'encoding': 'TTLV', 'transport': 'raw_tls'}],
+                'events': [event],
+            }
+            (evidence_dir / 'rust-response-routes-2.1.json').write_text(json.dumps(report))
+            process = subprocess.run([
+                sys.executable,
+                str(ROOT / 'interop/rust-kmip-validator/tools/run_route_matrix.py'),
+                '--matrix', str(matrix),
+                '--output-dir', str(root / 'output'),
+                '--response-evidence-dir', str(evidence_dir),
+            ], capture_output=True, text=True, timeout=30)
+            self.assertNotEqual(process.returncode, 0)
+            summary = json.loads((root / 'output/matrix-summary.json').read_bytes())
+            self.assertEqual(summary['invoked_response_cells'], 1)
+            self.assertEqual(summary['invoked_local_cells'], 1)
+            self.assertEqual(summary['pending_local_cells'], summary['required_local_cells'] - 2)
+
     def test_route_matrix_runner_does_not_accept_a_caller_selected_executable(self):
         process = subprocess.run([sys.executable,
             str(ROOT / 'interop/rust-kmip-validator/tools/run_route_matrix.py'), '--help'],
