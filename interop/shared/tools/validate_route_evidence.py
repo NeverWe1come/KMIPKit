@@ -33,14 +33,20 @@ def _event_outcome(record: dict) -> dict:
     return {field: value for field, value in record.items() if field != "invocation_id"}
 
 
-def _expected_tag_decode_rejection_code(cell: dict, case: dict) -> str | None:
+def _expected_tag_decode_rejection_code(
+    cell: dict,
+    case: dict,
+    target: dict | None = None,
+) -> str | None:
     requires = case.get("requires", {})
     if (cell.get("action") != "decode" or cell.get("mode") != "local"
             or ".generic-ttlv." not in f".{cell.get('route_id', '')}."):
         return None
-    if requires.get("target_kind") not in {"tag", "tag_range"}:
+    target_kind = target.get("kind") if target is not None else requires.get("target_kind")
+    allocation = target.get("allocation") if target is not None else requires.get("allocation")
+    if target_kind not in {"tag", "tag_range"}:
         return None
-    code = {"reserved": "tag_reserved", "unused": "tag_not_allocated"}.get(requires.get("allocation"))
+    code = {"reserved": "tag_reserved", "unused": "tag_not_allocated"}.get(allocation)
     if code is None:
         return None
     symbol = re.sub(r"[^a-z0-9]", "", cell.get("public_api_symbol", "").casefold())
@@ -237,6 +243,11 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
         raise ValueError("route evidence events must be an array")
     observed = {}
     case_by_id = {case["case_id"]: case for case in catalog["test_cases"]}
+    target_by_id = {
+        target["target_id"]: target
+        for target in catalog.get("normative_targets", [])
+        if isinstance(target, dict) and isinstance(target.get("target_id"), str)
+    }
     for event in events:
         if not isinstance(event, dict):
             raise ValueError("route evidence event must be an object")
@@ -275,7 +286,11 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
         if status == "passed":
             case = case_by_id[event["case_id"]]
             if event["action"] == "decode":
-                expected_rejection_code = _expected_tag_decode_rejection_code(planned, case)
+                expected_rejection_code = _expected_tag_decode_rejection_code(
+                    planned,
+                    case,
+                    target_by_id.get(planned["target_id"]),
+                )
                 outcome = event.get("decode_outcome")
                 if outcome == "rejected" or expected_rejection_code is not None:
                     if expected_rejection_code is None:
