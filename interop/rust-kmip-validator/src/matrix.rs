@@ -2185,10 +2185,7 @@ fn invoke_client_batch_route(symbol: &str, sample: &Item) -> Option<Result<Item>
             }
             "kmipkit_client::ClientBatch::with_request_time_stamp" => {
                 let value = sample.with_value(|value| match value {
-                    ValueView::DateTime(value) => Ok(*value),
-                    ValueView::DateTimeExtended(value) => {
-                        i64::try_from(*value).map_err(|_| "Time Stamp fixture is out of range")
-                    }
+                    ValueView::DateTime(value) | ValueView::DateTimeExtended(value) => Ok(*value),
                     _ => Err("Request Time Stamp fixture is not a Date-Time"),
                 })?;
                 let _batch = kmipkit::ClientBatch::empty().with_request_time_stamp(value);
@@ -2210,6 +2207,8 @@ fn invoke_client_batch_route(symbol: &str, sample: &Item) -> Option<Result<Item>
     })())
 }
 
+// Keep response accessor mappings next to their typed response fixtures.
+#[allow(clippy::too_many_lines)]
 fn invoke_client_batch_outcome_response_route(
     symbol: &str,
     sample: &Item,
@@ -2661,12 +2660,14 @@ fn invoke_response_ttlv_route(
     })())
 }
 
+// This small legacy route table groups single-operation protocol helpers.
+#[allow(clippy::too_many_lines)]
 fn invoke_simple_protocol_route(symbol: &str, sample: &Item) -> Option<Result<Item>> {
     if symbol == "kmipkit_protocol::CheckRequest::with_lease_time" {
-        return Some((|| {
+        return Some({
             let _request = kmipkit::protocol::CheckRequest::new().with_lease_time(1);
             sample.try_clone().map_err(|_| "local copy failed")
-        })());
+        });
     }
 
     if symbol == "kmipkit_protocol::RevokeRequest::with_compromise_occurrence_date" {
@@ -2697,10 +2698,10 @@ fn invoke_simple_protocol_route(symbol: &str, sample: &Item) -> Option<Result<It
     }
 
     if symbol == "kmipkit_protocol::DerivationParameters::new" {
-        return Some((|| {
+        return Some({
             let _parameters = kmipkit::protocol::DerivationParameters::new();
             sample.try_clone().map_err(|_| "local copy failed")
-        })());
+        });
     }
 
     if symbol == "kmipkit_protocol::QueryAsyncRequestsRequest::with_operations" {
@@ -2789,6 +2790,243 @@ fn invoke_simple_protocol_route(symbol: &str, sample: &Item) -> Option<Result<It
     None
 }
 
+// Keep a bounded set of simple request routes with their emitted payloads.
+#[allow(clippy::too_many_lines)]
+fn invoke_simple_request_builder_route(
+    symbol: &str,
+    sample: &Item,
+    target: &Json,
+    elements: &[Json],
+) -> Option<Result<Item>> {
+    const ROUTES: &[&str] = &[
+        "kmipkit_protocol::CheckRequest::with_usage_limits_count",
+        "kmipkit_protocol::QueryAsyncRequestsRequest::with_correlation_values",
+        "kmipkit_protocol::LocateRequest::with_maximum_items",
+        "kmipkit_protocol::LocateRequest::with_offset_items",
+        "kmipkit_protocol::RevokeRequest::with_revocation_message",
+        "kmipkit_protocol::LoginRequest::with_request_count",
+        "kmipkit_protocol::DelegatedLoginRequest::with_request_count",
+        "kmipkit_protocol::ValidateRequest::with_validity_date",
+        "kmipkit_protocol::RekeyRequest::with_offset",
+        "kmipkit_protocol::RekeyKeyPairRequest::with_offset",
+        "kmipkit_protocol::RecertifyRequest::with_offset",
+        "kmipkit_protocol::RekeyKeyPairRequest::with_private_key_unique_identifier",
+        "kmipkit_protocol::RecertifyRequest::with_certificate_request_unique_identifier",
+    ];
+    if !ROUTES.contains(&symbol) {
+        return None;
+    }
+
+    Some((|| {
+        let payload = match symbol {
+            "kmipkit_protocol::CheckRequest::with_usage_limits_count" => {
+                let count = sample.with_value(|value| match value {
+                    ValueView::LongInteger(value) => Ok(*value),
+                    _ => Err("Usage Limits Count fixture is not a Long Integer"),
+                })?;
+                kmipkit::protocol::CheckRequest::new()
+                    .with_usage_limits_count(count)
+                    .into_ttlv_payload()
+                    .map_err(|_| "Check request fixture rejected")?
+            }
+            "kmipkit_protocol::QueryAsyncRequestsRequest::with_correlation_values" => {
+                let mut correlations = Vec::new();
+                collect_tagged_items(sample, 0x0042_0006, &mut correlations)?;
+                if correlations.is_empty() && sample.tag().raw() == 0x0042_0006 {
+                    correlations.push(sample.try_clone().map_err(|_| "correlation copy failed")?);
+                }
+                let values = correlations
+                    .iter()
+                    .map(|item| {
+                        item.with_value(|value| match value {
+                            ValueView::ByteString(bytes) => Ok(bytes.to_vec()),
+                            _ => Err("Asynchronous Correlation Value is not a Byte String"),
+                        })
+                    })
+                    .collect::<Result<Vec<_>>>()?;
+                kmipkit::protocol::QueryAsyncRequestsRequest::new()
+                    .with_correlation_values(values)
+                    .to_ttlv_payload()
+                    .map_err(|_| "Query Asynchronous Requests fixture rejected")?
+            }
+            "kmipkit_protocol::LocateRequest::with_maximum_items"
+            | "kmipkit_protocol::LocateRequest::with_offset_items" => {
+                let value = if target["kind"] == "tag" {
+                    1
+                } else {
+                    sample.with_value(|value| match value {
+                        ValueView::Integer(value) => Ok(*value),
+                        _ => Err("Locate pagination fixture is not an Integer"),
+                    })?
+                };
+                let request =
+                    kmipkit::protocol::LocateRequest::new(kmipkit::protocol::AttributeSet::new());
+                let request = if symbol.ends_with("with_maximum_items") {
+                    request.with_maximum_items(value)
+                } else {
+                    request.with_offset_items(value)
+                };
+                request
+                    .to_ttlv_payload()
+                    .map_err(|_| "Locate request fixture rejected")?
+            }
+            "kmipkit_protocol::RevokeRequest::with_revocation_message" => {
+                let message = sample.with_value(|value| match value {
+                    ValueView::TextString(value) => Ok(value.to_owned()),
+                    _ => Err("Revocation Message fixture is not a Text String"),
+                })?;
+                kmipkit::protocol::RevokeRequest::new(
+                    kmipkit::protocol::RevocationReason::UNSPECIFIED,
+                )
+                .with_revocation_message(message)
+                .into_ttlv_payload()
+                .map_err(|_| "Revoke request fixture rejected")?
+            }
+            "kmipkit_protocol::LoginRequest::with_request_count" => {
+                let count = if target["kind"] == "tag" {
+                    1
+                } else {
+                    sample.with_value(|value| match value {
+                        ValueView::Integer(value) => Ok(*value),
+                        _ => Err("Login Request Count fixture is not an Integer"),
+                    })?
+                };
+                kmipkit::protocol::LoginRequest::new()
+                    .with_request_count(count)
+                    .into_ttlv_payload()
+                    .map_err(|_| "Login request fixture rejected")?
+            }
+            "kmipkit_protocol::DelegatedLoginRequest::with_request_count" => {
+                let count = if target["kind"] == "tag" {
+                    1
+                } else {
+                    sample.with_value(|value| match value {
+                        ValueView::Integer(value) => Ok(*value),
+                        _ => Err("Delegated Login Request Count fixture is not an Integer"),
+                    })?
+                };
+                kmipkit::protocol::DelegatedLoginRequest::new(kmipkit::ttlv::Structure::new())
+                    .with_request_count(count)
+                    .into_ttlv_payload()
+                    .map_err(|_| "Delegated Login request fixture rejected")?
+            }
+            "kmipkit_protocol::ValidateRequest::with_validity_date" => {
+                let date = if target["kind"] == "tag" {
+                    1
+                } else {
+                    sample.with_value(|value| match value {
+                        ValueView::DateTime(value) => Ok(*value),
+                        _ => Err("Validate Validity Date fixture is not a Date-Time"),
+                    })?
+                };
+                kmipkit::protocol::ValidateRequest::new()
+                    .with_unique_identifier(kmipkit::protocol::UniqueIdentifier::from(
+                        "route-matrix-certificate",
+                    ))
+                    .with_validity_date(date)
+                    .into_ttlv_payload()
+                    .map_err(|_| "Validate request fixture rejected")?
+            }
+            "kmipkit_protocol::RekeyRequest::with_offset"
+            | "kmipkit_protocol::RekeyKeyPairRequest::with_offset"
+            | "kmipkit_protocol::RecertifyRequest::with_offset" => {
+                let offset = if target["kind"] == "tag" {
+                    1
+                } else {
+                    sample.with_value(|value| match value {
+                        ValueView::Interval(value) => Ok(*value),
+                        _ => Err("Lifecycle Offset fixture is not an Interval"),
+                    })?
+                };
+                match symbol {
+                    "kmipkit_protocol::RekeyRequest::with_offset" => {
+                        kmipkit::protocol::RekeyRequest::new()
+                            .with_offset(offset)
+                            .into_ttlv_payload()
+                            .map_err(|_| "Rekey request fixture rejected")?
+                    }
+                    "kmipkit_protocol::RekeyKeyPairRequest::with_offset" => {
+                        kmipkit::protocol::RekeyKeyPairRequest::new()
+                            .with_offset(offset)
+                            .into_ttlv_payload()
+                            .map_err(|_| "Rekey Key Pair request fixture rejected")?
+                    }
+                    _ => kmipkit::protocol::RecertifyRequest::new()
+                        .with_unique_identifier(kmipkit::protocol::UniqueIdentifier::from(
+                            "route-matrix-certificate",
+                        ))
+                        .with_offset(offset)
+                        .into_ttlv_payload()
+                        .map_err(|_| "Recertify request fixture rejected")?,
+                }
+            }
+            "kmipkit_protocol::RekeyKeyPairRequest::with_private_key_unique_identifier"
+            | "kmipkit_protocol::RecertifyRequest::with_certificate_request_unique_identifier" => {
+                let identifier = if target["kind"] == "tag" {
+                    kmipkit::protocol::UniqueIdentifier::from("route-matrix-identifier")
+                } else {
+                    sample.with_value(|value| match value {
+                        ValueView::TextString(value) => Ok(
+                            kmipkit::protocol::UniqueIdentifier::TextString(value.to_owned()),
+                        ),
+                        ValueView::Integer(value) => {
+                            Ok(kmipkit::protocol::UniqueIdentifier::Integer(*value))
+                        }
+                        ValueView::Enumeration(value) => {
+                            Ok(kmipkit::protocol::UniqueIdentifier::Enumeration(*value))
+                        }
+                        _ => Err("Unique Identifier fixture has an unsupported wire type"),
+                    })?
+                };
+                if symbol
+                    == "kmipkit_protocol::RekeyKeyPairRequest::with_private_key_unique_identifier"
+                {
+                    kmipkit::protocol::RekeyKeyPairRequest::new()
+                        .with_private_key_unique_identifier(identifier)
+                        .into_ttlv_payload()
+                        .map_err(|_| "Rekey Key Pair request fixture rejected")?
+                } else {
+                    kmipkit::protocol::RecertifyRequest::new()
+                        .with_unique_identifier(kmipkit::protocol::UniqueIdentifier::from(
+                            "route-matrix-certificate",
+                        ))
+                        .with_certificate_request_unique_identifier(identifier)
+                        .into_ttlv_payload()
+                        .map_err(|_| "Recertify request fixture rejected")?
+                }
+            }
+            _ => return Err("unsupported simple request builder route"),
+        };
+        if target["kind"] == "tag" {
+            let target_tag = target["wire_value"]
+                .as_str()
+                .and_then(unsigned_wire_value)
+                .ok_or("Tag route target has no valid wire value")?;
+            let payload_item = request_payload_item(payload)?;
+            let mut fields = Vec::new();
+            collect_tagged_items(&payload_item, target_tag, &mut fields)?;
+            if fields.is_empty() {
+                return Err("typed request builder omitted the declared Tag");
+            }
+            return sample.try_clone().map_err(|_| "Tag fixture copy failed");
+        }
+        let model = request_payload_item(payload)?;
+        if let Ok(projected) = metadata_expected_target(&model, target, elements) {
+            Ok(projected)
+        } else {
+            let mut matching_fields = Vec::new();
+            collect_tagged_items(&model, sample.tag().raw(), &mut matching_fields)?;
+            match matching_fields.as_slice() {
+                [field] => field
+                    .try_clone()
+                    .map_err(|_| "request target projection copy failed"),
+                [] => Err("typed request builder omitted its target field"),
+                _ => Err("typed request builder emitted an ambiguous target field"),
+            }
+        }
+    })())
+}
+
 fn invoke_operation_data_route(symbol: &str, sample: &Item) -> Option<Result<Item>> {
     const ROUTES: &[&str] = &[
         "kmipkit_protocol::HashRequest::with_data",
@@ -2834,6 +3072,8 @@ fn invoke_operation_data_route(symbol: &str, sample: &Item) -> Option<Result<Ite
     })())
 }
 
+// The shared operation route table keeps typed serialization beside each API.
+#[allow(clippy::too_many_lines)]
 fn invoke_secret_operation_builder_route(
     symbol: &str,
     input_sample: &Item,
@@ -3249,6 +3489,8 @@ fn indicator_hash_parameters() -> Result<kmipkit::ttlv::Structure> {
         .map_err(|_| "indicator Hash parameters rejected")
 }
 
+// Indicator routes are intentionally enumerated against KMIP's distinct fields.
+#[allow(clippy::too_many_lines)]
 fn invoke_crypto_indicator_route(symbol: &str, sample: &Item) -> Option<Result<Item>> {
     let operation = crypto_indicator_operation(symbol)?;
     let is_init = symbol.ends_with("::with_init_indicator");
@@ -3359,6 +3601,8 @@ fn invoke_crypto_indicator_route(symbol: &str, sample: &Item) -> Option<Result<I
     })())
 }
 
+// Each key lifecycle operation maps masks through a different typed builder.
+#[allow(clippy::too_many_lines)]
 fn invoke_protection_storage_mask_route(
     symbol: &str,
     sample: &Item,
@@ -3771,6 +4015,9 @@ fn invoke(
         return Some(result);
     }
     if let Some(result) = invoke_login_usage_limits_route(symbol, target, elements) {
+        return Some(result);
+    }
+    if let Some(result) = invoke_simple_request_builder_route(symbol, sample, target, elements) {
         return Some(result);
     }
     if let Some(result) = invoke_request_selector_route(symbol, sample, target, elements) {
@@ -7372,7 +7619,6 @@ mod tests {
             "kmipkit_protocol::LoginRequest::with_request_count",
             "kmipkit_protocol::DelegatedLoginRequest::with_request_count",
             "kmipkit_protocol::ValidateRequest::with_validity_date",
-            "kmipkit_protocol::ImportRequest::with_replace_existing",
             "kmipkit_protocol::RekeyRequest::with_offset",
             "kmipkit_protocol::RekeyKeyPairRequest::with_offset",
             "kmipkit_protocol::RecertifyRequest::with_offset",
@@ -7397,15 +7643,11 @@ mod tests {
                     .unwrap();
                 for protocol_version in target["protocol_versions"].as_array().unwrap() {
                     let protocol_version = protocol_version.as_str().unwrap();
-                    let expected = sample_for_route_at_version(
-                        symbol,
-                        target,
-                        elements,
-                        protocol_version,
-                    )
-                    .unwrap_or_else(|error| {
-                        panic!("{symbol} sample failed for {target_id}: {error}")
-                    });
+                    let expected =
+                        sample_for_route_at_version(symbol, target, elements, protocol_version)
+                            .unwrap_or_else(|error| {
+                                panic!("{symbol} sample failed for {target_id}: {error}")
+                            });
                     let result = invoke(symbol, &expected, target, elements, protocol_version)
                         .unwrap_or_else(|| panic!("{symbol} route missing for {target_id}"))
                         .unwrap_or_else(|error| panic!("{symbol} rejected {target_id}: {error}"));
