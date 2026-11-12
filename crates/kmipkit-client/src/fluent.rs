@@ -6,9 +6,8 @@ use std::ops::BitOr;
 
 use kmipkit_protocol::attribute::typed;
 use kmipkit_protocol::{
-    ActivateRequest, ArchiveRequest, Attribute, AttributeDefinition, AttributeSet,
-    AttributeReference, AttributeSetError, CreateKeyPairRequest, CreateRequest,
-    CreateSplitKeyRequest,
+    ActivateRequest, ArchiveRequest, Attribute, AttributeDefinition, AttributeReference,
+    AttributeSet, AttributeSetError, CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest,
     CryptographicAlgorithm, CryptographicParameters, DecryptRequest, DestroyRequest,
     EncryptRequest, GetAttributeListRequest, GetAttributesRequest, GetRequest, HashRequest,
     LocateRequest, MacRequest, MacVerifyRequest, ManagedObject, ObjectGroupMember, ObjectType,
@@ -2879,8 +2878,8 @@ impl<'a> GetAttributesBuilder<'a> {
     /// Selects a text Unique Identifier. Omit this method to preserve the
     /// protocol's optional identifier or batch placeholder behavior.
     #[must_use]
-    pub fn unique_identifier(mut self, value: impl Into<String>) -> Self {
-        self.unique_identifier = Some(value.into());
+    pub fn unique_identifier(mut self, value: &str) -> Self {
+        self.unique_identifier = Some(value.to_owned());
         self
     }
 
@@ -2916,21 +2915,33 @@ impl<'a> GetAttributesBuilder<'a> {
     }
 
     /// Validates the complete typed request without transport or consumption.
+    ///
+    /// # Errors
+    /// Returns an error if the typed request is invalid.
     pub fn validate(&self) -> Result<(), FluentBuildError> {
         self.construct_request().map(|_| ())
     }
 
     /// Builds the existing typed Get Attributes request.
+    ///
+    /// # Errors
+    /// Returns an error if the typed request is invalid.
     pub fn build_request(&self) -> Result<GetAttributesRequest, FluentBuildError> {
         self.construct_request()
     }
 
     /// Builds the existing typed Get Attributes request without sending it.
+    ///
+    /// # Errors
+    /// Returns an error if the typed request is invalid.
     pub fn build(self) -> Result<GetAttributesRequest, FluentBuildError> {
         self.construct_request()
     }
 
     /// Converts the request to the existing typed batch item.
+    ///
+    /// # Errors
+    /// Returns an error if the typed request is invalid.
     pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
         Ok(ClientBatchItem::new(ClientRequest::GetAttributes(
             self.construct_request()?,
@@ -2982,8 +2993,8 @@ impl<'a> GetAttributeListBuilder<'a> {
     /// Selects a text Unique Identifier. Omit this method to preserve the
     /// protocol's optional identifier or batch placeholder behavior.
     #[must_use]
-    pub fn unique_identifier(mut self, value: impl Into<String>) -> Self {
-        self.unique_identifier = Some(value.into());
+    pub fn unique_identifier(mut self, value: &str) -> Self {
+        self.unique_identifier = Some(value.to_owned());
         self
     }
 
@@ -3008,21 +3019,33 @@ impl<'a> GetAttributeListBuilder<'a> {
     }
 
     /// Validates the complete typed request without transport or consumption.
+    ///
+    /// # Errors
+    /// Returns an error if the typed request is invalid.
     pub fn validate(&self) -> Result<(), FluentBuildError> {
         self.construct_request().map(|_| ())
     }
 
     /// Builds the existing typed Get Attribute List request.
+    ///
+    /// # Errors
+    /// Returns an error if the typed request is invalid.
     pub fn build_request(&self) -> Result<GetAttributeListRequest, FluentBuildError> {
         self.construct_request()
     }
 
     /// Builds the existing typed Get Attribute List request without sending it.
+    ///
+    /// # Errors
+    /// Returns an error if the typed request is invalid.
     pub fn build(self) -> Result<GetAttributeListRequest, FluentBuildError> {
         self.construct_request()
     }
 
     /// Converts the request to the existing typed batch item.
+    ///
+    /// # Errors
+    /// Returns an error if the typed request is invalid.
     pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
         Ok(ClientBatchItem::new(ClientRequest::GetAttributeList(
             self.construct_request()?,

@@ -9,7 +9,7 @@ use kmipkit_ttlv::{Structure, Value};
 use crate::asynchronous_execution_test_support::client_for;
 use crate::execute::encode_message_for_test;
 use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
-use crate::{ClientBatchOutcome, ClientRequest, FluentBuildError};
+use crate::{ClientBatchOutcome, ClientRequest, FluentBuildError, RequestOptions};
 use kmipkit_transport::RequestDeliveryState;
 
 const GET_ATTRIBUTES: u32 = 0x0000_000B;
@@ -57,14 +57,27 @@ fn response_bytes(operation: u32, payload: Structure) -> Vec<u8> {
 
 fn successful_attributes_payload() -> Structure {
     test_structure([
-        test_item(UNIQUE_IDENTIFIER, Value::text_string("object-42".to_owned())),
+        test_item(
+            UNIQUE_IDENTIFIER,
+            Value::text_string("object-42".to_owned()),
+        ),
         test_item(ATTRIBUTES, Value::structure(Structure::new())),
     ])
 }
 
+fn attributes_omitted_payload() -> Structure {
+    test_structure([test_item(
+        UNIQUE_IDENTIFIER,
+        Value::text_string("object-42".to_owned()),
+    )])
+}
+
 fn successful_attribute_list_payload() -> Structure {
     test_structure([
-        test_item(UNIQUE_IDENTIFIER, Value::text_string("object-42".to_owned())),
+        test_item(
+            UNIQUE_IDENTIFIER,
+            Value::text_string("object-42".to_owned()),
+        ),
         test_item(
             ATTRIBUTE_REFERENCE,
             Value::structure(test_structure([
@@ -123,13 +136,41 @@ fn get_attributes_builder_preserves_identifier_reference_order_and_duplicates() 
 #[test]
 fn attribute_read_builders_construct_the_matching_typed_batch_items() {
     let mut client = client_for(ExchangeScript::FailBeforeWrite).0;
+    let attributes_builder = client
+        .request()
+        .get_attributes()
+        .attribute_reference(AttributeReference::tag(0x0042_002F));
+    assert_eq!(attributes_builder.validate(), Ok(()));
+    assert_eq!(
+        attributes_builder
+            .build()
+            .expect("Get Attributes builds a typed request")
+            .unique_identifier(),
+        None
+    );
+
+    let mut client = client_for(ExchangeScript::FailBeforeWrite).0;
+    let list_builder = client.request().get_attribute_list();
+    assert_eq!(list_builder.validate(), Ok(()));
+    assert_eq!(
+        list_builder
+            .build()
+            .expect("Get Attribute List builds a typed request")
+            .unique_identifier(),
+        None
+    );
+
+    let mut client = client_for(ExchangeScript::FailBeforeWrite).0;
     let get_attributes = client
         .request()
         .get_attributes()
         .attribute_reference(AttributeReference::tag(0x0042_002F))
         .to_batch_item()
         .expect("Get Attributes converts to a typed batch item");
-    assert!(matches!(get_attributes.request(), ClientRequest::GetAttributes(_)));
+    assert!(matches!(
+        get_attributes.request(),
+        ClientRequest::GetAttributes(_)
+    ));
 
     let mut client = client_for(ExchangeScript::FailBeforeWrite).0;
     let get_list = client
@@ -137,8 +178,13 @@ fn attribute_read_builders_construct_the_matching_typed_batch_items() {
         .get_attribute_list()
         .to_batch_item()
         .expect("Get Attribute List converts to a typed batch item");
-    assert!(matches!(get_list.request(), ClientRequest::GetAttributeList(_)));
-    assert!(matches!(get_list.request(), ClientRequest::GetAttributeList(request) if request.unique_identifier().is_none()));
+    assert!(matches!(
+        get_list.request(),
+        ClientRequest::GetAttributeList(_)
+    ));
+    assert!(
+        matches!(get_list.request(), ClientRequest::GetAttributeList(request) if request.unique_identifier().is_none())
+    );
     assert_eq!(get_list.operation(), GET_ATTRIBUTE_LIST);
 }
 
@@ -164,6 +210,27 @@ fn attribute_read_builders_execute_one_exchange_and_keep_typed_response_shapes()
     assert!(attributes.as_items().is_empty());
 
     let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response: response_bytes(GET_ATTRIBUTES, attributes_omitted_payload()),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .request()
+        .get_attributes()
+        .unique_identifier("object-42")
+        .execute(&CodecLimits::defaults())
+        .expect("Get Attributes preserves an omitted Attributes field");
+    assert_eq!(transport.borrow().exchange_count(), 1);
+    assert!(
+        response
+            .outcome()
+            .response()
+            .get_attributes()
+            .expect("the operation-specific response is retained")
+            .attributes()
+            .is_none()
+    );
+
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
         response: response_bytes(GET_ATTRIBUTE_LIST, successful_attribute_list_payload()),
         request_write_chunks: Vec::new(),
     });
@@ -171,6 +238,8 @@ fn attribute_read_builders_execute_one_exchange_and_keep_typed_response_shapes()
         .request()
         .get_attribute_list()
         .unique_identifier("object-42")
+        .with_options(RequestOptions::default())
+        .with_asynchronous_indicator(1)
         .execute(&CodecLimits::defaults())
         .expect("Get Attribute List receives a valid typed response");
     assert_eq!(transport.borrow().exchange_count(), 1);
@@ -181,7 +250,10 @@ fn attribute_read_builders_execute_one_exchange_and_keep_typed_response_shapes()
         .attribute_references()
         .expect("the successful response contains the required reference");
     assert_eq!(references.len(), 1);
-    assert_eq!(references[0].name_parts(), Some(("KMIPKit_TestVendor", "Opaque.ReadableAttribute")));
+    assert_eq!(
+        references[0].name_parts(),
+        Some(("KMIPKit_TestVendor", "Opaque.ReadableAttribute"))
+    );
 }
 
 #[test]
@@ -212,4 +284,26 @@ fn get_attributes_builder_preserves_pending_status_and_correlation() {
         Some(correlation.as_slice())
     );
     assert_eq!(response.outcome().result().status().raw(), 2);
+}
+
+#[test]
+fn get_attribute_list_builder_keeps_failure_status_without_fabricated_payload() {
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response: asynchronous_response_bytes(GET_ATTRIBUTE_LIST, 1, Some(1), None, None),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .request()
+        .get_attribute_list()
+        .unique_identifier("object-42")
+        .execute(&CodecLimits::defaults())
+        .expect("an Operation Failed response remains a typed result");
+
+    assert_eq!(transport.borrow().exchange_count(), 1);
+    assert_eq!(response.outcome().result().status().raw(), 1);
+    let response_view = response.outcome().response();
+    let typed = response_view
+        .get_attribute_list()
+        .expect("the failure remains associated with Get Attribute List");
+    assert!(typed.attribute_references().is_none());
 }

@@ -845,6 +845,48 @@ rejects a Compromise Occurrence Date unless the reason is Key Compromise or CA
 Compromise. Supplying exchange-local `RequestOptions` remains separate from
 the Request Header Asynchronous Indicator.
 
+## Fluent attribute reads in Rust
+
+KMIPKIT-0108 adds `get_attributes()` and `get_attribute_list()` builders. They
+preserve the existing typed request and response contracts, including ordered
+Attribute References, duplicate-reference rejection, missing versus present
+empty Attributes, and Pending/Failure results.
+
+```rust,kmipkit-test
+use kmipkit_client::Client;
+use kmipkit_protocol::AttributeReference;
+use kmipkit_ttlv::codec::CodecLimits;
+
+#[allow(dead_code)]
+fn fluent_attribute_reads(client: &mut Client) -> Result<(), Box<dyn std::error::Error>> {
+    let limits = CodecLimits::defaults();
+    let attributes = client.request().get_attributes()
+        .unique_identifier("existing-key")
+        .attribute_reference(AttributeReference::tag(0x0042_002F))
+        .execute(&limits)?;
+    let _typed_attributes = attributes.outcome().response().get_attributes();
+
+    let names = client.request().get_attribute_list()
+        .unique_identifier("existing-key")
+        .execute(&limits)?;
+    let _typed_names = names.outcome().response().get_attribute_list();
+
+    let placeholder = client.request().get_attribute_list().to_batch_item()?;
+    let _ = placeholder;
+    Ok(())
+}
+
+fn main() {
+    let _ = fluent_attribute_reads;
+}
+```
+
+`execute()` sends one standalone operation, so provide its identifier. The
+identifier may be omitted when converting to a batch item that uses the KMIP
+ID Placeholder after a preceding operation. The returned operation-specific
+response view preserves fields actually present on the wire; it does not fetch
+missing attributes or retry.
+
 ## Fluent cryptographic requests in Rust
 
 KMIPKIT-0102 adds Rust builders for Encrypt, Decrypt, Sign, Signature Verify,
