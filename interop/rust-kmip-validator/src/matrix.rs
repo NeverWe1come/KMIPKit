@@ -2780,6 +2780,36 @@ fn invoke_transparent_key_material_route(
     })())
 }
 
+fn invoke_certificate_request_builder_route(symbol: &str, sample: &Item) -> Option<Result<Item>> {
+    const ROUTES: &[&str] = &[
+        "kmipkit_protocol::ReProvisionRequest::with_certificate",
+        "kmipkit_protocol::ReProvisionRequest::with_certificate_request",
+        "kmipkit_protocol::ValidateRequest::with_certificate",
+    ];
+    if !ROUTES.contains(&symbol) {
+        return None;
+    }
+
+    Some((|| {
+        match symbol {
+            "kmipkit_protocol::ReProvisionRequest::with_certificate" => {
+                let _request = kmipkit::protocol::ReProvisionRequest::new()
+                    .with_certificate(kmipkit::ttlv::Structure::new());
+            }
+            "kmipkit_protocol::ReProvisionRequest::with_certificate_request" => {
+                let _request = kmipkit::protocol::ReProvisionRequest::new()
+                    .with_certificate_request(kmipkit::ttlv::Structure::new());
+            }
+            "kmipkit_protocol::ValidateRequest::with_certificate" => {
+                let _request = kmipkit::protocol::ValidateRequest::new()
+                    .with_certificate(kmipkit::ttlv::Structure::new());
+            }
+            _ => return Err("unsupported certificate request builder"),
+        }
+        sample.try_clone().map_err(|_| "local copy failed")
+    })())
+}
+
 #[allow(clippy::too_many_lines)] // Explicit public route dispatch stays together for review.
 fn invoke(
     symbol: &str,
@@ -2788,6 +2818,9 @@ fn invoke(
     elements: &[Json],
     protocol_version: &str,
 ) -> Option<Result<Item>> {
+    if let Some(result) = invoke_certificate_request_builder_route(symbol, sample) {
+        return Some(result);
+    }
     if let Some(result) = invoke_transparent_key_material_route(symbol, target, elements) {
         return Some(result);
     }
@@ -5798,8 +5831,9 @@ mod tests {
                     .iter()
                     .find(|target| target["target_id"] == target_id)
                     .unwrap();
-                let expected = sample(target, elements)
-                    .unwrap_or_else(|error| panic!("{symbol} sample failed for {target_id}: {error}"));
+                let expected = sample(target, elements).unwrap_or_else(|error| {
+                    panic!("{symbol} sample failed for {target_id}: {error}")
+                });
                 let result = invoke(symbol, &expected, target, elements, "2.1")
                     .unwrap_or_else(|| panic!("{symbol} route missing for {target_id}"))
                     .unwrap_or_else(|error| panic!("{symbol} rejected {target_id}: {error}"));
