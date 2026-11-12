@@ -170,7 +170,7 @@ fn s2c_test_put_batch() -> Vec<u8> {
         INTEGER,
         &65536i32.to_be_bytes(),
     ));
-    request_header.extend(encode_test_ttlv(0x0042_000D, INTEGER, &2i32.to_be_bytes()));
+    request_header.extend(encode_test_ttlv(0x0042_000D, INTEGER, &3i32.to_be_bytes()));
 
     let key_value = encode_test_ttlv(0x0042_0043, BYTE_STRING, &[0x11, 0x22, 0x33, 0x44]);
     let key_value = encode_test_structure(0x0042_0045, &key_value);
@@ -213,6 +213,21 @@ fn s2c_test_put_batch() -> Vec<u8> {
     password_batch_item.extend(encode_test_ttlv(0x0042_0093, BYTE_STRING, &[0xC3, 0xD4]));
     password_batch_item.extend(encode_test_structure(0x0042_0079, &password_payload));
     root.extend(encode_test_structure(0x0042_000F, &password_batch_item));
+    let unknown_object = encode_test_structure(
+        0x0054_0001,
+        &encode_test_ttlv(0x0054_0002, ENUMERATION, &0xA1B2_C3D4u32.to_be_bytes()),
+    );
+    let mut unknown_payload = encode_test_ttlv(0x0042_0070, ENUMERATION, &1u32.to_be_bytes());
+    unknown_payload.extend(encode_test_ttlv(
+        0x0042_0094,
+        TEXT_STRING,
+        b"unknown-object-1",
+    ));
+    unknown_payload.extend(unknown_object);
+    let mut unknown_batch_item = encode_test_ttlv(0x0042_005C, ENUMERATION, &0x1Cu32.to_be_bytes());
+    unknown_batch_item.extend(encode_test_ttlv(0x0042_0093, BYTE_STRING, &[0xE5, 0xF6]));
+    unknown_batch_item.extend(encode_test_structure(0x0042_0079, &unknown_payload));
+    root.extend(encode_test_structure(0x0042_000F, &unknown_batch_item));
     encode_test_structure(0x0042_0078, &root)
 }
 
@@ -274,6 +289,24 @@ fn s2c_c_consumer_receives_put_material_as_a_secret_and_sends_typed_response() {
         .expect("client thread does not panic")
         .expect("TLS client receives a response");
     assert_eq!(&response[..4], &[0x42, 0x00, 0x7B, 0x01]);
+}
+
+#[test]
+fn server_put_secret_byte_and_text_values_are_redacted_in_debug_output() {
+    let bytes = kmipkit_protocol::ManagedFieldValue::ByteString(zeroize::Zeroizing::new(
+        b"symmetric-key-material".to_vec(),
+    ));
+    let text = kmipkit_protocol::ManagedFieldValue::TextString(zeroize::Zeroizing::new(
+        b"credential-password".to_vec(),
+    ));
+    let secret_text = SecretText::new("credential-password".to_owned());
+
+    assert_eq!(format!("{bytes:?}"), "ByteString([REDACTED])");
+    assert_eq!(format!("{text:?}"), "TextString([REDACTED])");
+    assert_eq!(format!("{secret_text:?}"), "SecretText([REDACTED])");
+    assert!(!format!("{bytes:?}").contains("symmetric-key-material"));
+    assert!(!format!("{text:?}").contains("credential-password"));
+    assert!(!format!("{secret_text:?}").contains("credential-password"));
 }
 
 fn coverage_authentication_handle() -> *mut kmipkit_authentication_t {
