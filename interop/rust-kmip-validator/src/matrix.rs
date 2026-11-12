@@ -12,6 +12,18 @@ use std::{
 mod generated;
 
 const KEY_BLOCK_TAG: u32 = 0x0042_0040;
+const KEY_WRAPPING_CONSTRUCTOR_ROUTES: &[&str] = &[
+    "kmipkit_protocol::EncryptionKeyInformation::try_new",
+    "kmipkit_protocol::EncryptionKeyInformation::with_cryptographic_parameters",
+    "kmipkit_protocol::KeyWrappingData::try_new",
+    "kmipkit_protocol::KeyWrappingData::with_encoding_option",
+    "kmipkit_protocol::KeyWrappingData::with_encryption_key_information",
+    "kmipkit_protocol::KeyWrappingData::with_iv_counter_nonce",
+    "kmipkit_protocol::KeyWrappingData::with_mac_signature",
+    "kmipkit_protocol::KeyWrappingData::with_mac_signature_key_information",
+    "kmipkit_protocol::MacSignatureKeyInformation::try_new",
+    "kmipkit_protocol::MacSignatureKeyInformation::with_cryptographic_parameters",
+];
 
 fn text<'a>(value: &'a Json, field: &str) -> Result<&'a str> {
     value[field].as_str().ok_or("matrix field missing")
@@ -1063,22 +1075,26 @@ fn key_wrapping_metadata_model(symbol: &str, target: &Json) -> Result<Item> {
     let encryption_target = target_id.contains("ENCRYPTION-KEY-INFORMATION");
     let mac_target = target_id.contains("MAC-SIGNATURE-KEY-INFORMATION");
     let full_wrapping_root = target_name == "Key Wrapping Data";
+    let generic_unique_identifier_tag = target_id == "KMIPKIT-ELEM-TAG-420094";
     let include_encryption = !wrapping_root || !mac_target || full_wrapping_root;
-    let include_mac = !wrapping_root || mac_target || full_wrapping_root;
+    let include_mac = (!wrapping_root || mac_target || full_wrapping_root)
+        && !(generic_unique_identifier_tag && !mac_target && !full_wrapping_root);
     let include_parameters = target_name == "Cryptographic Parameters";
-    if symbol == "kmipkit_protocol::EncryptionKeyInformation::try_from_item" {
+    if symbol.starts_with("kmipkit_protocol::EncryptionKeyInformation::") {
         return metadata_key_information(false, include_parameters);
     }
-    if symbol == "kmipkit_protocol::MacSignatureKeyInformation::try_from_item" {
+    if symbol.starts_with("kmipkit_protocol::MacSignatureKeyInformation::") {
         return metadata_key_information(true, include_parameters);
     }
 
     let mut data = KeyWrappingData::try_new(1).map_err(|_| "key wrapping fixture rejected")?;
     if include_encryption {
-        let info = kmipkit::protocol::EncryptionKeyInformation::try_from_item(
-            metadata_key_information(false, include_parameters && encryption_target)?,
-        )
-        .map_err(|_| "encryption key information fixture rejected")?;
+        let info =
+            kmipkit::protocol::EncryptionKeyInformation::try_from_item(metadata_key_information(
+                false,
+                include_parameters && (encryption_target || !mac_target),
+            )?)
+            .map_err(|_| "encryption key information fixture rejected")?;
         data = data.with_encryption_key_information(info);
     }
     if include_mac {
@@ -1133,6 +1149,10 @@ fn metadata_expected_target(model: &Item, target: &Json, elements: &[Json]) -> R
 }
 
 fn sample_for_route(symbol: &str, target: &Json, elements: &[Json]) -> Result<Item> {
+    if KEY_WRAPPING_CONSTRUCTOR_ROUTES.contains(&symbol) {
+        let model = key_wrapping_metadata_model(symbol, target)?;
+        return metadata_expected_target(&model, target, elements);
+    }
     if [
         "kmipkit_protocol::KeyValue::try_new",
         "kmipkit_protocol::KeyValue::try_from_item",
@@ -1306,6 +1326,14 @@ fn invoke(
             let payload = unique_identifier_request_payload(symbol, identifier)?;
             request_payload_item(payload)
         })());
+    }
+    if KEY_WRAPPING_CONSTRUCTOR_ROUTES.contains(&symbol) {
+        return Some(
+            key_wrapping_metadata_model(symbol, target).and_then(|model| {
+                crate::local_wire::roundtrip(&model)?;
+                metadata_expected_target(&model, target, elements)
+            }),
+        );
     }
     if symbol == "kmipkit_protocol::KeyValue::try_new" {
         return Some(key_value_item_for_target(target).and_then(|model| {
