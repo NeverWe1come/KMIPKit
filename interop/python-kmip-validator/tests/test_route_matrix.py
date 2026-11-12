@@ -1282,6 +1282,81 @@ class RouteMatrixTests(unittest.TestCase):
             self.assertEqual(1, event['batch_item_count'])
             self.assertEqual(1, event['peer_observed_response_count'])
 
+    def test_multi_item_batch_route_preserves_catalog_order_and_item_results(self):
+        from kmipkit import protocol_values
+
+        case_id = 'test-batch-continue-after-failure'
+        case = next(case for case in self.catalog['test_cases'] if case['case_id'] == case_id)
+        cell = next(cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
+                    if cell['case_id'] == case_id
+                    and cell['public_api_symbol'] == 'kmipkit.extensions.client_batch_item_get'
+                    and cell['workflow_item_index'] == 0
+                    and cell['action'] == 'send'
+                    and cell['protocol_version'] == '2.1'
+                    and cell['encoding'] == 'TTLV'
+                    and cell['transport'] == 'raw_tls')
+        target = next(target for target in self.catalog['normative_targets']
+                      if target['target_id'] == cell['target_id'])
+        symbols = [cell['public_api_symbol'], cell['execution_api_symbol']]
+        trace = self.runner.CallTrace(symbols)
+
+        with trace:
+            event = self.runner.execute_cell(cell, case, target, trace=trace)
+
+        expected_operations = ['Get', 'Get Attribute List']
+        self.assertEqual(expected_operations, event['batch_operation_sequence'])
+        self.assertEqual(expected_operations, event['peer_observed_operation_sequence'])
+        self.assertEqual([protocol_values.ResultStatus.OPERATION_FAILED,
+                          protocol_values.ResultStatus.SUCCESS],
+                         event['peer_observed_result_status_codes'])
+        self.assertEqual(2, event['batch_item_count'])
+        self.assertTrue(set(symbols) <= trace.observed)
+
+    def test_forward_placeholder_rejection_records_only_verified_local_state(self):
+        from unittest.mock import patch
+        from kmipkit_validator.controlled_peer import ControlledTlsPeer
+
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-batch-placeholder-forward-reference-rejected')
+        cell = next(cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
+                    if cell['case_id'] == case['case_id']
+                    and cell['action'] == 'send'
+                    and cell['workflow_operation'] == 'Activate'
+                    and cell['protocol_version'] == '2.1'
+                    and cell['encoding'] == 'TTLV'
+                    and cell['transport'] == 'raw_tls')
+        target = next(target for target in self.catalog['normative_targets']
+                      if target['target_id'] == cell['target_id'])
+        symbols = [cell['public_api_symbol'], cell['execution_api_symbol']]
+        trace = self.runner.CallTrace(symbols)
+        peers = []
+
+        def record_peer(**options):
+            peer = ControlledTlsPeer(**options)
+            peers.append(peer)
+            return peer
+
+        with patch('kmipkit_validator.controlled_peer.ControlledTlsPeer', side_effect=record_peer):
+            with trace:
+                kind, event = self.runner._execute_matrix_cell(cell, case, target)
+
+        self.assertEqual('event', kind)
+        self.assertEqual('passed', event['status'])
+        self.assertEqual(1, event['invocation_count'])
+        self.assertTrue(set(symbols) <= trace.observed)
+        self.assertEqual(1, len(peers))
+        self.assertTrue(peers[0].expect_no_connection)
+        self.assertEqual([], peers[0].requests)
+        self.assertEqual([], peers[0].responses)
+        self.assertEqual('not_sent', event['request_delivery_state'])
+        self.assertEqual(0, event['transport_invocation_count'])
+        self.assertEqual('batch_placeholder_forward_reference', event['local_rejection_code'])
+        self.assertEqual('validation', event['client_error_category'])
+        self.assertEqual('invalid_input', event['client_error_cause'])
+        for forbidden in ('request_tree_sha256', 'response_tree_sha256', 'wire_bytes_sha256',
+                          'peer_observed_response_count', 'peer_observed_result_status_codes'):
+            self.assertNotIn(forbidden, event)
+
     def test_batch_workflow_invokes_get_attribute_list_request_builder(self):
         case = next(case for case in self.catalog['test_cases']
                     if case['case_id'] == 'test-batch-create-activate-destroy')
