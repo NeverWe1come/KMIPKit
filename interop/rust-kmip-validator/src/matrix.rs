@@ -513,6 +513,10 @@ fn unique_identifier_request_payload(
     .map_err(|_| "Unique Identifier request fixture rejected")
 }
 
+fn request_payload_item(payload: kmipkit::ttlv::Structure) -> Result<Item> {
+    crate::driver::item(0x0042_0079, Value::structure(payload))
+}
+
 const MANAGED_OBJECT_ROOTS: [&str; 9] = [
     "Certificate",
     "Certificate Request",
@@ -856,7 +860,7 @@ fn invoke(
                 _ => Err("Key Format Type fixture is not an Enumeration"),
             })?;
             let payload = key_format_type_request_payload(symbol, raw)?;
-            crate::driver::item(0x0042_0079, Value::structure(payload))
+            request_payload_item(payload)
         })());
     }
     if symbol.ends_with("::with_unique_identifier") {
@@ -874,7 +878,7 @@ fn invoke(
                 _ => Err("Unique Identifier fixture has an unsupported wire type"),
             })?;
             let payload = unique_identifier_request_payload(symbol, identifier)?;
-            crate::driver::item(0x0042_0079, Value::structure(payload))
+            request_payload_item(payload)
         })());
     }
     if symbol == "kmipkit_protocol::ManagedObject::try_from_item" {
