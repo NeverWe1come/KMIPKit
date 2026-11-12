@@ -2197,6 +2197,91 @@ fn invoke_client_batch_outcome_response_route(
     })())
 }
 
+fn invoke_request_selector_route(
+    symbol: &str,
+    sample_item: &Item,
+    target: &Json,
+    elements: &[Json],
+) -> Option<Result<Item>> {
+    const ROUTES: &[&str] = &[
+        "kmipkit_protocol::CertifyRequest::with_certificate_request_type",
+        "kmipkit_protocol::RecertifyRequest::with_certificate_request_type",
+        "kmipkit_protocol::ExportRequest::with_key_compression_type",
+        "kmipkit_protocol::GetRequest::with_key_compression_type",
+        "kmipkit_protocol::ExportRequest::with_key_wrap_type",
+        "kmipkit_protocol::GetRequest::with_key_wrap_type",
+    ];
+    if !ROUTES.contains(&symbol) {
+        return None;
+    }
+    Some((|| {
+        let raw = sample_item.with_value(|value| match value {
+            ValueView::Enumeration(value) => Ok(*value),
+            _ => Err("request selector fixture is not an Enumeration"),
+        })?;
+        let secret_value = || kmipkit::protocol::SecretBytes::new(vec![0x30]);
+        let payload = match symbol {
+            "kmipkit_protocol::CertifyRequest::with_certificate_request_type" => {
+                kmipkit::protocol::CertifyRequest::new()
+                    .with_certificate_request_type(raw)
+                    .with_certificate_request_value(secret_value())
+                    .into_ttlv_payload()
+                    .map_err(|_| "Certify request fixture rejected")?
+            }
+            "kmipkit_protocol::RecertifyRequest::with_certificate_request_type" => {
+                kmipkit::protocol::RecertifyRequest::new()
+                    .with_certificate_request_type(raw)
+                    .with_certificate_request_value(secret_value())
+                    .into_ttlv_payload()
+                    .map_err(|_| "Re-certify request fixture rejected")?
+            }
+            "kmipkit_protocol::ExportRequest::with_key_compression_type" => {
+                kmipkit::protocol::ExportRequest::new()
+                    .with_key_compression_type(kmipkit::protocol::KeyCompressionType::from_raw(raw))
+                    .into_ttlv_payload()
+                    .map_err(|_| "Export request fixture rejected")?
+            }
+            "kmipkit_protocol::GetRequest::with_key_compression_type" => {
+                kmipkit::protocol::GetRequest::new()
+                    .with_key_compression_type(kmipkit::protocol::KeyCompressionType::from_raw(raw))
+                    .to_ttlv_payload()
+                    .map_err(|_| "Get request fixture rejected")?
+            }
+            "kmipkit_protocol::ExportRequest::with_key_wrap_type" => {
+                kmipkit::protocol::ExportRequest::new()
+                    .with_key_wrap_type(kmipkit::protocol::KeyWrapType::from_raw(raw))
+                    .into_ttlv_payload()
+                    .map_err(|_| "Export request fixture rejected")?
+            }
+            "kmipkit_protocol::GetRequest::with_key_wrap_type" => {
+                kmipkit::protocol::GetRequest::new()
+                    .with_key_wrap_type(kmipkit::protocol::KeyWrapType::from_raw(raw))
+                    .to_ttlv_payload()
+                    .map_err(|_| "Get request fixture rejected")?
+            }
+            _ => return Err("unsupported request selector route"),
+        };
+        let model = request_payload_item(payload)?;
+        match metadata_expected_target(&model, target, elements) {
+            Ok(projection) => Ok(projection),
+            Err("metadata fixture target is missing")
+                if target["kind"] == "structure_member"
+                    && symbol.ends_with("::with_certificate_request_type") =>
+            {
+                object_root_fixture("Certificate Request", target, elements)
+                    .map(|(_, _, projection)| projection)
+            }
+            Err("metadata fixture target is missing")
+                if target["kind"] == "structure_member"
+                    && symbol.ends_with("::with_key_compression_type") =>
+            {
+                key_block_fixture(target, elements).map(|(_, projection)| projection)
+            }
+            Err(error) => Err(error),
+        }
+    })())
+}
+
 fn invoke_simple_protocol_route(symbol: &str, sample: &Item) -> Option<Result<Item>> {
     if symbol == "kmipkit_protocol::ManagedObject::unknown" {
         return Some((|| match kmipkit::protocol::ManagedObject::unknown(
@@ -2454,6 +2539,9 @@ fn invoke(
         return Some(result);
     }
     if let Some(result) = invoke_client_batch_route(symbol, sample) {
+        return Some(result);
+    }
+    if let Some(result) = invoke_request_selector_route(symbol, sample, target, elements) {
         return Some(result);
     }
     if let Some(result) = crate::local_credentials::invoke(symbol, sample, target, elements) {
