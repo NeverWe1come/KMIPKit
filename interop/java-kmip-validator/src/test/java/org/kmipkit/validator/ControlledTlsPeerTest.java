@@ -460,6 +460,14 @@ class ControlledTlsPeerTest {
         assertEquals(8 + enumerationFixtures.size() + bitmaskCaseCount + dataTypeCaseCount
                         + CREDENTIAL_TYPE_MODEL_CASE_IDS.size(),
                 report.path("case_ids").size());
+        List<String> expectedCredentialCaseIds = CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().toList();
+        int credentialCaseStart = report.path("case_ids").size() - expectedCredentialCaseIds.size();
+        List<String> reportedCredentialCaseIds = new ArrayList<>();
+        for (int index = credentialCaseStart; index < report.path("case_ids").size(); index++) {
+            reportedCredentialCaseIds.add(report.path("case_ids").get(index).asText());
+        }
+        assertEquals(expectedCredentialCaseIds, reportedCredentialCaseIds,
+                "Credential structural case identifiers must keep deterministic catalog order.");
         assertEquals("test-op-query", report.path("case_ids").get(0).asText());
         for (int index = 1; index < 6; index++) {
             assertEquals("test-norm-tag-range-kmipkit-range-%03d".formatted(index),
