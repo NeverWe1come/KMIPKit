@@ -212,6 +212,12 @@ bool kmip_load_catalog(const char *json_path, kmip_test_case_t *out_cases, size_
                                    sizeof(test_case->object_type)) &&
             load_optional_requires(&document, requires, "attribute", test_case->attribute,
                                    sizeof(test_case->attribute)) &&
+            load_optional_requires(&document, requires, "attribute_reference_tag",
+                                   test_case->attribute_reference_tag,
+                                   sizeof(test_case->attribute_reference_tag)) &&
+            load_optional_requires(&document, requires, "attribute_response_type",
+                                   test_case->attribute_response_type,
+                                   sizeof(test_case->attribute_response_type)) &&
             load_optional_requires(&document, requires, "workflow_type", test_case->workflow_type,
                                    sizeof(test_case->workflow_type)) &&
             load_optional_requires(&document, requires, "enum_type", test_case->enum_type,

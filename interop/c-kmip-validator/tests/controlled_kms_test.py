@@ -32,7 +32,8 @@ def enumeration(tag: int, value: int) -> bytes:
 
 def response(operations: tuple[int, ...], protocol_minor: int,
              selected_attribute_tag: int = 0,
-             created_object_type: int = 2) -> bytes:
+             created_object_type: int = 2,
+             selected_attribute_wire: bytes | None = None) -> bytes:
     version = tlv(0x420069, 1,
                   integer(0x42006A, 2) + integer(0x42006B, protocol_minor))
     header = tlv(
@@ -98,7 +99,9 @@ def response(operations: tuple[int, ...], protocol_minor: int,
             payload_value = enumeration(0x420057, created_object_type) + \
                 tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 11:
-            if selected_attribute_tag == 0x420028:
+            if selected_attribute_wire is not None:
+                attributes = selected_attribute_wire
+            elif selected_attribute_tag == 0x420028:
                 attributes = enumeration(0x420028, 3)
             elif selected_attribute_tag == 0x42002A:
                 attributes = integer(0x42002A, 128)

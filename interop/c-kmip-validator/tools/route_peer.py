@@ -24,6 +24,7 @@ import xml.etree.ElementTree as ET
 
 from artifact_support import INSTALL, PIN, ROOT, sha256
 from route_evidence import cell_fields
+from route_attributes import AttributeCases
 sys.path.insert(0, str(ROOT / 'interop/c-kmip-validator/tests'))
 from controlled_kms_test import certificate_files, response, tlv
 sys.path.insert(0, str(ROOT / 'interop/shared/tools'))
@@ -246,8 +247,9 @@ CONTROLLED_PEER_LOCAL_MODEL_CASES = frozenset({
 })
 
 
-def assert_recipe(node, case_id, version):
-    expected, _ = RECIPES[case_id]
+def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None):
+    selected_recipe = recipe or RECIPES[case_id]
+    expected, _ = selected_recipe
     if tuple(numbers(node, 0x42005C)) != expected:
         raise ValueError('fixture_operation_order_mismatch')
     header = next(descendants(node, 0x420077), node)
@@ -266,7 +268,8 @@ def assert_recipe(node, case_id, version):
         if numbers(node, 0x42000E) != [1]:
             raise ValueError('fixture_cleanup_continuation_missing')
         implicit_target = case_id in ('test-op-get-attributes', 'test-op-get-attribute-list',
-            'test-attr-cryptographic-algorithm', 'test-attr-cryptographic-length', 'test-op-get-constraints')
+            'test-attr-cryptographic-algorithm', 'test-attr-cryptographic-length', 'test-op-get-constraints') or \
+            attribute_fixture is not None
         if len(numbers(node, 0x420094)) < len(expected) - 1 - int(implicit_target):
             raise ValueError('fixture_id_placeholder_missing')
         if len(list(descendants(node, 0x420093))) != len(expected):
@@ -275,7 +278,10 @@ def assert_recipe(node, case_id, version):
         raise ValueError('fixture_attribute_reference_mismatch')
     if case_id == 'test-attr-cryptographic-length' and numbers(node, 0x42013B) != [0x42002A]:
         raise ValueError('fixture_attribute_reference_mismatch')
-    if RECIPES[case_id][1] == 'query' and numbers(node, 0x420074) != [1]:
+    if attribute_fixture is not None and numbers(node, 0x42013B) != [
+            int(attribute_fixture['attribute_reference_tag'], 16)]:
+        raise ValueError('fixture_attribute_reference_mismatch')
+    if selected_recipe[1] == 'query' and numbers(node, 0x420074) != [1]:
         raise ValueError('fixture_query_function_mismatch')
     if case_id == 'test-norm-payload-client-create-request-21-003':
         masks = list(descendants(node, 0x42015F))
@@ -297,6 +303,44 @@ def assert_recipe(node, case_id, version):
         raise ValueError('fixture_rng_length_mismatch')
     if case_id == 'test-op-rng-seed' and [item[2] for item in descendants(node, 0x4200C2)] != [bytes(range(16))]:
         raise ValueError('fixture_rng_seed_mismatch')
+
+
+def fixture_wire(node):
+    tag, kind, value = node
+    body = b''.join(fixture_wire(child) for child in value) if kind == 1 else value
+    return tlv(tag, kind, body)
+
+
+def read_back_attribute_fixture(case, catalog, version, attributes):
+    policy = case.get('requires', {}).get('attribute_policy', {})
+    if 'read_back_attribute' not in policy.get('branch_classes', []):
+        return None
+    target_id = case.get('requires', {}).get('normative_target_id')
+    target = next((row for row in catalog['normative_targets']
+                   if row.get('target_id') == target_id), None)
+    if target is None or target.get('name') == 'Vendor Attribute':
+        return None
+    fixtures = attributes.fixtures(target, version)
+    if not fixtures:
+        return None
+    tag, item_type, _ = fixtures[0]
+    reference_tag = attributes.tags.get(normalize(case['requires']['attribute']))
+    if reference_tag is None or reference_tag != tag:
+        return None
+    return {
+        'attribute_reference_tag': f'{reference_tag:06X}',
+        'attribute_response_type': str(item_type),
+        'attribute_response_wire': fixture_wire(fixtures[0]),
+    }
+
+
+def recipe_for_case(case, attribute_fixture):
+    recipe = RECIPES.get(case['case_id'])
+    if recipe is not None:
+        return recipe
+    if attribute_fixture is not None:
+        return ((1, 11, 20), 'get_attributes')
+    return None
 
 
 
@@ -419,9 +463,16 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
     all_cells = list(iter_cells(catalog, manifest, languages=('c',)))
     artifact_sha256 = sha256(INSTALL / 'lib/libkmipkit_ffi.so')
     catalog_sha256 = sha256(ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json')
+    attribute_executor = AttributeCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog)
+    attribute_case_ids = {
+        case['case_id'] for case in catalog['test_cases']
+        if case['case_id'].startswith('test-attr-') and any(
+            read_back_attribute_fixture(case, catalog, version, attribute_executor) is not None
+            for version in case.get('execution', {}).get('protocol_versions', []))
+    }
     case_variants = [(case, variant) for case in catalog['test_cases'] for variant in
-        (('direct', 'standalone') if case['case_id'] in {'test-op-get-attributes', 'test-op-get-attribute-list',
-         'test-attr-cryptographic-algorithm', 'test-attr-cryptographic-length'} else ('direct',))]
+        (('direct', 'standalone') if case['case_id'] in {'test-op-get-attributes', 'test-op-get-attribute-list'}
+         or case['case_id'] in attribute_case_ids else ('direct',))]
     cells_by_case = {}
     for cell in all_cells:
         cells_by_case.setdefault(cell['case_id'], []).append(cell)
@@ -437,7 +488,12 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
             for encoding, transport in network_combinations:
                     for case, variant in case_variants:
                         case_id = case['case_id']
-                        if case_id not in RECIPES or version not in case['execution']['protocol_versions']:
+                        if version not in case['execution']['protocol_versions']:
+                            continue
+                        attribute_fixture = read_back_attribute_fixture(
+                            case, catalog, version, attribute_executor)
+                        recipe = recipe_for_case(case, attribute_fixture)
+                        if recipe is None:
                             continue
                         if version == '2.0' and case_id in ('test-op-discover-versions', 'test-op-login', 'test-op-get-constraints', 'test-op-ping'):
                             continue
@@ -455,13 +511,17 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         stream.settimeout(5)
                                         wire = read_request(stream, encoding, transport)
                                         request_tree = codec.decode(wire, encoding)
-                                        assert_recipe(request_tree, case_id, version)
+                                        assert_recipe(request_tree, case_id, version, recipe, attribute_fixture)
                                         selected_tag = {'test-attr-cryptographic-algorithm': 0x420028,
-                                                        'test-attr-cryptographic-length': 0x42002A}.get(case_id, 0)
+                                                        'test-attr-cryptographic-length': 0x42002A}.get(
+                                                            case_id, int(attribute_fixture['attribute_reference_tag'], 16)
+                                                            if attribute_fixture else 0)
                                         object_type = 4 if case_id == 'test-obj-private-key' else 3 if case_id == 'test-obj-public-key' else 2
-                                        response_wire = response(RECIPES[case_id][0], int(version[-1]), selected_tag, object_type)
+                                        response_wire = response(
+                                            recipe[0], int(version[-1]), selected_tag, object_type,
+                                            attribute_fixture['attribute_response_wire'] if attribute_fixture else None)
                                         response_tree = parse(response_wire)
-                                        verify_lifecycle(RECIPES[case_id][0], response_tree)
+                                        verify_lifecycle(recipe[0], response_tree)
                                         encoded_response = codec.encode(response_wire, encoding)
                                         if transport == 'https':
                                             content_type = {'TTLV': 'application/octet-stream', 'JSON': 'application/json', 'XML': 'text/xml'}[encoding]
@@ -495,6 +555,12 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                             trace_path.unlink(missing_ok=True)
                             connection_path.write_text(json.dumps(config))
                             peer_case = case_for_controlled_exchange(case)
+                            if attribute_fixture is not None:
+                                peer_case = {**peer_case, 'requires': {
+                                    **peer_case.get('requires', {}),
+                                    'attribute_reference_tag': attribute_fixture['attribute_reference_tag'],
+                                    'attribute_response_type': attribute_fixture['attribute_response_type'],
+                                }}
                             catalog_path.write_text(json.dumps({**catalog, 'test_cases': [peer_case]}))
                             run = subprocess.run([str(binary.resolve()), 'run', '--connection', str(connection_path),
                                 '--catalog', str(catalog_path), '--allow-mutations', '--output', str(result_path)],
@@ -528,6 +594,15 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                            'consumer_case_status': (result.get('cases') or [{}])[0].get('status', 'missing'),
                                            'consumer_server_compatibility': (result.get('cases') or [{}])[0].get('server_compatibility', 'missing'),
                                            'public_api_trace_symbols': sorted(invoked_symbols),
+                                           **({'request_attribute_reference_tags': [
+                                               f'{tag:06X}' for tag in numbers(
+                                                   next(item for item in observation[0][0][2]
+                                                        if item[0] == 0x42000F and numbers(item, 0x42005C) == [11]),
+                                                   0x42013B)],
+                                               'response_attribute_tags': [
+                                                   f'{item[0]:06X}' for item in next(
+                                                       descendants(observation[0][1], 0x420125))[2]]}
+                                               if observation and attribute_fixture else {}),
                                            **({'failure_code': code or 'peer_observation_missing'} if code or not observation else {})})
                             if not observation or code or run.returncode != 0:
                                 continue
@@ -574,7 +649,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                 event.update(status='passed', invocation_count=1, invocation_id=f'c-peer-{len(events)}')
                                 digest_tree = response_tree if cell['action'] == 'decode' else request_tree
                                 if cell['action'] == 'encode':
-                                    target_operation = 11 if case_id in {'test-op-get-attributes', 'test-attr-cryptographic-algorithm', 'test-attr-cryptographic-length'} else 12
+                                    target_operation = 11 if operation_name == 'Get Attributes' else 12
                                     target_item = next(item for item in request_tree[2] if item[0] == 0x42000F and numbers(item, 0x42005C) == [target_operation])
                                     digest_tree = next(descendants(target_item, 0x420079))
                                 event['response_tree_sha256' if cell['action'] == 'decode' else 'request_tree_sha256'] = tree_digest(digest_tree)
@@ -582,13 +657,13 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     event.update(request_delivery_state='not_sent', transport_invocation_count=0)
                                 elif cell['action'] == 'send':
                                     event.update(request_delivery_state='response_received', transport_invocation_count=1)
-                                if cell['action'] == 'send' and len(RECIPES[case_id][0]) > 1:
-                                    operations = [next(t['name'] for t in catalog['normative_targets'] if t['kind'] == 'enumeration_value' and t.get('wire_value') == f'{op:08X}' and any(p.endswith('ENUMERATION-OPERATION') for p in t.get('parent_element_ids', []))) for op in RECIPES[case_id][0]]
+                                if cell['action'] == 'send' and len(recipe[0]) > 1:
+                                    operations = [next(t['name'] for t in catalog['normative_targets'] if t['kind'] == 'enumeration_value' and t.get('wire_value') == f'{op:08X}' and any(p.endswith('ENUMERATION-OPERATION') for p in t.get('parent_element_ids', []))) for op in recipe[0]]
                                     event.update(batch_operation_sequence=operations, batch_item_count=len(operations),
                                         peer_observed_operation_sequence=operations,
                                         peer_observed_response_count=len(operations),
                                         peer_observed_result_status_codes=numbers(response_tree, 0x42007F),
-                                        peer_observed_effects=verify_lifecycle(RECIPES[case_id][0], response_tree))
+                                        peer_observed_effects=verify_lifecycle(recipe[0], response_tree))
                                 events.append(event)
                                 keys.add(_key(cell))
     return events, keys, checks
