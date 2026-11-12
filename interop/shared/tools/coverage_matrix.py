@@ -77,9 +77,13 @@ def _route_excludes_target(case: dict, route: dict, target: dict | None) -> bool
     requires = case.get("requires", {})
     target_kind = requires.get("target_kind", (target or {}).get("kind"))
     allocation = requires.get("allocation", (target or {}).get("allocation"))
-    return any(target_kind in exclusion["target_kinds"]
-               and allocation in exclusion["allocations"]
-               for exclusion in route.get("case_exclusions", []))
+    target_id = (target or {}).get("target_id")
+    return any(
+        target_id in exclusion.get("target_ids", [])
+        or target_kind in exclusion.get("target_kinds", [])
+        and allocation in exclusion.get("allocations", [])
+        for exclusion in route.get("case_exclusions", [])
+    )
 
 
 def _is_generic_tag_inventory_case(case: dict) -> bool:

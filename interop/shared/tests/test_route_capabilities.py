@@ -512,12 +512,14 @@ class RouteCapabilitiesTests(unittest.TestCase):
                       if route['language'] == language}
             for route_id in route_ids:
                 route = routes[route_id]
-                self.assertEqual([{
+                exclusion = next(exclusion for exclusion in route['case_exclusions']
+                                 if 'target_kinds' in exclusion)
+                self.assertEqual({
                     'target_kinds': ['tag', 'tag_range'],
                     'allocations': ['reserved', 'unused'],
                     'reason': 'This constructor takes an allocation-checked Tag; RawTag::try_checked rejects reserved and unused allocations before an Item can be constructed.',
                     'source_paths': [route['source_paths'][0], 'crates/kmipkit-ttlv/src/tag.rs'],
-                }], route['case_exclusions'])
+                }, exclusion)
 
     def test_reserved_tag_item_view_exclusions_require_decoder_rejection_sources(self):
         expected = {
@@ -530,13 +532,15 @@ class RouteCapabilitiesTests(unittest.TestCase):
         }
         for language, (route_id, route_source) in expected.items():
             route = next(route for route in self.data['routes'] if route['route_id'] == route_id)
-            self.assertEqual([{
+            exclusion = next(exclusion for exclusion in route['case_exclusions']
+                             if 'target_kinds' in exclusion)
+            self.assertEqual({
                 'target_kinds': ['tag', 'tag_range'],
                 'allocations': ['reserved', 'unused'],
                 'reason': 'The TTLV decoder rejects reserved and unused allocations before it can return an Item; this accessor therefore has no valid Item input for the case.',
                 'source_paths': [route_source, 'crates/kmipkit-ttlv/src/codec/decoder.rs',
                                  'crates/kmipkit-ttlv/src/tag.rs'],
-            }], route['case_exclusions'])
+            }, exclusion)
 
     def test_certificate_contents_are_excluded_from_generic_item_routes_with_oasis_sources(self):
         expected_symbols = {
