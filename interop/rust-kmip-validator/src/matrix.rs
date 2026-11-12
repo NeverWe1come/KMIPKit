@@ -1634,6 +1634,17 @@ fn sample_for_route_at_version(
     if symbol == "kmipkit_protocol::AttributeReference::tag" {
         return crate::driver::item(0x0042_013b, Value::enumeration(0x0042_0001));
     }
+    if symbol == "kmipkit_protocol::ProtocolVersion::from_raw" {
+        let message = if target["target_id"]
+            .as_str()
+            .is_some_and(|target_id| target_id.contains("MESSAGE-FIELD-8-5"))
+        {
+            response_message_fixture(target, elements, protocol_version)?
+        } else {
+            request_message_fixture(target, elements, protocol_version)?
+        };
+        return metadata_expected_target(&message, target, elements);
+    }
     if [
         "kmipkit_protocol::RequestMessage::try_from_ttlv",
         "kmipkit_protocol::ResponseMessage::try_from_ttlv",
@@ -1915,6 +1926,66 @@ fn invoke_client_batch_route(symbol: &str, sample: &Item) -> Option<Result<Item>
     })())
 }
 
+fn invoke_simple_protocol_route(symbol: &str, sample: &Item) -> Option<Result<Item>> {
+    if symbol == "kmipkit_protocol::ProtocolVersion::from_raw" {
+        return Some((|| {
+            let (major, minor) = if let Some(structure) = sample.as_structure() {
+                let read = |tag| {
+                    structure
+                        .children()
+                        .iter()
+                        .find(|child| child.tag().raw() == tag)
+                        .ok_or("Protocol Version fixture field missing")?
+                        .with_value(|value| match value {
+                            ValueView::Integer(value) => Ok(*value),
+                            _ => Err("Protocol Version fixture field is not an Integer"),
+                        })
+                };
+                (read(0x0042_006a)?, read(0x0042_006b)?)
+            } else {
+                let value = sample.with_value(|value| match value {
+                    ValueView::Integer(value) => Ok(*value),
+                    _ => Err("Protocol Version fixture is not an Integer"),
+                })?;
+                match sample.tag().raw() {
+                    0x0042_006a => (value, 1),
+                    0x0042_006b => (2, value),
+                    _ => return Err("Protocol Version fixture has an unexpected tag"),
+                }
+            };
+            let version = kmipkit::protocol::ProtocolVersion::from_raw(major, minor);
+            if version.major() != major || version.minor() != minor {
+                return Err("Protocol Version constructor changed its values");
+            }
+            sample.try_clone().map_err(|_| "local copy failed")
+        })());
+    }
+
+    if symbol == "kmipkit_protocol::SecretBytes::into_ttlv_value" {
+        return Some((|| {
+            let bytes = sample.with_value(|value| match value {
+                ValueView::ByteString(value) => Ok(value.to_vec()),
+                _ => Err("SecretBytes fixture is not a Byte String"),
+            })?;
+            let value = kmipkit::protocol::SecretBytes::new(bytes).into_ttlv_value();
+            Item::new(sample.tag(), value).map_err(|_| "secret byte value rejected")
+        })());
+    }
+
+    if symbol == "kmipkit_protocol::SecretText::into_ttlv_value" {
+        return Some((|| {
+            let text = sample.with_value(|value| match value {
+                ValueView::TextString(value) => Ok(value.to_owned()),
+                _ => Err("SecretText fixture is not a Text String"),
+            })?;
+            let value = kmipkit::protocol::SecretText::new(text).into_ttlv_value();
+            Item::new(sample.tag(), value).map_err(|_| "secret text value rejected")
+        })());
+    }
+
+    None
+}
+
 #[allow(clippy::too_many_lines)] // Explicit public route dispatch stays together for review.
 fn invoke(
     symbol: &str,
@@ -1923,6 +1994,9 @@ fn invoke(
     elements: &[Json],
     protocol_version: &str,
 ) -> Option<Result<Item>> {
+    if let Some(result) = invoke_simple_protocol_route(symbol, sample) {
+        return Some(result);
+    }
     if let Some(result) = invoke_attribute_reference_route(symbol, sample) {
         return Some(result);
     }
