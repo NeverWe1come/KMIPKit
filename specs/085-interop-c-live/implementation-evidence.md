@@ -115,3 +115,14 @@ an aggregate numeric enumeration roundtrip under a surrogate Tag field.
 The regression selects an assigned and a reserved target, calls the real
 installed ABI, checks the assigned target tree and reserved decoder rejection,
 and retains failure of the complete gate for a selected subset.
+
+### Coverage helper CLI confinement
+
+Sonar identified unrestricted log/receipt paths and an unnecessary foreign
+Cargo manifest override in the new helper. The manifest override is removed;
+only this repository's manifest is compiled. Report directory creation and
+fixed log/receipt paths follow the allowed output roots documented in
+`docs/development/testing.md`, and metadata replacement is atomic. Eleven
+functional tests, all 96 workflow contracts, and the actual Linux coverage
+collector pass with the guarded CLI. Exact-head Sonar verification remains
+required before treating the quality gate as satisfied.

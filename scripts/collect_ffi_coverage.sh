@@ -3,10 +3,11 @@ set -euo pipefail
 
 script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 repository_root="$(cd -- "${script_dir}/.." && pwd)"
-report_dir="${1:-${repository_root}/coverage-ffi}"
-report_dir="$(mkdir -p -- "${report_dir}" && cd -- "${report_dir}" && pwd)"
 target_root="${CARGO_TARGET_DIR:-${repository_root}/target}"
 llvm_cov_target="${target_root}/llvm-cov-target"
+report_dir="${1:-${repository_root}/coverage-ffi}"
+report_dir="$(python3 "${repository_root}/scripts/ffi_coverage_objects.py" \
+    --report-dir "${report_dir}" --prepare-report-dir)"
 # Keep the coverage report aligned with the full FFI source tree as modules are split out.
 mapfile -d '' -t source_files < <(
     find "${repository_root}/crates/kmipkit-ffi/src" -type f -name "*.rs" -print0 | sort -z
@@ -60,8 +61,7 @@ readonly profile_data="${merged_profiles[0]}"
 # Cargo 1.100 stores artifacts under build/<package>/<hash>/out, unlike older deps/ layouts.
 readonly object_manifest="${report_dir}/coverage-objects.nul"
 python3 "${repository_root}/scripts/ffi_coverage_objects.py" \
-    --target-root "${llvm_cov_target}" --cargo-log "${cargo_output}" \
-    --artifacts-json "${report_dir}/cargo-artifacts.jsonl" --refresh-artifacts \
+    --target-root "${llvm_cov_target}" --report-dir "${report_dir}" --refresh-artifacts \
     > "${object_manifest}"
 mapfile -d '' -t object_paths < "${object_manifest}"
 coverage_objects=()

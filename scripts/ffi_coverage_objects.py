@@ -9,10 +9,53 @@ import re
 import shlex
 import subprocess
 import sys
+import tempfile
 
+_REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+_CARGO_LOG_NAME = 'cargo-llvm-cov.log'
+_RECEIPT_NAME = 'cargo-artifacts.jsonl'
 _LIBRARY_NAMES = ('libkmipkit_ffi.so', 'libkmipkit_ffi.a')
 _CONSUMER_PREFIXES = {'unittests src/lib.rs': 'kmipkit_ffi-',
                       'tests/c_api_coverage.rs': 'c_api_coverage-'}
+
+
+def _authorized_roots() -> list[Path]:
+    roots = [_REPOSITORY_ROOT, Path(tempfile.gettempdir()).resolve()]
+    # An explicit Cargo target directory authorizes its build/report artifacts.
+    configured = os.environ.get('CARGO_TARGET_DIR')
+    if configured:
+        roots.append(Path(configured).resolve())
+    return roots
+
+
+def _directory(path: Path, *, create=False) -> Path:
+    resolved = path.resolve()
+    if not any(resolved.is_relative_to(root) for root in _authorized_roots()):
+        raise ValueError('coverage directory is outside authorized output roots')
+    if create:
+        resolved.mkdir(parents=True, exist_ok=True)
+    if not resolved.is_dir():
+        raise ValueError('coverage directory does not exist')
+    return resolved
+
+
+def prepare_report_dir(path: Path) -> Path:
+    """Validate a report directory before creating any filesystem entries."""
+    return _directory(path, create=True)
+
+
+def _report_file(path: Path, name: str, label: str, *, report_dir=None, must_exist=True) -> Path:
+    if path.name != name:
+        raise ValueError(f'{label} must use its fixed coverage report filename')
+    parent = _directory(path.parent)
+    if report_dir is not None and parent != report_dir:
+        raise ValueError(f'{label} must share the coverage report directory')
+    resolved = path.resolve(strict=must_exist)
+    if resolved.parent != parent or resolved.name != name:
+        raise ValueError(f'{label} escapes its coverage report directory')
+    if must_exist and not resolved.is_file():
+        raise ValueError(f'{label} is not an existing report file')
+    return resolved
 
 
 def _unique_object(candidates, root, label, *, executable=False):
@@ -35,7 +78,10 @@ def _unique_object(candidates, root, label, *, executable=False):
 
 def collect_ffi_objects(target_root: Path, cargo_log: Path, artifacts_json: Path) -> list[Path]:
     """Keep both complete libraries and the actual unit/C-consumer executables."""
-    root = target_root.resolve(strict=True)
+    root = _directory(target_root)
+    cargo_log = _report_file(cargo_log, _CARGO_LOG_NAME, 'Cargo log')
+    artifacts_json = _report_file(artifacts_json, _RECEIPT_NAME, 'Cargo receipt',
+                                  report_dir=cargo_log.parent)
     libraries = {name: [] for name in _LIBRARY_NAMES}
     for line in artifacts_json.read_text(encoding='utf-8').splitlines():
         artifact = json.loads(line)
@@ -54,8 +100,7 @@ def collect_ffi_objects(target_root: Path, cargo_log: Path, artifacts_json: Path
         match = pattern.search(line.strip())
         if match is not None:
             role, path = match.groups()
-            expected = _CONSUMER_PREFIXES[role]
-            if not Path(path).name.startswith(expected):
+            if not Path(path).name.startswith(_CONSUMER_PREFIXES[role]):
                 raise ValueError(f'{role} names an unexpected coverage executable')
             roles[role].append(Path(path))
     objects.extend(_unique_object(paths, root, role, executable=True)
@@ -63,11 +108,13 @@ def collect_ffi_objects(target_root: Path, cargo_log: Path, artifacts_json: Path
     return objects
 
 
-def record_ffi_artifacts(target_root: Path, manifest_path: Path, output: Path) -> None:
-    """Ask Cargo for current artifacts using cargo-llvm-cov's exact environment."""
-    environment = {**os.environ, 'CARGO_TARGET_DIR': str(target_root.resolve())}
+def record_ffi_artifacts(target_root: Path, output: Path) -> None:
+    """Capture current artifacts for this repository's fixed Cargo manifest."""
+    target_root = _directory(target_root)
+    output = _report_file(output, _RECEIPT_NAME, 'Cargo receipt', must_exist=False)
+    environment = {**os.environ, 'CARGO_TARGET_DIR': str(target_root)}
     coverage = subprocess.run(['cargo', 'llvm-cov', 'show-env', '--sh'],
-                              cwd=manifest_path.parent, env=environment,
+                              cwd=_REPOSITORY_ROOT, env=environment,
                               text=True, capture_output=True, check=True)
     for line in coverage.stdout.splitlines():
         words = shlex.split(line)
@@ -75,26 +122,34 @@ def record_ffi_artifacts(target_root: Path, manifest_path: Path, output: Path) -
             raise ValueError('cargo-llvm-cov returned an invalid environment assignment')
         name, value = words[1].split('=', 1)
         environment[name] = value
-    with output.open('w', encoding='utf-8') as receipt:
-        subprocess.run(['cargo', 'test', '--no-run', '--message-format=json',
-                        '--manifest-path', str(manifest_path), '-p', 'kmipkit-ffi',
-                        '--all-targets', '--all-features', '--locked'],
-                       cwd=manifest_path.parent, env=environment, stdout=receipt, check=True)
+    with tempfile.TemporaryDirectory(prefix='.ffi-coverage-', dir=output.parent) as raw:
+        receipt_path = Path(raw) / _RECEIPT_NAME
+        with receipt_path.open('w', encoding='utf-8') as receipt:
+            subprocess.run(['cargo', 'test', '--no-run', '--message-format=json',
+                            '--manifest-path', str(_REPOSITORY_ROOT / 'Cargo.toml'),
+                            '-p', 'kmipkit-ffi', '--all-targets', '--all-features', '--locked'],
+                           cwd=_REPOSITORY_ROOT, env=environment, stdout=receipt, check=True)
+        receipt_path.replace(output)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--target-root', type=Path, required=True)
-    parser.add_argument('--cargo-log', type=Path, required=True)
-    parser.add_argument('--artifacts-json', type=Path, required=True)
+    parser.add_argument('--target-root', type=Path)
+    parser.add_argument('--report-dir', type=Path, required=True)
+    parser.add_argument('--prepare-report-dir', action='store_true')
     parser.add_argument('--refresh-artifacts', action='store_true')
-    parser.add_argument('--manifest-path', type=Path,
-                        default=Path(__file__).resolve().parents[1] / 'Cargo.toml')
     args = parser.parse_args()
     try:
+        if args.prepare_report_dir:
+            print(prepare_report_dir(args.report_dir))
+            return
+        if args.target_root is None:
+            parser.error('--target-root is required when discovering coverage objects')
+        report_dir = _directory(args.report_dir)
+        receipt = report_dir / _RECEIPT_NAME
         if args.refresh_artifacts:
-            record_ffi_artifacts(args.target_root, args.manifest_path, args.artifacts_json)
-        objects = collect_ffi_objects(args.target_root, args.cargo_log, args.artifacts_json)
+            record_ffi_artifacts(args.target_root, receipt)
+        objects = collect_ffi_objects(args.target_root, report_dir / _CARGO_LOG_NAME, receipt)
     except (OSError, ValueError, subprocess.CalledProcessError) as error:
         parser.error(str(error))
     for path in objects:

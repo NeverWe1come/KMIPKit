@@ -33,10 +33,10 @@ class FfiCoverageObjectTests(unittest.TestCase):
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(b'fixture object')
             path.chmod(0o755)
-        log = root / 'cargo.log'
+        log = root / 'cargo-llvm-cov.log'
         log.write_text(f'Running unittests src/lib.rs ({objects[2]})\n'
                        f'Running tests/c_api_coverage.rs ({objects[3]})\n')
-        log.with_suffix('.artifacts.jsonl').write_text(json.dumps({
+        (log.parent / 'cargo-artifacts.jsonl').write_text(json.dumps({
             'reason': 'compiler-artifact', 'target': {'name': 'kmipkit_ffi'},
             'profile': {'test': False}, 'filenames': [str(path) for path in objects[:2]],
         }) + '\n')
@@ -46,14 +46,14 @@ class FfiCoverageObjectTests(unittest.TestCase):
         for layout in ('classic', 'cargo-1.100'):
             with self.subTest(layout=layout), tempfile.TemporaryDirectory() as directory:
                 root, log, objects = self.fixture(directory, layout)
-                self.assertEqual(MODULE.collect_ffi_objects(root, log, log.with_suffix('.artifacts.jsonl')), objects)
+                self.assertEqual(MODULE.collect_ffi_objects(root, log, (log.parent / 'cargo-artifacts.jsonl')), objects)
 
     def test_missing_static_library_cannot_reduce_the_coverage_denominator(self):
         with tempfile.TemporaryDirectory() as directory:
             root, log, objects = self.fixture(directory, 'cargo-1.100')
             objects[1].unlink()
             with self.assertRaisesRegex(ValueError, 'libkmipkit_ffi.a'):
-                MODULE.collect_ffi_objects(root, log, log.with_suffix('.artifacts.jsonl'))
+                MODULE.collect_ffi_objects(root, log, (log.parent / 'cargo-artifacts.jsonl'))
 
     def test_unreferenced_stale_library_cannot_enter_the_coverage_report(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -62,20 +62,20 @@ class FfiCoverageObjectTests(unittest.TestCase):
             stale.parent.mkdir(parents=True)
             stale.write_bytes(b'stale object')
             self.assertEqual(MODULE.collect_ffi_objects(
-                root, log, log.with_suffix('.artifacts.jsonl')), objects)
-            with log.with_suffix('.artifacts.jsonl').open('a') as receipt:
+                root, log, (log.parent / 'cargo-artifacts.jsonl')), objects)
+            with (log.parent / 'cargo-artifacts.jsonl').open('a') as receipt:
                 receipt.write(json.dumps({'reason': 'compiler-artifact',
                     'target': {'name': 'kmipkit_ffi'}, 'profile': {'test': False},
                     'filenames': [str(stale)]}) + '\n')
             with self.assertRaisesRegex(ValueError, 'ambiguous'):
-                MODULE.collect_ffi_objects(root, log, log.with_suffix('.artifacts.jsonl'))
+                MODULE.collect_ffi_objects(root, log, (log.parent / 'cargo-artifacts.jsonl'))
 
     def test_duplicate_hardlink_does_not_make_the_current_library_ambiguous(self):
         with tempfile.TemporaryDirectory() as directory:
             root, log, objects = self.fixture(directory, 'classic')
             alias = root / 'debug/libkmipkit_ffi.so'
             os.link(objects[0], alias)
-            actual = MODULE.collect_ffi_objects(root, log, log.with_suffix('.artifacts.jsonl'))
+            actual = MODULE.collect_ffi_objects(root, log, (log.parent / 'cargo-artifacts.jsonl'))
             self.assertTrue(actual[0].samefile(objects[0]))
             self.assertEqual(actual[1:], objects[1:])
 
@@ -87,13 +87,13 @@ class FfiCoverageObjectTests(unittest.TestCase):
             outside.chmod(0o755)
             log.write_text(log.read_text().replace(str(objects[3]), str(outside)))
             with self.assertRaisesRegex(ValueError, 'outside'):
-                MODULE.collect_ffi_objects(root, log, log.with_suffix('.artifacts.jsonl'))
+                MODULE.collect_ffi_objects(root, log, (log.parent / 'cargo-artifacts.jsonl'))
 
     def test_arbitrary_receipt_filename_is_rejected_before_reading(self):
         with tempfile.TemporaryDirectory() as directory:
             root, log, _ = self.fixture(directory, 'classic')
             private = root / 'credentials.json'
-            private.write_bytes(log.with_suffix('.artifacts.jsonl').read_bytes())
+            private.write_bytes((log.parent / 'cargo-artifacts.jsonl').read_bytes())
             with self.assertRaisesRegex(ValueError, 'receipt'):
                 MODULE.collect_ffi_objects(root, log, private)
 
@@ -102,8 +102,8 @@ class FfiCoverageObjectTests(unittest.TestCase):
             root, log, _ = self.fixture(directory, 'classic')
             foreign = Path(directory) / 'foreign'
             foreign.mkdir()
-            receipt = foreign / log.with_suffix('.artifacts.jsonl').name
-            receipt.write_bytes(log.with_suffix('.artifacts.jsonl').read_bytes())
+            receipt = foreign / 'cargo-artifacts.jsonl'
+            receipt.write_bytes((log.parent / 'cargo-artifacts.jsonl').read_bytes())
             with self.assertRaisesRegex(ValueError, 'report directory'):
                 MODULE.collect_ffi_objects(root, log, receipt)
 
@@ -111,8 +111,7 @@ class FfiCoverageObjectTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root, log, _ = self.fixture(directory, 'classic')
             result = subprocess.run([sys.executable, str(HELPER), '--target-root', str(root),
-                '--cargo-log', str(log), '--artifacts-json',
-                str(log.with_suffix('.artifacts.jsonl')), '--manifest-path',
+                '--report-dir', str(log.parent), '--manifest-path',
                 str(Path(directory) / 'foreign-Cargo.toml')], capture_output=True)
             self.assertNotEqual(result.returncode, 0, 'a CLI override must not select executable project code')
 
@@ -134,14 +133,13 @@ class FfiCoverageObjectTests(unittest.TestCase):
             private = root / 'credentials.log'
             private.write_bytes(log.read_bytes())
             with self.assertRaisesRegex(ValueError, 'log'):
-                MODULE.collect_ffi_objects(root, private, log.with_suffix('.artifacts.jsonl'))
+                MODULE.collect_ffi_objects(root, private, (log.parent / 'cargo-artifacts.jsonl'))
 
     def test_cli_preserves_paths_with_spaces_as_null_delimited_objects(self):
         with tempfile.TemporaryDirectory() as directory:
             root, log, objects = self.fixture(directory, 'cargo-1.100')
             result = subprocess.run([sys.executable, str(HELPER), '--target-root', str(root),
-                                     '--cargo-log', str(log), '--artifacts-json',
-                                     str(log.with_suffix('.artifacts.jsonl'))], capture_output=True, check=True)
+                                     '--report-dir', str(log.parent)], capture_output=True, check=True)
             self.assertEqual(result.stdout.split(b'\0'),
                              [os.fsencode(path) for path in objects] + [b''])
 
