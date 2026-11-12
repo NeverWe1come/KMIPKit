@@ -70,6 +70,8 @@ def _expected_batch_operations(case: dict) -> list[str] | None:
         return None
     parameters = scenario.get("parameters", {})
     items = parameters.get("items", []) if isinstance(parameters, dict) else []
+    if not items and case.get("category") != "batch_workflows":
+        return None
     if items:
         operations = []
         for item in items:
