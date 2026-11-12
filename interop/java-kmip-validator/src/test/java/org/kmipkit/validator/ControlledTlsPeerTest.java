@@ -1411,11 +1411,13 @@ class ControlledTlsPeerTest {
                             .equals(normalizeTargetName(parentName)))
                     .findFirst().orElse(null);
             if (tagTarget == null) continue;
-            JsonNode attributeTarget = targets.values().stream()
-                    .filter(candidate -> "attribute".equals(candidate.path("kind").asText()))
-                    .filter(candidate -> normalizeTargetName(candidate.path("name").asText())
-                            .equals(normalizeTargetName(parentName)))
-                    .findFirst().orElse(null);
+            // OASIS KMIP 2.0/2.1 §11.34 Object Type Enumeration is distinct from §4.36 Object Type Attribute.
+            JsonNode attributeTarget = "KMIPKIT-ELEM-ENUMERATION-OBJECT-TYPE".equals(parentId)
+                    ? null : targets.values().stream()
+                            .filter(candidate -> "attribute".equals(candidate.path("kind").asText()))
+                            .filter(candidate -> normalizeTargetName(candidate.path("name").asText())
+                                    .equals(normalizeTargetName(parentName)))
+                            .findFirst().orElse(null);
             int rawTag = parseWireTag(tagTarget.path("wire_value").asText());
             StandardAttribute attribute = attributeTarget == null ? null : standardAttributeForTag(rawTag);
             if (attributeTarget != null && attribute == null) {
