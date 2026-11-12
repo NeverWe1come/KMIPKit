@@ -418,6 +418,20 @@ class ControlledTlsPeerTest {
                         "java.typed-protocol.function.client_batch_response_item_at"),
                 "The installed batch item accessor must read the KMIP 2.1 response Batch Item field.");
         assertEquals(0, routeEventCount(report.path("events"), RESPONSE_BATCH_ITEM_CASE_ID,
+                        "java.typed-protocol.function.client_batch_item_response_extension_count"),
+                "Extension Count must not be attributed to the enclosing Batch Item Structure.");
+        assertEquals(2, routeEventCount(report.path("events"),
+                        "test-norm-message-field-message-field-8-6-message-extension",
+                        "java.typed-protocol.function.client_batch_item_response_extension_count"),
+                "Extension Count must read the exact KMIP 2.x §8.6 Message Extension field.");
+        assertEquals(2, routeEventCount(report.path("events"),
+                        "test-norm-message-field-message-field-9-13-message-extension",
+                        "java.typed-protocol.function.client_batch_item_response_extension_count"),
+                "Extension Count must read the exact KMIP 2.x §9.13 Message Extension field.");
+        assertEquals(2, routeEventCount(report.path("events"), "test-norm-tag-tag-420051",
+                        "java.typed-protocol.function.client_batch_item_response_extension_count"),
+                "Extension Count must retain the exact Message Extension tag identity.");
+        assertEquals(0, routeEventCount(report.path("events"), RESPONSE_BATCH_ITEM_CASE_ID,
                         "java.typed-protocol.function.client_batch_response_item_count"),
                 "Batch Count access must not be attributed to the structural Batch Item case.");
         assertEquals(0, routeEventCount(report.path("events"), RESPONSE_BATCH_ITEM_CASE_ID,
