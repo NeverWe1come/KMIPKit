@@ -229,9 +229,20 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertFalse(typed_gaps)
         self.assertEqual(10, len(typed_events))
         self.assertEqual(symbols, {event['public_api_symbol'] for event in typed_events})
+        def tag_value(name):
+            target = next(target for target in self.catalog['normative_targets']
+                          if target['kind'] == 'tag' and target['name'] == name)
+            return int(target['wire_value'], 16)
+
+        alternative_type = next(target for target in self.catalog['normative_targets']
+                                if target['kind'] == 'enumeration_value'
+                                and target['name'] == 'Uninterpreted Text String'
+                                and 'KMIPKIT-ELEM-ENUMERATION-ALTERNATIVE-NAME-TYPE'
+                                in target['parent_element_ids'])
         expected = self.runner.digest([[
-            0x4200BF, 1,
-            [[0x4200C0, 7, 'KMIPKit.Interop'.encode().hex()], [0x4200C1, 5, 1]],
+            tag_value('Alternative Name'), 1,
+            [[tag_value('Alternative Name Value'), 7, 'KMIPKit.Interop'.encode().hex()],
+             [tag_value('Alternative Name Type'), 5, int(alternative_type['wire_value'], 16)]],
         ]])
         self.assertEqual({expected}, {event['request_tree_sha256'] for event in typed_events})
 
