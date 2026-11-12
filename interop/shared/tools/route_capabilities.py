@@ -19,7 +19,7 @@ import tempfile
 import jsonschema
 
 from cli_paths import validate_git_commit, validate_git_path, resolve_within
-from route_models import credential_function_target_ids, model_inventory, value_inventory
+from route_models import _SCALAR_VALUE_KINDS, credential_function_target_ids, model_inventory, value_inventory
 
 ROOT = Path(__file__).resolve().parents[3]
 COVERAGE = ROOT / 'interop/shared/coverage'
@@ -521,7 +521,7 @@ def build_manifest(root=ROOT, commit='9a16cc90a12205101d22a38501a5e74c665df4dc')
                 else:
                     value = normalized(function_id)
                     target_ids = [target['target_id'] for target in targets
-                        if target['kind'] not in {'enumeration_value', 'bitmask_value', 'referenced_enum_value'}
+                        if target['kind'] not in _SCALAR_VALUE_KINDS
                         and _contains_name_tokens(target.get('name', ''), function_id)]
                     if re.search(r'(?:^|_)bytes(?:_|$)', function_id):
                         target_ids.extend(target['target_id'] for target in targets
