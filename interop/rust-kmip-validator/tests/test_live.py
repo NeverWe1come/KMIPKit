@@ -321,56 +321,76 @@ class LiveContract(unittest.TestCase):
             "kmipkit_client::ClientMessageExtension::with_ttlv",
             "kmipkit_client::ClientResponseView::ping",
         }
-        cells = [cell for cell in iter_cells(CATALOG, route_manifest, languages=("rust",))
-                 if cell["mode"] == "local" and cell["protocol_version"] == "2.1"
-                 and cell["public_api_symbol"] in response_symbols]
-        matrix = self.directory / "response-accessor-matrix.jsonl"
-        output = self.directory / "response-accessor-evidence.json"
-        matrix.write_text("".join(json.dumps(cell, sort_keys=True, separators=(",", ":")) + "\n" for cell in cells))
-        message_extension = ttlv(0x420051, 1, [
-            ttlv(0x4200e3, 7, "KMIPKit controlled fixture"),
-            ttlv(0x4200e4, 6, 0),
-            ttlv(0x4200e5, 1, [ttlv(0x540001, 7, "response-route")]),
-        ])
+        for version in ("2.0", "2.1"):
+            with self.subTest(version=version):
+                minor = int(version[-1])
+                cells = [cell for cell in iter_cells(CATALOG, route_manifest, languages=("rust",))
+                         if cell["mode"] == "local" and cell["protocol_version"] == version
+                         and cell["public_api_symbol"] in response_symbols]
+                matrix = self.directory / f"response-accessor-matrix-{version}.jsonl"
+                output = self.directory / f"response-accessor-evidence-{version}.json"
+                matrix.write_text("".join(json.dumps(cell, sort_keys=True, separators=(",", ":")) + "\n" for cell in cells))
+                message_extension = ttlv(0x420051, 1, [
+                    ttlv(0x42009d, 7, "FixtureVendor"),
+                    ttlv(0x420026, 6, 0),
+                    ttlv(0x42009c, 1, [
+                        ttlv(0x540173, 8, b"fixture-v1"),
+                        ttlv(0x540174, 5, 0xffffffff),
+                    ]),
+                ])
 
-        def answer(tree):
-            request_item = next(value for tag, kind, value in tree[0][2] if tag == 0x42000f)
-            operation = find(request_item, 0x42005c)
-            fields = [ttlv(0x42005c, 5, operation)]
-            batch_id = find(request_item, 0x420093)
-            if batch_id is not None:
-                fields.append(ttlv(0x420093, 8, batch_id))
-            if operation == 0x1f:
-                fields.extend([ttlv(0x42007f, 5, 2), ttlv(0x4200d6, 8, b"controlled-correlation")])
-            else:
-                fields.append(ttlv(0x42007f, 5, 0))
-                if operation == 0x1e:
-                    payload = [ttlv(0x420069, 1, [ttlv(0x42006a, 2, 2), ttlv(0x42006b, 2, 1)])]
-                    fields.append(ttlv(0x42007c, 1, payload))
-                else:
-                    fields.append(ttlv(0x42007c, 1, []))
-            header = [
-                ttlv(0x420069, 1, [ttlv(0x42006a, 2, 2), ttlv(0x42006b, 2, 1)]),
-                ttlv(0x420092, 9, 1794268800),
-                ttlv(0x42000d, 2, 1),
-            ]
-            if operation == 0x18:
-                header.append(message_extension)
-            return ttlv(0x42007b, 1, [ttlv(0x42007a, 1, header), ttlv(0x42000f, 1, fields)])
+                def answer(tree):
+                    request_item = next(value for tag, kind, value in tree[0][2] if tag == 0x42000f)
+                    operation = find(request_item, 0x42005c)
+                    fields = [ttlv(0x42005c, 5, operation)]
+                    batch_id = find(request_item, 0x420093)
+                    if batch_id is not None:
+                        fields.append(ttlv(0x420093, 8, batch_id))
+                    if operation == 0x1f:
+                        fields.extend([
+                            ttlv(0x42007f, 5, 2),
+                            ttlv(0x420006, 8, b"controlled-correlation"),
+                            ttlv(0x42007c, 1, []),
+                        ])
+                    else:
+                        fields.append(ttlv(0x42007f, 5, 0))
+                        if operation == 0x1e:
+                            payload = [ttlv(0x420069, 1, [ttlv(0x42006a, 2, 2), ttlv(0x42006b, 2, 1)])]
+                            fields.append(ttlv(0x42007c, 1, payload))
+                        else:
+                            fields.append(ttlv(0x42007c, 1, []))
+                            if operation == 0x18:
+                                fields.append(message_extension)
+                    header = [
+                        ttlv(0x420069, 1, [ttlv(0x42006a, 2, 2), ttlv(0x42006b, 2, minor)]),
+                        ttlv(0x420092, 9, 1794268800),
+                        ttlv(0x42000d, 2, 1),
+                    ]
+                    return ttlv(0x42007b, 1, [ttlv(0x42007a, 1, header), ttlv(0x42000f, 1, fields)])
 
-        with ControlledPeer(self.pki, answer) as peer:
-            configuration = self.directory / "response-accessor-connection.json"
-            configuration.write_text(json.dumps(self.connection(peer.port, version="2.1"), sort_keys=True))
-            process = subprocess.run(
-                [str(VALIDATOR), "matrix-network", "--matrix", str(matrix), "--connection", str(configuration), "--output", str(output)],
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30, text=True,
-            )
-        self.assertEqual(process.returncode, 0, process.stderr)
-        report = json.loads(output.read_text())
-        jsonschema.Draft202012Validator(json.loads((ROOT / "interop/shared/schemas/route-execution-evidence.schema.json").read_text())).validate(report)
-        self.assertEqual(len(report["events"]), len(cells))
-        self.assertTrue(all(event["status"] == "passed" and event["invocation_count"] == 1 for event in report["events"]))
-        self.assertCountEqual(peer.operations, [0x18, 0x1e, 0x32, 0x1f])
+                with ControlledPeer(self.pki, answer) as peer:
+                    configuration = self.directory / f"response-accessor-connection-{version}.json"
+                    configuration.write_text(json.dumps(self.connection(peer.port, version=version), sort_keys=True))
+                    process = subprocess.run(
+                        [str(VALIDATOR), "matrix-network", "--matrix", str(matrix), "--connection", str(configuration), "--output", str(output)],
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30, text=True,
+                    )
+                self.assertEqual(process.returncode, 0, process.stderr)
+                report = json.loads(output.read_text())
+                jsonschema.Draft202012Validator(json.loads((ROOT / "interop/shared/schemas/route-execution-evidence.schema.json").read_text())).validate(report)
+                self.assertEqual(len(report["events"]), len(cells))
+                self.assertTrue(all(event["status"] == "passed" and event["invocation_count"] == 1 for event in report["events"]))
+                self.assertEqual(
+                    [(event["encoding"], event["transport"]) for event in report["events"]],
+                    [(cell["encoding"], cell["transport"]) for cell in cells],
+                )
+                expected_operations = [0x18, 0x1e, 0x1f] + ([0x3b] if version == "2.1" else [])
+                self.assertCountEqual(peer.operations, expected_operations)
+                evidence = os.environ.get("KMIPKIT_EVIDENCE_DIR")
+                if evidence:
+                    evidence_path = Path(evidence)
+                    evidence_path.mkdir(parents=True, exist_ok=True)
+                    (evidence_path / f"rust-response-routes-{version}.json").write_text(json.dumps(report, indent=2) + "\n")
 
     def test_query_probes_profile_omissions_and_separates_rejections(self):
         for reason, status, compatibility in [(5, "server_unsupported", "unsupported"), (8, "server_unsupported", "unsupported"), (12, "policy_restricted", "policy_restricted"), (3, "failed", "unknown"), (0x100, "failed", "unknown")]:

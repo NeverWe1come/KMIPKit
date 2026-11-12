@@ -1,6 +1,10 @@
 //! Execute only named public routes; pending recipes never produce call evidence.
-use crate::models::{Result, hash};
+use crate::models::{Connection, Result, hash};
+use kmipkit::protocol::{
+    EncryptRequest, OperationData, QueryFunction, QueryRequest, SecretBytes, UniqueIdentifier,
+};
 use kmipkit::ttlv::{Item, Value, ValueView, codec::DecodeErrorKind};
+use kmipkit::{ClientBatch, ClientBatchItem, ClientRequest};
 use serde_json::{Value as Json, json};
 use std::{
     collections::HashSet,
@@ -5024,6 +5028,305 @@ pub(crate) fn run(matrix: &Path, output: &Path) -> Result<bool> {
         }
     }
     Ok(success)
+}
+
+const RESPONSE_ACCESSOR_ROUTES: &[&str] = &[
+    "kmipkit_client::ClientBatchOutcome::asynchronous_correlation_value",
+    "kmipkit_client::ClientBatchItemResponse::outcome",
+    "kmipkit_client::ClientBatchItemResponse::unique_batch_item_id",
+    "kmipkit_client::ClientBatchItemResponse::extensions",
+    "kmipkit_client::ClientBatchItemResponse::discover_versions_supported_versions",
+    "kmipkit_client::ClientBatchResponse::get",
+    "kmipkit_client::ClientBatchResponse::len",
+    "kmipkit_client::ClientMessageExtension::with_ttlv",
+    "kmipkit_client::ClientResponseView::ping",
+];
+
+fn response_item(
+    response: &kmipkit::ClientBatchResponse,
+) -> Result<&kmipkit::ClientBatchItemResponse> {
+    response
+        .get(0)
+        .ok_or("controlled fixture returned no response item")
+}
+
+fn response_digest(response: &kmipkit::ClientBatchItemResponse) -> Result<String> {
+    let mut fields = vec![
+        crate::driver::item(
+            0x0042_005c,
+            Value::enumeration(response.outcome().operation().raw()),
+        )?,
+        crate::driver::item(
+            0x0042_007f,
+            Value::enumeration(response.outcome().result().status().raw()),
+        )?,
+    ];
+    if let Some(id) = response.unique_batch_item_id() {
+        fields.push(crate::driver::item(
+            0x0042_0093,
+            Value::byte_string(id.to_vec()),
+        )?);
+    }
+    if let Some(reason) = response.outcome().result().reason() {
+        fields.push(crate::driver::item(
+            0x0042_007e,
+            Value::enumeration(reason.raw()),
+        )?);
+    }
+    if let Some(payload) = response.raw() {
+        fields.push(crate::driver::item(
+            0x0042_007c,
+            Value::structure(
+                payload
+                    .try_clone()
+                    .map_err(|_| "response payload copy failed")?,
+            ),
+        )?);
+    }
+    let batch_item = crate::driver::item(
+        0x0042_000f,
+        Value::structure(crate::driver::structure(0x0042_000f, fields)?),
+    )?;
+    let header = response
+        .response_header_raw()
+        .ok_or("controlled fixture response header unavailable")?
+        .try_clone()
+        .map_err(|_| "response header copy failed")?;
+    let header = crate::driver::item(0x0042_007a, Value::structure(header))?;
+    let message = crate::driver::item(
+        0x0042_007b,
+        Value::structure(crate::driver::structure(
+            0x0042_007b,
+            vec![header, batch_item],
+        )?),
+    )?;
+    crate::local_wire::roundtrip(&message)
+}
+
+fn response_route_invoked(
+    symbol: &str,
+    query: &kmipkit::ClientBatchResponse,
+    discover: &kmipkit::ClientBatchResponse,
+    ping: Option<&kmipkit::ClientBatchItemResponse>,
+    pending: &kmipkit::ClientBatchResponse,
+) -> Result<String> {
+    let query_item = response_item(query)?;
+    let (response, invoked) = match symbol {
+        "kmipkit_client::ClientBatchOutcome::asynchronous_correlation_value" => {
+            let pending_item = response_item(pending)?;
+            (
+                pending_item,
+                pending_item
+                    .outcome()
+                    .asynchronous_correlation_value()
+                    .is_some_and(|value| !value.is_empty()),
+            )
+        }
+        "kmipkit_client::ClientBatchItemResponse::outcome" => (
+            query_item,
+            query_item.outcome().response().result().status().raw() == 0,
+        ),
+        "kmipkit_client::ClientBatchItemResponse::unique_batch_item_id" => (
+            query_item,
+            query_item.unique_batch_item_id() == Some(b"rust-response-route".as_slice()),
+        ),
+        "kmipkit_client::ClientBatchItemResponse::extensions" => {
+            (query_item, !query_item.extensions().is_empty())
+        }
+        "kmipkit_client::ClientBatchItemResponse::discover_versions_supported_versions" => {
+            let version_item = response_item(discover)?;
+            (
+                version_item,
+                version_item
+                    .discover_versions_supported_versions()
+                    .is_some_and(|versions| !versions.is_empty()),
+            )
+        }
+        "kmipkit_client::ClientBatchResponse::get" => (
+            query.get(0).ok_or("batch response get returned no item")?,
+            true,
+        ),
+        "kmipkit_client::ClientBatchResponse::len" => (query_item, query.len() == 1),
+        "kmipkit_client::ClientMessageExtension::with_ttlv" => {
+            let extension = query_item
+                .extensions()
+                .first()
+                .ok_or("controlled fixture extension missing")?;
+            let has_extension_shape = extension.with_ttlv(|value| value.children().len() == 3);
+            (query_item, has_extension_shape)
+        }
+        "kmipkit_client::ClientResponseView::ping" => {
+            let ping = ping.ok_or("Ping response was not requested for this version")?;
+            (ping, ping.outcome().response().ping().is_some())
+        }
+        _ => return Err("unsupported response accessor route"),
+    };
+    if !invoked {
+        return Err("controlled fixture response did not satisfy the accessor route");
+    }
+    response_digest(response)
+}
+
+/// Execute the public response accessors that need server-produced typed responses.
+///
+/// The connection is restricted to a local raw-TLS TTLV fixture so CI cannot
+/// turn this evidence command into a probe against an external KMIP service.
+#[allow(clippy::too_many_lines)] // Keep fixture selection and its exact response calls auditable together.
+pub(crate) fn run_network(
+    matrix: &Path,
+    configuration: &[u8],
+    connection: &Connection,
+    output: &Path,
+) -> Result<bool> {
+    connection.validate()?;
+    if connection.transport != "raw_tls"
+        || connection.encoding != "TTLV"
+        || connection.api_level != "typed-protocol"
+    {
+        return Err("response route evidence requires typed-protocol TTLV over raw TLS");
+    }
+    let endpoint = connection
+        .endpoints
+        .raw_tls
+        .as_ref()
+        .ok_or("response route evidence requires a raw TLS endpoint")?;
+    if !endpoint
+        .host
+        .parse::<std::net::IpAddr>()
+        .is_ok_and(|address| address.is_loopback())
+    {
+        return Err("response route evidence requires a loopback endpoint");
+    }
+    let _version = match connection.protocol_version.as_str() {
+        "2.0" => kmipkit::ProtocolVersion::V2_0,
+        "2.1" => kmipkit::ProtocolVersion::V2_1,
+        _ => return Err("unsupported response route protocol version"),
+    };
+    let routes_bytes = include_bytes!("../../shared/coverage/route-capabilities.json");
+    let routes: Json =
+        serde_json::from_slice(routes_bytes).map_err(|_| "route manifest invalid")?;
+    if routes["library_commit"] != env!("KMIPKIT_LIBRARY_COMMIT") {
+        return Err("route artifact commit mismatch");
+    }
+    let canonical_rows: HashSet<_> =
+        include_str!(concat!(env!("OUT_DIR"), "/route-cell-hashes.txt"))
+            .lines()
+            .collect();
+    let rows: Vec<Json> =
+        BufReader::new(std::fs::File::open(matrix).map_err(|_| "matrix unavailable")?)
+            .lines()
+            .map(|line| {
+                serde_json::from_str(&line.map_err(|_| "matrix read failed")?)
+                    .map_err(|_| "matrix row invalid")
+            })
+            .collect::<Result<_>>()?;
+    if rows.is_empty() {
+        return Err("response route matrix is empty");
+    }
+    let mut seen = HashSet::new();
+    for row in &rows {
+        let canonical = serde_json::to_vec(row).map_err(|_| "matrix normalization failed")?;
+        if !canonical_rows.contains(hash(&canonical).as_str()) {
+            return Err("matrix row does not match canonical shared obligations");
+        }
+        if row["language"] != "rust"
+            || row["mode"] != "local"
+            || row["action"] != "decode"
+            || row["protocol_version"] != connection.protocol_version
+            || !RESPONSE_ACCESSOR_ROUTES.contains(&text(row, "public_api_symbol")?)
+        {
+            return Err("response route matrix contains an unsupported cell");
+        }
+        let key = json!([
+            row["case_id"],
+            row["route_id"],
+            row["target_id"],
+            row["protocol_version"]
+        ])
+        .to_string();
+        if !seen.insert(key) {
+            return Err("duplicate response route cell");
+        }
+    }
+
+    let mut client = crate::driver::client(connection)?;
+    let limits = kmipkit::ttlv::codec::CodecLimits::defaults();
+    let query_item = ClientBatchItem::query(QueryRequest::new([QueryFunction::OPERATIONS]))
+        .with_unique_batch_item_id(b"rust-response-route".to_vec());
+    let query = client
+        .execute(ClientBatch::new(query_item), &limits)
+        .map_err(|_| "controlled fixture query failed")?;
+    let discover = client
+        .execute(
+            ClientBatch::new(ClientBatchItem::discover_versions()),
+            &limits,
+        )
+        .map_err(|_| "controlled fixture discover-versions request failed")?;
+    let ping = if rows
+        .iter()
+        .any(|row| row["public_api_symbol"] == "kmipkit_client::ClientResponseView::ping")
+    {
+        Some(
+            client
+                .ping(&limits)
+                .map_err(|_| "controlled fixture ping failed")?,
+        )
+    } else {
+        None
+    };
+    let pending_request = ClientRequest::encrypt(EncryptRequest::new(
+        Some(UniqueIdentifier::TextString("route-fixture-key".to_owned())),
+        Some(OperationData::ByteString(SecretBytes::new(vec![0x41; 16]))),
+    ));
+    let pending = client
+        .execute(
+            ClientBatch::new(ClientBatchItem::new(pending_request)).with_asynchronous_indicator(1),
+            &limits,
+        )
+        .map_err(|_| "controlled fixture asynchronous response failed")?;
+    let mut events = Vec::with_capacity(rows.len());
+    for row in &rows {
+        let symbol = text(row, "public_api_symbol")?;
+        let digest = response_route_invoked(symbol, &query, &discover, ping.as_ref(), &pending)
+            .map_err(|error| {
+                eprintln!("response route {symbol} failed: {error}");
+                "controlled fixture response accessor failed"
+            })?;
+        let mut event = json!({
+            "case_id":row["case_id"], "route_id":row["route_id"], "target_id":row["target_id"],
+            "public_api_symbol":symbol, "execution_route_id":null, "execution_api_symbol":null,
+            "invocation_id":format!("rust-network-{}", events.len()), "action":"decode",
+            "protocol_version":row["protocol_version"], "encoding":row["encoding"], "transport":row["transport"],
+            "status":"passed", "invocation_count":1, "response_tree_sha256":digest,
+        });
+        for field in [
+            "workflow_step_index",
+            "workflow_operation",
+            "workflow_item_index",
+        ] {
+            if let Some(value) = row.get(field) {
+                event[field] = value.clone();
+            }
+        }
+        events.push(event);
+    }
+    let version_text = connection.protocol_version.clone();
+    let report = json!({
+        "schema_version":"1.0", "run_id":format!("rust-response-{}", uuid::Uuid::new_v4()),
+        "language":"rust", "server":{"id":connection.server_id,"product":"controlled-fixture",
+            "version":"offline-1","configuration_fingerprint":hash(configuration)},
+        "library_commit":env!("KMIPKIT_LIBRARY_COMMIT"), "artifact_sha256":env!("KMIPKIT_ARTIFACT_SHA256"),
+        "catalog_sha256":hash(include_bytes!("../../shared/catalog/kmipkit-1.0-test-catalog.json")),
+        "route_manifest_sha256":hash(routes_bytes),
+        "protocol_versions":[version_text], "network_combinations":[{"encoding":"TTLV","transport":"raw_tls"}],
+        "events":events,
+    });
+    std::fs::write(
+        output,
+        serde_json::to_vec_pretty(&report).map_err(|_| "matrix output failed")?,
+    )
+    .map_err(|_| "matrix output unavailable")?;
+    Ok(true)
 }
 
 #[cfg(test)]
