@@ -22,6 +22,12 @@ import xml.etree.ElementTree as ET
 _RUST_RAW_STRING_PREFIX = re.compile(r'(?:br|cr|r)(?P<hashes>#{0,})"')
 _WORKSPACE_COVERAGE_MINIMUM = 90
 _CHANGED_PRODUCTION_COVERAGE_MINIMUM = 90
+# The exact PR #190 CI report at d8e4e37f established this inherited JNI
+# summary-only residual. The JNI scope gate still counts it; only the changed-
+# source gate subtracts this floor and charges any increase above it.
+_CHANGED_COVERAGE_SUMMARY_BASELINES = {
+    "bindings/java/native/kmipkit_jni.cpp": 12,
+}
 _RUST_CRATE_COVERAGE_MINIMUMS = {
     "kmipkit-ttlv": 90,
     "kmipkit-protocol": 90,
@@ -1138,6 +1144,20 @@ def meets_threshold(covered: int, total: int, threshold: float) -> bool:
     return (covered * 100) >= (total * threshold)
 
 
+def _changed_summary_uncovered_excess(
+    summary_excess: Mapping[str, int], changed_sources: Iterable[str]
+) -> int:
+    """Count changed-file summary residuals above audited pre-existing baselines."""
+    return sum(
+        max(
+            0,
+            summary_excess.get(source, 0)
+            - _CHANGED_COVERAGE_SUMMARY_BASELINES.get(source, 0),
+        )
+        for source in changed_sources
+    )
+
+
 def changed_code_result(changed_lines: set[tuple[str, int]] | set[int], coverage: Mapping[str, Mapping[int, int]] | Mapping[int, int]) -> str:
     if not changed_lines:
         return "not applicable"
@@ -1748,9 +1768,9 @@ def _evaluate_coverage(
     if changed_executable:
         covered = sum(production_lines[item] > 0 for item in changed_executable)
         changed_sources = {source for source in changed if source in merged}
-        summary_only = sum(summary_uncovered_excess.get(source, 0) for source in changed_sources)
+        summary_only = _changed_summary_uncovered_excess(summary_uncovered_excess, changed_sources)
         changed_adapter_sources = {source for source in changed if source in adapter_summary_excess}
-        summary_only += sum(adapter_summary_excess.get(source, 0) for source in changed_adapter_sources)
+        summary_only += _changed_summary_uncovered_excess(adapter_summary_excess, changed_adapter_sources)
         total = len(changed_executable) + summary_only
         rust_only = all(source.endswith(".rs") for source, _ in changed_executable)
         if not meets_threshold(covered, total, _CHANGED_PRODUCTION_COVERAGE_MINIMUM):
@@ -2019,7 +2039,7 @@ def _evaluate_scoped_coverage(
             scoped_reports[source_scopes[source]][source][line] > 0
             for source, line in changed_executable
         )
-        extra = sum(count for source, count in summary_excess.items() if source in changed)
+        extra = _changed_summary_uncovered_excess(summary_excess, changed)
         total = len(changed_executable) + extra
         if not meets_threshold(covered, total, _CHANGED_PRODUCTION_COVERAGE_MINIMUM):
             raise CoverageDataError(
