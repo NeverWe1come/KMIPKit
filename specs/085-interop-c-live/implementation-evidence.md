@@ -105,3 +105,13 @@ and writes its normalized C ABI coverage report. The full workspace LLVM
 collection also completes, with 4,086 instrumented tests passed and three
 repository-marked tests ignored. All three-platform and adapter gates remain
 required; these local runs do not claim that the aggregate gate has passed.
+
+### Expanded Tag targets use their actual tag bytes
+
+The updated shared contract classifies reserved decoding from each expanded
+normative target. The C coordinator now executes those Tag-family target
+cells through the actual raw/checked tag and decoder path instead of reusing
+an aggregate numeric enumeration roundtrip under a surrogate Tag field.
+The regression selects an assigned and a reserved target, calls the real
+installed ABI, checks the assigned target tree and reserved decoder rejection,
+and retains failure of the complete gate for a selected subset.

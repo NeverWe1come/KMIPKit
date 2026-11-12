@@ -503,12 +503,15 @@ def run(output: Path, binary: Path | None = None) -> int:
         target = targets[cell['target_id']]
         fixture = scalar_fixture(target, tags, catalog, cell['protocol_version'])
         case = cases[cell['case_id']]
+        tag_target_case = (case.get('requires', {}).get('enum_type') == 'Tag'
+                           and target['kind'] in {'tag', 'tag_range'})
         # Multi-branch semantic cases require dedicated recipes. A scalar check
         # can satisfy only the individual inventory value/tag target case.
         individual_value = (
             case['category'] == 'normative_inventory' and not case.get('requires', {}).get('protocol_scenario')
-        ) or target['kind'] in {'operation', 'object_type'}
-        if cell['transport'] is None and any(key in case.get('requires', {}) for key in ('enum_type', 'bitmask_type')):
+        ) or target['kind'] in {'operation', 'object_type'} or tag_target_case
+        if (cell['transport'] is None and not tag_target_case
+                and any(key in case.get('requires', {}) for key in ('enum_type', 'bitmask_type'))):
             value_key = (case['case_id'], cell['protocol_version'])
             if value_key not in value_cache:
                 value_cache[value_key] = value_cases.execute(case, cell['protocol_version'])
@@ -521,7 +524,7 @@ def run(output: Path, binary: Path | None = None) -> int:
                 branch_evidence.append({**cell_fields(cell), **{key: result[key] for key in
                     ('sample_count', 'known_values_checked', 'unknown_value_preserved', 'combination_count', 'tree_sha256') if key in result}})
                 continue
-        if should_execute_attribute_case(cell, case, target):
+        if not tag_target_case and should_execute_attribute_case(cell, case, target):
             attribute_key = (case['case_id'], cell['target_id'], cell['protocol_version'])
             if attribute_key not in attribute_cache:
                 attribute_cache[attribute_key] = attribute_cases.execute(target, cell['protocol_version'])
@@ -534,7 +537,7 @@ def run(output: Path, binary: Path | None = None) -> int:
                 branch_evidence.append({**cell_fields(cell), 'sample_count': result['sample_count'],
                                         'negative_checks': result['negative_checks'], 'tree_sha256': result['tree_sha256']})
                 continue
-        if cell['transport'] is None:
+        if cell['transport'] is None and not tag_target_case:
             result = model_cases.execute(target, cell['protocol_version'], cell['public_api_symbol'])
             if result is not None and cell['public_api_symbol'] in result['invoked_symbols']:
                 event = cell_fields(cell)
