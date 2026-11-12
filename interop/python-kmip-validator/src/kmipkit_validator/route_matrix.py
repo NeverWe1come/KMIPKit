@@ -1088,7 +1088,8 @@ _BATCH_ITEM_RESULT_RESPONSE_MEMBERS = {
     'register_response', 'rekey_key_pair_response', 'rekey_response',
     'reprovision_response', 'revoke_response', 'rng_retrieve_response',
     'rng_seed_response', 'set_attribute_response', 'sign_response',
-    'signature_verify_response', 'validate_response',
+    'signature_verify_response', 'validate_response', 'private_key_unique_identifier',
+    'split_key_unique_identifiers',
 }
 _BATCH_ITEM_RESULT_VALUE_ROUTES.update(
     'kmipkit.client.BatchItemResult.' + member
@@ -1111,6 +1112,18 @@ _QUERY_RESPONSE_FIELD_ROUTES = {
     'kmipkit.client.QueryResponse.field_at',
     'kmipkit.client.QueryResponse.field_count',
 }
+_RESPONSE_DATA_FIELD_ROUTES = {
+    'kmipkit.client.LocateResponse.unique_identifiers',
+    'kmipkit.client.Pkcs11Response.correlation_value',
+    'kmipkit.client.Pkcs11Response.function_ttlv',
+    'kmipkit.client.Pkcs11Response.interface_ttlv',
+    'kmipkit.client.Pkcs11Response.output_parameters_ttlv',
+    'kmipkit.client.Pkcs11Response.return_code_ttlv',
+}
+_BATCH_ITEM_RESULT_VALUE_ROUTES.update(
+    'kmipkit.client.BatchItemResult.' + member
+    for member in ('private_key_unique_identifier', 'split_key_unique_identifiers')
+)
 
 
 def _batch_item_result_value_cell(cell: dict, case: dict, target: dict,
@@ -1434,6 +1447,60 @@ def _typed_response_ttlv_cell(cell: dict, target: dict,
             'response_tree_sha256': response_digest}
 
 
+def _response_data_field_cell(cell: dict, target: dict,
+                              trace: CallTrace | None) -> dict:
+    """Read ordered Locate identifiers or copied PKCS#11 response fields."""
+    from kmipkit import client, extensions
+
+    symbol = cell['public_api_symbol']
+    member = symbol.rsplit('.', 1)[-1]
+    identifier = extensions.UniqueIdentifier.text_string('interop-object-7')
+    if symbol.startswith('kmipkit.client.LocateResponse.'):
+        identifiers = (identifier, extensions.UniqueIdentifier.text_string('interop-object-8'))
+        response = client.LocateResponse(len(identifiers), identifiers)
+        observed = getattr(response, member)
+        if observed is not identifiers or len(observed) != 2 or observed[1].text != 'interop-object-8':
+            raise ValueError('LocateResponse changed the ordered Unique Identifier values')
+        response_digest = digest({'count': len(observed), 'identifiers': ['first', 'second']})
+    else:
+        from kmipkit import ttlv
+
+        child = [0x420094, 7, '696e7465726f702d6f626a6563742d37']
+        structure_members = ('response_ttlv', 'interface_ttlv', 'function_ttlv',
+                             'output_parameters_ttlv', 'return_code_ttlv')
+        correlation = b'\x00\xfffixture'
+        with ExitStack() as owned:
+            structures = {name: _credential_structure_from_children([child], owned)
+                          for name in structure_members}
+            response = client.Pkcs11Response(
+                response_ttlv=structures['response_ttlv'],
+                interface_ttlv=structures['interface_ttlv'],
+                function_ttlv=structures['function_ttlv'],
+                correlation_value=correlation,
+                output_parameters_ttlv=structures['output_parameters_ttlv'],
+                return_code_ttlv=structures['return_code_ttlv'])
+            owned.callback(response.close)
+            observed = getattr(response, member)
+            if member == 'correlation_value':
+                if observed != correlation:
+                    raise ValueError('PKCS#11 response changed its correlation bytes')
+                response_digest = digest({'member': member, 'length': len(observed),
+                                          'sha256': hashlib.sha256(observed).hexdigest()})
+            else:
+                if not isinstance(observed, ttlv.Structure) or observed is not structures[member]:
+                    raise ValueError('PKCS#11 response changed its generic TTLV structure')
+                with ttlv.ttlv_structure_view(observed) as view:
+                    if ttlv.ttlv_structure_view_item_count(view) != 1:
+                        raise ValueError('PKCS#11 response changed its structure item count')
+                response_digest = digest({'member': member, 'item_count': 1,
+                                          'tag': child[0], 'type': child[1]})
+    if trace is not None:
+        trace.record_invocation(symbol)
+    request_digest = digest({'case': cell['case_id'], 'target': target.get('target_id')})
+    return {'request_tree_sha256': request_digest,
+            'response_tree_sha256': response_digest}
+
+
 def _query_response_field_cell(cell: dict, target: dict,
                                trace: CallTrace | None) -> dict:
     """Read QueryResponse field count and indexed values in their original order."""
@@ -1520,6 +1587,8 @@ def execute_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | Non
             return _typed_response_ttlv_cell(cell, target, trace)
         if cell['public_api_symbol'] in _QUERY_RESPONSE_FIELD_ROUTES:
             return _query_response_field_cell(cell, target, trace)
+        if cell['public_api_symbol'] in _RESPONSE_DATA_FIELD_ROUTES:
+            return _response_data_field_cell(cell, target, trace)
         if cell['public_api_symbol'] in _BATCH_ITEM_RESULT_VALUE_ROUTES:
             return _batch_item_result_value_cell(cell, case, target, trace)
         return _generic_cell(cell, case, target)
