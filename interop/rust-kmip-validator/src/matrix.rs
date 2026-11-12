@@ -1690,6 +1690,12 @@ fn sample_for_route_at_version(
     {
         return ticket_fixture_target(target, elements);
     }
+    if symbol == "kmipkit_protocol::ManagedObject::unknown"
+        && target["target_id"] == "KMIPKIT-RANGE-004"
+    {
+        let raw_tag = sample(target, elements)?.tag().raw();
+        return crate::driver::item(raw_tag, Value::structure(kmipkit::ttlv::Structure::new()));
+    }
     if [
         "kmipkit_protocol::RequestMessage::try_from_ttlv",
         "kmipkit_protocol::ResponseMessage::try_from_ttlv",
@@ -1972,6 +1978,20 @@ fn invoke_client_batch_route(symbol: &str, sample: &Item) -> Option<Result<Item>
 }
 
 fn invoke_simple_protocol_route(symbol: &str, sample: &Item) -> Option<Result<Item>> {
+    if symbol == "kmipkit_protocol::ManagedObject::unknown" {
+        return Some((|| match kmipkit::protocol::ManagedObject::unknown(
+            kmipkit::protocol::ObjectType::from_raw(0x8000_0000),
+            sample
+                .try_clone()
+                .map_err(|_| "managed object fixture copy failed")?,
+        )
+        .map_err(|_| "unknown Managed Object rejected")?
+        {
+            kmipkit::protocol::ManagedObject::Unknown { item, .. } => Ok(item),
+            _ => Err("unknown Managed Object changed its variant"),
+        })());
+    }
+
     if symbol == "kmipkit_protocol::ProtocolVersion::from_raw" {
         return Some((|| {
             let (major, minor) = if let Some(structure) = sample.as_structure() {
