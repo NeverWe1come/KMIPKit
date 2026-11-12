@@ -378,6 +378,11 @@ class ControlledTlsPeerTest {
                     String credentialCaseId = CREDENTIAL_TYPE_MODEL_CASE_IDS.get(fixture.targetId());
                     String credentialTargetId = CREDENTIAL_TYPE_MODEL_TARGET_IDS.get(fixture.targetId());
                     for (String version : fixture.protocolVersions()) {
+                        JsonNode envelopeEvent = findRouteEvent(report.path("events"), credentialCaseId,
+                                "java.typed-protocol.model.org.kmipkit.credentials.credential.fromttlv",
+                                version, credentialTargetId);
+                        assertEquals("org.kmipkit.credentials.Credential.fromTtlv",
+                                envelopeEvent.path("public_api_symbol").asText());
                         assertEquals(credentialTargetId,
                                 findRouteEvent(report.path("events"), credentialCaseId,
                                         credentialRoute, version, credentialTargetId)
