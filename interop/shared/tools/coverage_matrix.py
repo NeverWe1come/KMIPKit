@@ -217,7 +217,8 @@ def _case_obligations(
     }
     local_value_case = (case.get("execution", {}).get("mode") == "local_model"
                         and any(field in requires for field in ("enum_type", "bitmask_type")))
-    if (not local_value_case
+    if (not operation_names
+            and not local_value_case
             and operation_id and operation_id not in item_targets
             and operation_id not in scenario_step_targets
             and _norm(case.get("operation", "")) not in explicit_operation_names):
