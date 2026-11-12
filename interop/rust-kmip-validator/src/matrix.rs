@@ -1449,6 +1449,32 @@ mod tests {
     }
 
     #[test]
+    fn reserved_enumeration_ranges_have_a_concrete_boundary_fixture() {
+        let catalog: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        let targets = catalog["normative_targets"].as_array().unwrap();
+        let mut checked = 0;
+        for target in targets.iter().filter(|target| {
+            target["kind"] == "enumeration_value" && target["allocation"] == "reserved"
+        }) {
+            let fixture = sample(target, elements);
+            assert!(
+                fixture.is_ok(),
+                "{}: {fixture:?}",
+                target["target_id"].as_str().unwrap_or("unknown target")
+            );
+            checked += 1;
+        }
+        assert!(checked > 0, "catalog has no reserved Enumeration ranges");
+    }
+
+    #[test]
     fn key_wrapping_metadata_recipes_build_and_parse_each_manifest_target() {
         let catalog: Json = serde_json::from_str(include_str!(
             "../../shared/catalog/kmipkit-1.0-test-catalog.json"
