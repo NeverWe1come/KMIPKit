@@ -501,9 +501,11 @@ fn collect_tagged_items(item: &Item, raw_tag: u32, matches: &mut Vec<Item>) -> R
     Ok(())
 }
 
-fn managed_object_fixture(target: &Json, elements: &[Json]) -> Result<(u32, Item, Item)> {
-    let root_name = managed_object_root_name(target, elements)
-        .ok_or("Managed Object fixture target has no object root")?;
+fn object_root_fixture(
+    root_name: &str,
+    target: &Json,
+    elements: &[Json],
+) -> Result<(u32, Item, Item)> {
     let (object_type, object, _) = crate::fixtures::object(root_name)?;
     let expected = if target["kind"] == "object_structure" && target["name"] == root_name {
         object
@@ -524,11 +526,124 @@ fn managed_object_fixture(target: &Json, elements: &[Json]) -> Result<(u32, Item
     Ok((object_type.raw(), object, expected))
 }
 
+fn managed_object_fixture(target: &Json, elements: &[Json]) -> Result<(u32, Item, Item)> {
+    let root_name = managed_object_root_name(target, elements)
+        .ok_or("Managed Object fixture target has no object root")?;
+    object_root_fixture(root_name, target, elements)
+}
+
+fn metadata_key_information(mac: bool, include_parameters: bool) -> Result<Item> {
+    use kmipkit::protocol::{EncryptionKeyInformation, MacSignatureKeyInformation};
+
+    if mac {
+        let mut info = MacSignatureKeyInformation::try_new("kmipkit-mac-key".to_owned())
+            .map_err(|_| "MAC key information fixture rejected")?;
+        if include_parameters {
+            info = info
+                .with_cryptographic_parameters(kmipkit::ttlv::Structure::new())
+                .map_err(|_| "MAC cryptographic parameters fixture rejected")?;
+        }
+        Ok(info.into_item())
+    } else {
+        let mut info = EncryptionKeyInformation::try_new("kmipkit-encryption-key".to_owned())
+            .map_err(|_| "encryption key information fixture rejected")?;
+        if include_parameters {
+            info = info
+                .with_cryptographic_parameters(kmipkit::ttlv::Structure::new())
+                .map_err(|_| "encryption cryptographic parameters fixture rejected")?;
+        }
+        Ok(info.into_item())
+    }
+}
+
+fn key_wrapping_metadata_model(symbol: &str, target: &Json) -> Result<Item> {
+    use kmipkit::protocol::KeyWrappingData;
+
+    let target_id = text(target, "target_id")?;
+    let target_name = text(target, "name")?;
+    let wrapping_root = symbol == "kmipkit_protocol::KeyWrappingData::try_from_item";
+    let encryption_target = target_id.contains("ENCRYPTION-KEY-INFORMATION");
+    let mac_target = target_id.contains("MAC-SIGNATURE-KEY-INFORMATION");
+    let full_wrapping_root = target_name == "Key Wrapping Data";
+    let include_encryption = !wrapping_root || !mac_target || full_wrapping_root;
+    let include_mac = !wrapping_root || mac_target || full_wrapping_root;
+    let include_parameters = target_name == "Cryptographic Parameters";
+    if symbol == "kmipkit_protocol::EncryptionKeyInformation::try_from_item" {
+        return metadata_key_information(false, include_parameters);
+    }
+    if symbol == "kmipkit_protocol::MacSignatureKeyInformation::try_from_item" {
+        return metadata_key_information(true, include_parameters);
+    }
+
+    let mut data = KeyWrappingData::try_new(1).map_err(|_| "key wrapping fixture rejected")?;
+    if include_encryption {
+        let info = kmipkit::protocol::EncryptionKeyInformation::try_from_item(
+            metadata_key_information(false, include_parameters && encryption_target)?,
+        )
+        .map_err(|_| "encryption key information fixture rejected")?;
+        data = data.with_encryption_key_information(info);
+    }
+    if include_mac {
+        let info = kmipkit::protocol::MacSignatureKeyInformation::try_from_item(
+            metadata_key_information(true, include_parameters && mac_target)?,
+        )
+        .map_err(|_| "MAC key information fixture rejected")?;
+        data = data.with_mac_signature_key_information(info);
+    }
+    if !wrapping_root {
+        match target_name {
+            "MAC/Signature" => data = data.with_mac_signature(vec![0x5a]),
+            "IV/Counter/Nonce" => data = data.with_iv_counter_nonce(vec![0x41]),
+            "Encoding Option" => data = data.with_encoding_option(1),
+            _ => {}
+        }
+    } else {
+        data = data
+            .with_mac_signature(vec![0x5a])
+            .with_iv_counter_nonce(vec![0x41])
+            .with_encoding_option(1);
+    }
+    data.into_item()
+        .map_err(|_| "key wrapping data fixture rejected")
+}
+
+fn metadata_expected_target(model: &Item, target: &Json, elements: &[Json]) -> Result<Item> {
+    let expected = sample(target, elements)?;
+    if model.tag().raw() == expected.tag().raw() {
+        return model
+            .try_clone()
+            .map_err(|_| "metadata fixture copy failed");
+    }
+    let mut matches = Vec::new();
+    collect_tagged_items(&model, expected.tag().raw(), &mut matches)?;
+    match matches.as_slice() {
+        [matched] => matched
+            .try_clone()
+            .map_err(|_| "metadata target copy failed"),
+        _ => Err("metadata fixture target is missing or ambiguous"),
+    }
+}
+
 fn sample_for_route(symbol: &str, target: &Json, elements: &[Json]) -> Result<Item> {
     if symbol == "kmipkit_protocol::ManagedObject::try_from_item"
         || typed_object_root(symbol).is_some()
     {
-        return managed_object_fixture(target, elements).map(|(_, _, expected)| expected);
+        let (_, _, expected) = if let Some(root_name) = typed_object_root(symbol) {
+            object_root_fixture(root_name, target, elements)?
+        } else {
+            managed_object_fixture(target, elements)?
+        };
+        return Ok(expected);
+    }
+    if [
+        "kmipkit_protocol::EncryptionKeyInformation::try_from_item",
+        "kmipkit_protocol::MacSignatureKeyInformation::try_from_item",
+        "kmipkit_protocol::KeyWrappingData::try_from_item",
+    ]
+    .contains(&symbol)
+    {
+        let model = key_wrapping_metadata_model(symbol, target)?;
+        return metadata_expected_target(&model, target, elements);
     }
     if symbol == "kmipkit_protocol::QueryResponse::to_ttlv_payload"
         && target["kind"] == "operation_payload_field"
@@ -618,8 +733,34 @@ fn invoke(
         );
     }
     if let Some(root) = typed_object_root(symbol) {
-        let (_, object, _) = crate::fixtures::object(root).ok()?;
+        let (_, object, _) = object_root_fixture(root, target, elements).ok()?;
         return invoke_typed_object_parser(symbol, object);
+    }
+    if [
+        "kmipkit_protocol::EncryptionKeyInformation::try_from_item",
+        "kmipkit_protocol::MacSignatureKeyInformation::try_from_item",
+        "kmipkit_protocol::KeyWrappingData::try_from_item",
+    ]
+    .contains(&symbol)
+    {
+        let item = key_wrapping_metadata_model(symbol, target).ok()?;
+        let result = match symbol {
+            "kmipkit_protocol::EncryptionKeyInformation::try_from_item" => {
+                kmipkit::protocol::EncryptionKeyInformation::try_from_item(item)
+                    .map(kmipkit::protocol::EncryptionKeyInformation::into_item)
+            }
+            "kmipkit_protocol::MacSignatureKeyInformation::try_from_item" => {
+                kmipkit::protocol::MacSignatureKeyInformation::try_from_item(item)
+                    .map(kmipkit::protocol::MacSignatureKeyInformation::into_item)
+            }
+            "kmipkit_protocol::KeyWrappingData::try_from_item" => {
+                kmipkit::protocol::KeyWrappingData::try_from_item(item)
+                    .and_then(kmipkit::protocol::KeyWrappingData::into_item)
+            }
+            _ => return None,
+        }
+        .map_err(|_| "key wrapping metadata parser rejected");
+        return Some(result);
     }
     if symbol.starts_with("kmipkit_ttlv::Value::") {
         let expected = match sample.item_type() {
@@ -971,6 +1112,105 @@ pub(crate) fn run(matrix: &Path, output: &Path) -> Result<bool> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn key_format_type_request_routes_construct_each_normative_value() {
+        // OASIS KMIP 2.0/2.1 §11.25 defines Key Format Type values.
+        let catalog: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let manifest: Json = serde_json::from_str(include_str!(
+            "../../shared/coverage/route-capabilities.json"
+        ))
+        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        let targets = catalog["normative_targets"].as_array().unwrap();
+        for symbol in [
+            "kmipkit_protocol::GetRequest::with_key_format_type",
+            "kmipkit_protocol::ExportRequest::with_key_format_type",
+        ] {
+            let route = manifest["routes"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|route| route["public_api_symbol"] == symbol)
+                .unwrap();
+            for target_id in route["normative_target_ids"].as_array().unwrap() {
+                let Some(target_id) = target_id.as_str() else {
+                    continue;
+                };
+                let Some(target) = targets.iter().find(|target| target["target_id"] == target_id)
+                else {
+                    continue;
+                };
+                if target["kind"] != "enumeration_value"
+                    || !target["parent_element_ids"]
+                        .as_array()
+                        .is_some_and(|parents| parents.iter().any(|parent| parent == "KMIPKIT-ELEM-ENUMERATION-KEY-FORMAT-TYPE"))
+                {
+                    continue;
+                }
+                let expected = sample(target, elements).unwrap();
+                let result = invoke(symbol, &expected, target, elements, "2.1");
+                assert!(result.is_some(), "{symbol} {target_id}: no request route");
+                let result = result.unwrap();
+                assert!(result.is_ok(), "{symbol} {target_id}: {result:?}");
+                let projection = crate::local_wire::target_hash(&result.unwrap(), &expected);
+                assert!(projection.is_ok(), "{symbol} {target_id}: {projection:?}");
+            }
+        }
+    }
+
+    #[test]
+    fn key_wrapping_metadata_recipes_build_and_parse_each_manifest_target() {
+        let catalog: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let manifest: Json = serde_json::from_str(include_str!(
+            "../../shared/coverage/route-capabilities.json"
+        ))
+        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        for symbol in [
+            "kmipkit_protocol::EncryptionKeyInformation::try_from_item",
+            "kmipkit_protocol::MacSignatureKeyInformation::try_from_item",
+            "kmipkit_protocol::KeyWrappingData::try_from_item",
+        ] {
+            let route = manifest["routes"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|route| route["public_api_symbol"] == symbol)
+                .unwrap();
+            for target_id in route["normative_target_ids"].as_array().unwrap() {
+                let target_id = target_id.as_str().unwrap();
+                let target = catalog["normative_targets"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .find(|target| target["target_id"] == target_id)
+                    .unwrap();
+                let expected = key_wrapping_metadata_model(symbol, target)
+                    .and_then(|model| metadata_expected_target(&model, target, elements));
+                assert!(expected.is_ok(), "{symbol} {target_id}: {expected:?}");
+                let expected = expected.unwrap();
+                let result = invoke(symbol, &expected, target, elements, "2.1");
+                assert!(result.is_some(), "{symbol} {target_id}: no parser route");
+                let result = result.unwrap();
+                assert!(result.is_ok(), "{symbol} {target_id}: {result:?}");
+                let projection = crate::local_wire::target_hash(&result.unwrap(), &expected);
+                assert!(projection.is_ok(), "{symbol} {target_id}: {projection:?}");
+            }
+        }
+    }
 
     #[test]
     fn vendor_attribute_target_uses_a_table_150_structure_fixture() {
