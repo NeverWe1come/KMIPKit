@@ -3287,10 +3287,13 @@ def _crypto_parameters_cell(cell: dict, case: dict, target: dict) -> dict:
         enumeration = next((item for item in _catalog_model_data()[2].values()
                             if item.get('kind') == 'enumeration'
                             and item.get('name') == target['name']), None)
-        if enumeration is None:
+        attribute_tag = next((by_id.get(parent_id) for parent_id in target.get('parent_element_ids', [])
+                              if by_id.get(parent_id, {}).get('kind') == 'tag'), None)
+        if enumeration is None or attribute_tag is None:
             raise RecipePending
+        tag = int(attribute_tag['wire_value'], 16)
         samples = [
-            (0x420028, 'Enumeration', int(item['wire_value'].replace('X', '0'), 16))
+            (tag, 'Enumeration', int(item['wire_value'].replace('X', '0'), 16))
             for item in by_id.values()
             if item.get('kind') == 'enumeration_value'
             and enumeration['element_id'] in item.get('parent_element_ids', [])
