@@ -203,6 +203,38 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
         self.assertEqual(symbols, {event['public_api_symbol'] for event in report['events']})
 
+    def test_typed_attribute_routes_construct_a_valid_alternative_name_structure(self):
+        # OASIS KMIP 2.0/2.1 §4.2, Table 31 requires Alternative Name Value and Type.
+        catalog = copy.deepcopy(self.catalog)
+        catalog['test_cases'] = [case for case in self.catalog['test_cases']
+                                 if case['case_id'] == 'test-attr-alternative-name']
+        symbols = {'kmipkit.typed_attributes.TypedAttribute.create',
+                   'kmipkit.typed_attributes.TypedAttribute.from_item',
+                   'kmipkit.attribute_operations.AttributeSet.try_new',
+                   'kmipkit.attribute_operations.AttributeSet.try_push',
+                   'kmipkit.attribute_operations.AttributeSet.try_push_typed'}
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in manifest['routes']
+                              if route['language'] == 'python'
+                              and route['public_api_symbol'] in symbols]
+        manifest['routes'].append(next(route for route in self.manifest['routes']
+                                       if route['language'] == 'python'
+                                       and route['public_api_symbol'] ==
+                                       'kmipkit.extensions.client_batch_item_get_attributes'))
+
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+
+        typed_events = [event for event in report['events'] if event['public_api_symbol'] in symbols]
+        typed_gaps = [gap for gap in gaps if gap['public_api_symbol'] in symbols]
+        self.assertFalse(typed_gaps)
+        self.assertEqual(10, len(typed_events))
+        self.assertEqual(symbols, {event['public_api_symbol'] for event in typed_events})
+        expected = self.runner.digest([[
+            0x4200BF, 1,
+            [[0x4200C0, 7, 'KMIPKit.Interop'], [0x4200C1, 5, 1]],
+        ]])
+        self.assertEqual({expected}, {event['request_tree_sha256'] for event in typed_events})
+
     def test_reserved_tag_routes_check_rejection_without_a_fabricated_item(self):
         catalog = copy.deepcopy(self.catalog)
         catalog['test_cases'] = [case for case in catalog['test_cases']
