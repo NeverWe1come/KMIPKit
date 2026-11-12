@@ -133,10 +133,13 @@ python3 interop/rust-kmip-validator/tools/check_coverage.py
 ```
 
 The script isolates compilation/profiles, runs the Rust and controlled subprocess
-suites, and fails below 90 percent. Only `local_cases_generated.rs` is excluded:
-it is a generated data-dispatch table verified by regeneration and every
-applicable local-model case. Handwritten-code coverage is measured from the
-current build rather than a fixed catalog count.
+suites, and fails below 90 percent. The generated `local_cases_generated.rs`
+data table and `route_calls_generated.rs` route-dispatch table are excluded from
+the raw line count. CI checks that both files regenerate without a diff;
+local-model cases and each implemented route record actual invocation evidence.
+Routes that remain pending are reported separately and are not counted as
+passed coverage. Handwritten-code coverage is measured from the current build
+rather than a fixed catalog count.
 
 ## KMIPKIT-0092 public route matrix (WIP)
 
