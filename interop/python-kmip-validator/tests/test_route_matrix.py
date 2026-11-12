@@ -1489,6 +1489,28 @@ class RouteMatrixTests(unittest.TestCase):
             'KMIPKIT-ELEM-STRUCTURE-MEMBER-7-27-PKCS-11-INPUT-PARAMETERS',
         }, {event['target_id'] for event in report['events']})
 
+    def test_extension_information_route_emits_catalogued_ttlv_structure(self):
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] ==
+                    'test-norm-operation-structure-operation-structure-7-13-extension-information')
+        target = next(target for target in self.catalog['normative_targets']
+                      if target['target_id'] ==
+                      'KMIPKIT-ELEM-OPERATION-STRUCTURE-7-13-EXTENSION-INFORMATION')
+        symbol = 'kmipkit.extensions.extension_information_to_ttlv'
+        catalog = copy.deepcopy(self.catalog)
+        catalog['test_cases'] = [case]
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in self.manifest['routes']
+                              if route['language'] == 'python'
+                              and route['public_api_symbol'] == symbol]
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+        self.assertEqual([], gaps)
+        expected_tree = [0x4200A4, 1, [[0x4200A5, 7, '4b4d49504b69742e496e7465726f70']]]
+        expected_digest = self.runner.digest(expected_tree)
+        self.assertEqual(2, len(report['events']))
+        self.assertEqual({expected_digest}, {event['request_tree_sha256']
+                                             for event in report['events']})
+
     def test_ci_requires_shared_changes_and_matrix_completeness(self):
         workflow = (ROOT / '.github/workflows/interop-python.yml').read_text()
         self.assertIn('python -m kmipkit_validator matrix', workflow)
