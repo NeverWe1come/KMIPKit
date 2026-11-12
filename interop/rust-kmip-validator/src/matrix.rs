@@ -725,18 +725,18 @@ fn key_wrapping_metadata_model(symbol: &str, target: &Json) -> Result<Item> {
         .map_err(|_| "MAC key information fixture rejected")?;
         data = data.with_mac_signature_key_information(info);
     }
-    if !wrapping_root {
+    if full_wrapping_root {
+        data = data
+            .with_mac_signature(vec![0x5a])
+            .with_iv_counter_nonce(vec![0x41])
+            .with_encoding_option(1);
+    } else {
         match target_name {
             "MAC/Signature" => data = data.with_mac_signature(vec![0x5a]),
             "IV/Counter/Nonce" => data = data.with_iv_counter_nonce(vec![0x41]),
             "Encoding Option" => data = data.with_encoding_option(1),
             _ => {}
         }
-    } else {
-        data = data
-            .with_mac_signature(vec![0x5a])
-            .with_iv_counter_nonce(vec![0x41])
-            .with_encoding_option(1);
     }
     data.into_item()
         .map_err(|_| "key wrapping data fixture rejected")
@@ -749,10 +749,10 @@ fn metadata_expected_target(model: &Item, target: &Json, elements: &[Json]) -> R
             .try_clone()
             .map_err(|_| "metadata fixture copy failed");
     }
-    let mut matches = Vec::new();
-    collect_tagged_items(&model, expected.tag().raw(), &mut matches)?;
-    match matches.as_slice() {
-        [matched] => matched
+    let mut tagged_items = Vec::new();
+    collect_tagged_items(model, expected.tag().raw(), &mut tagged_items)?;
+    match tagged_items.as_slice() {
+        [found_item] => found_item
             .try_clone()
             .map_err(|_| "metadata target copy failed"),
         _ => Err("metadata fixture target is missing or ambiguous"),
