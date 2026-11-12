@@ -31,43 +31,31 @@ def run_compare_cli(reference: Path, generated: Path) -> subprocess.CompletedPro
 
 
 class RouteLedgerComparisonTests(unittest.TestCase):
-    def test_cli_rejects_ledger_paths_outside_the_java_validator_root(self):
+    def test_cli_does_not_accept_path_overrides_even_inside_allowed_roots(self):
         ledger = {
             "artifact_sha256": "a" * 64,
             "catalog_sha256": "c" * 64,
             "executed_cells": 8398,
             "pending_cells": 63105,
         }
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            reference = root / "reference.json"
-            generated = root / "generated.json"
-            reference.write_text(json.dumps(ledger), encoding="utf-8")
-            generated.write_text(json.dumps(ledger), encoding="utf-8")
+        build_root = SCRIPT.parents[1] / "build"
+        build_root_existed = build_root.exists()
+        build_root.mkdir(exist_ok=True)
+        try:
+            with tempfile.TemporaryDirectory(dir=SCRIPT.parents[1]) as allowed_directory:
+                with tempfile.TemporaryDirectory(dir=build_root) as generated_directory:
+                    reference = Path(allowed_directory) / "reference.json"
+                    generated = Path(generated_directory) / "generated.json"
+                    reference.write_text(json.dumps(ledger), encoding="utf-8")
+                    generated.write_text(json.dumps(ledger), encoding="utf-8")
 
-            process = run_compare_cli(reference, generated)
-
-        self.assertNotEqual(process.returncode, 0)
-        self.assertIn("outside the allowed directories", process.stderr)
-
-    def test_cli_rejects_generated_ledger_outside_the_build_directory(self):
-        ledger = {
-            "artifact_sha256": "a" * 64,
-            "catalog_sha256": "c" * 64,
-            "executed_cells": 8398,
-            "pending_cells": 63105,
-        }
-        with tempfile.TemporaryDirectory(dir=SCRIPT.parents[1]) as allowed_directory:
-            with tempfile.TemporaryDirectory() as outside_directory:
-                reference = Path(allowed_directory) / "reference.json"
-                generated = Path(outside_directory) / "generated.json"
-                reference.write_text(json.dumps(ledger), encoding="utf-8")
-                generated.write_text(json.dumps(ledger), encoding="utf-8")
-
-                process = run_compare_cli(reference, generated)
+                    process = run_compare_cli(reference, generated)
+        finally:
+            if not build_root_existed:
+                build_root.rmdir()
 
         self.assertNotEqual(process.returncode, 0)
-        self.assertIn("outside the allowed directories", process.stderr)
+        self.assertIn("unrecognized arguments", process.stderr)
 
     def test_accepts_equal_coverage_when_build_artifact_hashes_differ(self):
         reference = {
