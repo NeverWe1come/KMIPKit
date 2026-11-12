@@ -14,7 +14,7 @@
   "$defs": {
     "requirementId": {
       "type": "string",
-      "pattern": "^KMIPKIT-(?:[0-9]{4}-(?:FR|SC)-[0-9]{3}|REQ-SPEC-(?:4\\.16|6\\.1\\.[0-9]+|7\\.12|7\\.18|9\\.4|9\\.11)-[0-9]{3}(?:-[0-9]{3})?)$",
+      "pattern": "^(?:KMIPKIT-(?:[0-9]{4}-(?:FR|SC)-[0-9]{3}|REQ-SPEC-(?:4\\.16|6\\.1\\.[0-9]+|7\\.12|7\\.18|9\\.4|9\\.11)-[0-9]{3}(?:-[0-9]{3})?)|REQ-[0-9]{3}-[0-9]{3})$",
       "description": "Stable functional or success-criteria identifier from an approved KMIPKit feature specification."
     },
     "requirementIds": {
@@ -945,6 +945,37 @@
               "$ref": "#/$defs/identifier"
             },
             "kind": {
+              "const": "input-value"
+            },
+            "type": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t$"
+            },
+            "valueType": {
+              "type": "string",
+              "pattern": "^kmipkit_[a-z0-9_]+_t$"
+            },
+            "ownership": {
+              "const": "borrowed"
+            }
+          },
+          "additionalProperties": false,
+          "description": "Caller-owned fixed-width value copied by value for the duration of the call."
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "kind",
+            "type",
+            "valueType",
+            "ownership"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/identifier"
+            },
+            "kind": {
               "const": "output-scalar-pointer"
             },
             "type": {
@@ -965,6 +996,10 @@
             },
             "ownership": {
               "const": "none"
+            },
+            "nullable": {
+              "type": "boolean",
+              "description": "Whether the output pointer may be NULL for the selected call variant."
             }
           },
           "additionalProperties": false
@@ -1265,6 +1300,10 @@
             "nullable": {
               "type": "boolean",
               "description": "Whether successful status may return no handle. Required explicitly for every output handle."
+            },
+            "pointerNullable": {
+              "type": "boolean",
+              "description": "Whether the output slot itself may be NULL for a call mode that does not use it."
             }
           },
           "additionalProperties": false
@@ -2358,7 +2397,7 @@
     },
     "v2RequirementId": {
       "type": "string",
-      "pattern": "^KMIPKIT-(?:[0-9]{4}-(?:FR|SC)-[0-9]{3}|REQ-SPEC-(?:4\\.16|6\\.1\\.[0-9]+|7\\.12|7\\.18|9\\.4|9\\.11)-[0-9]{3}(?:-[0-9]{3})?)$"
+      "pattern": "^(?:KMIPKIT-(?:[0-9]{4}-(?:FR|SC)-[0-9]{3}|REQ-SPEC-(?:4\\.16|6\\.1\\.[0-9]+|7\\.12|7\\.18|9\\.4|9\\.11)-[0-9]{3}(?:-[0-9]{3})?)|REQ-[0-9]{3}-[0-9]{3})$"
     },
     "v2RequirementIds": {
       "type": "array",
@@ -2546,6 +2585,10 @@
         "cSignature": {
           "$ref": "#/$defs/cSignature",
           "description": "Exact C ABI signature when this symbol is not a high-level function record."
+        },
+        "cTypeLayout": {
+          "$ref": "#/$defs/cTypeLayout",
+          "description": "C-only record layout for a declared c-only type."
         },
         "cValue": {
           "type": "integer",
@@ -2979,6 +3022,60 @@
               },
               "kind": {
                 "const": "java-member"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "cTypeLayout"
+            ]
+          },
+          "then": {
+            "properties": {
+              "packageId": {
+                "const": "c-kmipkit"
+              },
+              "kind": {
+                "const": "type"
+              },
+              "parityScope": {
+                "const": "c-only"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "type"
+              },
+              "parityScope": {
+                "const": "c-only"
+              }
+            },
+            "required": [
+              "kind",
+              "parityScope"
+            ]
+          },
+          "then": {
+            "properties": {
+              "packageId": {
+                "const": "c-kmipkit"
+              },
+              "exportName": {
+                "pattern": "^kmipkit_[a-z0-9_]+_t$"
+              },
+              "languageMappings": {
+                "required": [
+                  "c"
+                ],
+                "propertyNames": {
+                  "const": "c"
+                }
               }
             }
           }

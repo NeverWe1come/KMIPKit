@@ -55,6 +55,42 @@ pub struct kmipkit_client_t {
     _private: [u8; 0],
 }
 #[repr(C)]
+pub struct kmipkit_server_listener_config_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_server_listener_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_server_connection_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_server_incoming_batch_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_server_request_item_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_server_put_object_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_server_response_builder_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_server_response_item_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
+pub struct kmipkit_server_response_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
 pub struct kmipkit_client_batch_t {
     _private: [u8; 0],
 }
@@ -802,5 +838,31 @@ pub struct kmipkit_transport_config_v1_t {
     pub write_timeout: kmipkit_timeout_limit_v1_t,
     pub read_timeout: kmipkit_timeout_limit_v1_t,
     pub total_timeout: kmipkit_timeout_limit_v1_t,
+    pub max_request_bytes: u64,
+}
+
+/// Versioned TLS listener inputs. Certificate and private-key spans are
+/// borrowed only during construction; the validated listener config owns its
+/// parsed material. TLS 1.3 mutual authentication is always required.
+#[repr(C)]
+pub struct kmipkit_server_listener_config_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    /// 1 for raw TLS or 2 for HTTPS.
+    pub transport_kind: u32,
+    /// 0 for automatic HTTPS content negotiation, 1 for TTLV, 2 for JSON, or 3 for XML.
+    pub wire_encoding: u32,
+    pub reserved: u32,
+    pub bind_host: kmipkit_byte_span_v1_t,
+    pub bind_port: u16,
+    pub reserved2: u16,
+    pub listener_certificates: *const kmipkit_transport_input_v1_t,
+    pub listener_certificate_count: u64,
+    pub listener_private_key: kmipkit_transport_input_v1_t,
+    pub trust_certificates: *const kmipkit_transport_input_v1_t,
+    pub trust_certificate_count: u64,
+    pub revocation_lists: *const kmipkit_transport_input_v1_t,
+    pub revocation_list_count: u64,
+    pub target_path: kmipkit_byte_span_v1_t,
     pub max_request_bytes: u64,
 }

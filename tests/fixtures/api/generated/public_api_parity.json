@@ -319183,6 +319183,98 @@
         "KMIPKIT-0103-FR-005",
         "KMIPKIT-0103-FR-006"
       ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "capabilityState": "declared",
+      "mappings": {
+        "c": [
+          "KMIPKIT_SERVER_ENCODING_JSON",
+          "KMIPKIT_SERVER_ENCODING_TTLV",
+          "KMIPKIT_SERVER_ENCODING_XML",
+          "KMIPKIT_SERVER_LISTENER_HTTPS",
+          "KMIPKIT_SERVER_LISTENER_RAW_TLS",
+          "KMIPKIT_SERVER_PUT_READ_ENUMERATION",
+          "KMIPKIT_SERVER_PUT_READ_INTEGER",
+          "KMIPKIT_SERVER_PUT_READ_PRESENT",
+          "KMIPKIT_SERVER_PUT_READ_SECRET_BYTES",
+          "KMIPKIT_SERVER_PUT_READ_SECRET_TEXT",
+          "KMIPKIT_SERVER_PUT_READ_STRUCTURE_VIEW",
+          "KMIPKIT_SERVER_PUT_READ_TYPE",
+          "kmipkit_server_connection_recv_batch",
+          "kmipkit_server_connection_release",
+          "kmipkit_server_connection_send_response",
+          "kmipkit_server_connection_t",
+          "kmipkit_server_discover_versions_response_create",
+          "kmipkit_server_incoming_batch_count",
+          "kmipkit_server_incoming_batch_item_at",
+          "kmipkit_server_incoming_batch_protocol_version",
+          "kmipkit_server_incoming_batch_release",
+          "kmipkit_server_incoming_batch_t",
+          "kmipkit_server_listener_accept",
+          "kmipkit_server_listener_bind_https",
+          "kmipkit_server_listener_bind_raw_tls",
+          "kmipkit_server_listener_config_create_v1",
+          "kmipkit_server_listener_config_release",
+          "kmipkit_server_listener_config_t",
+          "kmipkit_server_listener_config_v1_t",
+          "kmipkit_server_listener_port",
+          "kmipkit_server_listener_release",
+          "kmipkit_server_listener_t",
+          "kmipkit_server_notify_response_create",
+          "kmipkit_server_put_object_field_read",
+          "kmipkit_server_put_object_release",
+          "kmipkit_server_put_object_t",
+          "kmipkit_server_put_object_tag",
+          "kmipkit_server_put_object_type",
+          "kmipkit_server_put_response_create",
+          "kmipkit_server_query_response_create",
+          "kmipkit_server_request_item_discover_version_at",
+          "kmipkit_server_request_item_discover_versions_count",
+          "kmipkit_server_request_item_endpoint_role",
+          "kmipkit_server_request_item_notify_attributes",
+          "kmipkit_server_request_item_notify_deleted_attribute_reference_at",
+          "kmipkit_server_request_item_notify_deleted_attribute_reference_count",
+          "kmipkit_server_request_item_operation",
+          "kmipkit_server_request_item_put_function",
+          "kmipkit_server_request_item_put_object",
+          "kmipkit_server_request_item_query_function_at",
+          "kmipkit_server_request_item_query_functions_count",
+          "kmipkit_server_request_item_release",
+          "kmipkit_server_request_item_t",
+          "kmipkit_server_request_item_unique_identifier",
+          "kmipkit_server_response_builder_add_failure",
+          "kmipkit_server_response_builder_add_success",
+          "kmipkit_server_response_builder_build",
+          "kmipkit_server_response_builder_create",
+          "kmipkit_server_response_builder_release",
+          "kmipkit_server_response_builder_t",
+          "kmipkit_server_response_item_release",
+          "kmipkit_server_response_item_t",
+          "kmipkit_server_response_release",
+          "kmipkit_server_response_t",
+          "kmipkit_server_set_endpoint_role_response_create"
+        ]
+      },
+      "ownerSpecId": "KMIPKIT-0066",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-001",
+        "REQ-066-002",
+        "REQ-066-003",
+        "REQ-066-004",
+        "REQ-066-005",
+        "REQ-066-006",
+        "REQ-066-007",
+        "REQ-066-008",
+        "REQ-066-009"
+      ]
     }
   ],
   "errorCategories": [
@@ -1056603,6 +1056695,3007 @@
         "KMIPKIT-0096-FR-002",
         "KMIPKIT-0096-FR-003",
         "KMIPKIT-0096-FR-004"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_listener_config_t",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_listener_config_t",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_listener_config_t",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-006",
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_listener_t",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_listener_t",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_listener_t",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-006",
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_connection_t",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_connection_t",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_connection_t",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-006",
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_incoming_batch_t",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_incoming_batch_t",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_incoming_batch_t",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-006",
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_request_item_t",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_request_item_t",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_request_item_t",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_put_object_t",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_put_object_t",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_put_object_t",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-004",
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_response_builder_t",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_response_builder_t",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_response_builder_t",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_response_item_t",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_response_item_t",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_response_item_t",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_response_t",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_response_t",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_response_t",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cTypeLayout": {
+        "fields": [
+          {
+            "name": "struct_size",
+            "type": "uint32_t"
+          },
+          {
+            "name": "abi_version",
+            "type": "uint32_t"
+          },
+          {
+            "name": "transport_kind",
+            "type": "uint32_t"
+          },
+          {
+            "name": "wire_encoding",
+            "type": "uint32_t"
+          },
+          {
+            "name": "reserved",
+            "type": "uint32_t"
+          },
+          {
+            "name": "bind_host",
+            "type": "kmipkit_byte_span_v1_t"
+          },
+          {
+            "name": "bind_port",
+            "type": "uint16_t"
+          },
+          {
+            "name": "reserved2",
+            "type": "uint16_t"
+          },
+          {
+            "name": "listener_certificates",
+            "type": "const kmipkit_transport_input_v1_t *"
+          },
+          {
+            "name": "listener_certificate_count",
+            "type": "uint64_t"
+          },
+          {
+            "name": "listener_private_key",
+            "type": "kmipkit_transport_input_v1_t"
+          },
+          {
+            "name": "trust_certificates",
+            "type": "const kmipkit_transport_input_v1_t *"
+          },
+          {
+            "name": "trust_certificate_count",
+            "type": "uint64_t"
+          },
+          {
+            "name": "revocation_lists",
+            "type": "const kmipkit_transport_input_v1_t *"
+          },
+          {
+            "name": "revocation_list_count",
+            "type": "uint64_t"
+          },
+          {
+            "name": "target_path",
+            "type": "kmipkit_byte_span_v1_t"
+          },
+          {
+            "name": "max_request_bytes",
+            "type": "uint64_t"
+          }
+        ],
+        "kind": "fixed-width-value",
+        "name": "kmipkit_server_listener_config_v1_t",
+        "versioned": true
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_listener_config_v1_t",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_listener_config_v1_t",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_listener_config_v1_t",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-006",
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cValue": 1,
+      "cValueType": "uint32_t",
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:KMIPKIT_SERVER_LISTENER_RAW_TLS",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_SERVER_LISTENER_RAW_TLS",
+      "kind": "macro",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_SERVER_LISTENER_RAW_TLS",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cValue": 2,
+      "cValueType": "uint32_t",
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:KMIPKIT_SERVER_LISTENER_HTTPS",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_SERVER_LISTENER_HTTPS",
+      "kind": "macro",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_SERVER_LISTENER_HTTPS",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cValue": 1,
+      "cValueType": "uint32_t",
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:KMIPKIT_SERVER_ENCODING_TTLV",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_SERVER_ENCODING_TTLV",
+      "kind": "macro",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_SERVER_ENCODING_TTLV",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cValue": 2,
+      "cValueType": "uint32_t",
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:KMIPKIT_SERVER_ENCODING_JSON",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_SERVER_ENCODING_JSON",
+      "kind": "macro",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_SERVER_ENCODING_JSON",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cValue": 3,
+      "cValueType": "uint32_t",
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:KMIPKIT_SERVER_ENCODING_XML",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_SERVER_ENCODING_XML",
+      "kind": "macro",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_SERVER_ENCODING_XML",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cValue": 1,
+      "cValueType": "uint32_t",
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:KMIPKIT_SERVER_PUT_READ_PRESENT",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_SERVER_PUT_READ_PRESENT",
+      "kind": "macro",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_SERVER_PUT_READ_PRESENT",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cValue": 2,
+      "cValueType": "uint32_t",
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:KMIPKIT_SERVER_PUT_READ_TYPE",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_SERVER_PUT_READ_TYPE",
+      "kind": "macro",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_SERVER_PUT_READ_TYPE",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cValue": 3,
+      "cValueType": "uint32_t",
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:KMIPKIT_SERVER_PUT_READ_ENUMERATION",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_SERVER_PUT_READ_ENUMERATION",
+      "kind": "macro",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_SERVER_PUT_READ_ENUMERATION",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cValue": 4,
+      "cValueType": "uint32_t",
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:KMIPKIT_SERVER_PUT_READ_INTEGER",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_SERVER_PUT_READ_INTEGER",
+      "kind": "macro",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_SERVER_PUT_READ_INTEGER",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cValue": 5,
+      "cValueType": "uint32_t",
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:KMIPKIT_SERVER_PUT_READ_SECRET_BYTES",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_SERVER_PUT_READ_SECRET_BYTES",
+      "kind": "macro",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_SERVER_PUT_READ_SECRET_BYTES",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cValue": 6,
+      "cValueType": "uint32_t",
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:KMIPKIT_SERVER_PUT_READ_STRUCTURE_VIEW",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_SERVER_PUT_READ_STRUCTURE_VIEW",
+      "kind": "macro",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_SERVER_PUT_READ_STRUCTURE_VIEW",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cValue": 7,
+      "cValueType": "uint32_t",
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:KMIPKIT_SERVER_PUT_READ_SECRET_TEXT",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_SERVER_PUT_READ_SECRET_TEXT",
+      "kind": "macro",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_SERVER_PUT_READ_SECRET_TEXT",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_connection_recv_batch is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "connection",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_connection_t *"
+          },
+          {
+            "kind": "handle",
+            "name": "limits",
+            "ownership": "borrowed",
+            "type": "kmipkit_codec_limits_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "timeout_seconds",
+            "type": "uint64_t"
+          },
+          {
+            "kind": "scalar",
+            "name": "timeout_nanoseconds",
+            "type": "uint32_t"
+          },
+          {
+            "kind": "output",
+            "name": "out_batch",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_server_incoming_batch_t **"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_connection_recv_batch",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_connection_recv_batch",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_connection_recv_batch",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-006",
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_connection_release is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "connection",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_connection_t *"
+          }
+        ],
+        "returnType": "void"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_connection_release",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_connection_release",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_connection_release",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_connection_send_response is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "connection",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_connection_t *"
+          },
+          {
+            "kind": "handle",
+            "name": "response",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_response_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "timeout_seconds",
+            "type": "uint64_t"
+          },
+          {
+            "kind": "scalar",
+            "name": "timeout_nanoseconds",
+            "type": "uint32_t"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_connection_send_response",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_connection_send_response",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_connection_send_response",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-006",
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_discover_versions_response_create is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "request",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_request_item_t *"
+          },
+          {
+            "countParameter": "version_count",
+            "elementType": "kmipkit_protocol_version_v1_t",
+            "kind": "input-array",
+            "name": "versions",
+            "nullable": true,
+            "ownership": "borrowed",
+            "type": "const kmipkit_protocol_version_v1_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "version_count",
+            "type": "uint64_t"
+          },
+          {
+            "kind": "output",
+            "name": "out_response_item",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_server_response_item_t **"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_discover_versions_response_create",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_discover_versions_response_create",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_discover_versions_response_create",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-002",
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_incoming_batch_count is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "batch",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_incoming_batch_t *"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_count",
+            "ownership": "none",
+            "type": "uint64_t *",
+            "valueType": "uint64_t"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_incoming_batch_count",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_incoming_batch_count",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_incoming_batch_count",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_incoming_batch_item_at is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "batch",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_incoming_batch_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "index",
+            "type": "uint64_t"
+          },
+          {
+            "kind": "output",
+            "name": "out_item",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_server_request_item_t **"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_incoming_batch_item_at",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_incoming_batch_item_at",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_incoming_batch_item_at",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_incoming_batch_protocol_version is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "batch",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_incoming_batch_t *"
+          },
+          {
+            "kind": "output-value-pointer",
+            "name": "out_version",
+            "ownership": "none",
+            "type": "kmipkit_protocol_version_v1_t *",
+            "valueType": "kmipkit_protocol_version_v1_t"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_incoming_batch_protocol_version",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_incoming_batch_protocol_version",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_incoming_batch_protocol_version",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_incoming_batch_release is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "batch",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_incoming_batch_t *"
+          }
+        ],
+        "returnType": "void"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_incoming_batch_release",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_incoming_batch_release",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_incoming_batch_release",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_listener_accept is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "listener",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_listener_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "timeout_seconds",
+            "type": "uint64_t"
+          },
+          {
+            "kind": "scalar",
+            "name": "timeout_nanoseconds",
+            "type": "uint32_t"
+          },
+          {
+            "kind": "output",
+            "name": "out_connection",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_server_connection_t **"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_listener_accept",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_listener_accept",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_listener_accept",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-006",
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_listener_bind_https is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "configuration",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_listener_config_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_listener",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_server_listener_t **"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_listener_bind_https",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_listener_bind_https",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_listener_bind_https",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-006",
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_listener_bind_raw_tls is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "configuration",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_listener_config_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_listener",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_server_listener_t **"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_listener_bind_raw_tls",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_listener_bind_raw_tls",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_listener_bind_raw_tls",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-006",
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_listener_config_create_v1 is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "direction": "input",
+            "kind": "versioned-value-pointer",
+            "name": "configuration",
+            "ownership": "borrowed",
+            "type": "const kmipkit_server_listener_config_v1_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_configuration",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_server_listener_config_t **"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_listener_config_create_v1",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_listener_config_create_v1",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_listener_config_create_v1",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-006",
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_listener_config_release is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "configuration",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_listener_config_t *"
+          }
+        ],
+        "returnType": "void"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_listener_config_release",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_listener_config_release",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_listener_config_release",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-006",
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_listener_port is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "listener",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_listener_t *"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_port",
+            "ownership": "none",
+            "type": "uint16_t *",
+            "valueType": "uint16_t"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_listener_port",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_listener_port",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_listener_port",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-006",
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_listener_release is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "listener",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_listener_t *"
+          }
+        ],
+        "returnType": "void"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_listener_release",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_listener_release",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_listener_release",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-006",
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_notify_response_create is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "request",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_request_item_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_response_item",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_server_response_item_t **"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_notify_response_create",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_notify_response_create",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_notify_response_create",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-003",
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_put_object_field_read is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "object",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_put_object_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "field_tag",
+            "type": "uint32_t"
+          },
+          {
+            "kind": "scalar",
+            "name": "read_kind",
+            "type": "uint32_t"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_present",
+            "ownership": "none",
+            "type": "uint8_t *",
+            "valueType": "uint8_t"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_item_type",
+            "nullable": true,
+            "ownership": "none",
+            "type": "uint8_t *",
+            "valueType": "uint8_t"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_enumeration",
+            "nullable": true,
+            "ownership": "none",
+            "type": "uint32_t *",
+            "valueType": "uint32_t"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_integer",
+            "nullable": true,
+            "ownership": "none",
+            "type": "int32_t *",
+            "valueType": "int32_t"
+          },
+          {
+            "kind": "output",
+            "name": "out_child",
+            "nullable": false,
+            "ownership": "library-owned",
+            "pointerNullable": true,
+            "type": "kmipkit_server_put_object_t **"
+          },
+          {
+            "kind": "output",
+            "name": "out_secret",
+            "nullable": false,
+            "ownership": "library-owned",
+            "pointerNullable": true,
+            "type": "kmipkit_secret_bytes_t **"
+          },
+          {
+            "kind": "output",
+            "name": "out_secret_text",
+            "nullable": false,
+            "ownership": "library-owned",
+            "pointerNullable": true,
+            "type": "kmipkit_secret_text_t **"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_put_object_field_read",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_put_object_field_read",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_put_object_field_read",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-004",
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_put_object_release is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "object",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_put_object_t *"
+          }
+        ],
+        "returnType": "void"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_put_object_release",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_put_object_release",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_put_object_release",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-004",
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_put_object_tag is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "object",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_put_object_t *"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_tag",
+            "ownership": "none",
+            "type": "uint32_t *",
+            "valueType": "uint32_t"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_put_object_tag",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_put_object_tag",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_put_object_tag",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-004",
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_put_object_type is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "object",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_put_object_t *"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_object_type",
+            "ownership": "none",
+            "type": "uint32_t *",
+            "valueType": "uint32_t"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_put_object_type",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_put_object_type",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_put_object_type",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-004",
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_put_response_create is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "request",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_request_item_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_response_item",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_server_response_item_t **"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_put_response_create",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_put_response_create",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_put_response_create",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-004",
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_query_response_create is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "request",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_request_item_t *"
+          },
+          {
+            "countParameter": "operation_count",
+            "elementType": "uint32_t",
+            "kind": "input-array",
+            "name": "operations",
+            "nullable": true,
+            "ownership": "borrowed",
+            "type": "const uint32_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "operation_count",
+            "type": "uint64_t"
+          },
+          {
+            "countParameter": "object_type_count",
+            "elementType": "uint32_t",
+            "kind": "input-array",
+            "name": "object_types",
+            "nullable": true,
+            "ownership": "borrowed",
+            "type": "const uint32_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "object_type_count",
+            "type": "uint64_t"
+          },
+          {
+            "countParameter": "extension_tag_count",
+            "elementType": "uint32_t",
+            "kind": "input-array",
+            "name": "extension_tags",
+            "nullable": true,
+            "ownership": "borrowed",
+            "type": "const uint32_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "extension_tag_count",
+            "type": "uint64_t"
+          },
+          {
+            "kind": "input-value",
+            "name": "vendor_identification",
+            "ownership": "borrowed",
+            "type": "kmipkit_byte_span_v1_t",
+            "valueType": "kmipkit_byte_span_v1_t"
+          },
+          {
+            "kind": "output",
+            "name": "out_response_item",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_server_response_item_t **"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_query_response_create",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_query_response_create",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_query_response_create",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-005",
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_request_item_discover_version_at is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_request_item_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "index",
+            "type": "uint64_t"
+          },
+          {
+            "kind": "output-value-pointer",
+            "name": "out_version",
+            "ownership": "none",
+            "type": "kmipkit_protocol_version_v1_t *",
+            "valueType": "kmipkit_protocol_version_v1_t"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_request_item_discover_version_at",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_request_item_discover_version_at",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_request_item_discover_version_at",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-002",
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_request_item_discover_versions_count is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_request_item_t *"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_count",
+            "ownership": "none",
+            "type": "uint64_t *",
+            "valueType": "uint64_t"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_request_item_discover_versions_count",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_request_item_discover_versions_count",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_request_item_discover_versions_count",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-002",
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_request_item_endpoint_role is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_request_item_t *"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_endpoint_role",
+            "ownership": "none",
+            "type": "uint32_t *",
+            "valueType": "uint32_t"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_request_item_endpoint_role",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_request_item_endpoint_role",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_request_item_endpoint_role",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-001",
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_request_item_notify_attributes is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "request",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_request_item_t *"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_present",
+            "ownership": "none",
+            "type": "uint8_t *",
+            "valueType": "uint8_t"
+          },
+          {
+            "kind": "output",
+            "name": "out_attributes",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_attribute_set_t **"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_request_item_notify_attributes",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_request_item_notify_attributes",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_request_item_notify_attributes",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-003",
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_request_item_notify_deleted_attribute_reference_at is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "request",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_request_item_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "index",
+            "type": "uint64_t"
+          },
+          {
+            "direction": "output",
+            "kind": "versioned-value-pointer",
+            "name": "output",
+            "ownership": "none",
+            "type": "kmipkit_attribute_reference_v1_t *"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_request_item_notify_deleted_attribute_reference_at",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_request_item_notify_deleted_attribute_reference_at",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_request_item_notify_deleted_attribute_reference_at",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-003",
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_request_item_notify_deleted_attribute_reference_count is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "request",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_request_item_t *"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_count",
+            "ownership": "none",
+            "type": "uint64_t *",
+            "valueType": "uint64_t"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_request_item_notify_deleted_attribute_reference_count",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_request_item_notify_deleted_attribute_reference_count",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_request_item_notify_deleted_attribute_reference_count",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-003",
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_request_item_operation is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_request_item_t *"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_operation",
+            "ownership": "none",
+            "type": "uint32_t *",
+            "valueType": "uint32_t"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_request_item_operation",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_request_item_operation",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_request_item_operation",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_request_item_put_function is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_request_item_t *"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_put_function",
+            "ownership": "none",
+            "type": "uint32_t *",
+            "valueType": "uint32_t"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_request_item_put_function",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_request_item_put_function",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_request_item_put_function",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_request_item_put_object is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "request",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_request_item_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_object",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_server_put_object_t **"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_request_item_put_object",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_request_item_put_object",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_request_item_put_object",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-004",
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_request_item_query_function_at is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_request_item_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "index",
+            "type": "uint64_t"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_function",
+            "ownership": "none",
+            "type": "uint32_t *",
+            "valueType": "uint32_t"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_request_item_query_function_at",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_request_item_query_function_at",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_request_item_query_function_at",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-005",
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_request_item_query_functions_count is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_request_item_t *"
+          },
+          {
+            "kind": "output-scalar-pointer",
+            "name": "out_count",
+            "ownership": "none",
+            "type": "uint64_t *",
+            "valueType": "uint64_t"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_request_item_query_functions_count",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_request_item_query_functions_count",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_request_item_query_functions_count",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-005",
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_request_item_release is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_request_item_t *"
+          }
+        ],
+        "returnType": "void"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_request_item_release",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_request_item_release",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_request_item_release",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_request_item_unique_identifier is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_request_item_t *"
+          },
+          {
+            "kind": "output-value-pointer",
+            "name": "out_identifier",
+            "ownership": "none",
+            "type": "kmipkit_byte_span_v1_t *",
+            "valueType": "kmipkit_byte_span_v1_t"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_request_item_unique_identifier",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_request_item_unique_identifier",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_request_item_unique_identifier",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_response_builder_add_failure is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "builder",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_response_builder_t *"
+          },
+          {
+            "kind": "handle",
+            "name": "request",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_request_item_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "result_status",
+            "type": "uint32_t"
+          },
+          {
+            "kind": "scalar",
+            "name": "has_result_reason",
+            "type": "uint8_t"
+          },
+          {
+            "kind": "scalar",
+            "name": "result_reason",
+            "type": "uint32_t"
+          },
+          {
+            "kind": "input-value",
+            "name": "result_message",
+            "ownership": "borrowed",
+            "type": "kmipkit_byte_span_v1_t",
+            "valueType": "kmipkit_byte_span_v1_t"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_response_builder_add_failure",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_response_builder_add_failure",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_response_builder_add_failure",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_response_builder_add_success is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "builder",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_response_builder_t *"
+          },
+          {
+            "kind": "handle",
+            "name": "request",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_request_item_t *"
+          },
+          {
+            "kind": "handle",
+            "name": "response_item",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_response_item_t *"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_response_builder_add_success",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_response_builder_add_success",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_response_builder_add_success",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_response_builder_build is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "builder",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_response_builder_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_response",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_server_response_t **"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_response_builder_build",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_response_builder_build",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_response_builder_build",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_response_builder_create is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "batch",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_incoming_batch_t *"
+          },
+          {
+            "kind": "output",
+            "name": "out_builder",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_server_response_builder_t **"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_response_builder_create",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_response_builder_create",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_response_builder_create",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_response_builder_release is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "builder",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_response_builder_t *"
+          }
+        ],
+        "returnType": "void"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_response_builder_release",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_response_builder_release",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_response_builder_release",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_response_item_release is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "item",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_response_item_t *"
+          }
+        ],
+        "returnType": "void"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_response_item_release",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_response_item_release",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_response_item_release",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_response_release is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "response",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_response_t *"
+          }
+        ],
+        "returnType": "void"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_response_release",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_response_release",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_response_release",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-009"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134).",
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved"
+      },
+      "cSignature": {
+        "documentation": [
+          "kmipkit_server_set_endpoint_role_response_create is part of the KMIPKIT-0066 C server-listener route."
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "parameters": [
+          {
+            "kind": "handle",
+            "name": "request",
+            "ownership": "borrowed",
+            "type": "kmipkit_server_request_item_t *"
+          },
+          {
+            "kind": "scalar",
+            "name": "endpoint_role",
+            "type": "uint32_t"
+          },
+          {
+            "kind": "input-value",
+            "name": "vendor_identification",
+            "ownership": "borrowed",
+            "type": "kmipkit_byte_span_v1_t",
+            "valueType": "kmipkit_byte_span_v1_t"
+          },
+          {
+            "kind": "output",
+            "name": "out_response_item",
+            "nullable": false,
+            "ownership": "library-owned",
+            "type": "kmipkit_server_response_item_t **"
+          }
+        ],
+        "returnType": "int32_t"
+      },
+      "capabilityId": "server_to_client_listener_c_abi",
+      "declarationId": "KMIPKIT-0106:kmipkit_server_set_endpoint_role_response_create",
+      "declarationState": "declared",
+      "exportName": "kmipkit_server_set_endpoint_role_response_create",
+      "kind": "c-symbol",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_server_set_endpoint_role_response_create",
+          "packageId": "c-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "c-only",
+      "requirementIds": [
+        "REQ-066-001",
+        "REQ-066-009"
       ]
     }
   ],
