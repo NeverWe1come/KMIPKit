@@ -396,7 +396,7 @@ def execute_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | Non
     if cell['transport'] is None:
         if cell['public_api_symbol'] == 'kmipkit.client.BatchItemResult.supported_versions':
             return _positive_fixture_cell(cell, case, target, trace=trace)
-        if cell['public_api_symbol'] in _CREDENTIAL_ROUTE_SYMBOLS:
+        if cell['public_api_symbol'].startswith('kmipkit.credentials.'):
             return _credential_cell(cell, case, target)
         if cell['public_api_symbol'] in _TYPED_ATTRIBUTE_SYMBOLS:
             return _typed_attribute_cell(cell, case, target)
@@ -1041,12 +1041,6 @@ _TYPED_ATTRIBUTE_SYMBOLS = {
     'kmipkit.attribute_operations.AttributeSet.try_push_typed',
 }
 
-_CREDENTIAL_ROUTE_SYMBOLS = {
-    'kmipkit.credentials.CredentialType.from_raw',
-    'kmipkit.credentials.Credential.into_ttlv',
-}
-
-
 def _credential_type_value(target: dict) -> int:
     if (target.get('kind') == 'enumeration_value'
             and 'KMIPKIT-ELEM-ENUMERATION-CREDENTIAL-TYPE'
@@ -1065,39 +1059,321 @@ def _credential_envelope_tree(credential_type: int) -> list:
     ]]
 
 
+_CREDENTIAL_TYPES = {
+    'USERNAME-AND-PASSWORD': 1,
+    'DEVICE': 2,
+    'ATTESTATION': 3,
+    'ONE-TIME-PASSWORD': 4,
+    'HASHED-PASSWORD': 5,
+    'TICKET': 6,
+}
+_CREDENTIAL_TAG_TYPES = {
+    0x420038: 5, 0x420092: 5, 0x420099: 1, 0x4200A1: 1,
+    0x4200A2: 2, 0x4200A9: 2, 0x4200AA: 2, 0x4200AB: 2,
+    0x4200B0: 2, 0x4200C7: 3, 0x4200C8: 3, 0x4200C9: 3,
+    0x4200CA: 3, 0x4200CB: 3, 0x4200CC: 3, 0x420149: 6,
+    0x42014A: 6, 0x42014B: 6, 0x420156: 4, 0x420157: 5,
+}
+_CREDENTIAL_MEMBER_TAGS = {
+    'KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ATTESTATION-NONCE': 0x4200C8,
+    'KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ATTESTATION-ATTESTATION-TYPE': 0x4200C7,
+    'KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ATTESTATION-ATTESTATION-MEASUREMENT': 0x4200CB,
+    'KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ATTESTATION-ATTESTATION-ASSERTION': 0x4200CC,
+    'KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-CREDENTIAL-CREDENTIAL-TYPE': 0x420024,
+    'KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-CREDENTIAL-CREDENTIAL-VALUE': 0x420025,
+    'KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-DEVICE-SERIAL-NUMBER': 0x4200B0,
+    'KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-DEVICE-IDENTIFIER': 0x4200A2,
+    'KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-NETWORK-IDENTIFIER': 0x4200AB,
+    'KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MACHINE-IDENTIFIER': 0x4200A9,
+    'KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-MEDIA-IDENTIFIER': 0x4200AA,
+    'KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-DEVICE-PASSWORD': 0x4200A1,
+    'KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-USERNAME': 0x420099,
+    'KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-TIMESTAMP': 0x420092,
+    'KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-HASHING-ALGORITHM': 0x420038,
+    'KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-HASHED-PASSWORD': 0x420157,
+    'KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ONE-TIME-PASSWORD-USERNAME': 0x420099,
+    'KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ONE-TIME-PASSWORD-PASSWORD': 0x4200A1,
+    'KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-ONE-TIME-PASSWORD-ONE-TIME-PASSWORD': 0x420156,
+    'KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-TICKET-TICKET': 0x420149,
+    'KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-USERNAME-AND-PASSWORD-USERNAME': 0x420099,
+    'KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-USERNAME-AND-PASSWORD-PASSWORD': 0x4200A1,
+}
+_CREDENTIAL_AUTH_TAG = 0x42000C
+_CREDENTIAL_NONCE_TAG = 0x4200C8
+
+
+def _credential_type_for_target(target: dict) -> int:
+    """Select the exact Credential Type established by the catalog target."""
+    exact = _credential_type_value(target)
+    if target.get('kind') == 'enumeration_value' and exact != 1:
+        return exact
+    for element_id in (target.get('target_id', ''), *target.get('parent_element_ids', [])):
+        for name, raw in _CREDENTIAL_TYPES.items():
+            if f'CREDENTIAL-{name}' in element_id:
+                return raw
+    if target.get('kind') == 'tag' and isinstance(target.get('wire_value'), str):
+        try:
+            return _CREDENTIAL_TAG_TYPES.get(int(target['wire_value'], 16), 1)
+        except ValueError:
+            pass
+    return 1
+
+
+def _credential_field(tag: int, kind: int, value: Any) -> list:
+    if kind == 7:
+        value = str(value).encode('utf-8').hex()
+    elif kind in (4, 8):
+        value = bytes(value).hex()
+    return [tag, kind, value]
+
+
+def _credential_nonce_children() -> list:
+    return [
+        _credential_field(0x4200C9, 8, b'\x11\x22\x33'),
+        _credential_field(0x4200CA, 8, b'\xa1\xb2\xc3'),
+    ]
+
+
+def _credential_value_children(credential_type: int) -> list:
+    """Return a valid synthetic Credential Value tree for the selected type."""
+    if credential_type == 1:
+        return [_credential_field(0x420099, 7, 'validator-user'),
+                _credential_field(0x4200A1, 7, 'validator-secret')]
+    if credential_type == 2:
+        return [_credential_field(0x4200B0, 7, 'validator-device-serial'),
+                _credential_field(0x4200A1, 7, 'validator-device-secret'),
+                _credential_field(0x4200A2, 7, 'validator-device-id'),
+                _credential_field(0x4200AB, 7, 'validator-network-id'),
+                _credential_field(0x4200A9, 7, 'validator-machine-id'),
+                _credential_field(0x4200AA, 7, 'validator-media-id')]
+    if credential_type == 3:
+        return [[0x4200C8, 1, _credential_nonce_children()],
+                [0x4200C7, 5, 0xF1234567],
+                _credential_field(0x4200CB, 8, b'\x10\x20\x30'),
+                _credential_field(0x4200CC, 8, b'\x40\x50\x60')]
+    if credential_type == 4:
+        return [_credential_field(0x420099, 7, 'validator-user'),
+                _credential_field(0x4200A1, 7, 'validator-secret'),
+                _credential_field(0x420156, 7, 'validator-one-time-code')]
+    if credential_type == 5:
+        return [_credential_field(0x420099, 7, 'validator-user'),
+                [0x420092, 11, 1_800_000_000],
+                [0x420038, 5, 0xE1234567],
+                _credential_field(0x420157, 8, b'\x71\x72\x73\x74')]
+    if credential_type == 6:
+        return [[0x420149, 1, [[0x42014A, 5, 1],
+                                _credential_field(0x42014B, 8, b'\x81\x82\x83')]]]
+    # Credential Types in the extension range and unassigned space are opaque.
+    return [[0x540001, 2, 7]]
+
+
+def _credential_envelope_tree_for_type(credential_type: int) -> list:
+    return [0x420023, 1, [[0x420024, 5, credential_type],
+                          [0x420025, 1, _credential_value_children(credential_type)]]]
+
+
+def _credential_item_from_tree(tree: list, owned: ExitStack):
+    """Materialize one numeric tree with the installed package's public TTLV API."""
+    tag, kind, value = tree
+    type_names = {1: 'structure', 2: 'integer', 3: 'long_integer', 4: 'big_integer',
+                  5: 'enumeration', 6: 'boolean', 7: 'text', 8: 'bytes',
+                  9: 'date_time', 10: 'interval', 11: 'date_time_extended'}
+    if kind == 1:
+        children = [owned.enter_context(_credential_item_from_tree(child, owned))
+                    for child in value]
+        value = owned.enter_context(PythonKmipDriver._structure(children))
+    elif kind == 7:
+        value = bytes.fromhex(value).decode('utf-8')
+    elif kind in (4, 8):
+        value = bytes.fromhex(value)
+    return owned.enter_context(PythonKmipDriver._item(tag, type_names[kind], value))
+
+
+def _credential_structure_from_children(children: list, owned: ExitStack):
+    items = [owned.enter_context(_credential_item_from_tree(child, owned)) for child in children]
+    return owned.enter_context(PythonKmipDriver._structure(items))
+
+
+def _credential_tree_has_tag(tree: list, tag: int) -> bool:
+    if tree[0] == tag:
+        return True
+    return tree[1] == 1 and any(_credential_tree_has_tag(child, tag) for child in tree[2])
+
+
+def _credential_assert_target(target: dict, tree: list, credential_type: int) -> None:
+    """Require the output TTLV to contain this exact expanded target."""
+    kind = target.get('kind')
+    if kind == 'tag':
+        if _credential_tree_has_tag(tree, int(target['wire_value'], 16)):
+            return
+    elif kind == 'structure_member':
+        tag = _CREDENTIAL_MEMBER_TAGS.get(target['target_id'])
+        if tag is not None and _credential_tree_has_tag(tree, tag):
+            return
+    elif kind == 'message_field':
+        if target['target_id'].endswith('AUTHENTICATION') and _credential_tree_has_tag(tree, _CREDENTIAL_AUTH_TAG):
+            return
+        if target['target_id'].endswith('NONCE') and _credential_tree_has_tag(tree, _CREDENTIAL_NONCE_TAG):
+            return
+        if target['target_id'].endswith('NONCE-ID') and _credential_tree_has_tag(tree, 0x4200C9):
+            return
+        if target['target_id'].endswith('NONCE-VALUE') and _credential_tree_has_tag(tree, 0x4200CA):
+            return
+        if target['target_id'].endswith('CREDENTIAL-MAY-BE-REPEATED'):
+            count = sum(child[0] == 0x420023 for child in tree[2]) if tree[1] == 1 else 0
+            if count >= 2:
+                return
+    elif kind == 'credential':
+        expected = _credential_type_for_target(target)
+        if credential_type == expected:
+            return
+    elif kind == 'enumeration_value':
+        if credential_type == _credential_type_value(target):
+            return
+    elif kind == 'data_type':
+        expected_kind = 8 if target['target_id'].endswith('BYTE-STRING') else 7
+        if tree[1] == expected_kind:
+            return
+    raise ValueError('Credential TTLV output did not contain the exact normative target')
+
+
 def _credential_cell(cell: dict, case: dict, target: dict) -> dict:
-    """Roundtrip a raw-preserving Credential Type or generic Credential envelope."""
+    """Roundtrip public typed Credential APIs and verify exact normative identity."""
     from kmipkit import credentials
 
     symbol = cell['public_api_symbol']
-    credential_type = _credential_type_value(target)
+    credential_type = _credential_type_for_target(target)
     if symbol == 'kmipkit.credentials.CredentialType.from_raw':
         observed = credentials.CredentialType.from_raw(credential_type).raw()
         expected = credential_type
-    elif symbol == 'kmipkit.credentials.Credential.into_ttlv':
         with ExitStack() as owned:
-            payload_field = owned.enter_context(PythonKmipDriver._item(0x42002A, 'integer', 0x13579))
-            payload = owned.enter_context(PythonKmipDriver._structure([payload_field]))
-            type_field = owned.enter_context(PythonKmipDriver._item(0x420024, 'enumeration', credential_type))
-            value_field = owned.enter_context(PythonKmipDriver._item(0x420025, 'structure', payload))
-            source = owned.enter_context(PythonKmipDriver._structure([type_field, value_field]))
+            item = owned.enter_context(PythonKmipDriver._item(0x420024, 'enumeration', observed))
+            tree = item_tree(item)
+            _credential_assert_target(target, tree, observed)
+    elif symbol in ('kmipkit.credentials.Credential.from_ttlv',
+                    'kmipkit.credentials.Credential.into_ttlv'):
+        with ExitStack() as owned:
+            envelope = _credential_envelope_tree_for_type(credential_type)
+            source = _credential_structure_from_children(envelope[2], owned)
             credential = owned.enter_context(credentials.Credential.from_ttlv(source))
             if credential.credential_type_raw() != credential_type:
                 raise ValueError('generic Credential Type getter changed the raw value')
             result = owned.enter_context(credential.into_ttlv())
-            result_item = owned.enter_context(PythonKmipDriver._item(0x420023, 'structure', result))
+            result_item = owned.enter_context(PythonKmipDriver._item(envelope[0], 'structure', result))
             tree = item_tree(result_item)
-            expected = _credential_envelope_tree(credential_type)
+            expected = envelope
             if tree != expected:
                 raise ValueError('generic Credential envelope did not preserve its exact fields')
+            _credential_assert_target(target, tree, credential_type)
+            observed = tree
+    elif symbol in ('kmipkit.credentials.CredentialValue.from_ttlv',
+                    'kmipkit.credentials.CredentialValue.into_ttlv'):
+        with ExitStack() as owned:
+            value_children = _credential_value_children(credential_type)
+            source = _credential_structure_from_children(value_children, owned)
+            credential_value = owned.enter_context(
+                credentials.CredentialValue.from_ttlv(credential_type, source))
+            if credential_value.credential_type_raw() != credential_type:
+                raise ValueError('Credential Value changed its raw Credential Type')
+            result = owned.enter_context(credential_value.into_ttlv())
+            result_item = owned.enter_context(PythonKmipDriver._item(0x420025, 'structure', result))
+            tree = item_tree(result_item)
+            expected = [0x420025, 1, value_children]
+            if tree != expected:
+                raise ValueError('Credential Value roundtrip changed its exact fields')
+            _credential_assert_target(target, tree, credential_type)
+            observed = tree
+    elif symbol in ('kmipkit.credentials.Nonce.from_ttlv',
+                    'kmipkit.credentials.Nonce.into_ttlv'):
+        with ExitStack() as owned:
+            children = _credential_nonce_children()
+            source = _credential_structure_from_children(children, owned)
+            nonce = owned.enter_context(credentials.Nonce.from_ttlv(source))
+            result = owned.enter_context(nonce.into_ttlv())
+            result_item = owned.enter_context(
+                PythonKmipDriver._item(_CREDENTIAL_NONCE_TAG, 'structure', result))
+            tree = item_tree(result_item)
+            expected = [_CREDENTIAL_NONCE_TAG, 1, children]
+            if tree != expected:
+                raise ValueError('Nonce roundtrip changed its exact fields')
+            _credential_assert_target(target, tree, 3)
+            observed = tree
+    elif symbol.startswith('kmipkit.credentials.Authentication.'):
+        with ExitStack() as owned:
+            credential_trees = [_credential_envelope_tree_for_type(raw) for raw in (1, 4)]
+            source_children = [_credential_item_tree_for_envelope(tree) for tree in credential_trees]
+            source = _credential_structure_from_children(source_children, owned)
+            if symbol.endswith('Authentication.create'):
+                credential_handles = []
+                for envelope in credential_trees:
+                    nested = _credential_structure_from_children(envelope[2], owned)
+                    credential_handles.append(owned.enter_context(credentials.Credential.from_ttlv(nested)))
+                authentication = owned.enter_context(credentials.Authentication.create(credential_handles))
+            else:
+                authentication = owned.enter_context(credentials.Authentication.from_ttlv(source))
+            result = owned.enter_context(authentication.into_ttlv())
+            result_item = owned.enter_context(
+                PythonKmipDriver._item(_CREDENTIAL_AUTH_TAG, 'structure', result))
+            tree = item_tree(result_item)
+            expected = [_CREDENTIAL_AUTH_TAG, 1, source_children]
+            if tree != expected:
+                raise ValueError('Authentication roundtrip changed order or repeated Credentials')
+            _credential_assert_target(target, tree, 1)
+            observed = tree
+    elif symbol in ('kmipkit.credentials.SecretBytes.into_ttlv_value',
+                    'kmipkit.credentials.SecretText.into_ttlv_value'):
+        from kmipkit import ttlv
+
+        with ExitStack() as owned:
+            if symbol.endswith('SecretBytes.into_ttlv_value'):
+                secret = owned.enter_context(credentials.SecretBytes.from_bytes(b'validator-fixture-bytes'))
+                value = owned.enter_context(secret.into_ttlv_value())
+                tag, expected_type = 0x4200FF, 8
+            else:
+                secret = owned.enter_context(credentials.SecretText.from_text('validator-fixture-text'))
+                value = owned.enter_context(secret.into_ttlv_value())
+                tag, expected_type = 0x4200FF, 7
+            limits = owned.enter_context(ttlv.codec_limits_defaults())
+            raw_tag = owned.enter_context(ttlv.raw_tag_from_raw(tag))
+            checked_tag = owned.enter_context(ttlv.raw_tag_try_checked(raw_tag))
+            item = owned.enter_context(ttlv.ttlv_item_create(checked_tag, value, limits))
+            tree = item_tree(item)
+            if tree[1] != expected_type:
+                raise ValueError('Secret TTLV conversion returned the wrong data type')
+            _credential_assert_target(target, tree, credential_type)
+            observed = tree
+    elif any(symbol == f'kmipkit.credentials.{name}.{method}'
+             for name, method in (
+                 ('AttestationCredential', 'from_ttlv'), ('AttestationCredential', 'into_ttlv'),
+                 ('DeviceCredential', 'from_ttlv'), ('DeviceCredential', 'into_ttlv'),
+                 ('HashedPasswordCredential', 'from_ttlv'), ('HashedPasswordCredential', 'into_ttlv'),
+                 ('UsernameAndPasswordCredential', 'from_ttlv'),
+                 ('UsernameAndPasswordCredential', 'into_ttlv'))):
+        class_name = symbol.split('.')[2]
+        fixed_type = {'UsernameAndPasswordCredential': 1, 'DeviceCredential': 2,
+                      'AttestationCredential': 3, 'HashedPasswordCredential': 5}[class_name]
+        with ExitStack() as owned:
+            value_children = _credential_value_children(fixed_type)
+            source = _credential_structure_from_children(value_children, owned)
+            credential_model = owned.enter_context(getattr(credentials, class_name).from_ttlv(source))
+            result = owned.enter_context(credential_model.into_ttlv())
+            result_item = owned.enter_context(PythonKmipDriver._item(0x420025, 'structure', result))
+            tree = item_tree(result_item)
+            expected = [0x420025, 1, value_children]
+            if tree != expected:
+                raise ValueError(f'{class_name} roundtrip changed its exact fields')
+            _credential_assert_target(target, tree, fixed_type)
             observed = tree
     else:
         raise RecipePending
-    if observed != expected:
+    if symbol == 'kmipkit.credentials.CredentialType.from_raw' and observed != expected:
         raise ValueError('Credential Type route changed the normative raw value')
-    tree = [[0x420024, 5, observed]] if isinstance(observed, int) else observed
-    tree_hash = digest(tree)
+    tree_hash = digest(observed if not isinstance(observed, int) else [0x420024, 5, observed])
     return {'request_tree_sha256': tree_hash, 'response_tree_sha256': tree_hash}
+
+
+def _credential_item_tree_for_envelope(envelope: list) -> list:
+    return envelope
 
 
 def _typed_attribute_cell(cell: dict, case: dict, target: dict) -> dict:
