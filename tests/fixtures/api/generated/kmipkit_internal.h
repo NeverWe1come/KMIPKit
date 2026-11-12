@@ -987,6 +987,7 @@ typedef struct kmipkit_mtls_client_config_v1_t kmipkit_mtls_client_config_v1_t;
 typedef struct kmipkit_symmetric_key_builder_t kmipkit_symmetric_key_builder_t;
 typedef struct kmipkit_symmetric_key_request_v1_t kmipkit_symmetric_key_request_v1_t;
 typedef struct kmipkit_crypto_operation_builder_t kmipkit_crypto_operation_builder_t;
+typedef struct kmipkit_create_key_pair_request_v1_t kmipkit_create_key_pair_request_v1_t;
 
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
@@ -1341,6 +1342,19 @@ struct kmipkit_symmetric_key_request_v1_t {
     uint8_t reserved_1;
     uint8_t reserved_2;
     kmipkit_byte_span_v1_t name;
+};
+
+struct kmipkit_create_key_pair_request_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint32_t cryptographic_algorithm;
+    int32_t cryptographic_length;
+    uint8_t private_usage_mask_present;
+    uint8_t public_usage_mask_present;
+    uint8_t reserved_0;
+    uint8_t reserved_1;
+    int32_t private_usage_mask;
+    int32_t public_usage_mask;
 };
 
 struct kmipkit_client_batch_item_metadata_v1_t {
@@ -3297,6 +3311,10 @@ int32_t kmipkit_client_batch_item_response_json(kmipkit_client_batch_item_respon
  */
 /* KMIPKIT-0093-FR-008, KMIPKIT-0093-FR-009, KMIPKIT-0095-FR-001, KMIPKIT-0095-FR-002, KMIPKIT-0095-FR-003, KMIPKIT-0095-FR-004, KMIPKIT-0095-FR-005 */
 int32_t kmipkit_client_batch_item_response_xml(kmipkit_client_batch_item_response_t * item, kmipkit_codec_limits_t * limits, kmipkit_secret_bytes_t ** out_rendered);
+/* KMIPKIT-0093-FR-011 */
+int32_t kmipkit_client_create_key_pair_v1(kmipkit_client_t * client, const kmipkit_create_key_pair_request_v1_t * request, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
+/* KMIPKIT-0093-FR-011 */
+int32_t kmipkit_client_create_key_pair_with_options_v1(kmipkit_client_t * client, const kmipkit_create_key_pair_request_v1_t * request, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);
 /* KMIPKIT-0006-FR-021, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_message_extension_view_ttlv(kmipkit_message_extension_view_t * extension, kmipkit_ttlv_structure_t ** out_structure);
 /* KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */

@@ -21,6 +21,31 @@ from kmipkit.typed_attributes import StandardAttribute
 _FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
 
 
+def test_key_pair_builder_requires_explicit_algorithm_and_length() -> None:
+    # KMIPKIT-0093-FR-011/013; KMIP 2.1 section 6.1.2 Create Key Pair.
+    builder = fluent.CreateKeyPairBuilder()
+    with pytest.raises(errors.KmipKitError):
+        builder.build()
+    builder.algorithm(6)
+    with pytest.raises(errors.KmipKitError):
+        builder.validate()
+    builder.length(256).private_usage_mask(1).public_usage_mask(2)
+    builder.validate()
+    item = builder.to_batch_item()
+    item.close()
+
+
+@pytest.mark.parametrize("method,value", [
+    ("algorithm", -1), ("algorithm", 1 << 32),
+    ("length", 0), ("length", True),
+    ("private_usage_mask", -1), ("public_usage_mask", 1 << 31),
+    ("with_options", None), ("asynchronous_indicator", -1),
+])
+def test_key_pair_builder_rejects_invalid_semantic_fields(method: str, value: object) -> None:
+    with pytest.raises(errors.KmipKitError):
+        getattr(fluent.CreateKeyPairBuilder(), method)(value)
+
+
 def _item(tag: int, item_type: int, value: bytes) -> bytes:
     return tag.to_bytes(3, "big") + bytes((item_type,)) + len(value).to_bytes(4, "big") + value + bytes((-len(value)) % 8)
 

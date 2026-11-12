@@ -17,6 +17,7 @@ pub(crate) const C_AVAILABLE_CAPABILITIES: &[&str] = &[
     "discover_versions_request_item",
     "ffi_runtime_metadata",
     "fluent_dx_api",
+    "fluent_dx_journeys",
     "generic_ttlv_model",
     "hashed_password_timestamp_sequence",
     "kmip30_draft_routes",
@@ -36031,6 +36032,66 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-observed-kmipkit-0096-attribute-at-root",
         "rust-kmipkit-client",
         "kmipkit_client::CreateSymmetricKeyBuilder::attribute_at",
+    ),
+    (
+        "rust-observed-kmipkit-0097-c2bf49a080bd13a3a55a",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateKeyPairBuilder",
+    ),
+    (
+        "rust-observed-kmipkit-0097-102d18a954fc22d3792a",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::algorithm",
+    ),
+    (
+        "rust-observed-kmipkit-0097-2961213a47a3d6dd13bc",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::build",
+    ),
+    (
+        "rust-observed-kmipkit-0097-a4f7e8567c65c32bef60",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::execute",
+    ),
+    (
+        "rust-observed-kmipkit-0097-f1a524d91989b66242e8",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::length",
+    ),
+    (
+        "rust-observed-kmipkit-0097-7d545991fa3b880e9d2f",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::private_usage_mask",
+    ),
+    (
+        "rust-observed-kmipkit-0097-4ae0a26f7fb4a735299f",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::public_usage_mask",
+    ),
+    (
+        "rust-observed-kmipkit-0097-a43249828aa4950d7181",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::to_batch_item",
+    ),
+    (
+        "rust-observed-kmipkit-0097-eea6ada7f602fc404e66",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::with_asynchronous_indicator",
+    ),
+    (
+        "rust-observed-kmipkit-0097-819a1c28f59ba75e4f28",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::with_options",
+    ),
+    (
+        "rust-observed-kmipkit-0097-a4de93d1f1c0dd6479a9",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::RequestBuilder<'a>::create_key_pair",
+    ),
+    (
+        "rust-observed-kmipkit-0097-89f1dc782362b4fc53f9",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::validate",
     ),
     (
         "T091:fluent-rust-map:b032afc80e7f963c",

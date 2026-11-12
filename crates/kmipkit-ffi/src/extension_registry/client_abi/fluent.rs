@@ -1,6 +1,8 @@
 //! Stable C adapters for the Rust-owned fluent request builders.
 
 use super::*;
+use kmipkit_protocol::attribute::typed;
+use kmipkit_protocol::{Attribute, CreateKeyPairRequest, ValidateKmipRequest};
 use std::sync::Arc;
 
 type SymmetricBuilder = kmipkit_client::fluent::CreateSymmetricKeyBuilder<'static>;
@@ -254,6 +256,126 @@ fn symmetric_builder_request(
         }
         _ => Err(ERROR_INVALID_INPUT),
     }
+}
+
+fn create_key_pair_request_v1(
+    request: *const kmipkit_create_key_pair_request_v1_t,
+) -> FfiResult<CreateKeyPairRequest> {
+    if request.is_null() || !request.is_aligned() {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    // SAFETY: a non-null pointer must reference one readable v1 request record.
+    let request = unsafe { request.read() };
+    if (request.struct_size as usize) < std::mem::size_of::<kmipkit_create_key_pair_request_v1_t>()
+        || request.abi_version != 1
+        || request.reserved_0 != 0
+        || request.reserved_1 != 0
+        || request.private_usage_mask_present > 1
+        || request.public_usage_mask_present > 1
+        || (request.private_usage_mask_present == 0 && request.private_usage_mask != 0)
+        || (request.public_usage_mask_present == 0 && request.public_usage_mask != 0)
+    {
+        return Err(ERROR_INVALID_INPUT);
+    }
+
+    let mut common_attributes = AttributeSet::new();
+    common_attributes
+        .try_push_typed(
+            Attribute::<typed::CryptographicAlgorithm>::new(request.cryptographic_algorithm)
+                .map_err(|_| ERROR_INVALID_INPUT)?,
+        )
+        .map_err(|_| ERROR_INVALID_INPUT)?;
+    common_attributes
+        .try_push_typed(
+            Attribute::<typed::CryptographicLength>::new(request.cryptographic_length)
+                .map_err(|_| ERROR_INVALID_INPUT)?,
+        )
+        .map_err(|_| ERROR_INVALID_INPUT)?;
+    let mut key_pair = CreateKeyPairRequest::new().with_common_attributes(common_attributes);
+
+    if request.private_usage_mask_present == 1 {
+        let mut attributes = AttributeSet::new();
+        attributes
+            .try_push_typed(
+                Attribute::<typed::CryptographicUsageMask>::new(request.private_usage_mask)
+                    .map_err(|_| ERROR_INVALID_INPUT)?,
+            )
+            .map_err(|_| ERROR_INVALID_INPUT)?;
+        key_pair = key_pair.with_private_key_attributes(attributes);
+    }
+    if request.public_usage_mask_present == 1 {
+        let mut attributes = AttributeSet::new();
+        attributes
+            .try_push_typed(
+                Attribute::<typed::CryptographicUsageMask>::new(request.public_usage_mask)
+                    .map_err(|_| ERROR_INVALID_INPUT)?,
+            )
+            .map_err(|_| ERROR_INVALID_INPUT)?;
+        key_pair = key_pair.with_public_key_attributes(attributes);
+    }
+    if !key_pair.validate().is_valid() {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    Ok(key_pair)
+}
+
+/// Executes one semantic Create Key Pair request with explicit algorithm and length.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_create_key_pair_v1(
+    client: *mut kmipkit_client_t,
+    request: *const kmipkit_create_key_pair_request_v1_t,
+    limits: *mut kmipkit_codec_limits_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let request = match create_key_pair_request_v1(request) {
+            Ok(request) => request,
+            Err(status) => return record_ffi_error(status),
+        };
+        execute_simple_request(
+            client,
+            ClientRequest::CreateKeyPair(request),
+            limits,
+            None,
+            out_response,
+        )
+    })
+}
+
+/// Executes Create Key Pair with explicit exchange-local timeout options.
+///
+/// # Safety
+///
+/// `client` and `limits` must be null or live handles of the declared types.
+/// Every non-null request and options pointer must refer to an aligned,
+/// initialized record readable for this call. `out_response` must be an
+/// aligned, writable handle slot. Input records and the output slot must not overlap.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_client_create_key_pair_with_options_v1(
+    client: *mut kmipkit_client_t,
+    request: *const kmipkit_create_key_pair_request_v1_t,
+    limits: *mut kmipkit_codec_limits_t,
+    options: *const kmipkit_request_options_v1_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if options.is_null() || !options.is_aligned() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        // SAFETY: the non-null aligned pointer is borrowed for this synchronous call.
+        let options = unsafe { &*options };
+        let request = match create_key_pair_request_v1(request) {
+            Ok(request) => request,
+            Err(status) => return record_ffi_error(status),
+        };
+        execute_simple_request(
+            client,
+            ClientRequest::CreateKeyPair(request),
+            limits,
+            Some(options),
+            out_response,
+        )
+    })
 }
 
 fn execute_simple_request(
@@ -736,4 +858,88 @@ pub extern "C" fn kmipkit_symmetric_key_builder_release(
     builder: *mut kmipkit_symmetric_key_builder_t,
 ) {
     ffi_entrypoint(|| release(builder, Kind::SymmetricKeyBuilder));
+}
+
+#[cfg(test)]
+mod key_pair_tests {
+    use super::*;
+
+    fn request() -> kmipkit_create_key_pair_request_v1_t {
+        kmipkit_create_key_pair_request_v1_t {
+            struct_size: u32::try_from(std::mem::size_of::<kmipkit_create_key_pair_request_v1_t>())
+                .expect("the ABI input record fits uint32"),
+            abi_version: 1,
+            cryptographic_algorithm: 6,
+            cryptographic_length: 256,
+            private_usage_mask_present: 1,
+            public_usage_mask_present: 1,
+            reserved_0: 0,
+            reserved_1: 0,
+            private_usage_mask: 1,
+            public_usage_mask: 2,
+        }
+    }
+
+    #[test]
+    fn key_pair_v1_preserves_explicit_and_absent_attribute_groups() {
+        // KMIPKIT-0093-FR-011/013; KMIP 2.1 section 6.1.2.
+        let mut input = request();
+        let parsed = create_key_pair_request_v1(&raw const input).expect("valid semantic input");
+        assert!(parsed.has_common_attributes());
+        assert!(parsed.has_private_key_attributes());
+        assert!(parsed.has_public_key_attributes());
+        input.private_usage_mask_present = 0;
+        input.public_usage_mask_present = 0;
+        input.private_usage_mask = 0;
+        input.public_usage_mask = 0;
+        let parsed = create_key_pair_request_v1(&raw const input).expect("optional usage masks");
+        assert!(!parsed.has_private_key_attributes());
+        assert!(!parsed.has_public_key_attributes());
+    }
+
+    #[test]
+    fn key_pair_v1_rejects_invalid_record_fields_before_execution() {
+        let mut invalid = Vec::new();
+        let mut input = request();
+        input.struct_size = 0;
+        invalid.push(input);
+        input = request();
+        input.abi_version = 2;
+        invalid.push(input);
+        input = request();
+        input.reserved_0 = 1;
+        invalid.push(input);
+        input = request();
+        input.reserved_1 = 1;
+        invalid.push(input);
+        input = request();
+        input.private_usage_mask_present = 2;
+        invalid.push(input);
+        input = request();
+        input.public_usage_mask_present = 2;
+        invalid.push(input);
+        input = request();
+        input.private_usage_mask_present = 0;
+        invalid.push(input);
+        input = request();
+        input.public_usage_mask_present = 0;
+        invalid.push(input);
+        for (index, input) in invalid.into_iter().enumerate() {
+            assert!(
+                matches!(
+                    create_key_pair_request_v1(&raw const input),
+                    Err(ERROR_INVALID_INPUT)
+                ),
+                "invalid field case {index} was accepted"
+            );
+        }
+        assert!(matches!(
+            create_key_pair_request_v1(std::ptr::null()),
+            Err(ERROR_INVALID_INPUT)
+        ));
+        assert!(matches!(
+            create_key_pair_request_v1(std::ptr::dangling::<u8>().cast()),
+            Err(ERROR_INVALID_INPUT)
+        ));
+    }
 }

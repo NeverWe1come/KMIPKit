@@ -11,6 +11,10 @@ AES_GCM_CIPHERTEXT = bytes.fromhex("0c4f9f4b8e8cb63bcc04c4a6f6aa354de9b9f2469e1e
 AES_GCM_IV = bytes(range(12))
 AES_GCM_AAD = b"kmipkit-gcm-aad"
 AES_GCM_TAG = bytes.fromhex("b516ad2a79bf55d147482f13feed6ea6")
+SIGNATURE_PLAINTEXT = b"KMIPKit ECDSA signature journey"
+SIGNATURE_DATA = bytes.fromhex(
+    "3045022100aabbccddeeff0011223344556677889902210033445566778899aabbccddeeff0011"
+)
 
 
 def _aes_gcm_parameters() -> cryptographic_parameters.CryptographicParameters:
@@ -117,6 +121,100 @@ def execute_aes_gcm_journey(kmip_client: client.Client, limits: ttlv.CodecLimits
     print("python: fluent AES-GCM journey verified")
 
 
+def _ecdsa_sha256_parameters() -> cryptographic_parameters.CryptographicParameters:
+    builder = cryptographic_parameters.CryptographicParameters.builder()
+    try:
+        return (
+            builder.hashing_algorithm(protocol_values.HashingAlgorithm.SHA_256)
+            .digital_signature_algorithm(
+                protocol_values.DigitalSignatureAlgorithm.ECDSA_WITH_SHA256
+            )
+            .build()
+        )
+    finally:
+        builder.close()
+
+
+def execute_key_pair_signature_journey(
+    kmip_client: client.Client, limits: ttlv.CodecLimits
+) -> None:
+    created = (
+        kmip_client.request()
+        .create_key_pair()
+        .algorithm(protocol_values.CryptographicAlgorithm.ECDSA)
+        .length(256)
+        .private_usage_mask(protocol_values.CryptographicUsageMask.SIGN)
+        .public_usage_mask(protocol_values.CryptographicUsageMask.VERIFY)
+        .execute(limits)
+    )
+    try:
+        create_item = created.items[0]
+        assert create_item.operation == protocol_values.Operation.CREATE_KEY_PAIR
+        assert create_item.outcome is client.BatchOutcome.COMPLETED
+        assert create_item.result_status == 0
+        private_identifier = create_item.private_key_unique_identifier
+        public_identifier = create_item.public_key_unique_identifier
+        assert private_identifier is not None and public_identifier is not None
+    finally:
+        created.close()
+
+    parameters = _ecdsa_sha256_parameters()
+    try:
+        with kmip_client.request().sign() as builder:
+            signed = (
+                builder.unique_identifier(private_identifier)
+                .data(SIGNATURE_PLAINTEXT)
+                .cryptographic_parameters(parameters)
+                .execute(limits)
+            )
+        sign_response = None
+        try:
+            sign_item = signed.items[0]
+            sign_response = sign_item.sign_response
+            assert sign_item.operation == protocol_values.Operation.SIGN
+            assert sign_item.outcome is client.BatchOutcome.COMPLETED
+            assert sign_item.result_status == 0
+            assert sign_response is not None
+            assert sign_response.unique_identifier == private_identifier
+            assert sign_response.signature_data == SIGNATURE_DATA
+            signature = bytearray(sign_response.signature_data)
+        finally:
+            if sign_response is not None:
+                sign_response.response_ttlv.close()
+            signed.close()
+    finally:
+        parameters.close()
+
+    parameters = _ecdsa_sha256_parameters()
+    try:
+        with kmip_client.request().signature_verify() as builder:
+            verified = (
+                builder.unique_identifier(public_identifier)
+                .data(SIGNATURE_PLAINTEXT)
+                .signature_data(signature)
+                .cryptographic_parameters(parameters)
+                .execute(limits)
+            )
+        verify_response = None
+        try:
+            verify_item = verified.items[0]
+            verify_response = verify_item.signature_verify_response
+            assert verify_item.operation == protocol_values.Operation.SIGNATURE_VERIFY
+            assert verify_item.outcome is client.BatchOutcome.COMPLETED
+            assert verify_item.result_status == 0
+            assert verify_response is not None
+            assert verify_response.unique_identifier == public_identifier
+            assert verify_response.validity_indicator_raw == 1
+        finally:
+            if verify_response is not None:
+                verify_response.response_ttlv.close()
+            verified.close()
+    finally:
+        parameters.close()
+        signature[:] = bytes(len(signature))
+    print("python: fluent Create Key Pair/Sign/Signature Verify journey verified")
+
+
 def main() -> None:
     port = int(os.environ["KMIPKIT_CONSUMER_TEST_PORT"])
     fixtures = Path(os.environ["KMIPKIT_CONSUMER_TEST_FIXTURES"])
@@ -190,6 +288,7 @@ def main() -> None:
                 for result in results:
                     result.close()
             execute_aes_gcm_journey(kmip_client, limits)
+            execute_key_pair_signature_journey(kmip_client, limits)
 
 
 if __name__ == "__main__":

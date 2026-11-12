@@ -5,7 +5,7 @@
 - Branch: feature/KMIPKIT-0107-fluent-journeys.
 - Pre-flight audit: five end-to-end journeys are incomplete across the four languages; existing tests are per-operation or legacy-facade tests. See the read-only FR-013 audit in the parent task.
 - Tasks 1–6 are dependency ordered. Task 1 establishes the fixture contract and end-to-end lifecycle semantics consumed by tasks 2–5.
-- Constraints: do not modify generated output manually; no production behavior change except if an approved fluent contract gap is found, in which case report it instead of expanding this task.
+- Constraints: do not modify generated output manually. The maintainer's direct authorization to implement KMIPKIT-0093 covers a missing binding facade when it prevents an approved journey; record the gap and close it through its typed API and manifest before the fixture uses it.
 
 ## Task 2: AES-GCM journey
 
@@ -25,4 +25,10 @@
 - Red result: the Rust and C lifecycle/AES-GCM journeys passed, then the controlled listener rejected connection 7 because it expected Create Key Pair (`0x02`) but received the C lifecycle Create (`0x01`). The fixture now requires Create Key Pair, Sign (`0x21`), and Signature Verify (`0x22`) after the first two journeys in each language.
 - Contract: use ECDSA P-256 with explicit SIGN and VERIFY usage masks; set SHA-256 and ECDSA-with-SHA-256 in Cryptographic Parameters; Sign must use the private ID and Verify the public ID returned by Create Key Pair. The fixture returns the signature as encoded TTLV and a positive validity result.
 - Scope audit: the Rust fluent Create Key Pair builder exists, but the C, Java, and Python fluent request facades currently do not expose a semantic Create Key Pair constructor. The Green implementation must close that gap before using the operation in the four-language journey.
-- Status: Red complete; Green in progress.
+- Green implementation: Rust uses the existing fluent Create Key Pair builder; C now has semantic one-exchange Create Key Pair functions over a versioned input record; Java and Python expose `createKeyPair()` / `create_key_pair()` builders with typed algorithm, length and separate private/public usage masks. All four consumers then Sign and Signature Verify using explicit SHA-256 and ECDSA-with-SHA-256 parameters.
+- Fixture contract: ten ordered TLS 1.3/mTLS requests per language, 40 total. It checks ECDSA/256, SIGN on the private key, VERIFY on the public key, the identifiers returned by Create Key Pair, the signed bytes, signature and signature-verification parameters. It returns encoded TTLV responses containing the key identifiers, fixture signature and valid indicator.
+- Verification: `sh tests/consumers/0093-journeys/verify.sh` completed on Linux. Rust, C, Java and Python each completed Create Key Pair → Sign → Signature Verify after their lifecycle and AES-GCM journeys; the responder validated all 40 requests and exited successfully. C compiled with `-Wall -Wextra -Werror`.
+- Manifest: the API source now declares the C v1 input record and direct functions, the Java/Python operation builders, and the completed Rust/C/Java/Python mappings. `python3 tools/api_manifest/generate.py --check` and the full C/Java/Python export audit passed.
+- Contract regression checks: preserve the exact 12 journey-supported Rust declarations and the remaining 34 blocked paths; increase the approved declaration snapshot from 16,359 to 16,396 for the 37 added binding declarations. Local build mappings use the existing C batch-item constructor rather than an execution function.
+- Fresh verification: the 40-exchange journey passed again; Python fluent tests passed (27), Java facade tests passed (10), focused Python 3.12 manifest/fixture contracts passed (29), and FFI ABI validation tests passed (2). FFI Clippy with all features, including test targets, passed.
+- Status: Task 3 Red is committed and Green is verified. Separate Green/Refactor commits and the final ownership refactor evidence are recorded in `task-3-report.md`; exact-head CI remains outside this local task.

@@ -37,6 +37,22 @@ import org.junit.jupiter.api.Test;
 /** Checks the Java package shape while preserving the established extensions API. */
 final class FluentFacadeShapeTest {
     @Test
+    void keyPairBuilderRequiresExplicitAlgorithmAndLength() {
+        // KMIPKIT-0093-FR-011/013; KMIP 2.1 section 6.1.2 Create Key Pair.
+        CreateKeyPairBuilder builder = new CreateKeyPairBuilder(null);
+        assertThrows(InvalidInputException.class, builder::build);
+        builder.algorithm(6);
+        assertThrows(InvalidInputException.class, builder::build);
+        builder.length(256).privateUsageMask(1).publicUsageMask(2);
+        try (ClientBatchItem item = builder.toBatchItem()) {
+            assertEquals(2, item.operation());
+        }
+        assertThrows(InvalidInputException.class, () -> builder.algorithm(-1));
+        assertThrows(InvalidInputException.class, () -> builder.withOptions(null));
+        assertThrows(InvalidInputException.class, () -> builder.asynchronousIndicator(-1));
+    }
+
+    @Test
     void exposesTaskEntryPointAndRetainsLegacyClientType() throws Exception {
         assertNotNull(Class.forName("org.kmipkit.client.KmipClient"));
         assertNotNull(Class.forName("org.kmipkit.client.SymmetricKeyRequest"));

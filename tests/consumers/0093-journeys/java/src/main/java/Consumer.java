@@ -10,10 +10,12 @@ import org.kmipkit.extensions.ExtensionRegistryLimits;
 import org.kmipkit.extensions.RequestOptions;
 import org.kmipkit.extensions.TransportConfiguration;
 import org.kmipkit.extensions.UniqueIdentifier;
+import org.kmipkit.fluent.CreateKeyPairBuilder;
 import org.kmipkit.fluent.SymmetricKeyBuilder;
 import org.kmipkit.protocol.KmipValues;
 import org.kmipkit.protocol.CryptographicParameters;
 import org.kmipkit.ttlv.CodecLimits;
+import org.kmipkit.ttlv.TtlvStructure;
 
 public final class Consumer {
     private static final byte[] AES_GCM_PLAINTEXT = "KMIPKit AES-GCM journey".getBytes(java.nio.charset.StandardCharsets.UTF_8);
@@ -26,10 +28,16 @@ public final class Consumer {
     private static final byte[] AES_GCM_TAG = {
         (byte) 0xb5, 0x16, (byte) 0xad, 0x2a, 0x79, (byte) 0xbf, 0x55, (byte) 0xd1,
         0x47, 0x48, 0x2f, 0x13, (byte) 0xfe, (byte) 0xed, 0x6e, (byte) 0xa6};
+    private static final byte[] SIGNATURE_PLAINTEXT = "KMIPKit ECDSA signature journey".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+    private static final byte[] SIGNATURE_DATA = {
+        0x30, 0x45, 0x02, 0x21, 0x00, (byte) 0xaa, (byte) 0xbb, (byte) 0xcc, (byte) 0xdd,
+        (byte) 0xee, (byte) 0xff, 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, (byte) 0x88,
+        (byte) 0x99, 0x02, 0x21, 0x00, 0x33, 0x44, 0x55, 0x66, 0x77, (byte) 0x88, (byte) 0x99,
+        (byte) 0xaa, (byte) 0xbb, (byte) 0xcc, (byte) 0xdd, (byte) 0xee, (byte) 0xff, 0x00, 0x11};
 
     private Consumer() {}
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         int port = Integer.parseInt(System.getenv("KMIPKIT_CONSUMER_TEST_PORT"));
         Path fixtures = Path.of(System.getenv("KMIPKIT_CONSUMER_TEST_FIXTURES"));
         CodecLimits limits = CodecLimits.defaults();
@@ -84,6 +92,7 @@ public final class Consumer {
             }
             System.out.println("java: fluent Create/Get/Destroy journey verified");
             executeAesGcmJourney(kmipClient, limits);
+            executeKeyPairSignatureJourney(kmipClient, limits);
         }
     }
 
@@ -155,5 +164,72 @@ public final class Consumer {
             }
         }
         System.out.println("java: fluent AES-GCM journey verified");
+    }
+
+    private static void executeKeyPairSignatureJourney(KmipClient client, CodecLimits limits) throws Exception {
+        UniqueIdentifier privateIdentifier;
+        UniqueIdentifier publicIdentifier;
+        CreateKeyPairBuilder builder = client.request().createKeyPair()
+                    .algorithm(KmipValues.CryptographicAlgorithm.ECDSA).length(256)
+                    .privateUsageMask((int) KmipValues.CryptographicUsageMask.SIGN)
+                    .publicUsageMask((int) KmipValues.CryptographicUsageMask.VERIFY);
+        try (ClientBatchResponse created = builder.execute(limits);
+                ClientBatchItemResult item = created.itemAt(0)) {
+            if (!item.outcomeKind().isCompleted() || item.resultStatus() != 0) {
+                throw new IllegalStateException("Create Key Pair did not complete successfully");
+            }
+            ClientBatchItemResult.CreateKeyPairResponse response = item.createKeyPairResponse().orElseThrow();
+            privateIdentifier = response.privateKeyUniqueIdentifier();
+            publicIdentifier = response.publicKeyUniqueIdentifier();
+        }
+
+        byte[] signature;
+        try (CryptographicParameters.Builder parameterBuilder = CryptographicParameters.builder();
+                CryptographicParameters parameters = parameterBuilder
+                        .hashingAlgorithm(KmipValues.HashingAlgorithm.SHA_256)
+                        .digitalSignatureAlgorithm(KmipValues.DigitalSignatureAlgorithm.ECDSA_WITH_SHA256)
+                        .build();
+                ClientBatchResponse signed = client.request().sign()
+                        .uniqueIdentifier(privateIdentifier).data(SIGNATURE_PLAINTEXT)
+                        .cryptographicParameters(parameters).execute(limits);
+                ClientBatchItemResult item = signed.itemAt(0)) {
+            if (!item.outcomeKind().isCompleted() || item.resultStatus() != 0) {
+                throw new IllegalStateException("Sign did not complete successfully");
+            }
+            ClientBatchItemResult.SignResponse response = item.signResponse().orElseThrow();
+            if (!response.uniqueIdentifier().text().equals(privateIdentifier.text())) {
+                throw new IllegalStateException("Sign response returned the wrong key identifier");
+            }
+            try (TtlvStructure ignored = response.responseTtlv()) {
+                signature = response.signatureData().orElseThrow();
+            }
+            if (!Arrays.equals(signature, SIGNATURE_DATA)) {
+                throw new IllegalStateException("Sign response did not match the signature fixture");
+            }
+        }
+
+        try (CryptographicParameters.Builder parameterBuilder = CryptographicParameters.builder();
+                CryptographicParameters parameters = parameterBuilder
+                        .hashingAlgorithm(KmipValues.HashingAlgorithm.SHA_256)
+                        .digitalSignatureAlgorithm(KmipValues.DigitalSignatureAlgorithm.ECDSA_WITH_SHA256)
+                        .build();
+                ClientBatchResponse verified = client.request().signatureVerify()
+                        .uniqueIdentifier(publicIdentifier).data(SIGNATURE_PLAINTEXT)
+                        .signatureData(signature).cryptographicParameters(parameters).execute(limits);
+                ClientBatchItemResult item = verified.itemAt(0)) {
+            if (!item.outcomeKind().isCompleted() || item.resultStatus() != 0) {
+                throw new IllegalStateException("Signature Verify did not complete successfully");
+            }
+            ClientBatchItemResult.SignatureVerifyResponse response = item.signatureVerifyResponse().orElseThrow();
+            try (TtlvStructure ignored = response.responseTtlv()) {
+                if (!response.uniqueIdentifier().text().equals(publicIdentifier.text())
+                        || response.validityIndicatorRaw().orElse(-1) != 1) {
+                    throw new IllegalStateException("Signature Verify did not confirm the fixture signature");
+                }
+            }
+        } finally {
+            Arrays.fill(signature, (byte) 0);
+        }
+        System.out.println("java: fluent Create Key Pair/Sign/Signature Verify journey verified");
     }
 }

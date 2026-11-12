@@ -337,6 +337,172 @@ cleanup:
     return status;
 }
 
+static int32_t execute_key_pair_signature_journey(
+    kmipkit_client_t *client, kmipkit_codec_limits_t *limits) {
+    static const uint8_t message[] = "KMIPKit ECDSA signature journey";
+    static const uint8_t expected_signature[] = {
+        0x30, 0x45, 0x02, 0x21, 0x00, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff, 0x00, 0x11,
+        0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0x02, 0x21, 0x00, 0x33, 0x44,
+        0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff, 0x00, 0x11};
+    kmipkit_create_key_pair_request_v1_t request = {0};
+    kmipkit_cryptographic_parameters_fields_v1_t parameter_fields = {0};
+    kmipkit_cryptographic_parameters_t *parameters = NULL;
+    kmipkit_client_batch_response_t *create_response = NULL;
+    kmipkit_client_batch_response_t *sign_response = NULL;
+    kmipkit_client_batch_response_t *verify_response = NULL;
+    kmipkit_client_batch_item_response_t *create_item = NULL;
+    kmipkit_client_batch_item_response_t *sign_item = NULL;
+    kmipkit_client_batch_item_response_t *verify_item = NULL;
+    kmipkit_crypto_operation_builder_t *builder = NULL;
+    kmipkit_client_batch_item_metadata_v1_t metadata = {0};
+    kmipkit_unique_identifier_v1_t private_identifier = {0};
+    kmipkit_unique_identifier_v1_t public_identifier = {0};
+    kmipkit_unique_identifier_v1_t response_identifier = {0};
+    kmipkit_byte_span_v1_t data = {message, (uint64_t)(sizeof(message) - 1)};
+    kmipkit_byte_span_v1_t signature = {0};
+    kmipkit_byte_span_v1_t correlation = {0};
+    uint8_t pair_present = 0;
+    uint8_t present = 0;
+    uint8_t signature_present = 0;
+    uint8_t correlation_present = 0;
+    uint8_t validity_present = 0;
+    uint8_t recovered_present = 0;
+    uint32_t validity = 0;
+    kmipkit_byte_span_v1_t recovered = {0};
+    int32_t status = 0;
+    int32_t failure_step = 0;
+
+    request.struct_size = (uint32_t)sizeof(request);
+    request.abi_version = UINT32_C(1);
+    request.cryptographic_algorithm = UINT32_C(6);
+    request.cryptographic_length = INT32_C(256);
+    request.private_usage_mask_present = UINT8_C(1);
+    request.public_usage_mask_present = UINT8_C(1);
+    request.private_usage_mask = INT32_C(1);
+    request.public_usage_mask = INT32_C(2);
+    initialize_identifier_v1(&private_identifier);
+    initialize_identifier_v1(&public_identifier);
+    initialize_identifier_v1(&response_identifier);
+    /* KMIPKIT-0093-FR-011: invalid ABI records must fail before transport. */
+    request.abi_version = UINT32_C(0);
+    status = kmipkit_client_create_key_pair_v1(client, &request, limits, &create_response);
+    if (status != KMIPKIT_ERROR_INVALID_INPUT || create_response != NULL) return 114;
+    request.abi_version = UINT32_C(1);
+    request.private_usage_mask_present = UINT8_C(2);
+    status = kmipkit_client_create_key_pair_v1(client, &request, limits, &create_response);
+    if (status != KMIPKIT_ERROR_INVALID_INPUT || create_response != NULL) return 115;
+    request.private_usage_mask_present = UINT8_C(1);
+    failure_step = 1;
+    status = kmipkit_client_create_key_pair_v1(client, &request, limits, &create_response);
+    if (status != 0 || create_response == NULL) goto cleanup;
+    failure_step = 2;
+    status = kmipkit_client_batch_response_item_at(create_response, UINT64_C(0), &create_item);
+    metadata.struct_size = (uint32_t)sizeof(metadata);
+    metadata.abi_version = UINT32_C(1);
+    if (status != 0 || create_item == NULL) goto cleanup;
+    status = kmipkit_client_batch_item_response_metadata_v1(create_item, &metadata);
+    if (status != 0 || metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) goto cleanup;
+    status = kmipkit_client_batch_item_response_create_key_pair(
+        create_item, &pair_present, &private_identifier, &public_identifier);
+    if (status != 0 || pair_present != UINT8_C(1) ||
+        private_identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
+        private_identifier.text_data == NULL || public_identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
+        public_identifier.text_data == NULL) {
+        status = 110;
+        goto cleanup;
+    }
+    kmipkit_client_batch_item_response_release(create_item);
+    create_item = NULL;
+
+    parameter_fields.struct_size = (uint32_t)sizeof(parameter_fields);
+    parameter_fields.abi_version = UINT32_C(1);
+    parameter_fields.hashing_algorithm_present = UINT8_C(1);
+    parameter_fields.hashing_algorithm = UINT32_C(6);
+    parameter_fields.digital_signature_algorithm_present = UINT8_C(1);
+    parameter_fields.digital_signature_algorithm = UINT32_C(14);
+    failure_step = 3;
+    status = kmipkit_cryptographic_parameters_from_fields_v1(&parameter_fields, &parameters);
+    if (status != 0 || parameters == NULL) goto cleanup;
+
+    failure_step = 4;
+    status = kmipkit_sign_builder_create(&builder);
+    if (status == 0) status = kmipkit_crypto_operation_builder_set_unique_identifier(builder, &private_identifier);
+    if (status == 0) status = kmipkit_crypto_operation_builder_set_cryptographic_parameters(builder, parameters);
+    if (status == 0) status = kmipkit_crypto_operation_builder_set_data(builder, &data);
+    if (status == 0) status = kmipkit_crypto_operation_builder_execute_v1(builder, client, limits, &sign_response);
+    kmipkit_crypto_operation_builder_release(builder);
+    builder = NULL;
+    if (status != 0 || sign_response == NULL) goto cleanup;
+    failure_step = 5;
+    status = kmipkit_client_batch_response_item_at(sign_response, UINT64_C(0), &sign_item);
+    if (status != 0 || sign_item == NULL) goto cleanup;
+    metadata = (kmipkit_client_batch_item_metadata_v1_t){0};
+    metadata.struct_size = (uint32_t)sizeof(metadata);
+    metadata.abi_version = UINT32_C(1);
+    status = kmipkit_client_batch_item_response_metadata_v1(sign_item, &metadata);
+    if (status != 0 || metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) goto cleanup;
+    status = kmipkit_client_batch_item_response_sign(
+        sign_item, &present, &response_identifier, &signature_present, &signature,
+        &correlation_present, &correlation);
+    if (status != 0 || present != UINT8_C(1) || signature_present != UINT8_C(1) ||
+        correlation_present != UINT8_C(0) || response_identifier.text_data == NULL ||
+        response_identifier.text_length != private_identifier.text_length ||
+        memcmp(response_identifier.text_data, private_identifier.text_data,
+               (size_t)private_identifier.text_length) != 0 || signature.data == NULL ||
+        signature.length != (uint64_t)sizeof(expected_signature) ||
+        memcmp(signature.data, expected_signature, sizeof(expected_signature)) != 0) {
+        status = 111;
+        goto cleanup;
+    }
+
+    failure_step = 6;
+    status = kmipkit_signature_verify_builder_create(&builder);
+    if (status == 0) status = kmipkit_crypto_operation_builder_set_unique_identifier(builder, &public_identifier);
+    if (status == 0) status = kmipkit_crypto_operation_builder_set_cryptographic_parameters(builder, parameters);
+    if (status == 0) status = kmipkit_crypto_operation_builder_set_data(builder, &data);
+    if (status == 0) status = kmipkit_crypto_operation_builder_set_signature_data(builder, &signature);
+    if (status == 0) status = kmipkit_crypto_operation_builder_execute_v1(builder, client, limits, &verify_response);
+    kmipkit_crypto_operation_builder_release(builder);
+    builder = NULL;
+    if (status != 0 || verify_response == NULL) goto cleanup;
+    failure_step = 7;
+    status = kmipkit_client_batch_response_item_at(verify_response, UINT64_C(0), &verify_item);
+    if (status != 0 || verify_item == NULL) goto cleanup;
+    metadata = (kmipkit_client_batch_item_metadata_v1_t){0};
+    metadata.struct_size = (uint32_t)sizeof(metadata);
+    metadata.abi_version = UINT32_C(1);
+    status = kmipkit_client_batch_item_response_metadata_v1(verify_item, &metadata);
+    if (status != 0 || metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) goto cleanup;
+    status = kmipkit_client_batch_item_response_signature_verify(
+        verify_item, &present, &response_identifier, &validity_present, &validity,
+        &recovered_present, &recovered, &correlation_present, &correlation);
+    if (status != 0 || present != UINT8_C(1) || validity_present != UINT8_C(1) ||
+        validity != UINT32_C(1) || response_identifier.text_data == NULL ||
+        response_identifier.text_length != public_identifier.text_length ||
+        memcmp(response_identifier.text_data, public_identifier.text_data,
+               (size_t)public_identifier.text_length) != 0) {
+        status = 112;
+        goto cleanup;
+    }
+    failure_step = 0;
+    status = 0;
+
+cleanup:
+    if (status == 0 && failure_step != 0) status = 113;
+    kmipkit_client_batch_item_response_release(verify_item);
+    kmipkit_client_batch_response_release(verify_response);
+    kmipkit_client_batch_item_response_release(sign_item);
+    kmipkit_client_batch_response_release(sign_response);
+    kmipkit_client_batch_item_response_release(create_item);
+    kmipkit_client_batch_response_release(create_response);
+    kmipkit_crypto_operation_builder_release(builder);
+    kmipkit_cryptographic_parameters_release(parameters);
+    if (status == 0) puts("c: fluent Create Key Pair/Sign/Signature Verify journey verified");
+    else fprintf(stderr, "C key-pair signature journey failed at step %d (status %d)\n",
+                 failure_step, status);
+    return status;
+}
+
 int main(void) {
     kmipkit_codec_limits_t *limits = 0;
     kmipkit_extension_registry_limits_v1_t registry_limits = {0};
@@ -423,6 +589,7 @@ int main(void) {
     }
     if (status == 0) status = execute_key_lifecycle(client, limits);
     if (status == 0) status = execute_aes_gcm_journey(client, limits);
+    if (status == 0) status = execute_key_pair_signature_journey(client, limits);
 
     kmipkit_client_release(client);
     kmipkit_transport_config_release(transport_configuration);
