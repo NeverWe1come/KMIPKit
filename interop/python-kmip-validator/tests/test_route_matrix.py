@@ -1322,6 +1322,7 @@ class RouteMatrixTests(unittest.TestCase):
     def test_batch_primary_operation_routes_execute_without_workflow_step(self):
         case_id = 'test-batch-register-encrypt-decrypt-destroy'
         case = next(case for case in self.catalog['test_cases'] if case['case_id'] == case_id)
+        expected_operations = case['requires']['protocol_scenario']['operations']
         symbols = {
             'kmipkit.extensions.client_batch_item_create': 'KMIPKIT-ELEM-OP-C2S-CREATE',
             'kmipkit.extensions.client_batch_item_decrypt': 'KMIPKIT-ELEM-OP-C2S-DECRYPT',
@@ -1342,7 +1343,9 @@ class RouteMatrixTests(unittest.TestCase):
                 kind, event = self.runner._execute_matrix_cell(cell, case, target)
                 self.assertEqual('event', kind, event)
                 self.assertEqual('passed', event['status'])
-                self.assertEqual(1, event['peer_observed_result_status_codes'][0])
+                self.assertEqual(expected_operations, event['batch_operation_sequence'])
+                self.assertEqual(expected_operations, event['peer_observed_operation_sequence'])
+                self.assertEqual(len(expected_operations), event['peer_observed_response_count'])
 
     def test_batch_workflow_invokes_get_attribute_list_request_builder(self):
         case = next(case for case in self.catalog['test_cases']
