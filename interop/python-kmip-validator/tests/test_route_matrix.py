@@ -1295,7 +1295,7 @@ class RouteMatrixTests(unittest.TestCase):
 
         self.assertEqual(1, len(observed_peers))
         request_tree = self.runner._network_tree(observed_peers[0].requests[0], 'TTLV')
-        request_items = [value for tag, _, value in request_tree[0][2] if tag == 0x42000F]
+        request_items = self.runner._batch_message_items(request_tree)
         observed_operations = [
             protocol_values.Operation.name(next(value for field, _, value in item
                                                  if field == 0x42005C))
@@ -1305,6 +1305,11 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(len(operation_order), len(request_items))
         self.assertTrue(all(not any(tag == 0x420094 for tag, _, _ in item)
                             for item in request_items))
+        expected_batch_ids = [f"kmipkit-route-{index:02d}".encode('ascii').hex()
+                              for index in range(1, len(operation_order) + 1)]
+        observed_batch_ids = [next(value for tag, _, value in item if tag == 0x420093)
+                              for item in request_items]
+        self.assertEqual(expected_batch_ids, observed_batch_ids)
         self.assertEqual(operation_order, event['batch_operation_sequence'])
         self.assertEqual(operation_order, event['peer_observed_operation_sequence'])
         self.assertEqual(len(operation_order), event['batch_item_count'])
@@ -1513,6 +1518,39 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(2, len(report['events']))
         self.assertEqual({expected_digest}, {event['request_tree_sha256']
                                              for event in report['events']})
+
+    def test_native_batch_result_accessors_execute_against_controlled_responses(self):
+        symbols = {
+            'kmipkit.client.BatchItemResult.response_header_ttlv':
+                'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM',
+            'kmipkit.client.BatchItemResult.raw':
+                'KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-RAW-00000001',
+            'kmipkit.client.BatchItemResult.extension_count':
+                'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION',
+            'kmipkit.client.BatchItemResult.extension_ttlv_at':
+                'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION',
+            'kmipkit.client.BatchItemResult.supported_versions':
+                'KMIPKIT-PAYLOAD-CLIENT-DISCOVER-VERSIONS-RESPONSE-20-001',
+            'kmipkit.client.BatchResult.item_count':
+                'KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT',
+            'kmipkit.client.BatchResult.item_at':
+                'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM',
+        }
+        chosen = {}
+        for cell in iter_cells(self.catalog, self.manifest, languages=('python',)):
+            target_id = symbols.get(cell['public_api_symbol'])
+            if (target_id == cell['target_id'] and cell['protocol_version'] == '2.0'
+                    and cell['transport'] is None and cell['public_api_symbol'] not in chosen):
+                chosen[cell['public_api_symbol']] = cell
+        self.assertEqual(set(symbols), set(chosen))
+        cases = {case['case_id']: case for case in self.catalog['test_cases']}
+        targets = {target['target_id']: target for target in self.catalog['normative_targets']}
+        for symbol, cell in chosen.items():
+            with self.subTest(symbol=symbol):
+                outcome, event = self.runner._execute_matrix_cell(
+                    cell, cases[cell['case_id']], targets[cell['target_id']])
+                self.assertEqual('event', outcome, event)
+                self.assertEqual('passed', event['status'], event)
 
     def test_ci_requires_shared_changes_and_matrix_completeness(self):
         workflow = (ROOT / '.github/workflows/interop-python.yml').read_text()
