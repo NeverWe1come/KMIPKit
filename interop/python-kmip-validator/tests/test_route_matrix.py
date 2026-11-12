@@ -237,8 +237,25 @@ class RouteMatrixTests(unittest.TestCase):
         catalog['test_cases'] = [case]
         report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
         self.assertEqual([], gaps)
-        self.assertEqual(2, len(report['events']))
+        self.assertEqual(38, len(report['events']))
         self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
+    def test_cryptographic_parameter_models_cover_operation_payload_targets(self):
+        symbol = 'kmipkit.cryptographic_parameters.CryptographicParameters.into_ttlv'
+        cases = {case['case_id']: case for case in self.catalog['test_cases']}
+        targets = {target['target_id']: target for target in self.catalog['normative_targets']}
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
+                 if cell['public_api_symbol'] == symbol
+                 and targets[cell['target_id']].get('kind') == 'operation_payload_field'
+                 and targets[cell['target_id']].get('name') == 'Cryptographic Parameters']
+        outcomes = [self.runner._execute_matrix_cell(cell, cases[cell['case_id']],
+                                                     targets[cell['target_id']])
+                    for cell in cells]
+        gaps = [value for kind, value in outcomes if kind == 'gap']
+        events = [value for kind, value in outcomes if kind == 'event']
+        self.assertEqual([], gaps)
+        self.assertTrue(events)
+        self.assertTrue(all(event['status'] == 'passed' for event in events))
 
     def test_cryptographic_parameter_builder_executes_targeted_enum_value(self):
         case = next(case for case in self.catalog['test_cases']
