@@ -402,7 +402,6 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(set(symbols) <= trace.observed)
         self.assertEqual([protocol_values.ResultStatus.OPERATION_FAILED],
                          event['peer_observed_result_status_codes'])
-        self.assertNotEqual([protocol_values.ResultStatus.SUCCESS], event['peer_observed_result_status_codes'])
 
     def test_create_routes_validate_peer_rejection_and_all_wire_encodings(self):
         catalog = copy.deepcopy(self.catalog)
