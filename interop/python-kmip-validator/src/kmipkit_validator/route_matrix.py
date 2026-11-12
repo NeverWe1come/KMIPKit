@@ -1125,6 +1125,7 @@ _TICKET_TTLV_ROUTES = {
     'kmipkit.client.LoginResponse.ticket_ttlv',
 }
 _GET_ATTRIBUTE_LIST_RESPONSE_ROUTE = 'kmipkit.client.GetAttributeListResponse'
+_BATCH_ERROR_CONTINUATION_ROUTE = 'kmipkit.client.Batch.add_error_continuation_value'
 _BATCH_ITEM_RESULT_VALUE_ROUTES.update(
     'kmipkit.client.BatchItemResult.' + member
     for member in ('private_key_unique_identifier', 'split_key_unique_identifiers')
@@ -1556,6 +1557,44 @@ def _get_attribute_list_response_constructor_cell(cell: dict, target: dict,
             'response_tree_sha256': response_digest}
 
 
+def _batch_error_continuation_cell(cell: dict, case: dict, target: dict,
+                                  trace: CallTrace | None) -> dict:
+    """Append the exact catalogued Batch Error Continuation Option to a public Batch."""
+    from kmipkit import client
+
+    wire_value = _target_field(target, case.get('requires', {}), 'wire_value')
+    if wire_value is None and target.get('kind') == 'message_field':
+        _, _, elements = _catalog_model_data()
+        enum_parent_ids = {element_id for element_id, element in elements.items()
+                           if element.get('kind') == 'enumeration'
+                           and _normalized_name(element.get('name', ''))
+                           == _normalized_name(target.get('name', ''))}
+        value_element = next((element for element in elements.values()
+                              if element.get('kind') == 'enumeration_value'
+                              and _normalized_name(element.get('name', '')) == 'continue'
+                              and any(parent in enum_parent_ids
+                                      for parent in element.get('parent_element_ids', []))), None)
+        if value_element is not None:
+            wire_value = value_element.get('wire_value')
+    if not isinstance(wire_value, str):
+        raise RecipePending
+    try:
+        value = int(wire_value.replace('X', '0'), 16)
+    except ValueError as error:
+        raise RecipePending from error
+    with client.Batch.create() as batch:
+        if batch.add_error_continuation_value(value) is not batch:
+            raise ValueError('Batch option builder did not preserve its Batch handle')
+        if batch.item_count != 0:
+            raise ValueError('Batch option builder unexpectedly appended a batch item')
+        if trace is not None:
+            trace.record_invocation(cell['public_api_symbol'])
+        response_digest = digest({'batch_error_continuation_option': value,
+                                  'item_count': 0, 'target': target.get('target_id')})
+    return {'request_tree_sha256': response_digest,
+            'response_tree_sha256': response_digest}
+
+
 def _query_response_field_cell(cell: dict, target: dict,
                                trace: CallTrace | None) -> dict:
     """Read QueryResponse field count and indexed values in their original order."""
@@ -1648,6 +1687,8 @@ def execute_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | Non
             return _ticket_ttlv_cell(cell, target, trace)
         if cell['public_api_symbol'] == _GET_ATTRIBUTE_LIST_RESPONSE_ROUTE:
             return _get_attribute_list_response_constructor_cell(cell, target, trace)
+        if cell['public_api_symbol'] == _BATCH_ERROR_CONTINUATION_ROUTE:
+            return _batch_error_continuation_cell(cell, case, target, trace)
         if cell['public_api_symbol'] in _BATCH_ITEM_RESULT_VALUE_ROUTES:
             return _batch_item_result_value_cell(cell, case, target, trace)
         return _generic_cell(cell, case, target)
