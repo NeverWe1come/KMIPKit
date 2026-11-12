@@ -401,7 +401,8 @@ class ControlledTlsPeerTest {
                 "Every TTLV data type needs its installed constructor, item view, and decoder routes.");
         long bitmaskCaseCount = bitmaskFixtures.stream().map(BitmaskFixture::caseId).distinct().count();
         long dataTypeCaseCount = dataTypeFixtures.stream().map(DataTypeFixture::caseId).distinct().count();
-        assertEquals(7 + enumerationFixtures.size() + bitmaskCaseCount + dataTypeCaseCount,
+        assertEquals(7 + enumerationFixtures.size() + bitmaskCaseCount + dataTypeCaseCount
+                        + CREDENTIAL_TYPE_MODEL_CASE_IDS.size(),
                 report.path("case_ids").size());
         assertEquals("test-op-query", report.path("case_ids").get(0).asText());
         for (int index = 1; index < 6; index++) {
@@ -1377,6 +1378,8 @@ class ControlledTlsPeerTest {
 
         String modelRoute = CREDENTIAL_TYPE_MODEL_ROUTES.get(fixture.targetId());
         if (modelRoute == null) return;
+        String modelCaseId = CREDENTIAL_TYPE_MODEL_CASE_IDS.get(fixture.targetId());
+        String modelTargetId = CREDENTIAL_TYPE_MODEL_TARGET_IDS.get(fixture.targetId());
         String modelSymbol;
         String credentialTreeHash = normalizedTreeSha256(credentialValueWire(modelRoute));
         try (TtlvStructure structure = credentialValueStructure(modelRoute)) {
@@ -1409,7 +1412,7 @@ class ControlledTlsPeerTest {
                 default -> throw new IllegalStateException("Unknown Credential Value model route: " + modelRoute);
             }
         }
-        appendRouteEvent(events, fixture.caseId(), modelRoute, fixture.targetId(), modelSymbol,
+        appendRouteEvent(events, modelCaseId, modelRoute, modelTargetId, modelSymbol,
                 null, null, "construct", protocolVersion, null, credentialTreeHash, null);
     }
 
