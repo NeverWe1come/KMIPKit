@@ -7324,4 +7324,30 @@ mod tests {
             }
         }
     }
+
+    #[test]
+    fn operation_secret_tag_fixtures_do_not_change_key_wrapping_models() {
+        let catalog: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        let symbol = "kmipkit_protocol::KeyWrappingData::with_iv_counter_nonce";
+        let target = catalog["normative_targets"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|target| target["target_id"] == "KMIPKIT-ELEM-TAG-42003D")
+            .unwrap();
+        let expected = sample_for_route_at_version(symbol, target, elements, "2.1").unwrap();
+        let model = key_wrapping_metadata_model(symbol, target).unwrap();
+
+        assert!(
+            crate::local_wire::target_hash(&model, &expected).is_ok(),
+            "request-only secret type fixtures changed the Key Wrapping Data source"
+        );
+    }
 }
