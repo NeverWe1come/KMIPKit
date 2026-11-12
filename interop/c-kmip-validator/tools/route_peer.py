@@ -705,6 +705,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                         recipe = recipe_for_case(case, attribute_fixture)
                         if recipe is None:
                             continue
+                        placeholder_chain_recipe = recipe[1] == 'batch_placeholder_chain'
                         if version == '2.0' and case_id in ('test-op-discover-versions', 'test-op-login', 'test-op-get-constraints', 'test-op-ping'):
                             continue
                         observation, errors = [], []
@@ -716,7 +717,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                             port = server.getsockname()[1]
                             def serve():
                                 try:
-                                    exchange_count = 2 if recipe[1] == 'batch_placeholder_chain' else 1
+                                    exchange_count = 2 if placeholder_chain_recipe else 1
                                     accepted, _ = server.accept()
                                     stream = context.wrap_socket(accepted, server_side=True)
                                     for exchange_index in range(exchange_count):
@@ -739,7 +740,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         stream.settimeout(5)
                                         wire = read_request(stream, encoding, transport, initial)
                                         request_tree = codec.decode(wire, encoding)
-                                        cleanup_exchange = recipe[1] == 'batch_placeholder_chain' and exchange_index == 1
+                                        cleanup_exchange = placeholder_chain_recipe and exchange_index == 1
                                         if cleanup_exchange:
                                             assert_placeholder_cleanup_request(request_tree, version)
                                             response_operations = (19, 20)
@@ -755,7 +756,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         response_item_ids = None
                                         response_statuses = None
                                         response_reasons = None
-                                        if recipe[1] == 'batch_placeholder_chain':
+                                        if placeholder_chain_recipe:
                                             response_item_ids = (
                                                 (b'placeholder-revoke-cleanup', b'placeholder-destroy-cleanup')
                                                 if cleanup_exchange else
@@ -775,7 +776,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             attribute_fixture['attribute_response_wire'] if attribute_fixture else None,
                                             response_item_ids, response_statuses, response_reasons)
                                         response_tree = parse(response_wire)
-                                        if recipe[1] == 'batch_placeholder_chain':
+                                        if placeholder_chain_recipe:
                                             verify_placeholder_chain_response(response_tree, response_operations)
                                         else:
                                             verify_lifecycle(recipe[0], response_tree)
@@ -901,7 +902,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                for item in observation[1][0][2]
                                                if item[0] == 0x42000F]}
                                                if observation and len(observation) > 1 and
-                                               recipe[1] == 'batch_placeholder_chain' else {}),
+                                               placeholder_chain_recipe else {}),
                                            **attribute_check,
                                            **({'failure_code': code or 'peer_observation_missing'} if code or not observation else {})})
                             if not observation or code or run.returncode != 0:
@@ -984,7 +985,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                 if cell['action'] == 'send' and len(recipe[0]) > 1:
                                     operations = [next(t['name'] for t in catalog['normative_targets'] if t['kind'] == 'enumeration_value' and t.get('wire_value') == f'{op:08X}' and any(p.endswith('ENUMERATION-OPERATION') for p in t.get('parent_element_ids', []))) for op in recipe[0]]
                                     effects = (['created', 'activated', 'object_retrieved']
-                                               if recipe[1] == 'batch_placeholder_chain' else
+                                               if placeholder_chain_recipe else
                                                verify_lifecycle(recipe[0], response_tree))
                                     event.update(batch_operation_sequence=operations, batch_item_count=len(operations),
                                         peer_observed_operation_sequence=operations,

@@ -2201,15 +2201,18 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                 setup_response_item, &created_identifier_present,
                 &response_object_type, &created_identifier);
         }
-        bool chain_resolved = status == 0 && created_identifier_present &&
+        bool create_response_valid = status == 0 && created_identifier_present &&
             response_object_type == requested_object_type &&
             created_identifier.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING &&
             created_identifier.text_length != 0 && created_identifier.text_data &&
             create_metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS &&
             activate_metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS &&
-            get_metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS &&
-            activate_response_matches_created_key(activate_response_item, &created_identifier, &status) &&
+            get_metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS;
+        bool activate_response_valid = create_response_valid &&
+            activate_response_matches_created_key(activate_response_item, &created_identifier, &status);
+        bool get_response_valid = activate_response_valid &&
             get_response_matches_created_key(response_item, &created_identifier, &status);
+        bool chain_resolved = create_response_valid && activate_response_valid && get_response_valid;
         if (!chain_resolved) {
             outcome.library_failed = status != 0;
             outcome.library_validated = status == 0;
@@ -2217,6 +2220,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                      "KMIPKit did not resolve the Activate/Get placeholder chain to one object");
             goto cleanup;
         }
+        // The normative batch ends at Get; clean up in a second request with the returned ID.
         if (!cleanup_placeholder_chain_object(client, &created_identifier, &status)) {
             outcome.library_failed = status != 0;
             outcome.library_validated = status == 0;
