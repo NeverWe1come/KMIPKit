@@ -2520,6 +2520,40 @@ fn invoke_response_ttlv_route(
 }
 
 fn invoke_simple_protocol_route(symbol: &str, sample: &Item) -> Option<Result<Item>> {
+    if symbol == "kmipkit_protocol::CheckRequest::with_lease_time" {
+        return Some((|| {
+            let _request = kmipkit::protocol::CheckRequest::new().with_lease_time(1);
+            sample.try_clone().map_err(|_| "local copy failed")
+        })());
+    }
+
+    if symbol == "kmipkit_protocol::RevokeRequest::with_compromise_occurrence_date" {
+        return Some((|| {
+            let request = kmipkit::protocol::RevokeRequest::new(
+                kmipkit::protocol::RevocationReason::from_raw(1),
+            )
+            .with_compromise_occurrence_date(1);
+            if request.compromise_occurrence_date() != Some(1) {
+                return Err("Revoke Compromise Occurrence Date was not retained");
+            }
+            sample.try_clone().map_err(|_| "local copy failed")
+        })());
+    }
+
+    if symbol == "kmipkit_protocol::SetDefaultsRequest::with_defaults_information" {
+        return Some((|| {
+            let request = kmipkit::protocol::SetDefaultsRequest::new()
+                .with_defaults_information(kmipkit::ttlv::Structure::new());
+            let payload = request
+                .to_ttlv_payload()
+                .map_err(|_| "Set Defaults fixture rejected")?;
+            if payload.view().children().len() != 1 {
+                return Err("Set Defaults Information was not serialized");
+            }
+            sample.try_clone().map_err(|_| "local copy failed")
+        })());
+    }
+
     if symbol == "kmipkit_protocol::DerivationParameters::new" {
         return Some((|| {
             let _parameters = kmipkit::protocol::DerivationParameters::new();
@@ -6149,7 +6183,9 @@ mod tests {
                     .find(|target| target["target_id"] == target_id)
                     .unwrap();
                 let expected = sample_for_route_at_version(symbol, target, elements, "2.1")
-                    .unwrap_or_else(|error| panic!("{symbol} sample failed for {target_id}: {error}"));
+                    .unwrap_or_else(|error| {
+                        panic!("{symbol} sample failed for {target_id}: {error}")
+                    });
                 let result = invoke(symbol, &expected, target, elements, "2.1")
                     .unwrap_or_else(|| panic!("{symbol} route missing for {target_id}"))
                     .unwrap_or_else(|error| panic!("{symbol} rejected {target_id}: {error}"));
