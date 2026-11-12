@@ -5,10 +5,10 @@ use driver::Observed;
 use kmipkit::protocol::{
     ActivateRequest, ArchiveRequest, CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest,
     CryptographicParameters, CryptographicParametersBuilder, DecryptRequest, DestroyRequest,
-    EncryptRequest, HashRequest, JoinSplitKeyRequest, LoginRequest, LogoutRequest, MacRequest,
-    MacVerifyRequest, ObjectType, OperationData, QueryFunction, QueryRequest, RevocationReason,
-    RevokeRequest, SecretBytes, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
-    SplitKeyReference, UniqueIdentifier,
+    EncryptRequest, GetAttributeListRequest, HashRequest, JoinSplitKeyRequest, LoginRequest,
+    LogoutRequest, MacRequest, MacVerifyRequest, ObjectType, OperationData, QueryFunction,
+    QueryRequest, RevocationReason, RevokeRequest, SecretBytes, SignRequest,
+    SignatureVerifyRequest, SplitKeyMethod, SplitKeyReference, UniqueIdentifier,
 };
 use kmipkit::{Client, ClientBatch, ClientBatchItem, ClientRequest};
 
@@ -470,6 +470,7 @@ impl Attempt<'_> {
             vec![
                 adapters::create(&self.name)?,
                 ClientRequest::Activate(ActivateRequest::new(None)),
+                ClientRequest::GetAttributeList(GetAttributeListRequest::new(None)),
                 ClientRequest::Revoke(RevokeRequest::new(RevocationReason::CESSATION_OF_OPERATION)),
                 ClientRequest::Destroy(DestroyRequest::new(None)),
             ]
