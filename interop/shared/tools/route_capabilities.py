@@ -214,6 +214,36 @@ def _function_operation_id(function_id, operations):
     return max(matches, default=(0, None))[1]
 
 
+def _function_target_ids(function_id, operation_id, action, targets):
+    """Assign exact protocol targets to a public serializer or response reader."""
+    if operation_id:
+        return [operation_id] + sorted({target['target_id'] for target in targets
+            if target.get('operation_id') == operation_id
+            and target.get('role') == ('response' if action == 'decode' else 'request')})
+    if function_id in _BATCH_RESPONSE_TARGETS:
+        return _BATCH_RESPONSE_TARGETS[function_id]
+    credential_targets = credential_function_target_ids(function_id, targets)
+    if credential_targets is not None:
+        return credential_targets
+    value = normalized(function_id)
+    result = [target['target_id'] for target in targets
+        if target['kind'] not in _SCALAR_VALUE_KINDS
+        and _contains_name_tokens(target.get('name', ''), function_id)]
+    if re.search(r'(?:^|_)bytes(?:_|$)', function_id):
+        result.extend(target['target_id'] for target in targets
+            if target['kind'] == 'data_type' and normalized(target['name']) == 'bytestring')
+    if re.search(r'(?:^|_)text(?:_|$)', function_id):
+        result.extend(target['target_id'] for target in targets
+            if target['kind'] == 'data_type' and normalized(target['name']) == 'textstring')
+    if 'typedattribute' in value:
+        result.extend(target['target_id'] for target in targets
+            if target['kind'] in {'attribute', 'attribute_structure'})
+    if 'managedobject' in value:
+        result.extend(target['target_id'] for target in targets
+            if target['kind'] in {'object_type', 'object_structure'})
+    return sorted(set(result)) or ['*']
+
+
 def _async_execution_entrypoint(api, language, operation_name, package_symbols):
     expected = normalized(operation_name)
     for function in api['functions']:
@@ -530,34 +560,7 @@ def build_manifest(root=ROOT, commit='9a16cc90a12205101d22a38501a5e74c665df4dc')
             operation_id = _function_operation_id(function_id, operations)
             if operation_id and not operation_id.startswith('KMIPKIT-'):
                 operation_id = None
-            if operation_id:
-                target_ids = [operation_id] + sorted({target['target_id'] for target in targets
-                    if target.get('operation_id') == operation_id
-                    and target.get('role') == ('response' if action == 'decode' else 'request')})
-            elif function_id in _BATCH_RESPONSE_TARGETS:
-                target_ids = _BATCH_RESPONSE_TARGETS[function_id]
-            else:
-                credential_targets = credential_function_target_ids(function_id, targets)
-                if credential_targets is not None:
-                    target_ids = credential_targets
-                else:
-                    value = normalized(function_id)
-                    target_ids = [target['target_id'] for target in targets
-                        if target['kind'] not in _SCALAR_VALUE_KINDS
-                        and _contains_name_tokens(target.get('name', ''), function_id)]
-                    if re.search(r'(?:^|_)bytes(?:_|$)', function_id):
-                        target_ids.extend(target['target_id'] for target in targets
-                            if target['kind'] == 'data_type' and normalized(target['name']) == 'bytestring')
-                    if re.search(r'(?:^|_)text(?:_|$)', function_id):
-                        target_ids.extend(target['target_id'] for target in targets
-                            if target['kind'] == 'data_type' and normalized(target['name']) == 'textstring')
-                    if 'typedattribute' in value:
-                        target_ids.extend(target['target_id'] for target in targets
-                            if target['kind'] in {'attribute', 'attribute_structure'})
-                    if 'managedobject' in value:
-                        target_ids.extend(target['target_id'] for target in targets
-                            if target['kind'] in {'object_type', 'object_structure'})
-                    target_ids = sorted(set(target_ids)) or ['*']
+            target_ids = _function_target_ids(function_id, operation_id, action, targets)
             network = action == 'construct' and '_to_batch_item' in function_id
             mode = 'network' if network else 'local'
             family = 'generic-ttlv' if function_id.startswith('ttlv_') else 'typed-protocol'
