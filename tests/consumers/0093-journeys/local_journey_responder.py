@@ -10,16 +10,8 @@ import ssl
 import struct
 
 
-EXPECTED_CONSUMER_OPERATIONS = (
-    # Rust consumer: Create, Get, Destroy.
-    1, 10, 20,
-    # C consumer: Create, Get, Destroy.
-    1, 10, 20,
-    # Java consumer: Create, Get, Destroy.
-    1, 10, 20,
-    # Python consumer: Create, Get, Destroy.
-    1, 10, 20,
-)
+_AES_GCM_JOURNEY_OPERATIONS = (1, 10, 20, 1, 0x1F, 0x20, 20)
+EXPECTED_CONSUMER_OPERATIONS = _AES_GCM_JOURNEY_OPERATIONS * 4
 
 
 def _item(tag: int, item_type: int, value: bytes) -> bytes:
