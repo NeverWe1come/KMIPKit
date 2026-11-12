@@ -124,6 +124,32 @@ class CoverageMatrixTests(unittest.TestCase):
                          {routes[cell['route_id']]['api_level'] for cell in cells})
         self.assertFalse(any(cell['mode'] == 'network' for cell in cells))
 
+    def test_tag_enum_target_exclusions_apply_to_expanded_obligations(self):
+        reserved = 'KMIPKIT-ELEM-TAG-420009'
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('rust',))
+                 if cell['case_id'] == 'test-enum-tag' and cell['target_id'] == reserved]
+        route_ids = {cell['route_id'] for cell in cells}
+        self.assertNotIn('rust.generic-ttlv.item.new', route_ids)
+        self.assertNotIn('rust.generic-ttlv.function.ttlv_item_view_from_item', route_ids)
+        self.assertIn('rust.generic-ttlv.model.kmipkit.ttlv.rawtag.new', route_ids)
+        self.assertIn('rust.generic-ttlv.codec.decode', route_ids)
+
+    def test_single_item_omission_case_does_not_require_option_setters(self):
+        case_id = 'test-batch-single-item-options-omitted'
+        targets = {
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION',
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION',
+        }
+        case = next(case for case in self.catalog['test_cases'] if case['case_id'] == case_id)
+        self.assertEqual({'continuation_option': 'absent', 'order_option': 'absent'},
+                         case['requires']['protocol_scenario']['expected'])
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('c',))
+                 if cell['case_id'] == case_id]
+        self.assertFalse(any(cell['target_id'] in targets for cell in cells))
+        self.assertTrue(any(cell['target_id'] == 'KMIPKIT-ELEM-OP-C2S-GET'
+                            and cell['action'] == 'construct' and cell['mode'] == 'network'
+                            for cell in cells))
+
     def test_explicit_server_initiated_operation_target_is_not_overridden(self):
         operation_ids = _operation_ids(self.catalog)
         case = next(case for case in self.catalog['test_cases']

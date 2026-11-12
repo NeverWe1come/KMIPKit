@@ -18,6 +18,7 @@ _PROTOCOL_VERSION_TARGET_PREFIX = 'Protocol Version'
 _CREDENTIAL_OUTER_TARGET_ID = 'KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL'
 _CREDENTIAL_TYPE_TARGET_ID = 'KMIPKIT-ELEM-ENUMERATION-CREDENTIAL-TYPE'
 _CREDENTIAL_CONVERTER_SUFFIXES = ('_into_ttlv', '_try_from_ttlv', '_from_ttlv')
+_SCALAR_VALUE_KINDS = frozenset({'enumeration_value', 'bitmask_value', 'referenced_enum_value'})
 _SECRET_DATA_INAPPLICABLE_KEY_BLOCK_FIELDS = {
     'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-ALGORITHM',
     'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-LENGTH'}
@@ -47,6 +48,7 @@ def target_ids(targets, names, *, all_attributes=False, all_objects=False, opera
         changed = len(blocked) != previous
     names = {norm(name) for name in names}
     roots = {t['target_id'] for t in targets if t['target_id'] not in blocked | excluded
+        and t['kind'] not in _SCALAR_VALUE_KINDS
         and (norm(t['name']) in names or norm(t['target_id']) in names)}
     if all_attributes:
         roots.update(t['target_id'] for t in targets if t['target_id'] not in blocked | excluded
