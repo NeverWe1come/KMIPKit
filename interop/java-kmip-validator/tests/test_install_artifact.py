@@ -157,6 +157,14 @@ class InstalledRouteProbeWorkflowTests(unittest.TestCase):
         )
         self.assertIn("python3 -B -m unittest discover -s tests -p 'test_*.py' -v", content)
 
+    def test_java_workflow_does_not_supply_cli_controlled_ledger_paths(self):
+        workflow = Path(__file__).parents[3] / ".github" / "workflows" / "interop-java.yml"
+        content = workflow.read_text(encoding="utf-8")
+        compare_command = content.split("python3 tools/compare_route_ledger.py", maxsplit=1)[1].splitlines()[0]
+        self.assertEqual(compare_command.strip(), "")
+        self.assertNotIn("--reference", content)
+        self.assertNotIn("--generated", content)
+
 
 if __name__ == "__main__":
     unittest.main()
