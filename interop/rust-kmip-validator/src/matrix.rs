@@ -2329,6 +2329,85 @@ fn invoke_request_selector_route(
     })())
 }
 
+fn usage_limits_structure(target: &Json, elements: &[Json]) -> Result<kmipkit::ttlv::Structure> {
+    let target_item = sample(target, elements)?;
+    if target_item.tag().raw() == 0x0042_0095
+        && target["target_id"] != "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-34-USAGE-LIMITS"
+    {
+        return target_item
+            .as_structure()
+            .ok_or("Usage Limits fixture is not a Structure")?
+            .try_clone()
+            .map_err(|_| "Usage Limits target copy failed");
+    }
+    let mut structure = kmipkit::ttlv::Structure::new();
+    for (tag, value) in [
+        (0x0042_0096, Value::long_integer(1)),
+        (0x0042_0097, Value::long_integer(10)),
+        (0x0042_0098, Value::enumeration(1)),
+    ] {
+        let item = if target_item.tag().raw() == tag {
+            target_item
+                .try_clone()
+                .map_err(|_| "Usage Limits target copy failed")?
+        } else {
+            message_item(tag, value)?
+        };
+        structure
+            .try_push(item)
+            .map_err(|_| "Usage Limits fixture rejected")?;
+    }
+    Ok(structure)
+}
+
+fn invoke_login_usage_limits_route(
+    symbol: &str,
+    target: &Json,
+    elements: &[Json],
+) -> Option<Result<Item>> {
+    const ROUTES: &[&str] = &[
+        "kmipkit_protocol::DelegatedLoginRequest::with_usage_limits",
+        "kmipkit_protocol::LoginRequest::with_usage_limits",
+    ];
+    if !ROUTES.contains(&symbol) {
+        return None;
+    }
+    Some((|| {
+        let target_id = text(target, "target_id")?;
+        let usage_limits = usage_limits_structure(target, elements)?;
+        let payload = if symbol == "kmipkit_protocol::DelegatedLoginRequest::with_usage_limits" {
+            let mut rights = kmipkit::ttlv::Structure::new();
+            if target_id == "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-34-USAGE-LIMITS" {
+                rights
+                    .try_push(sample(target, elements)?)
+                    .map_err(|_| "Delegated Login Rights fixture rejected")?;
+            }
+            kmipkit::protocol::DelegatedLoginRequest::new(rights)
+                .with_usage_limits(usage_limits)
+                .into_ttlv_payload()
+                .map_err(|_| "Delegated Login request fixture rejected")?
+        } else {
+            kmipkit::protocol::LoginRequest::new()
+                .with_usage_limits(usage_limits)
+                .into_ttlv_payload()
+                .map_err(|_| "Login request fixture rejected")?
+        };
+        let model = request_payload_item(payload)?;
+        match metadata_expected_target(&model, target, elements) {
+            Ok(projection) => Ok(projection),
+            Err("metadata fixture target is missing")
+                if target_id == "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-34-USAGE-LIMITS" =>
+            {
+                let right_tag = parent_structure_tag(target, elements)
+                    .ok_or("Rights fixture parent tag is unavailable")?;
+                let right = message_structure(right_tag, vec![sample(target, elements)?])?;
+                metadata_expected_target(&right, target, elements)
+            }
+            Err(error) => Err(error),
+        }
+    })())
+}
+
 fn invoke_simple_protocol_route(symbol: &str, sample: &Item) -> Option<Result<Item>> {
     if symbol == "kmipkit_protocol::ManagedObject::unknown" {
         return Some((|| match kmipkit::protocol::ManagedObject::unknown(
@@ -2586,6 +2665,9 @@ fn invoke(
         return Some(result);
     }
     if let Some(result) = invoke_client_batch_route(symbol, sample) {
+        return Some(result);
+    }
+    if let Some(result) = invoke_login_usage_limits_route(symbol, target, elements) {
         return Some(result);
     }
     if let Some(result) = invoke_request_selector_route(symbol, sample, target, elements) {
@@ -3751,9 +3833,11 @@ mod tests {
                 let result = result
                     .unwrap()
                     .unwrap_or_else(|error| panic!("{symbol}: {error}"));
+                let projection = crate::local_wire::target_hash(&result, &expected);
                 assert!(
-                    crate::local_wire::target_hash(&result, &expected).is_ok(),
-                    "{symbol}"
+                    projection.is_ok(),
+                    "{symbol} {}: {projection:?}",
+                    target["target_id"]
                 );
             }
         }
@@ -3804,9 +3888,11 @@ mod tests {
                 let result = result
                     .unwrap()
                     .unwrap_or_else(|error| panic!("{symbol}: {error}"));
+                let projection = crate::local_wire::target_hash(&result, &expected);
                 assert!(
-                    crate::local_wire::target_hash(&result, &expected).is_ok(),
-                    "{symbol}"
+                    projection.is_ok(),
+                    "{symbol} {}: {projection:?}",
+                    target["target_id"]
                 );
             }
         }
