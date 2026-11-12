@@ -150,6 +150,64 @@ def _case_exclusions(root, commit, language, symbol):
             'reason': 'OASIS KMIP 2.0/2.1 §2.7 Table 8 defines Secret Data fields as Secret Data Type and Key Block, while §3.1 defines Cryptographic Algorithm and Cryptographic Length as properties of a key. The Secret Data factory therefore has no valid input for these key-only Key Block member cases.',
             'source_paths': source_paths,
         })
+    # KMIP 2.x models Attribute Reference as two alternative wire shapes.
+    # Keep each constructor's obligations scoped to the shape it can emit.
+    if language == 'rust' and symbol in {
+        'kmipkit_protocol::AttributeReference::name',
+        'kmipkit_protocol::AttributeReference::tag',
+    }:
+        source_paths = [
+            'crates/kmipkit-protocol/src/attribute_reference.rs',
+            'specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html',
+            'specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html',
+        ]
+        for source_path in source_paths:
+            source(root, commit, source_path)
+        if symbol.endswith('::name'):
+            target_ids = [
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-5-5-ATTRIBUTE-REFERENCE',
+                'KMIPKIT-ELEM-TAG-42013B',
+            ]
+            reason = ('OASIS KMIP 2.0 §5.5 Table 146 and OASIS KMIP 2.1 §5.5 Table 161 define Attribute Reference as Structure OR Enumeration. '
+                      'The name constructor emits only the Structure variant, so it cannot produce the Enumeration target or the generic tag fixture.')
+        else:
+            target_ids = [
+                'KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-5-ATTRIBUTE-REFERENCE',
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-5-5-ATTRIBUTE-NAME',
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-5-5-VENDOR-IDENTIFICATION',
+                'KMIPKIT-ELEM-TAG-42013B',
+            ]
+            reason = ('OASIS KMIP 2.0 §5.5 Table 146 and OASIS KMIP 2.1 §5.5 Table 161 define Attribute Reference as Structure OR Enumeration. '
+                      'The tag constructor emits only the Enumeration variant, so it cannot produce the named Structure fields or the generic tag fixture.')
+        exclusions.append({
+            'target_ids': target_ids,
+            'reason': reason,
+            'source_paths': source_paths,
+        })
+    timestamp_setter_sources = {
+        ('c', 'kmipkit_client_batch_set_request_time_stamp'): 'bindings/c/include/kmipkit.h',
+        ('rust', 'kmipkit_client::ClientBatch::with_request_time_stamp'):
+            'crates/kmipkit-client/src/execute.rs',
+    }
+    if (language, symbol) in timestamp_setter_sources:
+        source_paths = [
+            timestamp_setter_sources[(language, symbol)],
+            'specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html',
+            'specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html',
+        ]
+        for source_path in source_paths:
+            source(root, commit, source_path)
+        exclusions.append({
+            'target_ids': [
+                'KMIPKIT-ELEM-MESSAGE-FIELD-8-5-TIME-STAMP',
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-TIMESTAMP',
+            ],
+            'reason': ('OASIS KMIP 2.0/2.1 §§8.2, 8.5, 9.11, and 9.20 distinguish the Request Header Time Stamp '
+                       'Date-Time field from the response-header field and the Date Time Extended hashed-password '
+                       'Timestamp. This request-header setter cannot construct the response header or the distinct '
+                       'extended value; its assigned Time Stamp tag remains covered by the builder route.'),
+            'source_paths': source_paths,
+        })
     return exclusions
 
 

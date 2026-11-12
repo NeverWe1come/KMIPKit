@@ -199041,15 +199041,19 @@
           },
           "expected": {
             "first": "OperationFailed",
-            "second": "OperationUndone",
-            "response_count": 2
+            "second": "OperationFailed",
+            "response_count": 2,
+            "effects": [
+              "first_item_failed",
+              "second_item_not_executed"
+            ]
           },
           "mode": "server_exchange",
           "mutation": "read_only",
           "steps": [
             "send_two_items_with_first_failing",
             "inspect_each_result_status",
-            "verify_second_item_effect"
+            "verify_second_item_not_executed"
           ],
           "assertions": [
             "first_failure_is_reported",
@@ -199292,7 +199296,7 @@
           "execute_protocol_scenario",
           "send_two_items_with_first_failing",
           "inspect_each_result_status",
-          "verify_second_item_effect"
+          "verify_second_item_not_executed"
         ],
         "assertions": [
           "first_failure_is_reported",
@@ -199340,7 +199344,11 @@
           "expected": {
             "first": "OperationFailed",
             "second": "Success",
-            "response_count": 2
+            "response_count": 2,
+            "effects": [
+              "first_item_failed",
+              "second_item_executed"
+            ]
           },
           "mode": "server_exchange",
           "mutation": "read_only",
