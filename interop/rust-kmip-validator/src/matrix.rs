@@ -1465,15 +1465,16 @@ fn expected_tag_decode_rejection(
     if !(symbol.contains("codecdecode") || symbol.ends_with("ttlvdecode")) {
         return None;
     }
-    let case = catalog["test_cases"]
+    let _case = catalog["test_cases"]
         .as_array()?
         .iter()
         .find(|case| case["case_id"] == row["case_id"])?;
-    let requires = &case["requires"];
-    if !["tag", "tag_range"].contains(&requires["target_kind"].as_str()?) {
+    // An enum inventory case can expand to tag-range targets even though its own `requires`
+    // block describes the enum. Use the resolved normative target's allocation here.
+    if !["tag", "tag_range"].contains(&target["kind"].as_str()?) {
         return None;
     }
-    let rejection_code = match requires["allocation"].as_str()? {
+    let rejection_code = match target["allocation"].as_str()? {
         "reserved" => "tag_reserved",
         "unused" => "tag_not_allocated",
         _ => return None,
