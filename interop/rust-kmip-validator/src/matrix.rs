@@ -12,6 +12,14 @@ use std::{
 mod generated;
 
 const KEY_BLOCK_TAG: u32 = 0x0042_0040;
+const KEY_PAIR_ATTRIBUTE_ROUTES: &[&str] = &[
+    "kmipkit_protocol::CreateKeyPairRequest::with_common_attributes",
+    "kmipkit_protocol::CreateKeyPairRequest::with_private_key_attributes",
+    "kmipkit_protocol::CreateKeyPairRequest::with_public_key_attributes",
+    "kmipkit_protocol::RekeyKeyPairRequest::with_common_attributes",
+    "kmipkit_protocol::RekeyKeyPairRequest::with_private_key_attributes",
+    "kmipkit_protocol::RekeyKeyPairRequest::with_public_key_attributes",
+];
 const KEY_WRAPPING_CONSTRUCTOR_ROUTES: &[&str] = &[
     "kmipkit_protocol::EncryptionKeyInformation::try_new",
     "kmipkit_protocol::EncryptionKeyInformation::try_from_unique_identifier",
@@ -1892,6 +1900,20 @@ fn sample_for_route_at_version(
     {
         return crate::fixtures::object(text(target, "name")?).map(|(_, item, _)| item);
     }
+    if KEY_PAIR_ATTRIBUTE_ROUTES.contains(&symbol)
+        && target["kind"] == "structure_member"
+        && target["target_id"]
+            .as_str()
+            .is_some_and(|target_id| target_id.contains("ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES"))
+    {
+        return crate::driver::item(0x0042_002c, Value::integer(1));
+    }
+    if KEY_PAIR_ATTRIBUTE_ROUTES.contains(&symbol) && target["kind"] == "tag" {
+        return crate::driver::item(
+            target_wire_value(target)?,
+            Value::structure(kmipkit::ttlv::Structure::new()),
+        );
+    }
     if let Some(value_type) = symbol.strip_prefix("kmipkit_ttlv::Value::")
         && target["source_encoding"]
             .as_str()
@@ -2761,6 +2783,62 @@ fn invoke_cryptographic_parameters_route(symbol: &str, sample: &Item) -> Option<
     })())
 }
 
+fn invoke_key_pair_attribute_route(
+    symbol: &str,
+    sample: &Item,
+    target: &Json,
+) -> Option<Result<Item>> {
+    if !KEY_PAIR_ATTRIBUTE_ROUTES.contains(&symbol) {
+        return None;
+    }
+
+    Some((|| {
+        let group_attributes = if target["kind"] == "structure_member" {
+            kmipkit::protocol::AttributeSet::try_new([sample
+                .try_clone()
+                .map_err(|_| "key-pair attribute fixture copy failed")?])
+            .map_err(|_| "key-pair attribute fixture rejected")?
+        } else {
+            kmipkit::protocol::AttributeSet::new()
+        };
+        let payload = match symbol {
+            "kmipkit_protocol::CreateKeyPairRequest::with_common_attributes" => {
+                kmipkit::protocol::CreateKeyPairRequest::new()
+                    .with_common_attributes(group_attributes)
+                    .into_ttlv_payload()
+            }
+            "kmipkit_protocol::CreateKeyPairRequest::with_private_key_attributes" => {
+                kmipkit::protocol::CreateKeyPairRequest::new()
+                    .with_private_key_attributes(group_attributes)
+                    .into_ttlv_payload()
+            }
+            "kmipkit_protocol::CreateKeyPairRequest::with_public_key_attributes" => {
+                kmipkit::protocol::CreateKeyPairRequest::new()
+                    .with_public_key_attributes(group_attributes)
+                    .into_ttlv_payload()
+            }
+            "kmipkit_protocol::RekeyKeyPairRequest::with_common_attributes" => {
+                kmipkit::protocol::RekeyKeyPairRequest::new()
+                    .with_common_attributes(group_attributes)
+                    .into_ttlv_payload()
+            }
+            "kmipkit_protocol::RekeyKeyPairRequest::with_private_key_attributes" => {
+                kmipkit::protocol::RekeyKeyPairRequest::new()
+                    .with_private_key_attributes(group_attributes)
+                    .into_ttlv_payload()
+            }
+            "kmipkit_protocol::RekeyKeyPairRequest::with_public_key_attributes" => {
+                kmipkit::protocol::RekeyKeyPairRequest::new()
+                    .with_public_key_attributes(group_attributes)
+                    .into_ttlv_payload()
+            }
+            _ => return Err("unsupported key-pair attribute route"),
+        }
+        .map_err(|_| "key-pair attribute request rejected")?;
+        request_payload_item(payload)
+    })())
+}
+
 fn invoke_request_attributes_route(symbol: &str, sample: &Item) -> Option<Result<Item>> {
     const ROUTES: &[&str] = &[
         "kmipkit_protocol::CertifyRequest::with_attributes",
@@ -3014,6 +3092,9 @@ fn invoke(
         return Some(result);
     }
     if let Some(result) = invoke_certificate_request_builder_route(symbol, sample) {
+        return Some(result);
+    }
+    if let Some(result) = invoke_key_pair_attribute_route(symbol, sample, target) {
         return Some(result);
     }
     if let Some(result) = invoke_transparent_key_material_route(symbol, target, elements) {
@@ -6427,17 +6508,21 @@ mod tests {
                     .iter()
                     .find(|target| target["target_id"] == target_id)
                     .unwrap();
-                let expected = sample_for_route_at_version(symbol, target, elements, "2.1")
-                    .unwrap_or_else(|error| {
-                        panic!("{symbol} sample failed for {target_id}: {error}")
-                    });
-                let result = invoke(symbol, &expected, target, elements, "2.1")
-                    .unwrap_or_else(|| panic!("{symbol} route missing for {target_id}"))
-                    .unwrap_or_else(|error| panic!("{symbol} rejected {target_id}: {error}"));
-                assert!(
-                    crate::local_wire::target_hash(&result, &expected).is_ok(),
-                    "{symbol} changed {target_id}"
-                );
+                for protocol_version in target["protocol_versions"].as_array().unwrap() {
+                    let protocol_version = protocol_version.as_str().unwrap();
+                    let expected =
+                        sample_for_route_at_version(symbol, target, elements, protocol_version)
+                            .unwrap_or_else(|error| {
+                                panic!("{symbol} sample failed for {target_id}: {error}")
+                            });
+                    let result = invoke(symbol, &expected, target, elements, protocol_version)
+                        .unwrap_or_else(|| panic!("{symbol} route missing for {target_id}"))
+                        .unwrap_or_else(|error| panic!("{symbol} rejected {target_id}: {error}"));
+                    assert!(
+                        crate::local_wire::target_hash(&result, &expected).is_ok(),
+                        "{symbol} changed {target_id}"
+                    );
+                }
             }
         }
     }
