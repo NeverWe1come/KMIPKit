@@ -2050,6 +2050,16 @@ fn invoke(
     ]
     .contains(&symbol)
     {
+        if symbol == "kmipkit_ttlv::Structure::new" && sample.as_structure().is_none() {
+            return Some((|| {
+                let mut structure = kmipkit::ttlv::Structure::new();
+                structure
+                    .try_push(sample.try_clone().map_err(|_| "local copy failed")?)
+                    .map_err(|_| "structure insertion rejected")?;
+                let container_tag = parent_structure_tag(target, elements).unwrap_or(0x0042_0079);
+                crate::driver::item(container_tag, Value::structure(structure))
+            })());
+        }
         if symbol.ends_with("::try_push")
             && sample
                 .as_structure()
@@ -2472,7 +2482,9 @@ mod tests {
             .as_array()
             .unwrap()
             .iter()
-            .find(|target| target["target_id"] == "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-10-DATA-LENGTH")
+            .find(|target| {
+                target["target_id"] == "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-10-DATA-LENGTH"
+            })
             .unwrap();
         let symbol = "kmipkit_ttlv::Structure::new";
         let expected = sample_for_route(symbol, target, elements).unwrap();
