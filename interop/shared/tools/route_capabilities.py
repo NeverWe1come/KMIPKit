@@ -25,6 +25,28 @@ ROOT = Path(__file__).resolve().parents[3]
 COVERAGE = ROOT / 'interop/shared/coverage'
 LANGUAGES = ('rust', 'c', 'java', 'python')
 ASYNC = {'cancel', 'poll', 'process', 'queryasyncrequests'}
+_FUNCTION_TARGET_OVERRIDES = {
+    # OASIS KMIP 2.0/2.1 §§8.5, 9.5 define response Batch Count.
+    'client_batch_response_item_count': [
+        'KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT',
+        'KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT',
+    ],
+    # OASIS KMIP 2.0/2.1 §§8.6, 9.7 define response Batch Item.
+    'client_batch_response_item_at': [
+        'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM',
+        'KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM',
+    ],
+    'client_batch_add_error_continuation_value': [
+        'KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-CONTINUE-00000001',
+        'KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-EXTENSIONS-8XXXXXXX',
+        'KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-STOP-00000002',
+        'KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-UNDO-00000003',
+        'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION',
+        'KMIPKIT-ELEM-MESSAGE-FIELD-9-6-BATCH-ERROR-CONTINUATION-OPTION',
+        'KMIPKIT-ELEM-TAG-42000E',
+    ],
+}
+_FUNCTION_ROUTE_KIND_OVERRIDES = {'client_batch_add_error_continuation_value': 'construct'}
 
 CHECKED_TAG_INPUTS = {
     ('rust', 'kmipkit_ttlv::Item::new'): 'crates/kmipkit-ttlv/src/item.rs',
@@ -163,6 +185,8 @@ def _function_route_kind(function_id):
         return 'decode'
     if any(token in value for token in ('_to_ttlv', '_into_ttlv')):
         return 'encode'
+    if value in _FUNCTION_ROUTE_KIND_OVERRIDES:
+        return _FUNCTION_ROUTE_KIND_OVERRIDES[value]
     if '_to_batch_item' in value:
         return 'construct'
     return None
@@ -200,6 +224,36 @@ def _function_operation_id(function_id, operations):
         if any(_contains_token_sequence(function_tokens, variant) for variant in variants):
             matches.append((width, operation_id))
     return max(matches, default=(0, None))[1]
+
+
+def _function_target_ids(function_id, operation_id, action, targets):
+    """Assign exact protocol targets to a public serializer or response reader."""
+    if operation_id:
+        return [operation_id] + sorted({target['target_id'] for target in targets
+            if target.get('operation_id') == operation_id
+            and target.get('role') == ('response' if action == 'decode' else 'request')})
+    if function_id in _FUNCTION_TARGET_OVERRIDES:
+        return _FUNCTION_TARGET_OVERRIDES[function_id]
+    credential_targets = credential_function_target_ids(function_id, targets)
+    if credential_targets is not None:
+        return credential_targets
+    value = normalized(function_id)
+    result = [target['target_id'] for target in targets
+        if target['kind'] not in _SCALAR_VALUE_KINDS
+        and _contains_name_tokens(target.get('name', ''), function_id)]
+    if re.search(r'(?:^|_)bytes(?:_|$)', function_id):
+        result.extend(target['target_id'] for target in targets
+            if target['kind'] == 'data_type' and normalized(target['name']) == 'bytestring')
+    if re.search(r'(?:^|_)text(?:_|$)', function_id):
+        result.extend(target['target_id'] for target in targets
+            if target['kind'] == 'data_type' and normalized(target['name']) == 'textstring')
+    if 'typedattribute' in value:
+        result.extend(target['target_id'] for target in targets
+            if target['kind'] in {'attribute', 'attribute_structure'})
+    if 'managedobject' in value:
+        result.extend(target['target_id'] for target in targets
+            if target['kind'] in {'object_type', 'object_structure'})
+    return sorted(set(result)) or ['*']
 
 
 def _async_execution_entrypoint(api, language, operation_name, package_symbols):
@@ -518,32 +572,7 @@ def build_manifest(root=ROOT, commit='9a16cc90a12205101d22a38501a5e74c665df4dc')
             operation_id = _function_operation_id(function_id, operations)
             if operation_id and not operation_id.startswith('KMIPKIT-'):
                 operation_id = None
-            if operation_id:
-                target_ids = [operation_id] + sorted({target['target_id'] for target in targets
-                    if target.get('operation_id') == operation_id
-                    and target.get('role') == ('response' if action == 'decode' else 'request')})
-            else:
-                credential_targets = credential_function_target_ids(function_id, targets)
-                if credential_targets is not None:
-                    target_ids = credential_targets
-                else:
-                    value = normalized(function_id)
-                    target_ids = [target['target_id'] for target in targets
-                        if target['kind'] not in _SCALAR_VALUE_KINDS
-                        and _contains_name_tokens(target.get('name', ''), function_id)]
-                    if re.search(r'(?:^|_)bytes(?:_|$)', function_id):
-                        target_ids.extend(target['target_id'] for target in targets
-                            if target['kind'] == 'data_type' and normalized(target['name']) == 'bytestring')
-                    if re.search(r'(?:^|_)text(?:_|$)', function_id):
-                        target_ids.extend(target['target_id'] for target in targets
-                            if target['kind'] == 'data_type' and normalized(target['name']) == 'textstring')
-                    if 'typedattribute' in value:
-                        target_ids.extend(target['target_id'] for target in targets
-                            if target['kind'] in {'attribute', 'attribute_structure'})
-                    if 'managedobject' in value:
-                        target_ids.extend(target['target_id'] for target in targets
-                            if target['kind'] in {'object_type', 'object_structure'})
-                    target_ids = sorted(set(target_ids)) or ['*']
+            target_ids = _function_target_ids(function_id, operation_id, action, targets)
             network = action == 'construct' and '_to_batch_item' in function_id
             mode = 'network' if network else 'local'
             family = 'generic-ttlv' if function_id.startswith('ttlv_') else 'typed-protocol'
