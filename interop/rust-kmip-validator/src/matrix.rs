@@ -3457,6 +3457,64 @@ mod tests {
     }
 
     #[test]
+    fn client_batch_outcome_response_variants_execute_manifest_routes() {
+        // OASIS KMIP 2.0/2.1 §6 defines these typed operation responses.
+        let catalog: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let manifest: Json = serde_json::from_str(include_str!(
+            "../../shared/coverage/route-capabilities.json"
+        ))
+        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        let targets = catalog["normative_targets"].as_array().unwrap();
+        let symbols = [
+            "kmipkit_client::ClientBatchOutcome::Activate",
+            "kmipkit_client::ClientBatchOutcome::Archive",
+            "kmipkit_client::ClientBatchOutcome::DeriveKey",
+            "kmipkit_client::ClientBatchOutcome::Destroy",
+            "kmipkit_client::ClientBatchOutcome::GetUsageAllocation",
+            "kmipkit_client::ClientBatchOutcome::Recover",
+        ];
+
+        for symbol in symbols {
+            let route = manifest["routes"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|route| route["public_api_symbol"] == symbol)
+                .unwrap();
+            let target = route["normative_target_ids"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .filter_map(Json::as_str)
+                .filter_map(|target_id| {
+                    targets
+                        .iter()
+                        .find(|target| target["target_id"] == target_id)
+                })
+                .find(|target| target["kind"] == "operation")
+                .unwrap_or_else(|| panic!("{symbol} has no operation target"));
+            let expected = sample_for_route_at_version(symbol, target, elements, "2.1").unwrap();
+            let result = invoke(symbol, &expected, target, elements, "2.1");
+
+            assert!(result.is_some(), "{symbol} route is not executable");
+            let result = result
+                .unwrap()
+                .unwrap_or_else(|error| panic!("{symbol}: {error}"));
+            assert!(
+                crate::local_wire::target_hash(&result, &expected).is_ok(),
+                "{symbol}"
+            );
+        }
+    }
+
+    #[test]
     fn locate_storage_status_mask_executes_every_manifest_target() {
         // OASIS KMIP 2.0/2.1 §12.3 and §6.1.28 define the Storage Status Mask.
         let catalog: Json = serde_json::from_str(include_str!(
