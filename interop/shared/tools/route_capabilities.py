@@ -184,6 +184,31 @@ def _case_exclusions(root, commit, language, symbol):
             'reason': reason,
             'source_paths': source_paths,
         })
+    timestamp_setter_sources = {
+        ('c', 'kmipkit_client_batch_set_request_time_stamp'): 'bindings/c/include/kmipkit.h',
+        ('rust', 'kmipkit_client::ClientBatch::with_request_time_stamp'):
+            'crates/kmipkit-client/src/execute.rs',
+    }
+    if (language, symbol) in timestamp_setter_sources:
+        source_paths = [
+            timestamp_setter_sources[(language, symbol)],
+            'specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html',
+            'specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html',
+        ]
+        for source_path in source_paths:
+            source(root, commit, source_path)
+        exclusions.append({
+            'target_ids': [
+                'KMIPKIT-ELEM-MESSAGE-FIELD-8-5-TIME-STAMP',
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-TIMESTAMP',
+                'KMIPKIT-ELEM-TAG-420092',
+            ],
+            'reason': ('OASIS KMIP 2.0/2.1 §§8.2, 8.5, 9.11, and 9.20 distinguish the Request Header Time Stamp '
+                       'Date-Time field from the response-header field and the Date Time Extended hashed-password '
+                       'Timestamp. This request-header setter cannot construct the response header or the distinct '
+                       'extended value; generic TTLV routes cover the tag allocation.'),
+            'source_paths': source_paths,
+        })
     return exclusions
 
 

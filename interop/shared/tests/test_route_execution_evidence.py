@@ -425,6 +425,7 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
     def test_controlled_peer_evidence_preserves_repeated_batch_item_order(self):
         case = {
             "case_id": "batch-get-stop",
+            "category": "batch_workflows",
             "requires": {"protocol_scenario": {
                 "parameters": {"items": ["Get(missing)", "Get(existing)"]},
                 "expected": {"first": "OperationFailed", "second": "OperationUndone", "response_count": 2},
@@ -451,6 +452,23 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         event["peer_observed_result_status_codes"] = [0, 3]
         with self.assertRaisesRegex(ValueError, "per-item status outcomes"):
             _validate_batch_event(event, case, catalog, ("batch-get-stop",))
+
+    def test_async_lifecycle_steps_are_not_validated_as_a_single_batch(self):
+        case = {
+            "case_id": "test-async-lifecycle-poll",
+            "category": "asynchronous_workflows",
+            "requires": {"protocol_scenario": {
+                "parameters": {"operations_in_request_order": [
+                    "Create", "Query Asynchronous Requests", "Poll",
+                ]},
+                "expected": {"operation_order": [
+                    "Create", "Query Asynchronous Requests", "Poll",
+                ]},
+            }},
+        }
+        event = {"batch_operation_sequence": ["Poll"], "batch_item_count": 1}
+
+        _validate_batch_event(event, case, {}, ("async-poll",))
 
     def _four_language_fixture(self):
         reports = []
