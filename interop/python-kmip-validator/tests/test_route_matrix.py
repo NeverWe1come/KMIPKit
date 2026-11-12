@@ -120,6 +120,25 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(report['events'])
         self.assertEqual({expected}, {event['request_tree_sha256'] for event in report['events']})
 
+    def test_generic_enum_routes_read_each_value_from_its_normative_target(self):
+        catalog, manifest = self.integer_fixture()
+        catalog['test_cases'] = [next(case for case in self.catalog['test_cases']
+                                     if case['case_id'] == 'test-enum-adjustment-type')]
+        symbols = {'kmipkit.ttlv.ttlv_item_create', 'kmipkit.ttlv.ttlv_value_enumeration'}
+        manifest['routes'] = [route for route in manifest['routes']
+                              if route['language'] == 'python'
+                              and route['public_api_symbol'] in symbols]
+
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+
+        self.assertFalse(gaps)
+        self.assertEqual(8, len(report['events']))
+        self.assertEqual(symbols, {event['public_api_symbol'] for event in report['events']})
+        self.assertEqual({'KMIPKIT-ELEM-ENUM-VALUE-ADJUSTMENT-TYPE-' + name
+                          for name in ('DECREMENT-00000002', 'EXTENSIONS-80000000',
+                                       'INCREMENT-00000001', 'NEGATE-00000003')},
+                         {event['target_id'] for event in report['events']})
+
     def test_cryptographic_parameter_enum_setters_preserve_exact_values_and_types(self):
         names = ('BLOCK-CIPHER-MODE', 'PADDING-METHOD', 'HASHING-ALGORITHM', 'KEY-ROLE-TYPE',
                  'DIGITAL-SIGNATURE-ALGORITHM', 'CRYPTOGRAPHIC-ALGORITHM', 'MASK-GENERATOR')
