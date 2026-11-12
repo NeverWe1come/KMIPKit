@@ -2053,6 +2053,8 @@ def _batch_operations_for_case(cell: dict, case: dict) -> list[str] | None:
     """Read the catalog's explicit ordered single-message batch recipe."""
     if cell.get('execution_route_id') != 'python.execute.typed-batch':
         return None
+    if case.get('category') != 'batch_workflows':
+        return None
     scenario = case.get('requires', {}).get('protocol_scenario', {})
     parameters = scenario.get('parameters', {}) if isinstance(scenario, dict) else {}
     operations = parameters.get('operations_in_request_order', []) if isinstance(parameters, dict) else []
