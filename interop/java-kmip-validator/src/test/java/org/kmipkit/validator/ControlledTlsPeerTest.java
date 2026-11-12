@@ -504,6 +504,12 @@ class ControlledTlsPeerTest {
                         "Every KMIP Cryptographic Parameters builder value needs a public-call event: "
                                 + fixture.targetId());
             }
+            if ("BATCH-ERROR-CONTINUATION-OPTION".equals(fixture.parentName())) {
+                assertEquals(fixture.protocolVersions().size(),
+                        routeEventCount(report.path("events"), fixture.caseId(),
+                                "java.typed-protocol.function.client_batch_add_error_continuation_value"),
+                        "Every Batch Error Continuation Option value must reach the installed ClientBatch API.");
+            }
             if ("CREDENTIAL-TYPE".equals(fixture.parentName())) {
                 assertEquals(fixture.protocolVersions().size(),
                         routeEventCount(report.path("events"), fixture.caseId(), CREDENTIAL_TYPE_FROM_RAW_ROUTE),
