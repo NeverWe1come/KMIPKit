@@ -342,11 +342,7 @@ class RouteMatrixTests(unittest.TestCase):
                 for cell in iter_cells(catalog, self.manifest, languages=('python',))
                 if cell['route_id'] == 'python.typed-protocol.client.execute_poll']
 
-        sequential_runs = [
-            [self.runner._execute_matrix_cell(*job) for job in jobs]
-            for _ in range(2)
-        ]
-        for results in sequential_runs:
+        def assert_failed_polls(results):
             self.assertTrue(all(kind == 'event' and value['status'] == 'passed'
                                 for kind, value in results))
             self.assertTrue(all(value['peer_observed_result_status_codes'] ==
@@ -356,6 +352,13 @@ class RouteMatrixTests(unittest.TestCase):
                                 [protocol_values.ResultReason.INVALID_ASYNCHRONOUS_CORRELATION_VALUE]
                                 for _, value in results))
 
+        sequential_runs = [
+            [self.runner._execute_matrix_cell(*job) for job in jobs]
+            for _ in range(2)
+        ]
+        for results in sequential_runs:
+            assert_failed_polls(results)
+
         with ProcessPoolExecutor(max_workers=8, mp_context=get_context('spawn')) as executor:
             concurrent_runs = [
                 [future.result() for future in
@@ -363,14 +366,7 @@ class RouteMatrixTests(unittest.TestCase):
                 for _ in range(2)
             ]
         for results in concurrent_runs:
-            self.assertTrue(all(kind == 'event' and value['status'] == 'passed'
-                                for kind, value in results))
-            self.assertTrue(all(value['peer_observed_result_status_codes'] ==
-                                [protocol_values.ResultStatus.OPERATION_FAILED]
-                                for _, value in results))
-            self.assertTrue(all(value['peer_observed_result_reason_codes'] ==
-                                [protocol_values.ResultReason.INVALID_ASYNCHRONOUS_CORRELATION_VALUE]
-                                for _, value in results))
+            assert_failed_polls(results)
 
     def test_create_routes_validate_peer_rejection_and_all_wire_encodings(self):
         catalog = copy.deepcopy(self.catalog)
