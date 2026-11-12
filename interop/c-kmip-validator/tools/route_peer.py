@@ -70,6 +70,21 @@ class Codec:
     def tag(self, value):
         return int(value, 16) if value.startswith('0x') else self.tags[normalize(value)]
 
+    def _decode_named_bitmask(self, tag, text):
+        remaining = normalize(text)
+        value = 0
+        names = sorted(((name, bit) for (bitmask_tag, name), bit in self.values.items()
+                        if bitmask_tag == tag), key=lambda entry: len(entry[0]), reverse=True)
+        while remaining:
+            for name, bit in names:
+                if remaining.startswith(name):
+                    value |= bit
+                    remaining = remaining[len(name):]
+                    break
+            else:
+                raise ValueError('fixture_invalid_named_bitmask')
+        return value
+
     def scalar(self, tag, kind, value):
         if kind == 7:
             return str(value).encode()
@@ -85,18 +100,7 @@ class Codec:
             elif (tag, normalize(value)) in self.values:
                 value = self.values[(tag, normalize(value))]
             elif tag in self.bitmask_tags:
-                remaining = normalize(value)
-                value = 0
-                names = sorted(((name, bit) for (bitmask_tag, name), bit in self.values.items()
-                                if bitmask_tag == tag), key=lambda entry: len(entry[0]), reverse=True)
-                while remaining:
-                    for name, bit in names:
-                        if remaining.startswith(name):
-                            value |= bit
-                            remaining = remaining[len(name):]
-                            break
-                    else:
-                        raise ValueError('fixture_invalid_named_bitmask')
+                value = self._decode_named_bitmask(tag, value)
             else:
                 value = sum(self.values[(tag, normalize(part))] for part in value.split())
         size = 8 if kind in (3, 6, 9, 11) else 4
