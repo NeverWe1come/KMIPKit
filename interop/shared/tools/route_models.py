@@ -149,8 +149,8 @@ def credential_function_target_ids(function_id, targets):
 
 
 def secret_data_model_target_ids(targets, names, operation_id, object_item, object_type_targets):
-    """Return the Secret Data model subtree without Key Block-inapplicable fields."""
-    candidates = target_ids(targets, names, all_objects=object_item, operation_id=operation_id,
+    """Return only the Secret Data subtree and omit inapplicable Key Block fields."""
+    candidates = target_ids(targets, names, operation_id=operation_id,
         exclude_target_ids=object_type_targets if object_item else ())
     return sorted(set(candidates) - _SECRET_DATA_INAPPLICABLE_KEY_BLOCK_FIELDS)
 
