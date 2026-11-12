@@ -445,11 +445,17 @@ def verify_consumer_provenance(report, artifact_sha256, catalog_sha256):
         raise ValueError('consumer_artifact_provenance_mismatch')
 
 
-def case_for_controlled_exchange(case):
+def case_for_controlled_exchange(case, attribute_fixture=None):
     """Run opaque request constructors through the controlled peer."""
     if (case['case_id'] in CONTROLLED_PEER_LOCAL_MODEL_CASES
             and case.get('execution', {}).get('mode') == 'local_model'):
-        return {**case, 'execution': {**case['execution'], 'mode': 'server_exchange'}}
+        case = {**case, 'execution': {**case['execution'], 'mode': 'server_exchange'}}
+    if attribute_fixture is not None:
+        case = {**case, 'requires': {
+            **case.get('requires', {}),
+            'attribute_reference_tag': attribute_fixture['attribute_reference_tag'],
+            'attribute_response_type': attribute_fixture['attribute_response_type'],
+        }}
     return case
 
 
@@ -554,13 +560,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                             connection_path, catalog_path, result_path, trace_path = (directory / name for name in ('connection.json', 'catalog.json', 'result.json', 'calls.tsv'))
                             trace_path.unlink(missing_ok=True)
                             connection_path.write_text(json.dumps(config))
-                            peer_case = case_for_controlled_exchange(case)
-                            if attribute_fixture is not None:
-                                peer_case = {**peer_case, 'requires': {
-                                    **peer_case.get('requires', {}),
-                                    'attribute_reference_tag': attribute_fixture['attribute_reference_tag'],
-                                    'attribute_response_type': attribute_fixture['attribute_response_type'],
-                                }}
+                            peer_case = case_for_controlled_exchange(case, attribute_fixture)
                             catalog_path.write_text(json.dumps({**catalog, 'test_cases': [peer_case]}))
                             run = subprocess.run([str(binary.resolve()), 'run', '--connection', str(connection_path),
                                 '--catalog', str(catalog_path), '--allow-mutations', '--output', str(result_path)],

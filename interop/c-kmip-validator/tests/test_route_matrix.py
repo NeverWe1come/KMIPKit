@@ -692,6 +692,7 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual({check['constructor_variant'] for check in checks}, {'direct', 'standalone'})
         self.assertTrue(all(check['status'] == 'passed' for check in checks))
         self.assertTrue(all(check['request_attribute_reference_tags'] == ['420001'] for check in checks))
+        self.assertTrue(all(check['response_attribute_tags'] == ['420001'] for check in checks))
         for symbol in ('kmipkit_client_batch_item_get_attributes',
                        'kmipkit_client_batch_item_get_attributes_from_request'):
             self.assertTrue(any(event['public_api_symbol'] == symbol and event['action'] == 'send'
