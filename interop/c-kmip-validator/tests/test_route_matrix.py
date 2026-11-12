@@ -794,17 +794,21 @@ class RouteMatrixTests(unittest.TestCase):
                             for check in checks))
 
 
-    def test_batch_count_matches_two_independent_read_items(self):
+    def test_two_read_item_batch_count_and_id_correlation(self):
         from artifact_support import ROOT
         from route_peer import execute_network_cells
         catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
         manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
-        case_id = 'test-batch-count-matches-items'
+        case_ids = {
+            'test-batch-count-matches-items',
+            'test-batch-unique-item-id-response-correlation',
+            'test-batch-order-false-correlates-response-items',
+        }
         selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
-                                               if case['case_id'] == case_id]}
+                                               if case['case_id'] in case_ids]}
         events, _, checks = execute_network_cells(
             ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
-        self.assertEqual(len(checks), 12, 'two-item batch must pass both versions over all six wire transports')
+        self.assertEqual(len(checks), 36, 'all three two-item batch cases must pass on every version/transport cell')
         self.assertTrue(all(check['status'] == 'passed' for check in checks))
         expected_operations = {
             'KMIPKIT-ELEM-OP-C2S-GET', 'KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST',
@@ -813,8 +817,14 @@ class RouteMatrixTests(unittest.TestCase):
         for symbol in ('kmipkit_client_batch_item_get', 'kmipkit_client_batch_item_get_attribute_list'):
             self.assertTrue(any(event['public_api_symbol'] == symbol and event['action'] == 'send'
                                 for event in events), symbol)
-        self.assertTrue(all('kmipkit_client_execute' in check['public_api_trace_symbols']
-                            for check in checks))
+        for check in checks:
+            symbols = check['public_api_trace_symbols']
+            self.assertTrue({'kmipkit_client_execute', 'kmipkit_client_batch_response_item_count',
+                             'kmipkit_client_batch_response_item_at',
+                             'kmipkit_client_batch_item_response_unique_batch_item_id'} <= set(symbols))
+            expected_response_order = [12, 10] if check['case_id'] == \
+                'test-batch-order-false-correlates-response-items' else [10, 12]
+            self.assertEqual(check['peer_response_operation_values'], expected_response_order)
 
 
     def test_single_item_batch_omits_optional_batch_options(self):

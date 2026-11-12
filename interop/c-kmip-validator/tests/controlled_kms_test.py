@@ -33,7 +33,8 @@ def enumeration(tag: int, value: int) -> bytes:
 def response(operations: tuple[int, ...], protocol_minor: int,
              selected_attribute_tag: int = 0,
              created_object_type: int = 2,
-             selected_attribute_wire: bytes | None = None) -> bytes:
+             selected_attribute_wire: bytes | None = None,
+             unique_batch_item_ids: tuple[bytes, ...] | None = None) -> bytes:
     version = tlv(0x420069, 1,
                   integer(0x42006A, 2) + integer(0x42006B, protocol_minor))
     header = tlv(
@@ -124,18 +125,19 @@ def response(operations: tuple[int, ...], protocol_minor: int,
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 56:
             payload_value = tlv(0x420168, 1, b"")
-        unique_batch_item_id = {
-            3: b"interop-register",
-            1: b"interop-create",
-            11: b"interop-attributes",
-            12: b"interop-attributes",
-            20: b"interop-destroy",
-            10: b"interop-get",
-            9: b"interop-check",
-            18: b"interop-activate",
-            19: b"interop-revoke",
-            56: b"interop-get-constraints",
-        }.get(operation)
+        unique_batch_item_id = (unique_batch_item_ids[item_index]
+                                if unique_batch_item_ids is not None else {
+                                    3: b"interop-register",
+                                    1: b"interop-create",
+                                    11: b"interop-attributes",
+                                    12: b"interop-attributes",
+                                    20: b"interop-destroy",
+                                    10: b"interop-get",
+                                    9: b"interop-check",
+                                    18: b"interop-activate",
+                                    19: b"interop-revoke",
+                                    56: b"interop-get-constraints",
+                                }.get(operation))
         if operations == (1, 20, 19, 20):
             unique_batch_item_id = (
                 b"interop-create", b"interop-destroy-target",
@@ -255,9 +257,15 @@ def main() -> int:
     )
     expected_operations += (37, 38, 39)
     expected_operations += (1, 18, 12, 19, 20)
+    expected_operations += (10, 12, 10, 12, 10, 12)
     expected_cases += ("test-op-hash", "test-op-rng-retrieve", "test-op-rng-seed")
     expected_cases += ("test-neg-destroy-active-without-revoke",)
     expected_cases += ("test-batch-create-activate-destroy",)
+    expected_cases += (
+        "test-batch-count-matches-items",
+        "test-batch-unique-item-id-response-correlation",
+        "test-batch-order-false-correlates-response-items",
+    )
     if protocol_version == "2.0":
         expected_cases += (
             "test-op-get", "test-op-get-attributes", "test-op-get-attribute-list", "test-op-check",
@@ -323,6 +331,18 @@ def main() -> int:
                                 raise AssertionError("Check fixture must revoke the created key before destroying it")
                             if any(operation not in expected_operations for operation in operations):
                                 raise AssertionError(f"unexpected operation batch {operations!r} for {protocol_version}")
+                            two_read_batch = operations == (10, 12)
+                            response_operations = operations
+                            response_item_ids = None
+                            if two_read_batch:
+                                if (request.count(tlv(0x420094, 7, b"fixture-key-1")) != 2 or
+                                        request.count(tlv(0x420093, 8, b"item-a")) != 1 or
+                                        request.count(tlv(0x420093, 8, b"item-b")) != 1):
+                                    raise AssertionError("two-read batch omitted fixture or unique item IDs")
+                                response_item_ids = (b"item-a", b"item-b")
+                                if tlv(0x420010, 6, b"\x00") in request:
+                                    response_operations = tuple(reversed(operations))
+                                    response_item_ids = (b"item-b", b"item-a")
                             create_lifecycle = operations == (1, 20)
                             check_lifecycle = operations == (1, 9, 19, 20)
                             activate_lifecycle = operations == (1, 18, 19, 20)
@@ -409,8 +429,9 @@ def main() -> int:
                                     tlv(0x4200A1, 7, b"interop-password") not in request:
                                 raise AssertionError("request is missing configured KMIP credentials")
                             stream.sendall(response(
-                                operations, protocol_minor, selected_attribute_tag,
-                                4 if private_key_create else 3 if public_key_create else 2))
+                                response_operations, protocol_minor, selected_attribute_tag,
+                                4 if private_key_create else 3 if public_key_create else 2,
+                                unique_batch_item_ids=response_item_ids))
                             handled += len(operations)
                             handled_operations.extend(operations)
                             handled_batches.append(operations)
