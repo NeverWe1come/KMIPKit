@@ -1309,9 +1309,32 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual([protocol_values.ResultStatus.OPERATION_FAILED,
                           protocol_values.ResultStatus.SUCCESS],
                          event['peer_observed_result_status_codes'])
+        self.assertEqual(['first_item_failed', 'second_item_executed'],
+                         event['peer_observed_effects'])
         self.assertNotIn('peer_observed_result_reason_codes', event)
         self.assertEqual(2, event['batch_item_count'])
         self.assertTrue(set(symbols) <= trace.observed)
+
+    def test_batch_stop_continuation_records_the_unexecuted_later_item(self):
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-batch-stop-on-first-failure')
+        cell = next(cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
+                    if cell['case_id'] == case['case_id']
+                    and cell['action'] == 'send'
+                    and cell['public_api_symbol'] == 'kmipkit.extensions.client_batch_item_get'
+                    and cell['protocol_version'] == '2.1'
+                    and cell['encoding'] == 'TTLV'
+                    and cell['transport'] == 'raw_tls')
+        target = next(target for target in self.catalog['normative_targets']
+                      if target['target_id'] == cell['target_id'])
+
+        kind, event = self.runner._execute_matrix_cell(cell, case, target)
+
+        self.assertEqual('event', kind)
+        self.assertEqual('passed', event['status'])
+        self.assertEqual(['Get', 'Get'], event['batch_operation_sequence'])
+        self.assertEqual(['first_item_failed', 'second_item_not_executed'],
+                         event['peer_observed_effects'])
 
     def test_forward_placeholder_rejection_records_only_verified_local_state(self):
         from unittest.mock import patch
