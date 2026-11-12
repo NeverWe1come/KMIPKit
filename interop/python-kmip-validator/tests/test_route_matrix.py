@@ -803,6 +803,26 @@ class RouteMatrixTests(unittest.TestCase):
                 self.assertIn('request_tree_sha256', result)
                 self.assertEqual(result['request_tree_sha256'], result['response_tree_sha256'])
 
+    def test_typed_message_parsers_preserve_complete_request_and_response_trees(self):
+        cases = (
+            ('test-norm-message-field-message-field-8-2-protocol-version',
+             'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-PROTOCOL-VERSION',
+             'kmipkit.messages.RequestMessage.from_ttlv'),
+            ('test-norm-message-field-message-field-8-5-time-stamp',
+             'KMIPKIT-ELEM-MESSAGE-FIELD-8-5-TIME-STAMP',
+             'kmipkit.messages.ResponseMessage.from_ttlv'),
+        )
+        for case_id, target_id, symbol in cases:
+            with self.subTest(symbol=symbol):
+                case = next(case for case in self.catalog['test_cases']
+                            if case['case_id'] == case_id)
+                target = next(target for target in self.catalog['normative_targets']
+                              if target['target_id'] == target_id)
+                cell = {'action': 'decode', 'public_api_symbol': symbol, 'transport': None}
+                result = self.runner.execute_cell(cell, case, target)
+                self.assertIn('request_tree_sha256', result)
+                self.assertEqual(result['request_tree_sha256'], result['response_tree_sha256'])
+
     def test_query_routes_record_the_peer_rejection_without_calling_it_success(self):
         catalog = copy.deepcopy(self.catalog)
         catalog['test_cases'] = [case for case in self.catalog['test_cases']
