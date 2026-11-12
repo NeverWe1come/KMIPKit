@@ -2459,6 +2459,32 @@ mod tests {
     }
 
     #[test]
+    fn generic_structure_constructor_wraps_a_primitive_normative_target() {
+        let catalog: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        let target = catalog["normative_targets"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|target| target["target_id"] == "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-10-DATA-LENGTH")
+            .unwrap();
+        let symbol = "kmipkit_ttlv::Structure::new";
+        let expected = sample_for_route(symbol, target, elements).unwrap();
+        assert_ne!(expected.item_type(), kmipkit::ttlv::ItemType::Structure);
+
+        let result = invoke(symbol, &expected, target, elements, "2.1")
+            .expect("Structure::new route is executable")
+            .expect("Structure::new accepts the fixture child");
+        assert!(crate::local_wire::target_hash(&result, &expected).is_ok());
+    }
+
+    #[test]
     fn transparent_key_material_fixture_uses_its_normative_structure_type() {
         let catalog: Json = serde_json::from_str(include_str!(
             "../../shared/catalog/kmipkit-1.0-test-catalog.json"
