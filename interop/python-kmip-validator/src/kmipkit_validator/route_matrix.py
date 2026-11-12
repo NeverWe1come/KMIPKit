@@ -480,6 +480,22 @@ def _managed_object_tree(target: dict) -> list:
         key_material_ids.extend(parent for parent in element.get('parent_element_ids', [])
                                 if elements.get(parent, {}).get('kind') == 'object_structure'
                                 and elements[parent].get('name') == 'Key Material')
+        parent_names = {elements.get(parent, {}).get('name')
+                        for parent in element.get('parent_element_ids', [])}
+        if element.get('name') == 'Key Material' and 'Key Value' in parent_names:
+            key_material_ids.append(next((candidate['element_id'] for candidate in elements.values()
+                                          if candidate.get('kind') == 'object_structure'
+                                          and candidate.get('name') == 'Key Material'
+                                          and any(reference.get('section') == '3.4'
+                                                  for reference in candidate.get('source_refs', []))), ''))
+    elif ((kind == 'object_structure' and element.get('name') == 'Key Value')
+          or (kind == 'tag' and element.get('name') == 'Key Material')):
+        key_material_ids.append(next((candidate['element_id'] for candidate in elements.values()
+                                      if candidate.get('kind') == 'object_structure'
+                                      and candidate.get('name') == 'Key Material'
+                                      and any(reference.get('section') == '3.4'
+                                              for reference in candidate.get('source_refs', []))), ''))
+    key_material_ids = [element_id for element_id in key_material_ids if element_id]
     if key_material_ids:
         format_type, material_children = _managed_object_key_material(
             key_material_ids[0], elements,
