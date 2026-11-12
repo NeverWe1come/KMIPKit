@@ -150,6 +150,8 @@ def _case_exclusions(root, commit, language, symbol):
             'reason': 'OASIS KMIP 2.0/2.1 §2.7 Table 8 defines Secret Data fields as Secret Data Type and Key Block, while §3.1 defines Cryptographic Algorithm and Cryptographic Length as properties of a key. The Secret Data factory therefore has no valid input for these key-only Key Block member cases.',
             'source_paths': source_paths,
         })
+    # KMIP 2.x models Attribute Reference as two alternative wire shapes.
+    # Keep each constructor's obligations scoped to the shape it can emit.
     if language == 'rust' and symbol in {
         'kmipkit_protocol::AttributeReference::name',
         'kmipkit_protocol::AttributeReference::tag',
