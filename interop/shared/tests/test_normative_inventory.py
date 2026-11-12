@@ -740,6 +740,15 @@ class NormativeInventoryTests(unittest.TestCase):
         }
         self.assertEqual({"Prohibited", "Optional", "Mandatory"}, indicator_values)
 
+    def test_stop_batch_does_not_report_unexecuted_items_as_undone(self) -> None:
+        case = next(item for item in self.catalog["test_cases"]
+                    if item["case_id"] == "test-batch-stop-on-first-failure")
+        scenario = case["requires"]["protocol_scenario"]
+        self.assertEqual("Stop", scenario["parameters"]["batch_error_continuation_option"])
+        self.assertEqual("OperationFailed", scenario["expected"]["second"])
+        self.assertEqual(2, scenario["expected"]["response_count"])
+        self.assertIn("second_item_not_executed", scenario["expected"]["effects"])
+
     def test_every_assigned_bitmask_combination_is_a_required_local_case(self) -> None:
         expected_counts = {
             "Cryptographic Usage Mask": 1 << 16,
