@@ -124,6 +124,17 @@ class RouteCapabilitiesTests(unittest.TestCase):
                      if route['language'] == 'rust'
                      and route['public_api_symbol'] == 'kmipkit_protocol::SecretData::try_from_item')
         self.assertIn('KMIPKIT-ELEM-OBJECT-STRUCTURE-SECRET-DATA', route['normative_target_ids'])
+        root_objects = {
+            'KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE',
+            'KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE-REQUEST',
+            'KMIPKIT-ELEM-OBJECT-STRUCTURE-OPAQUE-OBJECT',
+            'KMIPKIT-ELEM-OBJECT-STRUCTURE-PGP-KEY',
+            'KMIPKIT-ELEM-OBJECT-STRUCTURE-PRIVATE-KEY',
+            'KMIPKIT-ELEM-OBJECT-STRUCTURE-PUBLIC-KEY',
+            'KMIPKIT-ELEM-OBJECT-STRUCTURE-SPLIT-KEY',
+            'KMIPKIT-ELEM-OBJECT-STRUCTURE-SYMMETRIC-KEY',
+        }
+        self.assertFalse(root_objects.intersection(route['normative_target_ids']))
         self.assertNotIn('KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-ALGORITHM',
                          route['normative_target_ids'])
         self.assertNotIn('KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-LENGTH',
