@@ -17,6 +17,7 @@ import org.kmipkit.extensions.UniqueIdentifier;
 import org.kmipkit.extensions.QueryResponse;
 import org.kmipkit.extensions.QueryResponseField;
 import org.kmipkit.extensions.QueryResponseFieldKind;
+import org.kmipkit.protocol.CryptographicParameters;
 import org.kmipkit.protocol.KmipValues;
 import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.RawTag;
@@ -295,7 +296,9 @@ class ControlledTlsPeerTest {
         }
         int enumerationEventCount = enumerationFixtures.stream()
                 .mapToInt(fixture -> fixture.protocolVersions().size()
-                        * (4 + (fixture.attribute() == null ? 0 : 3))).sum();
+                        * (4 + (fixture.attribute() == null ? 0 : 3)
+                                + (CRYPTOGRAPHIC_PARAMETER_BUILDER_ROUTES.containsKey(fixture.parentName())
+                                        ? 1 : 0))).sum();
         int bitmaskEventCount = bitmaskFixtures.stream()
                 .mapToInt(fixture -> fixture.protocolVersions().size() * (4 + (fixture.attribute() == null ? 0 : 3)))
                 .sum();
@@ -1235,8 +1238,43 @@ class ControlledTlsPeerTest {
                         fixture.rawTag(), TtlvItemType.Enumeration, value, wire,
                         protocolVersion, fixture.value());
                 appendTypedEnumerationRouteEvents(events, fixture, wire, protocolVersion, treeHash);
+                appendCryptographicParameterBuilderRouteEvent(events, fixture, protocolVersion, treeHash);
             }
         }
+    }
+
+    private static void appendCryptographicParameterBuilderRouteEvent(ArrayNode events,
+            EnumerationFixture fixture, String protocolVersion, String treeHash) {
+        String routeId = CRYPTOGRAPHIC_PARAMETER_BUILDER_ROUTES.get(fixture.parentName());
+        if (routeId == null) return;
+        String method = switch (fixture.parentName()) {
+            case "BLOCK-CIPHER-MODE" -> "blockCipherMode";
+            case "CRYPTOGRAPHIC-ALGORITHM" -> "cryptographicAlgorithm";
+            case "DIGITAL-SIGNATURE-ALGORITHM" -> "digitalSignatureAlgorithm";
+            case "HASHING-ALGORITHM" -> "hashingAlgorithm";
+            case "KEY-ROLE-TYPE" -> "keyRoleType";
+            case "MASK-GENERATOR" -> "maskGenerator";
+            case "PADDING-METHOD" -> "paddingMethod";
+            default -> throw new IllegalStateException("Unknown Cryptographic Parameters route: "
+                    + fixture.parentName());
+        };
+        try (CryptographicParameters.Builder builder = CryptographicParameters.builder()) {
+            CryptographicParameters.Builder returned = switch (method) {
+                case "blockCipherMode" -> builder.blockCipherMode(fixture.value());
+                case "cryptographicAlgorithm" -> builder.cryptographicAlgorithm(fixture.value());
+                case "digitalSignatureAlgorithm" -> builder.digitalSignatureAlgorithm(fixture.value());
+                case "hashingAlgorithm" -> builder.hashingAlgorithm(fixture.value());
+                case "keyRoleType" -> builder.keyRoleType(fixture.value());
+                case "maskGenerator" -> builder.maskGenerator(fixture.value());
+                case "paddingMethod" -> builder.paddingMethod(fixture.value());
+                default -> throw new IllegalStateException("Unknown Cryptographic Parameters builder method: "
+                        + method);
+            };
+            assertTrue(returned == builder, "The installed fluent setter must return its builder instance.");
+        }
+        appendRouteEvent(events, fixture.caseId(), routeId, fixture.targetId(),
+                "org.kmipkit.protocol.CryptographicParameters.Builder." + method, null, null,
+                "construct", protocolVersion, null, treeHash, null);
     }
 
     private static void appendTypedEnumerationRouteEvents(ArrayNode events, EnumerationFixture fixture,
