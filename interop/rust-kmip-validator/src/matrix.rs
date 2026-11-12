@@ -474,6 +474,52 @@ fn typed_attribute_marker(symbol: &str) -> Option<&str> {
     marker.split(['>', ':']).next()
 }
 
+fn typed_attribute_constructor_route(symbol: &str) -> bool {
+    symbol.contains("kmipkit_protocol::attribute::Attribute::<") && symbol.ends_with("::new")
+}
+
+fn typed_attribute_constructor_item(symbol: &str, elements: &[Json]) -> Result<Item> {
+    let marker = typed_attribute_marker(symbol).ok_or("typed attribute marker missing")?;
+    if normalized_name(marker) == "vendorattribute" {
+        return vendor_attribute_item();
+    }
+    let attribute = elements
+        .iter()
+        .find(|element| {
+            element["kind"] == "attribute"
+                && normalized_name(element["name"].as_str().unwrap_or_default())
+                    == normalized_name(marker)
+        })
+        .ok_or("typed attribute definition missing")?;
+    let attribute_id = text(attribute, "element_id")?;
+    let tag = attribute["parent_element_ids"]
+        .as_array()
+        .and_then(|parents| parents.first())
+        .and_then(Json::as_str)
+        .and_then(|parent| parent.strip_prefix("KMIPKIT-ELEM-TAG-"))
+        .and_then(|raw| u32::from_str_radix(raw, 16).ok())
+        .ok_or("typed attribute tag missing")?;
+    let value = if normalized_name(marker) == "vendorattribute" {
+        vendor_attribute_value()?
+    } else if attribute["source_encoding"] == "Structure" {
+        let mut fields = kmipkit::ttlv::Structure::new();
+        for member in elements.iter().filter(|element| {
+            element["kind"] == "structure_member"
+                && element["parent_element_ids"]
+                    .as_array()
+                    .is_some_and(|parents| parents.iter().any(|parent| parent == attribute_id))
+        }) {
+            fields
+                .try_push(sample(member, elements)?)
+                .map_err(|_| "typed attribute structure rejected")?;
+        }
+        Value::structure(fields)
+    } else {
+        sample(attribute, elements)?.with_value(value_to_owned)?
+    };
+    crate::driver::item(tag, value)
+}
+
 fn vendor_attribute_item() -> Result<Item> {
     crate::driver::item(0x0042_0008, vendor_attribute_value()?)
 }
@@ -1929,6 +1975,10 @@ fn sample_for_route_at_version(
         let value = unique_identifier_value_variant(value_type)?;
         return Item::new(source.tag(), value).map_err(|_| "Unique Identifier fixture rejected");
     }
+    if typed_attribute_constructor_route(symbol) {
+        let model = typed_attribute_constructor_item(symbol, elements)?;
+        return metadata_expected_target(&model, target, elements);
+    }
     if typed_attribute_marker(symbol) == Some("VendorAttribute") {
         let model = vendor_attribute_item()?;
         return metadata_expected_target(&model, target, elements);
@@ -3180,6 +3230,13 @@ fn invoke(
     elements: &[Json],
     protocol_version: &str,
 ) -> Option<Result<Item>> {
+    if typed_attribute_constructor_route(symbol) {
+        return Some((|| {
+            let model = typed_attribute_constructor_item(symbol, elements)?;
+            generated::execute(symbol, &model)
+                .ok_or("generated typed attribute constructor missing")?
+        })());
+    }
     if typed_attribute_marker(symbol) == Some("VendorAttribute") {
         return Some((|| {
             let model = vendor_attribute_item()?;
