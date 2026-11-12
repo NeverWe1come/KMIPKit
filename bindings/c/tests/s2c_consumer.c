@@ -17,7 +17,7 @@ typedef struct kmipkit_codec_limits_t kmipkit_codec_limits_t;
 typedef struct kmipkit_client_batch_item_t kmipkit_client_batch_item_t;
 typedef struct kmipkit_protocol_version_v1_t kmipkit_protocol_version_v1_t;
 typedef struct kmipkit_secret_bytes_t kmipkit_secret_bytes_t;
-typedef struct kmipkit_codec_limits_t kmipkit_codec_limits_t;
+typedef struct kmipkit_secret_text_t kmipkit_secret_text_t;
 
 typedef struct {
     const uint8_t *data;
@@ -165,12 +165,18 @@ extern int32_t kmipkit_server_put_object_field_read(
     uint32_t *out_enumeration,
     int32_t *out_integer,
     kmipkit_server_put_object_t **out_child,
-    kmipkit_secret_bytes_t **out_secret);
+    kmipkit_secret_bytes_t **out_secret,
+    kmipkit_secret_text_t **out_secret_text);
 extern int32_t kmipkit_secret_bytes_with_bytes(
     kmipkit_secret_bytes_t *secret,
     void (*callback)(const uint8_t *, uint64_t, void *),
     void *context);
 extern void kmipkit_secret_bytes_release(kmipkit_secret_bytes_t *secret);
+extern int32_t kmipkit_secret_text_with_str(
+    kmipkit_secret_text_t *secret,
+    void (*callback)(const uint8_t *, uint64_t, void *),
+    void *context);
+extern void kmipkit_secret_text_release(kmipkit_secret_text_t *secret);
 extern void kmipkit_server_put_object_release(kmipkit_server_put_object_t *object);
 extern int32_t kmipkit_codec_limits_defaults(kmipkit_codec_limits_t **out_limits);
 extern void kmipkit_codec_limits_release(kmipkit_codec_limits_t *limits);
@@ -181,6 +187,13 @@ static void kmipkit_check_test_secret(const uint8_t *bytes, uint64_t length, voi
     uint32_t *valid = (uint32_t *)context;
     static const uint8_t expected[] = { 0x11u, 0x22u, 0x33u, 0x44u };
     *valid = (length == sizeof(expected) && memcmp(bytes, expected, sizeof(expected)) == 0) ? 1u : 0u;
+}
+
+static void kmipkit_check_test_secret_text(const uint8_t *bytes, uint64_t length, void *context) {
+    uint32_t *valid = (uint32_t *)context;
+    static const uint8_t expected[] = "s3cr3t";
+    *valid = (length == sizeof(expected) - 1u &&
+        memcmp(bytes, expected, sizeof(expected) - 1u) == 0) ? 1u : 0u;
 }
 
 _Static_assert(
@@ -195,17 +208,19 @@ int32_t kmipkit_s2c_consumer_receives_put_and_sends_response(
     kmipkit_start_test_client_fn start_client, void *context) {
     uint16_t port = 0u;
     uint32_t operation = 0u, put_function = 0u, object_type = 0u;
-    uint32_t key_format = 0u, secret_valid = 0u;
+    uint32_t key_format = 0u, secret_valid = 0u, secret_text_valid = 0u;
     uint64_t batch_count = 0u;
     uint8_t present = 0u, item_type = 0u;
     kmipkit_server_put_object_t *object = NULL, *key_block = NULL, *key_value = NULL;
+    kmipkit_server_put_object_t *password_object = NULL;
     kmipkit_secret_bytes_t *secret = NULL;
+    kmipkit_secret_text_t *secret_text = NULL;
     kmipkit_server_listener_config_t *configuration = NULL;
     kmipkit_server_listener_t *listener = NULL;
     kmipkit_server_connection_t *connection = NULL;
     kmipkit_server_incoming_batch_t *batch = NULL;
     kmipkit_codec_limits_t *limits = NULL;
-    kmipkit_server_request_item_t *request = NULL;
+    kmipkit_server_request_item_t *request = NULL, *password_request = NULL;
     kmipkit_server_response_builder_t *builder = NULL;
     kmipkit_server_response_item_t *response_item = NULL;
     kmipkit_server_response_t *response = NULL;
@@ -235,7 +250,7 @@ int32_t kmipkit_s2c_consumer_receives_put_and_sends_response(
     status = kmipkit_server_connection_recv_batch(connection, limits, 5u, 0u, &batch);
     if (status != 0 || batch == NULL) goto cleanup;
     status = kmipkit_server_incoming_batch_count(batch, &batch_count);
-    if (status != 0 || batch_count != 1u) { status = 101; goto cleanup; }
+    if (status != 0 || batch_count != 2u) { status = 101; goto cleanup; }
     status = kmipkit_server_incoming_batch_item_at(batch, 0u, &request);
     if (status != 0) goto cleanup;
     status = kmipkit_server_request_item_operation(request, &operation);
@@ -247,22 +262,38 @@ int32_t kmipkit_s2c_consumer_receives_put_and_sends_response(
     status = kmipkit_server_put_object_type(object, &object_type);
     if (status != 0 || object_type != 2u) { status = 104; goto cleanup; }
     status = kmipkit_server_put_object_field_read(object, 0x00420040u, 6u,
-        &present, &item_type, NULL, NULL, &key_block, NULL);
+        &present, &item_type, NULL, NULL, &key_block, NULL, NULL);
     if (status != 0 || present != 1u || key_block == NULL || item_type != 1u) { status = 105; goto cleanup; }
     status = kmipkit_server_put_object_field_read(key_block, 0x00420042u, 3u,
-        &present, &item_type, &key_format, NULL, NULL, NULL);
+        &present, &item_type, &key_format, NULL, NULL, NULL, NULL);
     if (status != 0 || present != 1u || key_format != 1u) { status = 106; goto cleanup; }
     status = kmipkit_server_put_object_field_read(key_block, 0x00420045u, 6u,
-        &present, &item_type, NULL, NULL, &key_value, NULL);
+        &present, &item_type, NULL, NULL, &key_value, NULL, NULL);
     if (status != 0 || present != 1u || key_value == NULL || item_type != 1u) { status = 107; goto cleanup; }
     status = kmipkit_server_put_object_field_read(key_value, 0x00420043u, 5u,
-        &present, &item_type, NULL, NULL, NULL, &secret);
+        &present, &item_type, NULL, NULL, NULL, &secret, NULL);
     if (status != 0 || present != 1u || secret == NULL || item_type != 8u) { status = 108; goto cleanup; }
     if (kmipkit_secret_bytes_with_bytes(secret, NULL, NULL) != KMIPKIT_ERROR_INVALID_INPUT) {
         status = 109; goto cleanup;
     }
     status = kmipkit_secret_bytes_with_bytes(secret, kmipkit_check_test_secret, &secret_valid);
     if (status != 0 || secret_valid != 1u) { status = 110; goto cleanup; }
+    status = kmipkit_server_incoming_batch_item_at(batch, 1u, &password_request);
+    if (status != 0) goto cleanup;
+    status = kmipkit_server_request_item_operation(password_request, &operation);
+    if (status != 0 || operation != 0x0000001Cu) { status = 112; goto cleanup; }
+    status = kmipkit_server_request_item_put_object(password_request, &password_object);
+    if (status != 0 || password_object == NULL) goto cleanup;
+    status = kmipkit_server_put_object_type(password_object, &object_type);
+    if (status != 0 || object_type != 13u) { status = 113; goto cleanup; }
+    status = kmipkit_server_put_object_field_read(password_object, 0x004200A1u, 7u,
+        &present, &item_type, NULL, NULL, NULL, NULL, &secret_text);
+    if (status != 0 || present != 1u || secret_text == NULL || item_type != 7u) { status = 114; goto cleanup; }
+    if (kmipkit_secret_text_with_str(secret_text, NULL, NULL) != KMIPKIT_ERROR_INVALID_INPUT) {
+        status = 115; goto cleanup;
+    }
+    status = kmipkit_secret_text_with_str(secret_text, kmipkit_check_test_secret_text, &secret_text_valid);
+    if (status != 0 || secret_text_valid != 1u) { status = 116; goto cleanup; }
     status = kmipkit_server_response_builder_create(batch, &builder);
     if (status != 0) goto cleanup;
     status = kmipkit_server_response_builder_add_failure(builder, request, 0u, 1u, 1u,
@@ -272,19 +303,28 @@ int32_t kmipkit_s2c_consumer_receives_put_and_sends_response(
     if (status != 0) goto cleanup;
     status = kmipkit_server_response_builder_add_success(builder, request, response_item);
     if (status != 0) goto cleanup;
+    kmipkit_server_response_item_release(response_item);
+    response_item = NULL;
+    status = kmipkit_server_put_response_create(password_request, &response_item);
+    if (status != 0) goto cleanup;
+    status = kmipkit_server_response_builder_add_success(builder, password_request, response_item);
+    if (status != 0) goto cleanup;
     status = kmipkit_server_response_builder_build(builder, &response);
     if (status != 0) goto cleanup;
     status = kmipkit_server_connection_send_response(connection, response, 5u, 0u);
 
 cleanup:
     if (secret != NULL) kmipkit_secret_bytes_release(secret);
+    if (secret_text != NULL) kmipkit_secret_text_release(secret_text);
     if (key_value != NULL) kmipkit_server_put_object_release(key_value);
     if (key_block != NULL) kmipkit_server_put_object_release(key_block);
     if (object != NULL) kmipkit_server_put_object_release(object);
+    if (password_object != NULL) kmipkit_server_put_object_release(password_object);
     if (response != NULL) kmipkit_server_response_release(response);
     if (response_item != NULL) kmipkit_server_response_item_release(response_item);
     if (builder != NULL) kmipkit_server_response_builder_release(builder);
     if (request != NULL) kmipkit_server_request_item_release(request);
+    if (password_request != NULL) kmipkit_server_request_item_release(password_request);
     if (batch != NULL) kmipkit_server_incoming_batch_release(batch);
     if (limits != NULL) kmipkit_codec_limits_release(limits);
     if (connection != NULL) kmipkit_server_connection_release(connection);
