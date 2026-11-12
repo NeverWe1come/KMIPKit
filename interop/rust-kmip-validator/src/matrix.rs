@@ -5431,4 +5431,51 @@ mod tests {
         let decoded = kmipkit::ttlv::codec::decode(&reserved_tag_ttlv(raw_tag));
         assert!(matches!(decoded, Err(error) if error.kind() == DecodeErrorKind::UnallocatedTag));
     }
+
+    #[test]
+    fn transparent_rsa_private_key_routes_execute_manifest_fixtures() {
+        let catalog: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        let target_ids = [
+            "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-7-KEY-MATERIAL",
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-7-KEY-MATERIAL-CRT-COEFFICIENT",
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-7-KEY-MATERIAL-MODULUS",
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-7-KEY-MATERIAL-P",
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-7-KEY-MATERIAL-PRIME-EXPONENT-P",
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-7-KEY-MATERIAL-PRIME-EXPONENT-Q",
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-7-KEY-MATERIAL-PRIVATE-EXPONENT",
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-7-KEY-MATERIAL-PUBLIC-EXPONENT",
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-7-KEY-MATERIAL-Q",
+        ];
+        let symbols = [
+            "kmipkit_protocol::TransparentRsaPrivateKey::try_from_components",
+            "kmipkit_protocol::TransparentRsaPrivateKey::try_from_item",
+        ];
+
+        for target_id in target_ids {
+            let target = catalog["normative_targets"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|target| target["target_id"] == target_id)
+                .unwrap();
+            for symbol in symbols {
+                let expected = sample_for_route_at_version(symbol, target, elements, "2.1")
+                    .unwrap_or_else(|error| panic!("{symbol} sample failed for {target_id}: {error}"));
+                let result = invoke(symbol, &expected, target, elements, "2.1")
+                    .unwrap_or_else(|| panic!("{symbol} route missing for {target_id}"))
+                    .unwrap_or_else(|error| panic!("{symbol} rejected {target_id}: {error}"));
+                assert!(
+                    crate::local_wire::target_hash(&result, &expected).is_ok(),
+                    "{symbol} changed {target_id}"
+                );
+            }
+        }
+    }
 }
