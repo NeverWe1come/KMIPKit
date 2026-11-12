@@ -667,6 +667,22 @@ fn managed_object_fixture(target: &Json, elements: &[Json]) -> Result<(u32, Item
     object_root_fixture(root_name, target, elements)
 }
 
+fn key_block_fixture(target: &Json, elements: &[Json]) -> Result<(Item, Item)> {
+    let (_, object, expected) = managed_object_fixture(target, elements)?;
+    let mut key_blocks = Vec::new();
+    collect_tagged_items(&object, 0x0042_0040, &mut key_blocks)?;
+    match key_blocks.as_slice() {
+        [key_block] => Ok((
+            key_block
+                .try_clone()
+                .map_err(|_| "Key Block fixture copy failed")?,
+            expected,
+        )),
+        [] => Err("Managed Object fixture has no Key Block"),
+        _ => Err("Managed Object fixture has ambiguous Key Blocks"),
+    }
+}
+
 fn metadata_key_information(mac: bool, include_parameters: bool) -> Result<Item> {
     use kmipkit::protocol::{EncryptionKeyInformation, MacSignatureKeyInformation};
 
@@ -760,6 +776,9 @@ fn metadata_expected_target(model: &Item, target: &Json, elements: &[Json]) -> R
 }
 
 fn sample_for_route(symbol: &str, target: &Json, elements: &[Json]) -> Result<Item> {
+    if symbol == "kmipkit_protocol::KeyBlock::try_from_item" {
+        return key_block_fixture(target, elements).map(|(_, expected)| expected);
+    }
     if symbol == "kmipkit_protocol::ManagedObject::try_from_item"
         || typed_object_root(symbol).is_some()
     {
@@ -898,6 +917,14 @@ fn invoke(
             )
             .map(kmipkit::protocol::ManagedObject::into_item)
             .map_err(|_| "managed object parser rejected"),
+        );
+    }
+    if symbol == "kmipkit_protocol::KeyBlock::try_from_item" {
+        let (key_block, _) = key_block_fixture(target, elements).ok()?;
+        return Some(
+            kmipkit::protocol::KeyBlock::try_from_item(key_block)
+                .and_then(kmipkit::protocol::KeyBlock::try_into_item)
+                .map_err(|_| "Key Block parser rejected"),
         );
     }
     if let Some(root) = typed_object_root(symbol) {
