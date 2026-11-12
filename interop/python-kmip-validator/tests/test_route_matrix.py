@@ -621,6 +621,31 @@ class RouteMatrixTests(unittest.TestCase):
         expected = self.runner.digest([[0x4200FF, 1, [[0x4200FF, 2, 7]]]])
         self.assertEqual({expected}, {event['request_tree_sha256'] for event in report['events']})
 
+    def test_managed_object_routes_construct_and_parse_catalogued_object_fields(self):
+        catalog = copy.deepcopy(self.catalog)
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in self.manifest['routes']
+                              if route['language'] == 'python'
+                              and route['public_api_symbol'].startswith('kmipkit.managed_objects.ManagedObject.')]
+        roots = {target['target_id'] for target in self.catalog['normative_targets']
+                 if target['kind'] == 'object_structure'
+                 and target['name'] in {'Certificate', 'Certificate Request', 'Opaque Object',
+                                        'PGP Key', 'Private Key', 'Public Key', 'Secret Data',
+                                        'Split Key', 'Symmetric Key'}}
+        object_ids = roots | {target['target_id'] for target in self.catalog['normative_targets']
+                              if target['kind'] == 'structure_member'
+                              and roots.intersection(target.get('parent_element_ids', []))}
+        root_names = {target['name'] for target in self.catalog['normative_targets']
+                      if target['target_id'] in roots}
+        object_ids |= {target['target_id'] for target in self.catalog['normative_targets']
+                       if target['kind'] == 'tag' and target['name'] in root_names}
+        catalog['test_cases'] = [case for case in self.catalog['test_cases']
+                                 if case['requires'].get('normative_target_id') in object_ids]
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+        self.assertEqual([], gaps)
+        self.assertTrue(report['events'])
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
     def test_query_routes_record_the_peer_rejection_without_calling_it_success(self):
         catalog = copy.deepcopy(self.catalog)
         catalog['test_cases'] = [case for case in self.catalog['test_cases']
