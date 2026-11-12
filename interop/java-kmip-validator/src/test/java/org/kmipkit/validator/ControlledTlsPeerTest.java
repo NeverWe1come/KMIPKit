@@ -68,6 +68,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -211,6 +212,7 @@ class ControlledTlsPeerTest {
         ArrayNode events = mapper.createArrayNode();
         List<EnumerationFixture> enumerationFixtures = genericEnumerationFixtures();
         List<BitmaskFixture> bitmaskFixtures = genericBitmaskFixtures();
+        List<DataTypeFixture> dataTypeFixtures = genericDataTypeFixtures();
         byte[] queryOperation = queryOperationTtlv();
         String requestTreeHash = normalizedTreeSha256(queryOperation);
 
@@ -220,6 +222,7 @@ class ControlledTlsPeerTest {
             appendActivationDateLocalRouteEvents(events, protocolVersion);
             appendGenericEnumerationRouteEvents(events, enumerationFixtures, protocolVersion);
             appendGenericBitmaskRouteEvents(events, bitmaskFixtures, protocolVersion);
+            appendGenericDataTypeRouteEvents(events, dataTypeFixtures, protocolVersion);
 
             byte[] serverCertificatePem = fixture("server-cert.pem");
             byte[] serverPrivateKeyPem = fixture("server-key.pem");
@@ -289,7 +292,7 @@ class ControlledTlsPeerTest {
         int bitmaskEventCount = bitmaskFixtures.stream()
                 .mapToInt(fixture -> fixture.protocolVersions().size() * (4 + (fixture.attribute() == null ? 0 : 3)))
                 .sum();
-        assertEquals(68 + enumerationEventCount + bitmaskEventCount, report.path("events").size());
+        assertEquals(68 + enumerationEventCount + bitmaskEventCount + 92, report.path("events").size());
         long bitmaskEvents = 0;
         for (JsonNode event : report.path("events")) {
             if ("test-bitmask-cryptographic-usage-mask".equals(event.path("case_id").asText())) {
@@ -307,7 +310,9 @@ class ControlledTlsPeerTest {
         assertEquals(92, dataTypeEvents,
                 "Every TTLV data type needs its installed constructor, item view, and decoder routes.");
         long bitmaskCaseCount = bitmaskFixtures.stream().map(BitmaskFixture::caseId).distinct().count();
-        assertEquals(7 + enumerationFixtures.size() + bitmaskCaseCount, report.path("case_ids").size());
+        long dataTypeCaseCount = dataTypeFixtures.stream().map(DataTypeFixture::caseId).distinct().count();
+        assertEquals(7 + enumerationFixtures.size() + bitmaskCaseCount + dataTypeCaseCount,
+                report.path("case_ids").size());
         assertEquals("test-op-query", report.path("case_ids").get(0).asText());
         for (int index = 1; index < 6; index++) {
             assertEquals("test-norm-tag-range-kmipkit-range-%03d".formatted(index),
@@ -1263,6 +1268,238 @@ class ControlledTlsPeerTest {
         return List.copyOf(fixtures);
     }
 
+    private static List<DataTypeFixture> genericDataTypeFixtures() throws Exception {
+        JsonNode catalog = readRouteEvidenceCatalog();
+        Map<String, JsonNode> targets = new HashMap<>();
+        for (JsonNode target : catalog.path("normative_targets")) {
+            targets.put(target.path("target_id").asText(), target);
+        }
+        var fixtures = new ArrayList<DataTypeFixture>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            JsonNode requires = testCase.path("requires");
+            if (!"data_type".equals(requires.path("target_kind").asText())) continue;
+            JsonNode target = targets.get(requires.path("normative_target_id").asText());
+            if (target == null) continue;
+            var versions = new ArrayList<String>();
+            for (JsonNode version : testCase.path("execution").path("protocol_versions")) {
+                versions.add(version.asText());
+            }
+            fixtures.add(new DataTypeFixture(testCase.path("case_id").asText(),
+                    target.path("target_id").asText(), target.path("name").asText(),
+                    parseWireTag(target.path("wire_value").asText()), List.copyOf(versions)));
+        }
+        return List.copyOf(fixtures);
+    }
+
+    private static void appendGenericDataTypeRouteEvents(ArrayNode events,
+            List<DataTypeFixture> fixtures, String protocolVersion) throws Exception {
+        JsonNode vectors = new ObjectMapper().readTree(
+                Path.of("../shared/vectors/ttlv-boundaries.json").toFile());
+        for (DataTypeFixture fixture : fixtures) {
+            if (!fixture.protocolVersions().contains(protocolVersion)) continue;
+            JsonNode vector = null;
+            for (JsonNode candidate : vectors.path("vectors")) {
+                if (fixture.dataType().equals(candidate.path("data_type").asText())) vector = candidate;
+            }
+            if (vector == null) throw new IllegalStateException("No TTLV boundary vectors for " + fixture.dataType());
+            JsonNode representative = representativeDataTypeSample(vector, fixture.dataType());
+            byte[] wire = HexFormat.of().parseHex(representative.path("hex").asText());
+            String treeHash = normalizedTreeSha256(wire);
+            for (JsonNode sample : vector.path("samples")) {
+                if (!sample.path("valid").asBoolean()) continue;
+                byte[] sampleWire = HexFormat.of().parseHex(sample.path("hex").asText());
+                boolean primarySample = sample.path("branch").asText()
+                        .equals(representative.path("branch").asText());
+                String sampleHash = normalizedTreeSha256(sampleWire);
+                try (TtlvValue value = createDataTypeValue(events, fixture, sampleWire,
+                        protocolVersion, sampleHash, primarySample);
+                        RawTag raw = RawTag.fromRaw(0x420001);
+                        Tag tag = raw.checked();
+                        TtlvItem created = TtlvItem.create(tag, value, CodecLimits.defaults());
+                        var view = created.view();
+                        var viewValue = view.value()) {
+                    assertEquals(fixture.typeCode(), view.itemType().code());
+                    assertTtlvDataTypeValue(fixture.dataType(), fixture.typeCode(), sampleWire, viewValue);
+                }
+                if (!primarySample) continue;
+                appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_item.create",
+                        fixture.targetId(), "org.kmipkit.ttlv.TtlvItem.create", null, null,
+                        "construct", protocolVersion, null, treeHash, null);
+                appendRouteEvent(events, fixture.caseId(),
+                        "java.generic-ttlv.function.ttlv_item_view_from_item", fixture.targetId(),
+                        "org.kmipkit.ttlv.TtlvItem.view", null, null,
+                        "decode", protocolVersion, null, null, treeHash);
+            }
+
+            for (JsonNode sample : vector.path("samples")) {
+                byte[] sampleWire = HexFormat.of().parseHex(sample.path("hex").asText());
+                if (sample.path("valid").asBoolean()) {
+                    try (TtlvItem decoded = TtlvCodec.decode(sampleWire);
+                            var decodedView = decoded.view();
+                            var decodedValue = decodedView.value()) {
+                        assertEquals(fixture.typeCode(), decodedView.itemType().code());
+                        assertTtlvDataTypeValue(fixture.dataType(), fixture.typeCode(), sampleWire, decodedValue);
+                    }
+                } else {
+                    TtlvDecodeException failure = assertThrows(TtlvDecodeException.class,
+                            () -> TtlvCodec.decode(sampleWire));
+                    assertTrue(failure.byteOffset() >= 0);
+                }
+            }
+            appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_codec.decode",
+                    fixture.targetId(), "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
+                    "decode", protocolVersion, null, null, treeHash);
+        }
+    }
+
+    private static JsonNode representativeDataTypeSample(JsonNode vector, String dataType) {
+        String desiredBranch = "Structure".equals(dataType) ? "nested_integer" : null;
+        JsonNode firstValid = null;
+        for (JsonNode sample : vector.path("samples")) {
+            if (!sample.path("valid").asBoolean()) continue;
+            if (firstValid == null) firstValid = sample;
+            if (desiredBranch != null && desiredBranch.equals(sample.path("branch").asText())) return sample;
+        }
+        if (firstValid == null) throw new IllegalStateException("TTLV boundary vector has no valid sample");
+        return firstValid;
+    }
+
+    private static TtlvValue createDataTypeValue(ArrayNode events, DataTypeFixture fixture,
+            byte[] wire, String protocolVersion, String treeHash, boolean recordEvidence) throws Exception {
+        String dataType = fixture.dataType();
+        byte[] bytes = dataTypeValueBytes(wire);
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvValue value;
+        switch (dataType) {
+            case "Big Integer" -> value = TtlvValue.BigInteger(bytes, limits);
+            case "Boolean" -> value = TtlvValue.Boolean(ByteBuffer.wrap(bytes).getLong() != 0);
+            case "Byte String" -> value = TtlvValue.ByteString(bytes, limits);
+            case "Date Time" -> value = TtlvValue.DateTime(ByteBuffer.wrap(bytes).getLong());
+            case "Date Time Extended" -> value = TtlvValue.DateTimeExtended(ByteBuffer.wrap(bytes).getLong());
+            case "Enumeration" -> value = TtlvValue.Enumeration(Integer.toUnsignedLong(ByteBuffer.wrap(bytes).getInt()));
+            case "Integer" -> value = TtlvValue.Integer(ByteBuffer.wrap(bytes).getInt());
+            case "Interval" -> value = TtlvValue.Interval(Integer.toUnsignedLong(ByteBuffer.wrap(bytes).getInt()));
+            case "Long Integer" -> value = TtlvValue.LongInteger(ByteBuffer.wrap(bytes).getLong());
+            case "Text String" -> value = TtlvValue.TextString(bytes, limits);
+            case "Structure" -> {
+                TtlvStructure structure = TtlvStructure.create();
+                boolean withItemRecorded = false;
+                try {
+                    if (recordEvidence) {
+                        appendRouteEvent(events, fixture.caseId(),
+                                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.create",
+                                fixture.targetId(), "org.kmipkit.ttlv.TtlvStructure.create", null, null,
+                                "construct", protocolVersion, null, treeHash, null);
+                    }
+                    for (byte[] childWire : structureChildWires(wire)) {
+                        try (TtlvItem child = TtlvCodec.decode(childWire)) {
+                            structure = TtlvStructure.withItem(structure, child, limits);
+                        }
+                        if (recordEvidence && !withItemRecorded) {
+                            appendRouteEvent(events, fixture.caseId(),
+                                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem",
+                                    fixture.targetId(), "org.kmipkit.ttlv.TtlvStructure.withItem", null, null,
+                                    "construct", protocolVersion, null, treeHash, null);
+                            withItemRecorded = true;
+                        }
+                    }
+                    value = TtlvValue.structure(structure, limits);
+                } finally {
+                    structure.close();
+                }
+            }
+            default -> throw new IllegalArgumentException("Unsupported TTLV data type: " + dataType);
+        }
+        String suffix = dataType.replaceAll("[^A-Za-z]", "").toLowerCase(Locale.ROOT);
+        if (recordEvidence) {
+            appendRouteEvent(events, fixture.caseId(),
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue." + suffix,
+                    fixture.targetId(), "org.kmipkit.ttlv.TtlvValue." + ttlvValueConstructorName(dataType),
+                    null, null, "construct", protocolVersion, null, treeHash, null);
+        }
+        return value;
+    }
+
+    private static String ttlvValueConstructorName(String dataType) {
+        return switch (dataType) {
+            case "Big Integer" -> "BigInteger";
+            case "Byte String" -> "ByteString";
+            case "Date Time" -> "DateTime";
+            case "Date Time Extended" -> "DateTimeExtended";
+            case "Long Integer" -> "LongInteger";
+            case "Structure" -> "structure";
+            case "Text String" -> "TextString";
+            default -> dataType.replace(" ", "");
+        };
+    }
+
+    private static void assertTtlvDataTypeValue(String dataType, int typeCode, byte[] wire,
+            org.kmipkit.ttlv.TtlvValueView value) throws Exception {
+        byte[] bytes = dataTypeValueBytes(wire);
+        switch (typeCode) {
+            case 1 -> {
+                List<Integer> tags = structureChildTags(wire);
+                try (var structure = value.structure()) {
+                    assertEquals(tags.size(), structure.itemCount());
+                    for (int index = 0; index < tags.size(); index++) {
+                        try (var child = structure.itemAt(index); Tag tag = child.tag()) {
+                            assertEquals(tags.get(index), tag.raw());
+                        }
+                    }
+                }
+            }
+            case 2 -> assertEquals(ByteBuffer.wrap(bytes).getInt(), value.integer());
+            case 3, 9, 11 -> assertEquals(ByteBuffer.wrap(bytes).getLong(), switch (typeCode) {
+                case 3 -> value.longInteger();
+                case 9 -> value.dateTime();
+                default -> value.dateTimeExtended();
+            });
+            case 4, 7, 8 -> assertArrayEquals(bytes, value.bytes());
+            case 5 -> assertEquals(Integer.toUnsignedLong(ByteBuffer.wrap(bytes).getInt()), value.enumeration());
+            case 6 -> assertEquals(ByteBuffer.wrap(bytes).getLong() != 0, value.booleanValue());
+            case 10 -> assertEquals(Integer.toUnsignedLong(ByteBuffer.wrap(bytes).getInt()), value.interval());
+            default -> throw new IllegalArgumentException("Unsupported TTLV type code " + typeCode + " for " + dataType);
+        }
+    }
+
+    private static byte[] dataTypeValueBytes(byte[] wire) {
+        int length = ByteBuffer.wrap(wire, 4, 4).getInt();
+        return java.util.Arrays.copyOfRange(wire, 8, Math.addExact(8, length));
+    }
+
+    private static List<Integer> structureChildTags(byte[] wire) {
+        int valueLength = ByteBuffer.wrap(wire, 4, 4).getInt();
+        int end = Math.addExact(8, valueLength);
+        int offset = 8;
+        var tags = new ArrayList<Integer>();
+        while (offset < end) {
+            int tag = (Byte.toUnsignedInt(wire[offset]) << 16)
+                    | (Byte.toUnsignedInt(wire[offset + 1]) << 8)
+                    | Byte.toUnsignedInt(wire[offset + 2]);
+            int childLength = ByteBuffer.wrap(wire, offset + 4, 4).getInt();
+            tags.add(tag);
+            offset = Math.addExact(offset, 8 + ((Math.addExact(childLength, 7)) & ~7));
+        }
+        if (offset != end) throw new IllegalArgumentException("TTLV structure fixture has a partial child");
+        return List.copyOf(tags);
+    }
+
+    private static List<byte[]> structureChildWires(byte[] wire) {
+        int valueLength = ByteBuffer.wrap(wire, 4, 4).getInt();
+        int end = Math.addExact(8, valueLength);
+        int offset = 8;
+        var items = new ArrayList<byte[]>();
+        while (offset < end) {
+            int length = ByteBuffer.wrap(wire, offset + 4, 4).getInt();
+            int itemEnd = Math.addExact(offset, 8 + ((Math.addExact(length, 7)) & ~7));
+            if (itemEnd > end) throw new IllegalArgumentException("TTLV structure fixture has a partial child");
+            items.add(java.util.Arrays.copyOfRange(wire, offset, itemEnd));
+            offset = itemEnd;
+        }
+        if (offset != end) throw new IllegalArgumentException("TTLV structure fixture has a partial child");
+        return List.copyOf(items);
+    }
+
     private static StandardAttribute standardAttributeForTag(int rawTag) {
         for (StandardAttribute attribute : StandardAttribute.values()) {
             if (attribute.tag() == rawTag) return attribute;
@@ -1712,6 +1949,7 @@ class ControlledTlsPeerTest {
         caseIds.add("test-attr-activation-date");
         genericEnumerationFixtures().forEach(fixture -> caseIds.add(fixture.caseId()));
         genericBitmaskFixtures().stream().map(BitmaskFixture::caseId).distinct().forEach(caseIds::add);
+        genericDataTypeFixtures().forEach(fixture -> caseIds.add(fixture.caseId()));
         report.putArray("protocol_versions").add("2.0").add("2.1");
         ObjectNode combination = mapper.createObjectNode();
         combination.put("encoding", "TTLV");
@@ -2223,6 +2461,9 @@ class ControlledTlsPeerTest {
 
     private record BitmaskFixture(String caseId, String targetId, int rawTag, long value,
             StandardAttribute attribute, List<String> protocolVersions) {}
+
+    private record DataTypeFixture(String caseId, String targetId, String dataType,
+            int typeCode, List<String> protocolVersions) {}
 
     private record MatrixPlan(List<Long> expectedOperations, List<byte[]> responses) {}
 }
