@@ -301,6 +301,7 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None):
     expected, _ = selected_recipe
     if tuple(numbers(node, 0x42005C)) != expected:
         raise ValueError('fixture_operation_order_mismatch')
+    assert_placeholder_usage(node, case_id)
     header = next(descendants(node, 0x420077), node)
     if numbers(header, 0x42006A) != [2] or numbers(header, 0x42006B) != [int(version[-1])]:
         raise ValueError('fixture_protocol_version_mismatch')
@@ -422,6 +423,23 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None):
         raise ValueError('fixture_rng_length_mismatch')
     if case_id == 'test-op-rng-seed' and [item[2] for item in descendants(node, 0x4200C2)] != [bytes(range(16))]:
         raise ValueError('fixture_rng_seed_mismatch')
+
+
+def assert_placeholder_usage(node, case_id):
+    """Require ID Placeholder batches to omit Unique Identifier after Create."""
+    if case_id != 'test-batch-create-activate-destroy':
+        return
+    batch_items = [child for child in node[2]
+                   if child[0] == 0x42000F and child[1] == 1]
+    if len(batch_items) < 2:
+        raise ValueError('fixture_id_placeholder_batch_shape_mismatch')
+    for batch_item in batch_items[1:]:
+        payloads = [child for child in batch_item[2]
+                    if child[0] == 0x420079 and child[1] == 1]
+        if len(payloads) != 1:
+            raise ValueError('fixture_id_placeholder_payload_mismatch')
+        if any(child[0] == 0x420094 for child in payloads[0][2]):
+            raise ValueError('fixture_id_placeholder_explicit_target')
 
 
 def fixture_wire(node):
