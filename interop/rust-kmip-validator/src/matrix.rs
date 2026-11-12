@@ -2803,6 +2803,44 @@ fn invoke_request_attributes_route(symbol: &str, sample: &Item) -> Option<Result
     })())
 }
 
+fn invoke_final_indicator_route(symbol: &str, sample: &Item) -> Option<Result<Item>> {
+    const ROUTES: &[&str] = &[
+        "kmipkit_protocol::DecryptRequest::with_final_indicator",
+        "kmipkit_protocol::EncryptRequest::with_final_indicator",
+    ];
+    if !ROUTES.contains(&symbol) {
+        return None;
+    }
+
+    Some((|| {
+        let data = kmipkit::protocol::OperationData::ByteString(
+            kmipkit::protocol::SecretBytes::new(vec![0x41]),
+        );
+        let payload = if symbol == "kmipkit_protocol::DecryptRequest::with_final_indicator" {
+            kmipkit::protocol::DecryptRequest::new(None, Some(data))
+                .with_correlation_value(kmipkit::protocol::SecretBytes::new(vec![0x43]))
+                .with_final_indicator(true)
+                .to_ttlv_payload()
+                .map_err(|_| "Decrypt Final Indicator fixture rejected")?
+        } else {
+            kmipkit::protocol::EncryptRequest::new(None, Some(data))
+                .with_correlation_value(kmipkit::protocol::SecretBytes::new(vec![0x43]))
+                .with_final_indicator(true)
+                .to_ttlv_payload()
+                .map_err(|_| "Encrypt Final Indicator fixture rejected")?
+        };
+        if !payload
+            .view()
+            .children()
+            .iter()
+            .any(|field| field.tag().raw() == 0x0042_00D8)
+        {
+            return Err("Final Indicator was omitted from the encoded request");
+        }
+        sample.try_clone().map_err(|_| "local copy failed")
+    })())
+}
+
 fn invoke_transparent_key_material_route(
     symbol: &str,
     target: &Json,
@@ -2955,6 +2993,9 @@ fn invoke(
     elements: &[Json],
     protocol_version: &str,
 ) -> Option<Result<Item>> {
+    if let Some(result) = invoke_final_indicator_route(symbol, sample) {
+        return Some(result);
+    }
     if let Some(result) = invoke_key_wrapping_request_route(symbol, sample) {
         return Some(result);
     }
@@ -6266,7 +6307,9 @@ mod tests {
                     .find(|target| target["target_id"] == target_id)
                     .unwrap();
                 let expected = sample_for_route_at_version(symbol, target, elements, "2.1")
-                    .unwrap_or_else(|error| panic!("{symbol} sample failed for {target_id}: {error}"));
+                    .unwrap_or_else(|error| {
+                        panic!("{symbol} sample failed for {target_id}: {error}")
+                    });
                 let result = invoke(symbol, &expected, target, elements, "2.1")
                     .unwrap_or_else(|| panic!("{symbol} route missing for {target_id}"))
                     .unwrap_or_else(|error| panic!("{symbol} rejected {target_id}: {error}"));
