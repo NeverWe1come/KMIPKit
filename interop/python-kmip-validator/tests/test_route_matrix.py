@@ -288,6 +288,8 @@ class RouteMatrixTests(unittest.TestCase):
             self.assertEqual(1, event['transport_invocation_count'])
 
     def test_async_poll_final_failure_executes_poll_and_preserves_failure_status(self):
+        # OASIS KMIP 2.0/2.1 §6.1.38 requires terminal Poll status to mirror the original operation;
+        # §6.1.8.1 lists Invalid Object Type as a Create failure reason.
         from unittest.mock import patch
         from kmipkit import protocol_values
         from kmipkit_validator.controlled_peer import ControlledTlsPeer
@@ -324,6 +326,51 @@ class RouteMatrixTests(unittest.TestCase):
                          event['peer_observed_result_reason_codes'])
         self.assertEqual('response_received', event['request_delivery_state'])
         self.assertEqual(1, event['transport_invocation_count'])
+
+    def test_unknown_async_correlation_is_stable_sequentially_and_concurrently(self):
+        # OASIS KMIP 2.0/2.1 Specification §6.1.38.1, Table 277 lists Invalid Asynchronous Correlation Value.
+        from concurrent.futures import ProcessPoolExecutor
+        from multiprocessing import get_context
+        from kmipkit import protocol_values
+
+        catalog = copy.deepcopy(self.catalog)
+        case = next(case for case in catalog['test_cases']
+                    if case['case_id'] == 'test-async-unknown-correlation-rejected')
+        catalog['test_cases'] = [case]
+        targets = {target['target_id']: target for target in catalog['normative_targets']}
+        jobs = [(cell, case, targets[cell['target_id']])
+                for cell in iter_cells(catalog, self.manifest, languages=('python',))
+                if cell['route_id'] == 'python.typed-protocol.client.execute_poll']
+
+        sequential_runs = [
+            [self.runner._execute_matrix_cell(*job) for job in jobs]
+            for _ in range(2)
+        ]
+        for results in sequential_runs:
+            self.assertTrue(all(kind == 'event' and value['status'] == 'passed'
+                                for kind, value in results))
+            self.assertTrue(all(value['peer_observed_result_status_codes'] ==
+                                [protocol_values.ResultStatus.OPERATION_FAILED]
+                                for _, value in results))
+            self.assertTrue(all(value['peer_observed_result_reason_codes'] ==
+                                [protocol_values.ResultReason.INVALID_ASYNCHRONOUS_CORRELATION_VALUE]
+                                for _, value in results))
+
+        with ProcessPoolExecutor(max_workers=8, mp_context=get_context('spawn')) as executor:
+            concurrent_runs = [
+                [future.result() for future in
+                 [executor.submit(self.runner._execute_matrix_cell, *job) for job in jobs]]
+                for _ in range(2)
+            ]
+        for results in concurrent_runs:
+            self.assertTrue(all(kind == 'event' and value['status'] == 'passed'
+                                for kind, value in results))
+            self.assertTrue(all(value['peer_observed_result_status_codes'] ==
+                                [protocol_values.ResultStatus.OPERATION_FAILED]
+                                for _, value in results))
+            self.assertTrue(all(value['peer_observed_result_reason_codes'] ==
+                                [protocol_values.ResultReason.INVALID_ASYNCHRONOUS_CORRELATION_VALUE]
+                                for _, value in results))
 
     def test_create_routes_validate_peer_rejection_and_all_wire_encodings(self):
         catalog = copy.deepcopy(self.catalog)
