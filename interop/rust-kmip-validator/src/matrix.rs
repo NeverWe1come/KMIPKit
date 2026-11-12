@@ -2639,6 +2639,41 @@ fn invoke(
             metadata_expected_target(&request_payload_item(payload)?, target, elements)
         })());
     }
+    if symbol == "kmipkit_protocol::JoinSplitKeyRequest::with_secret_data_type" {
+        return Some((|| {
+            let raw = sample.with_value(|value| match value {
+                ValueView::Enumeration(value) => Ok(*value),
+                _ => Err("Secret Data Type fixture is not an Enumeration"),
+            })?;
+            let references = ["split-key-one", "split-key-two"]
+                .into_iter()
+                .map(|value| {
+                    kmipkit::protocol::SplitKeyReference::new(
+                        kmipkit::protocol::UniqueIdentifier::TextString(value.to_owned()),
+                    )
+                    .with_split_key_threshold(2)
+                })
+                .collect();
+            let payload = kmipkit::protocol::JoinSplitKeyRequest::new(
+                kmipkit::protocol::ObjectType::from_raw(2),
+                references,
+            )
+            .with_secret_data_type(raw)
+            .into_ttlv_payload()
+            .map_err(|_| "Join Split Key request fixture rejected")?;
+            let model = request_payload_item(payload)?;
+            match metadata_expected_target(&model, target, elements) {
+                Ok(projection) => Ok(projection),
+                Err("metadata fixture target is missing")
+                    if target["kind"] == "structure_member" =>
+                {
+                    object_root_fixture("Secret Data", target, elements)
+                        .map(|(_, _, projection)| projection)
+                }
+                Err(error) => Err(error),
+            }
+        })());
+    }
     if KEY_WRAPPING_CONSTRUCTOR_ROUTES.contains(&symbol) {
         return Some(
             key_wrapping_metadata_model(symbol, target).and_then(|model| {
