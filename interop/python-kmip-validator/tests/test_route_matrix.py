@@ -1263,6 +1263,25 @@ class RouteMatrixTests(unittest.TestCase):
                 self.assertEqual(expected_operations, event['peer_observed_operation_sequence'])
                 self.assertEqual(len(expected_operations), event['peer_observed_response_count'])
 
+    def test_single_item_batch_route_records_ordered_batch_evidence(self):
+        case_id = 'test-batch-single-item-default-continuation'
+        catalog = copy.deepcopy(self.catalog)
+        catalog['test_cases'] = [case for case in catalog['test_cases']
+                                 if case['case_id'] == case_id]
+        symbol = 'kmipkit.extensions.client_batch_item_get'
+
+        report, gaps = self.runner.run_matrix(catalog, self.manifest, self.artifact)
+
+        self.assertEqual([], gaps)
+        send_events = [event for event in report['events']
+                       if event['action'] == 'send' and event['public_api_symbol'] == symbol]
+        self.assertTrue(send_events)
+        for event in send_events:
+            self.assertEqual(['Get'], event['batch_operation_sequence'])
+            self.assertEqual(['Get'], event['peer_observed_operation_sequence'])
+            self.assertEqual(1, event['batch_item_count'])
+            self.assertEqual(1, event['peer_observed_response_count'])
+
     def test_batch_workflow_invokes_get_attribute_list_request_builder(self):
         case = next(case for case in self.catalog['test_cases']
                     if case['case_id'] == 'test-batch-create-activate-destroy')
