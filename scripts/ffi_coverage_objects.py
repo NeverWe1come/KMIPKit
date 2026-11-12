@@ -42,15 +42,6 @@ def _directory(path: Path, *, create=False) -> Path:
     return resolved
 
 
-def prepare_report_dir(path: Path) -> Path:
-    """Validate a report directory before creating any filesystem entries."""
-    directory = _directory(path, create=True)
-    for name in _REPORT_FILES:
-        _report_file(directory / name, name, 'coverage output',
-                     report_dir=directory, must_exist=False)
-    return directory
-
-
 def _report_file(path: Path, name: str, label: str, *, report_dir=None, must_exist=True) -> Path:
     if path.name != name:
         raise ValueError(f'{label} must use its fixed coverage report filename')
@@ -63,6 +54,15 @@ def _report_file(path: Path, name: str, label: str, *, report_dir=None, must_exi
     if must_exist and not resolved.is_file():
         raise ValueError(f'{label} is not an existing report file')
     return resolved
+
+
+def prepare_report_dir(path: Path) -> Path:
+    """Validate a report directory before creating any filesystem entries."""
+    directory = _directory(path, create=True)
+    for name in _REPORT_FILES:
+        _report_file(directory / name, name, 'coverage output',
+                     report_dir=directory, must_exist=False)
+    return directory
 
 
 def _unique_object(candidates, root, label, *, executable=False):
