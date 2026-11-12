@@ -79,6 +79,38 @@ class ReproducibleArtifactBuildEnvironmentTests(unittest.TestCase):
             environment["RUSTFLAGS"], "--cfg ignored_when_encoded_flags_are_set"
         )
 
+    def test_native_compiler_flags_remap_temp_root_and_preserve_caller_flags(self):
+        temporary_root = Path("/tmp/kmipkit-java-source-with-spaces")
+
+        environment = INSTALL_ARTIFACT.cargo_environment_with_path_remapping(
+            {
+                "CFLAGS": "-O2 -DNAME='two words'",
+                "HOST_CFLAGS": "-O1",
+                "CXXFLAGS": "-O0",
+            },
+            temporary_root,
+        )
+
+        for name, optimization in (
+            ("CFLAGS", "-O2"),
+            ("HOST_CFLAGS", "-O1"),
+            ("CXXFLAGS", "-O0"),
+        ):
+            with self.subTest(name=name):
+                flags = INSTALL_ARTIFACT.shlex.split(environment[name])
+                self.assertIn(optimization, flags)
+                self.assertIn(
+                    "-ffile-prefix-map="
+                    f"{temporary_root.resolve()}=/kmipkit-build",
+                    flags,
+                )
+                self.assertIn(
+                    "-fdebug-prefix-map="
+                    f"{temporary_root.resolve()}=/kmipkit-build",
+                    flags,
+                )
+        self.assertIn("-DNAME=two words", INSTALL_ARTIFACT.shlex.split(environment["CFLAGS"]))
+
 
 class InstalledRouteProbeWorkflowTests(unittest.TestCase):
     def test_java_workflow_probes_and_persists_installed_package_routes(self):
