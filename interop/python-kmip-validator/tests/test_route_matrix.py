@@ -215,6 +215,31 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertIn('request_tree_sha256', result)
         self.assertEqual(result['request_tree_sha256'], result['response_tree_sha256'])
 
+    def test_digital_signature_algorithm_route_uses_its_own_attribute_tag(self):
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-attr-digital-signature-algorithm')
+        target = next(target for target in self.catalog['normative_targets']
+                      if target['target_id'] ==
+                      'KMIPKIT-ELEM-ATTRIBUTE-DIGITAL-SIGNATURE-ALGORITHM')
+        symbol = ('kmipkit.cryptographic_parameters.'
+                  'CryptographicParametersBuilder.digital_signature_algorithm')
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in self.manifest['routes']
+                              if route['language'] == 'python'
+                              and route['public_api_symbol'] == symbol]
+        manifest['routes'].append(next(route for route in self.manifest['routes']
+                                       if route['public_api_symbol'] ==
+                                       'kmipkit.extensions.client_batch_item_ping'))
+        manifest['routes'].append(next(route for route in self.manifest['routes']
+                                       if route['public_api_symbol'] ==
+                                       'kmipkit.extensions.client_batch_item_get_attributes'))
+        catalog = copy.deepcopy(self.catalog)
+        catalog['test_cases'] = [case]
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+        self.assertEqual([], gaps)
+        self.assertEqual(2, len(report['events']))
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
     def test_cryptographic_parameter_builder_executes_targeted_enum_value(self):
         case = next(case for case in self.catalog['test_cases']
                     if case['case_id'] == 'test-enum-cryptographic-algorithm')
