@@ -935,7 +935,8 @@ fn invoke(
         );
     }
     if symbol == "kmipkit_protocol::KeyBlock::try_new" {
-        return Some(crate::fixtures::key_block(false).and_then(|key_block| {
+        let secret_data = managed_object_root_name(target, elements) == Some("Secret Data");
+        return Some(crate::fixtures::key_block(secret_data).and_then(|key_block| {
             key_block
                 .try_into_item()
                 .map_err(|_| "Key Block constructor rejected")
