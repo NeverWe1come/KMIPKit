@@ -2059,8 +2059,6 @@ def _batch_operations_for_case(cell: dict, case: dict) -> list[str] | None:
     if not operations and isinstance(scenario, dict):
         expected = scenario.get('expected', {})
         operations = expected.get('operation_order', []) if isinstance(expected, dict) else []
-    if not operations and isinstance(scenario, dict):
-        operations = scenario.get('operations', [])
     if not operations:
         return None
     if not isinstance(operations, list):
