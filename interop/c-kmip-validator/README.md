@@ -10,7 +10,9 @@ Build the exact library artifact and the consumer from the repository root:
 ```sh
 python3 interop/c-kmip-validator/tools/install_artifact.py
 python3 interop/c-kmip-validator/tools/verify_artifact.py
+python3 -m pip install --only-binary ':all:' jsonschema==4.23.0
 cmake -S interop/c-kmip-validator -B interop/c-kmip-validator/build \
+  -DPython3_EXECUTABLE="$(command -v python3)" \
   -DKMIPKIT_C_INSTALL_DIR=interop/.local/c-live/install/9a16cc90a12205101d22a38501a5e74c665df4dc
 cmake --build interop/c-kmip-validator/build
 ctest --test-dir interop/c-kmip-validator/build --output-on-failure

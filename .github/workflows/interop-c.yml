@@ -48,17 +48,17 @@ jobs:
       - name: Verify installed C ABI provenance
         run: python3 interop/c-kmip-validator/tools/verify_artifact.py
 
+      - name: Install pinned evidence schema validator
+        run: python3 -m pip install --only-binary ':all:' jsonschema==4.23.0
+
       - name: Configure CMake
-        run: cmake -S interop/c-kmip-validator -B interop/c-kmip-validator/build -DKMIPKIT_C_INSTALL_DIR=interop/.local/c-live/install/9a16cc90a12205101d22a38501a5e74c665df4dc
+        run: cmake -S interop/c-kmip-validator -B interop/c-kmip-validator/build -DPython3_EXECUTABLE="$(command -v python3)" -DKMIPKIT_C_INSTALL_DIR=interop/.local/c-live/install/9a16cc90a12205101d22a38501a5e74c665df4dc
 
       - name: Build C validator
         run: cmake --build interop/c-kmip-validator/build
 
       - name: Run C unit and controlled peer tests
         run: ctest --test-dir interop/c-kmip-validator/build --output-on-failure
-
-      - name: Install pinned evidence schema validator
-        run: python3 -m pip install --only-binary ':all:' jsonschema==4.23.0
 
       - name: Run C matrix contract tests
         run: python3 interop/c-kmip-validator/tests/test_route_matrix.py
