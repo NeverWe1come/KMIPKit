@@ -1,6 +1,5 @@
 use kmipkit::{
     Client, ClientBatch, ClientBatchItem, ClientBatchResponse, ClientError, ClientRequest,
-    CryptographicUsageMask,
     client_config::ClientConfiguration,
     protocol::{
         Attribute, Authentication, Credential, CryptographicParametersBuilder, KeyMaterial,
