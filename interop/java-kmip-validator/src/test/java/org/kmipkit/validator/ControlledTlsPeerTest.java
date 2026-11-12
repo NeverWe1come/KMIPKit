@@ -90,6 +90,8 @@ class ControlledTlsPeerTest {
             "KEY-ROLE-TYPE", "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.keyroletype",
             "MASK-GENERATOR", "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.maskgenerator",
             "PADDING-METHOD", "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.paddingmethod");
+    private static final String CREDENTIAL_TYPE_FROM_RAW_ROUTE =
+            "java.typed-protocol.model.org.kmipkit.credentials.credentialtype.fromraw";
     @TempDir
     Path temporaryDirectory;
 
@@ -292,6 +294,18 @@ class ControlledTlsPeerTest {
                         routeEventCount(report.path("events"), fixture.caseId(), builderRoute),
                         "Every KMIP Cryptographic Parameters builder value needs a public-call event: "
                                 + fixture.targetId());
+            }
+            if ("CREDENTIAL-TYPE".equals(fixture.parentName())) {
+                assertEquals(fixture.protocolVersions().size(),
+                        routeEventCount(report.path("events"), fixture.caseId(), CREDENTIAL_TYPE_FROM_RAW_ROUTE),
+                        "Every Credential Type value needs an installed fromRaw call: " + fixture.targetId());
+                String credentialRoute = credentialTypeModelRoute(fixture.targetId());
+                if (credentialRoute != null) {
+                    assertEquals(fixture.protocolVersions().size(),
+                            routeEventCount(report.path("events"), fixture.caseId(), credentialRoute),
+                            "Every implemented Credential Value needs its exact installed fromTtlv call: "
+                                    + fixture.targetId());
+                }
             }
         }
         int enumerationEventCount = enumerationFixtures.stream()
@@ -2071,6 +2085,22 @@ class ControlledTlsPeerTest {
                     && routeId.equals(event.path("route_id").asText())) count++;
         }
         return count;
+    }
+
+    private static String credentialTypeModelRoute(String targetId) {
+        if (targetId.contains("USERNAME-AND-PASSWORD")) {
+            return "java.typed-protocol.model.org.kmipkit.credentials.usernameandpasswordcredential.fromttlv";
+        }
+        if (targetId.contains("DEVICE-00000002")) {
+            return "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv";
+        }
+        if (targetId.contains("ATTESTATION-00000003")) {
+            return "java.typed-protocol.model.org.kmipkit.credentials.attestationcredential.fromttlv";
+        }
+        if (targetId.contains("HASHED-PASSWORD")) {
+            return "java.typed-protocol.model.org.kmipkit.credentials.hashedpasswordcredential.fromttlv";
+        }
+        return null;
     }
 
     private static JsonNode findRouteEvent(JsonNode events, String routeId, String protocolVersion) {
