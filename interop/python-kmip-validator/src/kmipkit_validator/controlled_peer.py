@@ -69,7 +69,9 @@ def find_value(tree: list[tuple[int, int, bytes]], tag: int) -> bytes | None:
     return None
 
 
-def ping_response(request: bytes, status: int, reason: int | None, protocol_minor: int = 1) -> bytes:
+def ping_response(request: bytes, status: int, reason: int | None, protocol_minor: int = 1,
+                  cancellation_result: int | None = None,
+                  asynchronous_correlation_value: bytes | None = None) -> bytes:
     tree = parse_children(request[8:])
     operation_bytes = find_value(tree, 0x42005C)
     batch_id = find_value(tree, 0x420093)
@@ -83,7 +85,12 @@ def ping_response(request: bytes, status: int, reason: int | None, protocol_mino
     if reason is not None:
         payload.append(enumeration(0x42007E, reason))
     if status in (0, 2):
-        payload.append(structure(0x42007C))
+        response_payload = []
+        if asynchronous_correlation_value is not None:
+            response_payload.append(item(0x420006, 8, asynchronous_correlation_value))
+        if cancellation_result is not None:
+            response_payload.append(enumeration(0x420012, cancellation_result))
+        payload.append(structure(0x42007C, *response_payload))
     version = structure(
         0x420069,
         item(0x42006A, 2, struct.pack(">i", 2)),
@@ -321,6 +328,8 @@ class ControlledTlsPeer:
         encoding: str = "TTLV",
         transport: str = "raw_tls",
         protocol_version: str = "2.1",
+        cancellation_result: int | None = None,
+        asynchronous_correlation_value: bytes | None = None,
     ) -> None:
         self.status = status
         self.reason = reason
@@ -328,6 +337,8 @@ class ControlledTlsPeer:
         self.encoding = encoding
         self.transport = transport
         self.protocol_minor = int(protocol_version.split(".")[1])
+        self.cancellation_result = cancellation_result
+        self.asynchronous_correlation_value = asynchronous_correlation_value
         self.listener = socket.socket()
         self.listener.bind(("127.0.0.1", 0))
         self.listener.listen(1)
@@ -373,7 +384,8 @@ class ControlledTlsPeer:
                         )
                     else:
                         response = ping_response(
-                            request, self.status, self.reason, self.protocol_minor
+                            request, self.status, self.reason, self.protocol_minor,
+                            self.cancellation_result, self.asynchronous_correlation_value,
                         )
                 else:
                     response = text_response(

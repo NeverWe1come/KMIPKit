@@ -1126,6 +1126,13 @@ _TICKET_TTLV_ROUTES = {
 }
 _GET_ATTRIBUTE_LIST_RESPONSE_ROUTE = 'kmipkit.client.GetAttributeListResponse'
 _BATCH_ERROR_CONTINUATION_ROUTE = 'kmipkit.client.Batch.add_error_continuation_value'
+_ASYNC_OUTCOME_RESPONSE_ROUTES = {
+    'kmipkit.client.AsyncOperationOutcome.cancel_response',
+    'kmipkit.client.AsyncOperationOutcome.poll_response',
+    'kmipkit.client.AsyncOperationOutcome.process_response',
+    'kmipkit.client.AsyncOperationOutcome.query_async_requests_response',
+    'kmipkit.client.AsyncOperationOutcome.response_payload_ttlv',
+}
 _BATCH_ITEM_RESULT_VALUE_ROUTES.update(
     'kmipkit.client.BatchItemResult.' + member
     for member in ('private_key_unique_identifier', 'split_key_unique_identifiers')
@@ -1595,6 +1602,173 @@ def _batch_error_continuation_cell(cell: dict, case: dict, target: dict,
             'response_tree_sha256': response_digest}
 
 
+def _async_outcome_response_cell(cell: dict, case: dict, target: dict,
+                                 trace: CallTrace | None) -> dict:
+    """Create one asynchronous outcome through the mutually authenticated test peer."""
+    from .controlled_peer import ControlledTlsPeer, PKI
+    from .driver import PythonKmipDriver
+    from kmipkit import protocol_values, ttlv
+
+    symbol = cell['public_api_symbol']
+    operation = _cell_operation(cell, case)
+    member = symbol.rsplit('.', 1)[-1]
+    operation_for_member = {
+        'cancel_response': 'Cancel', 'poll_response': 'Poll',
+        'process_response': 'Process',
+        'query_async_requests_response': 'Query Asynchronous Requests',
+    }
+    if member in operation_for_member:
+        operation = operation_for_member[member]
+    scenario = case.get('requires', {}).get('protocol_scenario', {})
+    scenario_operations = scenario.get('operations', [])
+    if operation not in {'Cancel', 'Poll', 'Process', 'Query Asynchronous Requests'}:
+        operation = next((candidate for candidate in scenario_operations
+                          if candidate in {'Cancel', 'Poll', 'Process',
+                                           'Query Asynchronous Requests'}), 'Poll')
+    parameters = scenario.get('parameters', {})
+    cancellation_result = None
+    cancellation_name = parameters.get('cancel_result')
+    if operation == 'Cancel' and cancellation_name:
+        _, _, elements = _catalog_model_data()
+        enum_target_ids = scenario.get('target_ids', [])
+        cancellation_element = next((elements[target_id] for target_id in enum_target_ids
+                                     if target_id in elements
+                                     and elements[target_id].get('kind') == 'enumeration_value'
+                                     and _normalized_name(elements[target_id].get('name', ''))
+                                     == _normalized_name(cancellation_name)), None)
+        if cancellation_element is None:
+            raise RecipePending
+        cancellation_result = int(cancellation_element['wire_value'].replace('X', '0'), 16)
+    peer_status = (protocol_values.ResultStatus.SUCCESS if cancellation_result is not None
+                   else protocol_values.ResultStatus.OPERATION_FAILED)
+    peer_reason = (None if cancellation_result is not None
+                   else protocol_values.ResultReason.OPERATION_NOT_SUPPORTED)
+    correlation = b'kmipkit-validator-correlation'
+    protocol_version = cell['protocol_version']
+    peer = ControlledTlsPeer(
+        status=peer_status, reason=peer_reason, encoding='TTLV', transport='raw_tls',
+        protocol_version=protocol_version, cancellation_result=cancellation_result,
+        asynchronous_correlation_value=(correlation if cancellation_result is not None else None))
+    connection = {
+        'server_id': 'controlled-fixture', 'protocol_version': protocol_version,
+        'transport': 'raw_tls', 'encoding': 'TTLV', 'api_level': 'typed-protocol',
+        'endpoints': {'raw_tls': {'host': '127.0.0.1', 'port': peer.port},
+                      'https': {'url': f'https://127.0.0.1:{peer.port}/kmip'}},
+        'tls': {'ca_cert_path': str(PKI / 'server-cert.pem'),
+                'client_cert_path': str(PKI / 'client-cert.pem'),
+                'client_key_path': str(PKI / 'client-key.pem'),
+                'server_name_override': 'localhost',
+                'connect_timeout_seconds': 5, 'read_timeout_seconds': 5},
+    }
+    driver = None
+    limits = None
+    outcome = None
+    try:
+        driver = PythonKmipDriver(connection)
+        limits = ttlv.codec_limits_defaults()
+        if operation == 'Cancel':
+            outcome = driver._client.execute_cancel(correlation, limits)
+        elif operation == 'Poll':
+            outcome = driver._client.execute_poll(correlation, limits)
+        elif operation == 'Process':
+            outcome = driver._client.execute_process(
+                correlation, limits, asynchronous_indicator=1)
+        else:
+            outcome = driver._client.execute_query_async_requests(limits)
+
+        metadata = outcome.metadata_v1
+        if (int(metadata.result_status) != peer_status or metadata.result_reason != peer_reason):
+            raise ValueError('controlled asynchronous response status changed')
+        if symbol.endswith('.response_payload_ttlv'):
+            payload = outcome.response_payload_ttlv
+            if cancellation_result is None:
+                if payload is not None:
+                    payload.close()
+                    raise ValueError('unsupported asynchronous response unexpectedly included a payload')
+                observed = {'payload_present': False}
+            else:
+                if payload is None:
+                    raise ValueError('successful Cancel response omitted its payload')
+                try:
+                    with ttlv.ttlv_structure_view(payload) as payload_view:
+                        if ttlv.ttlv_structure_view_item_count(payload_view) != 2:
+                            raise ValueError('Cancel response payload item count changed')
+                        with ttlv.ttlv_structure_view_item_at(payload_view, 0) as item_view:
+                            with ttlv.ttlv_item_view_tag(item_view) as tag_view:
+                                raw_tag = ttlv.tag_value(tag_view)
+                            if (raw_tag != 0x420006
+                                    or int(ttlv.ttlv_item_view_type(item_view)) != 8):
+                                raise ValueError('Cancel response correlation field changed')
+                            with ttlv.ttlv_item_view_value(item_view) as item_value:
+                                byte_count = ttlv.ttlv_value_view_byte_length(item_value)
+                                if byte_count != len(correlation):
+                                    raise ValueError('Cancel response correlation length changed')
+                                for index, expected_byte in enumerate(correlation):
+                                    if ttlv.ttlv_value_view_byte_at(item_value, index) != expected_byte:
+                                        raise ValueError('Cancel response correlation value changed')
+                        with ttlv.ttlv_structure_view_item_at(payload_view, 1) as item_view:
+                            with ttlv.ttlv_item_view_tag(item_view) as tag_view:
+                                raw_tag = ttlv.tag_value(tag_view)
+                            if int(ttlv.ttlv_item_view_type(item_view)) != 5:
+                                raise ValueError('Cancellation Result changed its TTLV type')
+                            with ttlv.ttlv_item_view_value(item_view) as item_value:
+                                raw_value = ttlv.ttlv_value_view_enumeration(item_value)
+                    if raw_tag != 0x420012 or raw_value != cancellation_result:
+                        raise ValueError('Cancel response payload changed its Cancellation Result')
+                finally:
+                    payload.close()
+                observed = {'payload_present': True,
+                            'cancellation_result': cancellation_result}
+        else:
+            response = getattr(outcome, member)()
+            expected_type = {
+                'cancel_response': 'AsyncCancelResponse', 'poll_response': 'AsyncPollResponse',
+                'process_response': 'AsyncProcessResponse',
+                'query_async_requests_response': 'AsyncQueryAsyncRequestsResponse',
+            }[member]
+            if response is None or type(response).__name__ != expected_type:
+                raise ValueError('asynchronous response accessor returned an unexpected type')
+            if (int(response.result.result_status) != peer_status
+                    or response.result.result_reason != peer_reason):
+                raise ValueError('typed asynchronous response changed its result metadata')
+            observed = {'response_type': expected_type,
+                        'result_status': int(response.result.result_status),
+                        'result_reason': (None if response.result.result_reason is None
+                                          else int(response.result.result_reason))}
+            if member == 'cancel_response' and cancellation_result is not None:
+                if response.cancellation_result != cancellation_result:
+                    raise ValueError('typed Cancel response changed its Cancellation Result')
+                echoed = bytearray()
+                if (not response.with_echoed_correlation_value(
+                        lambda value: echoed.extend(value))
+                        or echoed != correlation):
+                    raise ValueError('typed Cancel response changed its echoed correlation')
+                observed['cancellation_result'] = response.cancellation_result
+        if trace is not None:
+            trace.record_invocation(symbol)
+        request = _network_tree(peer.requests[0], 'TTLV') if len(peer.requests) == 1 else []
+        response_tree = _network_tree(peer.responses[0], 'TTLV') if len(peer.responses) == 1 else []
+        if (not request or not response_tree
+                or _normalized_name(str(peer.request_observation.get('operation', '')))
+                != _normalized_name(operation)):
+            raise ValueError('controlled asynchronous peer did not observe the requested operation')
+        request_digest = digest(request)
+        response_digest = digest({'tree': response_tree, 'accessor': observed,
+                                  'target': target.get('target_id')})
+    finally:
+        if outcome is not None:
+            outcome.close()
+        if limits is not None:
+            limits.close()
+        if driver is not None:
+            driver.close()
+        peer.close()
+    return {'request_tree_sha256': request_digest,
+            'response_tree_sha256': response_digest,
+            'request_delivery_state': 'response_received',
+            'transport_invocation_count': 1, 'peer_observed_response_count': 1}
+
+
 def _query_response_field_cell(cell: dict, target: dict,
                                trace: CallTrace | None) -> dict:
     """Read QueryResponse field count and indexed values in their original order."""
@@ -1689,6 +1863,8 @@ def execute_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | Non
             return _get_attribute_list_response_constructor_cell(cell, target, trace)
         if cell['public_api_symbol'] == _BATCH_ERROR_CONTINUATION_ROUTE:
             return _batch_error_continuation_cell(cell, case, target, trace)
+        if cell['public_api_symbol'] in _ASYNC_OUTCOME_RESPONSE_ROUTES:
+            return _async_outcome_response_cell(cell, case, target, trace)
         if cell['public_api_symbol'] in _BATCH_ITEM_RESULT_VALUE_ROUTES:
             return _batch_item_result_value_cell(cell, case, target, trace)
         return _generic_cell(cell, case, target)
