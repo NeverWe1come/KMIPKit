@@ -359,6 +359,71 @@ def test_attribute_read_builders_execute_single_mtls_exchanges_and_preserve_orde
             raise peer_failures.get()
 
 
+def test_python_direct_attribute_read_methods_execute_single_mtls_exchanges() -> None:
+    port, observations, peer_failures, peer = _start_lifecycle_peer((11, 12))
+    registry = extensions.create_client_extension_registry(
+        (), extensions.default_extension_registry_limits()
+    )
+    configuration = extensions.create_client_configuration(registry)
+    results: list[client.BatchResult] = []
+    identifier = extensions.UniqueIdentifier.text_string("direct-attribute-read-key")
+    references = (
+        extensions.AttributeReference.tag(0x42002A),
+        extensions.AttributeReference.name("KMIPKit", "Comment"),
+    )
+    try:
+        with configuration, client.Client.create(
+            configuration, mtls_transport_config(port, _FIXTURES)
+        ) as kmip_client, ttlv.codec_limits_defaults() as limits:
+            with pytest.raises(errors.KmipKitError):
+                kmip_client.get_attributes(
+                    unique_identifier=None,
+                    attribute_references=references,
+                    limits=limits,
+                )
+            with pytest.raises(errors.KmipKitError):
+                kmip_client.get_attribute_list(
+                    unique_identifier=None, limits=limits
+                )
+            results.append(
+                kmip_client.get_attributes(
+                    unique_identifier=identifier,
+                    attribute_references=references,
+                    limits=limits,
+                    options=client.RequestOptions(),
+                )
+            )
+            results.append(
+                kmip_client.get_attribute_list(
+                    unique_identifier=identifier, limits=limits
+                )
+            )
+        peer.join(timeout=12)
+        assert not peer.is_alive()
+        assert peer_failures.empty()
+        assert [result.items[0].operation for result in results] == [11, 12]
+        assert [operation for operation, _, _ in observations] == [11, 12]
+        assert [observed_id for _, observed_id, _ in observations] == [
+            b"direct-attribute-read-key", b"direct-attribute-read-key"
+        ]
+        requests = [request for _, _, request in observations]
+        tag_reference = _item(0x42013B, 5, struct.pack(">I", 0x42002A))
+        name_reference = _structure(
+            0x42013B,
+            _item(0x42009D, 7, b"KMIPKit"),
+            _item(0x42000A, 7, b"Comment"),
+        )
+        assert requests[0].index(tag_reference) < requests[0].index(name_reference)
+        assert results[0].items[0].get_attributes_response is not None
+        assert results[1].items[0].get_attribute_list_response is not None
+    finally:
+        for result in results:
+            result.close()
+        peer.join(timeout=12)
+        if not peer_failures.empty():
+            raise peer_failures.get()
+
+
 def test_attribute_read_builders_preserve_omitted_identifier_and_reject_duplicates() -> None:
     request = fluent.Request(object())
     list_builder = request.get_attribute_list()

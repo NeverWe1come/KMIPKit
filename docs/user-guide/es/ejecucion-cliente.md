@@ -995,6 +995,64 @@ anterior proporciona el KMIP ID Placeholder. La vista específica de cada
 operación conserva los campos presentes en la respuesta; no solicita atributos
 ausentes ni reintenta.
 
+### Lectura de atributos en C, Java y Python
+
+KMIPKIT-0109 añade entradas orientadas a tareas en estos tres bindings. Usan
+las requests tipadas Get Attributes y Get Attribute List, conservan el orden
+de las referencias y ejecutan un solo intercambio. Las llamadas independientes
+requieren un identificador de objeto de tipo texto. Los builders pueden
+omitirlo al crear un elemento de batch que siga a un productor de ID
+Placeholder. Failure, Pending y los metadatos de entrega permanecen en el
+resultado batch existente; ningún builder sondea ni reintenta.
+
+En C, se pueden llamar las funciones directas sin construir el batch a mano:
+
+```c
+kmipkit_client_get_attributes_v1(
+    client, &key_id, references, reference_count, limits, &response);
+kmipkit_client_get_attribute_list_v1(client, &key_id, limits, &response);
+```
+
+Las variantes `_with_options_v1` reciben los timeouts propios del intercambio.
+Las funciones copian sincrónicamente sus entradas versionadas y devuelven una
+respuesta batch propiedad de quien llama; libérala con
+`kmipkit_client_batch_response_release`.
+
+Java y Python ofrecen las mismas operaciones desde sus espacios `request`:
+
+```java
+try (ClientBatchResponse response = client.request()
+        .getAttributes(keyId, references).execute(limits);
+        ClientBatchItemResult item = response.itemAt(0);
+        ClientBatchItemResult.GetAttributesResponse attributes =
+                item.getAttributesResponse().orElseThrow()) {
+    String resolvedId = attributes.uniqueIdentifier();
+}
+```
+
+```python
+result = kmip_client.request().get_attributes(
+    unique_identifier=key_id,
+    attribute_references=[AttributeReference.tag(0x0042002A)],
+).execute(limits)
+try:
+    resolved_id = result.items[0].get_attributes_response.unique_identifier
+finally:
+    result.close()
+```
+
+Python también expone métodos directos de un solo intercambio cuando no hace
+falta construir un batch:
+
+```python
+result = kmip_client.get_attribute_list(unique_identifier=key_id, limits=limits)
+```
+
+Usa `getAttributeList()` o `get_attribute_list()` sin identificador para crear
+un elemento de batch compatible con ID Placeholder. Los métodos directos de C y
+Python requieren identificador porque un intercambio independiente no puede
+resolver un ID Placeholder.
+
 ## Peticiones criptográficas fluidas en Rust
 
 KMIPKIT-0102 añade builders de Rust para Encrypt, Decrypt, Sign, Signature

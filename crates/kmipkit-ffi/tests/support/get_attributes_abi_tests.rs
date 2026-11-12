@@ -53,6 +53,8 @@ fn c_consumer_calls_task_oriented_attribute_read_entrypoints() {
 fn c_consumer_executes_both_attribute_read_entrypoints_over_mtls() {
     let (client, peer, exchange_count) = client_with_responses(vec![
         attribute_read_success_response(11),
+        attribute_read_success_response(11),
+        attribute_read_success_response(12),
         attribute_read_success_response(12),
     ]);
     let client = make_handle(
@@ -63,12 +65,12 @@ fn c_consumer_executes_both_attribute_read_entrypoints_over_mtls() {
     let status =
         unsafe { kmipkit_client_abi_c_consumer_executes_fluent_attribute_reads(client, limits) };
     peer.join()
-        .expect("the controlled TLS peer completes both exchanges");
+        .expect("the controlled TLS peer completes all four exchanges");
     assert_eq!(
         status, 1,
-        "the compiled C consumer completed both typed calls"
+        "the compiled C consumer completed both direct APIs with and without options"
     );
-    assert_eq!(exchange_count.load(Ordering::Relaxed), 2);
+    assert_eq!(exchange_count.load(Ordering::Relaxed), 4);
     kmipkit_codec_limits_release(limits);
     kmipkit_client_release(client);
 }

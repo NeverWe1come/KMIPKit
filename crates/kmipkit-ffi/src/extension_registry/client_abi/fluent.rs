@@ -278,7 +278,8 @@ fn fluent_get_attributes_request(
     attribute_references: *const crate::kmipkit_attribute_reference_v1_t,
     attribute_reference_count: u64,
 ) -> FfiResult<ClientRequest> {
-    let unique_identifier = super::super::copy_optional_text_identifier(unique_identifier)?;
+    let unique_identifier = super::super::copy_optional_text_identifier(unique_identifier)?
+        .ok_or(ERROR_INVALID_INPUT)?;
     let source = input_array(
         attribute_references,
         attribute_reference_count,
@@ -293,7 +294,7 @@ fn fluent_get_attributes_request(
             reference,
         ))?);
     }
-    let request = GetAttributesRequest::try_new(unique_identifier, references)
+    let request = GetAttributesRequest::try_new(Some(unique_identifier), references)
         .map_err(|_| ERROR_INVALID_INPUT)?;
     Ok(ClientRequest::get_attributes(request))
 }
@@ -301,9 +302,10 @@ fn fluent_get_attributes_request(
 fn fluent_get_attribute_list_request(
     unique_identifier: *const kmipkit_unique_identifier_v1_t,
 ) -> FfiResult<ClientRequest> {
-    let unique_identifier = super::super::copy_optional_text_identifier(unique_identifier)?;
+    let unique_identifier = super::super::copy_optional_text_identifier(unique_identifier)?
+        .ok_or(ERROR_INVALID_INPUT)?;
     Ok(ClientRequest::get_attribute_list(
-        GetAttributeListRequest::new(unique_identifier),
+        GetAttributeListRequest::new(Some(unique_identifier)),
     ))
 }
 
@@ -365,7 +367,7 @@ pub unsafe extern "C" fn kmipkit_client_get_attributes_with_options_v1(
     })
 }
 
-/// Executes one typed Get Attribute List request, preserving an omitted identifier.
+/// Executes one typed Get Attribute List request for a required object identifier.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_get_attribute_list_v1(
     client: *mut kmipkit_client_t,
@@ -382,7 +384,7 @@ pub extern "C" fn kmipkit_client_get_attribute_list_v1(
     })
 }
 
-/// Executes Get Attribute List with explicit exchange-local timeout options.
+/// Executes Get Attribute List for a required identifier with exchange-local timeout options.
 ///
 /// # Safety
 ///

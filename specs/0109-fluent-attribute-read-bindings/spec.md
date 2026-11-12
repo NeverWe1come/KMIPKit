@@ -29,13 +29,15 @@ references, one exchange, typed result, and response fields.
 
 ### Story 2 — List available attribute names (P1)
 
-An application selects an optional identifier or omits it for an enclosing
-placeholder-aware batch, then obtains the ordered Attribute References in a
-Get Attribute List response.
+An application selects an identifier and obtains the ordered Attribute
+References in a standalone Get Attribute List response. A fluent builder may
+omit the identifier when it becomes a batch item following an ID Placeholder
+producer.
 
-**Independent test**: each binding constructs either an operation-specific
-batch item or a standalone request, verifies omission is preserved, and checks
-the ordered typed response from a controlled transport.
+**Independent test**: each binding constructs an operation-specific batch item
+with an omitted identifier and verifies that omission is preserved. Standalone
+direct execution supplies an identifier and checks the ordered typed response
+from a controlled transport.
 
 ### Edge Cases
 
@@ -71,11 +73,15 @@ the ordered typed response from a controlled transport.
   task-oriented entry points for Get Attributes and Get Attribute List. Each
   entry point MUST construct the existing typed operation request and MUST NOT
   require callers to manually create a batch.
-- **KMIPKIT-0109-FR-002**: Get Attributes MUST preserve the caller's ordered
-  Attribute References and optional Unique Identifier. Duplicate references
-  MUST be rejected by the existing typed request validator before transport.
-- **KMIPKIT-0109-FR-003**: Get Attribute List MUST preserve an omitted
+- **KMIPKIT-0109-FR-002**: Get Attributes builders MUST preserve the caller's
+  ordered Attribute References and optional Unique Identifier. Standalone
+  direct execution methods MUST require a text Unique Identifier because they
+  cannot resolve a batch ID Placeholder. Duplicate references MUST be rejected
+  by the existing typed request validator before transport.
+- **KMIPKIT-0109-FR-003**: Get Attribute List builders MUST preserve an omitted
   Unique Identifier and MUST NOT synthesize an identifier or ID Placeholder.
+  Standalone direct execution methods MUST require a text Unique Identifier;
+  callers needing an omitted identifier MUST use a placeholder-aware batch.
 - **KMIPKIT-0109-FR-004**: Both operation builders MUST support explicit
   validation, conversion to the existing typed batch item, exchange-local
   options, and an explicit Request Header Asynchronous Indicator where the
@@ -102,8 +108,9 @@ the ordered typed response from a controlled transport.
 3. Java and Python consumer tests verify idiomatic calls, ownership, exact
    request shape, ordered values, typed results, and one controlled TLS
    exchange for each operation.
-4. Invalid builders fail before transport; valid standalone execution uses
-   exactly one exchange; batch conversion preserves omitted identifiers.
+4. Invalid builders fail before transport; standalone direct execution
+   requires an identifier and uses exactly one exchange; batch conversion
+   preserves omitted identifiers for placeholder-aware batches.
 5. Format, lint, language suites, coverage, generation, export audit, and
    exact-head CI pass before removing `[WIP]`.
 
