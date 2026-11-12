@@ -174,6 +174,14 @@ public final class Consumer {
         System.out.println("java: fluent AES-GCM journey verified");
     }
 
+    private static CryptographicParameters ecdsaSha256Parameters() {
+        try (CryptographicParameters.Builder builder = CryptographicParameters.builder()) {
+            return builder.hashingAlgorithm(KmipValues.HashingAlgorithm.SHA_256)
+                    .digitalSignatureAlgorithm(KmipValues.DigitalSignatureAlgorithm.ECDSA_WITH_SHA256)
+                    .build();
+        }
+    }
+
     private static void executeKeyPairSignatureJourney(KmipClient client, CodecLimits limits) throws Exception {
         UniqueIdentifier privateIdentifier;
         UniqueIdentifier publicIdentifier;
@@ -201,11 +209,7 @@ public final class Consumer {
         }
 
         byte[] signature;
-        try (CryptographicParameters.Builder parameterBuilder = CryptographicParameters.builder();
-                CryptographicParameters parameters = parameterBuilder
-                        .hashingAlgorithm(KmipValues.HashingAlgorithm.SHA_256)
-                        .digitalSignatureAlgorithm(KmipValues.DigitalSignatureAlgorithm.ECDSA_WITH_SHA256)
-                        .build();
+        try (CryptographicParameters parameters = ecdsaSha256Parameters();
                 SignBuilder signBuilder = client.request().sign();
                 ClientBatchResponse signed = signBuilder
                         .uniqueIdentifier(privateIdentifier).data(SIGNATURE_PLAINTEXT)
@@ -226,11 +230,7 @@ public final class Consumer {
             }
         }
 
-        try (CryptographicParameters.Builder parameterBuilder = CryptographicParameters.builder();
-                CryptographicParameters parameters = parameterBuilder
-                        .hashingAlgorithm(KmipValues.HashingAlgorithm.SHA_256)
-                        .digitalSignatureAlgorithm(KmipValues.DigitalSignatureAlgorithm.ECDSA_WITH_SHA256)
-                        .build();
+        try (CryptographicParameters parameters = ecdsaSha256Parameters();
                 SignatureVerifyBuilder verifyBuilder = client.request().signatureVerify();
                 ClientBatchResponse verified = verifyBuilder
                         .uniqueIdentifier(publicIdentifier).data(SIGNATURE_PLAINTEXT)

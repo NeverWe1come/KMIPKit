@@ -49,3 +49,9 @@
 - Fresh results: the 40-exchange journey, Python 30, Java 15, FFI 3, manifest 13,
   fixture 2 and documentation 4 tests pass. Generation verifies 12 outputs;
   the refreshed export audit and all-feature FFI/test Clippy pass.
+- Red: `f0bd6c7431a328a9a5ad99a6ff2ea7eebd1f0a9d`; Green:
+  `bd338ac06b57bdef2164dc9e158f2d218a9b47a1`.
+- Refactor centralizes duplicate Java signature parameter construction and
+  closes its parameter builder. The 40-exchange journey and 15 Java tests pass
+  again. Both review findings are addressed; the separate Refactor commit and
+  exact evidence are available in the report for independent review.

@@ -9,7 +9,8 @@ Owner: approved KMIPKIT-0093 FR-011/FR-013, F001.3; KMIP 2.1 sections
 
 The four consumers execute Create Key Pair -> Sign -> Signature Verify over
 the existing TLS 1.3 mutual-authentication listener. They explicitly select
-ECDSA/256, private SIGN and public VERIFY usage, SHA-256, and ECDSA-with-SHA-256.
+ECDSA/256 with Recommended Curve P-256, private SIGN and public VERIFY usage,
+SHA-256, and ECDSA-with-SHA-256.
 The listener decodes the parameters, operation, key identifiers, payload and
 signature; the consumers inspect real encoded TTLV responses and valid results.
 The new binding facades assemble existing typed Rust requests; they add no
@@ -303,10 +304,8 @@ Fresh Green commands and results:
     `cargo fmt --manifest-path tests/consumers/0093-journeys/rust/Cargo.toml -- --check`
     and `git diff --check` — passed. Log: `/tmp/kmipkit-task3-fix1-fmt.log`.
 
-Red review-fix commit: `f0bd6c743`.
-Green review-fix commit: the commit containing these typed common-attribute
-adapters, explicit curve selections, Java resource scopes and regenerated evidence.
-Refactor verification follows after the Green commit.
+Red review-fix commit: `f0bd6c7431a328a9a5ad99a6ff2ea7eebd1f0a9d`.
+Green review-fix commit: `bd338ac06b57bdef2164dc9e158f2d218a9b47a1`.
 
 Self-review: no invented algorithm/curve code, no C layout break, no curve
 inference from key length, and no request retry. Native ownership of all newly
@@ -315,3 +314,27 @@ and Java/Python build requests while borrowed attributes are still alive.
 Only the listed worktree is modified, and the unrelated untracked Python
 lockfile remains untouched. The prior unrelated candidate-exclusion baseline
 failure and cross-platform/coverage scope limits remain as documented above.
+
+### Fix round 1 Refactor and final status
+
+The separate Refactor commit is titled
+`refactor(KMIPKIT-0107): share Java signature parameters`. It centralizes the
+identical SHA-256 / ECDSA-with-SHA-256 parameter construction in a private Java
+consumer helper. The helper closes its parameter builder before returning the
+owned parameter object. Sign/SignatureVerify builders remain explicit resources
+in their operation scopes. No public API or wire-contract change is introduced
+by the Refactor.
+
+- `sh tests/consumers/0093-journeys/verify.sh` passed again, including all 40
+  exchanges and the listener's successful exit. Log:
+  `/tmp/kmipkit-task3-fix1-refactor.log`.
+- `mvn -f bindings/java/pom.xml -Dtest=org.kmipkit.fluent.FluentFacadeShapeTest,org.kmipkit.fluent.FluentCryptoApiShapeTest -Dexec.skip=true -Dmaven.compiler.useIncrementalCompilation=false test`
+  passed all 15 tests again. Log: `/tmp/kmipkit-task3-fix1-java-refactor.log`.
+- `git diff --check` passed before committing.
+
+Both reviewer findings are addressed. Red, Green and Refactor are separate
+review-fix commits. The manifest generator, Java suites and export audit all
+completed successfully before the Green commit; the Refactor changes only the
+consumer helper and evidence. The worktree is ready for independent review,
+with only the pre-existing untracked `bindings/python/uv.lock` left outside the
+commits. There was no push, PR metadata change or readiness action.
