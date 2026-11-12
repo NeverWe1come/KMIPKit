@@ -505,9 +505,9 @@ def run(output: Path, binary: Path | None = None) -> int:
         case = cases[cell['case_id']]
         tag_target_case = (case.get('requires', {}).get('enum_type') == 'Tag'
                            and target['kind'] in {'tag', 'tag_range'})
-        # Multi-branch semantic cases require dedicated recipes. A scalar check
-        # can satisfy only the individual inventory value/tag target case.
-        individual_value = (
+        # Tag-family cells must use the expanded tag itself, including reserved tags.
+        # Other semantic scenarios still need their dedicated request recipes.
+        scalar_target_case = (
             case['category'] == 'normative_inventory' and not case.get('requires', {}).get('protocol_scenario')
         ) or target['kind'] in {'operation', 'object_type'} or tag_target_case
         if (cell['transport'] is None and not tag_target_case
@@ -573,7 +573,7 @@ def run(output: Path, binary: Path | None = None) -> int:
                 branch_evidence.append({**cell_fields(cell), 'sample_count': result['sample_count'],
                                         'branches': result['branches'], 'tree_sha256': result['tree_sha256']})
                 continue
-        if (cell['transport'] is None and fixture is not None and individual_value
+        if (cell['transport'] is None and fixture is not None and scalar_target_case
                 and (target['kind'] != 'tag' or target.get('allocation') != 'reserved' or
                      (cell['public_api_symbol'] in
                       {'kmipkit_ttlv_raw_tag_create', 'kmipkit_ttlv_raw_tag_try_checked', 'kmipkit_ttlv_decode'}))
