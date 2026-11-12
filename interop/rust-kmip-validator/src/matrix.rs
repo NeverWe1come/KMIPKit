@@ -2075,6 +2075,51 @@ fn invoke_simple_protocol_route(symbol: &str, sample: &Item) -> Option<Result<It
     None
 }
 
+fn invoke_operation_data_route(symbol: &str, sample: &Item) -> Option<Result<Item>> {
+    const ROUTES: &[&str] = &[
+        "kmipkit_protocol::HashRequest::with_data",
+        "kmipkit_protocol::MacRequest::with_data",
+        "kmipkit_protocol::MacVerifyRequest::with_data",
+        "kmipkit_protocol::SignRequest::with_data",
+        "kmipkit_protocol::SignatureVerifyRequest::with_data",
+    ];
+    if !ROUTES.contains(&symbol) {
+        return None;
+    }
+    Some((|| {
+        let data = sample.with_value(|value| match value {
+            ValueView::ByteString(value) => Ok(kmipkit::protocol::OperationData::ByteString(
+                kmipkit::protocol::SecretBytes::new(value.to_vec()),
+            )),
+            ValueView::Enumeration(value) => {
+                Ok(kmipkit::protocol::OperationData::Enumeration(*value))
+            }
+            ValueView::Integer(value) => Ok(kmipkit::protocol::OperationData::Integer(*value)),
+            _ => Err("operation Data fixture has an unsupported TTLV type"),
+        })?;
+        match symbol {
+            "kmipkit_protocol::HashRequest::with_data" => {
+                let _request = kmipkit::protocol::HashRequest::new(kmipkit::ttlv::Structure::new())
+                    .with_data(data);
+            }
+            "kmipkit_protocol::MacRequest::with_data" => {
+                let _request = kmipkit::protocol::MacRequest::new().with_data(data);
+            }
+            "kmipkit_protocol::MacVerifyRequest::with_data" => {
+                let _request = kmipkit::protocol::MacVerifyRequest::new().with_data(data);
+            }
+            "kmipkit_protocol::SignRequest::with_data" => {
+                let _request = kmipkit::protocol::SignRequest::new().with_data(data);
+            }
+            "kmipkit_protocol::SignatureVerifyRequest::with_data" => {
+                let _request = kmipkit::protocol::SignatureVerifyRequest::new().with_data(data);
+            }
+            _ => return Err("unsupported operation Data route"),
+        }
+        sample.try_clone().map_err(|_| "local copy failed")
+    })())
+}
+
 #[allow(clippy::too_many_lines)] // Explicit public route dispatch stays together for review.
 fn invoke(
     symbol: &str,
@@ -2083,6 +2128,9 @@ fn invoke(
     elements: &[Json],
     protocol_version: &str,
 ) -> Option<Result<Item>> {
+    if let Some(result) = invoke_operation_data_route(symbol, sample) {
+        return Some(result);
+    }
     if symbol == "kmipkit_protocol::extension::to_ttlv" {
         return Some((|| {
             let information =
