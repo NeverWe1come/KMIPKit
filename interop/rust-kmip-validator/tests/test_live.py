@@ -417,6 +417,28 @@ class LiveContract(unittest.TestCase):
             self.assertEqual(report["summary"]["policy_restricted"], 3)
             self.assertEqual(peer.operations, [0x18])
 
+    def test_batch_create_activate_get_attribute_list_revoke_destroy_matches_catalog_order(self):
+        case = self.rows("test-batch-create-activate-destroy")
+        scenario = case[0]["requires"]["protocol_scenario"]
+        expected_names = scenario["parameters"]["operations_in_request_order"]
+        operation_codes = {
+            target["name"]: int(target["wire_value"], 16)
+            for target in CATALOG["normative_targets"]
+            if target["kind"] == "enumeration_value"
+            and any("ENUMERATION-OPERATION" in parent for parent in target["parent_element_ids"])
+            and all(character in "0123456789abcdefABCDEF" for character in target["wire_value"])
+        }
+        expected_codes = [operation_codes[name] for name in expected_names]
+
+        with ControlledPeer(self.pki, successful_batch) as peer:
+            process, report = self.command(
+                self.connection(peer.port, mutations=True),
+                case,
+            )
+
+        self.assertEqual(peer.operations, expected_codes)
+        self.assertEqual(process.returncode, 0, process.stderr or report)
+
     def test_version_boundary_is_rejected_before_sending(self):
         cases = [case for case in CATALOG["test_cases"] if case["case_id"].startswith("test-v20-reject-")]
         with ControlledPeer(self.pki, lambda tree: response(0x18)) as peer:
