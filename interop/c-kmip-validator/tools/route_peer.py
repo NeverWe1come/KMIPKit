@@ -159,7 +159,12 @@ def descendants(node, tag):
 
 
 def numbers(node, tag):
-    return [int.from_bytes(item[2], 'big') for item in descendants(node, tag)]
+    return [int.from_bytes(item[2], 'big') for item in descendants(node, tag)
+            if item[1] != 1 and isinstance(item[2], bytes)]
+
+
+def text_values(node, tag):
+    return [item[2].decode('utf-8') for item in descendants(node, tag) if item[1] == 7]
 
 
 def request_payload_field_present(target, batch_item, targets, codec):
@@ -278,9 +283,19 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None):
         raise ValueError('fixture_attribute_reference_mismatch')
     if case_id == 'test-attr-cryptographic-length' and numbers(node, 0x42013B) != [0x42002A]:
         raise ValueError('fixture_attribute_reference_mismatch')
-    if attribute_fixture is not None and numbers(node, 0x42013B) != [
-            int(attribute_fixture['attribute_reference_tag'], 16)]:
-        raise ValueError('fixture_attribute_reference_mismatch')
+    if attribute_fixture is not None:
+        target_item = next(item for item in node[2]
+                           if item[0] == 0x42000F and numbers(item, 0x42005C) == [11])
+        if attribute_fixture['attribute_reference_kind'] == 'tag':
+            matches = numbers(target_item, 0x42013B) == [
+                int(attribute_fixture['attribute_reference_tag'], 16)]
+        else:
+            matches = (text_values(target_item, 0x42000A) == [
+                attribute_fixture['attribute_reference_name']] and
+                text_values(target_item, 0x42009D) == [
+                    attribute_fixture['attribute_vendor_identification']])
+        if not matches:
+            raise ValueError('fixture_attribute_reference_mismatch')
     if selected_recipe[1] == 'query' and numbers(node, 0x420074) != [1]:
         raise ValueError('fixture_query_function_mismatch')
     if case_id == 'test-norm-payload-client-create-request-21-003':
@@ -318,17 +333,38 @@ def read_back_attribute_fixture(case, catalog, version, attributes):
     target_id = case.get('requires', {}).get('normative_target_id')
     target = next((row for row in catalog['normative_targets']
                    if row.get('target_id') == target_id), None)
-    if target is None or target.get('name') == 'Vendor Attribute':
+    if target is None:
         return None
     fixtures = attributes.fixtures(target, version)
     if not fixtures:
         return None
     tag, item_type, _ = fixtures[0]
-    reference_tag = attributes.tags.get(normalize(case['requires']['attribute']))
-    if reference_tag is None or reference_tag != tag:
-        return None
+    if target.get('name') == 'Vendor Attribute':
+        if tag != attributes.tags.get(normalize('Attribute')) or item_type != 1:
+            return None
+        vendor_tag = attributes.tags[normalize('Vendor Identification')]
+        name_tag = attributes.tags[normalize('Attribute Name')]
+        fields = {field_tag: value.decode('utf-8') for field_tag, kind, value in fixtures[0][2]
+                  if kind == 7 and field_tag in (vendor_tag, name_tag)}
+        vendor, name = fields.get(vendor_tag), fields.get(name_tag)
+        if not vendor or not name:
+            return None
+        reference = {
+            'attribute_reference_kind': 'name',
+            'attribute_reference_name': name,
+            'attribute_vendor_identification': vendor,
+        }
+    else:
+        reference_tag = attributes.tags.get(normalize(case['requires']['attribute']))
+        if reference_tag is None or reference_tag != tag:
+            return None
+        reference = {
+            'attribute_reference_kind': 'tag',
+            'attribute_reference_tag': f'{reference_tag:06X}',
+        }
     return {
-        'attribute_reference_tag': f'{reference_tag:06X}',
+        **reference,
+        'attribute_response_tag': f'{tag:06X}',
         'attribute_response_type': str(item_type),
         'attribute_response_wire': fixture_wire(fixtures[0]),
     }
@@ -453,7 +489,12 @@ def case_for_controlled_exchange(case, attribute_fixture=None):
     if attribute_fixture is not None:
         case = {**case, 'requires': {
             **case.get('requires', {}),
-            'attribute_reference_tag': attribute_fixture['attribute_reference_tag'],
+            'attribute_reference_kind': attribute_fixture['attribute_reference_kind'],
+            'attribute_reference_tag': attribute_fixture.get('attribute_reference_tag', ''),
+            'attribute_reference_name': attribute_fixture.get('attribute_reference_name', ''),
+            'attribute_vendor_identification': attribute_fixture.get(
+                'attribute_vendor_identification', ''),
+            'attribute_response_tag': attribute_fixture['attribute_response_tag'],
             'attribute_response_type': attribute_fixture['attribute_response_type'],
         }}
     return case
@@ -520,7 +561,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         assert_recipe(request_tree, case_id, version, recipe, attribute_fixture)
                                         selected_tag = {'test-attr-cryptographic-algorithm': 0x420028,
                                                         'test-attr-cryptographic-length': 0x42002A}.get(
-                                                            case_id, int(attribute_fixture['attribute_reference_tag'], 16)
+                                                            case_id, int(attribute_fixture['attribute_response_tag'], 16)
                                                             if attribute_fixture else 0)
                                         object_type = 4 if case_id == 'test-obj-private-key' else 3 if case_id == 'test-obj-public-key' else 2
                                         response_wire = response(
@@ -589,20 +630,26 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     (0x42000F, 1, [(0x42005C, 5, (56).to_bytes(4, 'big')), (0x420079, 1, [])])])
                                 observation.append((attempted, None))
                             code = errors[0] if errors else 'consumer_check_failed' if not case_passed else 'public_api_trace_missing' if not called_symbols else None
+                            attribute_check = {}
+                            if observation and attribute_fixture:
+                                request_item = next(item for item in observation[0][0][2]
+                                                    if item[0] == 0x42000F and
+                                                    numbers(item, 0x42005C) == [11])
+                                attribute_check = {
+                                    'request_attribute_reference_tags': [
+                                        f'{tag:06X}' for tag in numbers(request_item, 0x42013B)],
+                                    'request_attribute_reference_names': text_values(request_item, 0x42000A),
+                                    'request_vendor_identifications': text_values(request_item, 0x42009D),
+                                    'response_attribute_tags': [
+                                        f'{item[0]:06X}' for item in next(
+                                            descendants(observation[0][1], 0x420125))[2]],
+                                }
                             checks.append({'case_id': case_id, 'constructor_variant': variant, 'protocol_version': version, 'encoding': encoding,
                                            'transport': transport, 'status': 'passed' if observation and not code and run.returncode == 0 else 'failed',
                                            'consumer_case_status': (result.get('cases') or [{}])[0].get('status', 'missing'),
                                            'consumer_server_compatibility': (result.get('cases') or [{}])[0].get('server_compatibility', 'missing'),
                                            'public_api_trace_symbols': sorted(invoked_symbols),
-                                           **({'request_attribute_reference_tags': [
-                                               f'{tag:06X}' for tag in numbers(
-                                                   next(item for item in observation[0][0][2]
-                                                        if item[0] == 0x42000F and numbers(item, 0x42005C) == [11]),
-                                                   0x42013B)],
-                                               'response_attribute_tags': [
-                                                   f'{item[0]:06X}' for item in next(
-                                                       descendants(observation[0][1], 0x420125))[2]]}
-                                               if observation and attribute_fixture else {}),
+                                           **attribute_check,
                                            **({'failure_code': code or 'peer_observation_missing'} if code or not observation else {})})
                             if not observation or code or run.returncode != 0:
                                 continue

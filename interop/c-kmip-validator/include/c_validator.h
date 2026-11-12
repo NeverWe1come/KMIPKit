@@ -26,7 +26,11 @@ typedef struct {
     char operation[KMIP_MAX_NAME_LEN];
     char object_type[KMIP_MAX_NAME_LEN];
     char attribute[KMIP_MAX_NAME_LEN];
+    char attribute_reference_kind[8];
     char attribute_reference_tag[16];
+    char attribute_reference_name[KMIP_MAX_NAME_LEN];
+    char attribute_vendor_identification[KMIP_MAX_NAME_LEN];
+    char attribute_response_tag[16];
     char attribute_response_type[8];
     char category[KMIP_MAX_NAME_LEN];
     char mode[32];

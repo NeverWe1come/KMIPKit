@@ -270,6 +270,62 @@ static bool attributes_contain_typed_tag(kmipkit_ttlv_structure_t *attributes,
     return valid && found;
 }
 
+static bool text_value_matches(kmipkit_ttlv_value_view_t *value,
+                               const uint8_t *expected,
+                               uint64_t expected_length) {
+    uint8_t item_type = 0;
+    uint64_t actual_length = 0;
+    if (!value || (!expected && expected_length != 0) ||
+        kmipkit_ttlv_value_view_type(value, &item_type) != 0 ||
+        item_type != KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING ||
+        kmipkit_ttlv_value_view_byte_length(value, &actual_length) != 0 ||
+        actual_length != expected_length) return false;
+    for (uint64_t index = 0; index < actual_length; ++index) {
+        uint8_t actual_byte = 0;
+        if (kmipkit_ttlv_value_view_byte_at(value, index, &actual_byte) != 0 ||
+            actual_byte != expected[index]) return false;
+    }
+    return true;
+}
+
+static bool structure_view_has_text(kmipkit_ttlv_structure_view_t *structure,
+                                    uint32_t tag,
+                                    const uint8_t *expected,
+                                    uint64_t expected_length) {
+    uint64_t count = 0;
+    if (!structure || kmipkit_ttlv_structure_view_item_count(structure, &count) != 0) return false;
+    for (uint64_t index = 0; index < count; ++index) {
+        kmipkit_ttlv_item_view_t *item = NULL;
+        kmipkit_ttlv_value_view_t *value = NULL;
+        if (kmipkit_ttlv_structure_view_item_at(structure, index, &item) != 0) return false;
+        bool matches = item_view_has_tag(item, tag, KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING, &value) &&
+            text_value_matches(value, expected, expected_length);
+        if (value) kmipkit_ttlv_value_view_release(value);
+        kmipkit_ttlv_item_view_release(item);
+        if (matches) return true;
+    }
+    return false;
+}
+
+static bool attribute_reference_name_matches(kmipkit_ttlv_item_view_t *item,
+                                             const kmipkit_attribute_reference_v1_t *reference) {
+    kmipkit_ttlv_value_view_t *value = NULL;
+    kmipkit_ttlv_structure_view_t *structure = NULL;
+    bool matches = reference && reference->kind == KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME &&
+        reference->vendor_identification_data && reference->attribute_name_data &&
+        item_view_has_tag(item, UINT32_C(0x42013B), KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE, &value) &&
+        kmipkit_ttlv_value_view_structure(value, &structure) == 0 &&
+        structure_view_has_text(structure, UINT32_C(0x42009D),
+                                reference->vendor_identification_data,
+                                reference->vendor_identification_length) &&
+        structure_view_has_text(structure, UINT32_C(0x42000A),
+                                reference->attribute_name_data,
+                                reference->attribute_name_length);
+    if (structure) kmipkit_ttlv_structure_view_release(structure);
+    if (value) kmipkit_ttlv_value_view_release(value);
+    return matches;
+}
+
 static bool same_text_identifier(const kmipkit_unique_identifier_v1_t *left,
                                  const kmipkit_unique_identifier_v1_t *right) {
     return left->kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING &&
@@ -1235,12 +1291,17 @@ static bool exported_attribute_payload_matches(
         kmipkit_ttlv_item_view_t *item = NULL;
         kmipkit_ttlv_value_view_t *value = NULL;
         uint32_t actual_reference = 0;
-        valid = references[index].kind == KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG &&
-            kmipkit_ttlv_structure_view_item_at(view, index + (identifier ? 1U : 0U), &item) == 0 &&
-            item_view_has_tag(item, UINT32_C(0x42013B),
-                              KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION, &value) &&
-            kmipkit_ttlv_value_view_enumeration(value, &actual_reference) == 0 &&
-            actual_reference == references[index].tag_value;
+        valid = kmipkit_ttlv_structure_view_item_at(view, index + (identifier ? 1U : 0U), &item) == 0;
+        if (valid && references[index].kind == KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG) {
+            valid = item_view_has_tag(item, UINT32_C(0x42013B),
+                                      KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION, &value) &&
+                kmipkit_ttlv_value_view_enumeration(value, &actual_reference) == 0 &&
+                actual_reference == references[index].tag_value;
+        } else if (valid && references[index].kind == KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME) {
+            valid = attribute_reference_name_matches(item, &references[index]);
+        } else if (valid) {
+            valid = false;
+        }
         if (value) kmipkit_ttlv_value_view_release(value);
         if (item) kmipkit_ttlv_item_view_release(item);
     }
@@ -1342,14 +1403,26 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         strcmp(test_case->case_id, "test-attr-cryptographic-algorithm") == 0;
     bool cryptographic_length_attribute_workflow =
         strcmp(test_case->case_id, "test-attr-cryptographic-length") == 0;
-    bool read_back_attribute_workflow = test_case->attribute_reference_tag[0] != '\0';
+    bool read_back_attribute_workflow = test_case->attribute_reference_kind[0] != '\0';
     uint32_t read_back_attribute_tag = 0;
+    uint32_t read_back_attribute_response_tag = 0;
     uint8_t read_back_attribute_type = 0;
+    bool attribute_reference_by_tag =
+        strcmp(test_case->attribute_reference_kind, "tag") == 0;
+    bool attribute_reference_by_name =
+        strcmp(test_case->attribute_reference_kind, "name") == 0;
     if (read_back_attribute_workflow &&
-        (!parse_attribute_reference_tag(test_case->attribute_reference_tag,
-                                        &read_back_attribute_tag) ||
+        ((!attribute_reference_by_tag && !attribute_reference_by_name) ||
+         (attribute_reference_by_tag &&
+          !parse_attribute_reference_tag(test_case->attribute_reference_tag,
+                                         &read_back_attribute_tag)) ||
+         !parse_attribute_reference_tag(test_case->attribute_response_tag,
+                                        &read_back_attribute_response_tag) ||
          !parse_attribute_response_type(test_case->attribute_response_type,
-                                        &read_back_attribute_type))) {
+                                        &read_back_attribute_type) ||
+         (attribute_reference_by_name &&
+          (!test_case->attribute_reference_name[0] ||
+           !test_case->attribute_vendor_identification[0])))) {
         return outcome_failed("read-back attribute fixture metadata is invalid");
     }
     bool hash_workflow = strcmp(test_case->case_id, "test-op-hash") == 0;
@@ -1536,14 +1609,25 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             } else if (get_attributes_workflow) {
                 if (read_back_attribute_workflow || cryptographic_algorithm_attribute_workflow ||
                     cryptographic_length_attribute_workflow) {
-                    const kmipkit_attribute_reference_v1_t attribute_reference = {
+                    kmipkit_attribute_reference_v1_t attribute_reference = {
                         .struct_size = (uint32_t)sizeof(kmipkit_attribute_reference_v1_t),
                         .abi_version = 1,
-                        .kind = KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG,
+                        .kind = attribute_reference_by_name ? KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME :
+                            KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG,
                         .tag_value = read_back_attribute_workflow ? read_back_attribute_tag :
                             cryptographic_algorithm_attribute_workflow ? UINT32_C(0x420028) :
                             UINT32_C(0x42002A)
                     };
+                    if (attribute_reference_by_name) {
+                        attribute_reference.vendor_identification_data =
+                            (const uint8_t *)test_case->attribute_vendor_identification;
+                        attribute_reference.vendor_identification_length =
+                            (uint64_t)strlen(test_case->attribute_vendor_identification);
+                        attribute_reference.attribute_name_data =
+                            (const uint8_t *)test_case->attribute_reference_name;
+                        attribute_reference.attribute_name_length =
+                            (uint64_t)strlen(test_case->attribute_reference_name);
+                    }
                     status = build_get_attributes_item(
                         NULL, &attribute_reference, 1, &item);
                 } else {
@@ -2154,7 +2238,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             response_item, &present, &response_identifier, &response_attributes);
         bool attributes_valid = response_attributes &&
             (read_back_attribute_workflow ?
-                attributes_contain_typed_tag(response_attributes, read_back_attribute_tag,
+                attributes_contain_typed_tag(response_attributes, read_back_attribute_response_tag,
                                              read_back_attribute_type) :
              cryptographic_algorithm_attribute_workflow ?
                 attributes_contain_value(response_attributes, UINT32_C(0x420028),

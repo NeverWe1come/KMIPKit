@@ -711,6 +711,7 @@ class RouteMatrixTests(unittest.TestCase):
             protocol_versions=('2.1',), network_combinations=(('TTLV', 'raw_tls'),))
         self.assertEqual(len(checks), 2, 'vendor attribute must use both Get Attributes constructors')
         self.assertTrue(all(check['status'] == 'passed' for check in checks))
+        self.assertTrue(all(check['request_attribute_reference_tags'] == [] for check in checks))
         self.assertTrue(all(check['request_attribute_reference_names'] == ['fixture_attribute']
                             for check in checks))
         self.assertTrue(all(check['request_vendor_identifications'] == ['fixture_vendor']
