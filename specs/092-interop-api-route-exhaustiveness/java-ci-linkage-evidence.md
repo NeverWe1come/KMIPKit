@@ -29,3 +29,12 @@ The explicit native `#[link(name = "kmipkit_ffi")]` introduces a second ABI
 library alongside Cargo's Rust dependency. Its build-script search path also
 assumes the pre-1.100 output directory layout. The regression targets must
 exercise their compiled C consumers against exactly one in-process ABI copy.
+
+## Green
+
+The explicit native ABI library links are removed. Both integration targets
+now depend on Cargo's `kmipkit_ffi` rlib; the operation target uses the public
+opaque batch type in its foreign declarations, matching the C header.
+
+The same Rust 1.100.0 command passes 50 C ABI tests and one operation-parity
+test (exit 0), including compiled C calls and mutual-TLS fixture exchanges.
