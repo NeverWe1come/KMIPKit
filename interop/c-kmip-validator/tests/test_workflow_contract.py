@@ -17,5 +17,13 @@ class CWorkflowContractTests(unittest.TestCase):
         self.assertNotIn("apt-get install", workflow)
 
 
+    def test_schema_dependency_precedes_ctest_and_uses_its_python(self):
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        self.assertLess(workflow.index('jsonschema==4.23.0'),
+                        workflow.index('ctest --test-dir'))
+        configure = next(line for line in workflow.splitlines() if 'cmake -S interop/' in line)
+        self.assertIn('Python3_EXECUTABLE', configure)
+
+
 if __name__ == "__main__":
     unittest.main()
