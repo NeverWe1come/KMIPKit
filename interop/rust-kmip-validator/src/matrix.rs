@@ -3021,6 +3021,46 @@ mod tests {
     }
 
     #[test]
+    fn unknown_managed_object_constructor_accepts_the_vendor_tag_range() {
+        let catalog: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        let target = catalog["normative_targets"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|target| target["target_id"] == "KMIPKIT-RANGE-004")
+            .unwrap();
+        for version in ["2.0", "2.1"] {
+            let expected = sample_for_route_at_version(
+                "kmipkit_protocol::ManagedObject::unknown",
+                target,
+                elements,
+                version,
+            )
+            .unwrap();
+            let result = invoke(
+                "kmipkit_protocol::ManagedObject::unknown",
+                &expected,
+                target,
+                elements,
+                version,
+            )
+            .unwrap_or_else(|| panic!("ManagedObject::unknown route is missing"))
+            .unwrap_or_else(|error| panic!("ManagedObject::unknown rejected the fixture: {error}"));
+            assert!(
+                crate::local_wire::target_hash(&result, &expected).is_ok(),
+                "ManagedObject::unknown changed the extension object"
+            );
+        }
+    }
+
+    #[test]
     fn attribute_reference_constructors_execute_name_and_raw_tag_forms() {
         let catalog: Json = serde_json::from_str(include_str!(
             "../../shared/catalog/kmipkit-1.0-test-catalog.json"
