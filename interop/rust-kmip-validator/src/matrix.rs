@@ -1801,7 +1801,31 @@ fn sample_for_route_at_version(
         let tag = target_wire_value(target)?;
         return crate::driver::item(tag, Value::structure(kmipkit::ttlv::Structure::new()));
     }
-    if target["kind"] == "tag"
+    let secret_operation_route = matches!(
+        symbol,
+        "kmipkit_protocol::CertifyRequest::with_certificate_request_value"
+            | "kmipkit_protocol::CreateSplitKeyRequest::with_prime_field_size"
+            | "kmipkit_protocol::DecryptRequest::with_authenticated_encryption_additional_data"
+            | "kmipkit_protocol::DecryptRequest::with_authenticated_encryption_tag"
+            | "kmipkit_protocol::DecryptRequest::with_correlation_value"
+            | "kmipkit_protocol::DecryptRequest::with_iv_counter_nonce"
+            | "kmipkit_protocol::EncryptRequest::with_authenticated_encryption_additional_data"
+            | "kmipkit_protocol::EncryptRequest::with_correlation_value"
+            | "kmipkit_protocol::EncryptRequest::with_iv_counter_nonce"
+            | "kmipkit_protocol::HashRequest::with_correlation_value"
+            | "kmipkit_protocol::MacRequest::with_correlation_value"
+            | "kmipkit_protocol::MacVerifyRequest::with_correlation_value"
+            | "kmipkit_protocol::MacVerifyRequest::with_mac_data"
+            | "kmipkit_protocol::Pkcs11Request::with_correlation_value"
+            | "kmipkit_protocol::RecertifyRequest::with_certificate_request_value"
+            | "kmipkit_protocol::SignRequest::with_correlation_value"
+            | "kmipkit_protocol::SignRequest::with_digested_data"
+            | "kmipkit_protocol::SignatureVerifyRequest::with_correlation_value"
+            | "kmipkit_protocol::SignatureVerifyRequest::with_digested_data"
+            | "kmipkit_protocol::SignatureVerifyRequest::with_signature_data"
+    );
+    if secret_operation_route
+        && target["kind"] == "tag"
         && [
             "Certificate Request Value",
             "Prime Field Size",
