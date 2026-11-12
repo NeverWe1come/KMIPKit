@@ -781,14 +781,17 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all(check['status'] == 'passed' for check in checks))
         expected_operations = {
             'KMIPKIT-ELEM-OP-C2S-CREATE', 'KMIPKIT-ELEM-OP-C2S-ACTIVATE',
-            'KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST', 'KMIPKIT-ELEM-OP-C2S-DESTROY',
+            'KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST', 'KMIPKIT-ELEM-OP-C2S-REVOKE',
+            'KMIPKIT-ELEM-OP-C2S-DESTROY',
         }
         self.assertTrue(expected_operations <= {event['target_id'] for event in events})
         for symbol in ('kmipkit_client_batch_item_create', 'kmipkit_client_batch_item_activate',
                        'kmipkit_client_batch_item_get_attribute_list',
-                       'kmipkit_client_batch_item_destroy', 'kmipkit_client_execute'):
+                       'kmipkit_client_batch_item_revoke', 'kmipkit_client_batch_item_destroy'):
             self.assertTrue(any(event['public_api_symbol'] == symbol and event['action'] == 'send'
                                 for event in events), symbol)
+        self.assertTrue(all('kmipkit_client_execute' in check['public_api_trace_symbols']
+                            for check in checks))
 
 
     def test_single_item_batch_omits_optional_batch_options(self):
