@@ -1206,6 +1206,66 @@ mod tests {
     }
 
     #[test]
+    fn unique_identifier_request_routes_construct_each_normative_value() {
+        // OASIS KMIP 2.0/2.1 §11.38, Table 187 defines Unique Identifier wire forms.
+        let catalog: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let manifest: Json = serde_json::from_str(include_str!(
+            "../../shared/coverage/route-capabilities.json"
+        ))
+        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        let targets = catalog["normative_targets"].as_array().unwrap();
+        for route in manifest["routes"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|route| {
+                route["language"] == "rust"
+                    && route["public_api_symbol"]
+                        .as_str()
+                        .is_some_and(|symbol| symbol.ends_with("::with_unique_identifier"))
+            })
+        {
+            let symbol = route["public_api_symbol"].as_str().unwrap();
+            for target_id in route["normative_target_ids"].as_array().unwrap() {
+                let Some(target_id) = target_id.as_str() else {
+                    continue;
+                };
+                let Some(target) = targets
+                    .iter()
+                    .find(|target| target["target_id"] == target_id)
+                else {
+                    continue;
+                };
+                if target["kind"] != "enumeration_value"
+                    || !target["parent_element_ids"]
+                        .as_array()
+                        .is_some_and(|parents| {
+                            parents.iter().any(|parent| {
+                                parent == "KMIPKIT-ELEM-ENUMERATION-UNIQUE-IDENTIFIER"
+                            })
+                        })
+                {
+                    continue;
+                }
+                let expected = sample(target, elements).unwrap();
+                let result = invoke(symbol, &expected, target, elements, "2.1");
+                assert!(result.is_some(), "{symbol} {target_id}: no request route");
+                let result = result.unwrap();
+                assert!(result.is_ok(), "{symbol} {target_id}: {result:?}");
+                let projection = crate::local_wire::target_hash(&result.unwrap(), &expected);
+                assert!(projection.is_ok(), "{symbol} {target_id}: {projection:?}");
+            }
+        }
+    }
+
+    #[test]
     fn key_wrapping_metadata_recipes_build_and_parse_each_manifest_target() {
         let catalog: Json = serde_json::from_str(include_str!(
             "../../shared/catalog/kmipkit-1.0-test-catalog.json"
