@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import Any, Self
 
 from . import errors, extensions, ttlv
@@ -9,11 +10,11 @@ from ._client_ffi import ffi, lib
 from ._ffi import ffi as _base_ffi
 from ._handles import _wrap_owned_handle
 from .client import (
+    _NATIVE_CALL_LOCK,
     Batch,
     BatchResult,
     Client,
     RequestOptions,
-    _NATIVE_CALL_LOCK,
     _batch_result,
     _raise_client_status,
     _request_options_record,
@@ -149,6 +150,111 @@ class Request:
 
     def hash(self) -> HashBuilder:
         return HashBuilder(client=self._client)
+
+    def get_attributes(
+        self,
+        unique_identifier: extensions.UniqueIdentifier | None = None,
+        attribute_references: Sequence[extensions.AttributeReference] = (),
+    ) -> GetAttributesBuilder:
+        return GetAttributesBuilder(
+            self._client, unique_identifier, attribute_references
+        )
+
+    def get_attribute_list(
+        self,
+        unique_identifier: extensions.UniqueIdentifier | None = None,
+    ) -> GetAttributeListBuilder:
+        return GetAttributeListBuilder(self._client, unique_identifier)
+
+
+class _AttributeReadBuilder:
+    """Shared one-exchange lifecycle for typed attribute read requests."""
+
+    def __init__(
+        self,
+        client: Client,
+        unique_identifier: extensions.UniqueIdentifier | None,
+    ) -> None:
+        if unique_identifier is not None and not (
+            isinstance(unique_identifier, extensions.UniqueIdentifier)
+            and unique_identifier.kind
+            is extensions.UniqueIdentifierKind.TEXT_STRING
+        ):
+            errors.raise_for_status(4)
+        self._client = client
+        self._unique_identifier = unique_identifier
+        self._options: RequestOptions | None = None
+        self._asynchronous_indicator: int | None = None
+
+    def with_options(self, options: RequestOptions) -> Self:
+        if not isinstance(options, RequestOptions):
+            errors.raise_for_status(4)
+        self._options = options
+        return self
+
+    def asynchronous_indicator(self, value: int) -> Self:
+        self._asynchronous_indicator = _unsigned(value, 32)
+        return self
+
+    def validate(self) -> None:
+        with self.build():
+            pass
+
+    def to_batch_item(self) -> extensions.ClientBatchItem:
+        return self.build()
+
+    def execute(self, limits: ttlv.CodecLimits) -> BatchResult:
+        if not isinstance(self._client, Client) or not isinstance(
+            limits, ttlv.CodecLimits
+        ):
+            errors.raise_for_status(4)
+        with Batch.create() as batch:
+            with self.build() as item:
+                batch.add_item(item)
+            if self._asynchronous_indicator is not None:
+                batch.set_asynchronous_indicator(self._asynchronous_indicator)
+            if self._options is not None:
+                return self._client.execute_with_options(
+                    batch, limits, self._options
+                )
+            return self._client.execute(batch, limits)
+
+
+class GetAttributesBuilder(_AttributeReadBuilder):
+    """Typed Get Attributes request preserving reference order."""
+
+    def __init__(
+        self,
+        client: Client,
+        unique_identifier: extensions.UniqueIdentifier | None,
+        attribute_references: Sequence[extensions.AttributeReference],
+    ) -> None:
+        if not isinstance(attribute_references, Sequence) or isinstance(
+            attribute_references, (str, bytes, bytearray)
+        ):
+            errors.raise_for_status(4)
+        if len(attribute_references) > 100_000:
+            errors.raise_for_status(5)
+        references = tuple(attribute_references)
+        if any(not isinstance(reference, extensions.AttributeReference)
+               for reference in references):
+            errors.raise_for_status(4)
+        super().__init__(client, unique_identifier)
+        self._attribute_references = references
+
+    def build(self) -> extensions.ClientBatchItem:
+        return extensions.client_batch_item_get_attributes(
+            self._unique_identifier, self._attribute_references
+        )
+
+
+class GetAttributeListBuilder(_AttributeReadBuilder):
+    """Typed Get Attribute List request with an optional object identifier."""
+
+    def build(self) -> extensions.ClientBatchItem:
+        return extensions.client_batch_item_get_attribute_list(
+            self._unique_identifier
+        )
 
 
 class Operation:
@@ -683,6 +789,8 @@ class HashBuilder(_CryptoOperationBuilder):
 __all__ = [
     "DecryptBuilder",
     "EncryptBuilder",
+    "GetAttributeListBuilder",
+    "GetAttributesBuilder",
     "HashBuilder",
     "MacBuilder",
     "MacVerifyBuilder",
