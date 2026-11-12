@@ -316,6 +316,39 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(symbols, {event['public_api_symbol'] for event in report['events']})
         self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
 
+    def test_typed_attribute_routes_cover_nested_attribute_fields_and_direct_tags(self):
+        # OASIS KMIP §§4.2, 4.4, 4.14, 4.16, 4.21, 4.27, 4.31, 4.32,
+        # 4.46–4.63 define the containing attribute structures and their fields.
+        catalog = copy.deepcopy(self.catalog)
+        targets = {target['target_id']: target for target in self.catalog['normative_targets']}
+        route_symbols = {'kmipkit.typed_attributes.TypedAttribute.create',
+                         'kmipkit.typed_attributes.TypedAttribute.from_item',
+                         'kmipkit.attribute_operations.AttributeSet.try_new',
+                         'kmipkit.attribute_operations.AttributeSet.try_push',
+                         'kmipkit.attribute_operations.AttributeSet.try_push_typed'}
+        routes = [route for route in self.manifest['routes']
+                  if route['language'] == 'python' and route['public_api_symbol'] in route_symbols]
+        target_ids = {target_id for route in routes for target_id in route['normative_target_ids']
+                      if targets[target_id]['kind'] in ('structure_member', 'tag')}
+        catalog['test_cases'] = [case for case in catalog['test_cases']
+                                 if case['requires'].get('normative_target_id') in target_ids]
+        for case in catalog['test_cases']:
+            case.pop('operation', None)
+            for field in ('operation_id', 'operation_sequence', 'protocol_scenario'):
+                case['requires'].pop(field, None)
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = copy.deepcopy(routes)
+        for route in manifest['routes']:
+            route['normative_target_ids'] = [target_id for target_id in route['normative_target_ids']
+                                             if target_id in target_ids]
+
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+
+        self.assertEqual(0, len(gaps), f'{len(gaps)} direct-attribute field/tag cells lack recipes')
+        self.assertTrue(report['events'])
+        self.assertEqual(route_symbols, {event['public_api_symbol'] for event in report['events']})
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
     def test_credential_type_enum_routes_preserve_each_normative_value(self):
         # OASIS KMIP 2.0/2.1 §11.11 defines the Credential Type discriminator values.
         catalog = copy.deepcopy(self.catalog)
