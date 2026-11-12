@@ -144,11 +144,11 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
         return fixture;
     }
     let kind = text(target, "kind")?;
-    let mut name = text(target, "name")?;
+    let mut name = text(target, "name")?.to_owned();
     if kind == "operation_payload_value_variant"
         && let Some(field_name) = target["field_name"].as_str()
     {
-        name = field_name;
+        name = field_name.to_owned();
     }
     if ["enumeration_value", "bitmask_value", "object_type"].contains(&kind)
         && let Some(parent) = target["parent_element_ids"]
@@ -157,15 +157,42 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
             .and_then(Json::as_str)
         && let Some(element) = elements.iter().find(|e| e["element_id"] == parent)
     {
-        name = element["name"].as_str().ok_or("target name missing")?;
+        name = element["name"]
+            .as_str()
+            .ok_or("target name missing")?
+            .to_owned();
+    }
+    let target_id = target["target_id"].as_str().unwrap_or_default();
+    if target_id.contains("ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES") {
+        // Use one concrete assigned §4 attribute for the inventory's wildcard member.
+        name = "Cryptographic Algorithm".to_owned();
+    } else if kind == "structure_member" {
+        name = name
+            .split('|')
+            .next()
+            .unwrap_or(&name)
+            .trim()
+            .trim_end_matches(',')
+            .trim()
+            .to_owned();
+        match name.as_str() {
+            "Alternative failover endpoints" => {
+                name = "Alternate Failover Endpoints".to_owned();
+            }
+            "Timestamp" => name = "Time Stamp".to_owned(),
+            _ => {}
+        }
     }
     let operation = if kind == "operation" {
-        operation_value(name).ok_or("operation target needs a concrete public enum value")?
+        operation_value(&name).ok_or("operation target needs a concrete public enum value")?
     } else {
         0
     };
     let tag = if kind == "operation" {
         0x0042_005c
+    } else if target_id == "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-VENDOR-SPECIFIC" {
+        // §7.37 permits a vendor-specific tag; this exercises the public generic extension range.
+        0x0054_0000
     } else if kind == "tag_range" && target["allocation"] == "extension" {
         let wire_value = text(target, "wire_value")?;
         wire_range_start(wire_value).ok_or("tag range needs a concrete fixture")?
@@ -185,7 +212,7 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
                     && element["allocation"] == "assigned"
                     && element["name"]
                         .as_str()
-                        .is_some_and(|tag_name| tag_name.eq_ignore_ascii_case(name))
+                        .is_some_and(|tag_name| tag_name.eq_ignore_ascii_case(&name))
             })
             .and_then(|e| e["wire_value"].as_str())
             .and_then(unsigned_wire_value)
@@ -220,89 +247,103 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
             _ => 1,
         }
     };
-    let encoding = target["source_encoding"]
-        .as_str()
-        .or_else(|| target["value_type"].as_str())
-        .or_else(|| {
-            elements
-                .iter()
-                .find(|element| element["kind"] == "attribute" && element["name"] == name)
-                .and_then(|element| element["source_encoding"].as_str())
-        })
-        .or_else(|| {
-            elements
-                .iter()
-                .find(|element| element["name"] == name && element["source_encoding"].is_string())
-                .and_then(|element| element["source_encoding"].as_str())
-        })
-        .or_else(|| {
-            elements.iter().find_map(|element| {
-                if element["name"] != name {
-                    return None;
-                }
-                match element["kind"].as_str() {
-                    Some("enumeration") => Some("Enumeration"),
-                    Some("bitmask") => Some("Integer"),
-                    _ => None,
+    let encoding = if target_id.contains("ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES")
+        || target_id == "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-22-OBJECT-TYPE-OBJECTTYPES"
+    {
+        // Exercise the concrete Enumeration branch of the attribute wildcard and wire union.
+        "Enumeration"
+    } else if target_id == "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-23-OBJECT-GROUP"
+        || target_id == "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-VENDOR-SPECIFIC"
+        || kind == "tag_range" && target["allocation"] == "extension"
+    {
+        "Text String"
+    } else {
+        target["source_encoding"]
+            .as_str()
+            .or_else(|| target["value_type"].as_str())
+            .or_else(|| {
+                elements
+                    .iter()
+                    .find(|element| element["kind"] == "attribute" && element["name"] == name)
+                    .and_then(|element| element["source_encoding"].as_str())
+            })
+            .or_else(|| {
+                elements
+                    .iter()
+                    .find(|element| {
+                        element["name"] == name && element["source_encoding"].is_string()
+                    })
+                    .and_then(|element| element["source_encoding"].as_str())
+            })
+            .or_else(|| {
+                elements.iter().find_map(|element| {
+                    if element["name"] != name {
+                        return None;
+                    }
+                    match element["kind"].as_str() {
+                        Some("enumeration") => Some("Enumeration"),
+                        Some("bitmask") => Some("Integer"),
+                        _ => None,
+                    }
+                })
+            })
+            .unwrap_or_else(|| {
+                if kind == "data_type" {
+                    &name
+                } else if [
+                    "attribute_structure",
+                    "operation_structure",
+                    "object_structure",
+                ]
+                .contains(&kind)
+                    || kind == "message_field" && name.contains("Structure")
+                {
+                    "Structure"
+                } else if kind == "operation_payload_field" {
+                    match name.as_str() {
+                        "New Attribute"
+                        | "Current Attribute"
+                        | "Common Attributes"
+                        | "Private Key Attributes"
+                        | "Public Key Attributes"
+                        | "Common Protection Storage Masks"
+                        | "Private Protection Storage Masks"
+                        | "Public Protection Storage Masks"
+                        | "Any Object (Section 2)"
+                        | "All Objects" => "Structure",
+                        "Adjustment Type"
+                        | "Derivation Method"
+                        | "Key Wrap Type"
+                        | "Object Group Member"
+                        | "Validity Indicator"
+                        | "Query Function"
+                        | "Client Registration Method"
+                        | "Endpoint Role"
+                        | "Put Function" => "Enumeration",
+                        "Adjustment Value"
+                        | "Request Count"
+                        | "Maximum Items"
+                        | "Offset Items"
+                        | "Storage Status Mask"
+                        | "Located Items" => "Integer",
+                        "Offset" => "Interval",
+                        "Replace Existing" => "Boolean",
+                        "Validity Date" => "Date Time",
+                        "Digested Data" => "Byte String",
+                        "Private Key Unique Identifier"
+                        | "Public Key Unique Identifier"
+                        | "Interop Identifier"
+                        | "Certificate Request Unique Identifier"
+                        | "Replaced Unique Identifier" => "Text String",
+                        _ => "",
+                    }
+                } else if kind == "attribute_structure" {
+                    "Structure"
+                } else {
+                    ""
                 }
             })
-        })
-        .unwrap_or_else(|| {
-            if kind == "data_type" {
-                name
-            } else if [
-                "attribute_structure",
-                "operation_structure",
-                "object_structure",
-            ]
-            .contains(&kind)
-                || kind == "message_field" && name.contains("Structure")
-            {
-                "Structure"
-            } else if kind == "operation_payload_field" {
-                match name {
-                    "New Attribute"
-                    | "Current Attribute"
-                    | "Common Attributes"
-                    | "Private Key Attributes"
-                    | "Public Key Attributes"
-                    | "Common Protection Storage Masks"
-                    | "Private Protection Storage Masks"
-                    | "Public Protection Storage Masks"
-                    | "Any Object (Section 2)"
-                    | "All Objects" => "Structure",
-                    "Adjustment Type"
-                    | "Derivation Method"
-                    | "Key Wrap Type"
-                    | "Object Group Member"
-                    | "Validity Indicator"
-                    | "Query Function"
-                    | "Client Registration Method"
-                    | "Endpoint Role"
-                    | "Put Function" => "Enumeration",
-                    "Adjustment Value"
-                    | "Request Count"
-                    | "Maximum Items"
-                    | "Offset Items"
-                    | "Storage Status Mask"
-                    | "Located Items" => "Integer",
-                    "Offset" => "Interval",
-                    "Replace Existing" => "Boolean",
-                    "Validity Date" => "Date Time",
-                    "Digested Data" => "Byte String",
-                    "Private Key Unique Identifier"
-                    | "Public Key Unique Identifier"
-                    | "Interop Identifier"
-                    | "Certificate Request Unique Identifier"
-                    | "Replaced Unique Identifier" => "Text String",
-                    _ => "",
-                }
-            } else if kind == "attribute_structure" {
-                "Structure"
-            } else {
-                ""
-            }
-        });
+    };
     let value = if target["target_id"] == "KMIPKIT-ELEM-TAG-420008" {
         // KMIP 2.1 §4.60, Table 150 defines the required Vendor Attribute fields and order.
         vendor_attribute_value()?
@@ -2974,16 +3015,30 @@ mod tests {
             assert!(sample.is_ok(), "{target_id}: {sample:?}");
             let sample = sample.unwrap();
             assert_eq!(sample.tag().raw(), expected_tag, "{target_id}");
-            for symbol in [
+            let value_constructor = match sample.item_type() {
+                kmipkit::ttlv::ItemType::Structure => "kmipkit_ttlv::Value::structure",
+                kmipkit::ttlv::ItemType::Enumeration => "kmipkit_ttlv::Value::enumeration",
+                kmipkit::ttlv::ItemType::TextString => "kmipkit_ttlv::Value::text_string",
+                kmipkit::ttlv::ItemType::DateTimeExtended => {
+                    "kmipkit_ttlv::Value::date_time_extended"
+                }
+                item_type => panic!("unexpected generic fixture type: {item_type:?}"),
+            };
+            let mut symbols = vec![
                 "kmipkit_ttlv::Item::new",
                 "kmipkit_ttlv::Item::with_value",
                 "kmipkit_ttlv::codec::decode",
-            ] {
-                let result = invoke(symbol, &sample, target, elements, "2.1");
-                assert!(result.is_some(), "{symbol} omitted {target_id}");
-                let result = result.unwrap();
-                assert!(result.is_ok(), "{symbol} {target_id}: {result:?}");
-                assert!(crate::local_wire::target_hash(&result.unwrap(), &sample).is_ok());
+            ];
+            symbols.push(value_constructor);
+            for protocol_version in target["protocol_versions"].as_array().unwrap() {
+                let protocol_version = protocol_version.as_str().unwrap();
+                for symbol in &symbols {
+                    let result = invoke(symbol, &sample, target, elements, protocol_version);
+                    assert!(result.is_some(), "{symbol} omitted {target_id}");
+                    let result = result.unwrap();
+                    assert!(result.is_ok(), "{symbol} {target_id}: {result:?}");
+                    assert!(crate::local_wire::target_hash(&result.unwrap(), &sample).is_ok());
+                }
             }
         }
     }
