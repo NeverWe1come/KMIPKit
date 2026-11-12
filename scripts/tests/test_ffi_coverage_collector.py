@@ -12,6 +12,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[2]
 
 
+@unittest.skipUnless(sys.platform == "linux", "The FFI coverage collector supports Linux only")
 class FfiCoverageCollectorTests(unittest.TestCase):
     def run_collector(self, layout, *, missing_consumer=False):
         with tempfile.TemporaryDirectory(prefix="ffi coverage ") as temporary:
@@ -43,9 +44,11 @@ class FfiCoverageCollectorTests(unittest.TestCase):
                 )
             )
             calls = root / "llvm-arguments.json"
-            document = {"data": [{"files": [{
+            document = {"type": "llvm.coverage.json.export", "version": "3.0.1",
+                        "data": [{"functions": [], "files": [{
                 "filename": str(ROOT / "crates/kmipkit-ffi/src/lib.rs"),
                 "segments": [[1, 1, 1, True, True, False], [2, 1, 0, False, False, False]],
+                "summary": {"lines": {"count": 1, "covered": 1}},
             }]}]}
             programs = {
                 tools / "cargo": f"print({log!r})\n",

@@ -48,43 +48,37 @@ if [[ ! -x "${llvm_cov}" ]]; then
 fi
 
 readonly profile_data="${llvm_cov_target}/KMIPKit.profdata"
-readonly ffi_dso="${llvm_cov_target}/debug/deps/libkmipkit_ffi.so"
-readonly ffi_staticlib="${llvm_cov_target}/debug/deps/libkmipkit_ffi.a"
-if [[ ! -f "${profile_data}" || ! -f "${ffi_dso}" || ! -f "${ffi_staticlib}" ]]; then
-    printf 'The instrumented Rust C ABI objects or merged LLVM profile are missing under %s.\n' "${llvm_cov_target}" >&2
+if [[ ! -f "${profile_data}" ]]; then
+    printf 'The merged LLVM profile is missing under %s.\n' "${llvm_cov_target}" >&2
     exit 1
 fi
 
-mapfile -t test_binary_names < <(
+mapfile -t test_binaries < <(
     sed -nE \
-        -e '/Running unittests src\/lib\.rs /s@.*\/(kmipkit_ffi-[[:xdigit:]]+)\).*@\1@p' \
-        -e '/Running tests\/c_api_coverage\.rs /s@.*(c_api_coverage-[[:xdigit:]]+).*@\1@p' \
+        -e '/Running unittests src\/lib\.rs /s@.*\((.*kmipkit_ffi-[[:xdigit:]]+)\).*@\1@p' \
+        -e '/Running tests\/c_api_coverage\.rs /s@.*\((.*c_api_coverage-[[:xdigit:]]+)\).*@\1@p' \
         "${cargo_output}"
 )
-if [[ "${#test_binary_names[@]}" -ne 2 ]]; then
+if [[ "${#test_binaries[@]}" -ne 2 ]]; then
     printf 'Cargo did not report both the FFI unit and C consumer test executables in %s.\n' \
         "${cargo_output}" >&2
     exit 1
 fi
-test_binaries=()
-for test_binary_name in "${test_binary_names[@]}"; do
-    test_binary="${llvm_cov_target}/debug/deps/${test_binary_name}"
+coverage_objects=()
+for test_binary in "${test_binaries[@]}"; do
+    if [[ "${test_binary}" != /* ]]; then
+        test_binary="${repository_root}/${test_binary}"
+    fi
     if [[ ! -f "${test_binary}" || ! -x "${test_binary}" ]]; then
         printf 'The FFI coverage test executable is missing under %s.\n' "${test_binary}" >&2
         exit 1
     fi
-    test_binaries+=("${test_binary}")
-done
-coverage_objects=()
-for test_binary in "${test_binaries[@]}"; do
     coverage_objects+=(-object "${test_binary}")
 done
 
 readonly raw_report="${report_dir}/coverage-raw.json"
 "${llvm_cov}" export -format=text \
     -instr-profile "${profile_data}" \
-    -object "${ffi_dso}" \
-    -object "${ffi_staticlib}" \
     "${coverage_objects[@]}" \
     --sources "${source_files[@]}" > "${raw_report}"
 

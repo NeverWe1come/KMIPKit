@@ -47,3 +47,16 @@ report the real pre-1.100 and 1.100 executable layouts, including spaces in
 paths, and require a missing C consumer executable to fail before export.
 The collector incorrectly requires unused native ABI libraries and rebuilds
 test executable paths under `debug/deps` instead of using Cargo's paths.
+
+## Collector regression: Green
+
+The collector now exports coverage from the unit and C consumer executables
+whose paths Cargo reports. Both contain the tested rlib ABI; a separately
+built static/shared ABI library is no longer part of this process. All FFI
+sources and both required test executables remain mandatory export inputs.
+
+`python3 -B -m unittest scripts.tests.test_ffi_coverage_collector
+scripts.tests.test_workflow scripts.tests.test_analysis_workflows` passes
+106 tests, including the missing-executable rejection. The three collector
+fixtures apply on Linux, the only supported platform of this collector;
+the native C ABI targets still run on every configured CI platform.
