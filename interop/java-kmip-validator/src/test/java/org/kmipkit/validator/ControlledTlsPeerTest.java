@@ -284,6 +284,15 @@ class ControlledTlsPeerTest {
         assertTrue(enumerationFixtures.stream().noneMatch(fixture -> fixture.caseId().equals(
                         "test-norm-enumeration-value-profile-name-reserved-00000001-00000103")),
                 "A finite Profile Name range must remain pending until each named value is represented.");
+        for (EnumerationFixture fixture : enumerationFixtures) {
+            String builderRoute = CRYPTOGRAPHIC_PARAMETER_BUILDER_ROUTES.get(fixture.parentName());
+            if (builderRoute != null) {
+                assertEquals(fixture.protocolVersions().size(),
+                        routeEventCount(report.path("events"), fixture.caseId(), builderRoute),
+                        "Every KMIP Cryptographic Parameters builder value needs a public-call event: "
+                                + fixture.targetId());
+            }
+        }
         int enumerationEventCount = enumerationFixtures.stream()
                 .mapToInt(fixture -> fixture.protocolVersions().size()
                         * (4 + (fixture.attribute() == null ? 0 : 3))).sum();
@@ -2015,6 +2024,15 @@ class ControlledTlsPeerTest {
                     && event.hasNonNull("execution_api_symbol")) return event;
         }
         throw new AssertionError("The expected controlled Query route event is absent.");
+    }
+
+    private static long routeEventCount(JsonNode events, String caseId, String routeId) {
+        long count = 0;
+        for (JsonNode event : events) {
+            if (caseId.equals(event.path("case_id").asText())
+                    && routeId.equals(event.path("route_id").asText())) count++;
+        }
+        return count;
     }
 
     private static JsonNode findRouteEvent(JsonNode events, String routeId, String protocolVersion) {
