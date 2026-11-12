@@ -1049,6 +1049,33 @@ class RouteMatrixTests(unittest.TestCase):
             self.assertEqual(event.get('peer_observed_state_after_sha256'), active_state)
         self.assertEqual(checks[0].get('peer_cleanup_state_after_sha256'), empty_state)
 
+    def test_tag_family_matrix_decodes_each_target_instead_of_a_surrogate_enum(self):
+        from artifact_support import ROOT
+        from contextlib import redirect_stderr, redirect_stdout
+        import io
+        from unittest.mock import patch
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        cells = [cell for cell in self.runner.iter_cells(catalog, manifest, languages=('c',))
+                 if cell['case_id'] == 'test-enum-tag' and cell['protocol_version'] == '2.1'
+                 and cell['public_api_symbol'] == 'kmipkit_ttlv_decode'
+                 and cell['target_id'] in {'KMIPKIT-ELEM-TAG-420001', 'KMIPKIT-ELEM-TAG-420009'}]
+        self.assertEqual(len(cells), 2)
+        with tempfile.TemporaryDirectory(dir=self.runner.OUTPUT_ROOT) as directory:
+            output = Path(directory) / 'evidence.json'
+            # Select only input cells; installed ABI calls and evidence validation are real.
+            with patch.object(self.runner, 'iter_cells', return_value=cells), \
+                    redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+                self.assertEqual(self.runner.run(output), 1, 'a subset cannot satisfy the full gate')
+            events = {event['target_id']: event for event in json.loads(output.read_text())['events']}
+        self.assertEqual(events['KMIPKIT-ELEM-TAG-420009'].get('decode_outcome'), 'rejected')
+        self.assertEqual(events['KMIPKIT-ELEM-TAG-420009']['decode_rejection_code'], 'tag_reserved')
+        expected_tree = {'tag': 0x420001, 'type': 2, 'value': '00000007'}
+        expected_hash = hashlib.sha256(json.dumps(
+            expected_tree, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+        self.assertEqual(events['KMIPKIT-ELEM-TAG-420001']['response_tree_sha256'], expected_hash)
+
     def test_single_item_batch_omits_optional_batch_options(self):
         from artifact_support import ROOT
         from route_peer import RECIPES, execute_network_cells
