@@ -161,9 +161,16 @@ def batch_response(
     protocol_minor: int,
     response_payloads: list[list[bytes]] | None = None,
     response_extensions: list[bytes] | None = None,
+    result_statuses: list[int] | None = None,
+    result_reasons: list[int | None] | None = None,
 ) -> bytes:
     """Return one ordered result per operation in the observed request batch."""
     from kmipkit import protocol_values
+
+    status_values = result_statuses if result_statuses is not None else [status] * len(operations)
+    reason_values = result_reasons if result_reasons is not None else [reason] * len(operations)
+    if len(status_values) != len(operations) or len(reason_values) != len(operations):
+        raise AssertionError("controlled result-code count differed from the batch count")
 
     request_ids: list[bytes | str | None] = []
     if encoding == "TTLV":
@@ -203,9 +210,9 @@ def batch_response(
             fields = [enumeration(0x42005C, operation_codes[key])]
             if batch_item_id is not None:
                 fields.append(item(0x420093, 8, batch_item_id))
-            fields.append(enumeration(0x42007F, status))
-            if reason is not None:
-                fields.append(enumeration(0x42007E, reason))
+            fields.append(enumeration(0x42007F, status_values[index]))
+            if reason_values[index] is not None:
+                fields.append(enumeration(0x42007E, reason_values[index]))
             if response_payloads is not None and response_payloads[index]:
                 fields.append(structure(0x420079, *response_payloads[index]))
             if response_extensions is not None:
@@ -257,10 +264,8 @@ def batch_response(
                 normalized_operation_name(value) for value in operations]:
             raise AssertionError("batch request operation order differed from the controlled scenario")
     response_operations = observed if encoding in ("JSON", "XML") else operations
-    documents = [
-        text_response(operation, encoding, status, reason, protocol_minor)
-        for operation in response_operations
-    ]
+    documents = [text_response(operation, encoding, status_values[index], reason_values[index], protocol_minor)
+                 for index, operation in enumerate(response_operations)]
     if encoding == "JSON":
         messages = [json.loads(document) for document in documents]
         message = messages[0]

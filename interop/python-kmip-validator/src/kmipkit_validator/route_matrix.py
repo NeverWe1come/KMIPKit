@@ -2169,6 +2169,56 @@ def _cell_operation(cell: dict, case: dict) -> str:
             or _EXECUTION_ROUTE_OPERATIONS.get(cell.get('execution_route_id'), case['operation']))
 
 
+def _batch_item_specs(case: dict) -> list[dict[str, Any]]:
+    """Resolve ordered batch item operations and fixture labels from the catalog."""
+    scenario = case.get('requires', {}).get('protocol_scenario', {})
+    parameters = scenario.get('parameters', {}) if isinstance(scenario, dict) else {}
+    items = parameters.get('items', []) if isinstance(parameters, dict) else []
+    if items:
+        specifications = []
+        for item in items:
+            if isinstance(item, str) and item:
+                operation, separator, detail = item.partition('(')
+                specifications.append({
+                    'operation': operation.strip(),
+                    'detail': detail.rstrip(')') if separator else '',
+                    'batch_item_id': None,
+                })
+            elif isinstance(item, dict) and isinstance(item.get('operation'), str):
+                specifications.append({
+                    'operation': item['operation'],
+                    'detail': '',
+                    'batch_item_id': item.get('id'),
+                })
+            else:
+                raise RecipePending
+        return specifications
+
+    operations = parameters.get('operations_in_request_order', []) if isinstance(parameters, dict) else []
+    if not operations:
+        operations = scenario.get('operations', []) if isinstance(scenario, dict) else []
+    if not isinstance(operations, list) or not operations:
+        raise RecipePending
+    return [{'operation': operation, 'detail': '', 'batch_item_id': None}
+            for operation in operations]
+
+
+def _batch_result_codes(case: dict, enum_type: Any, field: str,
+                        count: int, defaults: list[int | None]) -> list[int | None]:
+    scenario = case.get('requires', {}).get('protocol_scenario', {})
+    expected = scenario.get('expected', {}) if isinstance(scenario, dict) else {}
+    enum_values = {_normalized_name(name): int(value)
+                   for name, value in vars(enum_type).items() if isinstance(value, int)}
+    codes = []
+    for index in range(count):
+        ordinal = {0: 'first', 1: 'second', 2: 'third', 3: 'fourth'}.get(index, f'item_{index + 1}')
+        key = ordinal if field == 'status' else f'{ordinal}_reason'
+        value = expected.get(key) if isinstance(expected, dict) else None
+        codes.append(enum_values.get(_normalized_name(value), defaults[index])
+                     if isinstance(value, str) else defaults[index])
+    return codes
+
+
 def execute_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | None = None) -> dict:
     if cell['transport'] is None:
         if (target.get('kind') == 'operation_structure'
@@ -2228,6 +2278,12 @@ def execute_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | Non
     if case['case_id'] == 'test-op-discover-versions':
         return _positive_fixture_cell(cell, case, target, trace=trace)
     if case.get('requires', {}).get('workflow_type') == 'batch_id_placeholder':
+        return _batch_workflow_cell(cell, case, target, trace=trace)
+    if (case.get('category') == 'batch_workflows'
+            and case.get('requires', {}).get('expected_status') != 'NotSent'
+            and target.get('kind') == 'operation'
+            and cell.get('transport') is not None
+            and len(_batch_item_specs(case)) > 1):
         return _batch_workflow_cell(cell, case, target, trace=trace)
     return _network_cell(cell, case, target, trace=trace)
 
@@ -2640,14 +2696,13 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
 
 def _batch_workflow_cell(cell: dict, case: dict, target: dict,
                          *, trace: CallTrace | None) -> dict:
-    """Send the catalogued ordered batch using omitted IDs for placeholder consumers."""
-    from kmipkit import protocol_values, ttlv
+    """Send the complete catalogued batch and retain its ordered wire evidence."""
+    from kmipkit import errors, extensions, protocol_values, ttlv
     from .controlled_peer import ControlledTlsPeer, PKI, batch_response
 
     scenario = case.get('requires', {}).get('protocol_scenario', {})
-    operations = scenario.get('operations') if isinstance(scenario, dict) else None
-    if not isinstance(operations, list) or not operations:
-        raise RecipePending
+    item_specs = _batch_item_specs(case)
+    operations = [spec['operation'] for spec in item_specs]
     workflow_operation = cell.get('workflow_operation')
     if workflow_operation is not None and workflow_operation not in operations:
         raise ValueError('batch route operation is absent from the catalog workflow')
@@ -2656,14 +2711,26 @@ def _batch_workflow_cell(cell: dict, case: dict, target: dict,
 
     status = protocol_values.ResultStatus.OPERATION_FAILED
     reason = protocol_values.ResultReason.OPERATION_NOT_SUPPORTED
+    parameters = scenario.get('parameters', {}) if isinstance(scenario, dict) else {}
+    forward_placeholder_rejection = (
+        isinstance(parameters, dict)
+        and parameters.get('placeholder_direction') == 'later item to earlier item'
+    )
+    status_codes = _batch_result_codes(case, protocol_values.ResultStatus, 'status', len(operations),
+                                       [status] * len(operations))
+    reason_defaults = [reason if code == status else None for code in status_codes]
+    reason_codes = _batch_result_codes(case, protocol_values.ResultReason, 'reason', len(operations),
+                                       reason_defaults)
     peer = ControlledTlsPeer(
         status=status,
         reason=reason,
+        expect_no_connection=forward_placeholder_rejection,
         encoding=cell['encoding'],
         transport=cell['transport'],
         protocol_version=cell['protocol_version'],
         response_builder=lambda request, encoding, minor: batch_response(
-            request, encoding, operations, status, reason, minor),
+            request, encoding, operations, status, reason, minor,
+            result_statuses=status_codes, result_reasons=reason_codes),
     )
     connection = {
         'server_id': 'controlled-fixture', 'protocol_version': cell['protocol_version'],
@@ -2679,38 +2746,94 @@ def _batch_workflow_cell(cell: dict, case: dict, target: dict,
     batch = None
     limits = None
     response = None
+    local_rejection = False
     try:
         driver = PythonKmipDriver(connection)
         batch = driver._client_module.Batch.create()
         limits = ttlv.codec_limits_defaults()
+        continuation = parameters.get('batch_error_continuation_option')
+        if isinstance(continuation, str) and continuation.casefold() != 'omitted':
+            enum_values = {_normalized_name(name): int(value)
+                           for name, value in vars(protocol_values.BatchErrorContinuationOption).items()
+                           if isinstance(value, int)}
+            continuation_value = enum_values.get(_normalized_name(continuation))
+            if continuation_value is None:
+                raise RecipePending
+            if batch.add_error_continuation_value(continuation_value) is not batch:
+                raise ValueError('Batch error continuation option was not retained')
+        ordered = parameters.get('batch_order_option')
+        if isinstance(ordered, bool):
+            batch.set_ordered(ordered)
         if workflow_operation is None:
             probe_case = {**case, 'operation': target['name']}
             probe = driver._build_item(
                 probe_case, None, name=f"KMIPKit-route-probe-{case['case_id']}")
             probe.close()
-        for index, operation in enumerate(operations):
+        for index, spec in enumerate(item_specs):
+            operation = spec['operation']
             item_case = {**case, 'operation': operation}
+            detail = _normalized_name(spec['detail'])
+            identifier = None
+            identifier_operations = {
+                'activate', 'archive', 'check', 'destroy', 'export', 'get', 'getattributelist',
+                'getattributes', 'getusageallocation', 'obtainlease', 'recover', 'revoke',
+            }
+            has_prior_create = any(name in {'Create', 'Create Key Pair', 'Create Split Key'}
+                                   for name in operations[:index])
+            if (forward_placeholder_rejection
+                    and operation.replace(' ', '').casefold() in identifier_operations
+                    and 'idplaceholderfromitem' in detail):
+                identifier = extensions.UniqueIdentifier.enumeration(
+                    protocol_values.UniqueIdentifier.ID_PLACEHOLDER)
+            elif (operation.replace(' ', '').casefold() in identifier_operations
+                  and 'idplaceholder' not in detail and not has_prior_create):
+                object_label = ('missing' if 'missing' in detail else 'existing')
+                identifier = extensions.UniqueIdentifier.text_string(
+                    f"KMIPKit-route-{object_label}-{case['case_id']}-{index}")
             if (operation == 'Get Attribute List'
                     and cell['public_api_symbol']
                     == 'kmipkit.attribute_operations.GetAttributeListRequest.to_batch_item'):
                 item = driver._build_high_level_item(
-                    item_case, None, name=f"KMIPKit-route-{case['case_id']}-{index}")
+                    item_case, identifier,
+                    name=f"KMIPKit-route-{case['case_id']}-{index}")
             else:
                 item = driver._build_item(
-                    item_case, None, name=f"KMIPKit-route-{case['case_id']}-{index}")
+                    item_case, identifier,
+                    name=f"KMIPKit-route-{case['case_id']}-{index}")
+            batch_item_id = spec['batch_item_id']
+            batch_item_id = (batch_item_id.encode('utf-8') if isinstance(batch_item_id, str)
+                             else batch_item_id)
+            if batch_item_id is None:
+                batch_item_id = f"kmipkit-route-{index + 1:02d}".encode('ascii')
             item = driver._extensions.with_unique_batch_item_id(
-                item, f"kmipkit-route-{index + 1:02d}".encode('ascii'))
+                item, batch_item_id)
             batch.add_item(item)
-        response = driver._client.execute(batch, limits)
-        if response.item_count() != len(operations):
-            raise ValueError('typed batch response count differs from the ordered request')
-        status_codes = [int(response.item_at(index).result_status)
-                        for index in range(response.item_count())]
-        reason_codes = [int(response.item_at(index).result_reason)
-                        if response.item_at(index).result_reason is not None else None
-                        for index in range(response.item_count())]
-        if status_codes != [status] * len(operations) or reason_codes != [reason] * len(operations):
-            raise ValueError('controlled batch peer response did not preserve ordered item outcomes')
+            if trace is not None and operation == workflow_operation:
+                trace.record_invocation(cell['public_api_symbol'])
+        try:
+            if trace is not None and cell.get('execution_api_symbol'):
+                trace.record_invocation(cell['execution_api_symbol'])
+            response = driver._client.execute(batch, limits)
+        except errors.ClientExecutionError as error:
+            if forward_placeholder_rejection:
+                response_ttlv = error.response_ttlv
+                if response_ttlv is not None:
+                    response_ttlv.close()
+                    raise ValueError('local batch rejection exposed an unexpected response TTLV')
+                if (error.client_category != errors.ClientErrorCategory.VALIDATION
+                        or error.cause != errors.ClientErrorCause.INVALID_INPUT
+                        or error.delivery != errors.DeliveryState.NOT_SENT):
+                    raise ValueError('forward placeholder rejection has unexpected client metadata')
+                local_rejection = True
+            elif all(code == protocol_values.ResultStatus.SUCCESS for code in status_codes):
+                raise
+        if response is not None:
+            if response.item_count() != len(operations):
+                raise ValueError('typed batch response count differs from the ordered request')
+            native_statuses = [int(response.item_at(index).result_status)
+                               for index in range(response.item_count())]
+            if native_statuses != status_codes:
+                raise ValueError('typed batch result accessors changed the ordered item statuses')
     finally:
         if response is not None:
             response.close()
@@ -2722,6 +2845,19 @@ def _batch_workflow_cell(cell: dict, case: dict, target: dict,
             driver.close()
         peer.close()
 
+    if forward_placeholder_rejection:
+        if not local_rejection or peer.requests or peer.responses:
+            raise ValueError('forward placeholder was not rejected locally before transport')
+        return {
+            'batch_operation_sequence': operations,
+            'batch_item_count': len(operations),
+            'request_delivery_state': 'not_sent',
+            'transport_invocation_count': 0,
+            'local_rejection_code': 'batch_placeholder_forward_reference',
+            'client_error_category': 'validation',
+            'client_error_cause': 'invalid_input',
+        }
+
     if len(peer.requests) != 1 or len(peer.responses) != 1:
         raise ValueError('controlled batch fixture did not exchange exactly one message')
     request = _network_tree(peer.requests[0], cell['encoding'])
@@ -2732,14 +2868,22 @@ def _batch_workflow_cell(cell: dict, case: dict, target: dict,
     response_operations = _batch_message_operations(response_tree)
     if request_operations != operations or response_operations != operations:
         raise ValueError('controlled peer did not observe the complete ordered batch')
-    if any(any(tag == 0x420094 for tag, _, _ in item) for item in request_items[1:]):
-        raise ValueError('a placeholder-consuming batch item encoded a Unique Identifier')
+    if case.get('requires', {}).get('workflow_type') == 'batch_id_placeholder':
+        if any(any(tag == 0x420094 for tag, _, _ in item) for item in request_items[1:]):
+            raise ValueError('a placeholder-consuming batch item encoded a Unique Identifier')
+    else:
+        for spec, request_item in zip(item_specs, request_items, strict=True):
+            if ('idplaceholder' in _normalized_name(spec['detail'])
+                    and any(tag == 0x420094 for tag, _, _ in request_item)):
+                raise ValueError('a placeholder batch item encoded a Unique Identifier')
     if peer.request_observation.get('batch_count') != len(operations):
         raise ValueError('controlled peer observed a different batch count')
     observed_status_codes = [next(value for tag, _, value in item if tag == 0x42007F)
                              for item in response_items]
     observed_reason_codes = [next((value for tag, _, value in item if tag == 0x42007E), None)
                              for item in response_items]
+    if observed_status_codes != status_codes or observed_reason_codes != reason_codes:
+        raise ValueError('controlled batch peer returned unexpected ordered item outcomes')
     return {
         'request_tree_sha256': digest(request),
         'response_tree_sha256': digest(response_tree),

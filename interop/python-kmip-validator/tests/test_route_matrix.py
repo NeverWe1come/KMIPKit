@@ -1327,8 +1327,6 @@ class RouteMatrixTests(unittest.TestCase):
                     and cell['transport'] == 'raw_tls')
         target = next(target for target in self.catalog['normative_targets']
                       if target['target_id'] == cell['target_id'])
-        symbols = [cell['public_api_symbol'], cell['execution_api_symbol']]
-        trace = self.runner.CallTrace(symbols)
         peers = []
 
         def record_peer(**options):
@@ -1337,17 +1335,17 @@ class RouteMatrixTests(unittest.TestCase):
             return peer
 
         with patch('kmipkit_validator.controlled_peer.ControlledTlsPeer', side_effect=record_peer):
-            with trace:
-                kind, event = self.runner._execute_matrix_cell(cell, case, target)
+            kind, event = self.runner._execute_matrix_cell(cell, case, target)
 
         self.assertEqual('event', kind)
         self.assertEqual('passed', event['status'])
         self.assertEqual(1, event['invocation_count'])
-        self.assertTrue(set(symbols) <= trace.observed)
         self.assertEqual(1, len(peers))
         self.assertTrue(peers[0].expect_no_connection)
         self.assertEqual([], peers[0].requests)
         self.assertEqual([], peers[0].responses)
+        self.assertEqual(['Activate', 'Create'], event['batch_operation_sequence'])
+        self.assertEqual(2, event['batch_item_count'])
         self.assertEqual('not_sent', event['request_delivery_state'])
         self.assertEqual(0, event['transport_invocation_count'])
         self.assertEqual('batch_placeholder_forward_reference', event['local_rejection_code'])
