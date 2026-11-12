@@ -83,6 +83,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ControlledTlsPeerTest {
+    private record NormativeTarget(String caseId, String targetId) { }
+
     private static final String LOG_MESSAGE = "KMIPKit interoperability diagnostic";
     private static final String CREATED_OBJECT_ID = "controlled-create-object-id";
     private static final List<TagRangeFixture> TAG_RANGE_FIXTURES = List.of(
@@ -124,6 +126,31 @@ class ControlledTlsPeerTest {
             "test-norm-message-field-message-field-8-4-batch-item";
     private static final String RESPONSE_BATCH_ITEM_TARGET_ID =
             "KMIPKIT-ELEM-MESSAGE-FIELD-8-4-BATCH-ITEM";
+    private static final List<NormativeTarget> RESPONSE_MESSAGE_PARSE_TARGETS = List.of(
+            new NormativeTarget("test-norm-message-field-message-field-8-5-batch-count",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT"),
+            new NormativeTarget("test-norm-message-field-message-field-8-6-batch-item",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM"),
+            new NormativeTarget("test-norm-message-field-message-field-8-6-message-extension",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION"),
+            new NormativeTarget("test-norm-message-field-message-field-9-5-batch-count",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT"),
+            new NormativeTarget("test-norm-message-field-message-field-9-7-batch-item",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM"),
+            new NormativeTarget("test-norm-message-field-message-field-9-13-message-extension",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION"));
+    private static final List<NormativeTarget> REQUEST_MESSAGE_PARSE_TARGETS = List.of(
+            new NormativeTarget("test-norm-message-field-message-field-9-5-batch-count",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT"),
+            new NormativeTarget("test-norm-message-field-message-field-9-7-batch-item",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM"),
+            new NormativeTarget("test-norm-message-field-message-field-9-13-message-extension",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION"));
+    private static final List<NormativeTarget> BATCH_ITEM_FIELD_TARGETS = List.of(
+            new NormativeTarget("test-norm-message-field-message-field-8-6-batch-item",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM"),
+            new NormativeTarget("test-norm-message-field-message-field-9-7-batch-item",
+                    "KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM"));
     private static final Map<String, String> CREDENTIAL_TYPE_MODEL_ROUTES = Map.of(
             "KMIPKIT-ELEM-ENUM-VALUE-CREDENTIAL-TYPE-USERNAME-AND-PASSWORD-00000001",
             "java.typed-protocol.model.org.kmipkit.credentials.usernameandpasswordcredential.fromttlv",
@@ -3136,16 +3163,10 @@ class ControlledTlsPeerTest {
             assertEquals(0x18L, item.operation().orElseThrow());
             assertEquals(1L, item.extensionCount());
         }
-        for (String[] field : List.of(
-                new String[] {"test-norm-message-field-message-field-9-5-batch-count",
-                        "KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT"},
-                new String[] {"test-norm-message-field-message-field-9-7-batch-item",
-                        "KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM"},
-                new String[] {"test-norm-message-field-message-field-9-13-message-extension",
-                        "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION"})) {
-            appendRouteEvent(events, field[0],
+        for (NormativeTarget field : REQUEST_MESSAGE_PARSE_TARGETS) {
+            appendRouteEvent(events, field.caseId(),
                     "java.typed-protocol.model.org.kmipkit.message.requestmessage.fromttlv",
-                    field[1], "org.kmipkit.message.RequestMessage.fromTtlv", null, null,
+                    field.targetId(), "org.kmipkit.message.RequestMessage.fromTtlv", null, null,
                     "construct", protocolVersion, null, treeHash, null);
         }
     }
@@ -3269,34 +3290,18 @@ class ControlledTlsPeerTest {
                 "java.typed-protocol.model.org.kmipkit.message.responsemessage.fromttlv",
                 RESPONSE_BATCH_ITEM_TARGET_ID, "org.kmipkit.message.ResponseMessage.fromTtlv",
                 null, null, "construct", protocolVersion, null, responseHash, null);
-        for (String[] field : List.of(
-                new String[] {"test-norm-message-field-message-field-8-5-batch-count",
-                        "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT"},
-                new String[] {"test-norm-message-field-message-field-8-6-batch-item",
-                        "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM"},
-                new String[] {"test-norm-message-field-message-field-8-6-message-extension",
-                        "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION"},
-                new String[] {"test-norm-message-field-message-field-9-5-batch-count",
-                        "KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT"},
-                new String[] {"test-norm-message-field-message-field-9-7-batch-item",
-                        "KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM"},
-                new String[] {"test-norm-message-field-message-field-9-13-message-extension",
-                        "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION"})) {
-            appendRouteEvent(events, field[0],
+        for (NormativeTarget field : RESPONSE_MESSAGE_PARSE_TARGETS) {
+            appendRouteEvent(events, field.caseId(),
                     "java.typed-protocol.model.org.kmipkit.message.responsemessage.fromttlv",
-                    field[1], "org.kmipkit.message.ResponseMessage.fromTtlv", null, null,
+                    field.targetId(), "org.kmipkit.message.ResponseMessage.fromTtlv", null, null,
                     "construct", protocolVersion, null, responseHash, null);
         }
     }
 
     private static void appendBatchItemFieldRouteEvents(ArrayNode events, String routeId,
             String publicApiSymbol, String protocolVersion, String responseHash) {
-        for (String[] field : List.of(
-                new String[] {"test-norm-message-field-message-field-8-6-batch-item",
-                        "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM"},
-                new String[] {"test-norm-message-field-message-field-9-7-batch-item",
-                        "KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM"})) {
-            appendRouteEvent(events, field[0], routeId, field[1], publicApiSymbol,
+        for (NormativeTarget field : BATCH_ITEM_FIELD_TARGETS) {
+            appendRouteEvent(events, field.caseId(), routeId, field.targetId(), publicApiSymbol,
                     null, null, "decode", protocolVersion, null, null, responseHash);
         }
     }
