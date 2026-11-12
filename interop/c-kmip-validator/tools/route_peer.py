@@ -39,6 +39,8 @@ REQUEST_PAYLOAD_TAG = 0x420079
 UNIQUE_IDENTIFIER_TAG = 0x420094
 ENUMERATION_TTLV_TYPE = 5
 ID_PLACEHOLDER_ENUMERATION = 1
+PLACEHOLDER_CHAIN_OPERATIONS = (1, 18, 10)
+PLACEHOLDER_CLEANUP_OPERATIONS = (19, 20)
 
 CERTIFICATE_ATTRIBUTE_FIELDS = (
     'Certificate Subject CN', 'Certificate Subject O', 'Certificate Subject OU',
@@ -256,7 +258,7 @@ RECIPES = {
     'test-v20-reject-get-constraints': ((56,), 'get_constraints'),
     'test-op-create': ((1, 20), 'create'),
     'test-batch-create-activate-destroy': ((1, 18, 12, 19, 20), 'create_activate_attribute_list_revoke_destroy'),
-    'test-batch-placeholder-chain-resolves': ((1, 18, 10), 'batch_placeholder_chain'),
+    'test-batch-placeholder-chain-resolves': (PLACEHOLDER_CHAIN_OPERATIONS, 'batch_placeholder_chain'),
     'test-batch-single-item-options-omitted': ((10,), 'batch_single_item_options_omitted'),
     'test-batch-count-matches-items': ((10, 12), 'batch_count_two_read_items'),
     'test-batch-unique-item-id-response-correlation': ((10, 12), 'batch_count_two_read_items'),
@@ -465,7 +467,7 @@ def verify_placeholder_chain_response(node, operations):
             [text_values(item, 0x420094) for item in items] !=
             [['fixture-key-1'] for _ in operations]):
         raise ValueError('fixture_placeholder_chain_response_mismatch')
-    if tuple(operations) == (1, 18, 10):
+    if tuple(operations) == PLACEHOLDER_CHAIN_OPERATIONS:
         get_item = items[2]
         if not list(descendants(get_item, 0x42008F)):
             raise ValueError('fixture_placeholder_chain_get_object_missing')
@@ -779,7 +781,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         cleanup_exchange = placeholder_chain_recipe and exchange_index == 1
                                         if cleanup_exchange:
                                             assert_placeholder_cleanup_request(request_tree, version)
-                                            response_operations = (19, 20)
+                                            response_operations = PLACEHOLDER_CLEANUP_OPERATIONS
                                         else:
                                             assert_recipe(request_tree, case_id, version, recipe, attribute_fixture)
                                             response_operations = recipe[0]
