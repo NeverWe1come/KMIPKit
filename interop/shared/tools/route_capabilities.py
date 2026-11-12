@@ -521,7 +521,8 @@ def build_manifest(root=ROOT, commit='9a16cc90a12205101d22a38501a5e74c665df4dc')
                 else:
                     value = normalized(function_id)
                     target_ids = [target['target_id'] for target in targets
-                        if _contains_name_tokens(target.get('name', ''), function_id)]
+                        if target['kind'] not in {'enumeration_value', 'bitmask_value', 'referenced_enum_value'}
+                        and _contains_name_tokens(target.get('name', ''), function_id)]
                     if re.search(r'(?:^|_)bytes(?:_|$)', function_id):
                         target_ids.extend(target['target_id'] for target in targets
                             if target['kind'] == 'data_type' and normalized(target['name']) == 'bytestring')

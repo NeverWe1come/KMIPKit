@@ -47,6 +47,7 @@ def target_ids(targets, names, *, all_attributes=False, all_objects=False, opera
         changed = len(blocked) != previous
     names = {norm(name) for name in names}
     roots = {t['target_id'] for t in targets if t['target_id'] not in blocked | excluded
+        and t['kind'] not in {'enumeration_value', 'bitmask_value', 'referenced_enum_value'}
         and (norm(t['name']) in names or norm(t['target_id']) in names)}
     if all_attributes:
         roots.update(t['target_id'] for t in targets if t['target_id'] not in blocked | excluded
