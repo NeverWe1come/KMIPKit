@@ -10,6 +10,18 @@ import ssl
 import struct
 
 
+EXPECTED_CONSUMER_OPERATIONS = (
+    # Rust consumer: Ping followed by Create, Get, Destroy.
+    0x3B, 1, 10, 20,
+    # C consumer: Ping followed by Create, Get, Destroy.
+    0x3B, 1, 10, 20,
+    # Java consumer: Create, Get, Destroy, then the existing Pending/Failure cases.
+    1, 10, 20, 20, 20,
+    # Python consumer: Ping followed by Create, Get, Destroy.
+    0x3B, 1, 10, 20,
+)
+
+
 def _item(tag: int, item_type: int, value: bytes) -> bytes:
     header = tag.to_bytes(3, "big") + bytes((item_type,)) + len(value).to_bytes(4, "big")
     return header + value + bytes((-len(value)) % 8)
@@ -185,8 +197,8 @@ def _validate_operation(
             raise RuntimeError("Get or Destroy did not use the returned Unique Identifier")
     if operation in (10, 20):
         indicators = [value for tag, kind, value in header_fields if tag == 0x420007 and kind == 5]
-        if operation == 10 and indicators != [struct.pack(">I", 1)]:
-            raise RuntimeError("Get omitted the explicit Request Header Asynchronous Indicator")
+        if operation == 10 and indicators not in ([], [struct.pack(">I", 1)]):
+            raise RuntimeError("Get contains an invalid Request Header Asynchronous Indicator")
         if operation == 20 and indicators not in ([], [struct.pack(">I", 1)]):
             raise RuntimeError("Destroy contains an invalid Request Header Asynchronous Indicator")
 
@@ -201,8 +213,10 @@ def main() -> None:
     parser.add_argument("--ready-file", type=Path, required=True)
     parser.add_argument("--pid-file", type=Path, required=True)
     parser.add_argument("--fixture-dir", type=Path, required=True)
-    parser.add_argument("--connections", type=int, default=8)
+    parser.add_argument("--connections", type=int, default=len(EXPECTED_CONSUMER_OPERATIONS))
     args = parser.parse_args()
+    if args.connections != len(EXPECTED_CONSUMER_OPERATIONS):
+        raise RuntimeError("the parity fixture requires the complete four-language journey sequence")
 
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     context.minimum_version = ssl.TLSVersion.TLSv1_3
@@ -221,7 +235,7 @@ def main() -> None:
         args.ready_file.write_text(str(listener.getsockname()[1]), encoding="ascii")
         try:
             async_destroy_count = 0
-            for connection_index in range(args.connections):
+            for connection_index, expected_operation in enumerate(EXPECTED_CONSUMER_OPERATIONS):
                 raw, _address = listener.accept()
                 raw.settimeout(10)
                 with raw, context.wrap_socket(raw, server_side=True) as stream:
@@ -230,6 +244,12 @@ def main() -> None:
                         raise RuntimeError("fixture requires an authenticated TLS 1.3 client")
                     request = _read_frame(stream)
                     operation, fields, header_fields = _request_operation(request)
+                    if operation != expected_operation:
+                        raise RuntimeError(
+                            "consumer journey operation order mismatch; "
+                            f"index={connection_index} expected={expected_operation:#x} "
+                            f"received={operation:#x}"
+                        )
                     _validate_operation(operation, fields, header_fields)
                     asynchronous_destroy = operation == 20 and _has_async_indicator(header_fields)
                     pending = asynchronous_destroy and async_destroy_count == 0
