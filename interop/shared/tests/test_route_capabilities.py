@@ -576,6 +576,13 @@ class RouteCapabilitiesTests(unittest.TestCase):
         self.assertTrue(any(target.startswith('KMIPKIT-ELEM-STRUCTURE-MEMBER-3-7-KEY-MATERIAL-') for target in ids))
         self.assertFalse(any(target.startswith('KMIPKIT-ELEM-STRUCTURE-MEMBER-3-8-KEY-MATERIAL-') for target in ids))
 
+    def test_key_material_byte_string_route_only_claims_the_generic_material_tag(self):
+        # OASIS KMIP 2.0/2.1 §11.25 assigns formats 1-6 and 22-23 ByteString
+        # material; formats 7-13 and 20-21 require a Structure (§§3.4-3.12).
+        route = next(route for route in self.data['routes']
+                     if route['public_api_symbol'] == 'kmipkit_protocol::KeyMaterial::byte_string')
+        self.assertEqual({'KMIPKIT-ELEM-TAG-420043'}, set(route['normative_target_ids']))
+
     def test_referenced_pkcs11_values_remain_covered_when_named_constants_are_absent(self):
         catalog = json.loads((SHARED / 'catalog/kmipkit-1.0-test-catalog.json').read_text())
         expected = {target['target_id'] for target in catalog['normative_targets']
