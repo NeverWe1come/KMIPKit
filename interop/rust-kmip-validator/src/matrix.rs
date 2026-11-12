@@ -2408,6 +2408,86 @@ fn invoke_login_usage_limits_route(
     })())
 }
 
+fn invoke_response_ttlv_route(
+    symbol: &str,
+    sample: &Item,
+    target: &Json,
+    elements: &[Json],
+    protocol_version: &str,
+) -> Option<Result<Item>> {
+    const ROUTES: &[&str] = &[
+        "kmipkit_protocol::HashResponse::with_ttlv",
+        "kmipkit_protocol::MacResponse::with_ttlv",
+        "kmipkit_protocol::MacVerifyResponse::with_ttlv",
+        "kmipkit_protocol::RegisterResponse::with_ttlv",
+        "kmipkit_protocol::RevokeResponse::with_ttlv",
+        "kmipkit_protocol::SignResponse::with_ttlv",
+        "kmipkit_protocol::SignatureVerifyResponse::with_ttlv",
+    ];
+    if !ROUTES.contains(&symbol) {
+        return None;
+    }
+
+    macro_rules! invoke_response_ttlv {
+        ($operation:literal, $response:ident) => {{
+            let message =
+                failed_response_message_fixture($operation, target, elements, protocol_version)?;
+            let item = message
+                .batch_items()
+                .next()
+                .ok_or("typed response fixture has no batch item")?;
+            let response = kmipkit::protocol::$response::try_from_response_item(item)
+                .map_err(|_| "typed response fixture rejected")?;
+            if response.with_ttlv(|tree| tree.children().len()) < 5 {
+                return Err("typed response TTLV accessor did not expose the response item");
+            }
+            sample.try_clone().map_err(|_| "local copy failed")
+        }};
+    }
+
+    macro_rules! invoke_failure_ttlv {
+        ($operation:literal, $response:ident) => {{
+            let message =
+                failed_response_message_fixture($operation, target, elements, protocol_version)?;
+            let item = message
+                .batch_items()
+                .next()
+                .ok_or("typed response fixture has no batch item")?;
+            let response = kmipkit::protocol::$response::try_from_response_item(item)
+                .map_err(|_| "typed response fixture rejected")?;
+            if response.with_ttlv(|tree| tree.children().len()).is_some() {
+                return Err("failed response unexpectedly retained its TTLV payload");
+            }
+            sample.try_clone().map_err(|_| "local copy failed")
+        }};
+    }
+
+    Some((|| match symbol {
+        "kmipkit_protocol::HashResponse::with_ttlv" => {
+            invoke_response_ttlv!("Hash", HashResponse)
+        }
+        "kmipkit_protocol::MacResponse::with_ttlv" => {
+            invoke_response_ttlv!("MAC", MacResponse)
+        }
+        "kmipkit_protocol::MacVerifyResponse::with_ttlv" => {
+            invoke_response_ttlv!("MAC Verify", MacVerifyResponse)
+        }
+        "kmipkit_protocol::RegisterResponse::with_ttlv" => {
+            invoke_failure_ttlv!("Register", RegisterResponse)
+        }
+        "kmipkit_protocol::RevokeResponse::with_ttlv" => {
+            invoke_failure_ttlv!("Revoke", RevokeResponse)
+        }
+        "kmipkit_protocol::SignResponse::with_ttlv" => {
+            invoke_response_ttlv!("Sign", SignResponse)
+        }
+        "kmipkit_protocol::SignatureVerifyResponse::with_ttlv" => {
+            invoke_response_ttlv!("Signature Verify", SignatureVerifyResponse)
+        }
+        _ => Err("unsupported typed response TTLV accessor"),
+    })())
+}
+
 fn invoke_simple_protocol_route(symbol: &str, sample: &Item) -> Option<Result<Item>> {
     if symbol == "kmipkit_protocol::ManagedObject::unknown" {
         return Some((|| match kmipkit::protocol::ManagedObject::unknown(
@@ -2662,6 +2742,11 @@ fn invoke(
         elements,
         protocol_version,
     ) {
+        return Some(result);
+    }
+    if let Some(result) =
+        invoke_response_ttlv_route(symbol, sample, target, elements, protocol_version)
+    {
         return Some(result);
     }
     if let Some(result) = invoke_client_batch_route(symbol, sample) {
