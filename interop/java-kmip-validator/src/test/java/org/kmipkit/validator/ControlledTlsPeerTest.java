@@ -327,6 +327,8 @@ class ControlledTlsPeerTest {
             appendGenericDataTypeRouteEvents(events, dataTypeFixtures, dataTypeVectors, protocolVersion);
             appendNormativeMessageFieldGenericRouteEvents(events, protocolVersion);
             appendNormativeRequestMessageParseEvents(events, protocolVersion);
+            LocalCatalogRouteChecks.executeTags(readRouteEvidenceCatalog(), protocolVersion, genericOnlyTagCaseIds(),
+                    invocation -> appendLocalCatalogInvocation(events, protocolVersion, invocation));
 
             byte[] serverCertificatePem = fixture("server-cert.pem");
             byte[] serverPrivateKeyPem = fixture("server-key.pem");
@@ -431,7 +433,7 @@ class ControlledTlsPeerTest {
                 "Installed Query calls against the controlled peer must emit route execution evidence.");
         JsonNode report = new ObjectMapper().readTree(reportPath.toFile());
         assertEquals("java", report.path("language").asText());
-        assertGenericTagInventoryEvidence(report.path("events"));
+        assertGenericOnlyTagInventoryEvidence(report.path("events"));
         assertTrue(enumerationFixtures.stream().noneMatch(fixture -> fixture.caseId().equals(
                         "test-norm-enumeration-value-profile-name-reserved-00000001-00000103")),
                 "A finite Profile Name range must remain pending until each named value is represented.");
@@ -596,12 +598,19 @@ class ControlledTlsPeerTest {
         int batchErrorContinuationEventCount = enumerationFixtures.stream()
                 .filter(fixture -> "BATCH-ERROR-CONTINUATION-OPTION".equals(fixture.parentName()))
                 .mapToInt(fixture -> fixture.protocolVersions().size()).sum();
+        int genericTagEventCount = 0;
+        Set<String> genericTagCaseIds = genericOnlyTagCaseIds();
+        for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
+            if (!genericTagCaseIds.contains(testCase.path("case_id").asText())) continue;
+            int routes = "reserved".equals(testCase.path("requires").path("allocation").asText()) ? 3 : 5;
+            genericTagEventCount += routes * testCase.path("execution").path("protocol_versions").size();
+        }
         assertEquals(68 + enumerationEventCount + bitmaskEventCount + 94 + batchItemAccessorEventCount
                         + batchItemExtensionCountEventCount + batchItemGenericRouteEventCount
                         + batchItemAdditionalResponseRouteEventCount + credentialGenericRouteEventCount
                         + normativeMessageFieldGenericRouteEventCount + normativeMessageFieldParserRouteEventCount
                         + normativeBatchItemAccessorRouteEventCount + credentialEnvelopeEventCount
-                        + batchErrorContinuationEventCount,
+                        + batchErrorContinuationEventCount + genericTagEventCount,
                 report.path("events").size());
         long bitmaskEvents = 0;
         for (JsonNode event : report.path("events")) {
@@ -622,7 +631,7 @@ class ControlledTlsPeerTest {
         long bitmaskCaseCount = bitmaskFixtures.stream().map(BitmaskFixture::caseId).distinct().count();
         long dataTypeCaseCount = dataTypeFixtures.stream().map(DataTypeFixture::caseId).distinct().count();
         assertEquals(15 + enumerationFixtures.size() + bitmaskCaseCount + dataTypeCaseCount
-                        + CREDENTIAL_TYPE_MODEL_CASE_IDS.size(),
+                        + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + genericTagCaseIds.size(),
                 report.path("case_ids").size());
         List<String> expectedCredentialCaseIds = CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().toList();
         int credentialCaseStart = report.path("case_ids").size() - expectedCredentialCaseIds.size();
@@ -2703,6 +2712,7 @@ class ControlledTlsPeerTest {
         caseIds.add("test-norm-message-field-message-field-8-6-message-extension");
         caseIds.add("test-norm-message-field-message-field-9-13-message-extension");
         caseIds.add("test-norm-tag-tag-420051");
+        genericOnlyTagCaseIds().forEach(caseIds::add);
         CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().forEach(caseIds::add);
         report.putArray("protocol_versions").add("2.0").add("2.1");
         ObjectNode combination = mapper.createObjectNode();
@@ -2724,11 +2734,29 @@ class ControlledTlsPeerTest {
         throw new AssertionError("The expected controlled Query route event is absent.");
     }
 
+    private static void appendLocalCatalogInvocation(ArrayNode events, String version,
+            LocalCatalogRouteChecks.Invocation invocation) throws Exception {
+        if (invocation.rejectionCode() != null) {
+            ObjectNode event = newRouteEvent(events, invocation.caseId(), invocation.routeId(),
+                    invocation.targetId(), invocation.symbol(), null, null, invocation.action(), version, null);
+            event.put("decode_outcome", "rejected");
+            event.put("decode_rejection_code", invocation.rejectionCode());
+            event.put("decode_input_sha256", sha256(invocation.wire()));
+            return;
+        }
+        String treeHash = normalizedTreeSha256(invocation.wire());
+        boolean construction = "construct".equals(invocation.action());
+        appendRouteEvent(events, invocation.caseId(), invocation.routeId(), invocation.targetId(),
+                invocation.symbol(), null, null, invocation.action(), version, null,
+                construction ? treeHash : null, construction ? null : treeHash);
+    }
+
     // OASIS KMIP 2.0 §11.54 and KMIP 2.1 §11.56: exact Tag assignments and reservations.
-    private static void assertGenericTagInventoryEvidence(JsonNode events) throws Exception {
+    private static void assertGenericOnlyTagInventoryEvidence(JsonNode events) throws Exception {
+        Set<String> selected = genericOnlyTagCaseIds();
         for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
             JsonNode requires = testCase.path("requires");
-            if (!"tag".equals(requires.path("target_kind").asText())) continue;
+            if (!selected.contains(testCase.path("case_id").asText())) continue;
             var routes = new ArrayList<>(List.of(
                     "java.generic-ttlv.model.org.kmipkit.ttlv.rawtag.fromraw",
                     "java.generic-ttlv.model.org.kmipkit.ttlv.rawtag.checked",
@@ -2746,6 +2774,28 @@ class ControlledTlsPeerTest {
                 }
             }
         }
+    }
+
+    private static Set<String> genericOnlyTagCaseIds() throws Exception {
+        JsonNode manifest = new ObjectMapper().readTree(
+                Path.of("../shared/coverage/route-capabilities.json").toFile());
+        Set<String> typedTargets = new java.util.HashSet<>();
+        for (JsonNode route : manifest.path("routes")) {
+            if (!"java".equals(route.path("language").asText())
+                    || "generic-ttlv".equals(route.path("api_level").asText())) continue;
+            for (JsonNode target : route.path("normative_target_ids")) typedTargets.add(target.asText());
+        }
+        assertTrue(!typedTargets.contains("*"), "A generic-only phase requires explicit typed route targets.");
+        Set<String> selected = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
+            JsonNode requires = testCase.path("requires");
+            if ("tag".equals(requires.path("target_kind").asText())
+                    && !typedTargets.contains(requires.path("normative_target_id").asText())) {
+                selected.add(testCase.path("case_id").asText());
+            }
+        }
+        assertTrue(!selected.isEmpty(), "The catalog must retain executable generic-only Tag cases.");
+        return selected;
     }
 
     private static long routeEventCount(JsonNode events, String caseId, String routeId) {
