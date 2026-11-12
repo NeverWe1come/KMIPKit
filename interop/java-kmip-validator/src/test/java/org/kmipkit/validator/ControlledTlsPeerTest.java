@@ -377,12 +377,22 @@ class ControlledTlsPeerTest {
                 ENDPOINT_ROLE_CLIENT_TARGET_ID, KmipValues.EndpointRole.CLIENT, "Client");
         assertEndpointRoleRouteEvidence(report.path("events"), ENDPOINT_ROLE_SERVER_CASE_ID,
                 ENDPOINT_ROLE_SERVER_TARGET_ID, KmipValues.EndpointRole.SERVER, "Server");
-        assertEquals(2, routeEventCount(report.path("events"), RESPONSE_BATCH_ITEM_CASE_ID,
-                        "java.typed-protocol.function.client_batch_response_item_at"),
-                "The installed batch item accessor must run against real KMIP 2.x response Batch Items.");
-        assertEquals(2, routeEventCount(report.path("events"), RESPONSE_BATCH_ITEM_CASE_ID,
+        assertEquals(2, routeEventCount(report.path("events"),
+                        "test-norm-message-field-message-field-8-5-batch-count",
                         "java.typed-protocol.function.client_batch_response_item_count"),
-                "The installed batch count accessor must run against real KMIP 2.x response Batch Items.");
+                "The installed batch count accessor must read response Batch Count in KMIP 2.0 and 2.1.");
+        assertEquals(2, routeEventCount(report.path("events"),
+                        "test-norm-message-field-message-field-9-5-batch-count",
+                        "java.typed-protocol.function.client_batch_response_item_count"),
+                "The installed batch count accessor must read the KMIP 2.1 response Batch Count field.");
+        assertEquals(2, routeEventCount(report.path("events"),
+                        "test-norm-message-field-message-field-8-6-batch-item",
+                        "java.typed-protocol.function.client_batch_response_item_at"),
+                "The installed batch item accessor must read response Batch Item in KMIP 2.0 and 2.1.");
+        assertEquals(2, routeEventCount(report.path("events"),
+                        "test-norm-message-field-message-field-9-7-batch-item",
+                        "java.typed-protocol.function.client_batch_response_item_at"),
+                "The installed batch item accessor must read the KMIP 2.1 response Batch Item field.");
         assertEquals(2, routeEventCount(report.path("events"), RESPONSE_BATCH_ITEM_CASE_ID,
                         "java.typed-protocol.function.client_batch_item_response_pending_correlation_value"),
                 "A controlled Pending response must expose its server-issued correlation value.");

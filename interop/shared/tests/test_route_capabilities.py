@@ -86,8 +86,12 @@ class RouteCapabilitiesTests(unittest.TestCase):
             self.assertEqual(expected, route['normative_target_ids'])
 
     def test_attribute_container_routes_do_not_claim_managed_object_structures(self):
+        # OASIS KMIP 2.0/2.1 §11.34 Object Type Enumeration is distinct from the §4.36 Object Type Attribute.
         catalog = json.loads((SHARED / 'catalog/kmipkit-1.0-test-catalog.json').read_text())
         targets = {target['target_id']: target for target in catalog['normative_targets']}
+        managed_object_type_values = {target_id for target_id, target in targets.items()
+            if target['kind'] == 'object_type' or
+            'KMIPKIT-ELEM-ENUMERATION-OBJECT-TYPE' in target.get('parent_element_ids', [])}
         routes = [route for route in self.data['routes']
                   if route['api_level'] == 'typed-protocol'
                   and any(token in route['public_api_symbol'].casefold()
@@ -98,6 +102,8 @@ class RouteCapabilitiesTests(unittest.TestCase):
                              if target_id in targets]
             self.assertFalse(any(target['kind'] in {'object_structure', 'operation_structure'}
                                  for target in route_targets), route['public_api_symbol'])
+            self.assertFalse(managed_object_type_values.intersection(route['normative_target_ids']),
+                             route['public_api_symbol'])
 
     def test_object_item_constructors_do_not_claim_object_type_values_or_sibling_structures(self):
         catalog = json.loads((SHARED / 'catalog/kmipkit-1.0-test-catalog.json').read_text())
@@ -323,6 +329,119 @@ class RouteCapabilitiesTests(unittest.TestCase):
             self.assertEqual([operation_id], route['operation_ids'], key)
             self.assertEqual(6, len(route['combinations']), key)
             self.assertEqual('construct', route['actions'][0], key)
+
+    def test_batch_response_readers_only_claim_response_batch_fields(self):
+        # OASIS KMIP 2.0/2.1 §§8.5-8.6 and §§9.5, 9.7 define response Batch Count and Batch Item.
+        expected = {
+            'count': {
+                'KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT',
+                'KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT',
+            },
+            'at': {
+                'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM',
+                'KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM',
+            },
+        }
+        symbols = {
+            'rust': {
+                'count': 'kmipkit_client::ClientBatchResponse::len',
+                'at': 'kmipkit_client::ClientBatchResponse::get',
+            },
+            'c': {
+                'count': 'kmipkit_client_batch_response_item_count',
+                'at': 'kmipkit_client_batch_response_item_at',
+            },
+            'java': {
+                'count': 'org.kmipkit.extensions.ClientBatchResponse.itemCount',
+                'at': 'org.kmipkit.extensions.ClientBatchResponse.itemAt',
+            },
+            'python': {
+                'count': 'kmipkit.client.BatchResult.item_count',
+                'at': 'kmipkit.client.BatchResult.item_at',
+            },
+        }
+        routes = {(route['language'], route['public_api_symbol']): route for route in self.data['routes']}
+        for language, readers in symbols.items():
+            for reader, target_ids in expected.items():
+                route = routes[(language, readers[reader])]
+                self.assertEqual(sorted(target_ids), sorted(route['normative_target_ids']), readers[reader])
+                self.assertEqual(['decode'], route['actions'], readers[reader])
+
+    def test_batch_error_continuation_builder_is_a_local_route_in_every_language(self):
+        # OASIS KMIP 2.0/2.1 §§8.2, 9.6, and 11.5 define this request option and its values.
+        symbols = {
+            'rust': 'kmipkit_client::ClientBatch::with_batch_error_continuation_option',
+            'c': 'kmipkit_client_batch_add_error_continuation_value',
+            'java': 'org.kmipkit.extensions.ClientBatch.addErrorContinuationValue',
+            'python': 'kmipkit.client.Batch.add_error_continuation_value',
+        }
+        expected = {
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION',
+            'KMIPKIT-ELEM-MESSAGE-FIELD-9-6-BATCH-ERROR-CONTINUATION-OPTION',
+            'KMIPKIT-ELEM-TAG-42000E',
+            'KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-CONTINUE-00000001',
+            'KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-STOP-00000002',
+            'KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-UNDO-00000003',
+            'KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-EXTENSIONS-8XXXXXXX',
+        }
+        routes = {(route['language'], route['public_api_symbol']): route for route in self.data['routes']}
+        for language, symbol in symbols.items():
+            route = routes[(language, symbol)]
+            self.assertEqual('local', route['mode'], symbol)
+            self.assertEqual(expected, set(route['normative_target_ids']), symbol)
+            self.assertIn('construct', route['actions'], symbol)
+
+    def test_response_message_extension_readers_only_claim_the_extension_field(self):
+        # OASIS KMIP 2.0/2.1 §§8.6, 9.13, and 11.56 define response Message Extension.
+        expected = {
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION',
+            'KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION',
+            'KMIPKIT-ELEM-TAG-420051',
+        }
+        symbols = {
+            'rust': {
+                'count': 'kmipkit_client::ClientBatchItemResponse::extensions',
+                'at': 'kmipkit_client::ClientMessageExtension::with_ttlv',
+            },
+            'c': {
+                'count': 'kmipkit_client_batch_item_response_extension_count',
+                'at': 'kmipkit_client_batch_item_response_extension_ttlv_at',
+            },
+            'java': {
+                'count': 'org.kmipkit.extensions.ClientBatchItemResult.extensionCount',
+                'at': 'org.kmipkit.extensions.ClientBatchItemResult.extensionTtlvAt',
+            },
+            'python': {
+                'count': 'kmipkit.client.BatchItemResult.extension_count',
+                'at': 'kmipkit.client.BatchItemResult.extension_ttlv_at',
+            },
+        }
+        routes = {(route['language'], route['public_api_symbol']): route for route in self.data['routes']}
+        for language, readers in symbols.items():
+            for reader, symbol in readers.items():
+                route = routes[(language, symbol)]
+                self.assertEqual(expected, set(route['normative_target_ids']), symbol)
+                self.assertEqual(['decode'], route['actions'], symbol)
+
+    def test_raw_response_ttlv_routes_claim_the_observed_get_response_value(self):
+        # OASIS KMIP 2.0/2.1 §§3.1, 9.7, and 11.25 define this Get response tree and Raw value.
+        expected = {
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM',
+            'KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM',
+            'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-KEY-FORMAT-TYPE',
+            'KMIPKIT-ELEM-TAG-42000F',
+            'KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-RAW-00000001',
+        }
+        symbols = {
+            'c': 'kmipkit_client_batch_item_response_raw_ttlv',
+            'java': 'org.kmipkit.extensions.ClientBatchItemResult.raw',
+            'python': 'kmipkit.client.BatchItemResult.raw',
+        }
+        routes = {(route['language'], route['public_api_symbol']): route for route in self.data['routes']}
+        for language, symbol in symbols.items():
+            route = routes[(language, symbol)]
+            self.assertEqual(expected, set(route['normative_target_ids']), symbol)
+            self.assertEqual(['decode'], route['actions'], symbol)
 
     def test_checked_tag_constructor_exclusions_are_source_backed_and_narrow(self):
         expected = {
