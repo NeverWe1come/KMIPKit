@@ -286,6 +286,16 @@ class RouteMatrixTests(unittest.TestCase):
                 result = self.runner.execute_cell(cell, case, target)
                 self.assertEqual(result['request_tree_sha256'], result['response_tree_sha256'])
 
+    def test_cryptographic_parameters_serialization_route_covers_every_catalogued_target(self):
+        self.assert_route_cells_pass({
+            'kmipkit.cryptographic_parameters.CryptographicParameters.into_ttlv',
+        })
+
+    def test_digital_signature_algorithm_attribute_route_executes(self):
+        self.assert_route_cells_pass({
+            'kmipkit.cryptographic_parameters.CryptographicParametersBuilder.digital_signature_algorithm',
+        })
+
     def test_scalar_payload_variants_roundtrip_the_exact_field_type_and_tag(self):
         catalog = copy.deepcopy(self.catalog)
         catalog['test_cases'] = [case for case in catalog['test_cases']
