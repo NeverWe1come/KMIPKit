@@ -79,6 +79,23 @@ def cargo_environment_with_path_remapping(
         flags = shlex.split(result.get("RUSTFLAGS", ""))
     flags.append(f"--remap-path-prefix={temporary_root.resolve()}=/kmipkit-build")
     result["CARGO_ENCODED_RUSTFLAGS"] = "\x1f".join(flags)
+
+    if os.name != "nt":
+        native_prefix_flags = [
+            f"-ffile-prefix-map={temporary_root.resolve()}=/kmipkit-build",
+            f"-fdebug-prefix-map={temporary_root.resolve()}=/kmipkit-build",
+        ]
+        for name in (
+            "CFLAGS",
+            "HOST_CFLAGS",
+            "TARGET_CFLAGS",
+            "CXXFLAGS",
+            "HOST_CXXFLAGS",
+            "TARGET_CXXFLAGS",
+        ):
+            result[name] = shlex.join(
+                [*shlex.split(result.get(name, "")), *native_prefix_flags]
+            )
     return result
 
 
