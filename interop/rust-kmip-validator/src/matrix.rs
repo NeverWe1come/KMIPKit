@@ -170,7 +170,7 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
     if kind == "operation_payload_value_variant"
         && let Some(field_name) = target["field_name"].as_str()
     {
-        name = field_name.to_owned();
+        field_name.clone_into(&mut name);
     }
     if ["enumeration_value", "bitmask_value", "object_type"].contains(&kind)
         && let Some(parent) = target["parent_element_ids"]
@@ -179,10 +179,10 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
             .and_then(Json::as_str)
         && let Some(element) = elements.iter().find(|e| e["element_id"] == parent)
     {
-        name = element["name"]
+        element["name"]
             .as_str()
             .ok_or("target name missing")?
-            .to_owned();
+            .clone_into(&mut name);
     }
     let target_id = target["target_id"].as_str().unwrap_or_default();
     name = concrete_fixture_name(target_id, kind, &name);
