@@ -1797,6 +1797,10 @@ fn sample_for_route_at_version(
     elements: &[Json],
     protocol_version: &str,
 ) -> Result<Item> {
+    if symbol.ends_with("protection_storage_masks") && target["kind"] == "tag" {
+        let tag = target_wire_value(target)?;
+        return crate::driver::item(tag, Value::structure(kmipkit::ttlv::Structure::new()));
+    }
     if symbol == "kmipkit_protocol::AttributeReference::tag" {
         return crate::driver::item(0x0042_013b, Value::enumeration(0x0042_0001));
     }
@@ -3078,6 +3082,146 @@ fn invoke_crypto_indicator_route(symbol: &str, sample: &Item) -> Option<Result<I
     })())
 }
 
+fn invoke_protection_storage_mask_route(
+    symbol: &str,
+    sample: &Item,
+    target: &Json,
+    elements: &[Json],
+) -> Option<Result<Item>> {
+    const ROUTES: &[&str] = &[
+        "kmipkit_protocol::CertifyRequest::with_protection_storage_masks",
+        "kmipkit_protocol::CreateKeyPairRequest::with_common_protection_storage_masks",
+        "kmipkit_protocol::CreateKeyPairRequest::with_private_protection_storage_masks",
+        "kmipkit_protocol::CreateKeyPairRequest::with_public_protection_storage_masks",
+        "kmipkit_protocol::CreateRequest::with_protection_storage_masks",
+        "kmipkit_protocol::CreateSplitKeyRequest::with_protection_storage_masks",
+        "kmipkit_protocol::JoinSplitKeyRequest::with_protection_storage_masks",
+        "kmipkit_protocol::RecertifyRequest::with_protection_storage_masks",
+        "kmipkit_protocol::RegisterRequest::with_protection_storage_masks",
+        "kmipkit_protocol::RekeyKeyPairRequest::with_common_protection_storage_masks",
+        "kmipkit_protocol::RekeyKeyPairRequest::with_private_protection_storage_masks",
+        "kmipkit_protocol::RekeyKeyPairRequest::with_public_protection_storage_masks",
+        "kmipkit_protocol::RekeyRequest::with_protection_storage_masks",
+    ];
+    if !ROUTES.contains(&symbol) {
+        return None;
+    }
+
+    Some((|| {
+        use kmipkit::protocol::{
+            AttributeSet, CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest,
+            JoinSplitKeyRequest, ObjectType, RegisterRequest, RekeyKeyPairRequest, RekeyRequest,
+            SecretBytes, SplitKeyMethod, SplitKeyReference, UniqueIdentifier,
+        };
+
+        let masks = sample
+            .as_structure()
+            .ok_or("Protection Storage Masks fixture is not a Structure")?
+            .try_clone()
+            .map_err(|_| "Protection Storage Masks fixture copy failed")?;
+        let payload = match symbol {
+            "kmipkit_protocol::CertifyRequest::with_protection_storage_masks" => {
+                kmipkit::protocol::CertifyRequest::new()
+                    .with_certificate_request_type(1)
+                    .with_certificate_request_value(SecretBytes::new(vec![0x30]))
+                    .with_unique_identifier(UniqueIdentifier::from("matrix-certificate"))
+                    .with_protection_storage_masks(masks)
+                    .into_ttlv_payload()
+                    .map_err(|_| "Certify Protection Storage Masks fixture rejected")?
+            }
+            "kmipkit_protocol::CreateRequest::with_protection_storage_masks" => {
+                CreateRequest::new(ObjectType::from_raw(2), AttributeSet::new())
+                    .with_protection_storage_masks(masks)
+                    .into_ttlv_payload()
+                    .map_err(|_| "Create Protection Storage Masks fixture rejected")?
+            }
+            "kmipkit_protocol::CreateSplitKeyRequest::with_protection_storage_masks" => {
+                CreateSplitKeyRequest::new(
+                    ObjectType::from_raw(2),
+                    2,
+                    1,
+                    SplitKeyMethod::from_raw(1),
+                    AttributeSet::new(),
+                )
+                .with_protection_storage_masks(masks)
+                .into_ttlv_payload()
+                .map_err(|_| "Create Split Key Protection Storage Masks fixture rejected")?
+            }
+            "kmipkit_protocol::JoinSplitKeyRequest::with_protection_storage_masks" => {
+                let references = ["matrix-split-key-one", "matrix-split-key-two"]
+                    .into_iter()
+                    .map(|identifier| {
+                        SplitKeyReference::new(UniqueIdentifier::from(identifier))
+                            .with_split_key_threshold(2)
+                    })
+                    .collect();
+                JoinSplitKeyRequest::new(ObjectType::from_raw(2), references)
+                    .with_protection_storage_masks(masks)
+                    .into_ttlv_payload()
+                    .map_err(|_| "Join Split Key Protection Storage Masks fixture rejected")?
+            }
+            "kmipkit_protocol::RecertifyRequest::with_protection_storage_masks" => {
+                kmipkit::protocol::RecertifyRequest::new()
+                    .with_unique_identifier(UniqueIdentifier::from("matrix-certificate"))
+                    .with_protection_storage_masks(masks)
+                    .into_ttlv_payload()
+                    .map_err(|_| "Re-certify Protection Storage Masks fixture rejected")?
+            }
+            "kmipkit_protocol::RegisterRequest::with_protection_storage_masks" => {
+                let (object_type, object, attributes) = crate::fixtures::object("Symmetric Key")?;
+                RegisterRequest::new(object_type, attributes, object)
+                    .with_protection_storage_masks(masks)
+                    .into_ttlv_payload()
+                    .map_err(|_| "Register Protection Storage Masks fixture rejected")?
+            }
+            "kmipkit_protocol::RekeyRequest::with_protection_storage_masks" => RekeyRequest::new()
+                .with_unique_identifier(UniqueIdentifier::from("matrix-existing-key"))
+                .with_protection_storage_masks(masks)
+                .into_ttlv_payload()
+                .map_err(|_| "Re-key Protection Storage Masks fixture rejected")?,
+            "kmipkit_protocol::CreateKeyPairRequest::with_common_protection_storage_masks" => {
+                CreateKeyPairRequest::new()
+                    .with_common_protection_storage_masks(masks)
+                    .into_ttlv_payload()
+                    .map_err(|_| "Create Key Pair common masks fixture rejected")?
+            }
+            "kmipkit_protocol::CreateKeyPairRequest::with_private_protection_storage_masks" => {
+                CreateKeyPairRequest::new()
+                    .with_private_protection_storage_masks(masks)
+                    .into_ttlv_payload()
+                    .map_err(|_| "Create Key Pair private masks fixture rejected")?
+            }
+            "kmipkit_protocol::CreateKeyPairRequest::with_public_protection_storage_masks" => {
+                CreateKeyPairRequest::new()
+                    .with_public_protection_storage_masks(masks)
+                    .into_ttlv_payload()
+                    .map_err(|_| "Create Key Pair public masks fixture rejected")?
+            }
+            "kmipkit_protocol::RekeyKeyPairRequest::with_common_protection_storage_masks" => {
+                RekeyKeyPairRequest::new()
+                    .with_common_protection_storage_masks(masks)
+                    .into_ttlv_payload()
+                    .map_err(|_| "Re-key Key Pair common masks fixture rejected")?
+            }
+            "kmipkit_protocol::RekeyKeyPairRequest::with_private_protection_storage_masks" => {
+                RekeyKeyPairRequest::new()
+                    .with_private_protection_storage_masks(masks)
+                    .into_ttlv_payload()
+                    .map_err(|_| "Re-key Key Pair private masks fixture rejected")?
+            }
+            "kmipkit_protocol::RekeyKeyPairRequest::with_public_protection_storage_masks" => {
+                RekeyKeyPairRequest::new()
+                    .with_public_protection_storage_masks(masks)
+                    .into_ttlv_payload()
+                    .map_err(|_| "Re-key Key Pair public masks fixture rejected")?
+            }
+            _ => return Err("unsupported Protection Storage Masks route"),
+        };
+        let model = request_payload_item(payload)?;
+        metadata_expected_target(&model, target, elements)
+    })())
+}
+
 fn invoke_transparent_key_material_route(
     symbol: &str,
     target: &Json,
@@ -3244,6 +3388,9 @@ fn invoke(
         })());
     }
     if let Some(result) = invoke_crypto_indicator_route(symbol, sample) {
+        return Some(result);
+    }
+    if let Some(result) = invoke_protection_storage_mask_route(symbol, sample, target, elements) {
         return Some(result);
     }
     if let Some(result) = invoke_key_wrapping_request_route(symbol, sample) {
@@ -6834,15 +6981,11 @@ mod tests {
                     .unwrap();
                 for protocol_version in target["protocol_versions"].as_array().unwrap() {
                     let protocol_version = protocol_version.as_str().unwrap();
-                    let expected = sample_for_route_at_version(
-                        symbol,
-                        target,
-                        elements,
-                        protocol_version,
-                    )
-                    .unwrap_or_else(|error| {
-                        panic!("{symbol} sample failed for {target_id}: {error}")
-                    });
+                    let expected =
+                        sample_for_route_at_version(symbol, target, elements, protocol_version)
+                            .unwrap_or_else(|error| {
+                                panic!("{symbol} sample failed for {target_id}: {error}")
+                            });
                     let result = invoke(symbol, &expected, target, elements, protocol_version)
                         .unwrap_or_else(|| panic!("{symbol} route missing for {target_id}"))
                         .unwrap_or_else(|error| panic!("{symbol} rejected {target_id}: {error}"));
