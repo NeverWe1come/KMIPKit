@@ -268,6 +268,21 @@ def construction_inventory(root, commit):
                 ('c', f'kmipkit_{key}_request_create', op['operationId'], c_path, 'network'),
                 ('java', f'org.kmipkit.extensions.{request_type}.create', op['operationId'], f'bindings/java/src/main/java/org/kmipkit/extensions/{request_type}.java', 'network'),
                 ('python', f'kmipkit.extensions.{request_type}.create', op['operationId'], py_path, 'network')])
+            batch_item_id = f'client_batch_item_{key}'
+            batch_item = next((function for function in api['functions']
+                               if function['id'] == batch_item_id), None)
+            if batch_item is None:
+                raise ValueError(f'missing public batch item constructor metadata: {batch_item_id}')
+            batch_item_paths = {
+                'rust': 'crates/kmipkit-client/src/execute.rs',
+                'c': c_path,
+                'java': java_path,
+                'python': py_path,
+            }
+            for language, path in batch_item_paths.items():
+                symbol = function_entrypoint(batch_item, language)
+                if symbol:
+                    inventory.append((language, symbol, op['operationId'], path, 'network'))
             continue
         if key in ASYNC:
             request_type = {'queryasyncrequests': 'QueryAsyncRequestsRequest'}.get(key, key.title() + 'Request')
