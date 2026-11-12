@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / 'interop/shared/tools'))
 sys.path.insert(0, str(ROOT / 'interop/rust-kmip-validator/tools'))
 from coverage_matrix import iter_cells
+from run_route_matrix import executable_local_cells
 from validate_route_evidence import validate_report
 from coverage_exclusions import generated_source_files
 
@@ -27,6 +28,12 @@ ELEMENTS = json.loads((ROOT / 'specification/catalog/kmip-2.1.json').read_bytes(
 
 
 class MatrixContract(unittest.TestCase):
+    def test_local_runner_scope_excludes_response_accessors_requiring_live_peer(self):
+        local = self.cell('kmipkit_ttlv::Item::new')
+        response = next(cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
+                        if cell['public_api_symbol'] == 'kmipkit_client::ClientBatchResponse::len')
+        self.assertEqual([local], executable_local_cells([local, response]))
+
     def test_coverage_gate_identifies_generated_dispatch_tables(self):
         generated = [
             str(ROOT / 'interop/rust-kmip-validator/src/local_cases_generated.rs'),
@@ -330,6 +337,10 @@ class MatrixContract(unittest.TestCase):
                 if cell['public_api_symbol'] == 'kmipkit_client::ClientBatchResponse::len'
                 and cell['protocol_version'] == '2.1'
             )
+            matrix.write_text(''.join(
+                json.dumps(cell, sort_keys=True, separators=(',', ':')) + '\n'
+                for cell in (self.cell('kmipkit_ttlv::Item::new'), response_cell)
+            ))
             provenance = json.loads((ROOT / 'interop/.local/rust-live/provenance.json').read_bytes())
             event = {
                 key: response_cell.get(key)
@@ -378,6 +389,7 @@ class MatrixContract(unittest.TestCase):
             self.assertEqual(summary['invoked_response_cells'], 1)
             self.assertEqual(summary['invoked_local_cells'], 1)
             self.assertEqual(summary['pending_local_cells'], summary['required_local_cells'] - 2)
+            self.assertEqual(summary['gate_failure_code'], 'missing_required_matrix_cells')
 
     def test_route_matrix_runner_does_not_accept_a_caller_selected_executable(self):
         process = subprocess.run([sys.executable,
