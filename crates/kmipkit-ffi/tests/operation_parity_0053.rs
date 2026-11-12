@@ -1,5 +1,6 @@
 #![cfg(feature = "coverage-c-consumer")]
 
+// The rlib supplies the ABI symbols used by the compiled C consumer as well.
 use kmipkit_ffi::kmipkit_client_batch_t;
 
 #[link(name = "kmipkit_operation_parity_0053_consumer", kind = "static")]

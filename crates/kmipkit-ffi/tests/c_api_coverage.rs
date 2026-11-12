@@ -68,6 +68,8 @@ unsafe extern "C" {
     fn kmipkit_credential_value_c_consumer_contract() -> i32;
 }
 
+// Cargo's rlib supplies the ABI symbols to both Rust declarations and compiled
+// C consumers, keeping handles and thread-local error state in one library copy.
 use kmipkit_ffi::{kmipkit_codec_limits_t, kmipkit_ttlv_decode_error_v1_t, kmipkit_ttlv_item_t};
 use kmipkit_test_support::EphemeralPki;
 use kmipkit_ttlv::{Item, StructureView, ValueView};

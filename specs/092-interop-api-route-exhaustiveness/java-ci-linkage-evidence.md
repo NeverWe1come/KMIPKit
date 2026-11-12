@@ -60,3 +60,14 @@ scripts.tests.test_workflow scripts.tests.test_analysis_workflows` passes
 106 tests, including the missing-executable rejection. The three collector
 fixtures apply on Linux, the only supported platform of this collector;
 the native C ABI targets still run on every configured CI platform.
+
+## Refactor
+
+The build script no longer derives native ABI search paths from `OUT_DIR`.
+Only the `cc`-reported paths for the compiled C consumer archives are needed.
+The testing guide and target comments explain why a single rlib supplies the
+ABI symbols and thread-local error state.
+
+After this cleanup, the Rust 1.100.0 native regression command again passes
+50 C ABI tests and one operation-parity test. Shared interoperability tests
+pass 178 tests, and Java installer/ledger tooling passes 12 tests.
