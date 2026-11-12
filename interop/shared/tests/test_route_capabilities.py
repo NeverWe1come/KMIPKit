@@ -78,6 +78,13 @@ class RouteCapabilitiesTests(unittest.TestCase):
             self.assertNotIn(key_format_raw, route['normative_target_ids'])
             self.assertNotIn(endpoint_role_client, route['normative_target_ids'])
 
+    def test_java_batch_response_accessors_are_limited_to_response_batch_items(self):
+        expected = ['KMIPKIT-ELEM-MESSAGE-FIELD-8-4-BATCH-ITEM']
+        for suffix in ('item_at', 'item_count'):
+            route_id = f'java.typed-protocol.function.client_batch_response_{suffix}'
+            route = next(route for route in self.data['routes'] if route['route_id'] == route_id)
+            self.assertEqual(expected, route['normative_target_ids'])
+
     def test_attribute_container_routes_do_not_claim_managed_object_structures(self):
         catalog = json.loads((SHARED / 'catalog/kmipkit-1.0-test-catalog.json').read_text())
         targets = {target['target_id']: target for target in catalog['normative_targets']}
