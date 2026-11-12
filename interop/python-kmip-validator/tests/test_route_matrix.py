@@ -9,7 +9,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / 'interop/shared/tools'))
 from coverage_matrix import iter_cells
-from validate_route_evidence import validate_report
+from validate_route_evidence import _validate_batch_event, validate_report
 
 
 class RouteMatrixTests(unittest.TestCase):
@@ -1006,6 +1006,121 @@ class RouteMatrixTests(unittest.TestCase):
     def test_batch_error_continuation_builder_route_executes(self):
         symbol = 'kmipkit.client.Batch.add_error_continuation_value'
         self.assert_route_cells_pass({symbol})
+
+    def test_batch_count_scenario_sends_every_catalogued_item_without_unrequested_option(self):
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-batch-count-matches-items')
+        target = next(target for target in self.catalog['normative_targets']
+                      if target['target_id'] == 'KMIPKIT-ELEM-OP-C2S-GET')
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
+                 if cell['case_id'] == case['case_id']
+                 and cell['target_id'] == target['target_id']
+                 and cell.get('execution_route_id') == 'python.execute.typed-batch'
+                 and cell.get('workflow_step_index') == 0
+                 and cell['protocol_version'] == '2.0'
+                 and cell['action'] == 'send']
+        self.assertEqual({('TTLV', 'raw_tls'), ('TTLV', 'https'),
+                          ('JSON', 'raw_tls'), ('JSON', 'https'),
+                          ('XML', 'raw_tls'), ('XML', 'https')},
+                         {(cell['encoding'], cell['transport']) for cell in cells})
+        from unittest.mock import patch
+        from kmipkit_validator.controlled_peer import ControlledTlsPeer
+        for cell in cells:
+            with self.subTest(encoding=cell['encoding'], transport=cell['transport']):
+                peers = []
+
+                def record_peer(**options):
+                    peer = ControlledTlsPeer(**options)
+                    peers.append(peer)
+                    return peer
+
+                with patch('kmipkit_validator.controlled_peer.ControlledTlsPeer',
+                           side_effect=record_peer):
+                    outcome, event = self.runner._execute_matrix_cell(cell, case, target)
+                self.assertEqual('event', outcome)
+                self.assertEqual(
+                    ['get', 'getattributelist'],
+                    [self.runner._normalized_name(value)
+                     for value in peers[0].request_observation['operations']],
+                )
+                self.assertEqual(2, peers[0].request_observation['batch_count'])
+                self.assertIsNone(peers[0].request_observation['batch_error_continuation_option'])
+                self.assertEqual(2, event['peer_observed_response_count'])
+                _validate_batch_event(event, case, self.catalog, ('batch-count',))
+
+    def test_batch_stop_peer_preserves_stop_semantics_and_result_evidence(self):
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-batch-stop-on-first-failure')
+        target = next(target for target in self.catalog['normative_targets']
+                      if target['target_id'] == 'KMIPKIT-ELEM-OP-C2S-GET')
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
+                 if cell['case_id'] == case['case_id']
+                 and cell['target_id'] == target['target_id']
+                 and cell.get('execution_route_id') == 'python.execute.typed-batch'
+                 and cell['workflow_item_index'] == 0
+                 and cell['protocol_version'] == '2.0'
+                 and cell['action'] == 'send']
+        self.assertEqual({('TTLV', 'raw_tls'), ('TTLV', 'https'),
+                          ('JSON', 'raw_tls'), ('JSON', 'https'),
+                          ('XML', 'raw_tls'), ('XML', 'https')},
+                         {(cell['encoding'], cell['transport']) for cell in cells})
+        from unittest.mock import patch
+        from kmipkit_validator.controlled_peer import ControlledTlsPeer
+        for cell in cells:
+            with self.subTest(encoding=cell['encoding'], transport=cell['transport']):
+                peers = []
+
+                def record_peer(**options):
+                    peer = ControlledTlsPeer(**options)
+                    peers.append(peer)
+                    return peer
+
+                with patch('kmipkit_validator.controlled_peer.ControlledTlsPeer',
+                           side_effect=record_peer):
+                    outcome, event = self.runner._execute_matrix_cell(cell, case, target)
+                self.assertEqual('event', outcome)
+                self.assertEqual([1, 1], event['peer_observed_result_status_codes'])
+                self.assertEqual(['first_item_failed', 'second_item_not_executed'],
+                                 event['peer_observed_effects'])
+                self.assertEqual(2, peers[0].request_observation['batch_error_continuation_option'])
+                _validate_batch_event(event, case, self.catalog, ('batch-stop',))
+
+    def test_batch_continue_peer_executes_later_item_across_wire_combinations(self):
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-batch-continue-after-failure')
+        target = next(target for target in self.catalog['normative_targets']
+                      if target['target_id'] == 'KMIPKIT-ELEM-OP-C2S-GET')
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
+                 if cell['case_id'] == case['case_id']
+                 and cell['target_id'] == target['target_id']
+                 and cell.get('execution_route_id') == 'python.execute.typed-batch'
+                 and cell['workflow_item_index'] == 0
+                 and cell['protocol_version'] == '2.0'
+                 and cell['action'] == 'send']
+        self.assertEqual({('TTLV', 'raw_tls'), ('TTLV', 'https'),
+                          ('JSON', 'raw_tls'), ('JSON', 'https'),
+                          ('XML', 'raw_tls'), ('XML', 'https')},
+                         {(cell['encoding'], cell['transport']) for cell in cells})
+        from unittest.mock import patch
+        from kmipkit_validator.controlled_peer import ControlledTlsPeer
+        for cell in cells:
+            with self.subTest(encoding=cell['encoding'], transport=cell['transport']):
+                peers = []
+
+                def record_peer(**options):
+                    peer = ControlledTlsPeer(**options)
+                    peers.append(peer)
+                    return peer
+
+                with patch('kmipkit_validator.controlled_peer.ControlledTlsPeer',
+                           side_effect=record_peer):
+                    outcome, event = self.runner._execute_matrix_cell(cell, case, target)
+                self.assertEqual('event', outcome)
+                self.assertEqual([1, 0], event['peer_observed_result_status_codes'])
+                self.assertEqual(['first_item_failed', 'second_item_executed'],
+                                 event['peer_observed_effects'])
+                self.assertEqual(1, peers[0].request_observation['batch_error_continuation_option'])
+                _validate_batch_event(event, case, self.catalog, ('batch-continue',))
 
     def test_async_outcome_response_accessors_execute_against_controlled_peer(self):
         symbols = {

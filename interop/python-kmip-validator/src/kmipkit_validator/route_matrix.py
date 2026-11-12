@@ -2072,6 +2072,8 @@ def _batch_operations_for_case(cell: dict, case: dict) -> list[str] | None:
     else:
         operations = parameters.get('operations_in_request_order', []) if isinstance(parameters, dict) else []
     if not operations and isinstance(scenario, dict):
+        operations = scenario.get('operations', [])
+    if not operations and isinstance(scenario, dict):
         expected = scenario.get('expected', {})
         operations = expected.get('operation_order', []) if isinstance(expected, dict) else []
     if not operations:
@@ -2087,7 +2089,9 @@ def _batch_operations_for_case(cell: dict, case: dict) -> list[str] | None:
 
 def _execute_typed_batch(driver: PythonKmipDriver, case: dict, cell: dict,
                          operations: list[str], identifier, name: str,
-                         expected_status: int, expected_reason: int | None) -> dict:
+                         expected_status: int, expected_reason: int | None,
+                         result_statuses: list[int] | None = None,
+                         result_reasons: list[int | None] | None = None) -> dict:
     """Build the catalogued ordered Batch and verify each controlled result."""
     from kmipkit import protocol_values, ttlv
 
@@ -2096,12 +2100,25 @@ def _execute_typed_batch(driver: PythonKmipDriver, case: dict, cell: dict,
     items = []
     authentication = None
     response = None
+    result_statuses = ([expected_status] * len(operations)
+                       if result_statuses is None else result_statuses)
+    result_reasons = ([expected_reason] * len(operations)
+                      if result_reasons is None else result_reasons)
+    if len(result_statuses) != len(operations) or len(result_reasons) != len(operations):
+        raise ValueError('controlled peer result sequence count did not match batch items')
     try:
         if len(operations) > 1:
             batch.set_ordered(True)
-            batch.add_error_continuation_value(
-                protocol_values.BatchErrorContinuationOption.CONTINUE
-            )
+            scenario = case.get('requires', {}).get('protocol_scenario', {})
+            parameters = scenario.get('parameters', {}) if isinstance(scenario, dict) else {}
+            continuation_name = parameters.get('batch_error_continuation_option')
+            if continuation_name is not None and continuation_name != 'omitted':
+                continuation_value = getattr(
+                    protocol_values.BatchErrorContinuationOption,
+                    _normalized_name(str(continuation_name)).upper(), None)
+                if not isinstance(continuation_value, int):
+                    raise ValueError('catalog batch continuation option is not a KMIP value')
+                batch.add_error_continuation_value(continuation_value)
         for index, operation in enumerate(operations, start=1):
             route_case = {**case, 'operation': operation}
             symbol = cell['public_api_symbol']
@@ -2134,11 +2151,11 @@ def _execute_typed_batch(driver: PythonKmipDriver, case: dict, cell: dict,
             )
         for index in range(response_count):
             result = response.item_at(index)
-            if (int(result.result_status) != expected_status
-                    or result.result_reason != expected_reason):
+            if (int(result.result_status) != result_statuses[index]
+                    or result.result_reason != result_reasons[index]):
                 raise ValueError('controlled peer returned an unexpected ordered Batch result')
-        status_code = expected_status
-        reason_code = expected_reason
+        status_code = result_statuses[0]
+        reason_code = result_reasons[0]
         unsupported = (
             status_code == protocol_values.ResultStatus.OPERATION_FAILED
             and reason_code in (protocol_values.ResultReason.OPERATION_NOT_SUPPORTED,
@@ -2398,6 +2415,8 @@ def _network_tree(wire: bytes, encoding: str) -> list:
                      0x42007F: protocol_values.ResultStatus,
                      0x42007E: protocol_values.ResultReason}.get(tag)
         if enum_type is None:
+            if isinstance(value, str) and value.startswith('0x'):
+                return int(value, 16)
             return value
         normalized = _normalized_name(str(value))
         matches = [raw for name, raw in vars(enum_type).items() if isinstance(raw, int)
@@ -2527,6 +2546,16 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
         peer_status = protocol_values.ResultStatus.SUCCESS
         peer_reason = None
         expected_driver_status = 'passed'
+    elif (case['case_id'] == 'test-batch-stop-on-first-failure'
+          and batch_operations is not None):
+        peer_status = protocol_values.ResultStatus.OPERATION_FAILED
+        peer_reason = protocol_values.ResultReason.ITEM_NOT_FOUND
+        expected_driver_status = 'passed'
+    elif (case['case_id'] == 'test-batch-continue-after-failure'
+          and batch_operations is not None):
+        peer_status = protocol_values.ResultStatus.OPERATION_FAILED
+        peer_reason = protocol_values.ResultReason.ITEM_NOT_FOUND
+        expected_driver_status = 'passed'
     elif final_async_failure:
         peer_status = protocol_values.ResultStatus.OPERATION_FAILED
         peer_reason = protocol_values.ResultReason.INVALID_OBJECT_TYPE
@@ -2539,9 +2568,21 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
         peer_status = protocol_values.ResultStatus.OPERATION_FAILED
         peer_reason = protocol_values.ResultReason.OPERATION_NOT_SUPPORTED
         expected_driver_status = 'server_unsupported'
+    batch_result_statuses = None
+    batch_result_reasons = None
+    if (case['case_id'] == 'test-batch-stop-on-first-failure'
+            and batch_operations is not None):
+        batch_result_statuses = [peer_status, peer_status]
+        batch_result_reasons = [peer_reason, protocol_values.ResultReason.GENERAL_FAILURE]
+    elif (case['case_id'] == 'test-batch-continue-after-failure'
+          and batch_operations is not None):
+        batch_result_statuses = [peer_status, protocol_values.ResultStatus.SUCCESS]
+        batch_result_reasons = [peer_reason, None]
     peer = ControlledTlsPeer(status=peer_status, reason=peer_reason,
                              encoding=cell['encoding'], transport=cell['transport'],
-                             protocol_version=cell['protocol_version'])
+                             protocol_version=cell['protocol_version'],
+                             result_statuses=batch_result_statuses,
+                             result_reasons=batch_result_reasons)
     connection = {
         'server_id': 'controlled-fixture', 'protocol_version': cell['protocol_version'],
         'transport': cell['transport'], 'encoding': cell['encoding'], 'api_level': 'typed-protocol',
@@ -2565,7 +2606,8 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
             identifier = extensions.UniqueIdentifier.text_string('KMIPKit-python-route')
             name = 'KMIPKit-python-route'
             result = _execute_typed_batch(driver, case, cell, batch_operations,
-                                          identifier, name, peer_status, peer_reason)
+                                          identifier, name, peer_status, peer_reason,
+                                          batch_result_statuses, batch_result_reasons)
         else:
             route_case = case if case['operation'] == operation else {**case, 'operation': operation}
             identifier = extensions.UniqueIdentifier.text_string('KMIPKit-python-route')
@@ -2640,12 +2682,17 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
                            and 0 <= batch_index < len(request_codes)
                            and request_codes[batch_index] == expected_operation)
         response_matches = response_codes == expected_batch_codes
+    continue_batch = case['case_id'] == 'test-batch-continue-after-failure'
+    response_payload_matches = (
+        _find_tree_value(response, 0x420094) == b'KMIPKit-python-route'.hex()
+        and _find_tree_value(response, 0x42013B) == 0x00420022
+    ) if continue_batch else _find_tree_value(response, 0x42007C) is None
     if (not request_matches
             or not response_matches
             or _find_tree_value(response, 0x42007F) != peer_status
             or _find_tree_value(response, 0x42007E) != peer_reason
             or (positive_ping and _find_tree_value(response, 0x42007C) != [])
-            or (not positive_ping and _find_tree_value(response, 0x42007C) is not None)):
+            or (not positive_ping and not response_payload_matches)):
         raise ValueError('controlled peer request or unsupported response shape mismatch')
     if trace is None:
         raise ValueError('network cell has no public-call trace')
@@ -2655,11 +2702,15 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
             'request_delivery_state': 'response_received', 'transport_invocation_count': 1,
             'peer_observed_response_count': len(batch_operations) if batch_operations is not None else 1,
             'peer_observed_result_status_codes': (
-                [peer_status] * len(batch_operations) if batch_operations is not None else [peer_status]
+                (batch_result_statuses or [peer_status] * len(batch_operations))
+                if batch_operations is not None else [peer_status]
             ),
             **({'peer_observed_result_reason_codes': (
-                [peer_reason] * len(batch_operations) if batch_operations is not None else [peer_reason]
-            )} if peer_reason is not None else {})}
+                (batch_result_reasons or [peer_reason] * len(batch_operations))
+                if batch_operations is not None else [peer_reason]
+            )} if (peer_reason is not None
+                  and (batch_result_reasons is None
+                       or all(reason is not None for reason in batch_result_reasons))) else {})}
     if batch_operations is not None:
         observed['batch_operation_sequence'] = [
             protocol_values.Operation.name(value) for value in request_codes
@@ -2668,6 +2719,8 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
             protocol_values.Operation.name(value) for value in response_codes
         ]
         observed['batch_item_count'] = len(batch_operations)
+    if peer.peer_observed_effects:
+        observed['peer_observed_effects'] = list(peer.peer_observed_effects)
     return observed
 
 

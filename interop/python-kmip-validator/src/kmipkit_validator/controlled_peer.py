@@ -82,14 +82,22 @@ def find_value(tree: list[tuple[int, int, bytes]], tag: int) -> bytes | None:
 def ping_response(request: bytes, status: int, reason: int | None, protocol_minor: int = 1,
                   cancellation_result: int | None = None,
                   asynchronous_correlation_value: bytes | None = None,
-                  include_response_extension: bool = False) -> bytes:
+                  include_response_extension: bool = False,
+                  result_statuses: list[int] | None = None,
+                  result_reasons: list[int | None] | None = None) -> bytes:
     tree = parse_children(request[8:])
     request_batch = [parse_children(value) for tag, kind, value in tree
                      if tag == 0x42000F and kind == 1]
     if not request_batch:
         raise AssertionError("request had no Batch Item")
+    result_statuses = [status] * len(request_batch) if result_statuses is None else result_statuses
+    result_reasons = [reason] * len(request_batch) if result_reasons is None else result_reasons
+    if len(result_statuses) != len(request_batch) or len(result_reasons) != len(request_batch):
+        raise ValueError("controlled peer result sequence count did not match batch items")
     response_batch = []
-    for fields in request_batch:
+    for index, fields in enumerate(request_batch):
+        item_status = result_statuses[index]
+        item_reason = result_reasons[index]
         operation_bytes = find_value(fields, 0x42005C)
         batch_id = find_value(fields, 0x420093)
         if operation_bytes is None:
@@ -97,15 +105,20 @@ def ping_response(request: bytes, status: int, reason: int | None, protocol_mino
         payload = [enumeration(0x42005C, int.from_bytes(operation_bytes, "big"))]
         if batch_id is not None:
             payload.append(item(0x420093, 8, batch_id))
-        payload.append(enumeration(0x42007F, status))
-        if reason is not None:
-            payload.append(enumeration(0x42007E, reason))
-        if status in (0, 2):
+        payload.append(enumeration(0x42007F, item_status))
+        if item_reason is not None:
+            payload.append(enumeration(0x42007E, item_reason))
+        if item_status in (0, 2):
             response_payload = []
             if asynchronous_correlation_value is not None:
                 response_payload.append(item(0x420006, 8, asynchronous_correlation_value))
             if cancellation_result is not None:
                 response_payload.append(enumeration(0x420012, cancellation_result))
+            if item_status == 0 and int.from_bytes(operation_bytes, "big") == 0x0C:
+                response_payload.extend((
+                    item(0x420094, 7, b"KMIPKit-python-route"),
+                    enumeration(0x42013B, 0x00420022),
+                ))
             payload.append(structure(0x42007C, *response_payload))
         if include_response_extension:
             payload.append(response_message_extension())
@@ -186,7 +199,10 @@ def request_observation(request: bytes, encoding: str) -> dict[str, object]:
         if not operations:
             raise AssertionError("request had no Batch Item Operation")
         names = [protocol_values.Operation.name(operation) for operation in operations]
-        return {"operation": names[0], "operations": names, "batch_count": batch_count}
+        continuation = find_value(tree, 0x42000E)
+        return {"operation": names[0], "operations": names, "batch_count": batch_count,
+                "batch_error_continuation_option": (int.from_bytes(continuation, "big")
+                                                      if continuation is not None else None)}
     if encoding == "JSON":
         tree = json.loads(request)
 
@@ -219,8 +235,10 @@ def request_observation(request: bytes, encoding: str) -> dict[str, object]:
                   if isinstance(field, dict) and field.get("tag") == "UniqueBatchItemID"), None)
             for node in batch_nodes(tree)
         ]
+        continuation = find(tree, "BatchErrorContinuationOption")
         return {"operation": operations[0], "operations": operations,
-                "batch_count": find(tree, "BatchCount"), "batch_ids": identifiers}
+                "batch_count": find(tree, "BatchCount"), "batch_ids": identifiers,
+                "batch_error_continuation_option": _batch_option_value(continuation)}
     root = ET.fromstring(request)
     batch_items = root.findall(".//BatchItem")
     operations = [node.find("./Operation") for node in batch_items]
@@ -233,12 +251,29 @@ def request_observation(request: bytes, encoding: str) -> dict[str, object]:
         for node in batch_items
         for identifier in [node.find("./UniqueBatchItemID")]
     ]
+    continuation = root.find(".//BatchErrorContinuationOption")
     return {
         "operation": names[0],
         "operations": names,
         "batch_count": int(batch_count.attrib["value"]),
         "batch_ids": identifiers,
+        "batch_error_continuation_option": _batch_option_value(
+            None if continuation is None else continuation.attrib.get("value")
+        ),
     }
+
+
+def _batch_option_value(value):
+    if value is None or isinstance(value, int):
+        return value
+    from kmipkit import protocol_values
+
+    for option in (protocol_values.BatchErrorContinuationOption.CONTINUE,
+                   protocol_values.BatchErrorContinuationOption.STOP,
+                   protocol_values.BatchErrorContinuationOption.UNDO):
+        if protocol_values.BatchErrorContinuationOption.name(option) == value:
+            return option
+    return value
 
 
 def normalized_operation_name(value: str) -> str:
@@ -250,21 +285,26 @@ def text_response(
     supported_versions: tuple[tuple[int, int], ...] | None = None,
     operations: list[str] | None = None,
     batch_ids: list[str | None] | None = None,
+    result_statuses: list[int] | None = None,
+    result_reasons: list[int | None] | None = None,
 ) -> bytes:
     from kmipkit import protocol_values
 
-    status_name = "".join(protocol_values.ResultStatus.name(status).split())
-    reason_name = (
-        None
-        if reason is None
-        else "".join(protocol_values.ResultReason.name(reason).split())
-    )
     operations = operations or [operation]
     batch_ids = [None] * len(operations) if batch_ids is None else batch_ids
     if len(batch_ids) != len(operations):
         raise ValueError("controlled peer batch identifier count did not match operations")
+    result_statuses = [status] * len(operations) if result_statuses is None else result_statuses
+    result_reasons = [reason] * len(operations) if result_reasons is None else result_reasons
+    if len(result_statuses) != len(operations) or len(result_reasons) != len(operations):
+        raise ValueError("controlled peer result sequence count did not match operations")
 
-    def response_item(item_operation: str, identifier: str | None) -> list[dict]:
+    def response_item(index: int, item_operation: str, identifier: str | None) -> list[dict]:
+        item_status = result_statuses[index]
+        item_reason = result_reasons[index]
+        status_name = "".join(protocol_values.ResultStatus.name(item_status).split())
+        reason_name = (None if item_reason is None else
+                       "".join(protocol_values.ResultReason.name(item_reason).split()))
         fields = [
             {"tag": "Operation", "type": "Enumeration", "value": item_operation},
         ]
@@ -273,15 +313,22 @@ def text_response(
         fields.append({"tag": "ResultStatus", "type": "Enumeration", "value": status_name})
         if reason_name is not None:
             fields.append({"tag": "ResultReason", "type": "Enumeration", "value": reason_name})
-        if status == protocol_values.ResultStatus.SUCCESS:
-            versions = [] if supported_versions is None else [
-                {"tag": "ProtocolVersion", "value": [
-                    {"tag": "ProtocolVersionMajor", "type": "Integer", "value": major},
-                    {"tag": "ProtocolVersionMinor", "type": "Integer", "value": minor},
-                ]}
-                for major, minor in supported_versions
-            ]
-            fields.append({"tag": "ResponsePayload", "value": versions})
+        if item_status == protocol_values.ResultStatus.SUCCESS:
+            if normalized_operation_name(item_operation) == "getattributelist":
+                fields.append({"tag": "ResponsePayload", "value": [
+                    {"tag": "UniqueIdentifier", "type": "TextString",
+                     "value": "KMIPKit-python-route"},
+                    {"tag": "AttributeReference", "type": "Enumeration", "value": "0x00420022"},
+                ]})
+            else:
+                versions = [] if supported_versions is None else [
+                    {"tag": "ProtocolVersion", "value": [
+                        {"tag": "ProtocolVersionMajor", "type": "Integer", "value": major},
+                        {"tag": "ProtocolVersionMinor", "type": "Integer", "value": minor},
+                    ]}
+                    for major, minor in supported_versions
+                ]
+                fields.append({"tag": "ResponsePayload", "value": versions})
         return fields
 
     if encoding == "JSON":
@@ -302,13 +349,18 @@ def text_response(
                         {"tag": "BatchCount", "type": "Integer", "value": len(operations)},
                     ],
                 },
-                *[{"tag": "BatchItem", "value": response_item(item_operation, batch_ids[index])}
+                *[{"tag": "BatchItem", "value": response_item(index, item_operation, batch_ids[index])}
                   for index, item_operation in enumerate(operations)],
             ],
         }
         return json.dumps(response, separators=(",", ":")).encode("utf-8")
 
-    def xml_response_item(item_operation: str, identifier: str | None) -> str:
+    def xml_response_item(index: int, item_operation: str, identifier: str | None) -> str:
+        item_status = result_statuses[index]
+        item_reason = result_reasons[index]
+        status_name = "".join(protocol_values.ResultStatus.name(item_status).split())
+        reason_name = (None if item_reason is None else
+                       "".join(protocol_values.ResultReason.name(item_reason).split()))
         fields = [
             f'<Operation type="Enumeration" value="{item_operation}"/>',
         ]
@@ -317,8 +369,14 @@ def text_response(
         fields.append(f'<ResultStatus type="Enumeration" value="{status_name}"/>')
         if reason_name is not None:
             fields.append(f'<ResultReason type="Enumeration" value="{reason_name}"/>')
-        if status == protocol_values.ResultStatus.SUCCESS:
-            if supported_versions is None:
+        if item_status == protocol_values.ResultStatus.SUCCESS:
+            if normalized_operation_name(item_operation) == "getattributelist":
+                fields.append(
+                    '<ResponsePayload><UniqueIdentifier type="TextString" '
+                    'value="KMIPKit-python-route"/><AttributeReference type="Enumeration" '
+                    'value="0x00420022"/></ResponsePayload>'
+                )
+            elif supported_versions is None:
                 fields.append("<ResponsePayload/>")
             else:
                 versions = "".join(
@@ -340,7 +398,7 @@ def text_response(
         '<TimeStamp type="DateTime" value="1970-01-01T00:00:01Z"/>'
         f'<BatchCount type="Integer" value="{len(operations)}"/>'
         "</ResponseHeader>"
-        + "".join(xml_response_item(item_operation, batch_ids[index])
+        + "".join(xml_response_item(index, item_operation, batch_ids[index])
                   for index, item_operation in enumerate(operations))
         + "</ResponseMessage>"
     )
@@ -406,6 +464,8 @@ class ControlledTlsPeer:
         cancellation_result: int | None = None,
         asynchronous_correlation_value: bytes | None = None,
         include_response_extension: bool = False,
+        result_statuses: list[int] | None = None,
+        result_reasons: list[int | None] | None = None,
     ) -> None:
         self.status = status
         self.reason = reason
@@ -416,6 +476,9 @@ class ControlledTlsPeer:
         self.cancellation_result = cancellation_result
         self.asynchronous_correlation_value = asynchronous_correlation_value
         self.include_response_extension = include_response_extension
+        self.result_statuses = result_statuses
+        self.result_reasons = result_reasons
+        self.peer_observed_effects: list[str] = []
         self.listener = socket.socket()
         self.listener.bind(("127.0.0.1", 0))
         self.listener.listen(1)
@@ -454,6 +517,16 @@ class ControlledTlsPeer:
                     request = read_raw_document(stream, self.encoding)
                 self.requests.append(request)
                 self.request_observation = request_observation(request, self.encoding)
+                statuses = self.result_statuses or [self.status] * len(
+                    self.request_observation["operations"]
+                )
+                continuation = self.request_observation.get("batch_error_continuation_option")
+                if (continuation == 2 and statuses and statuses[0] == 1
+                        and len(self.request_observation["operations"]) > 1):
+                    self.peer_observed_effects = ["first_item_failed", "second_item_not_executed"]
+                elif (continuation == 1 and len(statuses) > 1
+                      and statuses[0] == 1 and statuses[1] == 0):
+                    self.peer_observed_effects = ["first_item_failed", "second_item_executed"]
                 if self.encoding == "TTLV":
                     if normalized_operation_name(str(self.request_observation["operation"])) == "discoverversions":
                         response = discover_versions_response(
@@ -464,7 +537,8 @@ class ControlledTlsPeer:
                         response = ping_response(
                             request, self.status, self.reason, self.protocol_minor,
                             self.cancellation_result, self.asynchronous_correlation_value,
-                            self.include_response_extension,
+                            self.include_response_extension, self.result_statuses,
+                            self.result_reasons,
                         )
                 else:
                     response = text_response(
@@ -479,6 +553,8 @@ class ControlledTlsPeer:
                         operations=[str(value) for value in self.request_observation["operations"]],
                         batch_ids=[None if value is None else str(value)
                                    for value in self.request_observation.get("batch_ids", [])],
+                        result_statuses=self.result_statuses,
+                        result_reasons=self.result_reasons,
                     )
                 self.responses.append(response)
                 if self.transport == "https":
