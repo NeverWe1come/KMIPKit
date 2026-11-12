@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import copy
 import os
 from pathlib import Path
 import sys
@@ -133,6 +134,24 @@ class CoverageMatrixTests(unittest.TestCase):
         self.assertNotIn('rust.generic-ttlv.function.ttlv_item_view_from_item', route_ids)
         self.assertIn('rust.generic-ttlv.model.kmipkit.ttlv.rawtag.new', route_ids)
         self.assertIn('rust.generic-ttlv.codec.decode', route_ids)
+
+    def test_source_backed_target_id_exclusions_apply_to_generic_routes(self):
+        target_id = 'KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES'
+        manifest = copy.deepcopy(self.manifest)
+        route = next(route for route in manifest['routes']
+                     if route['route_id'] == 'rust.generic-ttlv.item.new')
+        route['case_exclusions'] = [{
+            'target_ids': [target_id],
+            'reason': 'OASIS KMIP 2.0/2.1 §4.6 describes certificate contents, not a TTLV tag.',
+            'source_paths': ['specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html',
+                             'crates/kmipkit-ttlv/src/item.rs'],
+        }]
+        cells = list(iter_cells(self.catalog, manifest, languages=('rust',)))
+        self.assertFalse(any(cell['route_id'] == route['route_id']
+                             and cell['target_id'] == target_id for cell in cells))
+        self.assertTrue(any(cell['route_id'] == route['route_id']
+                            and cell['target_id'] == 'KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER'
+                            for cell in cells))
 
     def test_single_item_omission_case_does_not_require_option_setters(self):
         case_id = 'test-batch-single-item-options-omitted'
