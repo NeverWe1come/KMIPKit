@@ -171,6 +171,40 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertTrue(result["matchesManifest"])
         self.assertEqual(result["counts"]["missingFromManifest"], 0)
 
+    def test_c_only_public_record_fields_are_declared_by_its_layout(self):
+        manifest = {
+            "publicDeclarations": [
+                {
+                    "packageId": "c-kmipkit",
+                    "exportName": "kmipkit_probe_v1_t",
+                    "kind": "type",
+                    "declarationState": "declared",
+                    "parityScope": "c-only",
+                    "cTypeLayout": {
+                        "name": "kmipkit_probe_v1_t",
+                        "kind": "fixed-width-value",
+                        "versioned": True,
+                        "fields": [{"name": "value", "type": "uint32_t"}],
+                    },
+                }
+            ],
+            "types": [],
+            "approvedExclusions": [],
+        }
+        report = {
+            "complete": True,
+            "declarations": [
+                AUDIT._record("c-kmipkit", "kmipkit_probe_v1_t", "type", "1"),
+                AUDIT._record("c-kmipkit", "kmipkit_probe_v1_t.value", "field", "1"),
+            ],
+            "issues": [],
+        }
+
+        result = AUDIT.compare(report, manifest, "c-kmipkit")
+
+        self.assertTrue(result["matchesManifest"])
+        self.assertEqual(result["counts"]["missingFromManifest"], 0)
+
     def test_java_compile_uses_gradle_configured_jspecify_classpath(self):
         repo_root = Path(__file__).resolve().parents[3]
         with tempfile.TemporaryDirectory() as directory:
