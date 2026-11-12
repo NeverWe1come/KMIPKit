@@ -1784,6 +1784,14 @@ fn sample_for_route_at_version(
     if [
         "kmipkit_protocol::TransparentRsaPrivateKey::try_from_components",
         "kmipkit_protocol::TransparentRsaPrivateKey::try_from_item",
+        "kmipkit_protocol::TransparentDhPrivateKey::try_from_item",
+        "kmipkit_protocol::TransparentDhPrivateKey::try_new",
+        "kmipkit_protocol::TransparentDhPublicKey::try_from_item",
+        "kmipkit_protocol::TransparentDhPublicKey::try_new",
+        "kmipkit_protocol::TransparentDsaPrivateKey::try_from_item",
+        "kmipkit_protocol::TransparentDsaPrivateKey::try_new",
+        "kmipkit_protocol::TransparentDsaPublicKey::try_from_item",
+        "kmipkit_protocol::TransparentDsaPublicKey::try_new",
     ]
     .contains(&symbol)
     {
@@ -2721,6 +2729,57 @@ fn invoke_request_attributes_route(symbol: &str, sample: &Item) -> Option<Result
     })())
 }
 
+fn invoke_transparent_key_material_route(
+    symbol: &str,
+    target: &Json,
+    elements: &[Json],
+) -> Option<Result<Item>> {
+    const ROUTES: &[&str] = &[
+        "kmipkit_protocol::TransparentDhPrivateKey::try_from_item",
+        "kmipkit_protocol::TransparentDhPrivateKey::try_new",
+        "kmipkit_protocol::TransparentDhPublicKey::try_from_item",
+        "kmipkit_protocol::TransparentDhPublicKey::try_new",
+        "kmipkit_protocol::TransparentDsaPrivateKey::try_from_item",
+        "kmipkit_protocol::TransparentDsaPrivateKey::try_new",
+        "kmipkit_protocol::TransparentDsaPublicKey::try_from_item",
+        "kmipkit_protocol::TransparentDsaPublicKey::try_new",
+    ];
+    if !ROUTES.contains(&symbol) {
+        return None;
+    }
+
+    Some((|| {
+        let format = key_material_format_for_target(target)
+            .ok_or("transparent Key Material format is unavailable")?;
+        let item = transparent_key_material(format)?;
+        let model = match symbol {
+            "kmipkit_protocol::TransparentDhPrivateKey::try_from_item" => {
+                kmipkit::protocol::TransparentDhPrivateKey::try_from_item(item)
+                    .map(kmipkit::protocol::TransparentDhPrivateKey::into_item)
+                    .map_err(|_| "transparent DH private key parser rejected")?
+            }
+            "kmipkit_protocol::TransparentDhPublicKey::try_from_item" => {
+                kmipkit::protocol::TransparentDhPublicKey::try_from_item(item)
+                    .map(kmipkit::protocol::TransparentDhPublicKey::into_item)
+                    .map_err(|_| "transparent DH public key parser rejected")?
+            }
+            "kmipkit_protocol::TransparentDsaPrivateKey::try_from_item" => {
+                kmipkit::protocol::TransparentDsaPrivateKey::try_from_item(item)
+                    .map(kmipkit::protocol::TransparentDsaPrivateKey::into_item)
+                    .map_err(|_| "transparent DSA private key parser rejected")?
+            }
+            "kmipkit_protocol::TransparentDsaPublicKey::try_from_item" => {
+                kmipkit::protocol::TransparentDsaPublicKey::try_from_item(item)
+                    .map(kmipkit::protocol::TransparentDsaPublicKey::into_item)
+                    .map_err(|_| "transparent DSA public key parser rejected")?
+            }
+            _ => item,
+        };
+        crate::local_wire::roundtrip(&model)?;
+        metadata_expected_target(&model, target, elements)
+    })())
+}
+
 #[allow(clippy::too_many_lines)] // Explicit public route dispatch stays together for review.
 fn invoke(
     symbol: &str,
@@ -2729,6 +2788,9 @@ fn invoke(
     elements: &[Json],
     protocol_version: &str,
 ) -> Option<Result<Item>> {
+    if let Some(result) = invoke_transparent_key_material_route(symbol, target, elements) {
+        return Some(result);
+    }
     if let Some(result) = invoke_request_attributes_route(symbol, sample) {
         return Some(result);
     }
@@ -5685,12 +5747,17 @@ mod tests {
                     .iter()
                     .find(|target| target["target_id"] == target_id)
                     .unwrap();
-                let expected = sample(target, elements)
-                    .unwrap_or_else(|error| panic!("{symbol} sample failed for {target_id}: {error}"));
+                let expected = sample_for_route_at_version(symbol, target, elements, "2.1")
+                    .unwrap_or_else(|error| {
+                        panic!("{symbol} sample failed for {target_id}: {error}")
+                    });
                 let result = invoke(symbol, &expected, target, elements, "2.1")
                     .unwrap_or_else(|| panic!("{symbol} route missing for {target_id}"))
                     .unwrap_or_else(|error| panic!("{symbol} rejected {target_id}: {error}"));
-                assert!(crate::local_wire::target_hash(&result, &expected).is_ok());
+                assert!(
+                    crate::local_wire::target_hash(&result, &expected).is_ok(),
+                    "{symbol} changed {target_id}"
+                );
             }
         }
     }
