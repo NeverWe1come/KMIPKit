@@ -54,6 +54,15 @@ unsafe extern "C" {
         key_length: u64,
         out_port: *mut u16,
     ) -> i32;
+    fn kmipkit_s2c_consumer_binds_https_listener(
+        leaf: *const u8,
+        leaf_length: u64,
+        root: *const u8,
+        root_length: u64,
+        key: *const u8,
+        key_length: u64,
+        out_port: *mut u16,
+    ) -> i32;
     fn kmipkit_s2c_consumer_receives_put_and_sends_response(
         leaf: *const u8,
         leaf_length: u64,
@@ -85,6 +94,30 @@ fn s2c_c_consumer_binds_a_tls13_mtls_listener() {
     // SAFETY: certificate and key spans borrow live test-owned buffers; port is writable.
     let status = unsafe {
         kmipkit_s2c_consumer_binds_tls_listener(
+            leaf.as_ptr(),
+            leaf.len() as u64,
+            root.as_ptr(),
+            root.len() as u64,
+            key.as_ptr(),
+            key.len() as u64,
+            &raw mut port,
+        )
+    };
+    assert_eq!(status, SUCCESS);
+    assert_ne!(port, 0);
+}
+
+#[test]
+#[cfg(feature = "coverage-c-consumer")]
+fn s2c_c_consumer_binds_an_https_listener() {
+    let pki = EphemeralPki::generate().expect("ephemeral test PKI generation succeeds");
+    let identity = pki.server_identity();
+    let [leaf, root] = identity.certificate_chain_der();
+    let key = identity.private_key_der();
+    let mut port = 0;
+    // SAFETY: certificate and key spans borrow live test-owned buffers; port is writable.
+    let status = unsafe {
+        kmipkit_s2c_consumer_binds_https_listener(
             leaf.as_ptr(),
             leaf.len() as u64,
             root.as_ptr(),
@@ -160,6 +193,35 @@ fn encode_test_structure(tag: u32, children: &[u8]) -> Vec<u8> {
     encode_test_ttlv(tag, 1, children)
 }
 
+fn s2c_test_notify_item(
+    unique_identifier: &[u8],
+    request_id: u8,
+    include_changes: bool,
+) -> Vec<u8> {
+    const ENUMERATION: u8 = 5;
+    const TEXT_STRING: u8 = 7;
+    let mut payload = encode_test_ttlv(0x0042_0094, TEXT_STRING, unique_identifier);
+    if include_changes {
+        let changed_object_type = encode_test_ttlv(0x0042_0057, ENUMERATION, &2u32.to_be_bytes());
+        payload.extend(encode_test_structure(0x0042_0125, &changed_object_type));
+        let deleted_attribute_name =
+            encode_test_ttlv(0x0042_000A, ENUMERATION, &0x0042_0028u32.to_be_bytes());
+        payload.extend(encode_test_structure(0x0042_0126, &deleted_attribute_name));
+        let mut vendor_attribute_name =
+            encode_test_ttlv(0x0042_009D, TEXT_STRING, b"KMIPKit test vendor");
+        vendor_attribute_name.extend(encode_test_ttlv(
+            0x0042_000A,
+            TEXT_STRING,
+            b"Vendor Attribute",
+        ));
+        payload.extend(encode_test_structure(0x0042_0126, &vendor_attribute_name));
+    }
+    let mut item = encode_test_ttlv(0x0042_005C, ENUMERATION, &0x1Bu32.to_be_bytes());
+    item.extend(encode_test_ttlv(0x0042_0093, 8, &[request_id]));
+    item.extend(encode_test_structure(0x0042_0079, &payload));
+    encode_test_structure(0x0042_000F, &item)
+}
+
 fn s2c_test_put_batch() -> Vec<u8> {
     const INTEGER: u8 = 2;
     const ENUMERATION: u8 = 5;
@@ -174,7 +236,7 @@ fn s2c_test_put_batch() -> Vec<u8> {
         INTEGER,
         &65536i32.to_be_bytes(),
     ));
-    request_header.extend(encode_test_ttlv(0x0042_000D, INTEGER, &7i32.to_be_bytes()));
+    request_header.extend(encode_test_ttlv(0x0042_000D, INTEGER, &8i32.to_be_bytes()));
 
     let key_value = encode_test_ttlv(0x0042_0043, BYTE_STRING, &[0x11, 0x22, 0x33, 0x44]);
     let key_value = encode_test_structure(0x0042_0045, &key_value);
@@ -241,16 +303,7 @@ fn s2c_test_put_batch() -> Vec<u8> {
     discover_item.extend(encode_test_structure(0x0042_0079, &discover_payload));
     root.extend(encode_test_structure(0x0042_000F, &discover_item));
 
-    let mut notify_payload = encode_test_ttlv(0x0042_0094, TEXT_STRING, b"notify-object");
-    let changed_object_type = encode_test_ttlv(0x0042_0057, ENUMERATION, &2u32.to_be_bytes());
-    notify_payload.extend(encode_test_structure(0x0042_0125, &changed_object_type));
-    let deleted_attribute_name =
-        encode_test_ttlv(0x0042_000A, ENUMERATION, &0x0042_0028u32.to_be_bytes());
-    notify_payload.extend(encode_test_structure(0x0042_0126, &deleted_attribute_name));
-    let mut notify_item = encode_test_ttlv(0x0042_005C, ENUMERATION, &0x1Bu32.to_be_bytes());
-    notify_item.extend(encode_test_ttlv(0x0042_0093, BYTE_STRING, &[0x32]));
-    notify_item.extend(encode_test_structure(0x0042_0079, &notify_payload));
-    root.extend(encode_test_structure(0x0042_000F, &notify_item));
+    root.extend(s2c_test_notify_item(b"notify-object", 0x32, true));
 
     let query_payload = encode_test_ttlv(0x0042_0074, ENUMERATION, &1u32.to_be_bytes());
     let mut query_item = encode_test_ttlv(0x0042_005C, ENUMERATION, &0x18u32.to_be_bytes());
@@ -263,6 +316,8 @@ fn s2c_test_put_batch() -> Vec<u8> {
     role_item.extend(encode_test_ttlv(0x0042_0093, BYTE_STRING, &[0x34]));
     role_item.extend(encode_test_structure(0x0042_0079, &role_payload));
     root.extend(encode_test_structure(0x0042_000F, &role_item));
+
+    root.extend(s2c_test_notify_item(b"notify-no-attributes", 0x35, false));
     encode_test_structure(0x0042_0078, &root)
 }
 

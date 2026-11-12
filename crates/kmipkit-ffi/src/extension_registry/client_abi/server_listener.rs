@@ -6,6 +6,10 @@ use super::*;
 use crate::kmipkit_attribute_reference_v1_t;
 use std::time::Duration;
 
+#[cfg(test)]
+#[path = "../../../tests/support/server_listener_tests.rs"]
+mod tests;
+
 const SERVER_LISTENER_RAW_TLS: u32 = 1;
 const SERVER_LISTENER_HTTPS: u32 = 2;
 const SERVER_LISTENER_ENCODING_TTLV: u32 = 1;
@@ -782,8 +786,12 @@ pub extern "C" fn kmipkit_server_request_item_unique_identifier(
 }
 
 /// Returns the changed attributes from a typed Notify request as a validated Attribute Set.
+///
+/// # Safety
+/// `out_present` must point to aligned writable `u8` storage. A non-null
+/// `out_attributes` must point to aligned writable handle storage.
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_server_request_item_notify_attributes(
+pub unsafe extern "C" fn kmipkit_server_request_item_notify_attributes(
     request: *mut kmipkit_server_request_item_t,
     out_present: *mut u8,
     out_attributes: *mut *mut kmipkit_attribute_set_t,
@@ -838,8 +846,12 @@ pub extern "C" fn kmipkit_server_request_item_notify_deleted_attribute_reference
 }
 
 /// Reads one Deleted Attribute Reference from Notify into a versioned borrowed-span record.
+///
+/// # Safety
+/// `output` must point to writable storage containing a valid v1 output record
+/// header, as required by `validate_attribute_reference_output`.
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_server_request_item_notify_deleted_attribute_reference_at(
+pub unsafe extern "C" fn kmipkit_server_request_item_notify_deleted_attribute_reference_at(
     request: *mut kmipkit_server_request_item_t,
     index: u64,
     output: *mut kmipkit_attribute_reference_v1_t,
