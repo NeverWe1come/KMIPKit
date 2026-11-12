@@ -5912,6 +5912,12 @@ mod tests {
             "rust.typed-protocol.model.kmipkit.protocol.transparentdsaprivatekey.try.new",
             "rust.typed-protocol.model.kmipkit.protocol.transparentdsapublickey.try.from.item",
             "rust.typed-protocol.model.kmipkit.protocol.transparentdsapublickey.try.new",
+            "rust.typed-protocol.model.kmipkit.protocol.transparentecprivatekey.try.from.item",
+            "rust.typed-protocol.model.kmipkit.protocol.transparentecprivatekey.try.new",
+            "rust.typed-protocol.model.kmipkit.protocol.transparentecpublickey.try.from.item",
+            "rust.typed-protocol.model.kmipkit.protocol.transparentecpublickey.try.new",
+            "rust.typed-protocol.model.kmipkit.protocol.transparentrsapublickey.try.from.item",
+            "rust.typed-protocol.model.kmipkit.protocol.transparentrsapublickey.try.new",
         ];
 
         for route_id in route_ids {
