@@ -582,6 +582,38 @@ def _managed_object_cell(cell: dict, case: dict, target: dict) -> dict:
     from kmipkit import managed_objects
 
     symbol = cell['public_api_symbol']
+    if symbol.startswith('kmipkit.managed_objects.KeyBlock.'):
+        tree = _managed_object_tree(target)
+        if tree[0] != 0x420040 or tree[1] != 1:
+            raise ValueError('managed-object fixture did not produce a Key Block Structure')
+        with ExitStack() as owned:
+            fields = [owned.enter_context(_credential_item_from_tree(field, owned))
+                      for field in tree[2]]
+            if symbol.endswith('.from_fields'):
+                result = owned.enter_context(managed_objects.KeyBlock.from_fields(fields))
+            elif symbol.endswith('.from_item'):
+                structure = owned.enter_context(PythonKmipDriver._structure(fields))
+                source = owned.enter_context(PythonKmipDriver._item(0x420040, 'structure', structure))
+                result = owned.enter_context(managed_objects.KeyBlock.from_item(source))
+            else:
+                raise RecipePending
+            observed = item_tree(result)
+            if observed != tree:
+                raise ValueError('Key Block route changed the exact ordered TTLV fields')
+        if target.get('kind') == 'tag' and target['target_id'].endswith('TAG-420040'):
+            matched = observed[0] == int(target['wire_value'], 16)
+        elif target.get('kind') == 'structure_member':
+            matched = _credential_tree_has_tag(
+                observed, _managed_object_tag(_catalog_model_data()[2], target.get('name', '')))
+        elif target.get('kind') == 'object_structure':
+            matched = observed[0] == 0x420040 or _credential_tree_has_tag(
+                observed, _managed_object_tag(_catalog_model_data()[2], target.get('name', '')))
+        else:
+            matched = False
+        if not matched:
+            raise ValueError('Key Block route did not retain the exact normative target')
+        tree_hash = digest(observed)
+        return {'request_tree_sha256': tree_hash, 'response_tree_sha256': tree_hash}
     if not symbol.startswith('kmipkit.managed_objects.ManagedObject.'):
         raise RecipePending
     elements = _catalog_model_data()[2]
@@ -2046,8 +2078,6 @@ def _crypto_parameters_cell(cell: dict, case: dict, target: dict) -> dict:
     from kmipkit import ttlv
     from kmipkit.cryptographic_parameters import CryptographicParameters
 
-    if case['requires'].get('target_kind') != 'enumeration_value':
-        raise RecipePending
     names = {
         'Block Cipher Mode': 'block_cipher_mode', 'Padding Method': 'padding_method',
         'Hashing Algorithm': 'hashing_algorithm', 'Key Role Type': 'key_role_type',
@@ -2057,7 +2087,25 @@ def _crypto_parameters_cell(cell: dict, case: dict, target: dict) -> dict:
     by_id, _, _ = _catalog_model_data()
     methods = {int(item['wire_value'], 16): names[item['name']] for item in by_id.values()
                if item.get('kind') == 'tag' and item.get('name') in names}
-    samples = _generic_samples(case, target, 'kmipkit.ttlv.ttlv_item_create')
+    if case['requires'].get('target_kind') == 'enumeration_value':
+        samples = _generic_samples(case, target, 'kmipkit.ttlv.ttlv_item_create')
+    elif (target.get('kind') == 'attribute' and target.get('name') in names
+          and target.get('source_encoding') == 'Enumeration'):
+        enumeration = next((item for item in _catalog_model_data()[2].values()
+                            if item.get('kind') == 'enumeration'
+                            and item.get('name') == target['name']), None)
+        if enumeration is None:
+            raise RecipePending
+        samples = [
+            (0x420028, 'Enumeration', int(item['wire_value'].replace('X', '0'), 16))
+            for item in by_id.values()
+            if item.get('kind') == 'enumeration_value'
+            and enumeration['element_id'] in item.get('parent_element_ids', [])
+            and item.get('allocation') in ('assigned', 'extension')
+            and isinstance(item.get('wire_value'), str)
+        ]
+    else:
+        raise RecipePending
     if not samples or any(tag not in methods or kind != 'Enumeration' for tag, kind, _ in samples):
         raise RecipePending
     observed = []
