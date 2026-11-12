@@ -6688,4 +6688,60 @@ mod tests {
             }
         }
     }
+
+    #[test]
+    fn structured_typed_attribute_constructors_execute_nested_targets() {
+        let catalog: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let routes: Json = serde_json::from_str(include_str!(
+            "../../shared/coverage/route-capabilities.json"
+        ))
+        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        let targets = catalog["normative_targets"].as_array().unwrap();
+
+        for route in routes["routes"].as_array().unwrap() {
+            let symbol = route["public_api_symbol"].as_str().unwrap();
+            if !symbol.starts_with("kmipkit_protocol::attribute::Attribute::<")
+                || !symbol.ends_with("::new")
+            {
+                continue;
+            }
+            let target_ids = route["normative_target_ids"].as_array().unwrap();
+            if !target_ids.iter().any(|target_id| {
+                targets.iter().any(|target| {
+                    target["target_id"] == *target_id && target["kind"] == "structure_member"
+                })
+            }) {
+                continue;
+            }
+            for target_id in target_ids {
+                let target_id = target_id.as_str().unwrap();
+                let target = targets
+                    .iter()
+                    .find(|target| target["target_id"] == target_id)
+                    .unwrap();
+                for protocol_version in target["protocol_versions"].as_array().unwrap() {
+                    let protocol_version = protocol_version.as_str().unwrap();
+                    let expected =
+                        sample_for_route_at_version(symbol, target, elements, protocol_version)
+                            .unwrap_or_else(|error| {
+                                panic!("{symbol} sample failed for {target_id}: {error}")
+                            });
+                    let result = invoke(symbol, &expected, target, elements, protocol_version)
+                        .unwrap_or_else(|| panic!("{symbol} route missing for {target_id}"))
+                        .unwrap_or_else(|error| panic!("{symbol} rejected {target_id}: {error}"));
+                    assert!(
+                        crate::local_wire::target_hash(&result, &expected).is_ok(),
+                        "{symbol} changed {target_id}"
+                    );
+                }
+            }
+        }
+    }
 }
