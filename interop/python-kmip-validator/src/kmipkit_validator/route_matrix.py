@@ -366,6 +366,223 @@ def _generic_cell(cell: dict, case: dict, target: dict) -> dict:
     return {'request_tree_sha256': tree_hash, 'response_tree_sha256': tree_hash}
 
 
+def _managed_object_tag(elements: dict, name: str) -> int:
+    normalized = _normalized_name(name)
+    entry = next((item for item in elements.values()
+                  if item.get('kind') == 'tag'
+                  and _normalized_name(item.get('name', '')) == normalized), None)
+    if entry is None:
+        raise RecipePending
+    return int(entry['wire_value'], 16)
+
+
+def _managed_object_field_tree(element: dict, element_types: dict[str, set[str]],
+                               elements: dict[str, dict]) -> list:
+    """Build one catalogued structure member with its source TTLV type."""
+    types = PythonKmipDriver._catalog_value_types({'requires': {}}, element, element_types)
+    if 'Structure' in types:
+        kind, value = 1, []
+    elif 'Enumeration' in types:
+        kind, value = 5, 1
+    elif 'Big Integer' in types:
+        kind, value = 4, '0000000000000001'
+    elif 'Integer' in types:
+        kind, value = 2, 1
+    elif 'Byte String' in types:
+        kind, value = 8, b'KMIPKit.Interop'.hex()
+    elif 'Text String' in types:
+        kind, value = 7, 'KMIPKit.Interop'.encode().hex()
+    elif 'Boolean' in types:
+        kind, value = 6, 1
+    elif 'Date Time' in types:
+        kind, value = 9, 1
+    elif 'Interval' in types:
+        kind, value = 10, 1
+    elif 'Date Time Extended' in types:
+        kind, value = 11, 1
+    else:
+        raise RecipePending
+    return [_managed_object_tag(elements, element.get('name', '')), kind, value]
+
+
+def _managed_object_context(structure_id: str, children: list, elements: dict[str, dict]) -> list:
+    """Place a nested Key Value/Key Material/Key Wrapping structure in Key Block."""
+    structure = elements.get(structure_id)
+    if structure is None or structure.get('kind') != 'object_structure':
+        raise RecipePending
+    if structure.get('name') == 'Key Block':
+        return [0x420040, 1, children]
+    parents = [parent for parent in structure.get('parent_element_ids', [])
+               if elements.get(parent, {}).get('kind') == 'object_structure']
+    if len(parents) != 1:
+        raise RecipePending
+    parent_id = parents[0]
+    member = next((item for item in elements.values()
+                   if item.get('kind') == 'structure_member'
+                   and parent_id in item.get('parent_element_ids', [])
+                   and _normalized_name(item.get('name', '')) ==
+                   _normalized_name(structure.get('name', ''))), None)
+    if member is None:
+        raise RecipePending
+    nested = [_managed_object_tag(elements, member['name']), 1, children]
+    return _managed_object_context(parent_id, [nested], elements)
+
+
+def _managed_object_key_material(element_id: str, elements: dict[str, dict],
+                                 include_member_id: str | None = None) -> tuple[int, list]:
+    """Create valid Key Material for the target's transparent format table."""
+    element = elements[element_id]
+    section = next((reference.get('section') for reference in element.get('source_refs', [])
+                    if reference.get('section', '').startswith('3.')), None)
+    formats = {'3.4': 7, '3.5': 8, '3.6': 9, '3.7': 10, '3.8': 11,
+               '3.9': 12, '3.10': 13, '3.11': 20, '3.12': 21}
+    field_order = {
+        '3.4': ('Key',),
+        '3.5': ('P', 'Q', 'G', 'X'),
+        '3.6': ('P', 'Q', 'G', 'Y'),
+        '3.7': ('Modulus', 'Public Exponent', 'Private Exponent', 'P', 'Q',
+                'Prime Exponent P', 'Prime Exponent Q', 'CRT Coefficient'),
+        '3.8': ('Modulus', 'Public Exponent'),
+        '3.9': ('P', 'Q', 'G', 'J', 'X'),
+        '3.10': ('P', 'Q', 'G', 'J', 'Y'),
+        '3.11': ('Recommended Curve', 'D'),
+        '3.12': ('Recommended Curve', 'Q String'),
+    }
+    format_type = formats.get(section)
+    names = field_order.get(section)
+    if format_type is None or names is None:
+        raise RecipePending
+    members = [member for member in elements.values()
+               if member.get('kind') == 'structure_member'
+               and element_id in member.get('parent_element_ids', [])]
+    by_name = {_normalized_name(member.get('name', '')): member for member in members}
+    children = [_managed_object_field_tree(by_name[_normalized_name(name)], {}, elements)
+                for name in names if _normalized_name(name) in by_name
+                and (section == '3.7'
+                     or by_name[_normalized_name(name)].get('source_requiredness') == 'Yes'
+                     or by_name[_normalized_name(name)].get('element_id') == include_member_id)]
+    return format_type, children
+
+
+def _managed_object_wrapping_data(elements: dict[str, dict]) -> list:
+    """Create valid Key Wrapping Data with both key-information alternatives."""
+    encryption = [_managed_object_tag(elements, 'Unique Identifier'), 7,
+                  'encryption-fixture'.encode().hex()]
+    mac = [_managed_object_tag(elements, 'Unique Identifier'), 7,
+           'mac-fixture'.encode().hex()]
+    parameters = [_managed_object_tag(elements, 'Cryptographic Parameters'), 1, []]
+    encryption_info = [_managed_object_tag(elements, 'Encryption Key Information'), 1,
+                       [encryption, parameters]]
+    mac_info = [_managed_object_tag(elements, 'MAC/Signature Key Information'), 1,
+                [mac, parameters]]
+    fields = [
+        [_managed_object_tag(elements, 'Wrapping Method'), 5, 1],
+        encryption_info,
+        mac_info,
+        [_managed_object_tag(elements, 'MAC/Signature'), 8, b'mac-fixture'.hex()],
+        [_managed_object_tag(elements, 'IV/Counter/Nonce'), 8, b'iv-fixture'.hex()],
+        [_managed_object_tag(elements, 'Encoding Option'), 5, 1],
+    ]
+    return [_managed_object_tag(elements, 'Key Wrapping Data'), 1, fields]
+
+
+def _managed_object_tree(target: dict, case: dict) -> list:
+    """Construct a minimal nested Key Block carrying the exact normative target."""
+    _, element_types, elements = _catalog_model_data()
+    element = elements.get(target['target_id'])
+    if element is None:
+        raise RecipePending
+    kind = target.get('kind')
+    target_id = target['target_id']
+    has_wrapping_target = any(marker in target_id for marker in (
+        'KEY-WRAPPING-DATA', 'ENCRYPTION-KEY-INFORMATION',
+        'MAC-SIGNATURE-KEY-INFORMATION'))
+    key_material_ids = []
+    if kind == 'object_structure' and element.get('name') == 'Key Material':
+        key_material_ids.append(element['element_id'])
+    elif kind == 'structure_member':
+        key_material_ids.extend(parent for parent in element.get('parent_element_ids', [])
+                                if elements.get(parent, {}).get('kind') == 'object_structure'
+                                and elements[parent].get('name') == 'Key Material')
+    if key_material_ids:
+        format_type, material_children = _managed_object_key_material(
+            key_material_ids[0], elements,
+            target['target_id'] if kind == 'structure_member' else None)
+        material = [0x420043, 1, material_children]
+        key_value = [0x420045, 1, [material]]
+    else:
+        format_type = 1
+        if has_wrapping_target:
+            key_value = [0x420045, 8, b'wrapped-fixture'.hex()]
+        else:
+            key_value = [0x420045, 1, [[0x420043, 8, b'KMIPKitInterop01'.hex()]]]
+    if 'KEY-VALUE-ATTRIBUTES' in target_id:
+        key_value[2].append([_managed_object_tag(elements, 'Attributes'), 1, []])
+    key_block_fields = [[0x420042, 5, format_type]]
+    if 'KEY-COMPRESSION-TYPE' in target_id:
+        key_block_fields.append([_managed_object_tag(elements, 'Key Compression Type'), 5, 1])
+    cryptographic_target = kind == 'structure_member' and element.get('name') in (
+        'Cryptographic Algorithm', 'Cryptographic Length')
+    if cryptographic_target:
+        key_block_fields.extend(([0x420028, 5, 3], [0x42002A, 2, 128]))
+    else:
+        key_block_fields.append(key_value)
+    if has_wrapping_target:
+        key_block_fields.append(_managed_object_wrapping_data(elements))
+    if kind == 'object_structure' and element.get('name') not in (
+            'Key Block', 'Key Value', 'Key Wrapping Data',
+            'Encryption Key Information', 'MAC/Signature Key Information') and not key_material_ids:
+        raise RecipePending
+    if kind == 'structure_member' and not key_material_ids and not any(
+            marker in target_id for marker in ('KEY-BLOCK', 'KEY-VALUE', 'KEY-WRAPPING-DATA',
+                                                'ENCRYPTION-KEY-INFORMATION',
+                                                'MAC-SIGNATURE-KEY-INFORMATION')):
+        raise RecipePending
+    return [0x420040, 1, key_block_fields]
+
+
+def _managed_object_cell(cell: dict, case: dict, target: dict) -> dict:
+    """Invoke the exact public managed-object constructor/parser route."""
+    from kmipkit import managed_objects
+
+    symbol = cell['public_api_symbol']
+    if not symbol.startswith('kmipkit.managed_objects.KeyBlock.'):
+        raise RecipePending
+    tree = _managed_object_tree(target, case)
+    if tree[0] != 0x420040 or tree[1] != 1:
+        raise ValueError('managed-object fixture did not produce a Key Block Structure')
+    with ExitStack() as owned:
+        fields = [owned.enter_context(_credential_item_from_tree(field, owned))
+                  for field in tree[2]]
+        if symbol.endswith('.from_fields'):
+            result = owned.enter_context(managed_objects.KeyBlock.from_fields(fields))
+        elif symbol.endswith('.from_item'):
+            structure = owned.enter_context(PythonKmipDriver._structure(fields))
+            source = owned.enter_context(PythonKmipDriver._item(0x420040, 'structure', structure))
+            result = owned.enter_context(managed_objects.KeyBlock.from_item(source))
+        else:
+            raise RecipePending
+        observed = item_tree(result)
+        if observed != tree:
+            raise ValueError('Key Block route did not preserve the exact ordered TTLV fields')
+    elements = _catalog_model_data()[2]
+    target_kind = target.get('kind')
+    if target_kind == 'tag' and target['target_id'].endswith('TAG-420040'):
+        matched = observed[0] == int(target['wire_value'], 16)
+    elif target_kind == 'structure_member':
+        matched = _credential_tree_has_tag(
+            observed, _managed_object_tag(elements, elements[target['target_id']]['name']))
+    elif target_kind == 'object_structure':
+        matched = observed[0] == 0x420040 or _credential_tree_has_tag(
+            observed, _managed_object_tag(elements, target.get('name', '')))
+    else:
+        matched = False
+    if not matched:
+        raise ValueError('Key Block route did not retain the exact normative target')
+    tree_hash = digest(observed)
+    return {'request_tree_sha256': tree_hash, 'response_tree_sha256': tree_hash}
+
+
 _GENERIC_SYMBOLS = {
     'kmipkit.ttlv.' + name for name in (
         'ttlv_item_view_from_item', 'raw_tag_from_raw', 'raw_tag_try_checked',
@@ -402,6 +619,8 @@ def execute_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | Non
             return _async_request_cell(cell, case, target)
         if cell['public_api_symbol'].startswith('kmipkit.attribute_operations.'):
             return _attribute_request_cell(cell, case, target)
+        if cell['public_api_symbol'].startswith('kmipkit.managed_objects.'):
+            return _managed_object_cell(cell, case, target)
         if cell['public_api_symbol'] in _TYPED_ATTRIBUTE_SYMBOLS:
             return _typed_attribute_cell(cell, case, target)
         if cell['public_api_symbol'].startswith('kmipkit.cryptographic_parameters.'):
