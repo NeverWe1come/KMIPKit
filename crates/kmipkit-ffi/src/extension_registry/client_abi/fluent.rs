@@ -280,19 +280,16 @@ fn fluent_get_attributes_request(
 ) -> FfiResult<ClientRequest> {
     let unique_identifier = super::super::copy_optional_text_identifier(unique_identifier)?
         .ok_or(ERROR_INVALID_INPUT)?;
-    let source = input_array(
-        attribute_references,
-        attribute_reference_count,
-        MAX_GET_ATTRIBUTES_REFERENCES,
-    )?;
+    let maximum = MAX_GET_ATTRIBUTES_REFERENCES;
+    let source = input_array(attribute_references, attribute_reference_count, maximum)?;
     let mut references = Vec::new();
     references
         .try_reserve_exact(source.len())
         .map_err(|_| ERROR_RESOURCE_LIMIT)?;
     for reference in source {
-        references.push(super::super::copy_attribute_reference(ptr::from_ref(
-            reference,
-        ))?);
+        let reference_pointer = ptr::from_ref(reference);
+        let copied_reference = super::super::copy_attribute_reference(reference_pointer)?;
+        references.push(copied_reference);
     }
     let request = GetAttributesRequest::try_new(Some(unique_identifier), references)
         .map_err(|_| ERROR_INVALID_INPUT)?;
