@@ -148,7 +148,10 @@ fn main() {
 
     println!("cargo:rerun-if-changed={}", public_header.display());
     println!("cargo:rerun-if-changed={}", internal_header.display());
-    println!("cargo:rustc-link-search=native={}", target_profile.display());
+    println!(
+        "cargo:rustc-link-search=native={}",
+        target_profile.display()
+    );
     println!("cargo:rustc-link-search=native={}", target_deps.display());
 
     for consumer in &CONSUMERS {
