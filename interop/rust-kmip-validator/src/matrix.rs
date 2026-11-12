@@ -1110,14 +1110,15 @@ fn expected_tag_decode_rejection(
         "unused" => "tag_not_allocated",
         _ => return None,
     };
-    let wire_value = text(target, "wire_value").ok()?;
-    let start = wire_value
+    Some((target_wire_start(target)?, rejection_code))
+}
+
+fn target_wire_start(target: &Json) -> Option<u32> {
+    text(target, "wire_value")
+        .ok()?
         .split(['-', '–', '—'])
-        .next()?
-        .trim()
-        .trim_start_matches("0x")
-        .replace(['X', 'x'], "0");
-    Some((u32::from_str_radix(&start, 16).ok()?, rejection_code))
+        .next()
+        .and_then(unsigned_wire_value)
 }
 
 fn raw_tag_route_event(row: &Json, target: &Json, invocation: usize) -> Option<Json> {
@@ -1131,7 +1132,7 @@ fn raw_tag_route_event(row: &Json, target: &Json, invocation: usize) -> Option<J
     {
         return None;
     }
-    let raw = unsigned_wire_value(target["wire_value"].as_str()?)?;
+    let raw = target_wire_start(target)?;
     let tag = kmipkit::ttlv::RawTag::new(raw).ok()?;
     let (expected, result_value) = if symbol == "kmipkit_ttlv::RawTag::new" {
         (true, json!(["RawTag", tag.raw()]))
