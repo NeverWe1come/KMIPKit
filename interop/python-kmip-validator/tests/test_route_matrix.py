@@ -1224,6 +1224,11 @@ class RouteMatrixTests(unittest.TestCase):
         from kmipkit_validator.contract import SHARED, _validate
         _validate(report, SHARED / 'schemas/route-execution-evidence.schema.json',
                   'route evidence violates the shared schema')
+        validate_report(
+            report, catalog, manifest, catalog_sha256=report['catalog_sha256'],
+            route_manifest_sha256=report['route_manifest_sha256'],
+            expected_artifact_sha256=self.artifact['artifact_sha256'],
+        )
         self.assertEqual([], gaps)
         self.assertEqual(90, len(report['events']))
         self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
