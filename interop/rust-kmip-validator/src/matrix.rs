@@ -1845,11 +1845,23 @@ fn invoke_client_batch_route(symbol: &str, sample: &Item) -> Option<Result<Item>
                 let _batch = kmipkit::ClientBatch::empty().with_asynchronous_indicator(value);
             }
             "kmipkit_client::ClientBatch::with_authentication" => {
-                let structure = sample
-                    .as_structure()
-                    .ok_or("Authentication fixture is not a Structure")?
-                    .try_clone()
-                    .map_err(|_| "Authentication fixture copy failed")?;
+                let structure = if sample.tag().raw() == 0x0042_0023 {
+                    let mut structure = kmipkit::ttlv::Structure::new();
+                    structure
+                        .try_push(
+                            sample
+                                .try_clone()
+                                .map_err(|_| "Authentication fixture copy failed")?,
+                        )
+                        .map_err(|_| "Authentication fixture rejected")?;
+                    structure
+                } else {
+                    sample
+                        .as_structure()
+                        .ok_or("Authentication fixture is not a Structure")?
+                        .try_clone()
+                        .map_err(|_| "Authentication fixture copy failed")?
+                };
                 let authentication = kmipkit::protocol::Authentication::try_from_ttlv(structure)
                     .map_err(|_| "Authentication fixture rejected")?;
                 let _batch = kmipkit::ClientBatch::empty().with_authentication(authentication);
@@ -1879,6 +1891,9 @@ fn invoke_client_batch_route(symbol: &str, sample: &Item) -> Option<Result<Item>
             "kmipkit_client::ClientBatch::with_request_time_stamp" => {
                 let value = sample.with_value(|value| match value {
                     ValueView::DateTime(value) => Ok(*value),
+                    ValueView::DateTimeExtended(value) => {
+                        i64::try_from(*value).map_err(|_| "Time Stamp fixture is out of range")
+                    }
                     _ => Err("Request Time Stamp fixture is not a Date-Time"),
                 })?;
                 let _batch = kmipkit::ClientBatch::empty().with_request_time_stamp(value);
