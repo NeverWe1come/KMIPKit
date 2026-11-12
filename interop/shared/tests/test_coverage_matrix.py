@@ -96,6 +96,17 @@ class CoverageMatrixTests(unittest.TestCase):
                               in enumerate(zip(case["requires"]["protocol_scenario"]["operations"], target_ids))},
                              steps)
 
+    def test_explicit_batch_recipe_does_not_inherit_unrelated_primary_operation(self):
+        case = next(case for case in self.catalog["test_cases"]
+                    if case["case_id"] == "test-batch-register-encrypt-decrypt-destroy")
+        scenario_target_ids = case["requires"]["protocol_scenario"]["target_ids"]
+        obligations = _case_obligations(case, _operation_ids(self.catalog),
+                                        self.catalog["normative_targets"])
+        operation_obligations = [item["target_id"] for item in obligations
+                                 if item["target_id"].startswith("KMIPKIT-ELEM-OP-")]
+
+        self.assertEqual(scenario_target_ids, operation_obligations)
+
     def test_duplicate_operation_names_default_to_client_initiated_direction(self):
         operation_ids = _operation_ids(self.catalog)
         self.assertEqual('KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS',
