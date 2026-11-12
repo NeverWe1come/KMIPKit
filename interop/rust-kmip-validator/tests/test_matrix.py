@@ -32,7 +32,8 @@ class MatrixContract(unittest.TestCase):
             str(ROOT / 'interop/rust-kmip-validator/src/local_cases_generated.rs'),
             str(ROOT / 'interop/rust-kmip-validator/src/route_calls_generated.rs'),
         ]
-        self.assertCountEqual(generated, generated_source_files(generated))
+        report_paths = generated + [str(ROOT / 'interop/rust-kmip-validator/src/matrix.rs')]
+        self.assertCountEqual(generated, generated_source_files(report_paths))
 
     def cell(self, symbol, target='KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-LENGTH'):
         return next(cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))

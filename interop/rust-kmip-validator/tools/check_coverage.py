@@ -7,11 +7,12 @@ import shlex
 import subprocess
 import sys
 
+from coverage_exclusions import GENERATED_SOURCE_REGEX, generated_source_files
+
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "interop/rust-kmip-validator/Cargo.toml"
 TARGET = ROOT / "interop/rust-kmip-validator/target/coverage-build"
 OUTPUT = ROOT / "interop/rust-kmip-validator/target/coverage.json"
-from coverage_exclusions import GENERATED_SOURCE_REGEX, generated_source_files
 
 env = os.environ.copy()
 env["CARGO_TARGET_DIR"] = str(TARGET)
@@ -35,7 +36,19 @@ commands = [
     [sys.executable, "-m", "unittest", "discover", "-s", "interop/rust-kmip-validator/tests", "-p", "test_matrix.py", "-v"],
     # These exhaustive generated dispatch tables is verified against every local
     # catalog case, actual matrix calls, and regeneration checks; it is excluded from handwritten-code coverage.
-    ["cargo", "+1.94", "llvm-cov", "report", "--manifest-path", str(MANIFEST), "--ignore-filename-regex", GENERATED_SOURCE_REGEX, "--json", "--output-path", str(OUTPUT)],
+    [
+        "cargo",
+        "+1.94",
+        "llvm-cov",
+        "report",
+        "--manifest-path",
+        str(MANIFEST),
+        "--ignore-filename-regex",
+        GENERATED_SOURCE_REGEX.pattern,
+        "--json",
+        "--output-path",
+        str(OUTPUT),
+    ],
 ]
 for command in commands:
     subprocess.run(command, cwd=ROOT, env=env, check=True)
