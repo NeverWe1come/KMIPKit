@@ -367,21 +367,62 @@ def _batch_request_details(request: bytes, encoding: str) -> tuple[int | None, l
         continuation_value = next((entry.get("value") for entry in header
                                    if entry.get("tag") == "BatchErrorContinuationOption"), None)
         batch_items = [entry for entry in message if entry.get("tag") == "BatchItem"]
-        operation_name = lambda entry: entry.get("value")
-        item_fields = lambda entry: entry.get("value", [])
-        field_name = lambda entry: entry.get("tag")
-        field_value = lambda entry: entry.get("value")
+
+        def find_json_item(node: object, tag: str) -> dict[str, object] | None:
+            if isinstance(node, dict):
+                if node.get("tag") == tag:
+                    return node
+                return find_json_item(node.get("value"), tag)
+            if isinstance(node, list):
+                for child in node:
+                    found = find_json_item(child, tag)
+                    if found is not None:
+                        return found
+            return None
+
+        details = []
+        for batch_item in batch_items:
+            fields = batch_item.get("value", [])
+            operation = next((entry.get("value") for entry in fields
+                              if entry.get("tag") == "Operation"), None)
+            identifier = find_json_item(fields, "UniqueIdentifier")
+            if not isinstance(operation, str):
+                raise AssertionError("batch item omitted its Operation")
+            operation = {
+                "get": "Get",
+                "getattributelist": "Get Attribute List",
+            }.get(normalized_operation_name(operation), operation)
+            identifier_value = identifier.get("value") if identifier is not None else None
+            if identifier_value is not None and not isinstance(identifier_value, str):
+                raise AssertionError("batch Unique Identifier used an unsupported JSON value")
+            details.append({"operation": operation, "unique_identifier": identifier_value})
     elif encoding == "XML":
         root = ET.fromstring(request)
         continuation_field = root.find("./RequestHeader/BatchErrorContinuationOption")
         continuation_value = (continuation_field.attrib.get("value")
                               if continuation_field is not None else None)
         batch_items = root.findall("./BatchItem")
-        operation_name = lambda entry: (entry.find("./Operation").attrib.get("value")
-                                        if entry.find("./Operation") is not None else None)
-        item_fields = lambda entry: list(entry)
-        field_name = lambda entry: entry.tag
-        field_value = lambda entry: entry.attrib.get("value")
+
+        def local_name(tag: str) -> str:
+            return tag.rsplit("}", 1)[-1]
+
+        details = []
+        for batch_item in batch_items:
+            operation_field = next((entry for entry in batch_item
+                                    if local_name(entry.tag) == "Operation"), None)
+            identifier = next((entry for entry in batch_item.iter()
+                               if local_name(entry.tag) == "UniqueIdentifier"), None)
+            operation = (operation_field.attrib.get("value")
+                         if operation_field is not None else None)
+            identifier_value = (identifier.attrib.get("value")
+                                if identifier is not None else None)
+            if operation is None:
+                raise AssertionError("batch item omitted its Operation")
+            operation = {
+                "get": "Get",
+                "getattributelist": "Get Attribute List",
+            }.get(normalized_operation_name(operation), operation)
+            details.append({"operation": operation, "unique_identifier": identifier_value})
     else:
         raise AssertionError("batch simulation received an unsupported encoding")
 
@@ -396,16 +437,6 @@ def _batch_request_details(request: bytes, encoding: str) -> tuple[int | None, l
         }.get(normalized)
     else:
         continuation = None
-    details = []
-    for batch_item in batch_items:
-        fields = item_fields(batch_item)
-        operation = operation_name(next((entry for entry in fields
-                                         if field_name(entry) == "Operation"), {}))
-        if operation is None:
-            raise AssertionError("batch item omitted its Operation")
-        identifier = next((field_value(entry) for entry in fields
-                           if field_name(entry) == "UniqueIdentifier"), None)
-        details.append({"operation": operation, "unique_identifier": identifier})
     return continuation, details
 
 
