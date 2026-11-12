@@ -251,6 +251,24 @@ class RouteMatrixTests(unittest.TestCase):
                 self.assertIn('request_tree_sha256', result)
                 self.assertEqual(result['request_tree_sha256'], result['response_tree_sha256'])
 
+    def test_cryptographic_parameter_routes_accept_catalog_structure_member_name(self):
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] ==
+                    'test-norm-structure-member-structure-member-7-12-cryptographic-parameters')
+        target = next(target for target in self.catalog['normative_targets']
+                      if target['target_id'] ==
+                      'KMIPKIT-ELEM-STRUCTURE-MEMBER-7-12-CRYPTOGRAPHIC-PARAMETERS')
+        for symbol in (
+                'kmipkit.cryptographic_parameters.CryptographicParameters.builder',
+                'kmipkit.cryptographic_parameters.CryptographicParameters.from_ttlv',
+                'kmipkit.cryptographic_parameters.CryptographicParameters.into_ttlv',
+                'kmipkit.cryptographic_parameters.CryptographicParametersBuilder.build'):
+            with self.subTest(symbol=symbol):
+                cell = {'action': 'construct', 'public_api_symbol': symbol, 'transport': None}
+                result = self.runner.execute_cell(cell, case, target)
+                self.assertIn('request_tree_sha256', result)
+                self.assertEqual(result['request_tree_sha256'], result['response_tree_sha256'])
+
     def test_scalar_payload_variants_roundtrip_the_exact_field_type_and_tag(self):
         catalog = copy.deepcopy(self.catalog)
         catalog['test_cases'] = [case for case in catalog['test_cases']
