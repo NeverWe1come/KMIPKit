@@ -1088,6 +1088,10 @@ fn sample_for_route(symbol: &str, target: &Json, elements: &[Json]) -> Result<It
         let model = construct_key_block_fixture(target, elements)?;
         return metadata_expected_target(&model, target, elements);
     }
+    if symbol == "kmipkit_protocol::KeyBlock::with_key_value" {
+        let model = construct_key_block_fixture(target, elements)?;
+        return metadata_expected_target(&model, target, elements);
+    }
     if symbol == "kmipkit_protocol::ManagedObject::try_from_item"
         || typed_object_root(symbol).is_some()
     {
@@ -1245,6 +1249,14 @@ fn invoke(
         );
     }
     if symbol == "kmipkit_protocol::KeyBlock::try_new" {
+        return Some(
+            construct_key_block_fixture(target, elements).and_then(|model| {
+                crate::local_wire::roundtrip(&model)?;
+                metadata_expected_target(&model, target, elements)
+            }),
+        );
+    }
+    if symbol == "kmipkit_protocol::KeyBlock::with_key_value" {
         return Some(
             construct_key_block_fixture(target, elements).and_then(|model| {
                 crate::local_wire::roundtrip(&model)?;
@@ -1738,9 +1750,7 @@ mod tests {
             .as_array()
             .unwrap()
             .iter()
-            .find(|target| {
-                target["target_id"] == "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-4-KEY-MATERIAL"
-            })
+            .find(|target| target["target_id"] == "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-4-KEY-MATERIAL")
             .unwrap();
         let (_, _, expected) = object_root_fixture("PGP Key", target, elements).unwrap();
         assert_eq!(expected.item_type(), kmipkit::ttlv::ItemType::Structure);
