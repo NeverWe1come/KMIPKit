@@ -14,6 +14,7 @@ import socket
 import ssl
 import struct
 import subprocess
+import sys
 import tempfile
 import threading
 import time
@@ -28,6 +29,9 @@ import controlled_wire
 from request_parity import RequestNormalizer, parity_signature, result_code
 
 ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT / "interop/shared/tools"))
+from coverage_matrix import iter_cells
+
 VALIDATOR = Path(os.environ.get("KMIPKIT_VALIDATOR_BIN", ROOT / "interop/rust-kmip-validator/target/debug/rust-kmip-validator"))
 SERVER = Path(os.environ.get("KMIPKIT_TEST_SERVER", ROOT / "interop/.local/rust-test-server/harness/target/debug/kmipkit-interop-local-server"))
 CATALOG = json.loads((ROOT / "interop/shared/catalog/kmipkit-1.0-test-catalog.json").read_text())
@@ -303,6 +307,70 @@ class LiveContract(unittest.TestCase):
         self.assertIsNone(find(single_header, 0x42000E))
         self.assertIsNone(find(single_header, 0x420010))
         self.assertTrue(all(c["server_compatibility"] == "unknown" for c in report["cases"]))
+
+    def test_response_accessor_matrix_runs_through_controlled_mtls(self):
+        route_manifest = json.loads((ROOT / "interop/shared/coverage/route-capabilities.json").read_text())
+        response_symbols = {
+            "kmipkit_client::ClientBatchOutcome::asynchronous_correlation_value",
+            "kmipkit_client::ClientBatchItemResponse::outcome",
+            "kmipkit_client::ClientBatchItemResponse::unique_batch_item_id",
+            "kmipkit_client::ClientBatchItemResponse::extensions",
+            "kmipkit_client::ClientBatchItemResponse::discover_versions_supported_versions",
+            "kmipkit_client::ClientBatchResponse::get",
+            "kmipkit_client::ClientBatchResponse::len",
+            "kmipkit_client::ClientMessageExtension::with_ttlv",
+            "kmipkit_client::ClientResponseView::ping",
+        }
+        cells = [cell for cell in iter_cells(CATALOG, route_manifest, languages=("rust",))
+                 if cell["mode"] == "local" and cell["protocol_version"] == "2.1"
+                 and cell["public_api_symbol"] in response_symbols]
+        matrix = self.directory / "response-accessor-matrix.jsonl"
+        output = self.directory / "response-accessor-evidence.json"
+        matrix.write_text("".join(json.dumps(cell, sort_keys=True, separators=(",", ":")) + "\n" for cell in cells))
+        message_extension = ttlv(0x420051, 1, [
+            ttlv(0x4200e3, 7, "KMIPKit controlled fixture"),
+            ttlv(0x4200e4, 6, 0),
+            ttlv(0x4200e5, 1, [ttlv(0x540001, 7, "response-route")]),
+        ])
+
+        def answer(tree):
+            request_item = next(value for tag, kind, value in tree[0][2] if tag == 0x42000f)
+            operation = find(request_item, 0x42005c)
+            fields = [ttlv(0x42005c, 5, operation)]
+            batch_id = find(request_item, 0x420093)
+            if batch_id is not None:
+                fields.append(ttlv(0x420093, 8, batch_id))
+            if operation == 0x1f:
+                fields.extend([ttlv(0x42007f, 5, 2), ttlv(0x4200d6, 8, b"controlled-correlation")])
+            else:
+                fields.append(ttlv(0x42007f, 5, 0))
+                if operation == 0x1e:
+                    payload = [ttlv(0x420069, 1, [ttlv(0x42006a, 2, 2), ttlv(0x42006b, 2, 1)])]
+                    fields.append(ttlv(0x42007c, 1, payload))
+                else:
+                    fields.append(ttlv(0x42007c, 1, []))
+            header = [
+                ttlv(0x420069, 1, [ttlv(0x42006a, 2, 2), ttlv(0x42006b, 2, 1)]),
+                ttlv(0x420092, 9, 1794268800),
+                ttlv(0x42000d, 2, 1),
+            ]
+            if operation == 0x18:
+                header.append(message_extension)
+            return ttlv(0x42007b, 1, [ttlv(0x42007a, 1, header), ttlv(0x42000f, 1, fields)])
+
+        with ControlledPeer(self.pki, answer) as peer:
+            configuration = self.directory / "response-accessor-connection.json"
+            configuration.write_text(json.dumps(self.connection(peer.port, version="2.1"), sort_keys=True))
+            process = subprocess.run(
+                [str(VALIDATOR), "matrix-network", "--matrix", str(matrix), "--connection", str(configuration), "--output", str(output)],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30, text=True,
+            )
+        self.assertEqual(process.returncode, 0, process.stderr)
+        report = json.loads(output.read_text())
+        jsonschema.Draft202012Validator(json.loads((ROOT / "interop/shared/schemas/route-execution-evidence.schema.json").read_text())).validate(report)
+        self.assertEqual(len(report["events"]), len(cells))
+        self.assertTrue(all(event["status"] == "passed" and event["invocation_count"] == 1 for event in report["events"]))
+        self.assertCountEqual(peer.operations, [0x18, 0x1e, 0x32, 0x1f])
 
     def test_query_probes_profile_omissions_and_separates_rejections(self):
         for reason, status, compatibility in [(5, "server_unsupported", "unsupported"), (8, "server_unsupported", "unsupported"), (12, "policy_restricted", "policy_restricted"), (3, "failed", "unknown"), (0x100, "failed", "unknown")]:
