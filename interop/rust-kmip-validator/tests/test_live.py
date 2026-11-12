@@ -115,6 +115,35 @@ def successful_batch(tree):
     return ttlv(0x42007b, 1, [header, *results])
 
 
+def successful_lifecycle_batch(tree, operation_codes):
+    request_items = [value for tag, kind, value in tree[0][2] if tag == 0x42000F]
+    results = []
+    for request_item in request_items:
+        operation = find(request_item, 0x42005C)
+        fields = [ttlv(0x42005C, 5, operation)]
+        batch_id = find(request_item, 0x420093)
+        if batch_id is not None:
+            fields.append(ttlv(0x420093, 8, batch_id))
+        fields.append(ttlv(0x42007F, 5, 0))
+        unique_identifier = [ttlv(0x420094, 7, "controlled-batch-object")]
+        if operation == operation_codes["Create"]:
+            payload = [ttlv(0x420057, 5, 2), *unique_identifier]
+        elif operation == operation_codes["Get Attribute List"]:
+            payload = [*unique_identifier, ttlv(0x42013B, 5, 0x420001)]
+        else:
+            payload = unique_identifier
+        fields.append(ttlv(0x42007C, 1, payload))
+        results.append(ttlv(0x42000F, 1, fields))
+    major = find(tree, 0x42006A)
+    minor = find(tree, 0x42006B)
+    header = ttlv(0x42007A, 1, [
+        ttlv(0x420069, 1, [ttlv(0x42006A, 2, major), ttlv(0x42006B, 2, minor)]),
+        ttlv(0x420092, 9, 1794268800),
+        ttlv(0x42000D, 2, len(results)),
+    ])
+    return ttlv(0x42007B, 1, [header, *results])
+
+
 def receive(channel):
     header = b""
     while len(header) < 8:
@@ -418,6 +447,7 @@ class LiveContract(unittest.TestCase):
             self.assertEqual(peer.operations, [0x18])
 
     def test_batch_create_activate_get_attribute_list_revoke_destroy_matches_catalog_order(self):
+        """KMIP 2.1 §§6.1.1, 6.1.8, 6.1.15, 6.1.21, and 6.1.44 batch flow."""
         case = self.rows("test-batch-create-activate-destroy")
         scenario = case[0]["requires"]["protocol_scenario"]
         expected_names = scenario["parameters"]["operations_in_request_order"]
@@ -430,33 +460,10 @@ class LiveContract(unittest.TestCase):
         }
         expected_codes = [operation_codes[name] for name in expected_names]
 
-        def lifecycle_response(tree):
-            request_items = [value for tag, kind, value in tree[0][2] if tag == 0x42000F]
-            results = []
-            for request_item in request_items:
-                operation = find(request_item, 0x42005C)
-                fields = [ttlv(0x42005C, 5, operation)]
-                batch_id = find(request_item, 0x420093)
-                if batch_id is not None:
-                    fields.append(ttlv(0x420093, 8, batch_id))
-                fields.append(ttlv(0x42007F, 5, 0))
-                unique_identifier = [ttlv(0x420094, 7, "controlled-batch-object")]
-                if operation == operation_codes["Create"]:
-                    payload = [ttlv(0x420057, 5, 2), *unique_identifier]
-                elif operation == operation_codes["Get Attribute List"]:
-                    payload = [*unique_identifier, ttlv(0x42013B, 5, 0x420001)]
-                else:
-                    payload = unique_identifier
-                fields.append(ttlv(0x42007C, 1, payload))
-                results.append(ttlv(0x42000F, 1, fields))
-            header = ttlv(0x42007A, 1, [
-                ttlv(0x420069, 1, [ttlv(0x42006A, 2, 2), ttlv(0x42006B, 2, 1)]),
-                ttlv(0x420092, 9, 1794268800),
-                ttlv(0x42000D, 2, len(results)),
-            ])
-            return ttlv(0x42007B, 1, [header, *results])
-
-        with ControlledPeer(self.pki, lifecycle_response) as peer:
+        with ControlledPeer(
+            self.pki,
+            lambda tree: successful_lifecycle_batch(tree, operation_codes),
+        ) as peer:
             process, report = self.command(
                 self.connection(peer.port, mutations=True),
                 case,
