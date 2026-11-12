@@ -23,11 +23,12 @@ class RouteMatrixTests(unittest.TestCase):
         self.manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
         self.artifact = {'library_commit': self.manifest['library_commit'], 'artifact_sha256': 'a' * 64}
 
-    def assert_route_cells_pass(self, symbols):
+    def assert_route_cells_pass(self, symbols, target_ids=None):
         cases = {case['case_id']: case for case in self.catalog['test_cases']}
         targets = {target['target_id']: target for target in self.catalog['normative_targets']}
         cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
-                 if cell['public_api_symbol'] in symbols]
+                 if cell['public_api_symbol'] in symbols
+                 and (target_ids is None or cell['target_id'] in target_ids)]
         outcomes = [self.runner._execute_matrix_cell(cell, cases[cell['case_id']],
                                                      targets[cell['target_id']])
                     for cell in cells]
@@ -1390,6 +1391,24 @@ class RouteMatrixTests(unittest.TestCase):
             'kmipkit.client.BatchItemResult.extension_count',
             'kmipkit.client.BatchItemResult.extension_ttlv_at',
         })
+
+    def test_generic_ttlv_scalar_and_item_routes_cover_remaining_catalogued_fields(self):
+        target_ids = {
+            'KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES',
+            'KMIPKIT-PAYLOAD-SERVER-PUT-REQUEST-20-004',
+            'KMIPKIT-PAYLOAD-SERVER-PUT-REQUEST-21-004',
+            'KMIPKIT-ELEM-OPERATION-STRUCTURE-7-16-INTEROP-IDENTIFIER',
+            'KMIPKIT-ELEM-STRUCTURE-MEMBER-7-27-PKCS-11-INPUT-PARAMETERS',
+            'KMIPKIT-ELEM-STRUCTURE-MEMBER-7-28-PKCS-11-INTERFACE',
+            'KMIPKIT-ELEM-STRUCTURE-MEMBER-7-29-PKCS-11-OUTPUT-PARAMETERS',
+        }
+        self.assert_route_cells_pass({
+            'kmipkit.ttlv.ttlv_decode',
+            'kmipkit.ttlv.ttlv_item_create',
+            'kmipkit.ttlv.ttlv_item_view_from_item',
+            'kmipkit.ttlv.ttlv_value_byte_string',
+            'kmipkit.ttlv.ttlv_value_text_string',
+        }, target_ids=target_ids)
 
     def test_decode_wire_digest_is_the_received_response(self):
         import hashlib
