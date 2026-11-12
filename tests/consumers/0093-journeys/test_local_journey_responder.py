@@ -6,6 +6,44 @@ import unittest
 from local_journey_responder import _item, _structure, _validate_operation
 
 
+class ExpertAttributeJourneyContractTests(unittest.TestCase):
+    def _create_fields(self, attribute: bytes | None) -> list[tuple[int, int, bytes]]:
+        payload_items = [
+            _item(0x420057, 5, struct.pack(">I", 2)),
+            _item(0x420098, 7, b"fluent-expert-attributes"),
+            _item(0x420028, 5, struct.pack(">I", 3)),
+            _item(0x42002A, 2, struct.pack(">i", 256)),
+            _item(0x42002C, 2, struct.pack(">i", 12)),
+        ]
+        if attribute is not None:
+            payload_items.append(attribute)
+        return [(0x420079, 1, b"".join(payload_items))]
+
+    def test_expert_attribute_create_requires_catalogued_object_group_text(self) -> None:
+        invalid_attributes = (
+            None,
+            _item(0x420056, 2, struct.pack(">i", 1)),
+            _item(0x420056, 7, b"wrong-expert-group"),
+        )
+        for attribute in invalid_attributes:
+            with self.subTest(attribute=attribute), self.assertRaisesRegex(
+                RuntimeError, "Object Group"
+            ):
+                _validate_operation(
+                    1,
+                    self._create_fields(attribute),
+                    [],
+                    b"fluent-expert-attributes",
+                )
+
+        _validate_operation(
+            1,
+            self._create_fields(_item(0x420056, 7, b"fluent-expert-group")),
+            [],
+            b"fluent-expert-attributes",
+        )
+
+
 class KeyPairCurveContractTests(unittest.TestCase):
     def validate(self, domain: bytes) -> None:
         common = _structure(
