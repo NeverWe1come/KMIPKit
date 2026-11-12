@@ -1801,6 +1801,28 @@ fn sample_for_route_at_version(
         let tag = target_wire_value(target)?;
         return crate::driver::item(tag, Value::structure(kmipkit::ttlv::Structure::new()));
     }
+    if target["kind"] == "tag"
+        && [
+            "Certificate Request Value",
+            "Prime Field Size",
+            "Authenticated Encryption Additional Data",
+            "Authenticated Encryption Tag",
+            "Correlation Value",
+            "IV/Counter/Nonce",
+            "MAC Data",
+            "Digested Data",
+            "Signature Data",
+        ]
+        .contains(&target["name"].as_str().unwrap_or_default())
+    {
+        let tag = target_wire_value(target)?;
+        let value = if target["name"] == "Prime Field Size" {
+            Value::big_integer(vec![0x41; 8])
+        } else {
+            Value::byte_string(vec![0x4b])
+        };
+        return crate::driver::item(tag, value);
+    }
     if symbol == "kmipkit_protocol::AttributeReference::tag" {
         return crate::driver::item(0x0042_013b, Value::enumeration(0x0042_0001));
     }
@@ -2788,6 +2810,237 @@ fn invoke_operation_data_route(symbol: &str, sample: &Item) -> Option<Result<Ite
     })())
 }
 
+fn invoke_secret_operation_builder_route(
+    symbol: &str,
+    input_sample: &Item,
+    target: &Json,
+    elements: &[Json],
+) -> Option<Result<Item>> {
+    const ROUTES: &[&str] = &[
+        "kmipkit_protocol::CertifyRequest::with_certificate_request_value",
+        "kmipkit_protocol::CreateSplitKeyRequest::with_prime_field_size",
+        "kmipkit_protocol::DecryptRequest::with_authenticated_encryption_additional_data",
+        "kmipkit_protocol::DecryptRequest::with_authenticated_encryption_tag",
+        "kmipkit_protocol::DecryptRequest::with_correlation_value",
+        "kmipkit_protocol::DecryptRequest::with_iv_counter_nonce",
+        "kmipkit_protocol::EncryptRequest::with_authenticated_encryption_additional_data",
+        "kmipkit_protocol::EncryptRequest::with_correlation_value",
+        "kmipkit_protocol::EncryptRequest::with_iv_counter_nonce",
+        "kmipkit_protocol::HashRequest::with_correlation_value",
+        "kmipkit_protocol::MacRequest::with_correlation_value",
+        "kmipkit_protocol::MacVerifyRequest::with_correlation_value",
+        "kmipkit_protocol::MacVerifyRequest::with_mac_data",
+        "kmipkit_protocol::Pkcs11Request::with_correlation_value",
+        "kmipkit_protocol::RecertifyRequest::with_certificate_request_value",
+        "kmipkit_protocol::SignRequest::with_correlation_value",
+        "kmipkit_protocol::SignRequest::with_digested_data",
+        "kmipkit_protocol::SignatureVerifyRequest::with_correlation_value",
+        "kmipkit_protocol::SignatureVerifyRequest::with_digested_data",
+        "kmipkit_protocol::SignatureVerifyRequest::with_signature_data",
+    ];
+    if !ROUTES.contains(&symbol) {
+        return None;
+    }
+
+    Some((|| {
+        use kmipkit::protocol::{
+            AttributeSet, CreateSplitKeyRequest, OperationData, Pkcs11Request, SecretBytes,
+            SplitKeyMethod,
+        };
+
+        let sample_bytes = || {
+            input_sample.with_value(|value| match value {
+                ValueView::ByteString(value) | ValueView::BigInteger(value) => Ok(value.to_vec()),
+                _ => Err("secret field fixture is not a byte sequence"),
+            })
+        };
+        let secret = || sample_bytes().map(SecretBytes::new);
+        let data = || OperationData::ByteString(SecretBytes::new(vec![0x44, 0x55]));
+        let payload = match symbol {
+            "kmipkit_protocol::CertifyRequest::with_certificate_request_value" => {
+                kmipkit::protocol::CertifyRequest::new()
+                    .with_certificate_request_type(1)
+                    .with_certificate_request_value(secret()?)
+                    .into_ttlv_payload()
+                    .map_err(|_| "Certify Certificate Request Value fixture rejected")?
+            }
+            "kmipkit_protocol::RecertifyRequest::with_certificate_request_value" => {
+                kmipkit::protocol::RecertifyRequest::new()
+                    .with_certificate_request_type(1)
+                    .with_certificate_request_value(secret()?)
+                    .into_ttlv_payload()
+                    .map_err(|_| "Re-certify Certificate Request Value fixture rejected")?
+            }
+            "kmipkit_protocol::CreateSplitKeyRequest::with_prime_field_size" => {
+                CreateSplitKeyRequest::new(
+                    kmipkit::protocol::ObjectType::from_raw(2),
+                    2,
+                    1,
+                    SplitKeyMethod::from_raw(3),
+                    AttributeSet::new(),
+                )
+                .with_prime_field_size(sample_bytes()?)
+                .into_ttlv_payload()
+                .map_err(|_| "Create Split Key Prime Field Size fixture rejected")?
+            }
+            "kmipkit_protocol::DecryptRequest::with_authenticated_encryption_additional_data" => {
+                kmipkit::protocol::DecryptRequest::new(None, Some(data()))
+                    .with_init_indicator(true)
+                    .with_authenticated_encryption_additional_data(secret()?)
+                    .to_ttlv_payload()
+                    .map_err(|_| "Decrypt Additional Authenticated Data fixture rejected")?
+            }
+            "kmipkit_protocol::DecryptRequest::with_authenticated_encryption_tag" => {
+                kmipkit::protocol::DecryptRequest::new(None, Some(data()))
+                    .with_init_indicator(true)
+                    .with_authenticated_encryption_tag(secret()?)
+                    .to_ttlv_payload()
+                    .map_err(|_| "Decrypt Authenticated Encryption Tag fixture rejected")?
+            }
+            "kmipkit_protocol::DecryptRequest::with_correlation_value" => {
+                kmipkit::protocol::DecryptRequest::new(None, Some(data()))
+                    .with_correlation_value(secret()?)
+                    .with_final_indicator(true)
+                    .to_ttlv_payload()
+                    .map_err(|_| "Decrypt Correlation Value fixture rejected")?
+            }
+            "kmipkit_protocol::EncryptRequest::with_authenticated_encryption_additional_data" => {
+                kmipkit::protocol::EncryptRequest::new(None, Some(data()))
+                    .with_init_indicator(true)
+                    .with_authenticated_encryption_additional_data(secret()?)
+                    .to_ttlv_payload()
+                    .map_err(|_| "Encrypt Additional Authenticated Data fixture rejected")?
+            }
+            "kmipkit_protocol::EncryptRequest::with_correlation_value" => {
+                kmipkit::protocol::EncryptRequest::new(None, Some(data()))
+                    .with_correlation_value(secret()?)
+                    .with_final_indicator(true)
+                    .to_ttlv_payload()
+                    .map_err(|_| "Encrypt Correlation Value fixture rejected")?
+            }
+            "kmipkit_protocol::DecryptRequest::with_iv_counter_nonce" => {
+                kmipkit::protocol::DecryptRequest::new(None, Some(data()))
+                    .with_iv_counter_nonce(secret()?)
+                    .to_ttlv_payload()
+                    .map_err(|_| "Decrypt IV/Counter/Nonce fixture rejected")?
+            }
+            "kmipkit_protocol::EncryptRequest::with_iv_counter_nonce" => {
+                kmipkit::protocol::EncryptRequest::new(None, Some(data()))
+                    .with_iv_counter_nonce(secret()?)
+                    .to_ttlv_payload()
+                    .map_err(|_| "Encrypt IV/Counter/Nonce fixture rejected")?
+            }
+            "kmipkit_protocol::HashRequest::with_correlation_value" => {
+                kmipkit::protocol::HashRequest::new(indicator_hash_parameters()?)
+                    .with_data(data())
+                    .with_correlation_value(secret()?)
+                    .with_final_indicator(true)
+                    .to_ttlv_payload()
+                    .map_err(|_| "Hash Correlation Value fixture rejected")?
+            }
+            "kmipkit_protocol::MacRequest::with_correlation_value" => {
+                kmipkit::protocol::MacRequest::new()
+                    .with_data(data())
+                    .with_correlation_value(secret()?)
+                    .with_final_indicator(true)
+                    .to_ttlv_payload()
+                    .map_err(|_| "MAC Correlation Value fixture rejected")?
+            }
+            "kmipkit_protocol::MacVerifyRequest::with_correlation_value" => {
+                kmipkit::protocol::MacVerifyRequest::new()
+                    .with_data(data())
+                    .with_mac_data(SecretBytes::new(vec![0x66]))
+                    .with_correlation_value(secret()?)
+                    .with_final_indicator(true)
+                    .to_ttlv_payload()
+                    .map_err(|_| "MAC Verify Correlation Value fixture rejected")?
+            }
+            "kmipkit_protocol::MacVerifyRequest::with_mac_data" => {
+                kmipkit::protocol::MacVerifyRequest::new()
+                    .with_data(data())
+                    .with_mac_data(secret()?)
+                    .to_ttlv_payload()
+                    .map_err(|_| "MAC Verify MAC Data fixture rejected")?
+            }
+            "kmipkit_protocol::Pkcs11Request::with_correlation_value" => {
+                let mut function = kmipkit::ttlv::Structure::new();
+                function
+                    .try_push(crate::driver::item(0x0042_015a, Value::enumeration(1))?)
+                    .map_err(|_| "PKCS#11 Function fixture rejected")?;
+                Pkcs11Request::new(function)
+                    .with_correlation_value(secret()?)
+                    .into_ttlv_payload()
+                    .map_err(|_| "PKCS#11 Correlation Value fixture rejected")?
+            }
+            "kmipkit_protocol::SignRequest::with_correlation_value" => {
+                kmipkit::protocol::SignRequest::new()
+                    .with_data(data())
+                    .with_correlation_value(secret()?)
+                    .with_final_indicator(true)
+                    .to_ttlv_payload()
+                    .map_err(|_| "Sign Correlation Value fixture rejected")?
+            }
+            "kmipkit_protocol::SignRequest::with_digested_data" => {
+                kmipkit::protocol::SignRequest::new()
+                    .with_digested_data(secret()?)
+                    .to_ttlv_payload()
+                    .map_err(|_| "Sign Digested Data fixture rejected")?
+            }
+            "kmipkit_protocol::SignatureVerifyRequest::with_correlation_value" => {
+                kmipkit::protocol::SignatureVerifyRequest::new()
+                    .with_data(data())
+                    .with_signature_data(SecretBytes::new(vec![0x77]))
+                    .with_correlation_value(secret()?)
+                    .with_final_indicator(true)
+                    .to_ttlv_payload()
+                    .map_err(|_| "Signature Verify Correlation Value fixture rejected")?
+            }
+            "kmipkit_protocol::SignatureVerifyRequest::with_digested_data" => {
+                kmipkit::protocol::SignatureVerifyRequest::new()
+                    .with_digested_data(secret()?)
+                    .with_signature_data(SecretBytes::new(vec![0x77]))
+                    .to_ttlv_payload()
+                    .map_err(|_| "Signature Verify Digested Data fixture rejected")?
+            }
+            "kmipkit_protocol::SignatureVerifyRequest::with_signature_data" => {
+                kmipkit::protocol::SignatureVerifyRequest::new()
+                    .with_data(data())
+                    .with_signature_data(secret()?)
+                    .to_ttlv_payload()
+                    .map_err(|_| "Signature Verify Signature Data fixture rejected")?
+            }
+            _ => return Err("unsupported secret operation field route"),
+        };
+        let mut model = request_payload_item(payload)?;
+        if target["kind"] == "structure_member"
+            && (symbol == "kmipkit_protocol::CertifyRequest::with_certificate_request_value"
+                || symbol == "kmipkit_protocol::RecertifyRequest::with_certificate_request_value"
+                || symbol == "kmipkit_protocol::CreateSplitKeyRequest::with_prime_field_size"
+                || symbol == "kmipkit_protocol::DecryptRequest::with_iv_counter_nonce"
+                || symbol == "kmipkit_protocol::EncryptRequest::with_iv_counter_nonce")
+        {
+            let parent_tag = target_parent_tag(target, elements)
+                .ok_or("request field target has no containing structure")?;
+            let target_tag = sample(target, elements)?.tag().raw();
+            let mut fields = kmipkit::ttlv::Structure::new();
+            let mut values = Vec::new();
+            collect_tagged_items(&model, target_tag, &mut values)?;
+            let [value] = values.as_slice() else {
+                return Err("request field fixture is missing or ambiguous");
+            };
+            fields
+                .try_push(
+                    value
+                        .try_clone()
+                        .map_err(|_| "request field fixture copy failed")?,
+                )
+                .map_err(|_| "request field wrapper rejected")?;
+            model = crate::driver::item(parent_tag, Value::structure(fields))?;
+        }
+        metadata_expected_target(&model, target, elements)
+    })())
+}
+
 fn invoke_cryptographic_parameters_route(symbol: &str, sample: &Item) -> Option<Result<Item>> {
     const ROUTES: &[&str] = &[
         "kmipkit_protocol::EncryptRequest::with_cryptographic_parameters",
@@ -3406,6 +3659,9 @@ fn invoke(
         return Some(result);
     }
     if let Some(result) = invoke_request_attributes_route(symbol, sample) {
+        return Some(result);
+    }
+    if let Some(result) = invoke_secret_operation_builder_route(symbol, sample, target, elements) {
         return Some(result);
     }
     if let Some(result) = invoke_cryptographic_parameters_route(symbol, sample) {
