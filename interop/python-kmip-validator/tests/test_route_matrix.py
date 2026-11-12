@@ -1240,7 +1240,7 @@ class RouteMatrixTests(unittest.TestCase):
         case = next(case for case in self.catalog['test_cases'] if case['case_id'] == case_id)
         expected_operations = case['requires']['protocol_scenario']['operations']
         symbols = {
-            'kmipkit.extensions.client_batch_item_create': 'KMIPKIT-ELEM-OP-C2S-CREATE',
+            'kmipkit.extensions.client_batch_item_register': 'KMIPKIT-ELEM-OP-C2S-REGISTER',
             'kmipkit.extensions.client_batch_item_decrypt': 'KMIPKIT-ELEM-OP-C2S-DECRYPT',
         }
         for symbol, target_id in symbols.items():
