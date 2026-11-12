@@ -861,6 +861,18 @@ typedef uint8_t kmipkit_query_response_field_kind_t;
 #define KMIPKIT_STANDARD_ATTRIBUTE_X509_CERTIFICATE_IDENTIFIER ((uint32_t)4325557)
 #define KMIPKIT_STANDARD_ATTRIBUTE_X509_CERTIFICATE_ISSUER ((uint32_t)4325558)
 #define KMIPKIT_STANDARD_ATTRIBUTE_X509_CERTIFICATE_SUBJECT ((uint32_t)4325559)
+#define KMIPKIT_SERVER_LISTENER_RAW_TLS ((uint32_t)1)
+#define KMIPKIT_SERVER_LISTENER_HTTPS ((uint32_t)2)
+#define KMIPKIT_SERVER_ENCODING_TTLV ((uint32_t)1)
+#define KMIPKIT_SERVER_ENCODING_JSON ((uint32_t)2)
+#define KMIPKIT_SERVER_ENCODING_XML ((uint32_t)3)
+#define KMIPKIT_SERVER_PUT_READ_PRESENT ((uint32_t)1)
+#define KMIPKIT_SERVER_PUT_READ_TYPE ((uint32_t)2)
+#define KMIPKIT_SERVER_PUT_READ_ENUMERATION ((uint32_t)3)
+#define KMIPKIT_SERVER_PUT_READ_INTEGER ((uint32_t)4)
+#define KMIPKIT_SERVER_PUT_READ_SECRET_BYTES ((uint32_t)5)
+#define KMIPKIT_SERVER_PUT_READ_STRUCTURE_VIEW ((uint32_t)6)
+#define KMIPKIT_SERVER_PUT_READ_SECRET_TEXT ((uint32_t)7)
 
 /* C ABI record input for kmipkit_transport_config_v1_t.endpoint_kind: raw TLS endpoint. */
 #define KMIPKIT_TRANSPORT_ENDPOINT_RAW_TLS ((uint32_t)1)
@@ -987,11 +999,25 @@ typedef struct kmipkit_mtls_client_config_v1_t kmipkit_mtls_client_config_v1_t;
 typedef struct kmipkit_symmetric_key_builder_t kmipkit_symmetric_key_builder_t;
 typedef struct kmipkit_symmetric_key_request_v1_t kmipkit_symmetric_key_request_v1_t;
 typedef struct kmipkit_crypto_operation_builder_t kmipkit_crypto_operation_builder_t;
+typedef struct kmipkit_mtls_client_config_v1_t kmipkit_mtls_client_config_v1_t;
+typedef struct kmipkit_symmetric_key_builder_t kmipkit_symmetric_key_builder_t;
+typedef struct kmipkit_symmetric_key_request_v1_t kmipkit_symmetric_key_request_v1_t;
+typedef struct kmipkit_crypto_operation_builder_t kmipkit_crypto_operation_builder_t;
+typedef struct kmipkit_server_listener_config_t kmipkit_server_listener_config_t;
+typedef struct kmipkit_server_listener_t kmipkit_server_listener_t;
+typedef struct kmipkit_server_connection_t kmipkit_server_connection_t;
+typedef struct kmipkit_server_incoming_batch_t kmipkit_server_incoming_batch_t;
+typedef struct kmipkit_server_request_item_t kmipkit_server_request_item_t;
+typedef struct kmipkit_server_put_object_t kmipkit_server_put_object_t;
+typedef struct kmipkit_server_response_builder_t kmipkit_server_response_builder_t;
+typedef struct kmipkit_server_response_item_t kmipkit_server_response_item_t;
+typedef struct kmipkit_server_response_t kmipkit_server_response_t;
 
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
 typedef struct kmipkit_transport_input_v1_t kmipkit_transport_input_v1_t;
 typedef struct kmipkit_transport_config_v1_t kmipkit_transport_config_v1_t;
+typedef struct kmipkit_server_listener_config_v1_t kmipkit_server_listener_config_v1_t;
 
 typedef struct {
     uint64_t max_definitions;
@@ -1381,6 +1407,26 @@ struct kmipkit_transport_config_v1_t {
     kmipkit_timeout_limit_v1_t write_timeout;
     kmipkit_timeout_limit_v1_t read_timeout;
     kmipkit_timeout_limit_v1_t total_timeout;
+    uint64_t max_request_bytes;
+};
+
+struct kmipkit_server_listener_config_v1_t {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint32_t transport_kind;
+    uint32_t wire_encoding;
+    uint32_t reserved;
+    kmipkit_byte_span_v1_t bind_host;
+    uint16_t bind_port;
+    uint16_t reserved2;
+    const kmipkit_transport_input_v1_t * listener_certificates;
+    uint64_t listener_certificate_count;
+    kmipkit_transport_input_v1_t listener_private_key;
+    const kmipkit_transport_input_v1_t * trust_certificates;
+    uint64_t trust_certificate_count;
+    const kmipkit_transport_input_v1_t * revocation_lists;
+    uint64_t revocation_list_count;
+    kmipkit_byte_span_v1_t target_path;
     uint64_t max_request_bytes;
 };
 
@@ -3559,6 +3605,178 @@ int32_t kmipkit_signature_verify_builder_create(kmipkit_crypto_operation_builder
  */
 /* KMIPKIT-0096-FR-002, KMIPKIT-0096-FR-003, KMIPKIT-0096-FR-004 */
 int32_t kmipkit_symmetric_key_builder_insert_attribute_item(kmipkit_symmetric_key_builder_t * builder, uint64_t index, kmipkit_ttlv_item_t * item);
+/* kmipkit_server_connection_recv_batch is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-006, REQ-066-009 */
+int32_t kmipkit_server_connection_recv_batch(kmipkit_server_connection_t * connection, kmipkit_codec_limits_t * limits, uint64_t timeout_seconds, uint32_t timeout_nanoseconds, kmipkit_server_incoming_batch_t ** out_batch);
+/* kmipkit_server_connection_release is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-009 */
+void kmipkit_server_connection_release(kmipkit_server_connection_t * connection);
+/* kmipkit_server_connection_send_response is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-006, REQ-066-009 */
+int32_t kmipkit_server_connection_send_response(kmipkit_server_connection_t * connection, kmipkit_server_response_t * response, uint64_t timeout_seconds, uint32_t timeout_nanoseconds);
+/* kmipkit_server_discover_versions_response_create is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-002, REQ-066-009 */
+int32_t kmipkit_server_discover_versions_response_create(kmipkit_server_request_item_t * request, const kmipkit_protocol_version_v1_t * versions, uint64_t version_count, kmipkit_server_response_item_t ** out_response_item);
+/* kmipkit_server_incoming_batch_count is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-009 */
+int32_t kmipkit_server_incoming_batch_count(kmipkit_server_incoming_batch_t * batch, uint64_t * out_count);
+/* kmipkit_server_incoming_batch_item_at is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-009 */
+int32_t kmipkit_server_incoming_batch_item_at(kmipkit_server_incoming_batch_t * batch, uint64_t index, kmipkit_server_request_item_t ** out_item);
+/* kmipkit_server_incoming_batch_protocol_version is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-009 */
+int32_t kmipkit_server_incoming_batch_protocol_version(kmipkit_server_incoming_batch_t * batch, kmipkit_protocol_version_v1_t * out_version);
+/* kmipkit_server_incoming_batch_release is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-009 */
+void kmipkit_server_incoming_batch_release(kmipkit_server_incoming_batch_t * batch);
+/* kmipkit_server_listener_accept is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-006, REQ-066-009 */
+int32_t kmipkit_server_listener_accept(kmipkit_server_listener_t * listener, uint64_t timeout_seconds, uint32_t timeout_nanoseconds, kmipkit_server_connection_t ** out_connection);
+/* kmipkit_server_listener_bind_https is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-006, REQ-066-009 */
+int32_t kmipkit_server_listener_bind_https(kmipkit_server_listener_config_t * configuration, kmipkit_server_listener_t ** out_listener);
+/* kmipkit_server_listener_bind_raw_tls is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-006, REQ-066-009 */
+int32_t kmipkit_server_listener_bind_raw_tls(kmipkit_server_listener_config_t * configuration, kmipkit_server_listener_t ** out_listener);
+/* kmipkit_server_listener_config_create_v1 is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-006, REQ-066-009 */
+int32_t kmipkit_server_listener_config_create_v1(const kmipkit_server_listener_config_v1_t * configuration, kmipkit_server_listener_config_t ** out_configuration);
+/* kmipkit_server_listener_config_release is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-006, REQ-066-009 */
+void kmipkit_server_listener_config_release(kmipkit_server_listener_config_t * configuration);
+/* kmipkit_server_listener_port is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-006, REQ-066-009 */
+int32_t kmipkit_server_listener_port(kmipkit_server_listener_t * listener, uint16_t * out_port);
+/* kmipkit_server_listener_release is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-006, REQ-066-009 */
+void kmipkit_server_listener_release(kmipkit_server_listener_t * listener);
+/* kmipkit_server_notify_response_create is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-003, REQ-066-009 */
+int32_t kmipkit_server_notify_response_create(kmipkit_server_request_item_t * request, kmipkit_server_response_item_t ** out_response_item);
+/* kmipkit_server_put_object_field_read is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-004, REQ-066-009 */
+int32_t kmipkit_server_put_object_field_read(kmipkit_server_put_object_t * object, uint32_t field_tag, uint32_t read_kind, uint8_t * out_present, uint8_t * out_item_type, uint32_t * out_enumeration, int32_t * out_integer, kmipkit_server_put_object_t ** out_child, kmipkit_secret_bytes_t ** out_secret, kmipkit_secret_text_t ** out_secret_text);
+/* kmipkit_server_put_object_release is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-004, REQ-066-009 */
+void kmipkit_server_put_object_release(kmipkit_server_put_object_t * object);
+/* kmipkit_server_put_object_tag is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-004, REQ-066-009 */
+int32_t kmipkit_server_put_object_tag(kmipkit_server_put_object_t * object, uint32_t * out_tag);
+/* kmipkit_server_put_object_type is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-004, REQ-066-009 */
+int32_t kmipkit_server_put_object_type(kmipkit_server_put_object_t * object, uint32_t * out_object_type);
+/* kmipkit_server_put_response_create is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-004, REQ-066-009 */
+int32_t kmipkit_server_put_response_create(kmipkit_server_request_item_t * request, kmipkit_server_response_item_t ** out_response_item);
+/* kmipkit_server_query_response_create is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-005, REQ-066-009 */
+int32_t kmipkit_server_query_response_create(kmipkit_server_request_item_t * request, const uint32_t * operations, uint64_t operation_count, const uint32_t * object_types, uint64_t object_type_count, const uint32_t * extension_tags, uint64_t extension_tag_count, kmipkit_byte_span_v1_t vendor_identification, kmipkit_server_response_item_t ** out_response_item);
+/* kmipkit_server_request_item_discover_version_at is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-002, REQ-066-009 */
+int32_t kmipkit_server_request_item_discover_version_at(kmipkit_server_request_item_t * item, uint64_t index, kmipkit_protocol_version_v1_t * out_version);
+/* kmipkit_server_request_item_discover_versions_count is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-002, REQ-066-009 */
+int32_t kmipkit_server_request_item_discover_versions_count(kmipkit_server_request_item_t * item, uint64_t * out_count);
+/* kmipkit_server_request_item_endpoint_role is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-001, REQ-066-009 */
+int32_t kmipkit_server_request_item_endpoint_role(kmipkit_server_request_item_t * item, uint32_t * out_endpoint_role);
+/* kmipkit_server_request_item_notify_attributes is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-003, REQ-066-009 */
+int32_t kmipkit_server_request_item_notify_attributes(kmipkit_server_request_item_t * request, uint8_t * out_present, kmipkit_attribute_set_t ** out_attributes);
+/* kmipkit_server_request_item_notify_deleted_attribute_reference_at is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-003, REQ-066-009 */
+int32_t kmipkit_server_request_item_notify_deleted_attribute_reference_at(kmipkit_server_request_item_t * request, uint64_t index, kmipkit_attribute_reference_v1_t * output);
+/* kmipkit_server_request_item_notify_deleted_attribute_reference_count is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-003, REQ-066-009 */
+int32_t kmipkit_server_request_item_notify_deleted_attribute_reference_count(kmipkit_server_request_item_t * request, uint64_t * out_count);
+/* kmipkit_server_request_item_operation is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-009 */
+int32_t kmipkit_server_request_item_operation(kmipkit_server_request_item_t * item, uint32_t * out_operation);
+/* kmipkit_server_request_item_put_function is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-009 */
+int32_t kmipkit_server_request_item_put_function(kmipkit_server_request_item_t * item, uint32_t * out_put_function);
+/* kmipkit_server_request_item_put_object is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-004, REQ-066-009 */
+int32_t kmipkit_server_request_item_put_object(kmipkit_server_request_item_t * request, kmipkit_server_put_object_t ** out_object);
+/* kmipkit_server_request_item_query_function_at is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-005, REQ-066-009 */
+int32_t kmipkit_server_request_item_query_function_at(kmipkit_server_request_item_t * item, uint64_t index, uint32_t * out_function);
+/* kmipkit_server_request_item_query_functions_count is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-005, REQ-066-009 */
+int32_t kmipkit_server_request_item_query_functions_count(kmipkit_server_request_item_t * item, uint64_t * out_count);
+/* kmipkit_server_request_item_release is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-009 */
+void kmipkit_server_request_item_release(kmipkit_server_request_item_t * item);
+/* kmipkit_server_request_item_unique_identifier is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-009 */
+int32_t kmipkit_server_request_item_unique_identifier(kmipkit_server_request_item_t * item, kmipkit_byte_span_v1_t * out_identifier);
+/* kmipkit_server_response_builder_add_failure is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-009 */
+int32_t kmipkit_server_response_builder_add_failure(kmipkit_server_response_builder_t * builder, kmipkit_server_request_item_t * request, uint32_t result_status, uint8_t has_result_reason, uint32_t result_reason, kmipkit_byte_span_v1_t result_message);
+/* kmipkit_server_response_builder_add_success is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-009 */
+int32_t kmipkit_server_response_builder_add_success(kmipkit_server_response_builder_t * builder, kmipkit_server_request_item_t * request, kmipkit_server_response_item_t * response_item);
+/* kmipkit_server_response_builder_build is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-009 */
+int32_t kmipkit_server_response_builder_build(kmipkit_server_response_builder_t * builder, kmipkit_server_response_t ** out_response);
+/* kmipkit_server_response_builder_create is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-009 */
+int32_t kmipkit_server_response_builder_create(kmipkit_server_incoming_batch_t * batch, kmipkit_server_response_builder_t ** out_builder);
+/* kmipkit_server_response_builder_release is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-009 */
+void kmipkit_server_response_builder_release(kmipkit_server_response_builder_t * builder);
+/* kmipkit_server_response_item_release is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-009 */
+void kmipkit_server_response_item_release(kmipkit_server_response_item_t * item);
+/* kmipkit_server_response_release is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-009 */
+void kmipkit_server_response_release(kmipkit_server_response_t * response);
+/* kmipkit_server_set_endpoint_role_response_create is part of the KMIPKIT-0066 C server-listener route.
+ */
+/* REQ-066-001, REQ-066-009 */
+int32_t kmipkit_server_set_endpoint_role_response_create(kmipkit_server_request_item_t * request, uint32_t endpoint_role, kmipkit_byte_span_v1_t vendor_identification, kmipkit_server_response_item_t ** out_response_item);
 /* Executes one KMIP batch and returns an owned generic ResponseMessage TTLV only for an approved missing, repeated, or malformed Unique Identifier in a successful MAC, MAC Verify, Sign, or Signature Verify response.
  * The caller owns and must release out_error_response_ttlv when it is non-null; it remains null for all other failures and successful execution.
  * The generic response is preserved without placing raw response bytes in diagnostics.

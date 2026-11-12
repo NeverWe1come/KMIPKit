@@ -146,7 +146,11 @@ fn encode_test_ttlv(tag: u32, item_type: u8, value: &[u8]) -> Vec<u8> {
     let mut encoded = Vec::with_capacity(8 + value.len() + 7);
     encoded.extend_from_slice(&tag.to_be_bytes()[1..]);
     encoded.push(item_type);
-    encoded.extend_from_slice(&(value.len() as u32).to_be_bytes());
+    encoded.extend_from_slice(
+        &u32::try_from(value.len())
+            .expect("test TTLV value length fits u32")
+            .to_be_bytes(),
+    );
     encoded.extend_from_slice(value);
     encoded.resize(8 + value.len().div_ceil(8) * 8, 0);
     encoded
@@ -170,7 +174,7 @@ fn s2c_test_put_batch() -> Vec<u8> {
         INTEGER,
         &65536i32.to_be_bytes(),
     ));
-    request_header.extend(encode_test_ttlv(0x0042_000D, INTEGER, &3i32.to_be_bytes()));
+    request_header.extend(encode_test_ttlv(0x0042_000D, INTEGER, &7i32.to_be_bytes()));
 
     let key_value = encode_test_ttlv(0x0042_0043, BYTE_STRING, &[0x11, 0x22, 0x33, 0x44]);
     let key_value = encode_test_structure(0x0042_0045, &key_value);
@@ -228,6 +232,37 @@ fn s2c_test_put_batch() -> Vec<u8> {
     unknown_batch_item.extend(encode_test_ttlv(0x0042_0093, BYTE_STRING, &[0xE5, 0xF6]));
     unknown_batch_item.extend(encode_test_structure(0x0042_0079, &unknown_payload));
     root.extend(encode_test_structure(0x0042_000F, &unknown_batch_item));
+    let mut discover_version = Vec::new();
+    discover_version.extend(encode_test_ttlv(0x0042_006A, INTEGER, &2i32.to_be_bytes()));
+    discover_version.extend(encode_test_ttlv(0x0042_006B, INTEGER, &1i32.to_be_bytes()));
+    let discover_payload = encode_test_structure(0x0042_0069, &discover_version);
+    let mut discover_item = encode_test_ttlv(0x0042_005C, ENUMERATION, &0x1Eu32.to_be_bytes());
+    discover_item.extend(encode_test_ttlv(0x0042_0093, BYTE_STRING, &[0x31]));
+    discover_item.extend(encode_test_structure(0x0042_0079, &discover_payload));
+    root.extend(encode_test_structure(0x0042_000F, &discover_item));
+
+    let mut notify_payload = encode_test_ttlv(0x0042_0094, TEXT_STRING, b"notify-object");
+    let changed_object_type = encode_test_ttlv(0x0042_0057, ENUMERATION, &2u32.to_be_bytes());
+    notify_payload.extend(encode_test_structure(0x0042_0125, &changed_object_type));
+    let deleted_attribute_name =
+        encode_test_ttlv(0x0042_000A, ENUMERATION, &0x0042_0028u32.to_be_bytes());
+    notify_payload.extend(encode_test_structure(0x0042_0126, &deleted_attribute_name));
+    let mut notify_item = encode_test_ttlv(0x0042_005C, ENUMERATION, &0x1Bu32.to_be_bytes());
+    notify_item.extend(encode_test_ttlv(0x0042_0093, BYTE_STRING, &[0x32]));
+    notify_item.extend(encode_test_structure(0x0042_0079, &notify_payload));
+    root.extend(encode_test_structure(0x0042_000F, &notify_item));
+
+    let query_payload = encode_test_ttlv(0x0042_0074, ENUMERATION, &1u32.to_be_bytes());
+    let mut query_item = encode_test_ttlv(0x0042_005C, ENUMERATION, &0x18u32.to_be_bytes());
+    query_item.extend(encode_test_ttlv(0x0042_0093, BYTE_STRING, &[0x33]));
+    query_item.extend(encode_test_structure(0x0042_0079, &query_payload));
+    root.extend(encode_test_structure(0x0042_000F, &query_item));
+
+    let role_payload = encode_test_ttlv(0x0042_0151, ENUMERATION, &1u32.to_be_bytes());
+    let mut role_item = encode_test_ttlv(0x0042_005C, ENUMERATION, &0x32u32.to_be_bytes());
+    role_item.extend(encode_test_ttlv(0x0042_0093, BYTE_STRING, &[0x34]));
+    role_item.extend(encode_test_structure(0x0042_0079, &role_payload));
+    root.extend(encode_test_structure(0x0042_000F, &role_item));
     encode_test_structure(0x0042_0078, &root)
 }
 
