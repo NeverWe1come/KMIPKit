@@ -108,18 +108,15 @@ class ControlledTlsPeerTest {
             "test-norm-enumeration-value-enum-value-endpoint-role-client-00000001";
     private static final String ENDPOINT_ROLE_CLIENT_TARGET_ID =
             "KMIPKIT-ELEM-ENUM-VALUE-ENDPOINT-ROLE-CLIENT-00000001";
-    private static final List<String> ENDPOINT_ROLE_RESPONSE_ROUTES = List.of(
-            "java.typed-protocol.function.client_async_operation_outcome_response_payload_ttlv",
-            "java.typed-protocol.function.client_batch_item_response_extension_count",
-            "java.typed-protocol.function.client_batch_item_response_extension_ttlv_at",
-            "java.typed-protocol.function.client_batch_item_response_header_ttlv",
-            "java.typed-protocol.function.client_batch_item_response_metadata_v1",
-            "java.typed-protocol.function.client_batch_item_response_metadata_v2",
-            "java.typed-protocol.function.client_batch_item_response_pending_correlation_value",
-            "java.typed-protocol.function.client_batch_item_response_raw_ttlv",
-            "java.typed-protocol.function.client_batch_item_response_unique_batch_item_id",
-            "java.typed-protocol.function.client_batch_response_item_at",
-            "java.typed-protocol.function.client_batch_response_item_count");
+    private static final String ENDPOINT_ROLE_SERVER_CASE_ID =
+            "test-norm-enumeration-value-enum-value-endpoint-role-server-00000002";
+    private static final String ENDPOINT_ROLE_SERVER_TARGET_ID =
+            "KMIPKIT-ELEM-ENUM-VALUE-ENDPOINT-ROLE-SERVER-00000002";
+    private static final List<String> ENDPOINT_ROLE_GENERIC_ROUTES = List.of(
+            "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
+            "java.generic-ttlv.ttlv_item.create",
+            "java.generic-ttlv.function.ttlv_item_view_from_item",
+            "java.generic-ttlv.ttlv_codec.decode");
     private static final Map<String, String> CREDENTIAL_TYPE_MODEL_ROUTES = Map.of(
             "KMIPKIT-ELEM-ENUM-VALUE-CREDENTIAL-TYPE-USERNAME-AND-PASSWORD-00000001",
             "java.typed-protocol.model.org.kmipkit.credentials.usernameandpasswordcredential.fromttlv",
@@ -161,6 +158,10 @@ class ControlledTlsPeerTest {
 
         assertEquals(expectedCaseIds, actualCaseIds,
                 "Every named enum value with a same-named standalone tag must exercise the generic TTLV routes.");
+        assertEndpointRoleCatalogValue(actualCaseIds, ENDPOINT_ROLE_CLIENT_CASE_ID,
+                ENDPOINT_ROLE_CLIENT_TARGET_ID, KmipValues.EndpointRole.CLIENT, "Client");
+        assertEndpointRoleCatalogValue(actualCaseIds, ENDPOINT_ROLE_SERVER_CASE_ID,
+                ENDPOINT_ROLE_SERVER_TARGET_ID, KmipValues.EndpointRole.SERVER, "Server");
     }
 
     // OASIS KMIP 2.1 §6.1.16 and §4.1.2: Discover Versions request and response.
@@ -328,12 +329,10 @@ class ControlledTlsPeerTest {
         assertEquals(2, routeEventCount(report.path("events"),
                         KEY_FORMAT_RAW_CASE_ID, CLIENT_BATCH_ITEM_RAW_TTLV_ROUTE),
                 "The controlled Get response must exercise raw TTLV access to the named Key Format Type value.");
-        for (String routeId : ENDPOINT_ROLE_RESPONSE_ROUTES) {
-            assertEquals(2, routeEventCount(report.path("events"),
-                            ENDPOINT_ROLE_CLIENT_CASE_ID, routeId),
-                    "Every Endpoint Role response route must run against a controlled response for both versions: "
-                            + routeId);
-        }
+        assertEndpointRoleRouteEvidence(report.path("events"), ENDPOINT_ROLE_CLIENT_CASE_ID,
+                ENDPOINT_ROLE_CLIENT_TARGET_ID, KmipValues.EndpointRole.CLIENT, "Client");
+        assertEndpointRoleRouteEvidence(report.path("events"), ENDPOINT_ROLE_SERVER_CASE_ID,
+                ENDPOINT_ROLE_SERVER_TARGET_ID, KmipValues.EndpointRole.SERVER, "Server");
         for (EnumerationFixture fixture : enumerationFixtures) {
             String builderRoute = CRYPTOGRAPHIC_PARAMETER_BUILDER_ROUTES.get(fixture.parentName());
             if (builderRoute != null) {
@@ -1285,9 +1284,12 @@ class ControlledTlsPeerTest {
             List<EnumerationFixture> fixtures, String protocolVersion) throws Exception {
         for (EnumerationFixture fixture : fixtures) {
             if (!fixture.protocolVersions().contains(protocolVersion)) continue;
-            byte[] wire = item(fixture.rawTag(), 5, intBytes((int) fixture.value()));
+            long enumValue = installedEnumerationValue(fixture);
+            assertEquals(fixture.value(), enumValue,
+                    "The installed Java enum constant must match the catalog wire value.");
+            byte[] wire = item(fixture.rawTag(), 5, intBytes((int) enumValue));
             String treeHash = normalizedTreeSha256(wire);
-            try (TtlvValue value = TtlvValue.Enumeration(fixture.value())) {
+            try (TtlvValue value = TtlvValue.Enumeration(enumValue)) {
                 appendRouteEvent(events, fixture.caseId(),
                         "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
                         fixture.targetId(), "org.kmipkit.ttlv.TtlvValue.Enumeration", null, null,
@@ -1298,6 +1300,45 @@ class ControlledTlsPeerTest {
                 appendTypedEnumerationRouteEvents(events, fixture, wire, protocolVersion, treeHash);
                 appendCryptographicParameterBuilderRouteEvent(events, fixture, protocolVersion, treeHash);
                 appendCredentialEnumerationRouteEvents(events, fixture, protocolVersion, treeHash);
+            }
+        }
+    }
+
+    private static long installedEnumerationValue(EnumerationFixture fixture) {
+        return switch (fixture.targetId()) {
+            case ENDPOINT_ROLE_CLIENT_TARGET_ID -> KmipValues.EndpointRole.CLIENT;
+            case ENDPOINT_ROLE_SERVER_TARGET_ID -> KmipValues.EndpointRole.SERVER;
+            default -> fixture.value();
+        };
+    }
+
+    private static void assertEndpointRoleCatalogValue(Set<String> actualCaseIds, String caseId,
+            String targetId, long installedValue, String expectedName) throws Exception {
+        assertTrue(actualCaseIds.contains(caseId), "The Endpoint Role enum target must have a generic TTLV fixture.");
+        EnumerationFixture fixture = genericEnumerationFixtures().stream()
+                .filter(candidate -> candidate.caseId().equals(caseId)
+                        && candidate.targetId().equals(targetId))
+                .findFirst().orElseThrow(() -> new AssertionError(
+                        "The Endpoint Role enum target is missing from the generated fixture set."));
+        assertEquals(installedValue, fixture.value(), "The Endpoint Role constant must match the catalog value.");
+        assertEquals(expectedName, KmipValues.EndpointRole.name(installedValue));
+    }
+
+    private static void assertEndpointRoleRouteEvidence(JsonNode events, String caseId, String targetId,
+            long installedValue, String expectedName) throws Exception {
+        EnumerationFixture fixture = genericEnumerationFixtures().stream()
+                .filter(candidate -> candidate.caseId().equals(caseId)
+                        && candidate.targetId().equals(targetId))
+                .findFirst().orElseThrow(() -> new AssertionError(
+                        "The Endpoint Role enum target is missing from the generated fixture set."));
+        assertEquals(installedValue, installedEnumerationValue(fixture));
+        assertEquals(expectedName, KmipValues.EndpointRole.name(installedValue));
+        for (String protocolVersion : List.of("2.0", "2.1")) {
+            for (String routeId : ENDPOINT_ROLE_GENERIC_ROUTES) {
+                JsonNode event = findRouteEvent(events, caseId, routeId, protocolVersion, targetId);
+                assertEquals(targetId, event.path("target_id").asText());
+                assertEquals("passed", event.path("status").asText());
+                assertEquals(1, event.path("invocation_count").asInt());
             }
         }
     }
@@ -2337,6 +2378,23 @@ class ControlledTlsPeerTest {
                     && protocolVersion.equals(event.path("protocol_version").asText())) return event;
         }
         throw new AssertionError("The expected installed Java API route event is absent.");
+    }
+
+    private static JsonNode findRouteEvent(JsonNode events, String caseId, String routeId,
+            String protocolVersion, String targetId) {
+        int matches = 0;
+        JsonNode found = null;
+        for (JsonNode event : events) {
+            if (caseId.equals(event.path("case_id").asText())
+                    && routeId.equals(event.path("route_id").asText())
+                    && protocolVersion.equals(event.path("protocol_version").asText())
+                    && targetId.equals(event.path("target_id").asText())) {
+                matches++;
+                found = event;
+            }
+        }
+        assertEquals(1, matches, "Each Endpoint Role generic route must execute exactly once per version.");
+        return found;
     }
 
     private static byte[] queryOperationTtlv() throws Exception {
