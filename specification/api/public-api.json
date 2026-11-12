@@ -5465,6 +5465,74 @@
         "module": "kmipkit.fluent",
         "name": "CryptoOperationBuilder"
       }
+    },
+    {
+      "id": "CreateKeyPairRequestV1",
+      "kind": "struct",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi",
+        "name": "kmipkit_create_key_pair_request_v1_t",
+        "owner": "ffi"
+      },
+      "c": {
+        "name": "kmipkit_create_key_pair_request_v1_t",
+        "kind": "fixed-width-value",
+        "visibility": "public",
+        "versioned": true,
+        "fields": [
+          {
+            "name": "struct_size",
+            "type": "uint32_t"
+          },
+          {
+            "name": "abi_version",
+            "type": "uint32_t"
+          },
+          {
+            "name": "cryptographic_algorithm",
+            "type": "uint32_t"
+          },
+          {
+            "name": "cryptographic_length",
+            "type": "int32_t"
+          },
+          {
+            "name": "private_usage_mask_present",
+            "type": "uint8_t"
+          },
+          {
+            "name": "public_usage_mask_present",
+            "type": "uint8_t"
+          },
+          {
+            "name": "reserved_0",
+            "type": "uint8_t"
+          },
+          {
+            "name": "reserved_1",
+            "type": "uint8_t"
+          },
+          {
+            "name": "private_usage_mask",
+            "type": "int32_t"
+          },
+          {
+            "name": "public_usage_mask",
+            "type": "int32_t"
+          }
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "name": "CreateKeyPairBuilder"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "name": "CreateKeyPairBuilder"
+      }
     }
   ],
   "functions": [
@@ -55185,6 +55253,298 @@
         "returnType": "credentials.SecretBytes"
       },
       "ordering": "preserves-response-field-wire-order"
+    },
+    {
+      "id": "client_create_key_pair_v1",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::CreateKeyPairBuilder",
+        "name": "execute",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "ClientBatchResponse"
+      },
+      "c": {
+        "symbol": "kmipkit_client_create_key_pair_v1",
+        "parameters": [
+          {
+            "name": "client",
+            "kind": "handle",
+            "type": "kmipkit_client_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "request",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_create_key_pair_request_v1_t *",
+            "ownership": "borrowed",
+            "direction": "input"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_response",
+            "kind": "output",
+            "type": "kmipkit_client_batch_response_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "class": "CreateKeyPairBuilder",
+        "method": "execute",
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "function": "CreateKeyPairBuilder.execute",
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_create_key_pair_v1",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "returnType": "BatchResult"
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false
+    },
+    {
+      "id": "client_create_key_pair_with_options_v1",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::CreateKeyPairBuilder",
+        "name": "execute",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "ClientBatchResponse"
+      },
+      "c": {
+        "symbol": "kmipkit_client_create_key_pair_with_options_v1",
+        "parameters": [
+          {
+            "name": "client",
+            "kind": "handle",
+            "type": "kmipkit_client_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "request",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_create_key_pair_request_v1_t *",
+            "ownership": "borrowed",
+            "direction": "input"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "options",
+            "kind": "input-value-pointer",
+            "type": "const kmipkit_request_options_v1_t *",
+            "valueType": "kmipkit_request_options_v1_t",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_response",
+            "kind": "output",
+            "type": "kmipkit_client_batch_response_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "class": "CreateKeyPairBuilder",
+        "method": "execute",
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "function": "CreateKeyPairBuilder.execute",
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_create_key_pair_with_options_v1",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "returnType": "BatchResult"
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false
+    },
+    {
+      "id": "client_create_key_pair_with_common_attributes_v1",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "rust": {
+        "module": "kmipkit_client::fluent::CreateKeyPairBuilder",
+        "name": "execute",
+        "owner": "client",
+        "requestBoundary": "not-applicable",
+        "parameters": [],
+        "returnType": "ClientBatchResponse"
+      },
+      "c": {
+        "symbol": "kmipkit_client_create_key_pair_with_common_attributes_v1",
+        "parameters": [
+          {
+            "name": "client",
+            "kind": "handle",
+            "type": "kmipkit_client_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "request",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_create_key_pair_request_v1_t *",
+            "ownership": "borrowed",
+            "direction": "input"
+          },
+          {
+            "name": "attributes",
+            "kind": "handle",
+            "type": "kmipkit_attribute_set_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_response",
+            "kind": "output",
+            "type": "kmipkit_client_batch_response_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.fluent",
+        "class": "CreateKeyPairBuilder",
+        "method": "execute",
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "returnType": "ClientBatchResponse"
+      },
+      "python": {
+        "module": "kmipkit.fluent",
+        "function": "CreateKeyPairBuilder.execute",
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_create_key_pair_with_common_attributes_v1",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "returnType": "BatchResult"
+      },
+      "ordering": "not-applicable",
+      "legacyRegistry": false
     }
   ],
   "errorCategories": [
@@ -127743,6 +128103,43 @@
         "python": {
           "packageId": "python-kmipkit",
           "name": "kmipkit.client.AsyncOperationMetadataV1"
+        }
+      }
+    },
+    {
+      "declarationId": "rust-observed-90f4f40f232395a7b932",
+      "packageId": "rust-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit::CryptographicUsageMask",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::CryptographicUsageMask"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_bitmask_cryptographic_usage_mask_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.protocol.KmipValues.CryptographicUsageMask"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.protocol_values.CryptographicUsageMask"
         }
       }
     },
@@ -717404,54 +717801,123 @@
       "packageId": "rust-kmipkit-client",
       "kind": "type",
       "exportName": "kmipkit_client::fluent::CreateKeyPairBuilder",
-      "capabilityId": "fluent_dx_api",
+      "capabilityId": "fluent_dx_journeys",
       "requirementIds": [
+        "KMIPKIT-0093-FR-011",
         "KMIPKIT-0097-FR-001",
         "KMIPKIT-0097-FR-002",
         "KMIPKIT-0097-FR-003",
         "KMIPKIT-0097-FR-004",
         "KMIPKIT-0097-FR-005"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0097",
-      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_create_key_pair_request_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-kmipkit-0097-102d18a954fc22d3792a",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::algorithm",
-      "capabilityId": "fluent_dx_api",
+      "capabilityId": "fluent_dx_journeys",
       "requirementIds": [
+        "KMIPKIT-0093-FR-011",
         "KMIPKIT-0097-FR-001",
         "KMIPKIT-0097-FR-002",
         "KMIPKIT-0097-FR-003",
         "KMIPKIT-0097-FR-004",
         "KMIPKIT-0097-FR-005"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0097",
-      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::algorithm"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_create_key_pair_request_v1_t.cryptographic_algorithm"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.algorithm"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.algorithm"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-kmipkit-0097-2961213a47a3d6dd13bc",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::build",
-      "capabilityId": "fluent_dx_api",
+      "capabilityId": "fluent_dx_journeys",
       "requirementIds": [
+        "KMIPKIT-0093-FR-011",
         "KMIPKIT-0097-FR-001",
         "KMIPKIT-0097-FR-002",
         "KMIPKIT-0097-FR-003",
         "KMIPKIT-0097-FR-004",
         "KMIPKIT-0097-FR-005"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0097",
-      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::build"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_create_key_pair"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.build"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.build"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-kmipkit-0097-0257b89d10bb0a1c51bf",
@@ -717476,54 +717942,123 @@
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::common_attribute",
-      "capabilityId": "fluent_dx_api",
+      "capabilityId": "fluent_dx_journeys",
       "requirementIds": [
+        "KMIPKIT-0093-FR-011",
         "KMIPKIT-0097-FR-001",
         "KMIPKIT-0097-FR-002",
         "KMIPKIT-0097-FR-003",
         "KMIPKIT-0097-FR-004",
         "KMIPKIT-0097-FR-005"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0097",
-      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::common_attribute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_attribute_set_try_push_typed"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.commonAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.common_attribute"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-kmipkit-0097-a4f7e8567c65c32bef60",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::execute",
-      "capabilityId": "fluent_dx_api",
+      "capabilityId": "fluent_dx_journeys",
       "requirementIds": [
+        "KMIPKIT-0093-FR-011",
         "KMIPKIT-0097-FR-001",
         "KMIPKIT-0097-FR-002",
         "KMIPKIT-0097-FR-003",
         "KMIPKIT-0097-FR-004",
         "KMIPKIT-0097-FR-005"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0097",
-      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::execute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_create_key_pair_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.execute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.execute"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-kmipkit-0097-f1a524d91989b66242e8",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::length",
-      "capabilityId": "fluent_dx_api",
+      "capabilityId": "fluent_dx_journeys",
       "requirementIds": [
+        "KMIPKIT-0093-FR-011",
         "KMIPKIT-0097-FR-001",
         "KMIPKIT-0097-FR-002",
         "KMIPKIT-0097-FR-003",
         "KMIPKIT-0097-FR-004",
         "KMIPKIT-0097-FR-005"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0097",
-      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::length"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_create_key_pair_request_v1_t.cryptographic_length"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.length"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.length"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-kmipkit-0097-5bfb646e3349c9619b78",
@@ -717566,18 +718101,41 @@
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::private_usage_mask",
-      "capabilityId": "fluent_dx_api",
+      "capabilityId": "fluent_dx_journeys",
       "requirementIds": [
+        "KMIPKIT-0093-FR-011",
         "KMIPKIT-0097-FR-001",
         "KMIPKIT-0097-FR-002",
         "KMIPKIT-0097-FR-003",
         "KMIPKIT-0097-FR-004",
         "KMIPKIT-0097-FR-005"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0097",
-      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::private_usage_mask"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_create_key_pair_request_v1_t.private_usage_mask"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.privateUsageMask"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.private_usage_mask"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-kmipkit-0097-6bf0c4a7c1586fa05db6",
@@ -717620,72 +718178,164 @@
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::public_usage_mask",
-      "capabilityId": "fluent_dx_api",
+      "capabilityId": "fluent_dx_journeys",
       "requirementIds": [
+        "KMIPKIT-0093-FR-011",
         "KMIPKIT-0097-FR-001",
         "KMIPKIT-0097-FR-002",
         "KMIPKIT-0097-FR-003",
         "KMIPKIT-0097-FR-004",
         "KMIPKIT-0097-FR-005"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0097",
-      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::public_usage_mask"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_create_key_pair_request_v1_t.public_usage_mask"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.publicUsageMask"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.public_usage_mask"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-kmipkit-0097-a43249828aa4950d7181",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::to_batch_item",
-      "capabilityId": "fluent_dx_api",
+      "capabilityId": "fluent_dx_journeys",
       "requirementIds": [
+        "KMIPKIT-0093-FR-011",
         "KMIPKIT-0097-FR-001",
         "KMIPKIT-0097-FR-002",
         "KMIPKIT-0097-FR-003",
         "KMIPKIT-0097-FR-004",
         "KMIPKIT-0097-FR-005"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0097",
-      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::to_batch_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_create_key_pair"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.toBatchItem"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.to_batch_item"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-kmipkit-0097-eea6ada7f602fc404e66",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::with_asynchronous_indicator",
-      "capabilityId": "fluent_dx_api",
+      "capabilityId": "fluent_dx_journeys",
       "requirementIds": [
+        "KMIPKIT-0093-FR-011",
         "KMIPKIT-0097-FR-001",
         "KMIPKIT-0097-FR-002",
         "KMIPKIT-0097-FR-003",
         "KMIPKIT-0097-FR-004",
         "KMIPKIT-0097-FR-005"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0097",
-      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::with_asynchronous_indicator"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_set_asynchronous_indicator"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.asynchronousIndicator"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.asynchronous_indicator"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-kmipkit-0097-819a1c28f59ba75e4f28",
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::with_options",
-      "capabilityId": "fluent_dx_api",
+      "capabilityId": "fluent_dx_journeys",
       "requirementIds": [
+        "KMIPKIT-0093-FR-011",
         "KMIPKIT-0097-FR-001",
         "KMIPKIT-0097-FR-002",
         "KMIPKIT-0097-FR-003",
         "KMIPKIT-0097-FR-004",
         "KMIPKIT-0097-FR-005"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0097",
-      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::with_options"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_create_key_pair_with_options_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.withOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.with_options"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-kmipkit-0097-448219041f78456fa460",
@@ -717728,18 +718378,41 @@
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::fluent::RequestBuilder<'a>::create_key_pair",
-      "capabilityId": "fluent_dx_api",
+      "capabilityId": "fluent_dx_journeys",
       "requirementIds": [
+        "KMIPKIT-0093-FR-011",
         "KMIPKIT-0097-FR-001",
         "KMIPKIT-0097-FR-002",
         "KMIPKIT-0097-FR-003",
         "KMIPKIT-0097-FR-004",
         "KMIPKIT-0097-FR-005"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0097",
-      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::RequestBuilder<'a>::create_key_pair"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_create_key_pair_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.FluentRequest.createKeyPair"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Request.create_key_pair"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-kmipkit-0097-3bc6fde99de03ddba9b6",
@@ -717814,17 +718487,40 @@
       "packageId": "rust-kmipkit-client",
       "kind": "associated-item",
       "exportName": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::validate",
-      "capabilityId": "fluent_dx_api",
+      "capabilityId": "fluent_dx_journeys",
       "requirementIds": [
+        "KMIPKIT-0093-FR-011",
         "KMIPKIT-0097-FR-001",
         "KMIPKIT-0097-FR-003",
         "KMIPKIT-0097-FR-005",
         "KMIPKIT-0097-FR-006"
       ],
-      "declarationState": "blocked",
+      "declarationState": "declared",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0097",
-      "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::validate"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_create_key_pair"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.build"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.validate"
+        }
+      }
     },
     {
       "declarationId": "rust-observed-kmipkit-0097-43fd908d4be490b3526a",
@@ -765501,6 +766197,1326 @@
         }
       },
       "candidateSpecId": "KMIPKIT-0096"
+    },
+    {
+      "declarationId": "kmipkit_client_create_key_pair_v1:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_create_key_pair_v1",
+      "capabilityId": "fluent_dx_journeys",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::execute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_create_key_pair_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.execute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.execute"
+        }
+      }
+    },
+    {
+      "declarationId": "kmipkit_client_create_key_pair_with_options_v1:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_create_key_pair_with_options_v1",
+      "capabilityId": "fluent_dx_journeys",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::with_options"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_create_key_pair_with_options_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.withOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.with_options"
+        }
+      }
+    },
+    {
+      "declarationId": "CreateKeyPairRequestV1:c",
+      "packageId": "c-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit_create_key_pair_request_v1_t",
+      "capabilityId": "fluent_dx_journeys",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_create_key_pair_request_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder"
+        }
+      }
+    },
+    {
+      "declarationId": "CreateKeyPairRequestV1:c:struct_size",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_create_key_pair_request_v1_t.struct_size",
+      "capabilityId": "fluent_dx_journeys_c",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_create_key_pair_request_v1_t.struct_size"
+        }
+      }
+    },
+    {
+      "declarationId": "CreateKeyPairRequestV1:c:abi_version",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_create_key_pair_request_v1_t.abi_version",
+      "capabilityId": "fluent_dx_journeys_c",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_create_key_pair_request_v1_t.abi_version"
+        }
+      }
+    },
+    {
+      "declarationId": "CreateKeyPairRequestV1:c:cryptographic_algorithm",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_create_key_pair_request_v1_t.cryptographic_algorithm",
+      "capabilityId": "fluent_dx_journeys_c",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_create_key_pair_request_v1_t.cryptographic_algorithm"
+        }
+      }
+    },
+    {
+      "declarationId": "CreateKeyPairRequestV1:c:cryptographic_length",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_create_key_pair_request_v1_t.cryptographic_length",
+      "capabilityId": "fluent_dx_journeys_c",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_create_key_pair_request_v1_t.cryptographic_length"
+        }
+      }
+    },
+    {
+      "declarationId": "CreateKeyPairRequestV1:c:private_usage_mask_present",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_create_key_pair_request_v1_t.private_usage_mask_present",
+      "capabilityId": "fluent_dx_journeys_c",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_create_key_pair_request_v1_t.private_usage_mask_present"
+        }
+      }
+    },
+    {
+      "declarationId": "CreateKeyPairRequestV1:c:public_usage_mask_present",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_create_key_pair_request_v1_t.public_usage_mask_present",
+      "capabilityId": "fluent_dx_journeys_c",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_create_key_pair_request_v1_t.public_usage_mask_present"
+        }
+      }
+    },
+    {
+      "declarationId": "CreateKeyPairRequestV1:c:reserved_0",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_create_key_pair_request_v1_t.reserved_0",
+      "capabilityId": "fluent_dx_journeys_c",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_create_key_pair_request_v1_t.reserved_0"
+        }
+      }
+    },
+    {
+      "declarationId": "CreateKeyPairRequestV1:c:reserved_1",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_create_key_pair_request_v1_t.reserved_1",
+      "capabilityId": "fluent_dx_journeys_c",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_create_key_pair_request_v1_t.reserved_1"
+        }
+      }
+    },
+    {
+      "declarationId": "CreateKeyPairRequestV1:c:private_usage_mask",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_create_key_pair_request_v1_t.private_usage_mask",
+      "capabilityId": "fluent_dx_journeys_c",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_create_key_pair_request_v1_t.private_usage_mask"
+        }
+      }
+    },
+    {
+      "declarationId": "CreateKeyPairRequestV1:c:public_usage_mask",
+      "packageId": "c-kmipkit",
+      "kind": "field",
+      "exportName": "kmipkit_create_key_pair_request_v1_t.public_usage_mask",
+      "capabilityId": "fluent_dx_journeys_c",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_create_key_pair_request_v1_t.public_usage_mask"
+        }
+      }
+    },
+    {
+      "declarationId": "T093:fluent-java:CreateKeyPairBuilder",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.fluent.CreateKeyPairBuilder",
+      "capabilityId": "fluent_dx_journeys",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_create_key_pair_request_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder"
+        }
+      }
+    },
+    {
+      "declarationId": "T093:fluent-python:CreateKeyPairBuilder",
+      "packageId": "python-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit.fluent.CreateKeyPairBuilder",
+      "capabilityId": "fluent_dx_journeys",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_create_key_pair_request_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder"
+        }
+      }
+    },
+    {
+      "declarationId": "T093:fluent-python:CreateKeyPairBuilder.__init__",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.CreateKeyPairBuilder.__init__",
+      "capabilityId": "fluent_dx_journeys",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_create_key_pair_request_v1_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.__init__"
+        }
+      }
+    },
+    {
+      "declarationId": "T093:fluent-java:CreateKeyPairBuilder.algorithm",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.CreateKeyPairBuilder.algorithm",
+      "capabilityId": "fluent_dx_journeys",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::algorithm"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_create_key_pair_request_v1_t.cryptographic_algorithm"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.algorithm"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.algorithm"
+        }
+      }
+    },
+    {
+      "declarationId": "T093:fluent-python:CreateKeyPairBuilder.algorithm",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.CreateKeyPairBuilder.algorithm",
+      "capabilityId": "fluent_dx_journeys",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::algorithm"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_create_key_pair_request_v1_t.cryptographic_algorithm"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.algorithm"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.algorithm"
+        }
+      }
+    },
+    {
+      "declarationId": "T093:fluent-java:CreateKeyPairBuilder.length",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.CreateKeyPairBuilder.length",
+      "capabilityId": "fluent_dx_journeys",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::length"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_create_key_pair_request_v1_t.cryptographic_length"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.length"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.length"
+        }
+      }
+    },
+    {
+      "declarationId": "T093:fluent-python:CreateKeyPairBuilder.length",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.CreateKeyPairBuilder.length",
+      "capabilityId": "fluent_dx_journeys",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::length"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_create_key_pair_request_v1_t.cryptographic_length"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.length"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.length"
+        }
+      }
+    },
+    {
+      "declarationId": "T093:fluent-java:CreateKeyPairBuilder.private_usage_mask",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.CreateKeyPairBuilder.privateUsageMask",
+      "capabilityId": "fluent_dx_journeys",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::private_usage_mask"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_create_key_pair_request_v1_t.private_usage_mask"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.privateUsageMask"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.private_usage_mask"
+        }
+      }
+    },
+    {
+      "declarationId": "T093:fluent-python:CreateKeyPairBuilder.private_usage_mask",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.CreateKeyPairBuilder.private_usage_mask",
+      "capabilityId": "fluent_dx_journeys",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::private_usage_mask"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_create_key_pair_request_v1_t.private_usage_mask"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.privateUsageMask"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.private_usage_mask"
+        }
+      }
+    },
+    {
+      "declarationId": "T093:fluent-java:CreateKeyPairBuilder.public_usage_mask",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.CreateKeyPairBuilder.publicUsageMask",
+      "capabilityId": "fluent_dx_journeys",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::public_usage_mask"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_create_key_pair_request_v1_t.public_usage_mask"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.publicUsageMask"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.public_usage_mask"
+        }
+      }
+    },
+    {
+      "declarationId": "T093:fluent-python:CreateKeyPairBuilder.public_usage_mask",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.CreateKeyPairBuilder.public_usage_mask",
+      "capabilityId": "fluent_dx_journeys",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::public_usage_mask"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_create_key_pair_request_v1_t.public_usage_mask"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.publicUsageMask"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.public_usage_mask"
+        }
+      }
+    },
+    {
+      "declarationId": "T093:fluent-java:CreateKeyPairBuilder.with_options",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.CreateKeyPairBuilder.withOptions",
+      "capabilityId": "fluent_dx_journeys",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::with_options"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_create_key_pair_with_options_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.withOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.with_options"
+        }
+      }
+    },
+    {
+      "declarationId": "T093:fluent-python:CreateKeyPairBuilder.with_options",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.CreateKeyPairBuilder.with_options",
+      "capabilityId": "fluent_dx_journeys",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::with_options"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_create_key_pair_with_options_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.withOptions"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.with_options"
+        }
+      }
+    },
+    {
+      "declarationId": "T093:fluent-java:CreateKeyPairBuilder.asynchronous_indicator",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.CreateKeyPairBuilder.asynchronousIndicator",
+      "capabilityId": "fluent_dx_journeys",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::with_asynchronous_indicator"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_set_asynchronous_indicator"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.asynchronousIndicator"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.asynchronous_indicator"
+        }
+      }
+    },
+    {
+      "declarationId": "T093:fluent-python:CreateKeyPairBuilder.asynchronous_indicator",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.CreateKeyPairBuilder.asynchronous_indicator",
+      "capabilityId": "fluent_dx_journeys",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::with_asynchronous_indicator"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_set_asynchronous_indicator"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.asynchronousIndicator"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.asynchronous_indicator"
+        }
+      }
+    },
+    {
+      "declarationId": "T093:fluent-java:CreateKeyPairBuilder.build",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.CreateKeyPairBuilder.build",
+      "capabilityId": "fluent_dx_journeys",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::build"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_create_key_pair"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.build"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.build"
+        }
+      }
+    },
+    {
+      "declarationId": "T093:fluent-python:CreateKeyPairBuilder.build",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.CreateKeyPairBuilder.build",
+      "capabilityId": "fluent_dx_journeys",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::build"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_create_key_pair"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.build"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.build"
+        }
+      }
+    },
+    {
+      "declarationId": "T093:fluent-java:CreateKeyPairBuilder.to_batch_item",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.CreateKeyPairBuilder.toBatchItem",
+      "capabilityId": "fluent_dx_journeys",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::to_batch_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_create_key_pair"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.toBatchItem"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.to_batch_item"
+        }
+      }
+    },
+    {
+      "declarationId": "T093:fluent-python:CreateKeyPairBuilder.to_batch_item",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.CreateKeyPairBuilder.to_batch_item",
+      "capabilityId": "fluent_dx_journeys",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::to_batch_item"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_create_key_pair"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.toBatchItem"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.to_batch_item"
+        }
+      }
+    },
+    {
+      "declarationId": "T093:fluent-java:CreateKeyPairBuilder.execute",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.CreateKeyPairBuilder.execute",
+      "capabilityId": "fluent_dx_journeys",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::execute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_create_key_pair_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.execute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.execute"
+        }
+      }
+    },
+    {
+      "declarationId": "T093:fluent-python:CreateKeyPairBuilder.execute",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.CreateKeyPairBuilder.execute",
+      "capabilityId": "fluent_dx_journeys",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::execute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_create_key_pair_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.execute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.execute"
+        }
+      }
+    },
+    {
+      "declarationId": "T093:fluent-python:CreateKeyPairBuilder.validate",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.CreateKeyPairBuilder.validate",
+      "capabilityId": "fluent_dx_journeys",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::validate"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_create_key_pair"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.build"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.validate"
+        }
+      }
+    },
+    {
+      "declarationId": "T093:fluent-java:Request.create_key_pair",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.FluentRequest.createKeyPair",
+      "capabilityId": "fluent_dx_journeys",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::RequestBuilder<'a>::create_key_pair"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_create_key_pair_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.FluentRequest.createKeyPair"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Request.create_key_pair"
+        }
+      }
+    },
+    {
+      "declarationId": "T093:fluent-python:Request.create_key_pair",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.Request.create_key_pair",
+      "capabilityId": "fluent_dx_journeys",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::RequestBuilder<'a>::create_key_pair"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_create_key_pair_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.FluentRequest.createKeyPair"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.Request.create_key_pair"
+        }
+      }
+    },
+    {
+      "declarationId": "kmipkit_client_create_key_pair_with_common_attributes_v1:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_create_key_pair_with_common_attributes_v1",
+      "capabilityId": "fluent_dx_journeys",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::execute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_create_key_pair_with_common_attributes_v1"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.execute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.execute"
+        }
+      }
+    },
+    {
+      "declarationId": "T093:fluent-java:CreateKeyPairBuilder.commonAttribute",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.CreateKeyPairBuilder.commonAttribute",
+      "capabilityId": "fluent_dx_journeys",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::common_attribute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_attribute_set_try_push_typed"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.commonAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.common_attribute"
+        }
+      }
+    },
+    {
+      "declarationId": "T093:fluent-python:CreateKeyPairBuilder.common_attribute",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.fluent.CreateKeyPairBuilder.common_attribute",
+      "capabilityId": "fluent_dx_journeys",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::common_attribute"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_attribute_set_try_push_typed"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.fluent.CreateKeyPairBuilder.commonAttribute"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.fluent.CreateKeyPairBuilder.common_attribute"
+        }
+      }
     }
   ],
   "approvedExclusions": [
@@ -1088694,6 +1090710,7 @@
       },
       "mappings": {
         "rust": [
+          "kmipkit::CryptographicUsageMask",
           "kmipkit_client::Client",
           "kmipkit_client::Client::execute",
           "kmipkit_client::Client::execute_with_options",
@@ -1088955,6 +1090972,7 @@
         ],
         "c": [
           "KMIPKIT_ERROR_INVALID_INPUT",
+          "kmipkit_bitmask_cryptographic_usage_mask_t",
           "kmipkit_client_batch_item_get",
           "kmipkit_client_batch_set_asynchronous_indicator",
           "kmipkit_client_create",
@@ -1089178,7 +1091196,8 @@
           "org.kmipkit.fluent.SymmetricKeyBuilder.toBatchItem",
           "org.kmipkit.fluent.SymmetricKeyBuilder.usageMask",
           "org.kmipkit.fluent.SymmetricKeyBuilder.vendorAttribute",
-          "org.kmipkit.fluent.SymmetricKeyBuilder.withOptions"
+          "org.kmipkit.fluent.SymmetricKeyBuilder.withOptions",
+          "org.kmipkit.protocol.KmipValues.CryptographicUsageMask"
         ],
         "python": [
           "kmipkit.client.Client",
@@ -1089368,7 +1091387,8 @@
           "kmipkit.fluent.SymmetricKeyBuilder.name",
           "kmipkit.fluent.SymmetricKeyBuilder.to_batch_item",
           "kmipkit.fluent.SymmetricKeyBuilder.usage_mask",
-          "kmipkit.fluent.SymmetricKeyBuilder.with_options"
+          "kmipkit.fluent.SymmetricKeyBuilder.with_options",
+          "kmipkit.protocol_values.CryptographicUsageMask"
         ]
       }
     },
@@ -1089485,6 +1091505,110 @@
           "kmipkit_mac_verify_builder_create",
           "kmipkit_sign_builder_create",
           "kmipkit_signature_verify_builder_create"
+        ]
+      }
+    },
+    {
+      "capabilityId": "fluent_dx_journeys",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "capabilityState": "declared",
+      "parityScope": "four-language",
+      "ownerSpecId": "KMIPKIT-0093",
+      "approvalEvidence": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "mappings": {
+        "rust": [
+          "kmipkit_client::fluent::CreateKeyPairBuilder",
+          "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::algorithm",
+          "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::build",
+          "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::common_attribute",
+          "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::execute",
+          "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::length",
+          "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::private_usage_mask",
+          "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::public_usage_mask",
+          "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::to_batch_item",
+          "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::validate",
+          "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::with_asynchronous_indicator",
+          "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::with_options",
+          "kmipkit_client::fluent::RequestBuilder<'a>::create_key_pair"
+        ],
+        "c": [
+          "kmipkit_attribute_set_try_push_typed",
+          "kmipkit_client_batch_item_create_key_pair",
+          "kmipkit_client_batch_set_asynchronous_indicator",
+          "kmipkit_client_create_key_pair_v1",
+          "kmipkit_client_create_key_pair_with_common_attributes_v1",
+          "kmipkit_client_create_key_pair_with_options_v1",
+          "kmipkit_create_key_pair_request_v1_t",
+          "kmipkit_create_key_pair_request_v1_t.cryptographic_algorithm",
+          "kmipkit_create_key_pair_request_v1_t.cryptographic_length",
+          "kmipkit_create_key_pair_request_v1_t.private_usage_mask",
+          "kmipkit_create_key_pair_request_v1_t.public_usage_mask"
+        ],
+        "java": [
+          "org.kmipkit.fluent.CreateKeyPairBuilder",
+          "org.kmipkit.fluent.CreateKeyPairBuilder.algorithm",
+          "org.kmipkit.fluent.CreateKeyPairBuilder.asynchronousIndicator",
+          "org.kmipkit.fluent.CreateKeyPairBuilder.build",
+          "org.kmipkit.fluent.CreateKeyPairBuilder.commonAttribute",
+          "org.kmipkit.fluent.CreateKeyPairBuilder.execute",
+          "org.kmipkit.fluent.CreateKeyPairBuilder.length",
+          "org.kmipkit.fluent.CreateKeyPairBuilder.privateUsageMask",
+          "org.kmipkit.fluent.CreateKeyPairBuilder.publicUsageMask",
+          "org.kmipkit.fluent.CreateKeyPairBuilder.toBatchItem",
+          "org.kmipkit.fluent.CreateKeyPairBuilder.withOptions",
+          "org.kmipkit.fluent.FluentRequest.createKeyPair"
+        ],
+        "python": [
+          "kmipkit.fluent.CreateKeyPairBuilder",
+          "kmipkit.fluent.CreateKeyPairBuilder.__init__",
+          "kmipkit.fluent.CreateKeyPairBuilder.algorithm",
+          "kmipkit.fluent.CreateKeyPairBuilder.asynchronous_indicator",
+          "kmipkit.fluent.CreateKeyPairBuilder.build",
+          "kmipkit.fluent.CreateKeyPairBuilder.common_attribute",
+          "kmipkit.fluent.CreateKeyPairBuilder.execute",
+          "kmipkit.fluent.CreateKeyPairBuilder.length",
+          "kmipkit.fluent.CreateKeyPairBuilder.private_usage_mask",
+          "kmipkit.fluent.CreateKeyPairBuilder.public_usage_mask",
+          "kmipkit.fluent.CreateKeyPairBuilder.to_batch_item",
+          "kmipkit.fluent.CreateKeyPairBuilder.validate",
+          "kmipkit.fluent.CreateKeyPairBuilder.with_options",
+          "kmipkit.fluent.Request.create_key_pair"
+        ]
+      }
+    },
+    {
+      "capabilityId": "fluent_dx_journeys_c",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "capabilityState": "declared",
+      "parityScope": "c-only",
+      "ownerSpecId": "KMIPKIT-0093",
+      "approvalEvidence": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "mappings": {
+        "c": [
+          "kmipkit_create_key_pair_request_v1_t.abi_version",
+          "kmipkit_create_key_pair_request_v1_t.cryptographic_algorithm",
+          "kmipkit_create_key_pair_request_v1_t.cryptographic_length",
+          "kmipkit_create_key_pair_request_v1_t.private_usage_mask",
+          "kmipkit_create_key_pair_request_v1_t.private_usage_mask_present",
+          "kmipkit_create_key_pair_request_v1_t.public_usage_mask",
+          "kmipkit_create_key_pair_request_v1_t.public_usage_mask_present",
+          "kmipkit_create_key_pair_request_v1_t.reserved_0",
+          "kmipkit_create_key_pair_request_v1_t.reserved_1",
+          "kmipkit_create_key_pair_request_v1_t.struct_size"
         ]
       }
     }

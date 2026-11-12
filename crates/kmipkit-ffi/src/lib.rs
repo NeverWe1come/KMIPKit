@@ -602,6 +602,22 @@ pub struct kmipkit_symmetric_key_request_v1_t {
     pub name: kmipkit_byte_span_v1_t,
 }
 
+/// Versioned semantic input for a Create Key Pair request.
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct kmipkit_create_key_pair_request_v1_t {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub cryptographic_algorithm: u32,
+    pub cryptographic_length: i32,
+    pub private_usage_mask_present: u8,
+    pub public_usage_mask_present: u8,
+    pub reserved_0: u8,
+    pub reserved_1: u8,
+    pub private_usage_mask: i32,
+    pub public_usage_mask: i32,
+}
+
 /// Simplified, versioned TLS 1.3/mTLS client configuration using DER byte spans and default
 /// transport timeouts. Certificate arrays and all spans are borrowed for the constructor call.
 #[repr(C)]

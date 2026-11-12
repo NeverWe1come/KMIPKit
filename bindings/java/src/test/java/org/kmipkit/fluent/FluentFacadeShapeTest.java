@@ -30,12 +30,35 @@ import org.kmipkit.ttlv.RawTag;
 import org.kmipkit.ttlv.StandardAttribute;
 import org.kmipkit.ttlv.Tag;
 import org.kmipkit.ttlv.TtlvItem;
+import org.kmipkit.ttlv.TtlvStructure;
 import org.kmipkit.ttlv.TtlvValue;
+import org.kmipkit.ttlv.TypedAttribute;
 import org.kmipkit.protocol.KmipValues.CryptographicUsageMask;
 import org.junit.jupiter.api.Test;
 
 /** Checks the Java package shape while preserving the established extensions API. */
 final class FluentFacadeShapeTest {
+    @Test
+    void keyPairBuilderRequiresExplicitAlgorithmAndLength() {
+        // KMIPKIT-0093-FR-011/013; KMIP 2.1 section 6.1.2 Create Key Pair.
+        CreateKeyPairBuilder builder = new CreateKeyPairBuilder(null);
+        assertThrows(InvalidInputException.class, builder::build);
+        builder.algorithm(6);
+        assertThrows(InvalidInputException.class, builder::build);
+        builder.length(256).privateUsageMask(1).publicUsageMask(2);
+        try (ClientBatchItem item = builder.toBatchItem()) {
+            assertEquals(2, item.operation());
+        }
+        assertThrows(InvalidInputException.class, () -> builder.algorithm(-1));
+        assertThrows(InvalidInputException.class, () -> builder.commonAttribute(null));
+        assertThrows(InvalidInputException.class, () -> builder.withOptions(null));
+        assertThrows(InvalidInputException.class, () -> builder.asynchronousIndicator(-1));
+        assertThrows(InvalidInputException.class,
+                () -> new CreateKeyPairBuilder(null).execute(null));
+        assertThrows(InvalidInputException.class,
+                () -> new CreateKeyPairBuilder(null).execute(CodecLimits.defaults()));
+    }
+
     @Test
     void exposesTaskEntryPointAndRetainsLegacyClientType() throws Exception {
         assertNotNull(Class.forName("org.kmipkit.client.KmipClient"));
@@ -280,6 +303,22 @@ final class FluentFacadeShapeTest {
             assertThrows(ClientOperationException.class,
                     () -> client.request().createSymmetricKey().aes256()
                             .usageMask((int) CryptographicUsageMask.ENCRYPT)
+                            .withOptions(RequestOptions.defaults()).execute(limits));
+            TtlvStructure parameters = TtlvStructure.create();
+            try (TtlvValue value = TtlvValue.structure(parameters, limits);
+                    TypedAttribute attribute = TypedAttribute.create(
+                            StandardAttribute.CRYPTOGRAPHIC_DOMAIN_PARAMETERS, value);
+                    ClientBatchItem keyPair = client.request().createKeyPair()
+                            .algorithm(6).length(256).privateUsageMask(1).publicUsageMask(2)
+                            .commonAttribute(attribute).withOptions(RequestOptions.defaults())
+                            .asynchronousIndicator(1).build()) {
+                assertEquals(2, keyPair.operation());
+            }
+            assertThrows(ClientOperationException.class,
+                    () -> client.request().createKeyPair().algorithm(6).length(256)
+                            .asynchronousIndicator(1).execute(limits));
+            assertThrows(ClientOperationException.class,
+                    () -> client.request().createKeyPair().algorithm(6).length(256)
                             .withOptions(RequestOptions.defaults()).execute(limits));
             assertThrows(ClientOperationException.class,
                     () -> client.request().get(id).asynchronousIndicator(1).execute(limits));
