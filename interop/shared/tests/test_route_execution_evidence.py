@@ -525,6 +525,56 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "per-item status outcomes"):
             _validate_batch_event(event, case, catalog, ("batch-get-stop",))
 
+    def test_async_workflow_order_is_not_mistaken_for_a_single_batch(self):
+        operations = ["Create", "Query Asynchronous Requests", "Poll"]
+        case = {
+            "case_id": "test-async-lifecycle-poll",
+            "category": "asynchronous_workflows",
+            "requires": {
+                "protocol_scenario": {
+                    "parameters": {"operations_in_request_order": operations},
+                    "expected": {"operation_order": operations},
+                },
+            },
+        }
+
+        self.assertIsNone(
+            _validate_batch_event(
+                {"workflow_operation": "Poll", "workflow_step_index": 2},
+                case,
+                {"normative_targets": []},
+                ("test-async-lifecycle-poll", "python.execute_poll"),
+            )
+        )
+
+    def test_batch_workflow_request_order_remains_batch_validated(self):
+        operations = ["Create", "Activate", "Get Attribute List", "Revoke", "Destroy"]
+        case = {
+            "case_id": "test-batch-create-activate-destroy",
+            "category": "batch_workflows",
+            "requires": {
+                "protocol_scenario": {
+                    "parameters": {"operations_in_request_order": operations},
+                    "expected": {"operation_order": operations, "response_count": len(operations)},
+                },
+            },
+        }
+        event = {
+            "batch_operation_sequence": operations,
+            "peer_observed_operation_sequence": operations,
+            "batch_item_count": len(operations),
+            "peer_observed_response_count": len(operations),
+        }
+
+        self.assertIsNone(
+            _validate_batch_event(
+                event,
+                case,
+                {"normative_targets": []},
+                ("test-batch-create-activate-destroy", "batch"),
+            )
+        )
+
     def _four_language_fixture(self):
         reports = []
         base_routes = copy.deepcopy(self.manifest["routes"])
