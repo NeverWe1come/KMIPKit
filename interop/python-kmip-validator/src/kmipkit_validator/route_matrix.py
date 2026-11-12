@@ -839,7 +839,7 @@ def _typed_message_cell(cell: dict, case: dict, target: dict) -> dict:
     message_type, root_tag, original = fixture
     import copy
     expected = copy.deepcopy(original)
-    by_id, _, elements = _catalog_model_data()
+    _, _, elements = _catalog_model_data()
     tag_elements = [element for element in elements.values() if element.get('kind') == 'tag']
 
     def field_name(element: dict) -> str:
