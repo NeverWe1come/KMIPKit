@@ -668,6 +668,9 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
     final_async_failure = (
         case['case_id'] == 'test-async-poll-final-operation-failure' and operation == 'Poll'
     )
+    invalid_async_correlation = (
+        case['case_id'] == 'test-async-unknown-correlation-rejected' and operation == 'Poll'
+    )
     if positive_ping:
         peer_status = protocol_values.ResultStatus.SUCCESS
         peer_reason = None
@@ -675,6 +678,10 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
     elif final_async_failure:
         peer_status = protocol_values.ResultStatus.OPERATION_FAILED
         peer_reason = protocol_values.ResultReason.INVALID_OBJECT_TYPE
+        expected_driver_status = 'failed'
+    elif invalid_async_correlation:
+        peer_status = protocol_values.ResultStatus.OPERATION_FAILED
+        peer_reason = protocol_values.ResultReason.INVALID_ASYNCHRONOUS_CORRELATION_VALUE
         expected_driver_status = 'failed'
     else:
         peer_status = protocol_values.ResultStatus.OPERATION_FAILED
