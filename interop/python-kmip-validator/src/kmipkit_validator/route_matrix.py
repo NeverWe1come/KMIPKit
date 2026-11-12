@@ -420,6 +420,10 @@ def run_matrix(catalog: dict, manifest: dict, artifact: dict,
                            for item in route['combinations']})
     if not combinations:
         combinations = [('TTLV', 'raw_tls')]
+    if any(route['language'] == 'python' for route in manifest['routes']):
+        # Several public modules import each other through kmipkit.__init__.
+        # Finish that package initialization before worker threads resolve APIs.
+        importlib.import_module('kmipkit')
     report = {
         'schema_version': '1.0', 'run_id': 'python-matrix-' + str(uuid.uuid4()), 'language': 'python',
         'server': {'id': 'controlled-fixture', 'product': 'KMIPKit Python controlled peer', 'version': '1',
@@ -1120,19 +1124,14 @@ def _typed_attribute_cell(cell: dict, case: dict, target: dict) -> dict:
                 raise RecipePending
             type_name, value = scalar[attribute.value_kind]
         with ExitStack() as owned:
-            if type_name == 'Structure' and target.get('name') == 'Alternative Name':
-                # KMIP 2.0/2.1 §4.2, Table 31 requires both fields; type 1 is Uninterpreted Text String (§11.2).
-                alternative_value = owned.enter_context(
-                    PythonKmipDriver._item(0x4200C0, 'text', 'KMIPKit.Interop')
-                )
-                alternative_type = owned.enter_context(
-                    PythonKmipDriver._item(0x4200C1, 'enumeration', 1)
-                )
-                value = owned.enter_context(PythonKmipDriver._structure(
-                    [alternative_value, alternative_type]
-                ))
-            elif type_name == 'Structure':
-                raise RecipePending
+            if type_name == 'Structure':
+                members = _typed_attribute_structure_items(target.get('name', ''))
+                if members is None:
+                    raise RecipePending
+                children = [owned.enter_context(PythonKmipDriver._item(
+                    child_tag, _TTLV_TYPE_KINDS[child_type], child_value
+                )) for child_tag, child_type, child_value in members]
+                value = owned.enter_context(PythonKmipDriver._structure(children))
             original = owned.enter_context(PythonKmipDriver._item(tag, _TTLV_TYPE_KINDS[type_name], value))
             expected = item_tree(original)
             typed = owned.enter_context(TypedAttribute.from_item(attribute, original))
@@ -1161,6 +1160,123 @@ def _typed_attribute_cell(cell: dict, case: dict, target: dict) -> dict:
             observed.append(expected)
     tree_hash = digest(observed)
     return {'request_tree_sha256': tree_hash, 'response_tree_sha256': tree_hash}
+
+
+def _typed_attribute_structure_items(attribute_name: str) -> list[tuple[int, str, Any]] | None:
+    """Build minimal, table-shaped structures for catalogued direct attributes."""
+    by_id, _, elements = _catalog_model_data()
+    fields: dict[str, tuple[tuple[str, str, Any], ...]] = {
+        # KMIP 2.0/2.1 §4.2, Table 31; Alternative Name Type value 1 is
+        # Uninterpreted Text String under §11.2.
+        'Alternative Name': (
+            ('Alternative Name Value', 'Text String', 'KMIPKit.Interop'),
+            ('Alternative Name Type', 'Enumeration', ('enum', 'Alternative Name Type', 'Uninterpreted Text String')),
+        ),
+        # §4.4 Table 36 requires Application Namespace; Application Data is optional.
+        'Application Specific Information': (
+            ('Application Namespace', 'Text String', 'KMIPKit.Interop'),
+            ('Application Data', 'Text String', 'interop-fixture'),
+        ),
+        # §4.14 Table 46; a positive Qlength is a valid DSA parameter representative.
+        'Cryptographic Domain Parameters': (('Qlength', 'Integer', 256),),
+        # §4.16 Table 59; the algorithm is a standalone optional member.
+        'Cryptographic Parameters': (
+            ('Cryptographic Algorithm', 'Enumeration', ('enum', 'Cryptographic Algorithm', None)),
+        ),
+        # §4.21 Table 69; Hashing Algorithm and Digest Value form a certificate digest.
+        'Digest': (
+            ('Hashing Algorithm', 'Enumeration', ('enum', 'Hashing Algorithm', None)),
+            ('Digest Value', 'Byte String', bytes(20)),
+        ),
+        # §4.27 Table 82.
+        'Key Value Location': (
+            ('Key Value Location Type', 'Enumeration', ('enum', 'Key Value Location Type', None)),
+            ('Key Value Location Value', 'Text String', 'https://kmipkit.invalid/key/1'),
+        ),
+        # §4.31 Table 91.
+        'Link': (
+            ('Link Type', 'Enumeration', ('enum', 'Link Type', None)),
+            ('Linked Object Identifier', 'Text String', 'KMIPKit.Interop.Object.1'),
+        ),
+        # §4.32 Table 93; Name Type value 1 is Uninterpreted Text String (§11.29).
+        'Name': (
+            ('Name Type', 'Enumeration', ('enum', 'Name Type', 'Uninterpreted Text String')),
+            ('Name Value', 'Text String', 'KMIPKit.Interop'),
+        ),
+        # §4.46 and §7.36 Table 388 require RNG Algorithm when RNG Parameters is present.
+        'Random Number Generator': (
+            ('RNG Algorithm', 'Enumeration', ('enum', 'RNG Algorithm', None)),
+        ),
+        # §4.47 Table 123; Cessation of Operation is the exact §11.48 value 6.
+        'Revocation Reason': (
+            ('Revocation Reason Code', 'Enumeration', ('enum', 'Revocation Reason Code', 'Cessation of Operation')),
+            ('Revocation Message', 'Text String', 'controlled fixture'),
+        ),
+        # §4.53 Table 135 and §11.57 Rotate Name Type.
+        'Rotate Name': (
+            ('Rotate Name Type', 'Enumeration', ('enum', 'Rotate Name Type', None)),
+            ('Rotate Name Value', 'Text String', 'KMIPKit.Interop'),
+        ),
+        # §4.52 (2.0)/§4.59 (2.1), §7.40 Table 392.
+        'Usage Limits': (
+            ('Usage Limits Count', 'Long Integer', 1),
+            ('Usage Limits Total', 'Long Integer', 1),
+            ('Usage Limits Unit', 'Enumeration', ('enum', 'Usage Limits Unit', None)),
+        ),
+        # §4.53 (2.0)/§4.60 (2.1), Table 150; Vendor Identification obeys its
+        # alphanumeric/underscore/period restriction.
+        'Vendor Attribute': (
+            ('Vendor Identification', 'Text String', 'KMIPKit'),
+            ('Attribute Name', 'Text String', 'interop'),
+            ('Attribute Value', 'Text String', 'fixture'),
+        ),
+        # §4.54 (2.0)/§4.61 (2.1), Table 152.
+        'X.509 Certificate Identifier': (
+            ('Certificate Serial Number', 'Byte String', b'\x01'),
+            ('Issuer Distinguished Name', 'Byte String', b'\x30\x00'),
+        ),
+        # §4.55/§4.62, Tables 153–154; the distinguished name is required.
+        'X.509 Certificate Issuer': (('Issuer Distinguished Name', 'Byte String', b'\x30\x00'),),
+        # §4.56/§4.63, Tables 155–156; the distinguished name is required.
+        'X.509 Certificate Subject': (('Subject Distinguished Name', 'Byte String', b'\x30\x00'),),
+    }
+    plan = fields.get(attribute_name)
+    if plan is None:
+        return None
+
+    def tag_value(name: str) -> int:
+        entry = next((item for item in elements.values()
+                      if item.get('kind') == 'tag' and item.get('name') == name), None)
+        if entry is None:
+            raise RecipePending
+        return int(entry['wire_value'], 16)
+
+    def enum_value(name: str, preferred: str | None) -> int:
+        enum = next((item for item in elements.values()
+                     if item.get('kind') == 'enumeration' and item.get('name') == name), None)
+        if enum is None:
+            raise RecipePending
+        candidates = [item for item in by_id.values()
+                      if item.get('kind') == 'enumeration_value'
+                      and enum['element_id'] in item.get('parent_element_ids', [])
+                      and isinstance(item.get('wire_value'), str)
+                      and not any(character in item['wire_value'] for character in 'Xx')]
+        if preferred is not None:
+            candidates = [item for item in candidates if item.get('name') == preferred]
+        if not candidates:
+            raise RecipePending
+        candidate = min(candidates, key=lambda item: int(item['wire_value'], 16))
+        values = PythonKmipDriver._wire_representatives(candidate['wire_value'])
+        if len(values) != 1:
+            raise RecipePending
+        return values[0]
+
+    result = []
+    for name, type_name, value in plan:
+        if isinstance(value, tuple) and value and value[0] == 'enum':
+            value = enum_value(value[1], value[2])
+        result.append((tag_value(name), type_name, value))
+    return result
 
 
 def _crypto_parameters_cell(cell: dict, case: dict, target: dict) -> dict:
