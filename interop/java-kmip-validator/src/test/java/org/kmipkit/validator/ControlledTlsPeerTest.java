@@ -127,6 +127,37 @@ class ControlledTlsPeerTest {
     @TempDir
     Path temporaryDirectory;
 
+    @Test
+    void enumerationFixturesCoverEveryNamedDirectTagFamily() throws Exception {
+        JsonNode catalog = readRouteEvidenceCatalog();
+        Map<String, JsonNode> targets = new HashMap<>();
+        for (JsonNode target : catalog.path("normative_targets")) {
+            targets.put(target.path("target_id").asText(), target);
+        }
+        Set<String> expectedCaseIds = new java.util.HashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            JsonNode requires = testCase.path("requires");
+            if (!"enumeration_value".equals(requires.path("target_kind").asText())) continue;
+            JsonNode target = targets.get(requires.path("normative_target_id").asText());
+            if (target == null || !target.path("parent_element_ids").isArray()
+                    || target.path("parent_element_ids").isEmpty()) continue;
+            String parentName = target.path("parent_element_ids").get(0).asText()
+                    .replace("KMIPKIT-ELEM-ENUMERATION-", "");
+            boolean hasStandaloneTag = targets.values().stream()
+                    .filter(candidate -> "tag".equals(candidate.path("kind").asText()))
+                    .anyMatch(candidate -> normalizeTargetName(candidate.path("name").asText())
+                            .equals(normalizeTargetName(parentName)));
+            if (hasStandaloneTag && !target.path("wire_value").asText().contains("-")) {
+                expectedCaseIds.add(testCase.path("case_id").asText());
+            }
+        }
+        Set<String> actualCaseIds = genericEnumerationFixtures().stream()
+                .map(EnumerationFixture::caseId).collect(java.util.stream.Collectors.toSet());
+
+        assertEquals(expectedCaseIds, actualCaseIds,
+                "Every named enum value with a same-named standalone tag must exercise the generic TTLV routes.");
+    }
+
     // OASIS KMIP 2.1 §6.1.16 and §4.1.2: Discover Versions request and response.
     @Test
     void typedDiscoverVersionsUsesInstalledPackageAndVerifiedMutualTls() throws Exception {
