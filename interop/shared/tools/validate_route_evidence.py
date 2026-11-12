@@ -90,6 +90,22 @@ def _expected_batch_operations(case: dict) -> list[str] | None:
     return list(ordered) if len(ordered) > 1 else None
 
 
+def _validate_local_batch_rejection(event: dict, case: dict, key: tuple) -> None:
+    scenario = case.get("requires", {}).get("protocol_scenario", {})
+    expected = scenario.get("expected", {}) if isinstance(scenario, dict) else {}
+    if (case.get("category") != "batch_workflows"
+            or expected.get("construction") != "rejected_or_server_reports_protocol_error"):
+        raise ValueError(f"catalog does not allow a local batch construction rejection: {key}")
+    if event.get("transport_invocation_count") != 0:
+        raise ValueError(f"locally rejected batch invoked the transport: {key}")
+    if event.get("local_rejection_code") != "batch_placeholder_forward_reference":
+        raise ValueError(f"locally rejected batch lacks its safe rejection code: {key}")
+    if event.get("client_error_category") != "validation":
+        raise ValueError(f"locally rejected batch has the wrong client error category: {key}")
+    if event.get("client_error_cause") != "invalid_input":
+        raise ValueError(f"locally rejected batch has the wrong client error cause: {key}")
+
+
 def _ordinal(index: int) -> str:
     return {1: "first", 2: "second", 3: "third", 4: "fourth", 5: "fifth"}.get(index, f"item_{index}")
 
@@ -144,6 +160,9 @@ def _validate_batch_event(event: dict, case: dict, catalog: dict, key: tuple) ->
     if event.get("batch_item_count") != len(expected_operations):
         raise ValueError(f"batch item count does not match the catalog: {key}")
     if event.get("status", "passed") != "passed":
+        return
+    if event.get("request_delivery_state") == "not_sent":
+        _validate_local_batch_rejection(event, case, key)
         return
     if event.get("peer_observed_operation_sequence") != expected_operations:
         raise ValueError(f"controlled peer did not observe the catalog batch order: {key}")
@@ -314,7 +333,14 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
                         raise ValueError(f"passed decode event requires a valid response tree hash: {key}")
             else:
                 tree_hash = event.get("request_tree_sha256")
-                if not isinstance(tree_hash, str) or not re.fullmatch(r"[0-9a-f]{64}", tree_hash):
+                local_batch_rejection = (
+                    event["action"] == "send"
+                    and event.get("request_delivery_state") == "not_sent"
+                    and event.get("batch_item_count") is not None
+                )
+                if local_batch_rejection:
+                    _validate_local_batch_rejection(event, case, key)
+                elif not isinstance(tree_hash, str) or not re.fullmatch(r"[0-9a-f]{64}", tree_hash):
                     raise ValueError(f"passed {event['action']} event requires a valid request tree hash: {key}")
         if "wire_bytes_deterministic" in event and not isinstance(event["wire_bytes_deterministic"], bool):
             raise ValueError(f"wire_bytes_deterministic must be a boolean: {key}")
@@ -331,16 +357,18 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
                 if event.get("transport_invocation_count") != 0:
                     raise ValueError(f"version-boundary request invoked the transport: {key}")
             elif event.get("request_delivery_state") == "not_sent":
-                raise ValueError(f"unexpected not-sent result for a network route cell: {key}")
+                _validate_local_batch_rejection(event, case, key)
             _validate_batch_event(event, case, catalog, key)
         observed[key] = event
 
     constructed = {
         _request_identity(event): event["request_tree_sha256"]
-        for event in observed.values() if event["action"] == "construct" and event.get("status") == "passed"
+        for event in observed.values()
+        if event["action"] == "construct" and event.get("status") == "passed"
     }
     for event in observed.values():
-        if event["action"] != "send" or event.get("status") != "passed":
+        if (event["action"] != "send" or event.get("status") != "passed"
+                or event.get("request_delivery_state") == "not_sent"):
             continue
         constructed_hash = constructed.get(_request_identity(event))
         if constructed_hash is not None and constructed_hash != event.get("request_tree_sha256"):
@@ -490,6 +518,9 @@ def validate_parity_collection(reports: list[dict], catalog: dict, manifest: dic
     for report in reports:
         for event in report["events"]:
             if event.get("status") != "passed" or event.get("action") not in {"construct", "send"}:
+                continue
+            if (event.get("action") == "send"
+                    and event.get("request_delivery_state") == "not_sent"):
                 continue
             identity = (
                 report["language"], event["case_id"], event["route_id"], event["target_id"],

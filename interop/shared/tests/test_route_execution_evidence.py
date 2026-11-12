@@ -170,6 +170,26 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         schema = json.loads((SHARED / "schemas/route-execution-evidence.schema.json").read_text())
         jsonschema.validate(report, schema)
 
+    def test_expected_local_batch_rejection_conforms_without_peer_observation(self):
+        try:
+            import jsonschema
+        except ImportError:
+            self.skipTest("jsonschema dependency is not installed")
+        report = copy.deepcopy(self.report)
+        send_event = next(event for event in report["events"] if event["action"] == "send")
+        send_event.update({
+            "batch_operation_sequence": ["Activate", "Create"],
+            "batch_item_count": 2,
+            "request_delivery_state": "not_sent",
+            "transport_invocation_count": 0,
+            "local_rejection_code": "batch_placeholder_forward_reference",
+            "client_error_category": "validation",
+            "client_error_cause": "invalid_input",
+        })
+        send_event.pop("request_tree_sha256")
+        schema = json.loads((SHARED / "schemas/route-execution-evidence.schema.json").read_text())
+        jsonschema.validate(report, schema)
+
     def test_missing_action_fails_coverage_even_when_the_route_was_called(self):
         report = copy.deepcopy(self.report)
         report["events"].pop()
@@ -468,6 +488,35 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         event["peer_observed_result_status_codes"] = [0, 3]
         with self.assertRaisesRegex(ValueError, "per-item status outcomes"):
             _validate_batch_event(event, case, catalog, ("batch-get-stop",))
+
+    def test_expected_forward_placeholder_rejection_can_prove_no_send_without_peer(self):
+        case = {
+            "case_id": "test-batch-placeholder-forward-reference-rejected",
+            "category": "batch_workflows",
+            "requires": {"protocol_scenario": {
+                "parameters": {"items": [
+                    "Activate(IDPlaceholder from item 2)",
+                    "Create(unique-key)",
+                ]},
+                "expected": {"construction": "rejected_or_server_reports_protocol_error"},
+            }},
+        }
+        event = {
+            "status": "passed",
+            "batch_operation_sequence": ["Activate", "Create"],
+            "batch_item_count": 2,
+            "request_delivery_state": "not_sent",
+            "transport_invocation_count": 0,
+            "local_rejection_code": "batch_placeholder_forward_reference",
+            "client_error_category": "validation",
+            "client_error_cause": "invalid_input",
+        }
+
+        _validate_batch_event(event, case, {}, ("forward-placeholder", "send"))
+
+        event["transport_invocation_count"] = 1
+        with self.assertRaisesRegex(ValueError, "invoked the transport"):
+            _validate_batch_event(event, case, {}, ("forward-placeholder", "send"))
 
     def test_async_lifecycle_steps_are_not_validated_as_a_single_batch(self):
         case = {
