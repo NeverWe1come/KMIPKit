@@ -2671,6 +2671,56 @@ fn invoke_cryptographic_parameters_route(symbol: &str, sample: &Item) -> Option<
     })())
 }
 
+fn invoke_request_attributes_route(symbol: &str, sample: &Item) -> Option<Result<Item>> {
+    const ROUTES: &[&str] = &[
+        "kmipkit_protocol::CertifyRequest::with_attributes",
+        "kmipkit_protocol::CreateSplitKeyRequest::with_attributes",
+        "kmipkit_protocol::JoinSplitKeyRequest::with_attributes",
+        "kmipkit_protocol::RecertifyRequest::with_attributes",
+        "kmipkit_protocol::RekeyRequest::with_attributes",
+    ];
+    if !ROUTES.contains(&symbol) {
+        return None;
+    }
+
+    Some((|| {
+        match symbol {
+            "kmipkit_protocol::CertifyRequest::with_attributes" => {
+                let _request = kmipkit::protocol::CertifyRequest::new()
+                    .with_attributes(kmipkit::ttlv::Structure::new());
+            }
+            "kmipkit_protocol::RecertifyRequest::with_attributes" => {
+                let _request = kmipkit::protocol::RecertifyRequest::new()
+                    .with_attributes(kmipkit::ttlv::Structure::new());
+            }
+            "kmipkit_protocol::RekeyRequest::with_attributes" => {
+                let _request = kmipkit::protocol::RekeyRequest::new()
+                    .with_attributes(kmipkit::ttlv::Structure::new());
+            }
+            "kmipkit_protocol::CreateSplitKeyRequest::with_attributes" => {
+                let attributes = kmipkit::protocol::AttributeSet::new();
+                let _request = kmipkit::protocol::CreateSplitKeyRequest::new(
+                    kmipkit::protocol::ObjectType::from_raw(2),
+                    2,
+                    2,
+                    kmipkit::protocol::SplitKeyMethod::XOR,
+                    attributes,
+                )
+                .with_attributes(kmipkit::protocol::AttributeSet::new());
+            }
+            "kmipkit_protocol::JoinSplitKeyRequest::with_attributes" => {
+                let _request = kmipkit::protocol::JoinSplitKeyRequest::new(
+                    kmipkit::protocol::ObjectType::from_raw(3),
+                    Vec::new(),
+                )
+                .with_attributes(kmipkit::protocol::AttributeSet::new());
+            }
+            _ => return Err("unsupported request Attributes builder"),
+        }
+        sample.try_clone().map_err(|_| "local copy failed")
+    })())
+}
+
 #[allow(clippy::too_many_lines)] // Explicit public route dispatch stays together for review.
 fn invoke(
     symbol: &str,
@@ -2679,6 +2729,9 @@ fn invoke(
     elements: &[Json],
     protocol_version: &str,
 ) -> Option<Result<Item>> {
+    if let Some(result) = invoke_request_attributes_route(symbol, sample) {
+        return Some(result);
+    }
     if let Some(result) = invoke_cryptographic_parameters_route(symbol, sample) {
         return Some(result);
     }
@@ -5577,7 +5630,9 @@ mod tests {
                     .find(|target| target["target_id"] == target_id)
                     .unwrap();
                 let expected = sample_for_route_at_version(symbol, target, elements, "2.1")
-                    .unwrap_or_else(|error| panic!("{symbol} sample failed for {target_id}: {error}"));
+                    .unwrap_or_else(|error| {
+                        panic!("{symbol} sample failed for {target_id}: {error}")
+                    });
                 let result = invoke(symbol, &expected, target, elements, "2.1")
                     .unwrap_or_else(|| panic!("{symbol} route missing for {target_id}"))
                     .unwrap_or_else(|error| panic!("{symbol} rejected {target_id}: {error}"));
