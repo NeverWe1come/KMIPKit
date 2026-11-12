@@ -563,6 +563,14 @@ class RouteCapabilitiesTests(unittest.TestCase):
                 self.assertIn('specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html',
                               exclusion['source_paths'])
 
+    def test_pinned_oasis_source_reader_accepts_windows_1252_html(self):
+        source = self.module.source(
+            ROOT,
+            '9a16cc90a12205101d22a38501a5e74c665df4dc',
+            'specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html',
+        )
+        self.assertIn('4.6 Certificate Attributes', source)
+
     def test_async_request_routes_use_the_exact_public_operation_executor(self):
         expected = {
             'rust': 'kmipkit_client::Client::execute_{operation}',
