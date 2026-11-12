@@ -1908,6 +1908,12 @@ fn sample_for_route_at_version(
     {
         return crate::driver::item(0x0042_002c, Value::integer(1));
     }
+    if crypto_indicator_operation(symbol).is_some()
+        && (symbol.ends_with("::with_init_indicator") || symbol.ends_with("::with_final_indicator"))
+        && target["kind"] == "tag"
+    {
+        return crate::driver::item(target_wire_value(target)?, Value::boolean(true));
+    }
     if KEY_PAIR_ATTRIBUTE_ROUTES.contains(&symbol) && target["kind"] == "tag" {
         return crate::driver::item(
             target_wire_value(target)?,
@@ -2889,41 +2895,136 @@ fn invoke_request_attributes_route(symbol: &str, sample: &Item) -> Option<Result
     })())
 }
 
-fn invoke_final_indicator_route(symbol: &str, sample: &Item) -> Option<Result<Item>> {
-    const ROUTES: &[&str] = &[
-        "kmipkit_protocol::DecryptRequest::with_final_indicator",
-        "kmipkit_protocol::EncryptRequest::with_final_indicator",
-    ];
-    if !ROUTES.contains(&symbol) {
+fn crypto_indicator_operation(symbol: &str) -> Option<&str> {
+    let operation = symbol.rsplit("::").nth(1)?;
+    [
+        "DecryptRequest",
+        "EncryptRequest",
+        "HashRequest",
+        "MacRequest",
+        "MacVerifyRequest",
+        "SignatureVerifyRequest",
+        "SignRequest",
+    ]
+    .contains(&operation)
+    .then_some(operation)
+}
+
+fn indicator_hash_parameters() -> Result<kmipkit::ttlv::Structure> {
+    kmipkit::protocol::CryptographicParametersBuilder::new()
+        .with_hashing_algorithm(6)
+        .build()
+        .map(kmipkit::protocol::CryptographicParameters::into_ttlv)
+        .map_err(|_| "indicator Hash parameters rejected")
+}
+
+fn invoke_crypto_indicator_route(symbol: &str, sample: &Item) -> Option<Result<Item>> {
+    let operation = crypto_indicator_operation(symbol)?;
+    let is_init = symbol.ends_with("::with_init_indicator");
+    let is_final = symbol.ends_with("::with_final_indicator");
+    if !is_init && !is_final {
         return None;
     }
 
     Some((|| {
-        let data = kmipkit::protocol::OperationData::ByteString(
-            kmipkit::protocol::SecretBytes::new(vec![0x41]),
-        );
-        let payload = if symbol == "kmipkit_protocol::DecryptRequest::with_final_indicator" {
-            kmipkit::protocol::DecryptRequest::new(None, Some(data))
-                .with_correlation_value(kmipkit::protocol::SecretBytes::new(vec![0x43]))
-                .with_final_indicator(true)
-                .to_ttlv_payload()
-                .map_err(|_| "Decrypt Final Indicator fixture rejected")?
-        } else {
-            kmipkit::protocol::EncryptRequest::new(None, Some(data))
-                .with_correlation_value(kmipkit::protocol::SecretBytes::new(vec![0x43]))
-                .with_final_indicator(true)
-                .to_ttlv_payload()
-                .map_err(|_| "Encrypt Final Indicator fixture rejected")?
+        let data = || {
+            kmipkit::protocol::OperationData::ByteString(kmipkit::protocol::SecretBytes::new(vec![
+                0x41,
+            ]))
         };
+        let correlation = || kmipkit::protocol::SecretBytes::new(vec![0x43]);
+        let payload = if is_init {
+            match operation {
+                "DecryptRequest" => kmipkit::protocol::DecryptRequest::new(None, None)
+                    .with_init_indicator(true)
+                    .to_ttlv_payload()
+                    .map_err(|_| "Decrypt Init Indicator fixture rejected"),
+                "EncryptRequest" => kmipkit::protocol::EncryptRequest::new(None, None)
+                    .with_init_indicator(true)
+                    .to_ttlv_payload()
+                    .map_err(|_| "Encrypt Init Indicator fixture rejected"),
+                "HashRequest" => kmipkit::protocol::HashRequest::new(indicator_hash_parameters()?)
+                    .with_init_indicator(true)
+                    .to_ttlv_payload()
+                    .map_err(|_| "Hash Init Indicator fixture rejected"),
+                "MacRequest" => kmipkit::protocol::MacRequest::new()
+                    .with_init_indicator(true)
+                    .to_ttlv_payload()
+                    .map_err(|_| "MAC Init Indicator fixture rejected"),
+                "MacVerifyRequest" => kmipkit::protocol::MacVerifyRequest::new()
+                    .with_init_indicator(true)
+                    .to_ttlv_payload()
+                    .map_err(|_| "MAC Verify Init Indicator fixture rejected"),
+                "SignatureVerifyRequest" => kmipkit::protocol::SignatureVerifyRequest::new()
+                    .with_init_indicator(true)
+                    .to_ttlv_payload()
+                    .map_err(|_| "Signature Verify Init Indicator fixture rejected"),
+                "SignRequest" => kmipkit::protocol::SignRequest::new()
+                    .with_init_indicator(true)
+                    .to_ttlv_payload()
+                    .map_err(|_| "Sign Init Indicator fixture rejected"),
+                _ => return Err("unsupported Init Indicator route"),
+            }
+        } else {
+            match operation {
+                "DecryptRequest" => kmipkit::protocol::DecryptRequest::new(None, Some(data()))
+                    .with_correlation_value(correlation())
+                    .with_final_indicator(true)
+                    .to_ttlv_payload()
+                    .map_err(|_| "Decrypt Final Indicator fixture rejected"),
+                "EncryptRequest" => kmipkit::protocol::EncryptRequest::new(None, Some(data()))
+                    .with_correlation_value(correlation())
+                    .with_final_indicator(true)
+                    .to_ttlv_payload()
+                    .map_err(|_| "Encrypt Final Indicator fixture rejected"),
+                "HashRequest" => kmipkit::protocol::HashRequest::new(indicator_hash_parameters()?)
+                    .with_data(data())
+                    .with_correlation_value(correlation())
+                    .with_final_indicator(true)
+                    .to_ttlv_payload()
+                    .map_err(|_| "Hash Final Indicator fixture rejected"),
+                "MacRequest" => kmipkit::protocol::MacRequest::new()
+                    .with_data(data())
+                    .with_correlation_value(correlation())
+                    .with_final_indicator(true)
+                    .to_ttlv_payload()
+                    .map_err(|_| "MAC Final Indicator fixture rejected"),
+                "MacVerifyRequest" => kmipkit::protocol::MacVerifyRequest::new()
+                    .with_data(data())
+                    .with_mac_data(correlation())
+                    .with_correlation_value(correlation())
+                    .with_final_indicator(true)
+                    .to_ttlv_payload()
+                    .map_err(|_| "MAC Verify Final Indicator fixture rejected"),
+                "SignatureVerifyRequest" => kmipkit::protocol::SignatureVerifyRequest::new()
+                    .with_data(data())
+                    .with_signature_data(correlation())
+                    .with_correlation_value(correlation())
+                    .with_final_indicator(true)
+                    .to_ttlv_payload()
+                    .map_err(|_| "Signature Verify Final Indicator fixture rejected"),
+                "SignRequest" => kmipkit::protocol::SignRequest::new()
+                    .with_data(data())
+                    .with_correlation_value(correlation())
+                    .with_final_indicator(true)
+                    .to_ttlv_payload()
+                    .map_err(|_| "Sign Final Indicator fixture rejected"),
+                _ => return Err("unsupported Final Indicator route"),
+            }
+        };
+        let payload = payload?;
+        let indicator_tag = if is_init { 0x0042_00d7 } else { 0x0042_00d8 };
         if !payload
             .view()
             .children()
             .iter()
-            .any(|field| field.tag().raw() == 0x0042_00D8)
+            .any(|field| field.tag().raw() == indicator_tag)
         {
-            return Err("Final Indicator was omitted from the encoded request");
+            return Err("cryptographic indicator was omitted from the encoded request");
         }
-        sample.try_clone().map_err(|_| "local copy failed")
+        let request = request_payload_item(payload)?;
+        crate::local_wire::target_hash(&request, sample)?;
+        Ok(request)
     })())
 }
 
@@ -3085,7 +3186,7 @@ fn invoke(
             generated::execute(symbol, &model).ok_or("generated Vendor Attribute route missing")?
         })());
     }
-    if let Some(result) = invoke_final_indicator_route(symbol, sample) {
+    if let Some(result) = invoke_crypto_indicator_route(symbol, sample) {
         return Some(result);
     }
     if let Some(result) = invoke_key_wrapping_request_route(symbol, sample) {
