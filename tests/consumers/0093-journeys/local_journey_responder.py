@@ -11,14 +11,20 @@ import struct
 
 
 _AES_GCM_JOURNEY_OPERATIONS = (1, 10, 20, 1, 0x1F, 0x20, 20)
-EXPECTED_CONSUMER_OPERATIONS = _AES_GCM_JOURNEY_OPERATIONS * 4
+_KEY_PAIR_JOURNEY_OPERATIONS = (2, 0x21, 0x22)
+_CONSUMER_JOURNEY_OPERATIONS = _AES_GCM_JOURNEY_OPERATIONS + _KEY_PAIR_JOURNEY_OPERATIONS
+EXPECTED_CONSUMER_OPERATIONS = _CONSUMER_JOURNEY_OPERATIONS * 4
 LIFECYCLE_IDENTIFIER = b"fluent-key"
 AES_GCM_IDENTIFIER = b"fluent-aes-gcm-key"
+PRIVATE_KEY_IDENTIFIER = b"fluent-signing-private"
+PUBLIC_KEY_IDENTIFIER = b"fluent-verification-public"
 AES_GCM_PLAINTEXT = bytes.fromhex("4b4d49504b6974204145532d47434d206a6f75726e6579")
 AES_GCM_CIPHERTEXT = bytes.fromhex("0c4f9f4b8e8cb63bcc04c4a6f6aa354de9b9f2469e1e26")
 AES_GCM_IV = bytes.fromhex("000102030405060708090a0b")
 AES_GCM_AAD = b"kmipkit-gcm-aad"
 AES_GCM_TAG = bytes.fromhex("b516ad2a79bf55d147482f13feed6ea6")
+SIGNATURE_DATA = bytes.fromhex("3045022100aabbccddeeff0011223344556677889902210033445566778899aabbccddeeff0011")
+SIGNATURE_PLAINTEXT = b"KMIPKit ECDSA signature journey"
 
 
 def _item(tag: int, item_type: int, value: bytes) -> bytes:
@@ -70,6 +76,24 @@ def _response(operation: int, identifier: bytes) -> bytes:
             0x42007C,
             _item(0x420094, 7, identifier),
             _item(0x4200C2, 8, AES_GCM_PLAINTEXT),
+        )
+    elif operation == 2:
+        payload = _structure(
+            0x42007C,
+            _item(0x420066, 7, PRIVATE_KEY_IDENTIFIER),
+            _item(0x42006F, 7, PUBLIC_KEY_IDENTIFIER),
+        )
+    elif operation == 0x21:
+        payload = _structure(
+            0x42007C,
+            _item(0x420094, 7, PRIVATE_KEY_IDENTIFIER),
+            _item(0x4200C3, 8, SIGNATURE_DATA),
+        )
+    elif operation == 0x22:
+        payload = _structure(
+            0x42007C,
+            _item(0x420094, 7, PUBLIC_KEY_IDENTIFIER),
+            _item(0x42009B, 5, struct.pack(">I", 1)),
         )
     else:
         raise RuntimeError(f"fixture received unsupported KMIP operation {operation:#x}")
@@ -164,7 +188,7 @@ def _validate_operation(
     expected_identifier: bytes,
 ) -> None:
     payloads = [value for tag, kind, value in fields if tag == 0x420079 and kind == 1]
-    if operation in (1, 10, 20, 0x1F, 0x20) and len(payloads) != 1:
+    if operation in (1, 2, 10, 20, 0x1F, 0x20, 0x21, 0x22) and len(payloads) != 1:
         raise RuntimeError(
             "journey request must contain one Request Payload; "
             f"operation={operation} tags={[hex(tag) for tag, _kind, _value in fields]}"
@@ -227,6 +251,39 @@ def _validate_operation(
             raise RuntimeError("AES-GCM IV Length was not explicitly 96 bits")
         if parameter_values.get(0x4200CE) != (2, struct.pack(">i", 128)):
             raise RuntimeError("AES-GCM Tag Length was not explicitly 128 bits")
+    elif operation == 2:
+        payload = _children(payloads[0])
+        groups = {tag: (kind, value) for tag, kind, value in payload}
+        expected_attributes = {
+            0x420126: {0x420028: (5, struct.pack(">I", 6)), 0x42002A: (2, struct.pack(">i", 256))},
+            0x420127: {0x42002C: (2, struct.pack(">i", 1))},
+            0x420128: {0x42002C: (2, struct.pack(">i", 2))},
+        }
+        if set(groups) != set(expected_attributes) or any(kind != 1 for kind, _value in groups.values()):
+            raise RuntimeError("Create Key Pair must use separate common/private/public attribute groups")
+        for group_tag, expected in expected_attributes.items():
+            actual = {tag: (kind, value) for tag, kind, value in _children(groups[group_tag][1])}
+            if actual != expected:
+                raise RuntimeError("Create Key Pair algorithm, length, or usage masks were not explicit")
+    elif operation in (0x21, 0x22):
+        payload = _children(payloads[0])
+        flattened_payload = _flatten(payload)
+        values = {tag: (kind, value) for tag, kind, value in flattened_payload}
+        expected_key = PRIVATE_KEY_IDENTIFIER if operation == 0x21 else PUBLIC_KEY_IDENTIFIER
+        if values.get(0x420094) != (7, expected_key):
+            raise RuntimeError("Sign or Signature Verify did not use the matching key-pair identifier")
+        if values.get(0x4200C2) != (8, SIGNATURE_PLAINTEXT):
+            raise RuntimeError("Sign or Signature Verify did not use the known message bytes")
+        if operation == 0x22 and values.get(0x4200C3) != (8, SIGNATURE_DATA):
+            raise RuntimeError("Signature Verify did not use the returned signature bytes")
+        parameters = [value for tag, kind, value in payload if tag == 0x42002B and kind == 1]
+        if len(parameters) != 1:
+            raise RuntimeError("Sign and Signature Verify must carry explicit Cryptographic Parameters")
+        parameter_values = {tag: (kind, value) for tag, kind, value in _flatten(_children(parameters[0]))}
+        if parameter_values.get(0x420038) != (5, struct.pack(">I", 6)):
+            raise RuntimeError("Sign and Signature Verify must explicitly select SHA-256")
+        if parameter_values.get(0x4200AE) != (5, struct.pack(">I", 14)):
+            raise RuntimeError("Sign and Signature Verify must explicitly select ECDSA with SHA-256")
     if operation in (10, 20):
         indicators = [value for tag, kind, value in header_fields if tag == 0x420007 and kind == 5]
         if operation == 10 and indicators not in ([], [struct.pack(">I", 1)]):
@@ -276,9 +333,11 @@ def main() -> None:
                             f"index={connection_index} expected={expected_operation:#x} "
                             f"received={operation:#x}"
                         )
-                    journey_offset = connection_index % len(_AES_GCM_JOURNEY_OPERATIONS)
+                    journey_offset = connection_index % len(_CONSUMER_JOURNEY_OPERATIONS)
                     expected_identifier = (
-                        AES_GCM_IDENTIFIER if journey_offset >= 3 else LIFECYCLE_IDENTIFIER
+                        AES_GCM_IDENTIFIER if 3 <= journey_offset < 7
+                        else LIFECYCLE_IDENTIFIER if journey_offset < 3
+                        else b""
                     )
                     _validate_operation(operation, fields, header_fields, expected_identifier)
                     stream.sendall(_response(operation, expected_identifier))
