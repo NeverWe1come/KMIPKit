@@ -12,8 +12,10 @@ import jsonschema
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / 'interop/shared/tools'))
+sys.path.insert(0, str(ROOT / 'interop/rust-kmip-validator/tools'))
 from coverage_matrix import iter_cells
 from validate_route_evidence import validate_report
+from coverage_exclusions import generated_source_files
 
 VALIDATOR = Path(os.environ.get('KMIPKIT_VALIDATOR_BIN', ROOT / 'interop/rust-kmip-validator/target/debug/rust-kmip-validator'))
 CATALOG_PATH = ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json'
@@ -25,6 +27,13 @@ ELEMENTS = json.loads((ROOT / 'specification/catalog/kmip-2.1.json').read_bytes(
 
 
 class MatrixContract(unittest.TestCase):
+    def test_coverage_gate_identifies_generated_dispatch_tables(self):
+        generated = [
+            str(ROOT / 'interop/rust-kmip-validator/src/local_cases_generated.rs'),
+            str(ROOT / 'interop/rust-kmip-validator/src/route_calls_generated.rs'),
+        ]
+        self.assertCountEqual(generated, generated_source_files(generated))
+
     def cell(self, symbol, target='KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-LENGTH'):
         return next(cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
                     if cell['public_api_symbol'] == symbol and (target is None or cell['target_id'] == target))
