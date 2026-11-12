@@ -1041,6 +1041,19 @@ def _typed_attribute_cell(cell: dict, case: dict, target: dict) -> dict:
                 raise RecipePending
             type_name, value = scalar[attribute.value_kind]
         with ExitStack() as owned:
+            if type_name == 'Structure' and target.get('name') == 'Alternative Name':
+                # KMIP 2.0/2.1 §4.2, Table 31 requires both fields; type 1 is Uninterpreted Text String (§11.2).
+                alternative_value = owned.enter_context(
+                    PythonKmipDriver._item(0x4200C0, 'text', 'KMIPKit.Interop')
+                )
+                alternative_type = owned.enter_context(
+                    PythonKmipDriver._item(0x4200C1, 'enumeration', 1)
+                )
+                value = owned.enter_context(PythonKmipDriver._structure(
+                    [alternative_value, alternative_type]
+                ))
+            elif type_name == 'Structure':
+                raise RecipePending
             original = owned.enter_context(PythonKmipDriver._item(tag, _TTLV_TYPE_KINDS[type_name], value))
             expected = item_tree(original)
             typed = owned.enter_context(TypedAttribute.from_item(attribute, original))

@@ -222,7 +222,7 @@ class RouteMatrixTests(unittest.TestCase):
                                        and route['public_api_symbol'] ==
                                        'kmipkit.extensions.client_batch_item_get_attributes'))
 
-        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact, process_workers=2)
 
         typed_events = [event for event in report['events'] if event['public_api_symbol'] in symbols]
         typed_gaps = [gap for gap in gaps if gap['public_api_symbol'] in symbols]
@@ -231,7 +231,7 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(symbols, {event['public_api_symbol'] for event in typed_events})
         expected = self.runner.digest([[
             0x4200BF, 1,
-            [[0x4200C0, 7, 'KMIPKit.Interop'], [0x4200C1, 5, 1]],
+            [[0x4200C0, 7, 'KMIPKit.Interop'.encode().hex()], [0x4200C1, 5, 1]],
         ]])
         self.assertEqual({expected}, {event['request_tree_sha256'] for event in typed_events})
 
