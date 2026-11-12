@@ -116,6 +116,26 @@ class FfiCoverageObjectTests(unittest.TestCase):
                 str(Path(directory) / 'foreign-Cargo.toml')], capture_output=True)
             self.assertNotEqual(result.returncode, 0, 'a CLI override must not select executable project code')
 
+    def test_report_directory_is_rejected_before_creation_outside_authorized_roots(self):
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as directory:
+            root, _, _ = self.fixture(directory, 'classic')
+            outside = Path(directory) / 'outside'
+            self.assertTrue(callable(getattr(MODULE, 'prepare_report_dir', None)),
+                            'coverage report directory guard is missing')
+            with patch.object(MODULE, '_authorized_roots', return_value=[root.resolve()]):
+                with self.assertRaisesRegex(ValueError, 'outside'):
+                    MODULE.prepare_report_dir(outside)
+            self.assertFalse(outside.exists())
+
+    def test_arbitrary_log_filename_is_rejected_before_reading(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root, log, _ = self.fixture(directory, 'classic')
+            private = root / 'credentials.log'
+            private.write_bytes(log.read_bytes())
+            with self.assertRaisesRegex(ValueError, 'log'):
+                MODULE.collect_ffi_objects(root, private, log.with_suffix('.artifacts.jsonl'))
+
     def test_cli_preserves_paths_with_spaces_as_null_delimited_objects(self):
         with tempfile.TemporaryDirectory() as directory:
             root, log, objects = self.fixture(directory, 'cargo-1.100')
