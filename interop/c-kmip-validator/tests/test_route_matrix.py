@@ -37,6 +37,14 @@ class RouteMatrixTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'path_outside_allowed_root'):
                 generate_route_wrappers.resolve_output_path(outside)
 
+    def test_route_wrapper_parameter_names_parse_without_regular_expressions(self):
+        import generate_route_wrappers
+
+        self.assertEqual(generate_route_wrappers.parameter_name('const char *label'), 'label')
+        self.assertEqual(generate_route_wrappers.parameter_name('uint8_t output[32]'), 'output')
+        with self.assertRaisesRegex(ValueError, 'unsupported_installed_signature'):
+            generate_route_wrappers.parameter_name('void (*callback)(void)')
+
     def test_known_enum_fixture_preserves_exact_named_target_value(self):
         target = {'kind': 'enumeration_value', 'wire_value': '00000003',
                   'parent_element_ids': ['KMIPKIT-ELEM-ENUMERATION-CRYPTOGRAPHIC-ALGORITHM']}
