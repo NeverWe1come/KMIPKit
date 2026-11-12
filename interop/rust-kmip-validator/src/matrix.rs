@@ -2207,4 +2207,35 @@ mod tests {
             assert!(crate::local_wire::target_hash(&result.unwrap(), &fixture).is_ok());
         }
     }
+
+    /// OASIS KMIP 2.0/2.1 §11.56 requires unallocated tag ranges to remain decodable as rejections.
+    #[test]
+    fn enum_tag_decode_routes_reject_unallocated_ranges_from_target_metadata() {
+        let catalog: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let target = catalog["normative_targets"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|target| target["target_id"] == "KMIPKIT-RANGE-001")
+            .unwrap();
+        let row = json!({
+            "action": "decode",
+            "case_id": "test-enum-tag",
+            "public_api_symbol": "kmipkit_ttlv::codec::decode",
+            "route_id": "rust.generic-ttlv.codec.decode",
+            "target_id": "KMIPKIT-RANGE-001",
+            "protocol_version": "2.1"
+        });
+        let Some((raw_tag, rejection_code)) = expected_tag_decode_rejection(&row, target, &catalog)
+        else {
+            panic!("unallocated tag target did not produce a rejection recipe");
+        };
+        assert_eq!(raw_tag, 0);
+        assert_eq!(rejection_code, "tag_not_allocated");
+        let decoded = kmipkit::ttlv::codec::decode(&reserved_tag_ttlv(raw_tag));
+        assert!(matches!(decoded, Err(error) if error.kind() == DecodeErrorKind::UnallocatedTag));
+    }
 }
