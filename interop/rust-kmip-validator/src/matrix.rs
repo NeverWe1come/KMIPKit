@@ -90,13 +90,16 @@ fn unsigned_wire_value(value: &str) -> Option<u32> {
     u32::from_str_radix(&digits, 16).ok()
 }
 
-fn target_wire_value(target: &Json) -> Result<u32> {
-    let range = text(target, "wire_value")?;
-    let start = range
+fn wire_range_start(value: &str) -> Option<u32> {
+    value
         .split(['-', '–', '—'])
         .next()
-        .ok_or("target range is empty")?;
-    unsigned_wire_value(start).ok_or("target range needs a concrete fixture recipe")
+        .and_then(unsigned_wire_value)
+}
+
+fn target_wire_value(target: &Json) -> Result<u32> {
+    let range = text(target, "wire_value")?;
+    wire_range_start(range).ok_or("target range needs a concrete fixture recipe")
 }
 
 fn vendor_attribute_value() -> Result<Value> {
@@ -149,11 +152,7 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
         0x0042_005c
     } else if kind == "tag_range" && target["allocation"] == "extension" {
         let wire_value = text(target, "wire_value")?;
-        let start = wire_value
-            .split(['-', '–', '—'])
-            .next()
-            .ok_or("tag range is empty")?;
-        unsigned_wire_value(start).ok_or("tag range needs a concrete fixture")?
+        wire_range_start(wire_value).ok_or("tag range needs a concrete fixture")?
     } else if kind == "referenced_enum_value" {
         match text(target, "parent_name")? {
             "PKCS#11 Function" => 0x0042_015a,
@@ -1123,11 +1122,7 @@ fn expected_tag_decode_rejection(
 }
 
 fn target_wire_start(target: &Json) -> Option<u32> {
-    text(target, "wire_value")
-        .ok()?
-        .split(['-', '–', '—'])
-        .next()
-        .and_then(unsigned_wire_value)
+    wire_range_start(text(target, "wire_value").ok()?)
 }
 
 fn raw_tag_route_event(row: &Json, target: &Json, invocation: usize) -> Option<Json> {
