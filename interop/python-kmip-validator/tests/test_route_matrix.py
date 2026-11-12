@@ -1355,6 +1355,34 @@ class RouteMatrixTests(unittest.TestCase):
                           'peer_observed_response_count', 'peer_observed_result_status_codes'):
             self.assertNotIn(forbidden, event)
 
+    def test_forward_placeholder_construct_and_decode_routes_keep_the_single_item_exchange(self):
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-batch-placeholder-forward-reference-rejected')
+        for action in ('construct', 'decode'):
+            with self.subTest(action=action):
+                cell = next(cell for cell in iter_cells(
+                    self.catalog, self.manifest, languages=('python',))
+                    if cell['case_id'] == case['case_id']
+                    and cell['target_id'] == 'KMIPKIT-ELEM-OP-C2S-ACTIVATE'
+                    and cell['workflow_operation'] == 'Activate'
+                    and cell['action'] == action
+                    and cell['protocol_version'] == '2.1'
+                    and cell['encoding'] == 'TTLV'
+                    and cell['transport'] == 'raw_tls')
+                target = next(target for target in self.catalog['normative_targets']
+                              if target['target_id'] == cell['target_id'])
+                kind, event = self.runner._execute_matrix_cell(cell, case, target)
+
+                self.assertEqual('event', kind)
+                self.assertEqual('passed', event['status'])
+                self.assertIn('request_tree_sha256', event)
+                self.assertIn('response_tree_sha256', event)
+                self.assertEqual('response_received', event['request_delivery_state'])
+                self.assertEqual(['Activate'], event['batch_operation_sequence'])
+                self.assertEqual(['Activate'], event['peer_observed_operation_sequence'])
+                self.assertEqual(1, event['peer_observed_response_count'])
+                self.assertNotIn('local_rejection_code', event)
+
     def test_batch_workflow_invokes_get_attribute_list_request_builder(self):
         case = next(case for case in self.catalog['test_cases']
                     if case['case_id'] == 'test-batch-create-activate-destroy')
