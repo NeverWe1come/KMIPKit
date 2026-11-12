@@ -2901,6 +2901,93 @@ mod tests {
         }
     }
 
+    /// OASIS KMIP 2.0/2.1 §§5.1–5.7, 7.12, 7.22, 7.23, 7.37, 9.11, and 11.56.
+    #[test]
+    fn generic_ttlv_routes_build_concrete_member_and_extension_fixtures() {
+        let catalog: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        let cases = [
+            (
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-5-1-ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES",
+                0x0042_0028,
+            ),
+            (
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-5-2-ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES",
+                0x0042_0028,
+            ),
+            (
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-5-3-ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES",
+                0x0042_0028,
+            ),
+            (
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-5-4-ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES",
+                0x0042_0028,
+            ),
+            (
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-5-6-ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES",
+                0x0042_0028,
+            ),
+            (
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-5-7-ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES",
+                0x0042_0028,
+            ),
+            (
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-12-CRYPTOGRAPHIC-PARAMETERS",
+                0x0042_002b,
+            ),
+            (
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-22-OBJECT-TYPE-OBJECTTYPES",
+                0x0042_0057,
+            ),
+            (
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-23-OBJECT-GROUP",
+                0x0042_0056,
+            ),
+            (
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-ALTERNATIVE-FAILOVER-ENDPOINTS",
+                0x0042_0135,
+            ),
+            (
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-VENDOR-SPECIFIC",
+                0x0054_0000,
+            ),
+            (
+                "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-TIMESTAMP",
+                0x0042_0092,
+            ),
+            ("KMIPKIT-RANGE-004", 0x0054_0000),
+        ];
+        for (target_id, expected_tag) in cases {
+            let target = catalog["normative_targets"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|target| target["target_id"] == target_id)
+                .unwrap();
+            let sample = sample_for_route("kmipkit_ttlv::Item::new", target, elements);
+            assert!(sample.is_ok(), "{target_id}: {sample:?}");
+            let sample = sample.unwrap();
+            assert_eq!(sample.tag().raw(), expected_tag, "{target_id}");
+            for symbol in [
+                "kmipkit_ttlv::Item::new",
+                "kmipkit_ttlv::Item::with_value",
+                "kmipkit_ttlv::codec::decode",
+            ] {
+                let result = invoke(symbol, &sample, target, elements, "2.1");
+                assert!(result.is_some(), "{symbol} omitted {target_id}");
+                let result = result.unwrap();
+                assert!(result.is_ok(), "{symbol} {target_id}: {result:?}");
+                assert!(crate::local_wire::target_hash(&result.unwrap(), &sample).is_ok());
+            }
+        }
+    }
+
     #[test]
     fn vendor_attribute_target_uses_a_table_150_structure_fixture() {
         let cases: Json = serde_json::from_str(include_str!(
