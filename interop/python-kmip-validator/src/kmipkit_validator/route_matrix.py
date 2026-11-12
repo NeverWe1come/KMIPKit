@@ -379,6 +379,17 @@ _GENERIC_SYMBOLS = {
 _MATRIX_WORKERS = 16
 _MATRIX_PROCESS_WORKERS = 8
 _MATRIX_MAX_IN_FLIGHT = 64
+_EXECUTION_ROUTE_OPERATIONS = {
+    'python.execute.cancel': 'Cancel',
+    'python.execute.poll': 'Poll',
+    'python.execute.process': 'Process',
+    'python.execute.queryasyncrequests': 'Query Asynchronous Requests',
+}
+
+
+def _cell_operation(cell: dict, case: dict) -> str:
+    return (cell.get('workflow_operation')
+            or _EXECUTION_ROUTE_OPERATIONS.get(cell.get('execution_route_id'), case['operation']))
 
 
 def execute_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | None = None) -> dict:
@@ -672,12 +683,7 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
 
     positive_ping = (case['case_id'] == 'test-op-ping'
                      and cell['public_api_symbol'] == 'kmipkit.extensions.client_batch_item_ping')
-    operation = cell.get('workflow_operation') or {
-        'python.execute.cancel': 'Cancel',
-        'python.execute.poll': 'Poll',
-        'python.execute.process': 'Process',
-        'python.execute.queryasyncrequests': 'Query Asynchronous Requests',
-    }.get(cell.get('execution_route_id'), case['operation'])
+    operation = _cell_operation(cell, case)
     final_async_failure = (
         case['case_id'] == 'test-async-poll-final-operation-failure' and operation == 'Poll'
     )
