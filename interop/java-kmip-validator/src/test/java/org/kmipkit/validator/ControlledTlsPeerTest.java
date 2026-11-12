@@ -431,6 +431,7 @@ class ControlledTlsPeerTest {
                 "Installed Query calls against the controlled peer must emit route execution evidence.");
         JsonNode report = new ObjectMapper().readTree(reportPath.toFile());
         assertEquals("java", report.path("language").asText());
+        assertGenericTagInventoryEvidence(report.path("events"));
         assertTrue(enumerationFixtures.stream().noneMatch(fixture -> fixture.caseId().equals(
                         "test-norm-enumeration-value-profile-name-reserved-00000001-00000103")),
                 "A finite Profile Name range must remain pending until each named value is represented.");
@@ -2721,6 +2722,30 @@ class ControlledTlsPeerTest {
                     && event.hasNonNull("execution_api_symbol")) return event;
         }
         throw new AssertionError("The expected controlled Query route event is absent.");
+    }
+
+    // OASIS KMIP 2.0 §11.54 and KMIP 2.1 §11.56: exact Tag assignments and reservations.
+    private static void assertGenericTagInventoryEvidence(JsonNode events) throws Exception {
+        for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
+            JsonNode requires = testCase.path("requires");
+            if (!"tag".equals(requires.path("target_kind").asText())) continue;
+            var routes = new ArrayList<>(List.of(
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.rawtag.fromraw",
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.rawtag.checked",
+                    "java.generic-ttlv.ttlv_codec.decode"));
+            if ("assigned".equals(requires.path("allocation").asText())) {
+                routes.add("java.generic-ttlv.ttlv_item.create");
+                routes.add("java.generic-ttlv.function.ttlv_item_view_from_item");
+            }
+            for (JsonNode version : testCase.path("execution").path("protocol_versions")) {
+                for (String route : routes) {
+                    JsonNode event = findRouteEvent(events, testCase.path("case_id").asText(), route,
+                            version.asText(), requires.path("normative_target_id").asText());
+                    assertEquals("passed", event.path("status").asText());
+                    assertEquals(1, event.path("invocation_count").asInt());
+                }
+            }
+        }
     }
 
     private static long routeEventCount(JsonNode events, String caseId, String routeId) {
