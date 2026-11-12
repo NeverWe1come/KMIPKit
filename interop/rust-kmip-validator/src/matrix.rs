@@ -6997,4 +6997,75 @@ mod tests {
             }
         }
     }
+
+    #[test]
+    fn secret_operation_builder_routes_execute_manifest_fixtures() {
+        let catalog: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let routes: Json = serde_json::from_str(include_str!(
+            "../../shared/coverage/route-capabilities.json"
+        ))
+        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        let symbols = [
+            "kmipkit_protocol::CertifyRequest::with_certificate_request_value",
+            "kmipkit_protocol::CreateSplitKeyRequest::with_prime_field_size",
+            "kmipkit_protocol::DecryptRequest::with_authenticated_encryption_additional_data",
+            "kmipkit_protocol::DecryptRequest::with_authenticated_encryption_tag",
+            "kmipkit_protocol::DecryptRequest::with_correlation_value",
+            "kmipkit_protocol::DecryptRequest::with_iv_counter_nonce",
+            "kmipkit_protocol::EncryptRequest::with_authenticated_encryption_additional_data",
+            "kmipkit_protocol::EncryptRequest::with_correlation_value",
+            "kmipkit_protocol::EncryptRequest::with_iv_counter_nonce",
+            "kmipkit_protocol::HashRequest::with_correlation_value",
+            "kmipkit_protocol::MacRequest::with_correlation_value",
+            "kmipkit_protocol::MacVerifyRequest::with_correlation_value",
+            "kmipkit_protocol::MacVerifyRequest::with_mac_data",
+            "kmipkit_protocol::Pkcs11Request::with_correlation_value",
+            "kmipkit_protocol::RecertifyRequest::with_certificate_request_value",
+            "kmipkit_protocol::SignRequest::with_correlation_value",
+            "kmipkit_protocol::SignRequest::with_digested_data",
+            "kmipkit_protocol::SignatureVerifyRequest::with_correlation_value",
+            "kmipkit_protocol::SignatureVerifyRequest::with_digested_data",
+            "kmipkit_protocol::SignatureVerifyRequest::with_signature_data",
+        ];
+
+        for symbol in symbols {
+            let route = routes["routes"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|route| route["public_api_symbol"] == symbol)
+                .unwrap();
+            for target_id in route["normative_target_ids"].as_array().unwrap() {
+                let target_id = target_id.as_str().unwrap();
+                let target = catalog["normative_targets"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .find(|target| target["target_id"] == target_id)
+                    .unwrap();
+                for protocol_version in target["protocol_versions"].as_array().unwrap() {
+                    let protocol_version = protocol_version.as_str().unwrap();
+                    let expected =
+                        sample_for_route_at_version(symbol, target, elements, protocol_version)
+                            .unwrap_or_else(|error| {
+                                panic!("{symbol} sample failed for {target_id}: {error}")
+                            });
+                    let result = invoke(symbol, &expected, target, elements, protocol_version)
+                        .unwrap_or_else(|| panic!("{symbol} route missing for {target_id}"))
+                        .unwrap_or_else(|error| panic!("{symbol} rejected {target_id}: {error}"));
+                    assert!(
+                        crate::local_wire::target_hash(&result, &expected).is_ok(),
+                        "{symbol} changed {target_id}"
+                    );
+                }
+            }
+        }
+    }
 }
