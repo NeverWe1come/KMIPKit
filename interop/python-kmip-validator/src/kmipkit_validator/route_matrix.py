@@ -396,6 +396,8 @@ def execute_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | Non
     if cell['transport'] is None:
         if cell['public_api_symbol'] == 'kmipkit.client.BatchItemResult.supported_versions':
             return _positive_fixture_cell(cell, case, target, trace=trace)
+        if cell['public_api_symbol'] in _CREDENTIAL_ROUTE_SYMBOLS:
+            return _credential_cell(cell, case, target)
         if cell['public_api_symbol'] in _TYPED_ATTRIBUTE_SYMBOLS:
             return _typed_attribute_cell(cell, case, target)
         if cell['public_api_symbol'].startswith('kmipkit.cryptographic_parameters.'):
@@ -1034,6 +1036,60 @@ _TYPED_ATTRIBUTE_SYMBOLS = {
     'kmipkit.attribute_operations.AttributeSet.try_push',
     'kmipkit.attribute_operations.AttributeSet.try_push_typed',
 }
+
+_CREDENTIAL_ROUTE_SYMBOLS = {
+    'kmipkit.credentials.CredentialType.from_raw',
+    'kmipkit.credentials.Credential.into_ttlv',
+}
+
+
+def _credential_type_value(target: dict) -> int:
+    if (target.get('kind') == 'enumeration_value'
+            and 'KMIPKIT-ELEM-ENUMERATION-CREDENTIAL-TYPE'
+            in target.get('parent_element_ids', [])):
+        values = PythonKmipDriver._wire_representatives(target['wire_value'])
+        if len(values) != 1:
+            raise RecipePending
+        return values[0]
+    return 1
+
+
+def _credential_cell(cell: dict, case: dict, target: dict) -> dict:
+    """Roundtrip a raw-preserving Credential Type or generic Credential envelope."""
+    from kmipkit import credentials
+
+    symbol = cell['public_api_symbol']
+    credential_type = _credential_type_value(target)
+    if symbol == 'kmipkit.credentials.CredentialType.from_raw':
+        observed = credentials.CredentialType.from_raw(credential_type).raw()
+        expected = credential_type
+    elif symbol == 'kmipkit.credentials.Credential.into_ttlv':
+        with ExitStack() as owned:
+            payload_field = owned.enter_context(PythonKmipDriver._item(0x42002A, 'integer', 0x13579))
+            payload = owned.enter_context(PythonKmipDriver._structure([payload_field]))
+            type_field = owned.enter_context(PythonKmipDriver._item(0x420024, 'enumeration', credential_type))
+            value_field = owned.enter_context(PythonKmipDriver._item(0x420025, 'structure', payload))
+            source = owned.enter_context(PythonKmipDriver._structure([type_field, value_field]))
+            credential = owned.enter_context(credentials.Credential.from_ttlv(source))
+            if credential.credential_type_raw() != credential_type:
+                raise ValueError('generic Credential Type getter changed the raw value')
+            result = owned.enter_context(credential.into_ttlv())
+            result_item = owned.enter_context(PythonKmipDriver._item(0x420023, 'structure', result))
+            tree = item_tree(result_item)
+            expected = [0x420023, 1, [
+                [0x420024, 5, credential_type],
+                [0x420025, 1, [[0x42002A, 2, 0x13579]]],
+            ]]
+            if tree != expected:
+                raise ValueError('generic Credential envelope did not preserve its exact fields')
+            observed = tree
+    else:
+        raise RecipePending
+    if observed != expected:
+        raise ValueError('Credential Type route changed the normative raw value')
+    tree = [[0x420024, 5, observed]] if isinstance(observed, int) else observed
+    tree_hash = digest(tree)
+    return {'request_tree_sha256': tree_hash, 'response_tree_sha256': tree_hash}
 
 
 def _typed_attribute_cell(cell: dict, case: dict, target: dict) -> dict:

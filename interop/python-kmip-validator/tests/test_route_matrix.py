@@ -261,7 +261,8 @@ class RouteMatrixTests(unittest.TestCase):
         report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
 
         self.assertEqual(0, len(gaps), f'{len(gaps)} Credential Type targets lack typed recipes')
-        self.assertEqual(24, len(report['events']))
+        self.assertEqual(len(list(iter_cells(catalog, manifest, languages=('python',)))),
+                         len(report['events']))
         self.assertEqual(symbols, {event['public_api_symbol'] for event in report['events']})
         self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
         credential_type_targets = {target['target_id'] for target in self.catalog['normative_targets']
