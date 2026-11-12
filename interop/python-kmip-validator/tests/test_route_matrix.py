@@ -1340,6 +1340,33 @@ class RouteMatrixTests(unittest.TestCase):
                 self.assertEqual(operation_order, event['peer_observed_operation_sequence'])
                 self.assertEqual([1] * len(operation_order), event['peer_observed_result_status_codes'])
 
+    def test_generic_structure_routes_cover_operation_structure_fields(self):
+        symbols = {
+            'kmipkit.ttlv.ttlv_structure_create',
+            'kmipkit.ttlv.ttlv_structure_with_item',
+        }
+        target_names = {
+            'Authenticated Encryption Additional Data', 'Authenticated Encryption Tag',
+            'Correlation Value', 'Data', 'Data Length', 'Final Indicator',
+            'Init Indicator', 'Interop Function', 'Interop identifier', 'Log Message',
+            'MAC Data', 'Signature Data',
+        }
+        targets = {target['target_id']: target for target in self.catalog['normative_targets']}
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
+                 if cell['public_api_symbol'] in symbols
+                 and targets[cell['target_id']].get('kind') == 'operation_structure'
+                 and targets[cell['target_id']].get('name') in target_names]
+        self.assertEqual(48, len(cells))
+        cases = {case['case_id']: case for case in self.catalog['test_cases']}
+        for cell in cells:
+            with self.subTest(target=cell['target_id'], symbol=cell['public_api_symbol'],
+                              protocol_version=cell['protocol_version']):
+                kind, event = self.runner._execute_matrix_cell(
+                    cell, cases[cell['case_id']], targets[cell['target_id']]
+                )
+                self.assertEqual('event', kind, event)
+                self.assertEqual('passed', event['status'])
+
     def test_create_routes_validate_peer_rejection_and_all_wire_encodings(self):
         catalog = copy.deepcopy(self.catalog)
         catalog['test_cases'] = [case for case in self.catalog['test_cases']
