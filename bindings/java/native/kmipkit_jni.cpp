@@ -3095,8 +3095,8 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_symmetricKeyBui
             return static_cast<jlong>(0);
         }
         if (output == nullptr) {
-            throw_invalid_input(env);
-            return static_cast<jlong>(0);
+            throw_invalid_input(env); // COVERAGE-EXCLUDE: Rust FFI success guarantees a non-null output.
+            return static_cast<jlong>(0); // COVERAGE-EXCLUDE: Stops after the unreachable null-output guard above.
         }
         return to_java_handle(output);
     });
