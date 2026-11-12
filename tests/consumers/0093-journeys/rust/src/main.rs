@@ -1,6 +1,6 @@
 use kmipkit::{
-    Client, ClientBatch, ClientBatchItem, ClientBatchResponse, ClientError, ClientRequest,
-    CryptographicUsageMask,
+    Client, ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientBatchResponse, ClientError,
+    ClientRequest, CryptographicUsageMask,
     client_config::ClientConfiguration,
     protocol::{
         Attribute, Authentication, Credential, CryptographicParametersBuilder, KeyMaterial,
@@ -79,6 +79,45 @@ fn execute_ping(
     client.execute(ClientBatch::new(ClientBatchItem::ping()), limits)
 }
 
+fn execute_fluent_key_lifecycle(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let created = client
+        .request()
+        .create_symmetric_key()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::from_raw(12))
+        .name("fluent-key")
+        .execute(limits)?;
+    let identifier = created
+        .outcome()
+        .create_response()
+        .and_then(|response| response.unique_identifier())
+        .cloned()
+        .ok_or("Create did not return its typed Unique Identifier")?;
+    assert_eq!(identifier, kmipkit::protocol::UniqueIdentifier::from("fluent-key"));
+
+    let retrieved = client.request().get(identifier.clone()).execute(limits)?;
+    let get_response = retrieved
+        .outcome()
+        .get_response()
+        .ok_or("Get did not return a typed successful response")?;
+    assert_eq!(get_response.result().status().raw(), 0);
+    assert_eq!(get_response.unique_identifier(), Some(&identifier));
+    assert!(get_response.object().is_some());
+
+    let destroyed = client.request().destroy(identifier.clone()).execute(limits)?;
+    let destroy_response = destroyed
+        .outcome()
+        .destroy_response()
+        .ok_or("Destroy did not return a typed successful response")?;
+    assert_eq!(destroy_response.result().status().raw(), 0);
+    assert_eq!(destroy_response.unique_identifier(), Some(&identifier));
+    println!("rust: fluent Create/Get/Destroy journey verified");
+    Ok(())
+}
+
 fn demonstrate_client_request() -> Result<(), Box<dyn std::error::Error>> {
     let request = ClientRequest::ping();
     let validation_report = request.validation_report();
@@ -147,5 +186,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let raw = item.raw().ok_or("Ping Response Payload is missing")?;
     assert_eq!(raw.children().len(), 0);
     println!("rust: Ping result and raw TTLV verified");
+    execute_fluent_key_lifecycle(&mut client, &limits)?;
     Ok(())
 }
