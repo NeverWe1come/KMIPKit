@@ -1126,6 +1126,15 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn('test_binaries+=("${test_binary}")', collector)
         self.assertIn('for test_binary in "${test_binaries[@]}"', collector)
 
+    def test_ffi_coverage_collector_finds_artifacts_in_cargo_build_script_output(self) -> None:
+        collector = (REPOSITORY_ROOT / "scripts" / "collect_ffi_coverage.sh").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn('find "${llvm_cov_target}/debug/build/kmipkit-ffi"', collector)
+        self.assertIn("-name libkmipkit_ffi.so", collector)
+        self.assertIn("-name libkmipkit_ffi.a", collector)
+
     def test_coverage_gate_waits_for_platform_and_adapter_reports(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "coverage-gate")
