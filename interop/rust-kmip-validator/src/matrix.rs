@@ -1428,6 +1428,32 @@ mod tests {
     }
 
     #[test]
+    fn key_block_constructor_preserves_secret_data_key_block_shape() {
+        // OASIS KMIP 2.0/2.1 §2.7 and §3.1 define Secret Data and Key Block.
+        let catalog: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        let target = catalog["normative_targets"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|target| {
+                target["target_id"]
+                    == "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-7-SECRET-DATA-KEY-BLOCK"
+            })
+            .unwrap();
+        let symbol = "kmipkit_protocol::KeyBlock::try_new";
+        let expected = sample_for_route(symbol, target, elements).unwrap();
+        let result = invoke(symbol, &expected, target, elements, "2.1").unwrap().unwrap();
+        assert!(crate::local_wire::target_hash(&result, &expected).is_ok());
+    }
+
+    #[test]
     fn key_format_type_request_routes_construct_each_normative_value() {
         // OASIS KMIP 2.0/2.1 §11.25 defines Key Format Type values.
         let catalog: Json = serde_json::from_str(include_str!(
