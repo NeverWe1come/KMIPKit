@@ -2897,6 +2897,50 @@ mod tests {
     }
 
     #[test]
+    fn ticket_constructors_execute_each_nested_normative_target() {
+        let catalog: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        let targets = [
+            "KMIPKIT-ELEM-CREDENTIAL-TICKET",
+            "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-39-TICKET",
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-39-TICKET-TYPE",
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-39-TICKET-VALUE",
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-TICKET-TICKET",
+            "KMIPKIT-ELEM-TAG-420149",
+        ];
+        for symbol in [
+            "kmipkit_protocol::Ticket::new",
+            "kmipkit_protocol::Ticket::try_from_ttlv",
+        ] {
+            for target_id in targets {
+                let target = catalog["normative_targets"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .find(|target| target["target_id"] == target_id)
+                    .unwrap();
+                let expected = sample_for_route_at_version(symbol, target, elements, "2.1")
+                    .unwrap_or_else(|error| {
+                        panic!("{symbol} could not fixture {target_id}: {error}")
+                    });
+                let result = invoke(symbol, &expected, target, elements, "2.1")
+                    .unwrap_or_else(|| panic!("{symbol} route is missing for {target_id}"))
+                    .unwrap_or_else(|error| panic!("{symbol} rejected {target_id}: {error}"));
+                assert!(
+                    crate::local_wire::target_hash(&result, &expected).is_ok(),
+                    "{symbol} changed {target_id}"
+                );
+            }
+        }
+    }
+
+    #[test]
     fn attribute_reference_constructors_execute_name_and_raw_tag_forms() {
         let catalog: Json = serde_json::from_str(include_str!(
             "../../shared/catalog/kmipkit-1.0-test-catalog.json"
