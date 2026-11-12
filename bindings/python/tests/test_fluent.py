@@ -602,6 +602,20 @@ def test_symmetric_builder_validates_catalogued_and_explicit_attributes() -> Non
                     assert item.operation == 1
 
 
+def test_symmetric_builder_reports_wrong_catalogued_type_as_unsent_validation() -> None:
+    with ttlv.ttlv_value_integer(1) as wrong_value:
+        with fluent.SymmetricKeyBuilder() as builder:
+            with pytest.raises(errors.ClientExecutionError) as caught:
+                builder.add_attribute(StandardAttribute.OBJECT_GROUP, wrong_value)
+
+    failure = caught.value
+    assert failure.status == 13
+    assert failure.client_category is errors.ClientErrorCategory.VALIDATION
+    assert failure.cause is errors.ClientErrorCause.INVALID_INPUT
+    assert failure.delivery is errors.DeliveryState.NOT_SENT
+    assert failure.response_ttlv is None
+
+
 def test_fluent_builder_and_operation_reject_invalid_options_and_closed_handles() -> None:
     builder = fluent.SymmetricKeyBuilder()
     with builder:
