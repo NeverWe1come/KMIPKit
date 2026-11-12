@@ -170,7 +170,7 @@ fn s2c_test_put_batch() -> Vec<u8> {
         INTEGER,
         &65536i32.to_be_bytes(),
     ));
-    request_header.extend(encode_test_ttlv(0x0042_000D, INTEGER, &1i32.to_be_bytes()));
+    request_header.extend(encode_test_ttlv(0x0042_000D, INTEGER, &2i32.to_be_bytes()));
 
     let key_value = encode_test_ttlv(0x0042_0043, BYTE_STRING, &[0x11, 0x22, 0x33, 0x44]);
     let key_value = encode_test_structure(0x0042_0045, &key_value);
@@ -197,6 +197,22 @@ fn s2c_test_put_batch() -> Vec<u8> {
     batch_item.extend(encode_test_structure(0x0042_0079, &request_payload));
     let mut root = encode_test_structure(0x0042_0077, &request_header);
     root.extend(encode_test_structure(0x0042_000F, &batch_item));
+    let password = encode_test_structure(
+        0x0042_01A1,
+        &encode_test_ttlv(0x0042_00A1, TEXT_STRING, b"s3cr3t"),
+    );
+    let mut password_payload = encode_test_ttlv(0x0042_0070, ENUMERATION, &1u32.to_be_bytes());
+    password_payload.extend(encode_test_ttlv(
+        0x0042_0094,
+        TEXT_STRING,
+        b"s2c-password-1",
+    ));
+    password_payload.extend(password);
+    let mut password_batch_item =
+        encode_test_ttlv(0x0042_005C, ENUMERATION, &0x1Cu32.to_be_bytes());
+    password_batch_item.extend(encode_test_ttlv(0x0042_0093, BYTE_STRING, &[0xC3, 0xD4]));
+    password_batch_item.extend(encode_test_structure(0x0042_0079, &password_payload));
+    root.extend(encode_test_structure(0x0042_000F, &password_batch_item));
     encode_test_structure(0x0042_0078, &root)
 }
 
