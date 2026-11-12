@@ -151,6 +151,60 @@ class RouteCapabilitiesTests(unittest.TestCase):
         self.assertNotIn('KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-LENGTH',
                          route['normative_target_ids'])
 
+    def test_key_wrapping_setters_only_claim_their_scoped_kmip_members(self):
+        routes = {route['public_api_symbol']: set(route['normative_target_ids'])
+                  for route in self.data['routes'] if route['language'] == 'rust'}
+        expected_members = {
+            'kmipkit_protocol::EncryptionKeyInformation::with_cryptographic_parameters':
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-ENCRYPTION-KEY-INFORMATION-CRYPTOGRAPHIC-PARAMETERS',
+            'kmipkit_protocol::EncryptionKeyInformation::with_typed_cryptographic_parameters':
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-ENCRYPTION-KEY-INFORMATION-CRYPTOGRAPHIC-PARAMETERS',
+            'kmipkit_protocol::MacSignatureKeyInformation::with_cryptographic_parameters':
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-MAC-SIGNATURE-KEY-INFORMATION-CRYPTOGRAPHIC-PARAMETERS',
+            'kmipkit_protocol::MacSignatureKeyInformation::with_typed_cryptographic_parameters':
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-MAC-SIGNATURE-KEY-INFORMATION-CRYPTOGRAPHIC-PARAMETERS',
+            'kmipkit_protocol::KeyWrappingData::with_encoding_option':
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-KEY-WRAPPING-DATA-ENCODING-OPTION',
+            'kmipkit_protocol::KeyWrappingData::with_encryption_key_information':
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-KEY-WRAPPING-DATA-ENCRYPTION-KEY-INFORMATION',
+            'kmipkit_protocol::KeyWrappingData::with_iv_counter_nonce':
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-KEY-WRAPPING-DATA-IV-COUNTER-NONCE',
+            'kmipkit_protocol::KeyWrappingData::with_mac_signature':
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-KEY-WRAPPING-DATA-MAC-SIGNATURE',
+            'kmipkit_protocol::KeyWrappingData::with_mac_signature_key_information':
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-KEY-WRAPPING-DATA-MAC-SIGNATURE-KEY-INFORMATION',
+        }
+        typed_parameter_routes = {
+            'kmipkit_protocol::EncryptionKeyInformation::with_typed_cryptographic_parameters',
+            'kmipkit_protocol::MacSignatureKeyInformation::with_typed_cryptographic_parameters',
+        }
+        self.assertTrue((set(expected_members) - typed_parameter_routes) <= set(routes))
+        for symbol, member_id in expected_members.items():
+            if symbol not in routes:
+                continue
+            targets = routes[symbol]
+            self.assertIn(member_id, targets, symbol)
+            self.assertFalse(any(target_id.startswith('KMIPKIT-ELEM-STRUCTURE-MEMBER-7-18-')
+                                 for target_id in targets), symbol)
+            self.assertNotIn('KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS', targets, symbol)
+        for symbol in (
+            'kmipkit_protocol::EncryptionKeyInformation::with_cryptographic_parameters',
+            'kmipkit_protocol::EncryptionKeyInformation::with_typed_cryptographic_parameters',
+        ):
+            self.assertNotIn(
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-MAC-SIGNATURE-KEY-INFORMATION-CRYPTOGRAPHIC-PARAMETERS',
+                routes[symbol], symbol)
+        for symbol in (
+            'kmipkit_protocol::MacSignatureKeyInformation::with_cryptographic_parameters',
+            'kmipkit_protocol::MacSignatureKeyInformation::with_typed_cryptographic_parameters',
+        ):
+            if symbol not in routes:
+                continue
+            self.assertNotIn(
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-ENCRYPTION-KEY-INFORMATION-CRYPTOGRAPHIC-PARAMETERS',
+                routes[symbol], symbol)
+        self.assertTrue(typed_parameter_routes <= set(routes))
+
     def test_object_type_raw_value_route_only_claims_its_own_enum_family(self):
         catalog = json.loads((SHARED / 'catalog/kmipkit-1.0-test-catalog.json').read_text())
         targets = {target['target_id']: target for target in catalog['normative_targets']}
