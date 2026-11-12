@@ -842,6 +842,27 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual('batch_placeholder_chain', workflow)
 
 
+    def test_batch_placeholder_chain_resolves_the_same_object_and_cleans_up(self):
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-batch-placeholder-chain-resolves'
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+        self.assertEqual(len(checks), 12, 'placeholder chain must pass both versions over all wire transports')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks))
+        self.assertTrue(all(check['peer_request_operations'] == [1, 18, 10] for check in checks))
+        self.assertTrue(all(check['peer_cleanup_operations'] == [19, 20] for check in checks))
+        for symbol in ('kmipkit_client_batch_item_create', 'kmipkit_client_batch_item_activate',
+                       'kmipkit_client_batch_item_get', 'kmipkit_client_batch_item_revoke',
+                       'kmipkit_client_batch_item_destroy', 'kmipkit_client_execute'):
+            self.assertTrue(any(event['public_api_symbol'] == symbol and event['action'] == 'send'
+                                for event in events), symbol)
+
+
     def test_single_item_batch_omits_optional_batch_options(self):
         from artifact_support import ROOT
         from route_peer import RECIPES, execute_network_cells
