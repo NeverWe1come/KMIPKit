@@ -49,6 +49,20 @@ passing shared-contract job does not satisfy those language-level requirements.
   response cells invoked, with zero failed invocations. It still correctly
   exits nonzero with 26,376 network cells pending. T006 and T007 remain open.
 
+## Development evidence: stable controlled-peer identity
+
+- Red commit `5d1d764c9` added an assertion that the controlled mTLS peer has
+  the same configuration fingerprint for KMIP 2.0 and 2.1. It failed because
+  hashing the complete connection document included the selected protocol
+  version and ephemeral endpoint port.
+- Green commit `354da0bdf` fingerprints the server identity, selected endpoint
+  host, TLS trust certificate, client certificate, and SNI. It omits connection
+  details that vary per matrix cell, allowing response evidence from the same
+  peer configuration to be combined safely.
+- Verification on 2026-11-12: Rust validator Clippy passed; all 67 Rust unit
+  tests and 3 CLI tests passed; the controlled mTLS response-accessor test
+  passed for KMIP 2.0 and 2.1 with one shared fingerprint.
+
 ## Development evidence: Secret Data constructor applicability
 
 - Red commit `f7cb47c47`: `python3 -m unittest interop.shared.tests.test_route_capabilities.RouteCapabilitiesTests.test_secret_data_constructor_does_not_claim_inapplicable_key_block_crypto_fields -v` failed because the route included Cryptographic Algorithm and Cryptographic Length.
