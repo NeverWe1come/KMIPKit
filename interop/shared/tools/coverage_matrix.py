@@ -15,6 +15,12 @@ from cli_paths import resolve_within
 
 ROOT = Path(__file__).resolve().parents[3]
 LANGUAGES = ("rust", "c", "java", "python")
+_BATCH_OPTION_TARGETS = {
+    "batch_error_continuation_option": (
+        "continuation_option", "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION"),
+    "batch_order_option": (
+        "order_option", "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION"),
+}
 
 
 def _norm(value: str) -> str:
@@ -50,6 +56,30 @@ def _operation_name_from_target(target_id: str) -> str | None:
 
 def _case_targets(case: dict, operation_ids: dict[str, str], normative_targets: list[dict] | None = None) -> set[str]:
     return {item["target_id"] for item in _case_obligations(case, operation_ids, normative_targets)}
+
+
+def _omitted_batch_option_targets(case: dict) -> set[str]:
+    scenario = case.get("requires", {}).get("protocol_scenario", {})
+    if not isinstance(scenario, dict):
+        return set()
+    parameters = scenario.get("parameters", {})
+    expected = scenario.get("expected", {})
+    if not isinstance(parameters, dict) or not isinstance(expected, dict):
+        return set()
+    omitted = set()
+    for parameter, (expected_key, target_id) in _BATCH_OPTION_TARGETS.items():
+        if parameters.get(parameter) in {"omitted", "absent"} or expected.get(expected_key) == "absent":
+            omitted.add(target_id)
+    return omitted
+
+
+def _route_excludes_target(case: dict, route: dict, target: dict | None) -> bool:
+    requires = case.get("requires", {})
+    target_kind = requires.get("target_kind", (target or {}).get("kind"))
+    allocation = requires.get("allocation", (target or {}).get("allocation"))
+    return any(target_kind in exclusion["target_kinds"]
+               and allocation in exclusion["allocations"]
+               for exclusion in route.get("case_exclusions", []))
 
 
 def _is_generic_tag_inventory_case(case: dict) -> bool:
@@ -114,6 +144,8 @@ def _case_obligations(
         scenario_targets = []
         parameters = {}
     plain_targets.extend(value for value in requires.get("normative_target_ids", []) if isinstance(value, str))
+    omitted_batch_targets = _omitted_batch_option_targets(case)
+    plain_targets = [target_id for target_id in plain_targets if target_id not in omitted_batch_targets]
 
     for field, target_kind, parent_prefix in (
         ("enum_type", "enumeration_value", "KMIPKIT-ELEM-ENUMERATION-"),
@@ -233,10 +265,6 @@ def applicable_routes(
         # normative inventory case, not cross-multiplied with the whole Tag set.
         if local_tag_case and route["api_level"] != "generic-ttlv":
             continue
-        if any(requires.get("target_kind") in exclusion["target_kinds"]
-               and requires.get("allocation") in exclusion["allocations"]
-               for exclusion in route.get("case_exclusions", [])):
-            continue
         if request_must_not_be_sent and route["mode"] == "local" and "response" in route["route_id"].casefold():
             continue
         if not case_version.intersection(route["protocol_versions"]):
@@ -275,8 +303,10 @@ def iter_cells(catalog: dict, manifest: dict, *, languages: tuple[str, ...] = LA
             for version in versions:
                 for obligation in obligations:
                     target_id = obligation["target_id"]
+                    target = normative_targets.get(target_id)
                     target_routes = [route for route in routes
                                      if version in route["protocol_versions"]
+                                     and not _route_excludes_target(case, route, target)
                                      and ("*" in route["normative_target_ids"]
                                           or target_id in route["normative_target_ids"])]
                     if not target_routes and _unavailable_for_target(manifest, language, target_id) is None:
@@ -289,8 +319,10 @@ def iter_cells(catalog: dict, manifest: dict, *, languages: tuple[str, ...] = LA
                     if version not in route["protocol_versions"]:
                         continue
                     route_obligations = [obligation for obligation in obligations
-                                         if "*" in route["normative_target_ids"]
-                                         or obligation["target_id"] in route["normative_target_ids"]]
+                                         if not _route_excludes_target(
+                                             case, route, normative_targets.get(obligation["target_id"]))
+                                         and ("*" in route["normative_target_ids"]
+                                              or obligation["target_id"] in route["normative_target_ids"])]
                     if not route_obligations:
                         continue
                     for combination in route["combinations"]:
