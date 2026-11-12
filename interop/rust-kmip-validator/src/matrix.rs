@@ -721,6 +721,31 @@ fn invoke(
     if let Some(result) = crate::local_credentials::invoke(symbol, sample, target, elements) {
         return Some(result);
     }
+    if [
+        "kmipkit_protocol::GetRequest::with_key_format_type",
+        "kmipkit_protocol::ExportRequest::with_key_format_type",
+    ]
+    .contains(&symbol)
+    {
+        return Some((|| {
+            let raw = sample.with_value(|value| match value {
+                ValueView::Enumeration(value) => Ok(*value),
+                _ => Err("Key Format Type fixture is not an Enumeration"),
+            })?;
+            let key_format_type = kmipkit::protocol::KeyFormatType::from_raw(raw);
+            let payload = if symbol == "kmipkit_protocol::GetRequest::with_key_format_type" {
+                kmipkit::protocol::GetRequest::new()
+                    .with_key_format_type(key_format_type)
+                    .to_ttlv_payload()
+            } else {
+                kmipkit::protocol::ExportRequest::new()
+                    .with_key_format_type(key_format_type)
+                    .into_ttlv_payload()
+            }
+            .map_err(|_| "Key Format Type request fixture rejected")?;
+            crate::driver::item(0x0042_0079, Value::structure(payload))
+        })());
+    }
     if symbol == "kmipkit_protocol::ManagedObject::try_from_item" {
         let (object_type, object, _) = managed_object_fixture(target, elements).ok()?;
         return Some(
@@ -1143,14 +1168,20 @@ mod tests {
                 let Some(target_id) = target_id.as_str() else {
                     continue;
                 };
-                let Some(target) = targets.iter().find(|target| target["target_id"] == target_id)
+                let Some(target) = targets
+                    .iter()
+                    .find(|target| target["target_id"] == target_id)
                 else {
                     continue;
                 };
                 if target["kind"] != "enumeration_value"
                     || !target["parent_element_ids"]
                         .as_array()
-                        .is_some_and(|parents| parents.iter().any(|parent| parent == "KMIPKIT-ELEM-ENUMERATION-KEY-FORMAT-TYPE"))
+                        .is_some_and(|parents| {
+                            parents
+                                .iter()
+                                .any(|parent| parent == "KMIPKIT-ELEM-ENUMERATION-KEY-FORMAT-TYPE")
+                        })
                 {
                     continue;
                 }
