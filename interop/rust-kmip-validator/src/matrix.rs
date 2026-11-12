@@ -15,6 +15,7 @@ const KEY_BLOCK_TAG: u32 = 0x0042_0040;
 const KEY_WRAPPING_CONSTRUCTOR_ROUTES: &[&str] = &[
     "kmipkit_protocol::EncryptionKeyInformation::try_new",
     "kmipkit_protocol::EncryptionKeyInformation::with_cryptographic_parameters",
+    "kmipkit_protocol::EncryptionKeyInformation::with_typed_cryptographic_parameters",
     "kmipkit_protocol::KeyWrappingData::try_new",
     "kmipkit_protocol::KeyWrappingData::with_encoding_option",
     "kmipkit_protocol::KeyWrappingData::with_encryption_key_information",
@@ -23,6 +24,7 @@ const KEY_WRAPPING_CONSTRUCTOR_ROUTES: &[&str] = &[
     "kmipkit_protocol::KeyWrappingData::with_mac_signature_key_information",
     "kmipkit_protocol::MacSignatureKeyInformation::try_new",
     "kmipkit_protocol::MacSignatureKeyInformation::with_cryptographic_parameters",
+    "kmipkit_protocol::MacSignatureKeyInformation::with_typed_cryptographic_parameters",
 ];
 
 fn text<'a>(value: &'a Json, field: &str) -> Result<&'a str> {
@@ -1042,25 +1044,47 @@ fn construct_key_block_fixture(target: &Json, elements: &[Json]) -> Result<Item>
         .map_err(|_| "Key Block constructor rejected")
 }
 
-fn metadata_key_information(mac: bool, include_parameters: bool) -> Result<Item> {
+fn metadata_key_information(
+    mac: bool,
+    include_parameters: bool,
+    typed_parameters: bool,
+) -> Result<Item> {
     use kmipkit::protocol::{EncryptionKeyInformation, MacSignatureKeyInformation};
 
     if mac {
         let mut info = MacSignatureKeyInformation::try_new("kmipkit-mac-key".to_owned())
             .map_err(|_| "MAC key information fixture rejected")?;
         if include_parameters {
-            info = info
-                .with_cryptographic_parameters(kmipkit::ttlv::Structure::new())
-                .map_err(|_| "MAC cryptographic parameters fixture rejected")?;
+            if typed_parameters {
+                let parameters = kmipkit::protocol::CryptographicParametersBuilder::new()
+                    .build()
+                    .map_err(|_| "typed MAC cryptographic parameters fixture rejected")?;
+                info = info
+                    .with_typed_cryptographic_parameters(parameters)
+                    .map_err(|_| "typed MAC cryptographic parameters fixture rejected")?;
+            } else {
+                info = info
+                    .with_cryptographic_parameters(kmipkit::ttlv::Structure::new())
+                    .map_err(|_| "MAC cryptographic parameters fixture rejected")?;
+            }
         }
         Ok(info.into_item())
     } else {
         let mut info = EncryptionKeyInformation::try_new("kmipkit-encryption-key".to_owned())
             .map_err(|_| "encryption key information fixture rejected")?;
         if include_parameters {
-            info = info
-                .with_cryptographic_parameters(kmipkit::ttlv::Structure::new())
-                .map_err(|_| "encryption cryptographic parameters fixture rejected")?;
+            if typed_parameters {
+                let parameters = kmipkit::protocol::CryptographicParametersBuilder::new()
+                    .build()
+                    .map_err(|_| "typed encryption cryptographic parameters fixture rejected")?;
+                info = info
+                    .with_typed_cryptographic_parameters(parameters)
+                    .map_err(|_| "typed encryption cryptographic parameters fixture rejected")?;
+            } else {
+                info = info
+                    .with_cryptographic_parameters(kmipkit::ttlv::Structure::new())
+                    .map_err(|_| "encryption cryptographic parameters fixture rejected")?;
+            }
         }
         Ok(info.into_item())
     }
@@ -1072,8 +1096,10 @@ fn key_wrapping_metadata_model(symbol: &str, target: &Json) -> Result<Item> {
     let target_id = text(target, "target_id")?;
     let target_name = text(target, "name")?;
     let wrapping_root = symbol == "kmipkit_protocol::KeyWrappingData::try_from_item";
-    let encryption_target = target_id.contains("ENCRYPTION-KEY-INFORMATION");
-    let mac_target = target_id.contains("MAC-SIGNATURE-KEY-INFORMATION");
+    let encryption_target = target_id.contains("ENCRYPTION-KEY-INFORMATION")
+        || target_name == "Encryption Key Information";
+    let mac_target = target_id.contains("MAC-SIGNATURE-KEY-INFORMATION")
+        || target_name == "MAC/Signature Key Information";
     let full_wrapping_root = target_name == "Key Wrapping Data";
     let generic_unique_identifier_tag = target_id == "KMIPKIT-ELEM-TAG-420094";
     let include_encryption = !wrapping_root || !mac_target || full_wrapping_root;
@@ -1081,10 +1107,18 @@ fn key_wrapping_metadata_model(symbol: &str, target: &Json) -> Result<Item> {
         && !(generic_unique_identifier_tag && !mac_target && !full_wrapping_root);
     let include_parameters = target_name == "Cryptographic Parameters";
     if symbol.starts_with("kmipkit_protocol::EncryptionKeyInformation::") {
-        return metadata_key_information(false, include_parameters);
+        return metadata_key_information(
+            false,
+            include_parameters,
+            symbol.ends_with("::with_typed_cryptographic_parameters"),
+        );
     }
     if symbol.starts_with("kmipkit_protocol::MacSignatureKeyInformation::") {
-        return metadata_key_information(true, include_parameters);
+        return metadata_key_information(
+            true,
+            include_parameters,
+            symbol.ends_with("::with_typed_cryptographic_parameters"),
+        );
     }
 
     let mut data = KeyWrappingData::try_new(1).map_err(|_| "key wrapping fixture rejected")?;
@@ -1093,13 +1127,14 @@ fn key_wrapping_metadata_model(symbol: &str, target: &Json) -> Result<Item> {
             kmipkit::protocol::EncryptionKeyInformation::try_from_item(metadata_key_information(
                 false,
                 include_parameters && (encryption_target || !mac_target),
+                false,
             )?)
             .map_err(|_| "encryption key information fixture rejected")?;
         data = data.with_encryption_key_information(info);
     }
     if include_mac {
         let info = kmipkit::protocol::MacSignatureKeyInformation::try_from_item(
-            metadata_key_information(true, include_parameters && mac_target)?,
+            metadata_key_information(true, include_parameters && mac_target, false)?,
         )
         .map_err(|_| "MAC key information fixture rejected")?;
         data = data.with_mac_signature_key_information(info);
@@ -1144,7 +1179,8 @@ fn metadata_expected_target(model: &Item, target: &Json, elements: &[Json]) -> R
         [found_item] => found_item
             .try_clone()
             .map_err(|_| "metadata target copy failed"),
-        _ => Err("metadata fixture target is missing or ambiguous"),
+        [] => Err("metadata fixture target is missing"),
+        _ => Err("metadata fixture target is ambiguous"),
     }
 }
 
