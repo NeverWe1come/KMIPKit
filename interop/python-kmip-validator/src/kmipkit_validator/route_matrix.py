@@ -565,6 +565,18 @@ def _managed_object_root_name(target: dict, elements: dict[str, dict]) -> str:
     raise RecipePending
 
 
+def _assert_managed_object_target(target: dict, tree: list, name: str,
+                                  elements: dict[str, dict]) -> None:
+    if target.get('kind') == 'structure_member':
+        member_tag = _managed_object_tag(elements, target.get('name', ''))
+        if not _credential_tree_has_tag(tree, member_tag):
+            raise RecipePending
+    elif target.get('kind') == 'tag' and tree[0] != int(target['wire_value'], 16):
+        raise ValueError('managed-object route changed the target tag')
+    elif target.get('kind') == 'object_structure' and tree[0] != _managed_object_tag(elements, name):
+        raise ValueError('managed-object route changed the root object tag')
+
+
 def _managed_object_cell(cell: dict, case: dict, target: dict) -> dict:
     """Invoke the exact public managed-object constructor/parser route."""
     from kmipkit import managed_objects
@@ -599,12 +611,7 @@ def _managed_object_cell(cell: dict, case: dict, target: dict) -> dict:
             raise ValueError('managed-object route changed the ordered OASIS fields')
         if result.object_type != object_type or observed[0] != _managed_object_tag(elements, name):
             raise ValueError('managed-object route changed the object type or root tag')
-        if target.get('kind') == 'structure_member':
-            member_tag = _managed_object_tag(elements, target.get('name', ''))
-            if not _credential_tree_has_tag(observed, member_tag):
-                raise RecipePending
-        if target.get('kind') == 'tag' and observed[0] != int(target['wire_value'], 16):
-            raise ValueError('managed-object route changed the target tag')
+        _assert_managed_object_target(target, observed, name, elements)
     tree_hash = digest(observed)
     return {'request_tree_sha256': tree_hash, 'response_tree_sha256': tree_hash}
 
