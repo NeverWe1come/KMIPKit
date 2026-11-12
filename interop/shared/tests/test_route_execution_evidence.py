@@ -177,7 +177,7 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
                 scope_cells=scope,
             )
         report = copy.deepcopy(self.report)
-        with self.assertRaisesRegex(ValueError, "unplanned route execution cell"):
+        with self.assertRaisesRegex(ValueError, "outside the declared route scope"):
             validate_report(
                 report,
                 self.catalog,
@@ -430,6 +430,36 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
                 [self.report], self.catalog, self.manifest,
                 catalog_sha256="c" * 64, route_manifest_sha256="d" * 64,
                 expected_artifact_sha256="b" * 64,
+            )
+
+    def test_collection_accepts_scoped_reports_only_when_the_union_is_complete(self):
+        local = copy.deepcopy(self.report)
+        local["run_id"] = "local-shard"
+        local["events"] = local["events"][:2]
+        network = copy.deepcopy(self.report)
+        network["run_id"] = "network-shard"
+        network["events"] = network["events"][2:]
+        scopes = {
+            local["run_id"]: local["events"],
+            network["run_id"]: network["events"],
+        }
+
+        summary = validate_collection(
+            [local, network], self.catalog, self.manifest,
+            catalog_sha256="c" * 64, route_manifest_sha256="d" * 64,
+            expected_artifact_sha256="b" * 64,
+            scope_cells_by_run=scopes,
+        )
+        self.assertTrue(summary["complete_matrix"])
+        self.assertEqual(5, summary["observed_cells"])
+
+        del network["events"][-1]
+        with self.assertRaisesRegex(ValueError, "misses full matrix cells"):
+            validate_collection(
+                [local, network], self.catalog, self.manifest,
+                catalog_sha256="c" * 64, route_manifest_sha256="d" * 64,
+                expected_artifact_sha256="b" * 64,
+                scope_cells_by_run=scopes,
             )
         conflict = copy.deepcopy(self.report)
         conflict["run_id"] = "run-conflict"
