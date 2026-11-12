@@ -1660,6 +1660,54 @@ fn response_message_fixture(
     )
 }
 
+fn failed_response_message_fixture(
+    operation: &str,
+    target: &Json,
+    elements: &[Json],
+    protocol_version: &str,
+) -> Result<kmipkit::protocol::ResponseMessage> {
+    let operation = operation_value(operation).ok_or("response operation is unavailable")?;
+    let header = message_structure(
+        0x0042_007A,
+        vec![
+            message_protocol_version(target, elements, protocol_version)?,
+            message_item(0x0042_0092, Value::date_time(1))?,
+            message_nonce(target, elements)?,
+            message_item(0x0042_0155, Value::byte_string(vec![0x50]))?,
+            message_item(0x0042_00C7, Value::enumeration(1))?,
+            message_item(
+                0x0042_0105,
+                Value::text_string("client-correlation".to_owned()),
+            )?,
+            message_item(
+                0x0042_0106,
+                Value::text_string("server-correlation".to_owned()),
+            )?,
+            message_item(0x0042_000D, Value::integer(1))?,
+        ],
+    )?;
+    let batch_item = message_structure(
+        0x0042_000F,
+        vec![
+            message_item(0x0042_005C, Value::enumeration(operation))?,
+            message_item(0x0042_0093, Value::byte_string(vec![0x4B, 1]))?,
+            message_item(0x0042_007F, Value::enumeration(1))?,
+            message_item(0x0042_007E, Value::enumeration(1))?,
+            message_item(
+                0x0042_007D,
+                Value::text_string("controlled fixture failure".to_owned()),
+            )?,
+        ],
+    )?;
+    let message = message_structure(0x0042_007B, vec![header, batch_item])?
+        .as_structure()
+        .ok_or("Response Message fixture root is not a Structure")?
+        .try_clone()
+        .map_err(|_| "Response Message fixture copy failed")?;
+    kmipkit::protocol::ResponseMessage::try_from_ttlv(message)
+        .map_err(|_| "Response Message fixture rejected")
+}
+
 fn message_fixture_model(
     symbol: &str,
     target: &Json,
@@ -2001,6 +2049,35 @@ fn invoke_client_batch_route(symbol: &str, sample: &Item) -> Option<Result<Item>
     })())
 }
 
+fn invoke_client_batch_outcome_response_route(
+    symbol: &str,
+    sample: &Item,
+    target: &Json,
+    elements: &[Json],
+    protocol_version: &str,
+) -> Option<Result<Item>> {
+    if symbol != "kmipkit_client::ClientBatchOutcome::encrypt_response" {
+        return None;
+    }
+    Some((|| {
+        let message =
+            failed_response_message_fixture("Encrypt", target, elements, protocol_version)?;
+        let item = message
+            .batch_items()
+            .next()
+            .ok_or("Encrypt response fixture has no batch item")?;
+        let response = kmipkit::protocol::EncryptResponse::try_from_response_item(item)
+            .map_err(|_| "Encrypt response fixture rejected")?;
+        let outcome = kmipkit::ClientBatchOutcome::Encrypt(response);
+        if outcome.operation() != kmipkit::ClientOperation::Encrypt
+            || outcome.encrypt_response().is_none()
+        {
+            return Err("Encrypt outcome accessor did not return its typed response");
+        }
+        sample.try_clone().map_err(|_| "local copy failed")
+    })())
+}
+
 fn invoke_simple_protocol_route(symbol: &str, sample: &Item) -> Option<Result<Item>> {
     if symbol == "kmipkit_protocol::ManagedObject::unknown" {
         return Some((|| match kmipkit::protocol::ManagedObject::unknown(
@@ -2246,6 +2323,15 @@ fn invoke(
         return Some(result);
     }
     if let Some(result) = invoke_attribute_reference_route(symbol, sample) {
+        return Some(result);
+    }
+    if let Some(result) = invoke_client_batch_outcome_response_route(
+        symbol,
+        sample,
+        target,
+        elements,
+        protocol_version,
+    ) {
         return Some(result);
     }
     if let Some(result) = invoke_client_batch_route(symbol, sample) {
@@ -3037,7 +3123,10 @@ mod tests {
 
         let result = invoke(symbol, &expected, target, elements, "2.1");
 
-        assert!(result.is_some(), "Encrypt response accessor is not executable");
+        assert!(
+            result.is_some(),
+            "Encrypt response accessor is not executable"
+        );
     }
 
     #[test]
