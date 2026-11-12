@@ -1385,6 +1385,12 @@ class RouteMatrixTests(unittest.TestCase):
     def test_supported_versions_accessor_covers_all_normative_discovery_targets(self):
         self.assert_route_cells_pass({'kmipkit.client.BatchItemResult.supported_versions'})
 
+    def test_batch_item_result_message_extension_accessors_execute_through_client(self):
+        self.assert_route_cells_pass({
+            'kmipkit.client.BatchItemResult.extension_count',
+            'kmipkit.client.BatchItemResult.extension_ttlv_at',
+        })
+
     def test_decode_wire_digest_is_the_received_response(self):
         import hashlib
         from unittest.mock import patch
