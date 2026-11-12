@@ -1427,6 +1427,16 @@ def _async_request_fields(operation: str, *, correlation_filter: bool, operation
     return fields
 
 
+def _assert_async_request_target(operation: str, target: dict, tree: list) -> None:
+    if target.get('kind') == 'operation':
+        if _normalized_name(target.get('name', '')) != _normalized_name(operation):
+            raise ValueError('asynchronous request class does not match its operation target')
+        return
+    tag = _async_target_tag(target)
+    if tag is None or not _credential_tree_has_tag([0, 1, tree[2]], tag):
+        raise ValueError('asynchronous TTLV output did not contain the exact target')
+
+
 def _async_request_cell(cell: dict, case: dict, target: dict) -> dict:
     """Invoke one public asynchronous request constructor or TTLV encoder."""
     from kmipkit import async_operations
@@ -1461,13 +1471,7 @@ def _async_request_cell(cell: dict, case: dict, target: dict) -> dict:
         tree = item_tree(payload_item)
         if tree != [0x4200FF, 1, expected]:
             raise ValueError('asynchronous request emitted different TTLV fields')
-    if target.get('kind') == 'operation':
-        if _normalized_name(target.get('name', '')) != _normalized_name(operation):
-            raise ValueError('asynchronous request class does not match its operation target')
-    else:
-        tag = _async_target_tag(target)
-        if tag is None or not _credential_tree_has_tag([0, 1, tree[2]], tag):
-            raise ValueError('asynchronous TTLV output did not contain the exact target')
+    _assert_async_request_target(operation, target, tree)
     tree_hash = digest([operation, tree])
     return {'request_tree_sha256': tree_hash, 'response_tree_sha256': tree_hash}
 
