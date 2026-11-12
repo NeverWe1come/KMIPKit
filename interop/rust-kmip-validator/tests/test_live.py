@@ -339,6 +339,7 @@ class LiveContract(unittest.TestCase):
 
     def test_response_accessor_matrix_runs_through_controlled_mtls(self):
         route_manifest = json.loads((ROOT / "interop/shared/coverage/route-capabilities.json").read_text())
+        configuration_fingerprints = []
         response_symbols = {
             "kmipkit_client::ClientBatchOutcome::asynchronous_correlation_value",
             "kmipkit_client::ClientBatchItemResponse::outcome",
@@ -407,6 +408,7 @@ class LiveContract(unittest.TestCase):
                 self.assertEqual(process.returncode, 0, process.stderr)
                 report = json.loads(output.read_text())
                 jsonschema.Draft202012Validator(json.loads((ROOT / "interop/shared/schemas/route-execution-evidence.schema.json").read_text())).validate(report)
+                configuration_fingerprints.append(report["server"]["configuration_fingerprint"])
                 self.assertEqual(len(report["events"]), len(cells))
                 self.assertTrue(all(event["status"] == "passed" and event["invocation_count"] == 1 for event in report["events"]))
                 self.assertEqual(
@@ -420,6 +422,8 @@ class LiveContract(unittest.TestCase):
                     evidence_path = Path(evidence)
                     evidence_path.mkdir(parents=True, exist_ok=True)
                     (evidence_path / f"rust-response-routes-{version}.json").write_text(json.dumps(report, indent=2) + "\n")
+        self.assertEqual(1, len(set(configuration_fingerprints)),
+                         "protocol versions must share the same controlled-peer configuration fingerprint")
 
     def test_query_probes_profile_omissions_and_separates_rejections(self):
         for reason, status, compatibility in [(5, "server_unsupported", "unsupported"), (8, "server_unsupported", "unsupported"), (12, "policy_restricted", "policy_restricted"), (3, "failed", "unknown"), (0x100, "failed", "unknown")]:
