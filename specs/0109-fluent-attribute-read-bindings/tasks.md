@@ -1,13 +1,11 @@
 # KMIPKIT-0109 Delivery Tasks
 
-- [ ] T001 Add failing C consumer tests for semantic Get Attributes and Get
-  Attribute List execution, optional identifier preservation, ordered
-  references, invalid inputs, and one-exchange response mapping.
-- [ ] T002 Add failing Java builder tests for both operations, including typed
-  responses and resource ownership.
-- [ ] T003 Add failing Python builder tests for both operations, named
-  arguments, response ownership, and invalid inputs.
-- [ ] T004 Record Red evidence in a dedicated test commit.
+- [x] T001 Add failing C consumer calls for both semantic entry points.
+- [x] T002 Add failing Java facade contract checks for both builders and
+  entry-point methods.
+- [x] T003 Add a failing Python consumer test for both builders and named
+  arguments.
+- [x] T004 Record Red evidence in a dedicated test commit.
 - [ ] T005 Implement C direct functions on the Rust execution path and verify
   the C ABI consumer and mTLS fixture.
 - [ ] T006 Implement Java builders and `FluentRequest` entry points; verify
