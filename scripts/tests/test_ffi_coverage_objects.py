@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import os
 from pathlib import Path
 import subprocess
@@ -35,36 +36,46 @@ class FfiCoverageObjectTests(unittest.TestCase):
         log = root / 'cargo.log'
         log.write_text(f'Running unittests src/lib.rs ({objects[2]})\n'
                        f'Running tests/c_api_coverage.rs ({objects[3]})\n')
+        log.with_suffix('.artifacts.jsonl').write_text(json.dumps({
+            'reason': 'compiler-artifact', 'target': {'name': 'kmipkit_ffi'},
+            'profile': {'test': False}, 'filenames': [str(path) for path in objects[:2]],
+        }) + '\n')
         return root, log, objects
 
     def test_preserves_both_libraries_and_consumers_in_both_cargo_layouts(self):
         for layout in ('classic', 'cargo-1.100'):
             with self.subTest(layout=layout), tempfile.TemporaryDirectory() as directory:
                 root, log, objects = self.fixture(directory, layout)
-                self.assertEqual(MODULE.collect_ffi_objects(root, log), objects)
+                self.assertEqual(MODULE.collect_ffi_objects(root, log, log.with_suffix('.artifacts.jsonl')), objects)
 
     def test_missing_static_library_cannot_reduce_the_coverage_denominator(self):
         with tempfile.TemporaryDirectory() as directory:
             root, log, objects = self.fixture(directory, 'cargo-1.100')
             objects[1].unlink()
             with self.assertRaisesRegex(ValueError, 'libkmipkit_ffi.a'):
-                MODULE.collect_ffi_objects(root, log)
+                MODULE.collect_ffi_objects(root, log, log.with_suffix('.artifacts.jsonl'))
 
-    def test_stale_distinct_library_is_rejected_as_ambiguous(self):
+    def test_unreferenced_stale_library_cannot_enter_the_coverage_report(self):
         with tempfile.TemporaryDirectory() as directory:
-            root, log, _ = self.fixture(directory, 'cargo-1.100')
+            root, log, objects = self.fixture(directory, 'cargo-1.100')
             stale = root / 'debug/build/kmipkit-ffi/stale/out/libkmipkit_ffi.so'
             stale.parent.mkdir(parents=True)
             stale.write_bytes(b'stale object')
+            self.assertEqual(MODULE.collect_ffi_objects(
+                root, log, log.with_suffix('.artifacts.jsonl')), objects)
+            with log.with_suffix('.artifacts.jsonl').open('a') as receipt:
+                receipt.write(json.dumps({'reason': 'compiler-artifact',
+                    'target': {'name': 'kmipkit_ffi'}, 'profile': {'test': False},
+                    'filenames': [str(stale)]}) + '\n')
             with self.assertRaisesRegex(ValueError, 'ambiguous'):
-                MODULE.collect_ffi_objects(root, log)
+                MODULE.collect_ffi_objects(root, log, log.with_suffix('.artifacts.jsonl'))
 
     def test_duplicate_hardlink_does_not_make_the_current_library_ambiguous(self):
         with tempfile.TemporaryDirectory() as directory:
             root, log, objects = self.fixture(directory, 'classic')
             alias = root / 'debug/libkmipkit_ffi.so'
             os.link(objects[0], alias)
-            actual = MODULE.collect_ffi_objects(root, log)
+            actual = MODULE.collect_ffi_objects(root, log, log.with_suffix('.artifacts.jsonl'))
             self.assertTrue(actual[0].samefile(objects[0]))
             self.assertEqual(actual[1:], objects[1:])
 
@@ -76,13 +87,14 @@ class FfiCoverageObjectTests(unittest.TestCase):
             outside.chmod(0o755)
             log.write_text(log.read_text().replace(str(objects[3]), str(outside)))
             with self.assertRaisesRegex(ValueError, 'outside'):
-                MODULE.collect_ffi_objects(root, log)
+                MODULE.collect_ffi_objects(root, log, log.with_suffix('.artifacts.jsonl'))
 
     def test_cli_preserves_paths_with_spaces_as_null_delimited_objects(self):
         with tempfile.TemporaryDirectory() as directory:
             root, log, objects = self.fixture(directory, 'cargo-1.100')
             result = subprocess.run([sys.executable, str(HELPER), '--target-root', str(root),
-                                     '--cargo-log', str(log)], capture_output=True, check=True)
+                                     '--cargo-log', str(log), '--artifacts-json',
+                                     str(log.with_suffix('.artifacts.jsonl'))], capture_output=True, check=True)
             self.assertEqual(result.stdout.split(b'\0'),
                              [os.fsencode(path) for path in objects] + [b''])
 

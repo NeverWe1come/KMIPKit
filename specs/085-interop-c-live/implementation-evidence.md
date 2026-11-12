@@ -85,3 +85,23 @@ active object after the three-item scenario, and deletion after independent
 cleanup. Both tests first failed for missing effects/state hashes; four
 focused state, lifecycle, and correlation tests now pass. The shared schema
 and completeness validator retain all of their existing requirements.
+
+### Cargo-independent FFI coverage artifact discovery
+
+The Linux FFI collector also failed after the full LLVM export because it
+assumed every library and executable lived in `debug/deps`. Cargo 1.100 uses
+per-artifact output directories. The collector now uses the executables
+reported by the completed Cargo test run and Cargo's current compiler-artifact
+JSON, captured under the exact environment emitted by cargo-llvm-cov. It keeps
+both the complete shared/static libraries and the unit/C-consumer executables;
+missing, foreign, or ambiguous current artifacts fail closed. Unreferenced
+stale build outputs cannot enter the export. A single merged profile is
+required without assuming the checkout directory is named KMIPKit.
+
+Six discovery tests cover both Cargo layouts, paths containing spaces,
+hardlinks, missing libraries, ambiguous metadata, and foreign executables.
+All 96 workflow tests pass. The actual collector passes with Cargo 1.100
+and writes its normalized C ABI coverage report. The full workspace LLVM
+collection also completes, with 4,086 instrumented tests passed and three
+repository-marked tests ignored. All three-platform and adapter gates remain
+required; these local runs do not claim that the aggregate gate has passed.

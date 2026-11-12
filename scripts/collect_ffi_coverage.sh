@@ -47,44 +47,31 @@ if [[ ! -x "${llvm_cov}" ]]; then
     exit 2
 fi
 
-readonly profile_data="${llvm_cov_target}/KMIPKit.profdata"
-readonly ffi_dso="${llvm_cov_target}/debug/deps/libkmipkit_ffi.so"
-readonly ffi_staticlib="${llvm_cov_target}/debug/deps/libkmipkit_ffi.a"
-if [[ ! -f "${profile_data}" || ! -f "${ffi_dso}" || ! -f "${ffi_staticlib}" ]]; then
-    printf 'The instrumented Rust C ABI objects or merged LLVM profile are missing under %s.\n' "${llvm_cov_target}" >&2
-    exit 1
-fi
-
-mapfile -t test_binary_names < <(
-    sed -nE \
-        -e '/Running unittests src\/lib\.rs /s@.*\/(kmipkit_ffi-[[:xdigit:]]+)\).*@\1@p' \
-        -e '/Running tests\/c_api_coverage\.rs /s@.*(c_api_coverage-[[:xdigit:]]+).*@\1@p' \
-        "${cargo_output}"
+mapfile -d '' -t merged_profiles < <(
+    find "${llvm_cov_target}" -maxdepth 1 -type f -name '*.profdata' -print0
 )
-if [[ "${#test_binary_names[@]}" -ne 2 ]]; then
-    printf 'Cargo did not report both the FFI unit and C consumer test executables in %s.\n' \
-        "${cargo_output}" >&2
+if [[ "${#merged_profiles[@]}" -ne 1 ]]; then
+    printf 'The merged LLVM profile is missing or ambiguous under %s.\n' "${llvm_cov_target}" >&2
     exit 1
 fi
-test_binaries=()
-for test_binary_name in "${test_binary_names[@]}"; do
-    test_binary="${llvm_cov_target}/debug/deps/${test_binary_name}"
-    if [[ ! -f "${test_binary}" || ! -x "${test_binary}" ]]; then
-        printf 'The FFI coverage test executable is missing under %s.\n' "${test_binary}" >&2
-        exit 1
-    fi
-    test_binaries+=("${test_binary}")
-done
+readonly profile_data="${merged_profiles[0]}"
+
+# Retain both complete library objects and the executables actually run by Cargo.
+# Cargo 1.100 stores artifacts under build/<package>/<hash>/out, unlike older deps/ layouts.
+readonly object_manifest="${report_dir}/coverage-objects.nul"
+python3 "${repository_root}/scripts/ffi_coverage_objects.py" \
+    --target-root "${llvm_cov_target}" --cargo-log "${cargo_output}" \
+    --artifacts-json "${report_dir}/cargo-artifacts.jsonl" --refresh-artifacts \
+    > "${object_manifest}"
+mapfile -d '' -t object_paths < "${object_manifest}"
 coverage_objects=()
-for test_binary in "${test_binaries[@]}"; do
-    coverage_objects+=(-object "${test_binary}")
+for coverage_object in "${object_paths[@]}"; do
+    coverage_objects+=(-object "${coverage_object}")
 done
 
 readonly raw_report="${report_dir}/coverage-raw.json"
 "${llvm_cov}" export -format=text \
     -instr-profile "${profile_data}" \
-    -object "${ffi_dso}" \
-    -object "${ffi_staticlib}" \
     "${coverage_objects[@]}" \
     --sources "${source_files[@]}" > "${raw_report}"
 
