@@ -2438,8 +2438,11 @@ fn invoke_response_ttlv_route(
         "kmipkit_protocol::HashResponse::with_ttlv",
         "kmipkit_protocol::MacResponse::with_ttlv",
         "kmipkit_protocol::MacVerifyResponse::with_ttlv",
+        "kmipkit_protocol::ReProvisionResponse::with_ttlv",
         "kmipkit_protocol::RegisterResponse::with_ttlv",
         "kmipkit_protocol::RevokeResponse::with_ttlv",
+        "kmipkit_protocol::RngRetrieveResponse::with_ttlv",
+        "kmipkit_protocol::RngSeedResponse::with_ttlv",
         "kmipkit_protocol::SignResponse::with_ttlv",
         "kmipkit_protocol::SignatureVerifyResponse::with_ttlv",
     ];
@@ -2491,11 +2494,20 @@ fn invoke_response_ttlv_route(
         "kmipkit_protocol::MacVerifyResponse::with_ttlv" => {
             invoke_response_ttlv!("MAC Verify", MacVerifyResponse)
         }
+        "kmipkit_protocol::ReProvisionResponse::with_ttlv" => {
+            invoke_failure_ttlv!("Re-Provision", ReProvisionResponse)
+        }
         "kmipkit_protocol::RegisterResponse::with_ttlv" => {
             invoke_failure_ttlv!("Register", RegisterResponse)
         }
         "kmipkit_protocol::RevokeResponse::with_ttlv" => {
             invoke_failure_ttlv!("Revoke", RevokeResponse)
+        }
+        "kmipkit_protocol::RngRetrieveResponse::with_ttlv" => {
+            invoke_response_ttlv!("RNG Retrieve", RngRetrieveResponse)
+        }
+        "kmipkit_protocol::RngSeedResponse::with_ttlv" => {
+            invoke_response_ttlv!("RNG Seed", RngSeedResponse)
         }
         "kmipkit_protocol::SignResponse::with_ttlv" => {
             invoke_response_ttlv!("Sign", SignResponse)
