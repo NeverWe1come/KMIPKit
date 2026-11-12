@@ -3303,6 +3303,22 @@ def _crypto_parameters_cell(cell: dict, case: dict, target: dict) -> dict:
     elif (target.get('kind') in {'attribute', 'operation_structure', 'structure_member', 'tag'}
           and target_name == 'Cryptographic Parameters'):
         samples = [(0x420028, 'Enumeration', 3)]
+    elif (target.get('kind') == 'operation_payload_field'
+          and target_name == 'Cryptographic Parameters'):
+        operation = case.get('requires', {}).get('operation', target.get('operation'))
+        parameters = {
+            'Encrypt': (0x420028, 3),  # AES
+            'Decrypt': (0x420028, 3),  # AES
+            'Hash': (0x420038, 6),  # SHA-256
+            'MAC': (0x420028, 9),  # HMAC-SHA256
+            'MAC Verify': (0x420028, 9),  # HMAC-SHA256
+            'Sign': (0x4200AE, 5),  # SHA-256 with RSA Encryption
+            'Signature Verify': (0x4200AE, 5),  # SHA-256 with RSA Encryption
+        }
+        tag, value = parameters.get(operation, (None, None))
+        if tag is None or value is None:
+            raise RecipePending
+        samples = [(tag, 'Enumeration', value)]
     elif target.get('kind') in {'structure_member', 'tag'}:
         field = names.get(target_name)
         if field is None:
