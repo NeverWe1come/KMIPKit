@@ -439,6 +439,20 @@ class NormativeInventoryTests(unittest.TestCase):
                             (case_id, version, operation_name),
                         )
 
+    def test_active_batch_cleanup_uses_non_compromise_revoke_and_cites_state_rules(self) -> None:
+        cases = {case['case_id']: case for case in self.catalog['test_cases']}
+        state_sections = {'2.0': '4.50', '2.1': '4.57'}
+        for case_id in (
+            'test-batch-create-activate-destroy',
+            'test-batch-register-encrypt-decrypt-destroy',
+        ):
+            scenario = cases[case_id]['requires']['protocol_scenario']
+            self.assertEqual('Cessation of Operation',
+                             scenario['parameters'].get('revocation_reason_code'), case_id)
+            refs = {(ref['document'], ref['section']) for ref in scenario['normative_refs']}
+            for version, section in state_sections.items():
+                self.assertIn((f'OASIS KMIP {version} Specification', section), refs, case_id)
+
     def test_ttlv_data_type_boundaries_match_both_oasis_length_tables(self) -> None:
         allowed_lengths = {
             "Structure": "Varies, multiple of 8",
