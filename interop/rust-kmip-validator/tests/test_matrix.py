@@ -55,6 +55,38 @@ class MatrixContract(unittest.TestCase):
                 '--output', str(output)], capture_output=True, text=True, timeout=30)
             return process, json.loads(output.read_bytes()) if output.exists() else None
 
+    def test_matrix_network_accepts_typed_query_execution_cells(self):
+        cells = [cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
+                 if cell['mode'] == 'network' and cell['case_id'] == 'test-op-query'
+                 and cell['protocol_version'] == '2.1' and cell['encoding'] == 'TTLV'
+                 and cell['transport'] == 'raw_tls']
+        self.assertEqual({'construct', 'send', 'decode'}, {cell['action'] for cell in cells})
+        with tempfile.TemporaryDirectory() as work:
+            root = Path(work)
+            matrix = root / 'query.jsonl'
+            connection = root / 'connection.json'
+            output = root / 'evidence.json'
+            matrix.write_text(''.join(json.dumps(cell) + '\n' for cell in cells))
+            connection.write_text(json.dumps({
+                'server_id': 'controlled-fixture', 'protocol_version': '2.1',
+                'transport': 'raw_tls', 'encoding': 'TTLV', 'api_level': 'typed-protocol',
+                'endpoints': {'raw_tls': {'host': '127.0.0.1', 'port': 1},
+                              'https': {'url': 'https://127.0.0.1:1/kmip'}},
+                'tls': {'ca_cert_path': str(root / 'missing-ca.pem'),
+                        'client_cert_path': str(root / 'missing-client.pem'),
+                        'client_key_path': str(root / 'missing-key.pem'),
+                        'server_name_override': 'localhost'},
+                'environment': {'kind': 'dedicated_test',
+                                'dedicated_test_environment_confirmed': True},
+                'execution_policy': {'probe_unsupported': False, 'allow_mutations': False},
+            }))
+            process = subprocess.run([
+                str(VALIDATOR), 'matrix-network', '--matrix', str(matrix),
+                '--connection', str(connection), '--output', str(output),
+            ], capture_output=True, text=True, timeout=30)
+        self.assertNotEqual(0, process.returncode)
+        self.assertIn('controlled fixture query failed', process.stderr)
+
     def test_named_typed_constructor_emits_actual_cell_evidence(self):
         cell = self.cell('kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::CryptographicLength>::new')
         process, report = self.run_matrix([cell])
