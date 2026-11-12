@@ -2078,6 +2078,12 @@ fn invoke_client_batch_outcome_response_route(
         "kmipkit_client::ClientBatchOutcome::signature_verify_response",
         "kmipkit_client::ClientBatchOutcome::rng_retrieve_response",
         "kmipkit_client::ClientBatchOutcome::rng_seed_response",
+        "kmipkit_client::ClientBatchOutcome::Activate",
+        "kmipkit_client::ClientBatchOutcome::Archive",
+        "kmipkit_client::ClientBatchOutcome::DeriveKey",
+        "kmipkit_client::ClientBatchOutcome::Destroy",
+        "kmipkit_client::ClientBatchOutcome::GetUsageAllocation",
+        "kmipkit_client::ClientBatchOutcome::Recover",
     ];
     if !RESPONSE_ACCESSOR_ROUTES.contains(&symbol) {
         return None;
@@ -2096,6 +2102,26 @@ fn invoke_client_batch_outcome_response_route(
             let outcome = kmipkit::ClientBatchOutcome::$variant(response);
             if outcome.result().status().raw() != 1 || outcome.$accessor().is_none() {
                 return Err("ClientBatchOutcome accessor did not return its typed response");
+            }
+            sample.try_clone().map_err(|_| "local copy failed")
+        }};
+    }
+
+    macro_rules! invoke_response_variant {
+        ($operation:literal, $response:ident, $variant:ident, $operation_variant:ident) => {{
+            let message =
+                failed_response_message_fixture($operation, target, elements, protocol_version)?;
+            let item = message
+                .batch_items()
+                .next()
+                .ok_or("typed operation response fixture has no batch item")?;
+            let response = kmipkit::protocol::$response::try_from_response_item(item)
+                .map_err(|_| "typed operation response fixture rejected")?;
+            let outcome = kmipkit::ClientBatchOutcome::$variant(response);
+            if outcome.operation() != kmipkit::ClientOperation::$operation_variant
+                || outcome.result().status().raw() != 1
+            {
+                return Err("ClientBatchOutcome variant did not preserve its operation result");
             }
             sample.try_clone().map_err(|_| "local copy failed")
         }};
@@ -2192,6 +2218,27 @@ fn invoke_client_batch_outcome_response_route(
         ),
         "kmipkit_client::ClientBatchOutcome::rng_seed_response" => {
             invoke_response_accessor!("RNG Seed", RngSeedResponse, RngSeed, rng_seed_response)
+        }
+        "kmipkit_client::ClientBatchOutcome::Activate" => {
+            invoke_response_variant!("Activate", ActivateResponse, Activate, Activate)
+        }
+        "kmipkit_client::ClientBatchOutcome::Archive" => {
+            invoke_response_variant!("Archive", ArchiveResponse, Archive, Archive)
+        }
+        "kmipkit_client::ClientBatchOutcome::DeriveKey" => {
+            invoke_response_variant!("Derive Key", DeriveKeyResponse, DeriveKey, DeriveKey)
+        }
+        "kmipkit_client::ClientBatchOutcome::Destroy" => {
+            invoke_response_variant!("Destroy", DestroyResponse, Destroy, Destroy)
+        }
+        "kmipkit_client::ClientBatchOutcome::GetUsageAllocation" => invoke_response_variant!(
+            "Get Usage Allocation",
+            GetUsageAllocationResponse,
+            GetUsageAllocation,
+            GetUsageAllocation
+        ),
+        "kmipkit_client::ClientBatchOutcome::Recover" => {
+            invoke_response_variant!("Recover", RecoverResponse, Recover, Recover)
         }
         _ => Err("unsupported ClientBatchOutcome response accessor"),
     })())
