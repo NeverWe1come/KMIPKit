@@ -1335,6 +1335,33 @@ mod tests {
     use super::*;
 
     #[test]
+    fn key_block_parser_route_roundtrips_the_normative_key_material_target() {
+        // OASIS KMIP 2.0/2.1 §3.10 and §3.11 define Key Material and Key Block.
+        let catalog: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        let target = catalog["normative_targets"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|target| {
+                target["target_id"] == "KMIPKIT-ELEM-OBJECT-STRUCTURE-3-10-KEY-MATERIAL"
+            })
+            .unwrap();
+        let symbol = "kmipkit_protocol::KeyBlock::try_from_item";
+        let expected = sample_for_route(symbol, target, elements).unwrap();
+        let result = invoke(symbol, &expected, target, elements, "2.1");
+        assert!(result.is_some(), "KeyBlock parser route is not executable");
+        let result = result.unwrap().unwrap();
+        assert!(crate::local_wire::target_hash(&result, &expected).is_ok());
+    }
+
+    #[test]
     fn key_format_type_request_routes_construct_each_normative_value() {
         // OASIS KMIP 2.0/2.1 §11.25 defines Key Format Type values.
         let catalog: Json = serde_json::from_str(include_str!(
