@@ -265,6 +265,9 @@ int32_t kmipkit_s2c_consumer_receives_put_and_sends_response(
     if (status != 0 || secret_valid != 1u) { status = 110; goto cleanup; }
     status = kmipkit_server_response_builder_create(batch, &builder);
     if (status != 0) goto cleanup;
+    status = kmipkit_server_response_builder_add_failure(builder, request, 0u, 1u, 1u,
+        (kmipkit_byte_span_v1_t){ NULL, 0u });
+    if (status != KMIPKIT_ERROR_INVALID_INPUT) { status = 111; goto cleanup; }
     status = kmipkit_server_put_response_create(request, &response_item);
     if (status != 0) goto cleanup;
     status = kmipkit_server_response_builder_add_success(builder, request, response_item);
