@@ -855,8 +855,6 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                             if attribute_fixture else 0)
                                         object_type = 4 if case_id == 'test-obj-private-key' else 3 if case_id == 'test-obj-public-key' else 2
                                         response_item_ids = None
-                                        response_statuses = None
-                                        response_reasons = None
                                         if placeholder_chain_recipe:
                                             response_item_ids = (
                                                 (b'placeholder-revoke-cleanup', b'placeholder-destroy-cleanup')
@@ -869,9 +867,6 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             if recipe[1] == 'batch_order_false_two_read_items':
                                                 response_operations = tuple(reversed(recipe[0]))
                                                 response_item_ids = (b'item-b', b'item-a')
-                                            elif recipe[1] == 'batch_continue_after_failure':
-                                                response_statuses = (1, 0)
-                                                response_reasons = (55, None)
                                         state_evidence = peer_state.execute(
                                             request_tree,
                                             continued_batch=recipe[1] == 'batch_continue_after_failure')
