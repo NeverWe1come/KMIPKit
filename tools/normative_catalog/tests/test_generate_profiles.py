@@ -35,18 +35,6 @@ from tools.normative_catalog.validate import load_validated_catalog
 ROOT = Path(__file__).resolve().parents[3]
 
 
-def _run_captured_utf8_command(args: list[str]) -> subprocess.CompletedProcess[str]:
-    """Capture a command whose output is expected to be UTF-8 text."""
-    return subprocess.run(
-        args,
-        capture_output=True,
-        check=False,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-    )
-
-
 def _mapping_applies_to_profile(
     mapping: dict[str, object],
     profile_id: str,
@@ -4727,6 +4715,20 @@ class ProfileMetadataGeneratorTests(unittest.TestCase):
 
 
 class ProfileTargetManifestTests(unittest.TestCase):
+    @staticmethod
+    def _run_captured_utf8_command(
+        args: list[str],
+    ) -> subprocess.CompletedProcess[str]:
+        """Capture command diagnostics without assuming the host code page."""
+        return subprocess.run(
+            args,
+            capture_output=True,
+            check=False,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+
     def setUp(self) -> None:
         self.catalog = {
             "profiles": [
@@ -4834,7 +4836,7 @@ class ProfileTargetManifestTests(unittest.TestCase):
                 load_profile_targets(repository, self.catalog)
 
     def test_captured_command_output_tolerates_non_utf8_diagnostics(self) -> None:
-        result = _run_captured_utf8_command(
+        result = self._run_captured_utf8_command(
             [
                 sys.executable,
                 "-c",
@@ -4863,7 +4865,7 @@ class ProfileTargetManifestTests(unittest.TestCase):
                 "mklink /J "
                 + subprocess.list2cmdline([str(junction), str(external)])
             )
-            result = _run_captured_utf8_command(
+            result = self._run_captured_utf8_command(
                 ["cmd.exe", "/d", "/c", mklink_command]
             )
             self.assertEqual(
