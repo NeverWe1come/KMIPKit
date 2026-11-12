@@ -7350,6 +7350,75 @@ mod tests {
     }
 
     #[test]
+    fn remaining_simple_request_builder_routes_execute_manifest_fixtures() {
+        let catalog: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let routes: Json = serde_json::from_str(include_str!(
+            "../../shared/coverage/route-capabilities.json"
+        ))
+        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        let symbols = [
+            "kmipkit_protocol::CheckRequest::with_usage_limits_count",
+            "kmipkit_protocol::QueryAsyncRequestsRequest::with_correlation_values",
+            "kmipkit_protocol::LocateRequest::with_maximum_items",
+            "kmipkit_protocol::LocateRequest::with_offset_items",
+            "kmipkit_protocol::RevokeRequest::with_revocation_message",
+            "kmipkit_protocol::LoginRequest::with_request_count",
+            "kmipkit_protocol::DelegatedLoginRequest::with_request_count",
+            "kmipkit_protocol::ValidateRequest::with_validity_date",
+            "kmipkit_protocol::ImportRequest::with_replace_existing",
+            "kmipkit_protocol::RekeyRequest::with_offset",
+            "kmipkit_protocol::RekeyKeyPairRequest::with_offset",
+            "kmipkit_protocol::RecertifyRequest::with_offset",
+            "kmipkit_protocol::RekeyKeyPairRequest::with_private_key_unique_identifier",
+            "kmipkit_protocol::RecertifyRequest::with_certificate_request_unique_identifier",
+        ];
+
+        for symbol in symbols {
+            let route = routes["routes"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|route| route["public_api_symbol"] == symbol)
+                .unwrap_or_else(|| panic!("{symbol} is missing from the route manifest"));
+            for target_id in route["normative_target_ids"].as_array().unwrap() {
+                let target_id = target_id.as_str().unwrap();
+                let target = catalog["normative_targets"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .find(|target| target["target_id"] == target_id)
+                    .unwrap();
+                for protocol_version in target["protocol_versions"].as_array().unwrap() {
+                    let protocol_version = protocol_version.as_str().unwrap();
+                    let expected = sample_for_route_at_version(
+                        symbol,
+                        target,
+                        elements,
+                        protocol_version,
+                    )
+                    .unwrap_or_else(|error| {
+                        panic!("{symbol} sample failed for {target_id}: {error}")
+                    });
+                    let result = invoke(symbol, &expected, target, elements, protocol_version)
+                        .unwrap_or_else(|| panic!("{symbol} route missing for {target_id}"))
+                        .unwrap_or_else(|error| panic!("{symbol} rejected {target_id}: {error}"));
+                    assert!(
+                        crate::local_wire::target_hash(&result, &expected).is_ok(),
+                        "{symbol} changed {target_id}"
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
     fn operation_secret_tag_fixtures_do_not_change_key_wrapping_models() {
         let catalog: Json = serde_json::from_str(include_str!(
             "../../shared/catalog/kmipkit-1.0-test-catalog.json"
