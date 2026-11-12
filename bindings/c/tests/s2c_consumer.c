@@ -33,8 +33,11 @@ int32_t kmipkit_s2c_consumer_receives_put_and_sends_response(
     uint16_t port = 0u;
     uint32_t operation = 0u, put_function = 0u, object_type = 0u, object_tag = 0u;
     uint32_t key_format = 0u, secret_valid = 0u, secret_text_valid = 0u;
+    int32_t integer = 0;
+    uint8_t wrong_present = 0u;
+    kmipkit_attribute_set_t *wrong_attributes = NULL;
     uint64_t batch_count = 0u;
-    uint8_t present = 0u, item_type = 0u;
+    uint8_t present = 0u, item_type = 0u, absent_present = UINT8_MAX;
     kmipkit_byte_span_v1_t identifier = { NULL, 0u };
     kmipkit_server_put_object_t *object = NULL, *key_block = NULL, *key_value = NULL;
     kmipkit_server_put_object_t *password_object = NULL, *unknown_object = NULL;
@@ -49,6 +52,7 @@ int32_t kmipkit_s2c_consumer_receives_put_and_sends_response(
     kmipkit_server_request_item_t *request = NULL, *password_request = NULL, *unknown_request = NULL;
     kmipkit_server_request_item_t *discover_request = NULL, *notify_request = NULL;
     kmipkit_server_request_item_t *query_request = NULL, *role_request = NULL;
+    kmipkit_server_request_item_t *no_attributes_request = NULL;
     kmipkit_server_response_builder_t *builder = NULL;
     kmipkit_server_response_item_t *response_item = NULL;
     kmipkit_server_response_t *response = NULL;
@@ -89,8 +93,10 @@ int32_t kmipkit_s2c_consumer_receives_put_and_sends_response(
     if (status != 0) goto cleanup;
     status = kmipkit_server_connection_recv_batch(connection, limits, 5u, 0u, &batch);
     if (status != 0 || batch == NULL) goto cleanup;
+    status = kmipkit_server_incoming_batch_item_at(batch, 99u, &request);
+    if (status != KMIPKIT_ERROR_INVALID_INPUT || request != NULL) { status = 145; goto cleanup; }
     status = kmipkit_server_incoming_batch_count(batch, &batch_count);
-    if (status != 0 || batch_count != 7u) { status = 101; goto cleanup; }
+    if (status != 0 || batch_count != 8u) { status = 101; goto cleanup; }
     status = kmipkit_server_incoming_batch_protocol_version(batch, &incoming_version);
     if (status != 0 || incoming_version.major != 2 || incoming_version.minor != 1) {
         status = 135; goto cleanup;
@@ -113,6 +119,12 @@ int32_t kmipkit_s2c_consumer_receives_put_and_sends_response(
     status = kmipkit_server_put_object_field_read(key_block, 0x00420042u, KMIPKIT_SERVER_PUT_READ_ENUMERATION,
         &present, &item_type, &key_format, NULL, NULL, NULL, NULL);
     if (status != 0 || present != 1u || key_format != 1u) { status = 106; goto cleanup; }
+    status = kmipkit_server_put_object_field_read(key_block, 0x00420042u, KMIPKIT_SERVER_PUT_READ_INTEGER,
+        &present, &item_type, NULL, &integer, NULL, NULL, NULL);
+    if (status != KMIPKIT_ERROR_INVALID_INPUT || present != 1u || integer != 0) { status = 136; goto cleanup; }
+    status = kmipkit_server_put_object_field_read(key_block, 0x0042002Au, KMIPKIT_SERVER_PUT_READ_INTEGER,
+        &present, &item_type, NULL, &integer, NULL, NULL, NULL);
+    if (status != 0 || present != 1u || integer != 128) { status = 157; goto cleanup; }
     status = kmipkit_server_put_object_field_read(key_block, 0x00420045u, KMIPKIT_SERVER_PUT_READ_STRUCTURE_VIEW,
         &present, &item_type, NULL, NULL, &key_value, NULL, NULL);
     if (status != 0 || present != 1u || key_value == NULL || item_type != 1u) { status = 107; goto cleanup; }
@@ -167,6 +179,10 @@ int32_t kmipkit_s2c_consumer_receives_put_and_sends_response(
     if (status != 0 || batch_count != 1u) { status = 122; goto cleanup; }
     status = kmipkit_server_request_item_discover_version_at(discover_request, 0u, &incoming_version);
     if (status != 0 || incoming_version.major != 2 || incoming_version.minor != 1) { status = 123; goto cleanup; }
+    status = kmipkit_server_request_item_discover_version_at(discover_request, 1u, &incoming_version);
+    if (status != KMIPKIT_ERROR_INVALID_INPUT) { status = 138; goto cleanup; }
+    status = kmipkit_server_request_item_put_function(discover_request, &put_function);
+    if (status != KMIPKIT_ERROR_INVALID_INPUT || put_function != 0u) { status = 139; goto cleanup; }
     status = kmipkit_server_incoming_batch_item_at(batch, 4u, &notify_request);
     if (status != 0) goto cleanup;
     status = kmipkit_server_request_item_operation(notify_request, &operation);
@@ -177,13 +193,24 @@ int32_t kmipkit_s2c_consumer_receives_put_and_sends_response(
     if (status != 0 || present != 1u || notify_attributes == NULL) { status = 131; goto cleanup; }
     status = kmipkit_attribute_set_len(notify_attributes, &changed_attribute_count);
     if (status != 0 || changed_attribute_count != 1u) { status = 132; goto cleanup; }
+    kmipkit_attribute_set_release(notify_attributes);
+    notify_attributes = NULL;
     status = kmipkit_server_request_item_notify_deleted_attribute_reference_count(
         notify_request, &deleted_reference_count);
-    if (status != 0 || deleted_reference_count != 1u) { status = 133; goto cleanup; }
+    if (status != 0 || deleted_reference_count != 2u) { status = 133; goto cleanup; }
     status = kmipkit_server_request_item_notify_deleted_attribute_reference_at(
         notify_request, 0u, &deleted_reference);
     if (status != 0 || deleted_reference.kind != 1u || deleted_reference.tag_value != 0x00420028u) {
         status = 134; goto cleanup;
+    }
+    status = kmipkit_server_request_item_notify_deleted_attribute_reference_at(
+        notify_request, 1u, &deleted_reference);
+    if (status != 0 || deleted_reference.kind != 2u ||
+        deleted_reference.vendor_identification_length != 19u ||
+        memcmp(deleted_reference.vendor_identification_data, "KMIPKit test vendor", 19u) != 0 ||
+        deleted_reference.attribute_name_length != 16u ||
+        memcmp(deleted_reference.attribute_name_data, "Vendor Attribute", 16u) != 0) {
+        status = 140; goto cleanup;
     }
     status = kmipkit_server_incoming_batch_item_at(batch, 5u, &query_request);
     if (status != 0) goto cleanup;
@@ -193,14 +220,39 @@ int32_t kmipkit_s2c_consumer_receives_put_and_sends_response(
     if (status != 0 || batch_count != 1u) { status = 127; goto cleanup; }
     status = kmipkit_server_request_item_query_function_at(query_request, 0u, &query_function);
     if (status != 0 || query_function != 1u) { status = 128; goto cleanup; }
+    status = kmipkit_server_request_item_query_function_at(query_request, 1u, &query_function);
+    if (status != KMIPKIT_ERROR_INVALID_INPUT) { status = 141; goto cleanup; }
+    status = kmipkit_server_request_item_endpoint_role(query_request, &operation);
+    if (status != KMIPKIT_ERROR_INVALID_INPUT || operation != 0u) { status = 142; goto cleanup; }
+    status = kmipkit_server_request_item_unique_identifier(query_request, &identifier);
+    if (status != KMIPKIT_ERROR_INVALID_INPUT || identifier.data != NULL || identifier.length != 0u) {
+        status = 149; goto cleanup;
+    }
+    status = kmipkit_server_request_item_notify_attributes(query_request, &wrong_present, &wrong_attributes);
+    if (status != KMIPKIT_ERROR_INVALID_INPUT || wrong_present != 0u || wrong_attributes != NULL) {
+        status = 150; goto cleanup;
+    }
+    status = kmipkit_server_request_item_notify_deleted_attribute_reference_count(query_request, &batch_count);
+    if (status != KMIPKIT_ERROR_INVALID_INPUT || batch_count != 0u) { status = 151; goto cleanup; }
+    status = kmipkit_server_request_item_discover_versions_count(query_request, &batch_count);
+    if (status != KMIPKIT_ERROR_INVALID_INPUT || batch_count != 0u) { status = 143; goto cleanup; }
+    status = kmipkit_server_request_item_query_functions_count(notify_request, &batch_count);
+    if (status != KMIPKIT_ERROR_INVALID_INPUT || batch_count != 0u) { status = 144; goto cleanup; }
     status = kmipkit_server_incoming_batch_item_at(batch, 6u, &role_request);
     if (status != 0) goto cleanup;
     status = kmipkit_server_request_item_operation(role_request, &operation);
     if (status != 0 || operation != 0x00000032u) { status = 129; goto cleanup; }
     status = kmipkit_server_request_item_endpoint_role(role_request, &operation);
     if (status != 0 || operation != 1u) { status = 130; goto cleanup; }
+    status = kmipkit_server_incoming_batch_item_at(batch, 7u, &no_attributes_request);
+    if (status != 0) { status = 153; goto cleanup; }
+    status = kmipkit_server_request_item_notify_attributes(
+        no_attributes_request, &absent_present, &notify_attributes);
+    if (status != 0 || absent_present != 0u || notify_attributes != NULL) { status = 152; goto cleanup; }
     status = kmipkit_server_response_builder_create(batch, &builder);
     if (status != 0) goto cleanup;
+    status = kmipkit_server_response_builder_build(builder, &response);
+    if (status != KMIPKIT_ERROR_INVALID_INPUT || response != NULL) { status = 146; goto cleanup; }
     status = kmipkit_server_response_builder_add_failure(builder, request, 0u, 1u, 1u,
         (kmipkit_byte_span_v1_t){ NULL, 0u });
     if (status != KMIPKIT_ERROR_INVALID_INPUT) { status = 111; goto cleanup; }
@@ -208,6 +260,12 @@ int32_t kmipkit_s2c_consumer_receives_put_and_sends_response(
     if (status != 0) goto cleanup;
     status = kmipkit_server_response_builder_add_success(builder, request, response_item);
     if (status != 0) goto cleanup;
+    kmipkit_server_response_item_release(response_item);
+    response_item = NULL;
+    status = kmipkit_server_put_response_create(request, &response_item);
+    if (status != 0) goto cleanup;
+    status = kmipkit_server_response_builder_add_success(builder, request, response_item);
+    if (status != KMIPKIT_ERROR_INVALID_INPUT) { status = 147; goto cleanup; }
     kmipkit_server_response_item_release(response_item);
     response_item = NULL;
     status = kmipkit_server_put_response_create(password_request, &response_item);
@@ -248,9 +306,19 @@ int32_t kmipkit_s2c_consumer_receives_put_and_sends_response(
     if (status != 0) goto cleanup;
     status = kmipkit_server_response_builder_add_success(builder, role_request, response_item);
     if (status != 0) goto cleanup;
+    kmipkit_server_response_item_release(response_item);
+    response_item = NULL;
+    status = kmipkit_server_notify_response_create(no_attributes_request, &response_item);
+    if (status != 0) { status = 154; goto cleanup; }
+    status = kmipkit_server_response_builder_add_success(builder, no_attributes_request, response_item);
+    if (status != 0) { status = 155; goto cleanup; }
     status = kmipkit_server_response_builder_build(builder, &response);
     if (status != 0) goto cleanup;
     status = kmipkit_server_connection_send_response(connection, response, 5u, 0u);
+    if (status != 0) goto cleanup;
+    status = kmipkit_server_connection_send_response(connection, response, 0u, 0u);
+    if (status != KMIPKIT_ERROR_INVALID_INPUT) { status = 148; goto cleanup; }
+    status = 0;
 
 cleanup:
     if (secret != NULL) kmipkit_secret_bytes_release(secret);
@@ -271,6 +339,7 @@ cleanup:
     if (notify_request != NULL) kmipkit_server_request_item_release(notify_request);
     if (query_request != NULL) kmipkit_server_request_item_release(query_request);
     if (role_request != NULL) kmipkit_server_request_item_release(role_request);
+    if (no_attributes_request != NULL) kmipkit_server_request_item_release(no_attributes_request);
     if (batch != NULL) kmipkit_server_incoming_batch_release(batch);
     if (limits != NULL) kmipkit_codec_limits_release(limits);
     if (connection != NULL) kmipkit_server_connection_release(connection);
@@ -314,6 +383,10 @@ int32_t kmipkit_s2c_consumer_rejects_invalid_handles(void) {
     if (kmipkit_server_listener_accept(NULL, 0, 0, &connection) !=
             KMIPKIT_ERROR_INVALID_INPUT || connection != NULL) {
         return 3;
+    }
+    if (kmipkit_server_listener_accept(NULL, 0, 1000000000u, &connection) !=
+            KMIPKIT_ERROR_INVALID_INPUT || connection != NULL) {
+        return 31;
     }
     if (kmipkit_server_connection_recv_batch(NULL, NULL, 0, 0, &batch) !=
             KMIPKIT_ERROR_INVALID_INPUT || batch != NULL) {
@@ -454,6 +527,59 @@ int32_t kmipkit_s2c_consumer_binds_tls_listener(
     status = kmipkit_server_listener_config_create_v1(&input, &configuration);
     if (status != 0) return status;
     status = kmipkit_server_listener_bind_raw_tls(configuration, &listener);
+    kmipkit_server_listener_config_release(configuration);
+    if (status != 0) return status;
+    status = kmipkit_server_listener_port(listener, out_port);
+    kmipkit_server_listener_release(listener);
+    return status;
+}
+
+int32_t kmipkit_s2c_consumer_binds_https_listener(
+    const uint8_t *leaf, uint64_t leaf_length,
+    const uint8_t *root, uint64_t root_length,
+    const uint8_t *key, uint64_t key_length,
+    uint16_t *out_port) {
+    static const uint8_t host[] = "127.0.0.1";
+    static const uint8_t path[] = "/kmip";
+    kmipkit_transport_input_v1_t chain[2] = {
+        { 1u, 2u, { leaf, leaf_length } },
+        { 1u, 2u, { root, root_length } },
+    };
+    kmipkit_transport_input_v1_t authority = { 1u, 2u, { root, root_length } };
+    kmipkit_server_listener_config_v1_t input = {
+        sizeof(kmipkit_server_listener_config_v1_t), 1u,
+        KMIPKIT_SERVER_LISTENER_HTTPS, 0u, 0u,
+        { host, (uint64_t)(sizeof(host) - 1u) }, 0u, 0u, chain, 2u,
+        { 1u, 2u, { key, key_length } }, &authority, 1u, NULL, 0u,
+        { path, (uint64_t)(sizeof(path) - 1u) }, 1u << 20,
+    };
+    kmipkit_server_listener_config_t *configuration = NULL;
+    kmipkit_server_listener_t *listener = NULL;
+    kmipkit_server_listener_config_v1_t invalid;
+    int32_t status;
+    if (out_port == NULL) return KMIPKIT_ERROR_INVALID_INPUT;
+    *out_port = 0u;
+    invalid = input;
+    invalid.listener_certificates = NULL;
+    invalid.listener_certificate_count = 0u;
+    if (kmipkit_server_listener_config_create_v1(&invalid, &configuration) !=
+            KMIPKIT_ERROR_INVALID_INPUT || configuration != NULL) return 32;
+    invalid = input;
+    invalid.trust_certificates = NULL;
+    invalid.trust_certificate_count = 0u;
+    if (kmipkit_server_listener_config_create_v1(&invalid, &configuration) !=
+            KMIPKIT_ERROR_INVALID_INPUT || configuration != NULL) return 33;
+    invalid = input;
+    invalid.wire_encoding = 99u;
+    if (kmipkit_server_listener_config_create_v1(&invalid, &configuration) !=
+            KMIPKIT_ERROR_INVALID_INPUT || configuration != NULL) return 34;
+    invalid = input;
+    invalid.transport_kind = KMIPKIT_SERVER_LISTENER_RAW_TLS;
+    if (kmipkit_server_listener_config_create_v1(&invalid, &configuration) !=
+            KMIPKIT_ERROR_INVALID_INPUT || configuration != NULL) return 35;
+    status = kmipkit_server_listener_config_create_v1(&input, &configuration);
+    if (status != 0) return status;
+    status = kmipkit_server_listener_bind_https(configuration, &listener);
     kmipkit_server_listener_config_release(configuration);
     if (status != 0) return status;
     status = kmipkit_server_listener_port(listener, out_port);
