@@ -215,6 +215,10 @@ jobs:
         id: run-clippy
         run: cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
 
+      - name: Build C ABI library for FFI consumer tests
+        id: build-ffi-library-for-consumer-tests
+        run: cargo build --locked -p kmipkit-ffi --features coverage-c-consumer
+
       - name: Run workspace tests
         id: run-workspace-tests
         run: cargo test --workspace --all-features --locked

@@ -137,13 +137,18 @@ fn main() {
     let workspace_root = manifest_dir.join("../..");
     let public_header = workspace_root.join("bindings/c/include");
     let internal_header = workspace_root.join("tests/fixtures/api/generated");
-    let target_deps = PathBuf::from(
+    let out_dir = PathBuf::from(
         env::var_os("OUT_DIR").expect("Cargo provides the build-script output directory"),
-    )
-    .join("../../../deps");
+    );
+    let target_profile = out_dir
+        .ancestors()
+        .nth(3)
+        .expect("Cargo build output is nested under a target profile directory");
+    let target_deps = target_profile.join("deps");
 
     println!("cargo:rerun-if-changed={}", public_header.display());
     println!("cargo:rerun-if-changed={}", internal_header.display());
+    println!("cargo:rustc-link-search=native={}", target_profile.display());
     println!("cargo:rustc-link-search=native={}", target_deps.display());
 
     for consumer in &CONSUMERS {
