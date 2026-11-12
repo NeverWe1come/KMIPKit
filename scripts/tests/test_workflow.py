@@ -1081,13 +1081,8 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn('cargo_output="${report_dir}/cargo-llvm-cov.log"', collector)
         self.assertIn(r"Running unittests src\/lib\.rs", collector)
         self.assertIn(r"Running tests\/c_api_coverage\.rs", collector)
-        self.assertIn(
-            'mapfile -t test_binary_names < <(',
-            collector,
-        )
-        self.assertIn("test_binaries=()", collector)
-        self.assertIn('test_binaries+=("${test_binary}")', collector)
-        self.assertIn("c_api_coverage-[[:xdigit:]]+", collector)
+        self.assertIn('mapfile -t test_binaries < <(', collector)
+        self.assertIn("'*.profdata'", collector)
         self.assertIn('for test_binary in "${test_binaries[@]}"', collector)
         self.assertIn('coverage_objects+=(-object "${test_binary}")', collector)
         self.assertIn('rustc --print sysroot', collector)
@@ -1095,7 +1090,7 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn('"${llvm_cov}" export -format=text', collector)
         self.assertNotIn('llvm-cov-20', collector)
         self.assertIn('rustup component add llvm-tools-preview --toolchain stable', job)
-        self.assertIn("KMIPKit.profdata", collector)
+        self.assertIn("'*.profdata'", collector)
         self.assertIn("libkmipkit_ffi.so", collector)
         self.assertIn("--sources", collector)
         self.assertIn("mapfile -d '' -t source_files < <(", collector)
@@ -1123,7 +1118,7 @@ class WorkflowContractTests(unittest.TestCase):
         )
         self.assertIn(r"Running unittests src\/lib\.rs", collector)
         self.assertIn(r"Running tests\/c_api_coverage\.rs", collector)
-        self.assertIn('test_binaries+=("${test_binary}")', collector)
+        self.assertIn('mapfile -t test_binaries < <(', collector)
         self.assertIn('for test_binary in "${test_binaries[@]}"', collector)
 
     def test_ffi_coverage_collector_finds_artifacts_in_cargo_build_script_output(self) -> None:
@@ -1131,9 +1126,9 @@ class WorkflowContractTests(unittest.TestCase):
             encoding="utf-8"
         )
 
-        self.assertIn('find "${llvm_cov_target}/debug/build/kmipkit-ffi"', collector)
-        self.assertIn("-name libkmipkit_ffi.so", collector)
-        self.assertIn("-name libkmipkit_ffi.a", collector)
+        self.assertIn('find "${artifact_root}" -type f -name "${artifact_name}"', collector)
+        self.assertIn("'libkmipkit_ffi.so'", collector)
+        self.assertIn("'libkmipkit_ffi.a'", collector)
 
     def test_coverage_gate_waits_for_platform_and_adapter_reports(self) -> None:
         contents = self.require_workflow()

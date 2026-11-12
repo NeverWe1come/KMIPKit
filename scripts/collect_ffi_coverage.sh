@@ -47,33 +47,39 @@ if [[ ! -x "${llvm_cov}" ]]; then
     exit 2
 fi
 
-readonly profile_data="${llvm_cov_target}/KMIPKit.profdata"
-readonly ffi_dso="${llvm_cov_target}/debug/deps/libkmipkit_ffi.so"
-readonly ffi_staticlib="${llvm_cov_target}/debug/deps/libkmipkit_ffi.a"
+find_newest_artifact() {
+    local artifact_root="$1"
+    local artifact_name="$2"
+    find "${artifact_root}" -type f -name "${artifact_name}" -printf '%T@ %p\n' \
+        | sort -nr \
+        | sed -n '1s/^[^ ]* //p'
+}
+
+readonly profile_data="$(find_newest_artifact "${llvm_cov_target}" '*.profdata')"
+readonly ffi_dso="$(find_newest_artifact "${llvm_cov_target}/debug" 'libkmipkit_ffi.so')"
+readonly ffi_staticlib="$(find_newest_artifact "${llvm_cov_target}/debug" 'libkmipkit_ffi.a')"
 if [[ ! -f "${profile_data}" || ! -f "${ffi_dso}" || ! -f "${ffi_staticlib}" ]]; then
     printf 'The instrumented Rust C ABI objects or merged LLVM profile are missing under %s.\n' "${llvm_cov_target}" >&2
     exit 1
 fi
 
-mapfile -t test_binary_names < <(
+mapfile -t test_binaries < <(
     sed -nE \
-        -e '/Running unittests src\/lib\.rs /s@.*\/(kmipkit_ffi-[[:xdigit:]]+)\).*@\1@p' \
-        -e '/Running tests\/c_api_coverage\.rs /s@.*(c_api_coverage-[[:xdigit:]]+).*@\1@p' \
+        -e '/Running unittests src\/lib\.rs /s@.* \(([^)]*)\)$@\1@p' \
+        -e '/Running tests\/c_api_coverage\.rs /s@.* \(([^)]*)\)$@\1@p' \
         "${cargo_output}"
 )
-if [[ "${#test_binary_names[@]}" -ne 2 ]]; then
+if [[ "${#test_binaries[@]}" -ne 2 ]]; then
     printf 'Cargo did not report both the FFI unit and C consumer test executables in %s.\n' \
         "${cargo_output}" >&2
     exit 1
 fi
-test_binaries=()
-for test_binary_name in "${test_binary_names[@]}"; do
-    test_binary="${llvm_cov_target}/debug/deps/${test_binary_name}"
+for test_binary in "${test_binaries[@]}"; do
     if [[ ! -f "${test_binary}" || ! -x "${test_binary}" ]]; then
-        printf 'The FFI coverage test executable is missing under %s.\n' "${test_binary}" >&2
+        printf 'The FFI coverage test executable reported by Cargo is missing: %s\n' \
+            "${test_binary}" >&2
         exit 1
     fi
-    test_binaries+=("${test_binary}")
 done
 coverage_objects=()
 for test_binary in "${test_binaries[@]}"; do
