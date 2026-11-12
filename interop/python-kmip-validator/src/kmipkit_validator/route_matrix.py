@@ -517,44 +517,94 @@ def _managed_object_tree(target: dict) -> list:
     return [0x420040, 1, key_block_fields]
 
 
+_MANAGED_OBJECT_TYPES = {
+    'Certificate': 1, 'Symmetric Key': 2, 'Public Key': 3, 'Private Key': 4,
+    'Split Key': 5, 'Secret Data': 7, 'Opaque Object': 8, 'PGP Key': 9,
+    'Certificate Request': 10,
+}
+
+
+def _managed_object_root_tree(name: str, elements: dict[str, dict]) -> list:
+    """Build the required fields of one OASIS §§2.1-2.9 managed-object root."""
+    object_tag = _managed_object_tag(elements, name)
+    key_block = [0x420040, 1, [
+        [0x420042, 5, 1],
+        [0x420045, 1, [[0x420043, 8, b'KMIPKitInterop01'.hex()]]],
+    ]]
+    fields = {
+        'Certificate': [[0x42001D, 5, 1], [0x42001E, 8, b'certificate-fixture'.hex()]],
+        'Certificate Request': [[0x420019, 5, 1], [0x420140, 8, b'certificate-request-fixture'.hex()]],
+        'Opaque Object': [[0x420059, 5, 1], [0x42005A, 8, b'opaque-fixture'.hex()]],
+        'PGP Key': [[0x4200BE, 2, 4], key_block],
+        'Private Key': [key_block],
+        'Public Key': [key_block],
+        'Secret Data': [[0x420086, 5, 1], key_block],
+        # KMIP 2.0/2.1 §2.8 requires Prime Field Size for method 3.
+        'Split Key': [[0x42008B, 2, 2], [0x420044, 2, 1], [0x42008C, 2, 1],
+                      [0x42008A, 5, 3], [0x420062, 4, '0000000000000017'], key_block],
+        'Symmetric Key': [key_block],
+    }.get(name)
+    if fields is None:
+        raise RecipePending
+    return [object_tag, 1, fields]
+
+
+def _managed_object_root_name(target: dict, elements: dict[str, dict]) -> str:
+    roots = {element['element_id']: element['name'] for element in elements.values()
+             if element.get('kind') == 'object_structure'
+             and element.get('name') in _MANAGED_OBJECT_TYPES}
+    if target.get('target_id') in roots:
+        return roots[target['target_id']]
+    for parent in target.get('parent_element_ids', []):
+        if parent in roots:
+            return roots[parent]
+    if target.get('kind') == 'tag':
+        for name in _MANAGED_OBJECT_TYPES:
+            if _managed_object_tag(elements, name) == int(target.get('wire_value', '0'), 16):
+                return name
+    raise RecipePending
+
+
 def _managed_object_cell(cell: dict, case: dict, target: dict) -> dict:
     """Invoke the exact public managed-object constructor/parser route."""
     from kmipkit import managed_objects
 
     symbol = cell['public_api_symbol']
-    if not symbol.startswith('kmipkit.managed_objects.KeyBlock.'):
+    if not symbol.startswith('kmipkit.managed_objects.ManagedObject.'):
         raise RecipePending
-    tree = _managed_object_tree(target)
-    if tree[0] != 0x420040 or tree[1] != 1:
-        raise ValueError('managed-object fixture did not produce a Key Block Structure')
+    elements = _catalog_model_data()[2]
+    if target.get('kind') not in {'object_structure', 'structure_member', 'tag'}:
+        raise RecipePending
+    name = _managed_object_root_name(target, elements)
+    tree = _managed_object_root_tree(name, elements)
+    object_type = _MANAGED_OBJECT_TYPES[name]
     with ExitStack() as owned:
         fields = [owned.enter_context(_credential_item_from_tree(field, owned))
                   for field in tree[2]]
         if symbol.endswith('.from_fields'):
-            result = owned.enter_context(managed_objects.KeyBlock.from_fields(fields))
+            result = owned.enter_context(managed_objects.ManagedObject.from_fields(object_type, fields))
         elif symbol.endswith('.from_item'):
             structure = owned.enter_context(PythonKmipDriver._structure(fields))
-            source = owned.enter_context(PythonKmipDriver._item(0x420040, 'structure', structure))
-            result = owned.enter_context(managed_objects.KeyBlock.from_item(source))
+            source = owned.enter_context(PythonKmipDriver._item(tree[0], 'structure', structure))
+            result = owned.enter_context(managed_objects.ManagedObject.from_item(object_type, source))
+        elif symbol.rsplit('.', 1)[-1] in {
+                'certificate', 'certificate_request', 'opaque_object', 'pgp_key', 'private_key',
+                'public_key', 'secret_data', 'split_key', 'symmetric_key'}:
+            constructor = getattr(managed_objects.ManagedObject, symbol.rsplit('.', 1)[-1])
+            result = owned.enter_context(constructor(fields))
         else:
             raise RecipePending
         observed = item_tree(result)
         if observed != tree:
-            raise ValueError('Key Block route did not preserve the exact ordered TTLV fields')
-    elements = _catalog_model_data()[2]
-    target_kind = target.get('kind')
-    if target_kind == 'tag' and target['target_id'].endswith('TAG-420040'):
-        matched = observed[0] == int(target['wire_value'], 16)
-    elif target_kind == 'structure_member':
-        matched = _credential_tree_has_tag(
-            observed, _managed_object_tag(elements, elements[target['target_id']]['name']))
-    elif target_kind == 'object_structure':
-        matched = observed[0] == 0x420040 or _credential_tree_has_tag(
-            observed, _managed_object_tag(elements, target.get('name', '')))
-    else:
-        matched = False
-    if not matched:
-        raise ValueError('Key Block route did not retain the exact normative target')
+            raise ValueError('managed-object route changed the ordered OASIS fields')
+        if result.object_type != object_type or observed[0] != _managed_object_tag(elements, name):
+            raise ValueError('managed-object route changed the object type or root tag')
+        if target.get('kind') == 'structure_member':
+            member_tag = _managed_object_tag(elements, target.get('name', ''))
+            if not _credential_tree_has_tag(observed, member_tag):
+                raise RecipePending
+        if target.get('kind') == 'tag' and observed[0] != int(target['wire_value'], 16):
+            raise ValueError('managed-object route changed the target tag')
     tree_hash = digest(observed)
     return {'request_tree_sha256': tree_hash, 'response_tree_sha256': tree_hash}
 
