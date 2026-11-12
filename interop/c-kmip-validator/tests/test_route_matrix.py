@@ -169,6 +169,14 @@ class RouteMatrixTests(unittest.TestCase):
         for encoding in ('TTLV', 'JSON', 'XML'):
             self.assertEqual(codec.decode(codec.encode(wire, encoding), encoding), parse(wire))
 
+    def test_json_codec_decodes_concatenated_named_bitmask_values(self):
+        from route_peer import Codec
+        from artifact_support import ROOT
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        codec = Codec(catalog)
+        wire = json.dumps({'tag': '0x42002C', 'type': 'Integer', 'value': 'SignVerify'}).encode()
+        self.assertEqual(codec.decode(wire, 'JSON'), (0x42002C, 2, (3).to_bytes(4, 'big')))
+
     def test_positive_case_cannot_pass_by_operation_name_alone(self):
         from route_peer import assert_recipe, parse, tlv
         # This contains the correct Query operation but omits Query Function.
