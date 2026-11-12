@@ -1100,6 +1100,16 @@ _CREDENTIAL_MEMBER_TAGS = {
 }
 _CREDENTIAL_AUTH_TAG = 0x42000C
 _CREDENTIAL_NONCE_TAG = 0x4200C8
+_CREDENTIAL_TYPED_MODEL_TYPES = {
+    'kmipkit.credentials.UsernameAndPasswordCredential.from_ttlv': ('UsernameAndPasswordCredential', 1),
+    'kmipkit.credentials.UsernameAndPasswordCredential.into_ttlv': ('UsernameAndPasswordCredential', 1),
+    'kmipkit.credentials.DeviceCredential.from_ttlv': ('DeviceCredential', 2),
+    'kmipkit.credentials.DeviceCredential.into_ttlv': ('DeviceCredential', 2),
+    'kmipkit.credentials.AttestationCredential.from_ttlv': ('AttestationCredential', 3),
+    'kmipkit.credentials.AttestationCredential.into_ttlv': ('AttestationCredential', 3),
+    'kmipkit.credentials.HashedPasswordCredential.from_ttlv': ('HashedPasswordCredential', 5),
+    'kmipkit.credentials.HashedPasswordCredential.into_ttlv': ('HashedPasswordCredential', 5),
+}
 
 
 def _credential_type_for_target(target: dict) -> int:
@@ -1237,6 +1247,20 @@ def _credential_assert_target(target: dict, tree: list, credential_type: int) ->
     raise ValueError('Credential TTLV output did not contain the exact normative target')
 
 
+def _credential_typed_model_tree(credentials_module, class_name: str, credential_type: int,
+                                 owned: ExitStack) -> list:
+    """Roundtrip one specialized Credential Value model using public methods."""
+    value_children = _credential_value_children(credential_type)
+    source = _credential_structure_from_children(value_children, owned)
+    model = owned.enter_context(getattr(credentials_module, class_name).from_ttlv(source))
+    result = owned.enter_context(model.into_ttlv())
+    result_item = owned.enter_context(PythonKmipDriver._item(0x420025, 'structure', result))
+    tree = item_tree(result_item)
+    if tree != [0x420025, 1, value_children]:
+        raise ValueError(f'{class_name} roundtrip changed its exact fields')
+    return tree
+
+
 def _credential_cell(cell: dict, case: dict, target: dict) -> dict:
     """Roundtrip public typed Credential APIs and verify exact normative identity."""
     from kmipkit import credentials
@@ -1301,7 +1325,7 @@ def _credential_cell(cell: dict, case: dict, target: dict) -> dict:
     elif symbol.startswith('kmipkit.credentials.Authentication.'):
         with ExitStack() as owned:
             credential_trees = [_credential_envelope_tree_for_type(raw) for raw in (1, 4)]
-            source_children = [_credential_item_tree_for_envelope(tree) for tree in credential_trees]
+            source_children = credential_trees
             source = _credential_structure_from_children(source_children, owned)
             if symbol.endswith('Authentication.create'):
                 credential_handles = []
@@ -1342,26 +1366,10 @@ def _credential_cell(cell: dict, case: dict, target: dict) -> dict:
                 raise ValueError('Secret TTLV conversion returned the wrong data type')
             _credential_assert_target(target, tree, credential_type)
             observed = tree
-    elif any(symbol == f'kmipkit.credentials.{name}.{method}'
-             for name, method in (
-                 ('AttestationCredential', 'from_ttlv'), ('AttestationCredential', 'into_ttlv'),
-                 ('DeviceCredential', 'from_ttlv'), ('DeviceCredential', 'into_ttlv'),
-                 ('HashedPasswordCredential', 'from_ttlv'), ('HashedPasswordCredential', 'into_ttlv'),
-                 ('UsernameAndPasswordCredential', 'from_ttlv'),
-                 ('UsernameAndPasswordCredential', 'into_ttlv'))):
-        class_name = symbol.split('.')[2]
-        fixed_type = {'UsernameAndPasswordCredential': 1, 'DeviceCredential': 2,
-                      'AttestationCredential': 3, 'HashedPasswordCredential': 5}[class_name]
+    elif symbol in _CREDENTIAL_TYPED_MODEL_TYPES:
+        class_name, fixed_type = _CREDENTIAL_TYPED_MODEL_TYPES[symbol]
         with ExitStack() as owned:
-            value_children = _credential_value_children(fixed_type)
-            source = _credential_structure_from_children(value_children, owned)
-            credential_model = owned.enter_context(getattr(credentials, class_name).from_ttlv(source))
-            result = owned.enter_context(credential_model.into_ttlv())
-            result_item = owned.enter_context(PythonKmipDriver._item(0x420025, 'structure', result))
-            tree = item_tree(result_item)
-            expected = [0x420025, 1, value_children]
-            if tree != expected:
-                raise ValueError(f'{class_name} roundtrip changed its exact fields')
+            tree = _credential_typed_model_tree(credentials, class_name, fixed_type, owned)
             _credential_assert_target(target, tree, fixed_type)
             observed = tree
     else:
@@ -1370,12 +1378,6 @@ def _credential_cell(cell: dict, case: dict, target: dict) -> dict:
         raise ValueError('Credential Type route changed the normative raw value')
     tree_hash = digest(observed if not isinstance(observed, int) else [0x420024, 5, observed])
     return {'request_tree_sha256': tree_hash, 'response_tree_sha256': tree_hash}
-
-
-def _credential_item_tree_for_envelope(envelope: list) -> list:
-    return envelope
-
-
 def _typed_attribute_cell(cell: dict, case: dict, target: dict) -> dict:
     """Check exact direct-attribute identity, value copies and collection reads."""
     from kmipkit import ttlv
