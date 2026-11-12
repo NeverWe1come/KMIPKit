@@ -291,7 +291,7 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(set(symbols) <= trace.observed)
         self.assertEqual([protocol_values.ResultStatus.OPERATION_FAILED],
                          event['peer_observed_result_status_codes'])
-        self.assertEqual([protocol_values.ResultReason.GENERAL_FAILURE],
+        self.assertEqual([protocol_values.ResultReason.INVALID_OBJECT_TYPE],
                          event['peer_observed_result_reason_codes'])
         self.assertEqual('response_received', event['request_delivery_state'])
         self.assertEqual(1, event['transport_invocation_count'])

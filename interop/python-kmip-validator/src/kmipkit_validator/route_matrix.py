@@ -661,9 +661,17 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
 
     positive_ping = (case['case_id'] == 'test-op-ping'
                      and cell['public_api_symbol'] == 'kmipkit.extensions.client_batch_item_ping')
+    operation = cell.get('workflow_operation', case['operation'])
+    final_async_failure = (
+        case['case_id'] == 'test-async-poll-final-operation-failure' and operation == 'Poll'
+    )
     peer_status = (protocol_values.ResultStatus.SUCCESS if positive_ping
                    else protocol_values.ResultStatus.OPERATION_FAILED)
-    peer_reason = (None if positive_ping else protocol_values.ResultReason.OPERATION_NOT_SUPPORTED)
+    peer_reason = (
+        None if positive_ping
+        else protocol_values.ResultReason.INVALID_OBJECT_TYPE if final_async_failure
+        else protocol_values.ResultReason.OPERATION_NOT_SUPPORTED
+    )
     peer = ControlledTlsPeer(status=peer_status, reason=peer_reason,
                              encoding=cell['encoding'], transport=cell['transport'],
                              protocol_version=cell['protocol_version'])
@@ -682,7 +690,6 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
     identifier = None
     try:
         driver = PythonKmipDriver(connection)
-        operation = case['operation']
         symbol = cell['public_api_symbol']
         if symbol.startswith('kmipkit.client.Client.execute_'):
             correlation = None if operation == 'Query Asynchronous Requests' else b'kmipkit-route-correlation'
@@ -705,7 +712,11 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
             else:
                 item = driver._build_item(case, identifier, name=name)
             result = driver._exchange(item)
-        expected_driver_status = 'passed' if positive_ping else 'server_unsupported'
+        expected_driver_status = (
+            'passed' if positive_ping
+            else 'failed' if final_async_failure
+            else 'server_unsupported'
+        )
         if (result['status'] != expected_driver_status or result['result_status_code'] != peer_status
                 or result.get('result_reason_code') != peer_reason):
             raise ValueError('controlled peer response status did not match the expected route outcome')
