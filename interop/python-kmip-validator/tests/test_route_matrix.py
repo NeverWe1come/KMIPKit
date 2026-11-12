@@ -713,6 +713,32 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertIn('request_tree_sha256', result)
         self.assertEqual(result['request_tree_sha256'], result['response_tree_sha256'])
 
+    def test_key_value_from_fields_executes_catalogued_key_material_target(self):
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] ==
+                    'test-norm-structure-member-structure-member-3-2-key-value-key-material')
+        target = next(target for target in self.catalog['normative_targets']
+                      if target['target_id'] ==
+                      'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-2-KEY-VALUE-KEY-MATERIAL')
+        cell = {'action': 'construct', 'public_api_symbol':
+                'kmipkit.managed_objects.KeyValue.from_fields', 'transport': None}
+        result = self.runner.execute_cell(cell, case, target)
+        self.assertIn('request_tree_sha256', result)
+        self.assertEqual(result['request_tree_sha256'], result['response_tree_sha256'])
+
+    def test_key_material_from_fields_executes_catalogued_transparent_member(self):
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] ==
+                    'test-norm-structure-member-structure-member-3-11-key-material-recommended-curve')
+        target = next(target for target in self.catalog['normative_targets']
+                      if target['target_id'] ==
+                      'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-11-KEY-MATERIAL-RECOMMENDED-CURVE')
+        cell = {'action': 'construct', 'public_api_symbol':
+                'kmipkit.managed_objects.KeyMaterial.from_fields', 'transport': None}
+        result = self.runner.execute_cell(cell, case, target)
+        self.assertIn('request_tree_sha256', result)
+        self.assertEqual(result['request_tree_sha256'], result['response_tree_sha256'])
+
     def test_query_routes_record_the_peer_rejection_without_calling_it_success(self):
         catalog = copy.deepcopy(self.catalog)
         catalog['test_cases'] = [case for case in self.catalog['test_cases']
