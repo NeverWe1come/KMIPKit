@@ -260,6 +260,9 @@ def text_response(
         else "".join(protocol_values.ResultReason.name(reason).split())
     )
     operations = operations or [operation]
+    batch_ids = [None] * len(operations) if batch_ids is None else batch_ids
+    if len(batch_ids) != len(operations):
+        raise ValueError("controlled peer batch identifier count did not match operations")
 
     def response_item(item_operation: str, identifier: str | None) -> list[dict]:
         fields = [
@@ -299,9 +302,8 @@ def text_response(
                         {"tag": "BatchCount", "type": "Integer", "value": len(operations)},
                     ],
                 },
-                *[{"tag": "BatchItem", "value": response_item(
-                    item_operation, (batch_ids or [None] * len(operations))[index]
-                )} for index, item_operation in enumerate(operations)],
+                *[{"tag": "BatchItem", "value": response_item(item_operation, batch_ids[index])}
+                  for index, item_operation in enumerate(operations)],
             ],
         }
         return json.dumps(response, separators=(",", ":")).encode("utf-8")
@@ -338,9 +340,8 @@ def text_response(
         '<TimeStamp type="DateTime" value="1970-01-01T00:00:01Z"/>'
         f'<BatchCount type="Integer" value="{len(operations)}"/>'
         "</ResponseHeader>"
-        + "".join(xml_response_item(
-            item_operation, (batch_ids or [None] * len(operations))[index]
-        ) for index, item_operation in enumerate(operations))
+        + "".join(xml_response_item(item_operation, batch_ids[index])
+                  for index, item_operation in enumerate(operations))
         + "</ResponseMessage>"
     )
     return document.encode("utf-8")
