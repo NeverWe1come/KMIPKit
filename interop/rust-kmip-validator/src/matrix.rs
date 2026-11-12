@@ -390,7 +390,86 @@ fn typed_item_route(symbol: &str) -> bool {
         || symbol.contains("Attribute::from_typed::<")
 }
 
+const MANAGED_OBJECT_ROOTS: [&str; 9] = [
+    "Certificate",
+    "Certificate Request",
+    "Opaque Object",
+    "PGP Key",
+    "Private Key",
+    "Public Key",
+    "Secret Data",
+    "Split Key",
+    "Symmetric Key",
+];
+
+fn managed_object_root_name(target: &Json, elements: &[Json]) -> Option<&'static str> {
+    let mut pending = target["parent_element_ids"]
+        .as_array()?
+        .iter()
+        .filter_map(Json::as_str)
+        .map(str::to_owned)
+        .collect::<Vec<_>>();
+    if let Some(name) = target["name"].as_str()
+        && let Some(root) = MANAGED_OBJECT_ROOTS.iter().find(|root| **root == name)
+    {
+        return Some(root);
+    }
+    while let Some(element_id) = pending.pop() {
+        let element = elements
+            .iter()
+            .find(|element| element["element_id"] == element_id)?;
+        let name = element["name"].as_str()?;
+        if element["kind"] == "object_structure"
+            && let Some(root) = MANAGED_OBJECT_ROOTS.iter().find(|root| **root == name)
+        {
+            return Some(root);
+        }
+        if let Some(parents) = element["parent_element_ids"].as_array() {
+            pending.extend(parents.iter().filter_map(Json::as_str).map(str::to_owned));
+        }
+    }
+    None
+}
+
+fn collect_tagged_items(item: &Item, raw_tag: u32, matches: &mut Vec<Item>) -> Result<()> {
+    if item.tag().raw() == raw_tag {
+        matches.push(item.try_clone().map_err(|_| "object fixture copy failed")?);
+    }
+    if let Some(structure) = item.as_structure() {
+        for child in structure.children() {
+            collect_tagged_items(child, raw_tag, matches)?;
+        }
+    }
+    Ok(())
+}
+
+fn managed_object_fixture(target: &Json, elements: &[Json]) -> Result<(u32, Item, Item)> {
+    let root_name = managed_object_root_name(target, elements)
+        .ok_or("Managed Object fixture target has no object root")?;
+    let (object_type, object, _) = crate::fixtures::object(root_name)?;
+    let expected = if target["kind"] == "object_structure" && target["name"] == root_name {
+        object
+            .try_clone()
+            .map_err(|_| "Managed Object fixture copy failed")?
+    } else {
+        let target_item = sample(target, elements)?;
+        let mut matching_items = Vec::new();
+        collect_tagged_items(&object, target_item.tag().raw(), &mut matching_items)?;
+        match matching_items.as_slice() {
+            [matched] => matched
+                .try_clone()
+                .map_err(|_| "Managed Object target copy failed")?,
+            [] => return Err("Managed Object fixture does not contain the target"),
+            _ => return Err("Managed Object target is ambiguous in fixture"),
+        }
+    };
+    Ok((object_type.raw(), object, expected))
+}
+
 fn sample_for_route(symbol: &str, target: &Json, elements: &[Json]) -> Result<Item> {
+    if symbol == "kmipkit_protocol::ManagedObject::try_from_item" {
+        return managed_object_fixture(target, elements).map(|(_, _, expected)| expected);
+    }
     if symbol == "kmipkit_protocol::QueryResponse::to_ttlv_payload"
         && target["kind"] == "operation_payload_field"
         && target["name"] == "Profile Information"
@@ -468,27 +547,15 @@ fn invoke(
         return Some(result);
     }
     if symbol == "kmipkit_protocol::ManagedObject::try_from_item" {
-        let name = target["name"].as_str()?;
-        let wire_value = elements
-            .iter()
-            .find(|element| {
-                element["kind"] == "object_type"
-                    && element["name"]
-                        .as_str()
-                        .is_some_and(|object_name| object_name.eq_ignore_ascii_case(name))
-            })?
-            .get("wire_value")?
-            .as_str()?;
-        let object_type = u32::from_str_radix(wire_value, 16).ok()?;
-        return Some((|| {
-            let item = sample.try_clone().map_err(|_| "local copy failed")?;
+        let (object_type, object, _) = managed_object_fixture(target, elements).ok()?;
+        return Some(
             kmipkit::protocol::ManagedObject::try_from_item(
                 kmipkit::protocol::ObjectType::from_raw(object_type),
-                item,
+                object,
             )
             .map(kmipkit::protocol::ManagedObject::into_item)
-            .map_err(|_| "managed object parser rejected")
-        })());
+            .map_err(|_| "managed object parser rejected"),
+        );
     }
     if symbol.starts_with("kmipkit_ttlv::Value::") {
         let expected = match sample.item_type() {
