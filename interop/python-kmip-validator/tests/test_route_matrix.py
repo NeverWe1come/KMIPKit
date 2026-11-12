@@ -1279,6 +1279,35 @@ class RouteMatrixTests(unittest.TestCase):
 
         self.assertIsNone(self.runner._batch_operations_for_case(route, asynchronous))
 
+    def test_single_item_batch_scenario_emits_validated_batch_evidence(self):
+        catalog = copy.deepcopy(self.catalog)
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-batch-single-item-default-continuation')
+        case['requires']['protocol_scenario']['target_ids'] = ['KMIPKIT-ELEM-OP-C2S-GET']
+        catalog['test_cases'] = [case]
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in self.manifest['routes']
+                              if route['language'] == 'python'
+                              and route['public_api_symbol'] ==
+                              'kmipkit.extensions.client_batch_item_get']
+        for route in manifest['routes']:
+            route['actions'] = ['construct']
+            route['combinations'] = [{'encoding': 'TTLV', 'transport': 'raw_tls'}]
+
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+
+        self.assertEqual([], gaps)
+        self.assertTrue(report['events'])
+        self.assertTrue(all(event.get('batch_operation_sequence') == ['Get']
+                            and event.get('peer_observed_operation_sequence') == ['Get']
+                            and event.get('batch_item_count') == 1
+                            and event.get('peer_observed_response_count') == 1
+                            for event in report['events']))
+        validate_report(report, catalog, manifest,
+                        catalog_sha256=report['catalog_sha256'],
+                        route_manifest_sha256=report['route_manifest_sha256'],
+                        expected_artifact_sha256=self.artifact['artifact_sha256'])
+
     def test_async_lifecycle_create_route_executes_as_a_single_request(self):
         catalog = copy.deepcopy(self.catalog)
         case = next(case for case in self.catalog['test_cases']
