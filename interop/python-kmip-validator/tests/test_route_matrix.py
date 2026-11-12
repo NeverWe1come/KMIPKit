@@ -258,6 +258,44 @@ class RouteMatrixTests(unittest.TestCase):
             self.assertEqual('response_received', event['request_delivery_state'])
             self.assertEqual(1, event['transport_invocation_count'])
 
+    def test_async_poll_final_failure_executes_poll_and_preserves_failure_status(self):
+        from unittest.mock import patch
+        from kmipkit import protocol_values
+        from kmipkit_validator.controlled_peer import ControlledTlsPeer
+
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-async-poll-final-operation-failure')
+        target = next(target for target in self.catalog['normative_targets']
+                      if target['target_id'] == 'KMIPKIT-ELEM-OP-C2S-POLL')
+        cell = {
+            'case_id': case['case_id'], 'target_id': target['target_id'],
+            'protocol_version': '2.1', 'encoding': 'TTLV', 'transport': 'raw_tls',
+            'public_api_symbol': 'kmipkit.client.Client.execute_poll',
+            'execution_api_symbol': 'kmipkit.client.Client.execute_poll',
+            'workflow_operation': 'Poll', 'action': 'decode',
+        }
+        peers = []
+
+        def record_peer(**options):
+            peer = ControlledTlsPeer(**options)
+            peers.append(peer)
+            return peer
+
+        symbols = [cell['public_api_symbol'], cell['execution_api_symbol']]
+        trace = self.runner.CallTrace(symbols)
+        with patch('kmipkit_validator.controlled_peer.ControlledTlsPeer', side_effect=record_peer):
+            with trace:
+                event = self.runner.execute_cell(cell, case, target, trace=trace)
+
+        self.assertEqual({'Poll'}, {peer.request_observation['operation'] for peer in peers})
+        self.assertTrue(set(symbols) <= trace.observed)
+        self.assertEqual([protocol_values.ResultStatus.OPERATION_FAILED],
+                         event['peer_observed_result_status_codes'])
+        self.assertEqual([protocol_values.ResultReason.GENERAL_FAILURE],
+                         event['peer_observed_result_reason_codes'])
+        self.assertEqual('response_received', event['request_delivery_state'])
+        self.assertEqual(1, event['transport_invocation_count'])
+
     def test_create_routes_validate_peer_rejection_and_all_wire_encodings(self):
         catalog = copy.deepcopy(self.catalog)
         catalog['test_cases'] = [case for case in self.catalog['test_cases']
