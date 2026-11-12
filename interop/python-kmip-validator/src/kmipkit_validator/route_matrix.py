@@ -2418,7 +2418,15 @@ def _positive_fixture_cell(cell: dict, case: dict, target: dict, *, trace: CallT
     from .controlled_peer import ControlledTlsPeer, PKI
     from kmipkit import extensions, protocol_values
 
+    discovery_targets = {
+        'KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS',
+        'KMIPKIT-PAYLOAD-CLIENT-DISCOVER-VERSIONS-RESPONSE-20-001',
+        'KMIPKIT-PAYLOAD-CLIENT-DISCOVER-VERSIONS-RESPONSE-21-001',
+    }
     if (case['case_id'] != 'test-op-discover-versions'
+            and case.get('operation') != 'Discover Versions'):
+        raise RecipePending
+    if (target.get('target_id') not in discovery_targets
             or cell['protocol_version'] not in ('2.0', '2.1')
             or cell['public_api_symbol'] not in (
                 'kmipkit.extensions.client_batch_item_discover_versions',
