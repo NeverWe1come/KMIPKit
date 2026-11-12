@@ -148,6 +148,30 @@ fn vendor_attribute_value() -> Result<Value> {
     Ok(Value::structure(fields))
 }
 
+fn certificate_attributes_item() -> Result<Item> {
+    let mut certificate_fields = kmipkit::ttlv::Structure::new();
+    certificate_fields
+        .try_push(crate::driver::item(
+            0x0042_0108,
+            Value::text_string("kmipkit.example".to_owned()),
+        )?)
+        .map_err(|_| "Certificate Subject CN fixture rejected")?;
+    let mut attribute_fields = kmipkit::ttlv::Structure::new();
+    attribute_fields
+        .try_push(crate::driver::item(
+            0x0042_000a,
+            Value::text_string("Certificate Attributes".to_owned()),
+        )?)
+        .map_err(|_| "Certificate Attributes name fixture rejected")?;
+    attribute_fields
+        .try_push(crate::driver::item(
+            0x0042_000b,
+            Value::structure(certificate_fields),
+        )?)
+        .map_err(|_| "Certificate Attributes value fixture rejected")?;
+    crate::driver::item(0x0042_0008, Value::structure(attribute_fields))
+}
+
 fn concrete_fixture_name(target_id: &str, kind: &str, name: &str) -> String {
     if target_id.contains("ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES") {
         // Use one concrete assigned §4 attribute for the inventory's wildcard member.
@@ -207,6 +231,9 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
             .clone_into(&mut name);
     }
     let target_id = target["target_id"].as_str().unwrap_or_default();
+    if target_id == "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES" {
+        return certificate_attributes_item();
+    }
     name = concrete_fixture_name(target_id, kind, &name);
     if kind == "operation_payload_field"
         && ["Any Object (Section 2)", "All Objects"].contains(&name.as_str())
@@ -1169,7 +1196,11 @@ fn managed_object_fixture(target: &Json, elements: &[Json]) -> Result<(u32, Item
 }
 
 fn key_block_fixture(target: &Json, elements: &[Json]) -> Result<(Item, Item)> {
-    let (_, object, expected) = managed_object_fixture(target, elements)?;
+    let (_, object, expected) = if target["target_id"] == "KMIPKIT-ELEM-TAG-420040" {
+        object_root_fixture("Symmetric Key", target, elements)?
+    } else {
+        managed_object_fixture(target, elements)?
+    };
     let mut key_blocks = Vec::new();
     collect_tagged_items(&object, KEY_BLOCK_TAG, &mut key_blocks)?;
     match key_blocks.as_slice() {
@@ -1892,6 +1923,8 @@ fn sample_for_route_at_version(
         return metadata_expected_target(&model, target, elements);
     }
     if [
+        "kmipkit_protocol::TransparentSymmetricKey::try_from_item",
+        "kmipkit_protocol::TransparentSymmetricKey::try_new",
         "kmipkit_protocol::TransparentRsaPrivateKey::try_from_components",
         "kmipkit_protocol::TransparentRsaPrivateKey::try_from_item",
         "kmipkit_protocol::TransparentDhPrivateKey::try_from_item",
@@ -3027,6 +3060,197 @@ fn invoke_simple_request_builder_route(
     })())
 }
 
+// These typed local models keep secrets and profile state out of serialized logs.
+#[allow(clippy::too_many_lines)]
+fn invoke_remaining_key_profile_model_route(
+    symbol: &str,
+    sample: &Item,
+    target: &Json,
+    elements: &[Json],
+) -> Option<Result<Item>> {
+    const ROUTES: &[&str] = &[
+        "kmipkit_protocol::TransparentSymmetricKey::try_new",
+        "kmipkit_protocol::TransparentSymmetricKey::try_from_item",
+        "kmipkit_protocol::SplitKeyReference::with_split_key_threshold",
+        "kmipkit_protocol::DerivationParameters::with_derivation_data",
+        "kmipkit_protocol::DerivationParameters::with_initialization_vector",
+        "kmipkit_protocol::DerivationParameters::with_iteration_count",
+        "kmipkit_protocol::DerivationParameters::with_salt",
+        "kmipkit_protocol::ProfileObjectState::with_usage_limits_count",
+        "kmipkit_protocol::ProfileObjectState::with_usage_limits_total",
+        "kmipkit_protocol::ImportRequest::with_replace_existing",
+    ];
+    if !ROUTES.contains(&symbol) {
+        return None;
+    }
+
+    Some((|| match symbol {
+        "kmipkit_protocol::TransparentSymmetricKey::try_new"
+        | "kmipkit_protocol::TransparentSymmetricKey::try_from_item" => {
+            let mut keys = Vec::new();
+            collect_tagged_items(sample, 0x0042_003f, &mut keys)?;
+            if keys.is_empty() && sample.tag().raw() == 0x0042_003f {
+                keys.push(
+                    sample
+                        .try_clone()
+                        .map_err(|_| "symmetric Key copy failed")?,
+                );
+            }
+            let key = match keys.as_slice() {
+                [item] => item.with_value(|value| match value {
+                    ValueView::ByteString(value) => Ok(value.to_vec()),
+                    _ => Err("transparent symmetric Key is not a Byte String"),
+                })?,
+                [] => vec![0x41; 16],
+                _ => return Err("transparent symmetric fixture has ambiguous Key fields"),
+            };
+            let material = kmipkit::protocol::TransparentSymmetricKey::try_new(key)
+                .map(kmipkit::protocol::TransparentSymmetricKey::into_item)
+                .map_err(|_| "transparent symmetric key constructor rejected")?;
+            let material = if symbol == "kmipkit_protocol::TransparentSymmetricKey::try_new" {
+                material
+            } else {
+                kmipkit::protocol::TransparentSymmetricKey::try_from_item(material)
+                    .map(kmipkit::protocol::TransparentSymmetricKey::into_item)
+                    .map_err(|_| "transparent symmetric key parser rejected")?
+            };
+            metadata_expected_target(&material, target, elements)
+        }
+        "kmipkit_protocol::SplitKeyReference::with_split_key_threshold" => {
+            let threshold = sample.with_value(|value| match value {
+                ValueView::Integer(value) => {
+                    u32::try_from(*value).map_err(|_| "Split Key Threshold fixture is out of range")
+                }
+                _ => Err("Split Key Threshold fixture is not an Integer"),
+            })?;
+            let reference = kmipkit::protocol::SplitKeyReference::new(
+                kmipkit::protocol::UniqueIdentifier::from("route-matrix-split-key"),
+            )
+            .with_split_key_threshold(threshold);
+            if reference.split_key_threshold() != Some(threshold) {
+                return Err("Split Key Threshold was not retained");
+            }
+            sample
+                .try_clone()
+                .map_err(|_| "Split Key Threshold fixture copy failed")
+        }
+        "kmipkit_protocol::DerivationParameters::with_derivation_data"
+        | "kmipkit_protocol::DerivationParameters::with_initialization_vector"
+        | "kmipkit_protocol::DerivationParameters::with_salt"
+        | "kmipkit_protocol::DerivationParameters::with_iteration_count" => {
+            let parameters = if symbol
+                == "kmipkit_protocol::DerivationParameters::with_iteration_count"
+            {
+                let count = sample.with_value(|value| match value {
+                    ValueView::Integer(value) => Ok(*value),
+                    _ => Err("Derivation Iteration Count is not an Integer"),
+                })?;
+                kmipkit::protocol::DerivationParameters::new().with_iteration_count(count)
+            } else {
+                let bytes = sample.with_value(|value| match value {
+                    ValueView::ByteString(value) => Ok(value.to_vec()),
+                    _ => Err("Derivation parameter fixture is not a Byte String"),
+                })?;
+                let secret = kmipkit::protocol::SecretBytes::new(bytes);
+                match symbol {
+                    "kmipkit_protocol::DerivationParameters::with_derivation_data" => {
+                        kmipkit::protocol::DerivationParameters::new().with_derivation_data(secret)
+                    }
+                    "kmipkit_protocol::DerivationParameters::with_initialization_vector" => {
+                        kmipkit::protocol::DerivationParameters::new()
+                            .with_initialization_vector(secret)
+                    }
+                    _ => kmipkit::protocol::DerivationParameters::new().with_salt(secret),
+                }
+            };
+            let attributes = kmipkit::protocol::AttributeSet::try_new([
+                crate::driver::item(0x0042_0028, Value::enumeration(3))?,
+                crate::driver::item(0x0042_002a, Value::integer(128))?,
+            ])
+            .map_err(|_| "Derive Key output attributes rejected")?;
+            let payload = kmipkit::protocol::DeriveKeyRequest::new(
+                kmipkit::protocol::ObjectType::from_raw(2),
+                vec![kmipkit::protocol::UniqueIdentifier::from(
+                    "route-matrix-source",
+                )],
+                kmipkit::protocol::DerivationMethod::from_raw(0),
+                parameters,
+                attributes,
+            )
+            .into_ttlv_payload()
+            .map_err(|_| "Derive Key request fixture rejected")?;
+            metadata_expected_target(&request_payload_item(payload)?, target, elements)
+        }
+        "kmipkit_protocol::ProfileObjectState::with_usage_limits_count"
+        | "kmipkit_protocol::ProfileObjectState::with_usage_limits_total" => {
+            let value = sample.with_value(|value| match value {
+                ValueView::LongInteger(value) => Ok(*value),
+                _ => Err("Profile Usage Limits fixture is not a Long Integer"),
+            })?;
+            let state = if symbol.ends_with("with_usage_limits_count") {
+                kmipkit::protocol::ProfileObjectState::new("route-matrix-object")
+                    .with_usage_limits_count(Some(value))
+            } else {
+                kmipkit::protocol::ProfileObjectState::new("route-matrix-object")
+                    .with_usage_limits_total(Some(value))
+            };
+            let context =
+                kmipkit::protocol::ProfileValidationContext::new().with_object_state(0, state);
+            let formatted = format!("{context:?}");
+            if !formatted.contains("object_state_count: 1")
+                || !formatted.contains("[REDACTED]")
+                || formatted.contains("route-matrix-object")
+            {
+                return Err("Profile state was not retained with redacted formatting");
+            }
+            sample
+                .try_clone()
+                .map_err(|_| "Profile Usage Limits fixture copy failed")
+        }
+        "kmipkit_protocol::ImportRequest::with_replace_existing" => {
+            let replace = if target["kind"] == "tag" {
+                true
+            } else {
+                sample.with_value(|value| match value {
+                    ValueView::Boolean(value) => Ok(*value),
+                    _ => Err("Replace Existing fixture is not a Boolean"),
+                })?
+            };
+            let object = crate::driver::item(
+                0x0054_0001,
+                Value::structure(kmipkit::ttlv::Structure::new()),
+            )?;
+            let payload = kmipkit::protocol::ImportRequest::new(
+                kmipkit::protocol::UniqueIdentifier::from("route-matrix-import"),
+                kmipkit::protocol::ObjectType::from_raw(0x8000_0000),
+                kmipkit::protocol::AttributeSet::new(),
+                object,
+            )
+            .with_replace_existing(replace)
+            .into_ttlv_payload()
+            .map_err(|_| "Import request fixture rejected")?;
+            if target["kind"] == "tag" {
+                let tag = target["wire_value"]
+                    .as_str()
+                    .and_then(unsigned_wire_value)
+                    .ok_or("Import route Tag has no valid wire value")?;
+                let payload_item = request_payload_item(payload)?;
+                let mut fields = Vec::new();
+                collect_tagged_items(&payload_item, tag, &mut fields)?;
+                if fields.is_empty() {
+                    return Err("Import request omitted its Replace Existing field");
+                }
+                sample
+                    .try_clone()
+                    .map_err(|_| "Import Tag fixture copy failed")
+            } else {
+                metadata_expected_target(&request_payload_item(payload)?, target, elements)
+            }
+        }
+        _ => Err("unsupported key or profile model route"),
+    })())
+}
+
 fn invoke_operation_data_route(symbol: &str, sample: &Item) -> Option<Result<Item>> {
     const ROUTES: &[&str] = &[
         "kmipkit_protocol::HashRequest::with_data",
@@ -4020,6 +4244,10 @@ fn invoke(
     if let Some(result) = invoke_simple_request_builder_route(symbol, sample, target, elements) {
         return Some(result);
     }
+    if let Some(result) = invoke_remaining_key_profile_model_route(symbol, sample, target, elements)
+    {
+        return Some(result);
+    }
     if let Some(result) = invoke_request_selector_route(symbol, sample, target, elements) {
         return Some(result);
     }
@@ -4851,7 +5079,10 @@ mod tests {
         let symbol = "kmipkit_protocol::KeyBlock::try_from_item";
         let expected = sample_for_route(symbol, target, elements).unwrap();
         let result = invoke(symbol, &expected, target, elements, "2.1");
-        assert!(result.is_some(), "KeyBlock parser tag route is not executable");
+        assert!(
+            result.is_some(),
+            "KeyBlock parser tag route is not executable"
+        );
         let result = result.unwrap().unwrap();
         assert!(crate::local_wire::target_hash(&result, &expected).is_ok());
     }
