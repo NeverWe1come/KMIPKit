@@ -2227,12 +2227,8 @@ def execute_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | Non
         return _generic_cell(cell, case, target)
     if case['case_id'] == 'test-op-discover-versions':
         return _positive_fixture_cell(cell, case, target, trace=trace)
-    if (case.get('requires', {}).get('workflow_type') == 'batch_id_placeholder'
-            and cell.get('workflow_operation') is not None):
-        return _batch_workflow_cell(cell, case, trace=trace)
-    if (case.get('requires', {}).get('workflow_type') == 'batch_id_placeholder'
-            and target.get('kind') == 'operation'):
-        case = {**case, 'operation': target.get('name', case['operation'])}
+    if case.get('requires', {}).get('workflow_type') == 'batch_id_placeholder':
+        return _batch_workflow_cell(cell, case, target, trace=trace)
     return _network_cell(cell, case, target, trace=trace)
 
 
@@ -2625,7 +2621,7 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
             **({'peer_observed_result_reason_codes': [peer_reason]} if peer_reason is not None else {})}
 
 
-def _batch_workflow_cell(cell: dict, case: dict,
+def _batch_workflow_cell(cell: dict, case: dict, target: dict,
                          *, trace: CallTrace | None) -> dict:
     """Send the catalogued ordered batch using omitted IDs for placeholder consumers."""
     from kmipkit import protocol_values, ttlv
@@ -2635,8 +2631,11 @@ def _batch_workflow_cell(cell: dict, case: dict,
     operations = scenario.get('operations') if isinstance(scenario, dict) else None
     if not isinstance(operations, list) or not operations:
         raise RecipePending
-    if cell.get('workflow_operation') not in operations:
+    workflow_operation = cell.get('workflow_operation')
+    if workflow_operation is not None and workflow_operation not in operations:
         raise ValueError('batch route operation is absent from the catalog workflow')
+    if workflow_operation is None and target.get('kind') != 'operation':
+        raise RecipePending
 
     status = protocol_values.ResultStatus.OPERATION_FAILED
     reason = protocol_values.ResultReason.OPERATION_NOT_SUPPORTED
@@ -2667,6 +2666,11 @@ def _batch_workflow_cell(cell: dict, case: dict,
         driver = PythonKmipDriver(connection)
         batch = driver._client_module.Batch.create()
         limits = ttlv.codec_limits_defaults()
+        if workflow_operation is None:
+            probe_case = {**case, 'operation': target['name']}
+            probe = driver._build_item(
+                probe_case, None, name=f"KMIPKit-route-probe-{case['case_id']}")
+            probe.close()
         for index, operation in enumerate(operations):
             item_case = {**case, 'operation': operation}
             if (operation == 'Get Attribute List'
