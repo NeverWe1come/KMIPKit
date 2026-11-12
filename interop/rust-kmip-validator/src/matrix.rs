@@ -4040,8 +4040,11 @@ mod tests {
             "kmipkit_protocol::HashResponse::with_ttlv",
             "kmipkit_protocol::MacResponse::with_ttlv",
             "kmipkit_protocol::MacVerifyResponse::with_ttlv",
+            "kmipkit_protocol::ReProvisionResponse::with_ttlv",
             "kmipkit_protocol::RegisterResponse::with_ttlv",
             "kmipkit_protocol::RevokeResponse::with_ttlv",
+            "kmipkit_protocol::RngRetrieveResponse::with_ttlv",
+            "kmipkit_protocol::RngSeedResponse::with_ttlv",
             "kmipkit_protocol::SignResponse::with_ttlv",
             "kmipkit_protocol::SignatureVerifyResponse::with_ttlv",
         ];
