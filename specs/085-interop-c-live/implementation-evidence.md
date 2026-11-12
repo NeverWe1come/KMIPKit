@@ -22,3 +22,24 @@ normative target. Controlled recipe tests follow each operation's catalog
 
 This work does not satisfy the complete 0092 C matrix, the 1.0 coverage gates,
 or vendor interoperability acceptance. PR #170 remains a draft marked WIP.
+
+## CI repair Red evidence (2026-11-12)
+
+PR #170 head `02b4aafe3964825829f046bbdfbb3b53e3e62d54` failed
+existing executable tests before this repair:
+
+- CI run `43297892137`, Ubuntu stable job `131461810582`: workspace
+  tests `operation_parity_0053` and `c_api_coverage` fail to link
+  `-lkmipkit_ffi`.
+- The same run, Windows Rust 1.94 job `131461810515`: `c_api_coverage`
+  links both the Rust rlib and the native library, producing LNK2005/LNK1169.
+- Coverage Ubuntu job `131461810884`: the instrumented
+  `operation_parity_0053` test fails to find the native library under the
+  newer Cargo build-output layout. The selected coverage gate consequently
+  rejects the incomplete producers.
+
+Reproduce the affected executable tests with
+`cargo test --locked -p kmipkit-ffi --all-features --test operation_parity_0053 --test c_api_coverage`.
+The regression is explicit native-library linkage in tests that must resolve
+C ABI symbols from their instrumented Rust crate, in the same process.
+The complete C matrix remains required and pending recipes must keep failing.
