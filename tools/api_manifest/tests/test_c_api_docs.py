@@ -12,6 +12,10 @@ AUDIT_REPORT_PATH = Path(
 AUDIT_REPORT = ROOT / AUDIT_REPORT_PATH
 
 
+def _load_audit_report():
+    return json.loads(AUDIT_REPORT.read_text(encoding="utf-8"))
+
+
 class CApiDocumentationTests(unittest.TestCase):
     def test_c_api_docs_point_to_the_generated_manifest_and_symbol_inventory(self) -> None:
         documentation = DOC.read_text(encoding="utf-8")
@@ -27,7 +31,7 @@ class CApiDocumentationTests(unittest.TestCase):
 
     def test_audit_guide_snapshot_matches_the_generated_report(self) -> None:
         guide = AUDIT_GUIDE.read_text(encoding="utf-8")
-        report = json.loads(AUDIT_REPORT.read_text(encoding="utf-8"))
+        report = _load_audit_report()
         labels = {"c-kmipkit": "C", "java-kmipkit": "Java", "python-kmipkit": "Python"}
 
         guide_rows = {
@@ -51,7 +55,7 @@ class CApiDocumentationTests(unittest.TestCase):
                 )
 
     def test_checked_in_binding_export_report_reconciles_every_package(self) -> None:
-        report = json.loads(AUDIT_REPORT.read_text(encoding="utf-8"))
+        report = _load_audit_report()
         manifest = json.loads(
             (ROOT / "specification" / "api" / "public-api.json").read_text(
                 encoding="utf-8"
@@ -98,7 +102,7 @@ class CApiDocumentationTests(unittest.TestCase):
                 )
 
     def test_get_attribute_list_c_exports_are_present_in_checked_in_report(self) -> None:
-        report = json.loads(AUDIT_REPORT.read_text(encoding="utf-8"))
+        report = _load_audit_report()
         manifest = json.loads(
             (ROOT / "specification" / "api" / "public-api.json").read_text(
                 encoding="utf-8"
