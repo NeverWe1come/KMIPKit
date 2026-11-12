@@ -358,6 +358,8 @@ class ControlledTlsPeerTest {
             appendNetworkQueryRouteEvents(events, protocolVersion, requestHash, responseHash);
             appendControlledActivationDateNetworkEvents(events, protocolVersion);
             appendControlledKeyFormatRawResponseRouteEvents(events, protocolVersion);
+            appendPendingQueryCorrelationEvidence(events, protocolVersion, serverCertificatePem,
+                    serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
         }
 
         writeRouteExecutionReport(reportPath, mapper, events);
@@ -381,6 +383,9 @@ class ControlledTlsPeerTest {
         assertEquals(2, routeEventCount(report.path("events"), RESPONSE_BATCH_ITEM_CASE_ID,
                         "java.typed-protocol.function.client_batch_response_item_count"),
                 "The installed batch count accessor must run against real KMIP 2.x response Batch Items.");
+        assertEquals(2, routeEventCount(report.path("events"), RESPONSE_BATCH_ITEM_CASE_ID,
+                        "java.typed-protocol.function.client_batch_item_response_pending_correlation_value"),
+                "A controlled Pending response must expose its server-issued correlation value.");
         for (EnumerationFixture fixture : enumerationFixtures) {
             String builderRoute = CRYPTOGRAPHIC_PARAMETER_BUILDER_ROUTES.get(fixture.parentName());
             if (builderRoute != null) {
@@ -2514,7 +2519,7 @@ class ControlledTlsPeerTest {
         genericBitmaskFixtures().stream().map(BitmaskFixture::caseId).distinct().forEach(caseIds::add);
         genericDataTypeFixtures().forEach(fixture -> caseIds.add(fixture.caseId()));
         caseIds.add(RESPONSE_BATCH_ITEM_CASE_ID);
-        CREDENTIAL_TYPE_MODEL_CASE_IDS.values().forEach(caseIds::add);
+        CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().forEach(caseIds::add);
         report.putArray("protocol_versions").add("2.0").add("2.1");
         ObjectNode combination = mapper.createObjectNode();
         combination.put("encoding", "TTLV");
@@ -2786,6 +2791,45 @@ class ControlledTlsPeerTest {
                 structure(0x42009c, textItem(0x540001, "fixture-extension")));
     }
 
+    private void appendPendingQueryCorrelationEvidence(ArrayNode events, String protocolVersion,
+            byte[] serverCertificatePem, byte[] serverPrivateKeyPem,
+            byte[] clientCertificatePem, byte[] clientPrivateKeyPem) throws Exception {
+        byte[] correlation = {0x50, 0x45, 0x4e, 0x44, (byte) protocolVersion.charAt(2)};
+        int protocolMinorVersion = "2.0".equals(protocolVersion) ? 0 : 1;
+        SSLServerSocket listener = listener(certificate(serverCertificatePem),
+                privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+        byte[] responseBytes = asynchronousResponse(0x18, correlation, protocolMinorVersion);
+        FutureTask<byte[]> peer = new FutureTask<>(() -> serveOneResponse(listener, responseBytes));
+        Thread peerThread = new Thread(peer, "java-validator-pending-query-peer-" + protocolVersion);
+        peerThread.setDaemon(true);
+        peerThread.start();
+        Path connectionFile = temporaryDirectory.resolve("pending-query-evidence-" + protocolVersion + ".json");
+        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                clientCertificatePem, clientPrivateKeyPem, true, protocolVersion));
+        try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile));
+                ClientBatch batch = ClientBatch.create()) {
+            batch.asynchronousIndicator(1);
+            ClientBatchItem request = ClientBatchItem.query(new int[] {1}, null);
+            batch.add(request);
+            try (ClientBatchResponse response = driver.executeBatchForEvidence(batch);
+                    ClientBatchItemResult result = response.itemAt(0)) {
+                assertEquals(2L, result.resultStatus());
+                assertArrayEquals(correlation, result.pendingCorrelationValue().orElseThrow());
+                appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
+                        "java.typed-protocol.function.client_batch_item_response_pending_correlation_value",
+                        RESPONSE_BATCH_ITEM_TARGET_ID,
+                        "org.kmipkit.extensions.ClientBatchItemResult.pendingCorrelationValue",
+                        null, null, "decode", protocolVersion, null, null,
+                        normalizedTreeSha256(responseBytes));
+            }
+        } finally {
+            listener.close();
+        }
+        byte[] requestBytes = peer.get(15, TimeUnit.SECONDS);
+        assertEquals(0x18L, requestOperation(requestBytes));
+        assertEquals(protocolMinorVersion, requestProtocolMinorVersion(requestBytes));
+    }
+
     private static void appendBatchItemGenericRouteEvents(ArrayNode events, String protocolVersion)
             throws Exception {
         String treeHash = normalizedTreeSha256(queryResponseBatchItem());
@@ -2861,12 +2905,6 @@ class ControlledTlsPeerTest {
         appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
                 "java.typed-protocol.function.client_batch_item_response_metadata_v2",
                 RESPONSE_BATCH_ITEM_TARGET_ID, "org.kmipkit.extensions.ClientBatchItemResult.metadataV2",
-                null, null, "decode", protocolVersion, null, null, responseHash);
-        assertTrue(result.pendingCorrelationValue().isEmpty());
-        appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
-                "java.typed-protocol.function.client_batch_item_response_pending_correlation_value",
-                RESPONSE_BATCH_ITEM_TARGET_ID,
-                "org.kmipkit.extensions.ClientBatchItemResult.pendingCorrelationValue",
                 null, null, "decode", protocolVersion, null, null, responseHash);
         assertArrayEquals("item-0".getBytes(StandardCharsets.US_ASCII),
                 result.uniqueBatchItemId().orElseThrow());
