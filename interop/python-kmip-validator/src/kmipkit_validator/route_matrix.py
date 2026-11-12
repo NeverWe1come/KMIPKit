@@ -710,10 +710,11 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
             correlation = None if operation == 'Query Asynchronous Requests' else b'kmipkit-route-correlation'
             result = driver._async_exchange(operation, correlation)
         else:
+            route_case = case if case['operation'] == operation else {**case, 'operation': operation}
             identifier = extensions.UniqueIdentifier.text_string('KMIPKit-python-route')
             name = 'KMIPKit-python-route'
             if symbol.endswith('.to_batch_item') and symbol.startswith('kmipkit.attribute_operations.'):
-                item = driver._build_high_level_item(case, identifier, name=name)
+                item = driver._build_high_level_item(route_case, identifier, name=name)
             elif operation == 'Logout':
                 ticket_type = driver._item(0x42014A, 'enumeration', 1)
                 ticket_value = driver._item(0x42014B, 'bytes', b'fixture-ticket')
@@ -725,7 +726,7 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
                     ticket_type.close()
                     ticket_value.close()
             else:
-                item = driver._build_item(case, identifier, name=name)
+                item = driver._build_item(route_case, identifier, name=name)
             result = driver._exchange(item)
         if (result['status'] != expected_driver_status or result['result_status_code'] != peer_status
                 or result.get('result_reason_code') != peer_reason):
