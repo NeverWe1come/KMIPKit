@@ -25,6 +25,11 @@ ROOT = Path(__file__).resolve().parents[3]
 COVERAGE = ROOT / 'interop/shared/coverage'
 LANGUAGES = ('rust', 'c', 'java', 'python')
 ASYNC = {'cancel', 'poll', 'process', 'queryasyncrequests'}
+_RESPONSE_MESSAGE_EXTENSION_TARGETS = [
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION',
+    'KMIPKIT-ELEM-TAG-420051',
+]
 _FUNCTION_TARGET_OVERRIDES = {
     # OASIS KMIP 2.0/2.1 §§8.5, 9.5 define response Batch Count.
     'client_batch_response_item_count': [
@@ -37,16 +42,8 @@ _FUNCTION_TARGET_OVERRIDES = {
         'KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM',
     ],
     # OASIS KMIP 2.0/2.1 §§8.6, 9.13, and 11.56 define response Message Extension.
-    'client_batch_item_response_extension_count': [
-        'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION',
-        'KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION',
-        'KMIPKIT-ELEM-TAG-420051',
-    ],
-    'client_batch_item_response_extension_ttlv_at': [
-        'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION',
-        'KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION',
-        'KMIPKIT-ELEM-TAG-420051',
-    ],
+    'client_batch_item_response_extension_count': _RESPONSE_MESSAGE_EXTENSION_TARGETS,
+    'client_batch_item_response_extension_ttlv_at': _RESPONSE_MESSAGE_EXTENSION_TARGETS,
     # OASIS KMIP 2.0/2.1 §§3.1, 9.7, and 11.25; the controlled Get response
     # preserves Key Format Type::Raw in the raw Batch Item TTLV view.
     'client_batch_item_response_raw_ttlv': [
