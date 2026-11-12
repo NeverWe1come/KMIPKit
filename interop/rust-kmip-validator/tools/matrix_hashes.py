@@ -2,7 +2,7 @@
 from pathlib import Path
 
 
-def contained_output_path(output_path, output_dir):
+def contained_output_path(output_path: str | Path, output_dir: str | Path) -> Path:
     """Resolve a generated-file path and require it to stay under Cargo OUT_DIR."""
     cargo_output_dir = Path(output_dir).resolve(strict=True)
     if not cargo_output_dir.is_dir():

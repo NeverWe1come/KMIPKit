@@ -1,7 +1,7 @@
 """Linear parser for generated Rust route-call match arms."""
 
 
-def parse_route_arm(line):
+def parse_route_arm(line: str) -> tuple[str, str] | None:
     """Return the symbol and body from a generated match arm, if well-formed."""
     if not line.startswith('"') or not line.endswith(','):
         return None
