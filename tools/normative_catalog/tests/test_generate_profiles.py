@@ -5,6 +5,7 @@ from __future__ import annotations
 import html
 import io
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -42,6 +43,7 @@ def _run_captured_utf8_command(args: list[str]) -> subprocess.CompletedProcess[s
         check=False,
         text=True,
         encoding="utf-8",
+        errors="replace",
     )
 
 
@@ -4844,8 +4846,8 @@ class ProfileTargetManifestTests(unittest.TestCase):
         self.assertEqual(result.stderr, "\ufffd")
 
     def test_fixed_loader_rejects_a_junctioned_target_manifest_directory(self) -> None:
-        if not shutil.which("cmd.exe"):
-            self.skipTest("Windows cmd.exe is required to create a directory junction")
+        if os.name != "nt" or not shutil.which("cmd.exe"):
+            self.skipTest("native Windows cmd.exe is required to create a directory junction")
 
         with tempfile.TemporaryDirectory() as directory:
             repository = Path(directory) / "repository"
