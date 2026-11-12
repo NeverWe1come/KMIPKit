@@ -170,7 +170,7 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
 # cryptographic operation builders; KMIPKIT-0095 adds response rendering and
 # KMIPKIT-0108 adds attribute-read declarations; this inventory also includes
 # the approved KMIPKIT-0093 reconciliation and narrowed T101 mappings.
-DECLARATIONS_SHA256 = "6de945965f8a0ba4b0f659da7ac63c8fcca623fb1787ab7a6d1ab8883ff5ffc4"
+DECLARATIONS_SHA256 = "c55de9be3f1aa28b4beedd8208ee92914643bf35559ebb467b8fb4d31a99ac9f"
 OPERATIONS_SHA256 = "2a6eb9fb6823b3456b3fb10b6d4af8477be9f1a1f68c06c252bb4873b272f3bc"
 
 
