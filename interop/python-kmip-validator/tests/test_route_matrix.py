@@ -1552,6 +1552,54 @@ class RouteMatrixTests(unittest.TestCase):
                 self.assertEqual('event', outcome, event)
                 self.assertEqual('passed', event['status'], event)
 
+    def test_server_put_object_routes_decode_and_view_a_complete_ttlv_message(self):
+        case_ids = {'test-norm-payload-server-put-request-20-004',
+                    'test-norm-payload-server-put-request-21-004'}
+        symbols = {'kmipkit.ttlv.ttlv_decode', 'kmipkit.ttlv.ttlv_item_create',
+                   'kmipkit.ttlv.ttlv_item_view_from_item'}
+        catalog = copy.deepcopy(self.catalog)
+        catalog['test_cases'] = [case for case in self.catalog['test_cases']
+                                 if case['case_id'] in case_ids]
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in self.manifest['routes']
+                              if route['language'] == 'python'
+                              and route['public_api_symbol'] in symbols]
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+        self.assertEqual([], gaps)
+        self.assertEqual(6, len(report['events']))
+        self.assertEqual(symbols, {event['public_api_symbol'] for event in report['events']})
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
+    def test_certificate_attributes_have_a_typed_generic_ttlv_view(self):
+        catalog = copy.deepcopy(self.catalog)
+        catalog['test_cases'] = [case for case in self.catalog['test_cases']
+                                 if case['case_id'] == 'test-attr-certificate-attributes']
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in self.manifest['routes']
+                              if route['language'] == 'python'
+                              and route['public_api_symbol'] ==
+                              'kmipkit.ttlv.ttlv_item_view_from_item']
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+        self.assertEqual([], gaps)
+        self.assertEqual(2, len(report['events']))
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
+    def test_key_wrapping_data_tag_has_complete_model_constructor_routes(self):
+        catalog = copy.deepcopy(self.catalog)
+        catalog['test_cases'] = [case for case in self.catalog['test_cases']
+                                 if case['case_id'] == 'test-norm-tag-tag-420046']
+        manifest = copy.deepcopy(self.manifest)
+        symbols = {'kmipkit.managed_objects.KeyWrappingData.from_fields',
+                   'kmipkit.managed_objects.KeyWrappingData.from_item'}
+        manifest['routes'] = [route for route in self.manifest['routes']
+                              if route['language'] == 'python'
+                              and route['public_api_symbol'] in symbols]
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+        self.assertEqual([], gaps)
+        self.assertEqual(4, len(report['events']))
+        self.assertEqual(symbols, {event['public_api_symbol'] for event in report['events']})
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
     def test_ci_requires_shared_changes_and_matrix_completeness(self):
         workflow = (ROOT / '.github/workflows/interop-python.yml').read_text()
         self.assertIn('python -m kmipkit_validator matrix', workflow)
