@@ -793,14 +793,14 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all('kmipkit_client_execute' in check['public_api_trace_symbols']
                             for check in checks))
 
-    def test_id_placeholder_requires_every_followup_item_to_omit_unique_identifier(self):
+    def test_id_placeholder_accepts_omission_or_reserved_enumeration_only(self):
         from route_peer import assert_placeholder_usage, parse, tlv
 
         def enumeration(tag, value):
             return tlv(tag, 5, value.to_bytes(4, 'big'))
 
         def batch_item(operation, unique_identifier=None):
-            payload = b'' if unique_identifier is None else tlv(0x420094, 7, unique_identifier.encode())
+            payload = b'' if unique_identifier is None else unique_identifier
             return tlv(0x42000F, 1, enumeration(0x42005C, operation)
                        + tlv(0x420079, 1, payload))
 
@@ -808,10 +808,24 @@ class RouteMatrixTests(unittest.TestCase):
         request = parse(tlv(0x420078, 1, b''.join(items)))
         assert_placeholder_usage(request, 'test-batch-create-activate-destroy')
 
+        reserved_placeholder = tlv(0x420094, 5, (1).to_bytes(4, 'big'))
+        explicit_placeholder_items = [batch_item(1)] + [
+            batch_item(operation, reserved_placeholder) for operation in (18, 12, 19, 20)
+        ]
+        explicit_placeholder_request = parse(tlv(0x420078, 1, b''.join(explicit_placeholder_items)))
+        assert_placeholder_usage(explicit_placeholder_request, 'test-batch-create-activate-destroy')
+
         request_with_explicit_target = parse(tlv(
-            0x420078, 1, b''.join([items[0], items[1], batch_item(12, 'fixture-key'), *items[3:]])))
+            0x420078, 1, b''.join([items[0], items[1], batch_item(
+                12, tlv(0x420094, 7, b'fixture-key')), *items[3:]])))
         with self.assertRaisesRegex(ValueError, 'fixture_id_placeholder_explicit_target'):
             assert_placeholder_usage(request_with_explicit_target, 'test-batch-create-activate-destroy')
+
+        request_with_invalid_enumeration = parse(tlv(
+            0x420078, 1, b''.join([items[0], batch_item(
+                18, tlv(0x420094, 5, (2).to_bytes(4, 'big'))), *items[2:]])))
+        with self.assertRaisesRegex(ValueError, 'fixture_id_placeholder_explicit_target'):
+            assert_placeholder_usage(request_with_invalid_enumeration, 'test-batch-create-activate-destroy')
 
     def test_placeholder_chain_case_maps_create_activate_get_recipe(self):
         from route_peer import recipe_for_case
@@ -834,7 +848,12 @@ class RouteMatrixTests(unittest.TestCase):
             ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
 
         self.assertEqual(len(checks), 12, 'placeholder chain must run over both versions and six wire transports')
-        self.assertTrue(all(check['status'] == 'passed' for check in checks))
+        failed_checks = [
+            {key: check.get(key) for key in
+             ('protocol_version', 'encoding', 'transport', 'status', 'reason', 'result_reason')}
+            for check in checks if check['status'] != 'passed'
+        ]
+        self.assertFalse(failed_checks, f'controlled placeholder-chain failures: {failed_checks[:3]}')
         expected_operations = {
             'KMIPKIT-ELEM-OP-C2S-CREATE',
             'KMIPKIT-ELEM-OP-C2S-ACTIVATE',
