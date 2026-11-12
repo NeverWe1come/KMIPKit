@@ -62,6 +62,20 @@ class CoverageMatrixTests(unittest.TestCase):
         }
         self.assertEqual(expected, observed)
 
+    def test_secret_data_factory_excludes_key_only_cryptographic_fields(self):
+        route_id = "python.typed-protocol.model.kmipkit.managed.objects.managedobject.secret.data"
+        excluded_targets = {
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-ALGORITHM",
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-LENGTH",
+        }
+        case_ids = {
+            "test-norm-structure-member-structure-member-3-1-key-block-cryptographic-algorithm",
+            "test-norm-structure-member-structure-member-3-1-key-block-cryptographic-length",
+        }
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest)
+                 if cell["route_id"] == route_id and cell["case_id"] in case_ids]
+        self.assertFalse(cells, "Secret Data is not a key and cannot carry key cryptographic properties")
+
     def test_batch_workflow_cells_include_each_ordered_operation_target(self):
         case = next(case for case in self.catalog["test_cases"]
                     if case["case_id"] == "test-batch-create-activate-destroy")
