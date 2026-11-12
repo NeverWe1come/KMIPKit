@@ -19,7 +19,7 @@ import tempfile
 import jsonschema
 
 from cli_paths import validate_git_commit, validate_git_path, resolve_within
-from route_models import credential_function_target_ids, model_inventory, value_inventory
+from route_models import _SCALAR_VALUE_KINDS, credential_function_target_ids, model_inventory, value_inventory
 
 ROOT = Path(__file__).resolve().parents[3]
 COVERAGE = ROOT / 'interop/shared/coverage'
@@ -268,7 +268,15 @@ def construction_inventory(root, commit):
                 ('c', f'kmipkit_{key}_request_create', op['operationId'], c_path, 'network'),
                 ('java', f'org.kmipkit.extensions.{request_type}.create', op['operationId'], f'bindings/java/src/main/java/org/kmipkit/extensions/{request_type}.java', 'network'),
                 ('python', f'kmipkit.extensions.{request_type}.create', op['operationId'], py_path, 'network')])
-            continue
+            batch_item_id = f'client_batch_item_{key}'
+            batch_item = next((function for function in api['functions']
+                               if function['id'] == batch_item_id), None)
+            if batch_item is None:
+                raise ValueError(f'missing public batch item constructor metadata: {batch_item_id}')
+            rust_symbol = function_entrypoint(batch_item, 'rust')
+            if rust_symbol:
+                inventory.append(('rust', rust_symbol, op['operationId'],
+                                  'crates/kmipkit-client/src/execute.rs', 'network'))
         if key in ASYNC:
             request_type = {'queryasyncrequests': 'QueryAsyncRequestsRequest'}.get(key, key.title() + 'Request')
             snake = 'query_async_requests' if key == 'queryasyncrequests' else key
@@ -521,7 +529,8 @@ def build_manifest(root=ROOT, commit='9a16cc90a12205101d22a38501a5e74c665df4dc')
                 else:
                     value = normalized(function_id)
                     target_ids = [target['target_id'] for target in targets
-                        if _contains_name_tokens(target.get('name', ''), function_id)]
+                        if target['kind'] not in _SCALAR_VALUE_KINDS
+                        and _contains_name_tokens(target.get('name', ''), function_id)]
                     if re.search(r'(?:^|_)bytes(?:_|$)', function_id):
                         target_ids.extend(target['target_id'] for target in targets
                             if target['kind'] == 'data_type' and normalized(target['name']) == 'bytestring')
