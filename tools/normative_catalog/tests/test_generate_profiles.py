@@ -8,6 +8,7 @@ import json
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -31,6 +32,17 @@ from tools.normative_catalog.validate import load_validated_catalog
 
 
 ROOT = Path(__file__).resolve().parents[3]
+
+
+def _run_captured_utf8_command(args: list[str]) -> subprocess.CompletedProcess[str]:
+    """Capture a command whose output is expected to be UTF-8 text."""
+    return subprocess.run(
+        args,
+        capture_output=True,
+        check=False,
+        text=True,
+        encoding="utf-8",
+    )
 
 
 def _mapping_applies_to_profile(
@@ -4819,6 +4831,18 @@ class ProfileTargetManifestTests(unittest.TestCase):
             with self.assertRaises(ProfileGenerationError):
                 load_profile_targets(repository, self.catalog)
 
+    def test_captured_command_output_tolerates_non_utf8_diagnostics(self) -> None:
+        result = _run_captured_utf8_command(
+            [
+                sys.executable,
+                "-c",
+                "import sys; sys.stderr.buffer.write(bytes([0xA0]))",
+            ]
+        )
+
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(result.stderr, "\ufffd")
+
     def test_fixed_loader_rejects_a_junctioned_target_manifest_directory(self) -> None:
         if not shutil.which("cmd.exe"):
             self.skipTest("Windows cmd.exe is required to create a directory junction")
@@ -4837,11 +4861,8 @@ class ProfileTargetManifestTests(unittest.TestCase):
                 "mklink /J "
                 + subprocess.list2cmdline([str(junction), str(external)])
             )
-            result = subprocess.run(
-                ["cmd.exe", "/d", "/c", mklink_command],
-                capture_output=True,
-                check=False,
-                text=True,
+            result = _run_captured_utf8_command(
+                ["cmd.exe", "/d", "/c", mklink_command]
             )
             self.assertEqual(
                 result.returncode,
