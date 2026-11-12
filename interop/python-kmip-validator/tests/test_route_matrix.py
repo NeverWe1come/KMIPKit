@@ -1302,6 +1302,9 @@ class RouteMatrixTests(unittest.TestCase):
             for item in request_items
         ]
         self.assertEqual(operation_order, observed_operations)
+        self.assertEqual(len(operation_order), len(request_items))
+        self.assertTrue(all(not any(tag == 0x420094 for tag, _, _ in item)
+                            for item in request_items))
         self.assertEqual(operation_order, event['batch_operation_sequence'])
         self.assertEqual(operation_order, event['peer_observed_operation_sequence'])
         self.assertEqual(len(operation_order), event['batch_item_count'])
