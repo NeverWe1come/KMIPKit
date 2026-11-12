@@ -122,7 +122,14 @@ Sonar identified unrestricted log/receipt paths and an unnecessary foreign
 Cargo manifest override in the new helper. The manifest override is removed;
 only this repository's manifest is compiled. Report directory creation and
 fixed log/receipt paths follow the allowed output roots documented in
-`docs/development/testing.md`, and metadata replacement is atomic. Eleven
+`docs/development/testing.md`, and metadata replacement is atomic. Twelve Linux
 functional tests, all 96 workflow contracts, and the actual Linux coverage
 collector pass with the guarded CLI. Exact-head Sonar verification remains
 required before treating the quality gate as satisfied.
+
+The real-shell symlink regression first demonstrated an output-log alias
+overwriting a foreign fixture before Cargo failed. Preparation now validates
+all fixed output paths before invoking Cargo or redirecting a report. The
+foreign fixture remains unchanged, and the full collector still succeeds.
+Sonar reported zero new issues and zero hotspots at `a6407e43e`; later heads
+still require their own quality-gate result.

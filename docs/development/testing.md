@@ -382,6 +382,9 @@ The C ABI collector confines its reports to the workspace, the operating system'
 temporary directory, or the explicitly configured `CARGO_TARGET_DIR`. Its helper
 uses the repository's fixed Cargo manifest and fixed report filenames; it cannot
 select another project or arbitrary log/receipt files through CLI arguments.
+Existing output-file symlinks must remain inside their report directory before
+the collector writes anything. The real shell regression runs on Linux, the
+only supported platform for this collector.
 
 The pull-request workflow's Linux `coverage` job runs the C ABI collector and
 uploads `coverage-ffi`. Java coverage runs on Linux and Windows and uploads one

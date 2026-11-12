@@ -15,6 +15,8 @@ _REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 _CARGO_MANIFEST = _REPOSITORY_ROOT / 'Cargo.toml'
 _CARGO_LOG_NAME = 'cargo-llvm-cov.log'
 _RECEIPT_NAME = 'cargo-artifacts.jsonl'
+_REPORT_FILES = (_CARGO_LOG_NAME, _RECEIPT_NAME, 'coverage-objects.nul',
+                 'coverage-raw.json', 'coverage.json')
 _LIBRARY_NAMES = ('libkmipkit_ffi.so', 'libkmipkit_ffi.a')
 _CONSUMER_PREFIXES = {'unittests src/lib.rs': 'kmipkit_ffi-',
                       'tests/c_api_coverage.rs': 'c_api_coverage-'}
@@ -42,7 +44,11 @@ def _directory(path: Path, *, create=False) -> Path:
 
 def prepare_report_dir(path: Path) -> Path:
     """Validate a report directory before creating any filesystem entries."""
-    return _directory(path, create=True)
+    directory = _directory(path, create=True)
+    for name in _REPORT_FILES:
+        _report_file(directory / name, name, 'coverage output',
+                     report_dir=directory, must_exist=False)
+    return directory
 
 
 def _report_file(path: Path, name: str, label: str, *, report_dir=None, must_exist=True) -> Path:
