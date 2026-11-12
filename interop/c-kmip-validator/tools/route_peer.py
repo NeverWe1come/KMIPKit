@@ -200,6 +200,10 @@ def text_values(node, tag):
     return [item[2].decode('utf-8') for item in descendants(node, tag) if item[1] == 7]
 
 
+def byte_string_values(node, tag):
+    return [item[2] for item in descendants(node, tag) if item[1] == 8]
+
+
 def request_payload_field_present(target, batch_item, targets, codec):
     """Check a request payload field under its exact operation's payload."""
     if (target.get('kind') != 'operation_payload_field'
@@ -245,6 +249,7 @@ RECIPES = {
     'test-op-rng-seed': ((38,), 'rng_seed'),
     'test-v20-reject-get-constraints': ((56,), 'get_constraints'),
     'test-op-create': ((1, 20), 'create'),
+    'test-batch-single-item-options-omitted': ((10,), 'batch_single_item_options_omitted'),
     'test-norm-payload-client-create-request-20-001': ((1, 20), 'create'),
     'test-norm-payload-client-create-request-20-002': ((1, 20), 'create'),
     'test-norm-payload-client-create-request-21-001': ((1, 20), 'create'),
@@ -274,6 +279,7 @@ RECIPES = {
 }
 
 CONTROLLED_PEER_LOCAL_MODEL_CASES = frozenset({
+    'test-batch-single-item-options-omitted',
     'test-norm-payload-client-query-request-20-001',
     'test-norm-payload-client-query-request-21-001',
     'test-norm-payload-client-query-request-21-002',
@@ -358,6 +364,18 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None):
                        not text_values(target_item, 0x42009D))
         if not matches:
             raise ValueError('fixture_attribute_reference_mismatch')
+    if selected_recipe[1] == 'batch_single_item_options_omitted':
+        items = [child for child in node[2]
+                 if child[0] == 0x42000F and child[1] == 1]
+        if (numbers(node, 0x42000D) != [1] or len(items) != 1 or
+                list(descendants(node, 0x420011)) or list(descendants(node, 0x42000E))):
+            raise ValueError('fixture_single_item_batch_options_mismatch')
+        if numbers(items[0], 0x42005C) != [10]:
+            raise ValueError('fixture_single_item_batch_operation_mismatch')
+        if text_values(items[0], 0x420094) != ['fixture-key-1']:
+            raise ValueError('fixture_single_item_batch_identifier_mismatch')
+        if byte_string_values(items[0], 0x420093) != [b'interop-get']:
+            raise ValueError('fixture_single_item_batch_item_id_mismatch')
     if selected_recipe[1] == 'query' and numbers(node, 0x420074) != [1]:
         raise ValueError('fixture_query_function_mismatch')
     if case_id == 'test-norm-payload-client-create-request-21-003':
@@ -775,7 +793,23 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             'kmipkit_get_attribute_list_request_to_ttlv_payload'}:
                                         continue
                                 target = targets_by_id[cell['target_id']]
-                                if target['kind'] == 'operation':
+                                if target['kind'] == 'message_field':
+                                    field_tag = codec.tags.get(normalize(target['name']))
+                                    if field_tag is None:
+                                        continue
+                                    field_present = bool(list(descendants(request_tree, field_tag)))
+                                    if case_id == 'test-batch-single-item-options-omitted':
+                                        expected_presence = {
+                                            'Batch Count': True,
+                                            'Batch Error Continuation Option': False,
+                                            'Batch Order Option': False,
+                                            'Batch Item': True,
+                                        }.get(target['name'])
+                                        if expected_presence is None or field_present != expected_presence:
+                                            continue
+                                    elif not field_present:
+                                        continue
+                                elif target['kind'] == 'operation':
                                     if target['name'] != operation_name:
                                         continue
                                 elif target['kind'] == 'operation_payload_field':

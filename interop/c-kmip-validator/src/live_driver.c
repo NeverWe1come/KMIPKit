@@ -1557,6 +1557,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     bool get_attribute_list_workflow = strcmp(test_case->case_id, "test-op-get-attribute-list") == 0;
     bool get_constraints_workflow = strcmp(test_case->case_id, "test-op-get-constraints") == 0;
     bool get_workflow = strcmp(test_case->case_id, "test-op-get") == 0;
+    bool single_item_batch_options_workflow =
+        strcmp(test_case->case_id, "test-batch-single-item-options-omitted") == 0;
     bool check_workflow = strcmp(test_case->case_id, "test-op-check") == 0;
     bool private_key_workflow = strcmp(test_case->case_id, "test-obj-private-key") == 0;
     bool public_key_workflow = strcmp(test_case->case_id, "test-obj-public-key") == 0;
@@ -1607,7 +1609,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         !get_constraints_workflow && !get_constraints_boundary_workflow) {
         return outcome_not_run("Get Constraints variations are not yet mapped to isolated C fixtures");
     }
-    if (strcmp(test_case->operation, "Get") == 0 && !get_workflow) {
+    if (strcmp(test_case->operation, "Get") == 0 && !get_workflow &&
+        !single_item_batch_options_workflow) {
         return outcome_not_run("object-specific Get recipes are not yet mapped to isolated C fixtures");
     }
     if (strcmp(test_case->operation, "Get Attributes") == 0 && !get_attributes_workflow) {
@@ -1678,6 +1681,21 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         static const uint8_t seed[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
         const kmipkit_byte_span_v1_t span = {.data = seed, .length = sizeof(seed)};
         status = kmipkit_client_batch_item_rng_seed(&span, &item);
+    } else if (single_item_batch_options_workflow) {
+        static const uint8_t fixture_identifier[] = "fixture-key-1";
+        const kmipkit_unique_identifier_v1_t identifier = {
+            .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+            .abi_version = 1,
+            .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
+            .text_data = fixture_identifier,
+            .text_length = sizeof(fixture_identifier) - 1
+        };
+        status = kmipkit_client_batch_item_get(&identifier, 0, 0, 0, 0, 0, 0, NULL, &item);
+        if (status == 0) status = set_batch_item_id(&item, "interop-get");
+        if (status == 0 && !request_item_is_valid(
+                item, request_validation_diagnostic, sizeof(request_validation_diagnostic))) {
+            status = KMIPKIT_ERROR_INVALID_INPUT;
+        }
     } else if (object_lifecycle_workflow) {
         kmipkit_unique_identifier_v1_t placeholder = {
             .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
@@ -1861,7 +1879,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     uint8_t created_identifier_present = 0;
     kmip_execution_outcome_t outcome = { .executed = true };
     status = kmipkit_client_batch_create(&batch);
-    if (status == 0 && create_workflow) {
+    if (status == 0 && single_item_batch_options_workflow) {
+        status = kmipkit_client_batch_add_item(batch, &item);
+    } else if (status == 0 && create_workflow) {
         status = kmipkit_client_batch_set_order_option(batch, 1);
         if (status == 0) status = kmipkit_client_batch_add_error_continuation_value(
             batch, KMIPKIT_ENUMERATION_BATCH_ERROR_CONTINUATION_OPTION_CONTINUE);

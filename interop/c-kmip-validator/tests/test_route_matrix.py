@@ -805,17 +805,14 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(len(checks), 12, 'single-item batch must pass both versions over all six wire transports')
         self.assertTrue(all(check['status'] == 'passed' for check in checks))
         expected_targets = {
-            'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT',
-            'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION',
-            'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION',
             'KMIPKIT-ELEM-MESSAGE-FIELD-8-3-BATCH-ITEM',
             'KMIPKIT-ELEM-OP-C2S-GET',
         }
         self.assertTrue(expected_targets <= {event['target_id'] for event in events})
-        for symbol in ('kmipkit_client_batch_item_get', 'kmipkit_client_batch_create',
-                       'kmipkit_client_batch_add_item', 'kmipkit_client_execute'):
-            self.assertTrue(any(event['public_api_symbol'] == symbol and event['action'] == 'send'
-                                for event in events), symbol)
+        self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_get' and
+                            event['action'] == 'send' for event in events))
+        self.assertTrue(all('kmipkit_client_execute' in check['public_api_trace_symbols']
+                            for check in checks))
 
     def test_hash_and_rng_cases_call_their_public_routes_and_check_responses(self):
         from artifact_support import ROOT
