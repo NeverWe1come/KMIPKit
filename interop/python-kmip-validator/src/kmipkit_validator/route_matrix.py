@@ -573,8 +573,12 @@ def _assert_managed_object_target(target: dict, tree: list, name: str,
             raise RecipePending
     elif target.get('kind') == 'tag' and tree[0] != int(target['wire_value'], 16):
         raise ValueError('managed-object route changed the target tag')
-    elif target.get('kind') == 'object_structure' and tree[0] != _managed_object_tag(elements, name):
-        raise ValueError('managed-object route changed the root object tag')
+    elif target.get('kind') == 'object_structure':
+        if target.get('name') in _MANAGED_OBJECT_TYPES:
+            if tree[0] != _managed_object_tag(elements, name):
+                raise ValueError('managed-object route changed the root object tag')
+        elif not _credential_tree_has_tag(tree, _managed_object_tag(elements, target.get('name', ''))):
+            raise RecipePending
 
 
 def _managed_object_cell(cell: dict, case: dict, target: dict) -> dict:
@@ -619,7 +623,14 @@ def _managed_object_cell(cell: dict, case: dict, target: dict) -> dict:
     elements = _catalog_model_data()[2]
     if target.get('kind') not in {'object_structure', 'structure_member', 'tag'}:
         raise RecipePending
-    name = _managed_object_root_name(target, elements)
+    factory_names = {
+        'certificate': 'Certificate', 'certificate_request': 'Certificate Request',
+        'opaque_object': 'Opaque Object', 'pgp_key': 'PGP Key',
+        'private_key': 'Private Key', 'public_key': 'Public Key',
+        'secret_data': 'Secret Data', 'split_key': 'Split Key',
+        'symmetric_key': 'Symmetric Key',
+    }
+    name = factory_names.get(symbol.rsplit('.', 1)[-1]) or _managed_object_root_name(target, elements)
     tree = _managed_object_root_tree(name, elements)
     object_type = _MANAGED_OBJECT_TYPES[name]
     with ExitStack() as owned:
