@@ -39,6 +39,11 @@ def _normalized_name(value: str) -> str:
     return ''.join(character for character in value.casefold() if character.isalnum())
 
 
+def _target_field(target: dict, requires: dict, field: str) -> Any:
+    """Prefer each expanded normative target's exact value over case defaults."""
+    return target.get(field, requires.get('target_kind' if field == 'kind' else field))
+
+
 def public_callable(symbol: str):
     parts = symbol.split('.')
     value = importlib.import_module('.'.join(parts[:2]))
@@ -123,7 +128,7 @@ def encode_fixture(tree: list) -> bytes:
 def _generic_samples(case: dict, target: dict, symbol: str) -> list[tuple[int, str, Any]]:
     """Resolve the finite numeric/type representatives from this exact catalog case."""
     requires = case['requires']
-    kind = target.get('kind', requires.get('target_kind'))
+    kind = _target_field(target, requires, 'kind')
     target_id = target['target_id']
     by_id, element_types, elements = _catalog_model_data()
     tag = 0x4200FF
@@ -179,8 +184,8 @@ def _generic_samples(case: dict, target: dict, symbol: str) -> list[tuple[int, s
             raise RecipePending
         values = PythonKmipDriver._wire_representatives(target['wire_value'])
         return [(int(object_type_tag['wire_value'], 16), 'Enumeration', value) for value in values]
-    allocation = target.get('allocation', requires.get('allocation'))
-    wire_value = target.get('wire_value', requires.get('wire_value'))
+    allocation = _target_field(target, requires, 'allocation')
+    wire_value = _target_field(target, requires, 'wire_value')
     if kind == 'tag' and allocation in ('assigned', 'extension') and isinstance(wire_value, str):
         return [(raw, 'Integer', 0) for raw in PythonKmipDriver._wire_representatives(wire_value)]
     if kind == 'tag_range' and allocation == 'extension' and isinstance(wire_value, str):
@@ -315,8 +320,8 @@ def _generic_cell(cell: dict, case: dict, target: dict) -> dict:
     from kmipkit import ttlv
 
     symbol = cell['public_api_symbol']
-    if (target.get('kind', case['requires'].get('target_kind')) in ('tag', 'tag_range')
-            and target.get('allocation', case['requires'].get('allocation')) in ('reserved', 'unused')):
+    if (_target_field(target, case['requires'], 'kind') in ('tag', 'tag_range')
+            and _target_field(target, case['requires'], 'allocation') in ('reserved', 'unused')):
         return _tag_rejection_cell(cell, case, target)
     if symbol not in _GENERIC_SYMBOLS:
         raise RecipePending
@@ -1033,7 +1038,7 @@ def _typed_attribute_cell(cell: dict, case: dict, target: dict) -> dict:
     observed = []
     for tag, type_name, value in samples:
         attribute = attributes[tag]
-        if target.get('kind', case['requires'].get('target_kind')) == 'tag':
+        if _target_field(target, case['requires'], 'kind') == 'tag':
             # Tag allocation cases have no prescribed value. Use the installed
             # attribute's exact catalogued scalar type instead of inventing one.
             scalar = {'Integer': ('Integer', 0), 'Enumeration': ('Enumeration', 1),
@@ -1154,8 +1159,8 @@ def _tag_rejection_cell(cell: dict, case: dict, target: dict) -> dict:
     from kmipkit import errors, ttlv
 
     requires = case['requires']
-    target_kind = target.get('kind', requires.get('target_kind'))
-    wire_value = target.get('wire_value', requires.get('wire_value'))
+    target_kind = _target_field(target, requires, 'kind')
+    wire_value = _target_field(target, requires, 'wire_value')
     if not isinstance(wire_value, str):
         raise RecipePending
     if target_kind == 'tag_range':
