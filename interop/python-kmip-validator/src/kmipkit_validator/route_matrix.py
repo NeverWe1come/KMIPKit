@@ -1133,6 +1133,12 @@ _ASYNC_OUTCOME_RESPONSE_ROUTES = {
     'kmipkit.client.AsyncOperationOutcome.query_async_requests_response',
     'kmipkit.client.AsyncOperationOutcome.response_payload_ttlv',
 }
+_BATCH_RESULT_LIVE_ROUTES = {
+    'kmipkit.client.BatchItemResult.raw',
+    'kmipkit.client.BatchItemResult.response_header_ttlv',
+    'kmipkit.client.BatchResult.item_at',
+    'kmipkit.client.BatchResult.item_count',
+}
 _BATCH_ITEM_RESULT_VALUE_ROUTES.update(
     'kmipkit.client.BatchItemResult.' + member
     for member in ('private_key_unique_identifier', 'split_key_unique_identifiers')
@@ -1769,6 +1775,110 @@ def _async_outcome_response_cell(cell: dict, case: dict, target: dict,
             'transport_invocation_count': 1, 'peer_observed_response_count': 1}
 
 
+def _batch_result_live_cell(cell: dict, target: dict,
+                            trace: CallTrace | None) -> dict:
+    """Read BatchResult and raw response views after a controlled Discover Versions exchange."""
+    from .controlled_peer import ControlledTlsPeer, PKI
+    from .driver import PythonKmipDriver
+    from kmipkit import extensions, protocol_values, ttlv
+
+    protocol_version = cell['protocol_version']
+    peer = ControlledTlsPeer(status=protocol_values.ResultStatus.SUCCESS, reason=None,
+                             encoding='TTLV', transport='raw_tls',
+                             protocol_version=protocol_version)
+    connection = {
+        'server_id': 'controlled-fixture', 'protocol_version': protocol_version,
+        'transport': 'raw_tls', 'encoding': 'TTLV', 'api_level': 'typed-protocol',
+        'endpoints': {'raw_tls': {'host': '127.0.0.1', 'port': peer.port},
+                      'https': {'url': f'https://127.0.0.1:{peer.port}/kmip'}},
+        'tls': {'ca_cert_path': str(PKI / 'server-cert.pem'),
+                'client_cert_path': str(PKI / 'client-cert.pem'),
+                'client_key_path': str(PKI / 'client-key.pem'),
+                'server_name_override': 'localhost',
+                'connect_timeout_seconds': 5, 'read_timeout_seconds': 5},
+    }
+    driver = None
+    batch = limits = response = None
+    owned_structure = None
+    try:
+        driver = PythonKmipDriver(connection)
+        batch = driver._client_module.Batch.create()
+        limits = ttlv.codec_limits_defaults()
+        with extensions.client_batch_item_discover_versions() as request_item:
+            batch.add_item(request_item)
+        response = driver._client.execute(batch, limits)
+        if response.item_count() != 1:
+            raise ValueError('controlled Discover Versions returned an unexpected batch count')
+        item_result = response.item_at(0)
+        if (item_result.operation != protocol_values.Operation.DISCOVER_VERSIONS
+                or item_result.result_status != protocol_values.ResultStatus.SUCCESS):
+            raise ValueError('controlled Discover Versions returned a mismatched batch item')
+
+        symbol = cell['public_api_symbol']
+        if symbol.endswith('.item_count'):
+            observed = response.item_count()
+            if observed != 1:
+                raise ValueError('BatchResult.item_count changed the returned item count')
+            safe_observed = {'item_count': observed}
+        elif symbol.endswith('.item_at'):
+            observed = response.item_at(0)
+            if observed.operation != protocol_values.Operation.DISCOVER_VERSIONS:
+                raise ValueError('BatchResult.item_at changed batch item order')
+            safe_observed = {'index': 0, 'operation': int(observed.operation)}
+        elif symbol.endswith('.response_header_ttlv'):
+            owned_structure = item_result.response_header_ttlv()
+            with ttlv.ttlv_structure_view(owned_structure) as view:
+                observed_tags = []
+                for index in range(ttlv.ttlv_structure_view_item_count(view)):
+                    with ttlv.ttlv_structure_view_item_at(view, index) as child:
+                        with ttlv.ttlv_item_view_tag(child) as tag:
+                            observed_tags.append(ttlv.tag_value(tag))
+            if observed_tags != [0x420069, 0x420092, 0x42000D]:
+                raise ValueError('BatchItemResult response header changed ordered KMIP fields')
+            safe_observed = {'response_header_tags': observed_tags}
+        else:
+            owned_structure = item_result.raw()
+            if owned_structure is None:
+                raise ValueError('successful Discover Versions response omitted its payload')
+            with ttlv.ttlv_structure_view(owned_structure) as view:
+                item_count = ttlv.ttlv_structure_view_item_count(view)
+                if item_count != 1:
+                    raise ValueError('Discover Versions response payload field count changed')
+                with ttlv.ttlv_structure_view_item_at(view, 0) as child:
+                    with ttlv.ttlv_item_view_tag(child) as tag:
+                        first_tag = ttlv.tag_value(tag)
+            if first_tag != 0x420069:
+                raise ValueError('Discover Versions payload did not preserve Protocol Version')
+            safe_observed = {'response_payload_item_count': item_count}
+
+        if trace is not None:
+            trace.record_invocation(symbol)
+        request_tree = _network_tree(peer.requests[0], 'TTLV')
+        response_tree = _network_tree(peer.responses[0], 'TTLV')
+        if (len(peer.requests) != 1 or len(peer.responses) != 1
+                or peer.request_observation.get('operation') != 'Discover Versions'):
+            raise ValueError('controlled peer did not observe one Discover Versions exchange')
+        request_digest = digest(request_tree)
+        response_digest = digest({'tree': response_tree, 'accessor': safe_observed,
+                                  'target': target.get('target_id')})
+    finally:
+        if owned_structure is not None:
+            owned_structure.close()
+        if response is not None:
+            response.close()
+        if limits is not None:
+            limits.close()
+        if batch is not None:
+            batch.close()
+        if driver is not None:
+            driver.close()
+        peer.close()
+    return {'request_tree_sha256': request_digest,
+            'response_tree_sha256': response_digest,
+            'request_delivery_state': 'response_received',
+            'transport_invocation_count': 1, 'peer_observed_response_count': 1}
+
+
 def _query_response_field_cell(cell: dict, target: dict,
                                trace: CallTrace | None) -> dict:
     """Read QueryResponse field count and indexed values in their original order."""
@@ -1865,6 +1975,8 @@ def execute_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | Non
             return _batch_error_continuation_cell(cell, case, target, trace)
         if cell['public_api_symbol'] in _ASYNC_OUTCOME_RESPONSE_ROUTES:
             return _async_outcome_response_cell(cell, case, target, trace)
+        if cell['public_api_symbol'] in _BATCH_RESULT_LIVE_ROUTES:
+            return _batch_result_live_cell(cell, target, trace)
         if cell['public_api_symbol'] in _BATCH_ITEM_RESULT_VALUE_ROUTES:
             return _batch_item_result_value_cell(cell, case, target, trace)
         return _generic_cell(cell, case, target)
