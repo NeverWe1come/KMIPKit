@@ -585,7 +585,7 @@ pub extern "C" fn kmipkit_symmetric_key_builder_insert_attribute_item(
         symmetric_builder_validation_status(|| {
             let item = try_ffi!(validated_expert_attribute_item(item));
             let Ok(index) = usize::try_from(index) else {
-                return record_ffi_error(ERROR_INVALID_INPUT);
+                return record_ffi_error(ERROR_INVALID_INPUT); // COVERAGE-EXCLUDE: The guard is unreachable on tested 64-bit targets.
             };
             try_ffi!(update_symmetric_builder(builder, |builder| {
                 builder.attribute_at(
