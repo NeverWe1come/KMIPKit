@@ -12,6 +12,7 @@ import sys
 import tempfile
 
 _REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+_CARGO_MANIFEST = _REPOSITORY_ROOT / 'Cargo.toml'
 _CARGO_LOG_NAME = 'cargo-llvm-cov.log'
 _RECEIPT_NAME = 'cargo-artifacts.jsonl'
 _LIBRARY_NAMES = ('libkmipkit_ffi.so', 'libkmipkit_ffi.a')
@@ -126,7 +127,7 @@ def record_ffi_artifacts(target_root: Path, output: Path) -> None:
         receipt_path = Path(raw) / _RECEIPT_NAME
         with receipt_path.open('w', encoding='utf-8') as receipt:
             subprocess.run(['cargo', 'test', '--no-run', '--message-format=json',
-                            '--manifest-path', str(_REPOSITORY_ROOT / 'Cargo.toml'),
+                            '--manifest-path', str(_CARGO_MANIFEST),
                             '-p', 'kmipkit-ffi', '--all-targets', '--all-features', '--locked'],
                            cwd=_REPOSITORY_ROOT, env=environment, stdout=receipt, check=True)
         receipt_path.replace(output)
