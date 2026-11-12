@@ -466,6 +466,10 @@ fn typed_attribute_marker(symbol: &str) -> Option<&str> {
     marker.split(['>', ':']).next()
 }
 
+fn vendor_attribute_item() -> Result<Item> {
+    crate::driver::item(0x0042_0008, vendor_attribute_value()?)
+}
+
 fn normalized_name(value: &str) -> String {
     value
         .chars()
@@ -1900,6 +1904,10 @@ fn sample_for_route_at_version(
     if !typed_item_route(symbol) {
         return sample(target, elements);
     }
+    if typed_attribute_marker(symbol) == Some("VendorAttribute") {
+        let model = vendor_attribute_item()?;
+        return metadata_expected_target(&model, target, elements);
+    }
     let marker = typed_attribute_marker(symbol).ok_or("typed attribute marker missing")?;
     let attribute = elements
         .iter()
@@ -2993,6 +3001,12 @@ fn invoke(
     elements: &[Json],
     protocol_version: &str,
 ) -> Option<Result<Item>> {
+    if typed_attribute_marker(symbol) == Some("VendorAttribute") {
+        return Some((|| {
+            let model = vendor_attribute_item()?;
+            generated::execute(symbol, &model).ok_or("generated Vendor Attribute route missing")?
+        })());
+    }
     if let Some(result) = invoke_final_indicator_route(symbol, sample) {
         return Some(result);
     }
@@ -6359,7 +6373,9 @@ mod tests {
                     .find(|target| target["target_id"] == target_id)
                     .unwrap();
                 let expected = sample_for_route_at_version(symbol, target, elements, "2.1")
-                    .unwrap_or_else(|error| panic!("{symbol} sample failed for {target_id}: {error}"));
+                    .unwrap_or_else(|error| {
+                        panic!("{symbol} sample failed for {target_id}: {error}")
+                    });
                 let result = invoke(symbol, &expected, target, elements, "2.1")
                     .unwrap_or_else(|| panic!("{symbol} route missing for {target_id}"))
                     .unwrap_or_else(|error| panic!("{symbol} rejected {target_id}: {error}"));
