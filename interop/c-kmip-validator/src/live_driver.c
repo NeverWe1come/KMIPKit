@@ -1562,7 +1562,10 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     bool batch_two_read_items_workflow =
         strcmp(test_case->case_id, "test-batch-count-matches-items") == 0 ||
         strcmp(test_case->case_id, "test-batch-unique-item-id-response-correlation") == 0 ||
-        strcmp(test_case->case_id, "test-batch-order-false-correlates-response-items") == 0;
+        strcmp(test_case->case_id, "test-batch-order-false-correlates-response-items") == 0 ||
+        strcmp(test_case->case_id, "test-batch-continue-after-failure") == 0;
+    bool continue_after_failure_workflow =
+        strcmp(test_case->case_id, "test-batch-continue-after-failure") == 0;
     bool single_item_batch_options_workflow =
         strcmp(test_case->case_id, "test-batch-single-item-options-omitted") == 0;
     bool check_workflow = strcmp(test_case->case_id, "test-op-check") == 0;
@@ -1708,7 +1711,19 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         }
     } else if (batch_two_read_items_workflow) {
         static const uint8_t fixture_identifier[] = "fixture-key-1";
-        const kmipkit_unique_identifier_v1_t identifier = {
+        static const uint8_t missing_identifier[] = "missing-key";
+        const uint8_t *get_identifier_data = continue_after_failure_workflow ?
+            missing_identifier : fixture_identifier;
+        const uint64_t get_identifier_length = continue_after_failure_workflow ?
+            sizeof(missing_identifier) - 1 : sizeof(fixture_identifier) - 1;
+        const kmipkit_unique_identifier_v1_t get_identifier = {
+            .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+            .abi_version = 1,
+            .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
+            .text_data = get_identifier_data,
+            .text_length = get_identifier_length
+        };
+        const kmipkit_unique_identifier_v1_t attribute_list_identifier = {
             .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
             .abi_version = 1,
             .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
@@ -1716,8 +1731,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             .text_length = sizeof(fixture_identifier) - 1
         };
         status = kmipkit_client_batch_item_get(
-            &identifier, 0, 0, 0, 0, 0, 0, NULL, &item);
-        if (status == 0) status = build_get_attribute_list_item(&identifier, &second_item);
+            &get_identifier, 0, 0, 0, 0, 0, 0, NULL, &item);
+        if (status == 0) status = build_get_attribute_list_item(
+            &attribute_list_identifier, &second_item);
         if (status == 0) status = set_batch_item_id(&item, "item-a");
         if (status == 0) status = set_batch_item_id(&second_item, "item-b");
         if (status == 0 && (!request_item_is_valid(
@@ -1936,6 +1952,11 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         if (strcmp(test_case->case_id, "test-batch-order-false-correlates-response-items") == 0) {
             status = kmipkit_client_batch_set_order_option(batch, 0);
         }
+        if (status == 0 && strcmp(test_case->case_id,
+                                   "test-batch-continue-after-failure") == 0) {
+            status = kmipkit_client_batch_add_error_continuation_value(
+                batch, KMIPKIT_ENUMERATION_BATCH_ERROR_CONTINUATION_OPTION_CONTINUE);
+        }
         if (status == 0) status = kmipkit_client_batch_add_item(batch, &item);
         if (status == 0) status = kmipkit_client_batch_add_item(batch, &second_item);
     } else if (status == 0 && create_workflow) {
@@ -2035,10 +2056,16 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             if (status == 0) status = kmipkit_client_batch_item_response_unique_batch_item_id(
                 *response_slot, &id_present, &id);
             if (status != 0 || !id_present || !id.data) break;
+            bool expected_get_status = continue_after_failure_workflow &&
+                metadata.operation == KMIPKIT_ENUMERATION_OPERATION_GET &&
+                metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_OPERATION_FAILED &&
+                metadata.has_result_reason != 0 &&
+                metadata.result_reason == KMIPKIT_ENUMERATION_RESULT_REASON_OBJECT_NOT_FOUND;
             if (id.length == sizeof("item-a") - 1 &&
                 memcmp(id.data, "item-a", sizeof("item-a") - 1) == 0 &&
                 metadata.operation == KMIPKIT_ENUMERATION_OPERATION_GET &&
-                metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+                (expected_get_status || (!continue_after_failure_workflow &&
+                 metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS))) {
                 get_matched = true;
             } else if (id.length == sizeof("item-b") - 1 &&
                        memcmp(id.data, "item-b", sizeof("item-b") - 1) == 0 &&

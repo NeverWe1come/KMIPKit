@@ -254,6 +254,7 @@ RECIPES = {
     'test-batch-count-matches-items': ((10, 12), 'batch_count_two_read_items'),
     'test-batch-unique-item-id-response-correlation': ((10, 12), 'batch_count_two_read_items'),
     'test-batch-order-false-correlates-response-items': ((10, 12), 'batch_order_false_two_read_items'),
+    'test-batch-continue-after-failure': ((10, 12), 'batch_continue_after_failure'),
     'test-norm-payload-client-create-request-20-001': ((1, 20), 'create'),
     'test-norm-payload-client-create-request-20-002': ((1, 20), 'create'),
     'test-norm-payload-client-create-request-21-001': ((1, 20), 'create'),
@@ -380,13 +381,14 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None):
             raise ValueError('fixture_single_item_batch_identifier_mismatch')
         if byte_string_values(items[0], 0x420093) != [b'interop-get']:
             raise ValueError('fixture_single_item_batch_item_id_mismatch')
-    if selected_recipe[1] in ('batch_count_two_read_items', 'batch_order_false_two_read_items'):
+    if selected_recipe[1] in ('batch_count_two_read_items', 'batch_order_false_two_read_items',
+                              'batch_continue_after_failure'):
         items = [child for child in node[2]
                  if child[0] == 0x42000F and child[1] == 1]
+        first_id = 'missing-key' if selected_recipe[1] == 'batch_continue_after_failure' else 'fixture-key-1'
         if (numbers(node, 0x42000D) != [2] or
                 [numbers(item, 0x42005C) for item in items] != [[10], [12]] or
-                [text_values(item, 0x420094) for item in items] !=
-                [['fixture-key-1'], ['fixture-key-1']] or
+                [text_values(item, 0x420094) for item in items] != [[first_id], ['fixture-key-1']] or
                 [byte_string_values(item, 0x420093) for item in items] !=
                 [[b'item-a'], [b'item-b']]):
             raise ValueError('fixture_two_read_batch_shape_mismatch')
@@ -395,6 +397,9 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None):
                 raise ValueError('fixture_batch_order_option_false_missing')
         elif list(descendants(node, 0x420010)):
             raise ValueError('fixture_unrequested_batch_order_option_present')
+        if selected_recipe[1] == 'batch_continue_after_failure':
+            if numbers(node, 0x42000E) != [1]:
+                raise ValueError('fixture_batch_continue_option_missing')
     if selected_recipe[1] == 'query' and numbers(node, 0x420074) != [1]:
         raise ValueError('fixture_query_function_mismatch')
     if case_id == 'test-norm-payload-client-create-request-21-003':
@@ -686,16 +691,22 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         object_type = 4 if case_id == 'test-obj-private-key' else 3 if case_id == 'test-obj-public-key' else 2
                                         response_operations = recipe[0]
                                         response_item_ids = None
+                                        response_statuses = None
+                                        response_reasons = None
                                         if recipe[1] in ('batch_count_two_read_items',
-                                                         'batch_order_false_two_read_items'):
+                                                         'batch_order_false_two_read_items',
+                                                         'batch_continue_after_failure'):
                                             response_item_ids = (b'item-a', b'item-b')
                                             if recipe[1] == 'batch_order_false_two_read_items':
                                                 response_operations = tuple(reversed(recipe[0]))
                                                 response_item_ids = (b'item-b', b'item-a')
+                                            elif recipe[1] == 'batch_continue_after_failure':
+                                                response_statuses = (1, 0)
+                                                response_reasons = (55, None)
                                         response_wire = response(
                                             response_operations, int(version[-1]), selected_tag, object_type,
                                             attribute_fixture['attribute_response_wire'] if attribute_fixture else None,
-                                            response_item_ids)
+                                            response_item_ids, response_statuses, response_reasons)
                                         response_tree = parse(response_wire)
                                         verify_lifecycle(recipe[0], response_tree)
                                         encoded_response = codec.encode(response_wire, encoding)
@@ -799,7 +810,17 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                if observation and case_id in {
                                                    'test-batch-count-matches-items',
                                                    'test-batch-unique-item-id-response-correlation',
-                                                   'test-batch-order-false-correlates-response-items'} else {}),
+                                                   'test-batch-order-false-correlates-response-items',
+                                                   'test-batch-continue-after-failure'} else {}),
+                                           **({'peer_response_result_statuses': [
+                                               numbers(item, 0x42007F)[0]
+                                               for item in observation[0][1][2]
+                                               if item[0] == 0x42000F]}
+                                               if observation and case_id in {
+                                                   'test-batch-count-matches-items',
+                                                   'test-batch-unique-item-id-response-correlation',
+                                                   'test-batch-order-false-correlates-response-items',
+                                                   'test-batch-continue-after-failure'} else {}),
                                            **attribute_check,
                                            **({'failure_code': code or 'peer_observation_missing'} if code or not observation else {})})
                             if not observation or code or run.returncode != 0:

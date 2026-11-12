@@ -34,7 +34,9 @@ def response(operations: tuple[int, ...], protocol_minor: int,
              selected_attribute_tag: int = 0,
              created_object_type: int = 2,
              selected_attribute_wire: bytes | None = None,
-             unique_batch_item_ids: tuple[bytes, ...] | None = None) -> bytes:
+             unique_batch_item_ids: tuple[bytes, ...] | None = None,
+             result_statuses: tuple[int, ...] | None = None,
+             result_reasons: tuple[int | None, ...] | None = None) -> bytes:
     version = tlv(0x420069, 1,
                   integer(0x42006A, 2) + integer(0x42006B, protocol_minor))
     header = tlv(
@@ -54,6 +56,9 @@ def response(operations: tuple[int, ...], protocol_minor: int,
         if operations == (1, 18, 20, 19, 20) and item_index == 2:
             result_status = 1
             result_reason = 67
+        if result_statuses is not None:
+            result_status = result_statuses[item_index]
+            result_reason = result_reasons[item_index] if result_reasons is not None else None
         if operation == 30:
             payload_value = tlv(
             0x420069, 1,
@@ -257,7 +262,7 @@ def main() -> int:
     )
     expected_operations += (37, 38, 39)
     expected_operations += (1, 18, 12, 19, 20)
-    expected_operations += (10, 12, 10, 12, 10, 12)
+    expected_operations += (10, 12, 10, 12, 10, 12, 10, 12)
     expected_cases += ("test-op-hash", "test-op-rng-retrieve", "test-op-rng-seed")
     expected_cases += ("test-neg-destroy-active-without-revoke",)
     expected_cases += ("test-batch-create-activate-destroy",)
@@ -265,6 +270,7 @@ def main() -> int:
         "test-batch-count-matches-items",
         "test-batch-unique-item-id-response-correlation",
         "test-batch-order-false-correlates-response-items",
+        "test-batch-continue-after-failure",
     )
     if protocol_version == "2.0":
         expected_cases += (
@@ -335,14 +341,32 @@ def main() -> int:
                             response_operations = operations
                             response_item_ids = None
                             if two_read_batch:
-                                if (request.count(tlv(0x420094, 7, b"fixture-key-1")) != 2 or
+                                continue_after_failure = tlv(0x420094, 7, b"missing-key") in request
+                                expected_fixture_identifiers = 1 if continue_after_failure else 2
+                                if (request.count(tlv(0x420094, 7, b"fixture-key-1")) !=
+                                        expected_fixture_identifiers or
+                                        (continue_after_failure and
+                                         request.count(tlv(0x420094, 7, b"missing-key")) != 1) or
                                         request.count(tlv(0x420093, 8, b"item-a")) != 1 or
                                         request.count(tlv(0x420093, 8, b"item-b")) != 1):
                                     raise AssertionError("two-read batch omitted fixture or unique item IDs")
                                 response_item_ids = (b"item-a", b"item-b")
+                                if continue_after_failure:
+                                    if enumeration(0x42000E, 1) not in request:
+                                        raise AssertionError("Continue-after-failure batch omitted Batch Error Continuation Option")
+                                    response_statuses = (1, 0)
+                                    response_reasons = (55, None)
+                                else:
+                                    response_statuses = None
+                                    response_reasons = None
                                 if tlv(0x420010, 6, b"\x00") in request:
                                     response_operations = tuple(reversed(operations))
                                     response_item_ids = (b"item-b", b"item-a")
+                                    response_statuses = None
+                                    response_reasons = None
+                            else:
+                                response_statuses = None
+                                response_reasons = None
                             create_lifecycle = operations == (1, 20)
                             check_lifecycle = operations == (1, 9, 19, 20)
                             activate_lifecycle = operations == (1, 18, 19, 20)
@@ -431,7 +455,9 @@ def main() -> int:
                             stream.sendall(response(
                                 response_operations, protocol_minor, selected_attribute_tag,
                                 4 if private_key_create else 3 if public_key_create else 2,
-                                unique_batch_item_ids=response_item_ids))
+                                unique_batch_item_ids=response_item_ids,
+                                result_statuses=response_statuses,
+                                result_reasons=response_reasons))
                             handled += len(operations)
                             handled_operations.extend(operations)
                             handled_batches.append(operations)
