@@ -112,6 +112,17 @@ class RouteCapabilitiesTests(unittest.TestCase):
         self.assertEqual(expected, actual)
         self.assertTrue(all(targets[target_id]['kind'] == 'object_structure' for target_id in actual))
 
+    def test_secret_data_parser_does_not_claim_inapplicable_key_block_crypto_fields(self):
+        # OASIS KMIP 2.1 §3.1 Table 11 excludes Cryptographic Algorithm and Length from Secret Data.
+        route = next(route for route in self.data['routes']
+                     if route['language'] == 'rust'
+                     and route['public_api_symbol'] == 'kmipkit_protocol::SecretData::try_from_item')
+        self.assertIn('KMIPKIT-ELEM-OBJECT-STRUCTURE-SECRET-DATA', route['normative_target_ids'])
+        self.assertNotIn('KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-ALGORITHM',
+                         route['normative_target_ids'])
+        self.assertNotIn('KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-LENGTH',
+                         route['normative_target_ids'])
+
     def test_object_type_raw_value_route_only_claims_its_own_enum_family(self):
         catalog = json.loads((SHARED / 'catalog/kmipkit-1.0-test-catalog.json').read_text())
         targets = {target['target_id']: target for target in catalog['normative_targets']}
