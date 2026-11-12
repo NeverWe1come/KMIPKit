@@ -672,7 +672,12 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
 
     positive_ping = (case['case_id'] == 'test-op-ping'
                      and cell['public_api_symbol'] == 'kmipkit.extensions.client_batch_item_ping')
-    operation = cell.get('workflow_operation', case['operation'])
+    operation = cell.get('workflow_operation') or {
+        'python.execute.cancel': 'Cancel',
+        'python.execute.poll': 'Poll',
+        'python.execute.process': 'Process',
+        'python.execute.queryasyncrequests': 'Query Asynchronous Requests',
+    }.get(cell.get('execution_route_id'), case['operation'])
     final_async_failure = (
         case['case_id'] == 'test-async-poll-final-operation-failure' and operation == 'Poll'
     )
