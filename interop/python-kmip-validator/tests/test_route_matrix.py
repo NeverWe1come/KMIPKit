@@ -1311,6 +1311,10 @@ class RouteMatrixTests(unittest.TestCase):
                          event['peer_observed_result_status_codes'])
         self.assertEqual(['first_item_failed', 'second_item_executed'],
                          event['peer_observed_effects'])
+        self.assertEqual(64, len(event['peer_observed_state_before_sha256']))
+        self.assertEqual(64, len(event['peer_observed_state_after_sha256']))
+        self.assertEqual(event['peer_observed_state_before_sha256'],
+                         event['peer_observed_state_after_sha256'])
         self.assertNotIn('peer_observed_result_reason_codes', event)
         self.assertEqual(2, event['batch_item_count'])
         self.assertTrue(set(symbols) <= trace.observed)
@@ -1335,6 +1339,10 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(['Get', 'Get'], event['batch_operation_sequence'])
         self.assertEqual(['first_item_failed', 'second_item_not_executed'],
                          event['peer_observed_effects'])
+        self.assertEqual(64, len(event['peer_observed_state_before_sha256']))
+        self.assertEqual(64, len(event['peer_observed_state_after_sha256']))
+        self.assertEqual(event['peer_observed_state_before_sha256'],
+                         event['peer_observed_state_after_sha256'])
 
     def test_forward_placeholder_rejection_records_only_verified_local_state(self):
         from unittest.mock import patch
