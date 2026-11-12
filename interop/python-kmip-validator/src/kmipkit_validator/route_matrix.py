@@ -2098,7 +2098,7 @@ def _crypto_parameters_cell(cell: dict, case: dict, target: dict) -> dict:
     by_id, _, _ = _catalog_model_data()
     methods = {int(item['wire_value'], 16): names[item['name']] for item in by_id.values()
                if item.get('kind') == 'tag' and item.get('name') in names}
-    if case['requires'].get('target_kind') == 'enumeration_value':
+    if target.get('kind') == 'enumeration_value':
         samples = _generic_samples(case, target, 'kmipkit.ttlv.ttlv_item_create')
     elif (target.get('kind') == 'attribute' and target.get('name') in names
           and target.get('source_encoding') == 'Enumeration'):
