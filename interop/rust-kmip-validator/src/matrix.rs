@@ -1858,6 +1858,54 @@ mod tests {
         }
     }
 
+    /// OASIS KMIP 2.0/2.1 §§3.2–3.12 define the typed Key Value and Key Material shapes.
+    #[test]
+    fn key_value_and_material_routes_execute_every_normative_target() {
+        let catalog: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let manifest: Json = serde_json::from_str(include_str!(
+            "../../shared/coverage/route-capabilities.json"
+        ))
+        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        for symbol in [
+            "kmipkit_protocol::KeyValue::try_new",
+            "kmipkit_protocol::KeyValue::try_from_item",
+            "kmipkit_protocol::KeyMaterial::byte_string",
+            "kmipkit_protocol::KeyMaterial::structure",
+            "kmipkit_protocol::KeyMaterial::try_from_item",
+        ] {
+            let route = manifest["routes"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|route| route["public_api_symbol"] == symbol)
+                .unwrap();
+            for target_id in route["normative_target_ids"].as_array().unwrap() {
+                let target_id = target_id.as_str().unwrap();
+                let target = catalog["normative_targets"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .find(|target| target["target_id"] == target_id)
+                    .unwrap();
+                let fixture = sample_for_route(symbol, target, elements);
+                assert!(fixture.is_ok(), "{symbol} {target_id}: {fixture:?}");
+                let fixture = fixture.unwrap();
+                let result = invoke(symbol, &fixture, target, elements, "2.1");
+                assert!(result.is_some(), "{symbol} {target_id}: route is not invoked");
+                let result = result.unwrap();
+                assert!(result.is_ok(), "{symbol} {target_id}: {result:?}");
+                assert!(crate::local_wire::target_hash(&result.unwrap(), &fixture).is_ok());
+            }
+        }
+    }
+
     #[test]
     fn key_format_type_request_routes_construct_each_normative_value() {
         // OASIS KMIP 2.0/2.1 §11.25 defines Key Format Type values.
