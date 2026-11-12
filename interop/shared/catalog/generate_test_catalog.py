@@ -1285,6 +1285,11 @@ def _add_legacy_lifecycle_scenarios(
     test_cases: list[dict], normative_targets: list[dict], indexes: dict[str, dict[str, str]],
 ) -> None:
     """Attach complete operation sequences and per-version OASIS refs to legacy workflows."""
+
+    def add_reference(references: list[dict], reference: dict) -> None:
+        if reference not in references:
+            references.append(reference)
+
     workflows = {
         "test-batch-create-activate-destroy": {
             "operations": ["Create", "Activate", "Get Attribute List", "Revoke", "Destroy"],
@@ -1344,19 +1349,16 @@ def _add_legacy_lifecycle_scenarios(
                     reference = {"document": document, "section": versioned_sections[version]}
                     if source_ref.get("table"):
                         reference["table"] = source_ref["table"]
-                    if reference not in refs:
-                        refs.append(reference)
+                    add_reference(refs, reference)
             for section in definition["sections"]:
                 if section in indexes[version]:
                     reference = {"document": document, "section": section}
-                    if reference not in refs:
-                        refs.append(reference)
+                    add_reference(refs, reference)
             for section in definition.get("versioned_sections", {}).get(version, []):
                 if section not in indexes[version]:
                     raise ValueError(f"Unknown KMIP {version} section {section} in {case_id}")
                 reference = {"document": document, "section": section}
-                if reference not in refs:
-                    refs.append(reference)
+                add_reference(refs, reference)
 
         parameters = {"operations_in_request_order": operations}
         if "Revoke" in operations:
