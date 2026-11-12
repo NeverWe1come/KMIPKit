@@ -434,6 +434,7 @@ class ControlledTlsPeerTest {
         JsonNode report = new ObjectMapper().readTree(reportPath.toFile());
         assertEquals("java", report.path("language").asText());
         assertGenericOnlyTagInventoryEvidence(report.path("events"));
+        assertReferencedPkcs11Evidence(report.path("events"));
         assertTrue(enumerationFixtures.stream().noneMatch(fixture -> fixture.caseId().equals(
                         "test-norm-enumeration-value-profile-name-reserved-00000001-00000103")),
                 "A finite Profile Name range must remain pending until each named value is represented.");
@@ -2796,6 +2797,32 @@ class ControlledTlsPeerTest {
         }
         assertTrue(!selected.isEmpty(), "The catalog must retain executable generic-only Tag cases.");
         return selected;
+    }
+
+    // OASIS KMIP 2.0/2.1 §§11.38-11.39: exact referenced PKCS#11 function/return values.
+    private static void assertReferencedPkcs11Evidence(JsonNode events) throws Exception {
+        for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
+            JsonNode requires = testCase.path("requires");
+            if (!"referenced_enum_value".equals(requires.path("target_kind").asText())) continue;
+            String caseId = testCase.path("case_id").asText();
+            String targetId = requires.path("normative_target_id").asText();
+            for (JsonNode version : testCase.path("execution").path("protocol_versions")) {
+                String constructedHash = null;
+                for (String route : List.of(
+                        "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
+                        "java.generic-ttlv.ttlv_item.create",
+                        "java.generic-ttlv.function.ttlv_item_view_from_item",
+                        "java.generic-ttlv.ttlv_codec.decode")) {
+                    JsonNode event = findRouteEvent(events, caseId, route, version.asText(), targetId);
+                    assertEquals("passed", event.path("status").asText());
+                    String hash = event.path("construct".equals(event.path("action").asText())
+                            ? "request_tree_sha256" : "response_tree_sha256").asText();
+                    if (constructedHash == null) constructedHash = hash;
+                    else assertEquals(constructedHash, hash,
+                            "All PKCS#11 value routes must preserve the same exact tag and unsigned value.");
+                }
+            }
+        }
     }
 
     private static long routeEventCount(JsonNode events, String caseId, String routeId) {
