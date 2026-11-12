@@ -96,6 +96,26 @@ claim that the expanded exhaustive coverage has been implemented. The exact
 latest evidence-only head and check results are recorded in the closeout
 report and PR description.
 
+## Red: clean Rust 1.100 workspace test link failure
+
+On the Python validator branch at `a860b0c810e73818e7a30b7a34b32cb3d0fa1ce2`,
+a clean Rust 1.100.0 workspace test run reproduces the cross-platform FFI
+consumer link failure:
+
+```sh
+CARGO_BUILD_JOBS=2 CARGO_INCREMENTAL=0 CARGO_TARGET_DIR=<empty-target> \
+  cargo +1.100.0 test --workspace --all-features --locked
+```
+
+The focused failure is `unable to find library -lkmipkit_ffi` for both
+`operation_parity_0053` and `c_api_coverage`. The same clean workspace command
+passes under Rust 1.99.1. Rust 1.100.0 places the crate's `.rlib`, `.a`, and
+`.so` outputs under `debug/build/kmipkit-ffi/<library-hash>/out`; the separate
+integration test executables are emitted under different hash directories.
+Their explicit `#[link(name = "kmipkit_ffi")]` declarations do not receive a
+native search path to the library output directory. This is a test-link setup
+failure, not a KMIP route or validator failure.
+
 ## Remaining limitations
 
 Controlled local TLS results are not vendor interoperability evidence. No Cosmian, CipherTrust or ESKM endpoint was
