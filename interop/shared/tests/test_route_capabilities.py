@@ -66,6 +66,18 @@ class RouteCapabilitiesTests(unittest.TestCase):
             self.assertNotIn('KMIPKIT-ELEM-ATTRIBUTE-DESCRIPTION', targets)
             self.assertNotIn('KMIPKIT-ELEM-TAG-4200FC', targets)
 
+    def test_raw_response_route_names_only_the_java_fixture_backed_enum_target(self):
+        key_format_raw = 'KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-RAW-00000001'
+        endpoint_role_client = 'KMIPKIT-ELEM-ENUM-VALUE-ENDPOINT-ROLE-CLIENT-00000001'
+        routes = {(route['language'], route['route_id']): route for route in self.data['routes']}
+        java_route = routes['java', 'java.typed-protocol.function.client_batch_item_response_raw_ttlv']
+        self.assertIn(key_format_raw, java_route['normative_target_ids'])
+        self.assertNotIn(endpoint_role_client, java_route['normative_target_ids'])
+        for language in ('c', 'python'):
+            route = routes[language, f'{language}.typed-protocol.function.client_batch_item_response_raw_ttlv']
+            self.assertNotIn(key_format_raw, route['normative_target_ids'])
+            self.assertNotIn(endpoint_role_client, route['normative_target_ids'])
+
     def test_attribute_container_routes_do_not_claim_managed_object_structures(self):
         catalog = json.loads((SHARED / 'catalog/kmipkit-1.0-test-catalog.json').read_text())
         targets = {target['target_id']: target for target in catalog['normative_targets']}
