@@ -162,7 +162,7 @@ BLOCKED_AFTER = 221
 # Register declarations, KMIPKIT-0101 lifecycle declarations, and KMIPKIT-0102
 # fluent cryptographic operation builders.
 # Includes the approved KMIPKIT-0093 inventory reconciliation.
-DECLARATIONS_SHA256 = "eb93c010d543229309e75ccc0f857130cfecc7bc68432b635697880729ac9fef"
+DECLARATIONS_SHA256 = "6846ad1c1a5b0ff75017aec603a9d48897d092d2a98ec77a6490d96f6faa353a"
 OPERATIONS_SHA256 = "2a6eb9fb6823b3456b3fb10b6d4af8477be9f1a1f68c06c252bb4873b272f3bc"
 
 
