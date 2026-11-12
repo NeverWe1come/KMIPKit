@@ -135,6 +135,25 @@ class FfiCoverageObjectTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'log'):
                 MODULE.collect_ffi_objects(root, private, (log.parent / 'cargo-artifacts.jsonl'))
 
+    @unittest.skipUnless(sys.platform == 'linux', 'the real FFI coverage collector is Linux-only')
+    def test_collector_rejects_symlinked_output_before_overwriting_its_target(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root, log, _ = self.fixture(directory, 'classic')
+            private = Path(directory) / 'private-fixture.log'
+            private.write_bytes(b'preserve this fixture')
+            log.unlink()
+            log.symlink_to(private)
+            tools = Path(directory) / 'tools'
+            tools.mkdir()
+            cargo = tools / 'cargo'
+            cargo.write_text('#!/bin/sh\nprintf "fake compiler output\\n"\nexit 1\n')
+            cargo.chmod(0o755)
+            environment = {**os.environ, 'PATH': str(tools) + os.pathsep + os.environ.get('PATH', '')}
+            result = subprocess.run(['bash', str(HELPER.with_name('collect_ffi_coverage.sh')), str(root)],
+                                     env=environment, capture_output=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertEqual(private.read_bytes(), b'preserve this fixture')
+
     def test_cli_preserves_paths_with_spaces_as_null_delimited_objects(self):
         with tempfile.TemporaryDirectory() as directory:
             root, log, objects = self.fixture(directory, 'cargo-1.100')
