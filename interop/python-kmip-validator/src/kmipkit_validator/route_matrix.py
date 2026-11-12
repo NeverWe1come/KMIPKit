@@ -1094,6 +1094,19 @@ _BATCH_ITEM_RESULT_VALUE_ROUTES.update(
     'kmipkit.client.BatchItemResult.' + member
     for member in _BATCH_ITEM_RESULT_RESPONSE_MEMBERS
 )
+_TYPED_RESPONSE_TTLV_ROUTES = {
+    'kmipkit.client.' + response_type + '.' + member
+    for response_type in (
+        'CertifyResponse', 'CheckResponse', 'DeriveKeyResponse', 'ExportResponse',
+        'GetAttributeListResponse', 'GetConstraintsResponse', 'GetUsageAllocationResponse',
+        'HashResponse', 'ImportResponse', 'JoinSplitKeyResponse', 'MacResponse',
+        'MacVerifyResponse', 'ObtainLeaseResponse', 'ReProvisionResponse', 'RecertifyResponse',
+        'RegisterResponse', 'RekeyKeyPairResponse', 'RekeyResponse', 'RevokeResponse',
+        'RngRetrieveResponse', 'RngSeedResponse', 'SetConstraintsResponse',
+        'SetDefaultsResponse', 'SignResponse', 'SignatureVerifyResponse', 'ValidateResponse',
+    )
+    for member in ('response_ttlv', 'response_payload_ttlv')
+}
 
 
 def _batch_item_result_value_cell(cell: dict, case: dict, target: dict,
@@ -1334,6 +1347,89 @@ def _batch_typed_response_accessor_cell(cell: dict, target: dict,
             'response_tree_sha256': response_digest}
 
 
+def _typed_response_ttlv_cell(cell: dict, target: dict,
+                              trace: CallTrace | None) -> dict:
+    """Construct a typed response and verify its public raw TTLV structure accessor."""
+    import inspect
+    from kmipkit import client, extensions, ttlv
+
+    symbol = cell['public_api_symbol']
+    _, response_name, member = symbol.rsplit('.', 2)
+    response_type = getattr(client, response_name)
+    expected_children = [[0x420094, 7, '696e7465726f702d6f626a6563742d37']]
+
+    def view_tree(view):
+        with ttlv.ttlv_item_view_tag(view) as tag:
+            raw_tag = ttlv.tag_value(tag)
+        kind = int(ttlv.ttlv_item_view_type(view))
+        with ttlv.ttlv_item_view_value(view) as value:
+            if kind == 1:
+                with ttlv.ttlv_value_view_structure(value) as children:
+                    result = []
+                    for index in range(ttlv.ttlv_structure_view_item_count(children)):
+                        with ttlv.ttlv_structure_view_item_at(children, index) as child:
+                            result.append(view_tree(child))
+            elif kind in (4, 7, 8):
+                result = ttlv.ttlv_value_view_bytes(value).hex()
+            else:
+                getter = {2: 'integer', 3: 'long_integer', 5: 'enumeration', 6: 'boolean',
+                          9: 'date_time', 10: 'interval', 11: 'date_time_extended'}[kind]
+                result = getattr(ttlv, 'ttlv_value_view_' + getter)(value)
+        return [raw_tag, kind, result]
+
+    with ExitStack() as owned:
+        structure = _credential_structure_from_children(expected_children, owned)
+        arguments = {}
+        for name, parameter in inspect.signature(response_type).parameters.items():
+            if parameter.default is not inspect.Parameter.empty:
+                continue
+            annotation = str(parameter.annotation).strip("'\"")
+            if name in {'response_ttlv', 'response_payload_ttlv'}:
+                arguments[name] = structure
+            elif name in {'unique_identifier', 'private_key_unique_identifier',
+                          'public_key_unique_identifier'}:
+                arguments[name] = ('interop-object-7' if annotation == 'str'
+                                   else extensions.UniqueIdentifier.text_string('interop-object-7'))
+            elif name == 'attribute_references':
+                arguments[name] = ()
+            elif name in {'attributes', 'any_object', 'object', '_ticket_value', 'ticket_ttlv'}:
+                arguments[name] = None
+            elif name in {'data', 'signature_data', 'mac_data', 'recovered_data',
+                          'correlation_value', 'iv_counter_nonce',
+                          'authenticated_encryption_tag'}:
+                arguments[name] = (None if '_SecretBytes' in annotation
+                                   else b'\x00\xfffixture')
+            elif name in {'validity_indicator_raw', 'object_type_raw', 'located_items',
+                          'lease_time', 'last_change_date', 'usage_limits_count',
+                          'cryptographic_usage_mask', 'data_length', 'ticket_type_raw'}:
+                arguments[name] = 2 if name == 'object_type_raw' else 1
+            elif name == 'unique_identifiers':
+                arguments[name] = (extensions.UniqueIdentifier.text_string('interop-object-7'),)
+            else:
+                raise RecipePending
+
+        value = response_type(**arguments)
+        if callable(getattr(value, 'close', None)):
+            owned.callback(value.close)
+        actual = getattr(value, member)
+        actual = actual() if callable(actual) else actual
+        if not isinstance(actual, ttlv.Structure):
+            raise ValueError('typed response TTLV accessor returned a non-Structure value')
+        with ttlv.ttlv_structure_view(actual) as structure_view:
+            observed_children = []
+            for index in range(ttlv.ttlv_structure_view_item_count(structure_view)):
+                with ttlv.ttlv_structure_view_item_at(structure_view, index) as child:
+                    observed_children.append(view_tree(child))
+        if observed_children != expected_children:
+            raise ValueError('typed response TTLV accessor changed its ordered structure')
+        if trace is not None:
+            trace.record_invocation(symbol)
+        response_digest = digest({'response_type': response_name, 'member': member,
+                                  'children': observed_children, 'target': target.get('target_id')})
+    return {'request_tree_sha256': response_digest,
+            'response_tree_sha256': response_digest}
+
+
 _GENERIC_SYMBOLS = {
     'kmipkit.ttlv.' + name for name in (
         'ttlv_item_view_from_item', 'raw_tag_from_raw', 'raw_tag_try_checked',
@@ -1380,6 +1476,8 @@ def execute_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | Non
             return _crypto_parameters_cell(cell, case, target)
         if cell['public_api_symbol'].startswith('kmipkit.messages.'):
             return _typed_message_cell(cell, case, target)
+        if cell['public_api_symbol'] in _TYPED_RESPONSE_TTLV_ROUTES:
+            return _typed_response_ttlv_cell(cell, target, trace)
         if cell['public_api_symbol'] in _BATCH_ITEM_RESULT_VALUE_ROUTES:
             return _batch_item_result_value_cell(cell, case, target, trace)
         return _generic_cell(cell, case, target)
