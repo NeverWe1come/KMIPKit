@@ -262,10 +262,12 @@ def main() -> int:
     )
     expected_operations += (37, 38, 39)
     expected_operations += (1, 18, 12, 19, 20)
+    expected_operations += (1, 18, 10, 19, 20)
     expected_operations += (10, 12, 10, 12, 10, 12, 10, 12)
     expected_cases += ("test-op-hash", "test-op-rng-retrieve", "test-op-rng-seed")
     expected_cases += ("test-neg-destroy-active-without-revoke",)
     expected_cases += ("test-batch-create-activate-destroy",)
+    expected_cases += ("test-batch-placeholder-chain-resolves",)
     expected_cases += (
         "test-batch-count-matches-items",
         "test-batch-unique-item-id-response-correlation",
@@ -373,6 +375,7 @@ def main() -> int:
                             revoke_lifecycle = operations == (1, 19, 20)
                             destroy_lifecycle = operations == (1, 20, 19, 20)
                             illegal_destroy_lifecycle = operations == (1, 18, 20, 19, 20)
+                            placeholder_chain_lifecycle = operations == (1, 18, 10, 19, 20)
                             get_constraints_lifecycle = operations == (1, 56, 19, 20)
                             lifecycle_target = {operations[1]: {
                                 9: b"interop-check", 10: b"interop-get",
@@ -388,6 +391,8 @@ def main() -> int:
                                 lifecycle_target = {20: b"interop-destroy-target"}
                             if illegal_destroy_lifecycle:
                                 lifecycle_target = {20: b"interop-destroy-active-target"}
+                            if placeholder_chain_lifecycle:
+                                lifecycle_target = {18: b"interop-activate", 10: b"interop-get"}
                             if get_constraints_lifecycle:
                                 lifecycle_target = {56: b"interop-get-constraints"}
                             if create_lifecycle:
@@ -402,6 +407,11 @@ def main() -> int:
                                     b"interop-create", b"interop-activate-before-destroy",
                                     b"interop-destroy-active-target", b"interop-revoke-cleanup",
                                     b"interop-destroy-cleanup"
+                                )
+                            if placeholder_chain_lifecycle:
+                                lifecycle_ids = (
+                                    b"interop-create", b"interop-activate", b"interop-get",
+                                    b"interop-revoke", b"interop-destroy"
                                 )
                             if lifecycle_target and any(
                                     tlv(0x420093, 8, item_id) not in request for item_id in lifecycle_ids):
@@ -438,6 +448,10 @@ def main() -> int:
                             if illegal_destroy_lifecycle and request.count(enumeration(0x420094, 1)) < 4:
                                 raise AssertionError(
                                     "illegal Destroy lifecycle must target and clean the same created object"
+                                )
+                            if placeholder_chain_lifecycle and request.count(enumeration(0x420094, 1)) < 4:
+                                raise AssertionError(
+                                    "placeholder chain must reference the produced object in Activate, Get, Revoke, and Destroy"
                                 )
                             if 8 in operations:
                                 if bytes.fromhex("4201250100000000") not in request:
@@ -573,8 +587,13 @@ def main() -> int:
             if login["status"] != "not_run" or "Login builder only supports KMIP 2.1" not in login.get("diagnostic", ""):
                 raise AssertionError("KMIP 2.0 Login must report the documented public C API limitation")
         if run.returncode != 0:
+            failed_cases = [{
+                "case_id": case["case_id"],
+                "diagnostic": case.get("diagnostic", ""),
+            } for case in result["cases"] if case["status"] == "failed"]
             raise AssertionError(
                 f"C validator exited {run.returncode}; stderr={run.stderr[-400:]!r}; "
+                f"failed_cases={failed_cases!r}; handled_batches={handled_batches!r}; "
                 f"summary={run.stdout[:1800]!r}"
             )
         correctness = {case["case_id"]: case["library_correctness"] for case in result["cases"]}

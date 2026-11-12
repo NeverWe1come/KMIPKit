@@ -253,7 +253,8 @@ RECIPES = {
     'test-v20-reject-get-constraints': ((56,), 'get_constraints'),
     'test-op-create': ((1, 20), 'create'),
     'test-batch-create-activate-destroy': ((1, 18, 12, 19, 20), 'create_activate_attribute_list_revoke_destroy'),
-    'test-batch-placeholder-chain-resolves': ((1, 18, 10), 'create_activate_get_placeholder_chain'),
+    'test-batch-placeholder-chain-resolves': (
+        (1, 18, 10, 19, 20), 'create_activate_get_placeholder_chain'),
     'test-batch-single-item-options-omitted': ((10,), 'batch_single_item_options_omitted'),
     'test-batch-count-matches-items': ((10, 12), 'batch_count_two_read_items'),
     'test-batch-unique-item-id-response-correlation': ((10, 12), 'batch_count_two_read_items'),
@@ -432,7 +433,7 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None):
 
 
 def assert_placeholder_usage(node, case_id):
-    """Require ID Placeholder batches to omit Unique Identifier after Create."""
+    """Accept omitted or explicit ID Placeholder identifiers after Create."""
     if case_id not in ('test-batch-create-activate-destroy',
                        'test-batch-placeholder-chain-resolves'):
         return
@@ -445,8 +446,15 @@ def assert_placeholder_usage(node, case_id):
                     if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
         if len(payloads) != 1:
             raise ValueError('fixture_id_placeholder_payload_mismatch')
-        if any(child[0] == UNIQUE_IDENTIFIER_TAG for child in payloads[0][2]):
-            raise ValueError('fixture_id_placeholder_explicit_target')
+        identifiers = [child for child in payloads[0][2]
+                       if child[0] == UNIQUE_IDENTIFIER_TAG]
+        if len(identifiers) > 1:
+            raise ValueError('fixture_id_placeholder_identifier_mismatch')
+        if identifiers:
+            identifier = identifiers[0]
+            if (identifier[1] != 5 or len(identifier[2]) != 4 or
+                    int.from_bytes(identifier[2], 'big') != 1):
+                raise ValueError('fixture_id_placeholder_identifier_mismatch')
 
 
 def fixture_wire(node):

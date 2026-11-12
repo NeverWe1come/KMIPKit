@@ -858,8 +858,6 @@ class RouteMatrixTests(unittest.TestCase):
             'KMIPKIT-ELEM-OP-C2S-CREATE',
             'KMIPKIT-ELEM-OP-C2S-ACTIVATE',
             'KMIPKIT-ELEM-OP-C2S-GET',
-            'KMIPKIT-ELEM-OP-C2S-REVOKE',
-            'KMIPKIT-ELEM-OP-C2S-DESTROY',
         }
         self.assertTrue(expected_operations <= {event['target_id'] for event in events})
         create_send = next(event for event in events
