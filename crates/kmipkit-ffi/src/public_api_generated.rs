@@ -5046,6 +5046,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit::ClientOperationOutcome",
     ),
     (
+        "rust-observed-90f4f40f232395a7b932",
+        "rust-kmipkit",
+        "kmipkit::CryptographicUsageMask",
+    ),
+    (
         "rust-observed-22743c10b7c47b3d4ffb",
         "rust-kmipkit",
         "kmipkit::PendingOutcome",

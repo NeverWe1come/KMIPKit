@@ -179,9 +179,9 @@ pub use kmipkit_client::{
     Client, ClientBatch, ClientBatchItem, ClientBatchItemResponse, ClientBatchOutcome,
     ClientBatchResponse, ClientCauseCategory, ClientError, ClientErrorCategory, ClientListener,
     ClientListenerConnection, ClientMessageExtension, ClientOperation, ClientOperationOutcome,
-    ClientRequest, ClientResponseView, IncomingServerBatch, PendingOutcome, RequestOptions,
-    ResponseEncodingError, RoleReversedSession, ServerRequestDispatcher, ServerRequestHandler,
-    ServerRequestItemPayload, ServerRequestItemView, UsageAllocationContext,
+    ClientRequest, ClientResponseView, CryptographicUsageMask, IncomingServerBatch, PendingOutcome,
+    RequestOptions, ResponseEncodingError, RoleReversedSession, ServerRequestDispatcher,
+    ServerRequestHandler, ServerRequestItemPayload, ServerRequestItemView, UsageAllocationContext,
     UsageAllocationContextError,
 };
 pub use kmipkit_protocol::{

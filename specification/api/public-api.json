@@ -127747,6 +127747,43 @@
       }
     },
     {
+      "declarationId": "rust-observed-90f4f40f232395a7b932",
+      "packageId": "rust-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit::CryptographicUsageMask",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "declared",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved in scope by the maintainer's direct 2026-11-11 instruction; implementation and source mapping remain subject to PR review."
+      },
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::CryptographicUsageMask"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_bitmask_cryptographic_usage_mask_t"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.protocol.KmipValues.CryptographicUsageMask"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.protocol_values.CryptographicUsageMask"
+        }
+      }
+    },
+    {
       "declarationId": "rust-observed-22743c10b7c47b3d4ffb",
       "packageId": "rust-kmipkit",
       "kind": "type",
@@ -1088694,6 +1088731,7 @@
       },
       "mappings": {
         "rust": [
+          "kmipkit::CryptographicUsageMask",
           "kmipkit_client::Client",
           "kmipkit_client::Client::execute",
           "kmipkit_client::Client::execute_with_options",
@@ -1088955,6 +1088993,7 @@
         ],
         "c": [
           "KMIPKIT_ERROR_INVALID_INPUT",
+          "kmipkit_bitmask_cryptographic_usage_mask_t",
           "kmipkit_client_batch_item_get",
           "kmipkit_client_batch_set_asynchronous_indicator",
           "kmipkit_client_create",
@@ -1089178,7 +1089217,8 @@
           "org.kmipkit.fluent.SymmetricKeyBuilder.toBatchItem",
           "org.kmipkit.fluent.SymmetricKeyBuilder.usageMask",
           "org.kmipkit.fluent.SymmetricKeyBuilder.vendorAttribute",
-          "org.kmipkit.fluent.SymmetricKeyBuilder.withOptions"
+          "org.kmipkit.fluent.SymmetricKeyBuilder.withOptions",
+          "org.kmipkit.protocol.KmipValues.CryptographicUsageMask"
         ],
         "python": [
           "kmipkit.client.Client",
@@ -1089368,7 +1089408,8 @@
           "kmipkit.fluent.SymmetricKeyBuilder.name",
           "kmipkit.fluent.SymmetricKeyBuilder.to_batch_item",
           "kmipkit.fluent.SymmetricKeyBuilder.usage_mask",
-          "kmipkit.fluent.SymmetricKeyBuilder.with_options"
+          "kmipkit.fluent.SymmetricKeyBuilder.with_options",
+          "kmipkit.protocol_values.CryptographicUsageMask"
         ]
       }
     },
