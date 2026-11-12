@@ -41,6 +41,19 @@ use super::*;
 use crate::extension_registry::credential_secrets::kmipkit_secret_bytes_release;
 use crate::kmipkit_byte_span_v1_t;
 
+#[cfg(feature = "coverage-c-consumer")]
+unsafe extern "C" {
+    fn kmipkit_s2c_consumer_rejects_invalid_handles() -> i32;
+}
+
+#[test]
+#[cfg(feature = "coverage-c-consumer")]
+fn s2c_c_consumer_rejects_invalid_listener_and_typed_request_handles() {
+    // SAFETY: the compiled C consumer passes only null handles and writable local outputs.
+    let status = unsafe { kmipkit_s2c_consumer_rejects_invalid_handles() };
+    assert_eq!(status, 0);
+}
+
 fn coverage_authentication_handle() -> *mut kmipkit_authentication_t {
     let mut tree = Structure::new();
     tree.try_push(
