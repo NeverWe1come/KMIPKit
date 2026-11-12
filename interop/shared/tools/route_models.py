@@ -278,6 +278,13 @@ def model_inventory(root, commit, source, api, targets):
         if credential_targets is not None:
             exact_targets = credential_targets
         raw_value_targets = scalar_enum_value_targets(targets, owner) if method == 'from_raw' else None
+        if owner == 'KeyMaterial' and method == 'byte_string':
+            # OASIS KMIP 2.0/2.1 §11.25 restricts this constructor to
+            # ByteString formats; transparent formats require Structure
+            # representations defined by §§3.4–3.12. The generic Key Material
+            # tag is the only target this route can represent without a
+            # format-specific fixture.
+            exact_targets = ['KMIPKIT-ELEM-TAG-420043']
         add('rust', symbol, selected, names, objects=owner == 'ManagedObject',
             operation_id=operation_id, object_item=is_object_item,
             exact_target_ids=raw_value_targets if method == 'from_raw' else exact_targets)
