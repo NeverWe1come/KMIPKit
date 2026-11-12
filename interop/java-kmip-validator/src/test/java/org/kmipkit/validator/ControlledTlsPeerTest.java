@@ -67,8 +67,8 @@ import java.util.UUID;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -213,6 +213,7 @@ class ControlledTlsPeerTest {
         List<EnumerationFixture> enumerationFixtures = genericEnumerationFixtures();
         List<BitmaskFixture> bitmaskFixtures = genericBitmaskFixtures();
         List<DataTypeFixture> dataTypeFixtures = genericDataTypeFixtures();
+        Map<String, JsonNode> dataTypeVectors = dataTypeBoundaryVectors();
         byte[] queryOperation = queryOperationTtlv();
         String requestTreeHash = normalizedTreeSha256(queryOperation);
 
@@ -222,7 +223,7 @@ class ControlledTlsPeerTest {
             appendActivationDateLocalRouteEvents(events, protocolVersion);
             appendGenericEnumerationRouteEvents(events, enumerationFixtures, protocolVersion);
             appendGenericBitmaskRouteEvents(events, bitmaskFixtures, protocolVersion);
-            appendGenericDataTypeRouteEvents(events, dataTypeFixtures, protocolVersion);
+            appendGenericDataTypeRouteEvents(events, dataTypeFixtures, dataTypeVectors, protocolVersion);
 
             byte[] serverCertificatePem = fixture("server-cert.pem");
             byte[] serverPrivateKeyPem = fixture("server-key.pem");
@@ -1292,15 +1293,11 @@ class ControlledTlsPeerTest {
     }
 
     private static void appendGenericDataTypeRouteEvents(ArrayNode events,
-            List<DataTypeFixture> fixtures, String protocolVersion) throws Exception {
-        JsonNode vectors = new ObjectMapper().readTree(
-                Path.of("../shared/vectors/ttlv-boundaries.json").toFile());
+            List<DataTypeFixture> fixtures, Map<String, JsonNode> vectors,
+            String protocolVersion) throws Exception {
         for (DataTypeFixture fixture : fixtures) {
             if (!fixture.protocolVersions().contains(protocolVersion)) continue;
-            JsonNode vector = null;
-            for (JsonNode candidate : vectors.path("vectors")) {
-                if (fixture.dataType().equals(candidate.path("data_type").asText())) vector = candidate;
-            }
+            JsonNode vector = vectors.get(fixture.dataType());
             if (vector == null) throw new IllegalStateException("No TTLV boundary vectors for " + fixture.dataType());
             JsonNode representative = representativeDataTypeSample(vector, fixture.dataType());
             byte[] wire = HexFormat.of().parseHex(representative.path("hex").asText());
@@ -1350,6 +1347,16 @@ class ControlledTlsPeerTest {
                     fixture.targetId(), "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
                     "decode", protocolVersion, null, null, treeHash);
         }
+    }
+
+    private static Map<String, JsonNode> dataTypeBoundaryVectors() throws Exception {
+        JsonNode source = new ObjectMapper().readTree(
+                Path.of("../shared/vectors/ttlv-boundaries.json").toFile());
+        Map<String, JsonNode> vectors = new HashMap<>();
+        for (JsonNode vector : source.path("vectors")) {
+            vectors.put(vector.path("data_type").asText(), vector);
+        }
+        return Map.copyOf(vectors);
     }
 
     private static JsonNode representativeDataTypeSample(JsonNode vector, String dataType) {
