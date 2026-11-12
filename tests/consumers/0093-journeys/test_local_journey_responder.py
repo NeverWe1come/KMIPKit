@@ -1,4 +1,4 @@
-"""KMIPKIT-0093-FR-013; KMIP 2.1 sections 6.1.2, 4.14 and 11.45."""
+"""KMIPKIT-0093-FR-013; KMIP 2.1 §§4.35, 6.1.2, 11.45 and 11.56."""
 
 import struct
 import unittest

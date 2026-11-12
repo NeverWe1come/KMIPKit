@@ -10127,7 +10127,9 @@ fn ffi_catalogued_builder_type_failure_reports_not_sent() {
 
     assert_eq!(
         super::fluent::kmipkit_symmetric_key_builder_add_catalogued_attribute(
-            builder, 0x4200_56, value,
+            builder,
+            0x0042_0056,
+            value,
         ),
         ERROR_TYPED_ATTRIBUTE_VALUE_TYPE_MISMATCH
     );

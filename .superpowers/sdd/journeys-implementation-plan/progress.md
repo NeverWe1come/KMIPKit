@@ -55,3 +55,20 @@
   closes its parameter builder. The 40-exchange journey and 15 Java tests pass
   again. Both review findings are addressed; the separate Refactor commit and
   exact evidence are available in the report for independent review.
+
+## Task 4: Expert attributes journey
+
+- Red: commit `d864ea369` makes the fixture reject a missing, wrong-type, or
+  incorrect Object Group value. Commit `8f47b9242` adds the Python assertion
+  that a wrong catalogued TTLV value reports `NOT_SENT`; it fails with delivery
+  `NONE`. Commit `20db515be` adds the FFI metadata regression and fails with
+  `(status, category, cause, delivery) = (13, 1, 1, 0)` instead of `(13, 1, 1, 1)`.
+- Green: commit `60ad54255` records catalogued-builder validation as
+  `NOT_SENT` in the shared Rust C ABI, exercises the expert Create/Destroy
+  flow in all four consumers, asserts local rejection and redacted metadata,
+  and extends the responder contract from 40 to 48 ordered exchanges.
+- Verification: `KMIPKIT_NATIVE_LIBRARY="$PWD/target/debug/deps/libkmipkit_ffi.so" TMPDIR="$PWD/target/tmp-kmipkit-0110" sh tests/consumers/0093-journeys/verify.sh` passed on Linux. Rust, C, Java and Python each completed the prior three journeys plus catalogued Object Group Create/Destroy; the listener accepted all 48 exchanges and exited successfully. C compiled with `-Wall -Wextra -Werror`.
+- Focused tests: `python3 -B -m unittest discover -s tests/consumers/0093-journeys -p test_local_journey_responder.py -v` passed 3 tests; Python fluent tests passed 32; `cargo test -p kmipkit-ffi --all-features` passed 480 unit tests, 56 C coverage tests and 1 operation-parity test.
+- Quality checks: `cargo fmt --all --check`, `cargo clippy -p kmipkit-ffi --all-targets --all-features -- -D warnings`, `git diff --check`, and the Python binding suite passed. The Python suite completed 1,358 tests after moving its wheel-build temporary directory from the full `/tmp` tmpfs to the workspace disk.
+- Refactor: traceability now names KMIP 2.1 §§4.35, 6.1.2 and 11.56 for Object Group/Create and records the 48-exchange contract; F001.4 is checked off. `python3 -B -m unittest scripts.tests.test_requirement_traceability -v` passed 2 tests, `python3 -B -m unittest discover -s tools/normative_catalog/tests -p 'test_feature_traceability.py' -v` passed 31 tests, `cargo fmt --all --check` and `git diff --check` passed.
+- Status: Red commits `8f47b9242` and `20db515be`, Green commit `60ad54255`, and this Refactor documentation commit are kept distinct. The earlier fixture Red is `d864ea369`.
