@@ -3306,6 +3306,53 @@ mod tests {
     }
 
     #[test]
+    fn locate_storage_status_mask_executes_every_manifest_target() {
+        // OASIS KMIP 2.0/2.1 §12.3 and §6.1.28 define the Storage Status Mask.
+        let catalog: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let manifest: Json = serde_json::from_str(include_str!(
+            "../../shared/coverage/route-capabilities.json"
+        ))
+        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        let targets = catalog["normative_targets"].as_array().unwrap();
+        let symbol = "kmipkit_protocol::LocateRequest::with_storage_status_mask";
+        let route = manifest["routes"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|route| route["public_api_symbol"] == symbol)
+            .unwrap();
+
+        for target_id in route["normative_target_ids"].as_array().unwrap() {
+            let target = targets
+                .iter()
+                .find(|target| target["target_id"] == *target_id)
+                .unwrap();
+            let expected = sample_for_route_at_version(symbol, target, elements, "2.1").unwrap();
+            let result = invoke(symbol, &expected, target, elements, "2.1");
+
+            assert!(
+                result.is_some(),
+                "{symbol} {} route is not executable",
+                target["target_id"]
+            );
+            let result = result
+                .unwrap()
+                .unwrap_or_else(|error| panic!("{symbol}: {error}"));
+            assert!(
+                crate::local_wire::target_hash(&result, &expected).is_ok(),
+                "{symbol}"
+            );
+        }
+    }
+
+    #[test]
     fn client_batch_authentication_and_timestamp_routes_cover_nested_fixtures() {
         let catalog: Json = serde_json::from_str(include_str!(
             "../../shared/catalog/kmipkit-1.0-test-catalog.json"
