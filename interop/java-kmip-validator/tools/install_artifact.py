@@ -19,6 +19,7 @@ from pathlib import Path
 
 
 PACKAGE_VERSION = "1.0.0"
+STABLE_ARTIFACT_BUILD_ROOT = "/kmipkit-build"
 
 
 def host_classifier() -> str:
@@ -67,23 +68,25 @@ def resolve_pin_file(pin_file: Path, project_root: Path) -> Path:
     return resolved
 
 
-def cargo_environment_with_path_remapping(
+def build_environment_with_path_remapping(
     environment: dict[str, str], temporary_root: Path
 ) -> dict[str, str]:
-    """Preserve caller Rust flags and normalize paths inside the isolated build root."""
+    """Preserve caller compiler flags and normalize isolated build paths."""
     result = environment.copy()
     encoded_flags = result.get("CARGO_ENCODED_RUSTFLAGS")
     if encoded_flags:
-        flags = encoded_flags.split("\x1f")
+        flags = [flag for flag in encoded_flags.split("\x1f") if flag]
     else:
         flags = shlex.split(result.get("RUSTFLAGS", ""))
-    flags.append(f"--remap-path-prefix={temporary_root.resolve()}=/kmipkit-build")
+    flags.append(
+        f"--remap-path-prefix={temporary_root.resolve()}={STABLE_ARTIFACT_BUILD_ROOT}"
+    )
     result["CARGO_ENCODED_RUSTFLAGS"] = "\x1f".join(flags)
 
     if os.name != "nt":
         native_prefix_flags = [
-            f"-ffile-prefix-map={temporary_root.resolve()}=/kmipkit-build",
-            f"-fdebug-prefix-map={temporary_root.resolve()}=/kmipkit-build",
+            f"-ffile-prefix-map={temporary_root.resolve()}={STABLE_ARTIFACT_BUILD_ROOT}",
+            f"-fdebug-prefix-map={temporary_root.resolve()}={STABLE_ARTIFACT_BUILD_ROOT}",
         ]
         for name in (
             "CFLAGS",
@@ -144,7 +147,7 @@ def install(repository: Path, commit: str, release_ref: str, maven_repository: P
         env["GRADLE_USER_HOME"] = str(tool_home / "gradle")
         env["CARGO_HOME"] = str(tool_home / "cargo")
         env["CARGO_TARGET_DIR"] = str(tool_home / "cargo-target")
-        env = cargo_environment_with_path_remapping(env, temp_root)
+        env = build_environment_with_path_remapping(env, temp_root)
         wrapper = source_root / "bindings" / "java" / "gradlew"
         if os.name == "nt":
             command = [str(wrapper.with_suffix(".bat")), "--no-daemon", "-p", str(wrapper.parent), "nativeJar"]

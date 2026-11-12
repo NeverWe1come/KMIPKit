@@ -45,7 +45,7 @@ class ReproducibleArtifactBuildEnvironmentTests(unittest.TestCase):
     def test_cargo_flags_remap_temp_root_and_preserve_caller_rustflags(self):
         temporary_root = Path("/tmp/kmipkit-java-source-with-spaces")
 
-        environment = INSTALL_ARTIFACT.cargo_environment_with_path_remapping(
+        environment = INSTALL_ARTIFACT.build_environment_with_path_remapping(
             {"RUSTFLAGS": "-C debuginfo=1"}, temporary_root
         )
 
@@ -60,7 +60,7 @@ class ReproducibleArtifactBuildEnvironmentTests(unittest.TestCase):
         )
 
     def test_existing_encoded_rustflags_keep_precedence_and_are_preserved(self):
-        environment = INSTALL_ARTIFACT.cargo_environment_with_path_remapping(
+        environment = INSTALL_ARTIFACT.build_environment_with_path_remapping(
             {
                 "RUSTFLAGS": "--cfg ignored_when_encoded_flags_are_set",
                 "CARGO_ENCODED_RUSTFLAGS": "-C\x1fdebuginfo=0",
@@ -83,7 +83,7 @@ class ReproducibleArtifactBuildEnvironmentTests(unittest.TestCase):
     def test_native_compiler_flags_remap_temp_root_and_preserve_caller_flags(self):
         temporary_root = Path("/tmp/kmipkit-java-source-with-spaces")
 
-        environment = INSTALL_ARTIFACT.cargo_environment_with_path_remapping(
+        environment = INSTALL_ARTIFACT.build_environment_with_path_remapping(
             {
                 "CFLAGS": "-O2 -DNAME='two words'",
                 "HOST_CFLAGS": "-O1",
@@ -113,7 +113,7 @@ class ReproducibleArtifactBuildEnvironmentTests(unittest.TestCase):
         self.assertIn("-DNAME=two words", shlex.split(environment["CFLAGS"]))
 
     def test_empty_encoded_rustflags_do_not_create_empty_arguments(self):
-        environment = INSTALL_ARTIFACT.cargo_environment_with_path_remapping(
+        environment = INSTALL_ARTIFACT.build_environment_with_path_remapping(
             {"CARGO_ENCODED_RUSTFLAGS": "\x1f-C\x1fdebuginfo=0\x1f"},
             Path("/tmp/kmipkit-java-source-empty-flags"),
         )
