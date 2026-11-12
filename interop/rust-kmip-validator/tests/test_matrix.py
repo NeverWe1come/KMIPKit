@@ -315,6 +315,23 @@ class MatrixContract(unittest.TestCase):
         self.assertEqual(process.returncode, 0, process.stderr)
         self.assertNotIn('--validator', process.stdout)
 
+    def test_matrix_hash_output_is_confined_to_cargo_out_dir(self):
+        sys.path.insert(0, str(ROOT / 'interop/rust-kmip-validator/tools'))
+        from matrix_hashes import contained_output_path
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            output_dir = root / 'cargo-out'
+            output_dir.mkdir()
+            expected = output_dir / 'route-cell-hashes.txt'
+            self.assertEqual(expected.resolve(), contained_output_path(expected, output_dir))
+            with self.assertRaises(ValueError):
+                contained_output_path(root / 'outside.txt', output_dir)
+            escape = output_dir / 'escape.txt'
+            escape.symlink_to(root / 'outside.txt')
+            with self.assertRaises(ValueError):
+                contained_output_path(escape, output_dir)
+
     def test_query_response_payload_accessor_reconstructs_the_decoded_response(self):
         cells = [cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
                  if cell['public_api_symbol'] == 'kmipkit_protocol::QueryResponse::to_ttlv_payload']
