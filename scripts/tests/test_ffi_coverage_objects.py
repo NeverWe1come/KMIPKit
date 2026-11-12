@@ -89,6 +89,33 @@ class FfiCoverageObjectTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'outside'):
                 MODULE.collect_ffi_objects(root, log, log.with_suffix('.artifacts.jsonl'))
 
+    def test_arbitrary_receipt_filename_is_rejected_before_reading(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root, log, _ = self.fixture(directory, 'classic')
+            private = root / 'credentials.json'
+            private.write_bytes(log.with_suffix('.artifacts.jsonl').read_bytes())
+            with self.assertRaisesRegex(ValueError, 'receipt'):
+                MODULE.collect_ffi_objects(root, log, private)
+
+    def test_cargo_log_and_receipt_must_share_the_report_directory(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root, log, _ = self.fixture(directory, 'classic')
+            foreign = Path(directory) / 'foreign'
+            foreign.mkdir()
+            receipt = foreign / log.with_suffix('.artifacts.jsonl').name
+            receipt.write_bytes(log.with_suffix('.artifacts.jsonl').read_bytes())
+            with self.assertRaisesRegex(ValueError, 'report directory'):
+                MODULE.collect_ffi_objects(root, log, receipt)
+
+    def test_cli_cannot_select_a_foreign_cargo_manifest(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root, log, _ = self.fixture(directory, 'classic')
+            result = subprocess.run([sys.executable, str(HELPER), '--target-root', str(root),
+                '--cargo-log', str(log), '--artifacts-json',
+                str(log.with_suffix('.artifacts.jsonl')), '--manifest-path',
+                str(Path(directory) / 'foreign-Cargo.toml')], capture_output=True)
+            self.assertNotEqual(result.returncode, 0, 'a CLI override must not select executable project code')
+
     def test_cli_preserves_paths_with_spaces_as_null_delimited_objects(self):
         with tempfile.TemporaryDirectory() as directory:
             root, log, objects = self.fixture(directory, 'cargo-1.100')
