@@ -98,6 +98,21 @@ class ControlledTlsPeerTest {
             "PADDING-METHOD", "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.paddingmethod");
     private static final String CREDENTIAL_TYPE_FROM_RAW_ROUTE =
             "java.typed-protocol.model.org.kmipkit.credentials.credentialtype.fromraw";
+    private static final String KEY_FORMAT_RAW_CASE_ID =
+            "test-norm-enumeration-value-enum-value-key-format-type-raw-00000001";
+    private static final String KEY_FORMAT_RAW_TARGET_ID =
+            "KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-RAW-00000001";
+    private static final String CLIENT_BATCH_ITEM_RAW_TTLV_ROUTE =
+            "java.typed-protocol.function.client_batch_item_response_raw_ttlv";
+    private static final Map<String, String> CREDENTIAL_TYPE_MODEL_ROUTES = Map.of(
+            "KMIPKIT-ELEM-ENUM-VALUE-CREDENTIAL-TYPE-USERNAME-AND-PASSWORD-00000001",
+            "java.typed-protocol.model.org.kmipkit.credentials.usernameandpasswordcredential.fromttlv",
+            "KMIPKIT-ELEM-ENUM-VALUE-CREDENTIAL-TYPE-DEVICE-00000002",
+            "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv",
+            "KMIPKIT-ELEM-ENUM-VALUE-CREDENTIAL-TYPE-ATTESTATION-00000003",
+            "java.typed-protocol.model.org.kmipkit.credentials.attestationcredential.fromttlv",
+            "KMIPKIT-ELEM-ENUM-VALUE-CREDENTIAL-TYPE-HASHED-PASSWORD-00000005",
+            "java.typed-protocol.model.org.kmipkit.credentials.hashedpasswordcredential.fromttlv");
     @TempDir
     Path temporaryDirectory;
 
@@ -295,8 +310,7 @@ class ControlledTlsPeerTest {
                         "test-norm-enumeration-value-profile-name-reserved-00000001-00000103")),
                 "A finite Profile Name range must remain pending until each named value is represented.");
         assertEquals(2, routeEventCount(report.path("events"),
-                        "test-norm-enumeration-value-enum-value-key-format-type-raw-00000001",
-                        "java.typed-protocol.function.client_batch_item_response_raw_ttlv"),
+                        KEY_FORMAT_RAW_CASE_ID, CLIENT_BATCH_ITEM_RAW_TTLV_ROUTE),
                 "The controlled Get response must exercise raw TTLV access to the named Key Format Type value.");
         for (EnumerationFixture fixture : enumerationFixtures) {
             String builderRoute = CRYPTOGRAPHIC_PARAMETER_BUILDER_ROUTES.get(fixture.parentName());
@@ -310,7 +324,7 @@ class ControlledTlsPeerTest {
                 assertEquals(fixture.protocolVersions().size(),
                         routeEventCount(report.path("events"), fixture.caseId(), CREDENTIAL_TYPE_FROM_RAW_ROUTE),
                         "Every Credential Type value needs an installed fromRaw call: " + fixture.targetId());
-                String credentialRoute = credentialTypeModelRoute(fixture.targetId());
+                String credentialRoute = CREDENTIAL_TYPE_MODEL_ROUTES.get(fixture.targetId());
                 if (credentialRoute != null) {
                     assertEquals(fixture.protocolVersions().size(),
                             routeEventCount(report.path("events"), fixture.caseId(), credentialRoute),
@@ -320,13 +334,7 @@ class ControlledTlsPeerTest {
             }
         }
         int enumerationEventCount = enumerationFixtures.stream()
-                .mapToInt(fixture -> fixture.protocolVersions().size()
-                        * (4 + (fixture.attribute() == null ? 0 : 3)
-                                + (CRYPTOGRAPHIC_PARAMETER_BUILDER_ROUTES.containsKey(fixture.parentName())
-                                        ? 1 : 0)
-                                + ("CREDENTIAL-TYPE".equals(fixture.parentName())
-                                        ? 1 + (credentialTypeModelRoute(fixture.targetId()) == null ? 0 : 1)
-                                        : 0))).sum();
+                .mapToInt(ControlledTlsPeerTest::expectedEnumerationRouteEvents).sum();
         int bitmaskEventCount = bitmaskFixtures.stream()
                 .mapToInt(fixture -> fixture.protocolVersions().size() * (4 + (fixture.attribute() == null ? 0 : 3)))
                 .sum();
@@ -1281,11 +1289,11 @@ class ControlledTlsPeerTest {
                 "org.kmipkit.credentials.CredentialType.fromRaw", null, null,
                 "construct", protocolVersion, null, enumTreeHash, null);
 
-        String modelRoute = credentialTypeModelRoute(fixture.targetId());
+        String modelRoute = CREDENTIAL_TYPE_MODEL_ROUTES.get(fixture.targetId());
         if (modelRoute == null) return;
         String modelSymbol;
-        String credentialTreeHash = normalizedTreeSha256(credentialValueWire(fixture.targetId()));
-        try (TtlvStructure structure = credentialValueStructure(fixture.targetId())) {
+        String credentialTreeHash = normalizedTreeSha256(credentialValueWire(modelRoute));
+        try (TtlvStructure structure = credentialValueStructure(modelRoute)) {
             switch (modelRoute) {
                 case "java.typed-protocol.model.org.kmipkit.credentials.attestationcredential.fromttlv" -> {
                     modelSymbol = "org.kmipkit.credentials.AttestationCredential.fromTtlv";
@@ -1319,13 +1327,13 @@ class ControlledTlsPeerTest {
                 null, null, "construct", protocolVersion, null, credentialTreeHash, null);
     }
 
-    private static byte[] credentialValueWire(String targetId) throws Exception {
-        if (targetId.contains("USERNAME-AND-PASSWORD")) {
+    private static byte[] credentialValueWire(String modelRoute) throws Exception {
+        if (modelRoute.endsWith("usernameandpasswordcredential.fromttlv")) {
             return structure(0x420025,
                     textItem(0x420099, "validator-user"),
                     textItem(0x4200a1, "validator-password-fixture"));
         }
-        if (targetId.contains("DEVICE-00000002")) {
+        if (modelRoute.endsWith("devicecredential.fromttlv")) {
             return structure(0x420025,
                     textItem(0x4200b0, "validator-serial"),
                     textItem(0x4200a1, "validator-password-fixture"),
@@ -1334,7 +1342,7 @@ class ControlledTlsPeerTest {
                     textItem(0x4200a9, "validator-machine-id"),
                     textItem(0x4200aa, "validator-media-id"));
         }
-        if (targetId.contains("ATTESTATION-00000003")) {
+        if (modelRoute.endsWith("attestationcredential.fromttlv")) {
             return structure(0x420025,
                     structure(0x4200c8,
                             item(0x4200c9, 8, new byte[] {0x01, 0x02}),
@@ -1342,28 +1350,28 @@ class ControlledTlsPeerTest {
                     item(0x4200c7, 5, intBytes(1)),
                     item(0x4200cb, 8, new byte[] {0x05, 0x06}));
         }
-        if (targetId.contains("HASHED-PASSWORD")) {
+        if (modelRoute.endsWith("hashedpasswordcredential.fromttlv")) {
             return structure(0x420025,
                     textItem(0x420099, "validator-user"),
                     item(0x420092, 10, longBytes(1_800_000_000L)),
                     item(0x420038, 5, intBytes(6)),
                     item(0x420157, 8, new byte[] {0x11, 0x22, 0x33, 0x44}));
         }
-        throw new IllegalArgumentException("No Credential Value wire fixture for the selected target");
+        throw new IllegalArgumentException("No Credential Value wire fixture for the selected API route");
     }
 
     private static byte[] textItem(int tag, String value) throws Exception {
         return item(tag, 7, value.getBytes(StandardCharsets.UTF_8));
     }
 
-    private static TtlvStructure credentialValueStructure(String targetId) throws Exception {
+    private static TtlvStructure credentialValueStructure(String modelRoute) throws Exception {
         CodecLimits limits = CodecLimits.defaults();
-        if (targetId.contains("USERNAME-AND-PASSWORD")) {
+        if (modelRoute.endsWith("usernameandpasswordcredential.fromttlv")) {
             TtlvStructure structure = TtlvStructure.create();
             structure = appendCredentialText(structure, 0x420099, "validator-user", limits);
             return appendCredentialText(structure, 0x4200a1, "validator-password-fixture", limits);
         }
-        if (targetId.contains("DEVICE-00000002")) {
+        if (modelRoute.endsWith("devicecredential.fromttlv")) {
             TtlvStructure structure = TtlvStructure.create();
             structure = appendCredentialText(structure, 0x4200b0, "validator-serial", limits);
             structure = appendCredentialText(structure, 0x4200a1, "validator-password-fixture", limits);
@@ -1372,7 +1380,7 @@ class ControlledTlsPeerTest {
             structure = appendCredentialText(structure, 0x4200a9, "validator-machine-id", limits);
             return appendCredentialText(structure, 0x4200aa, "validator-media-id", limits);
         }
-        if (targetId.contains("ATTESTATION-00000003")) {
+        if (modelRoute.endsWith("attestationcredential.fromttlv")) {
             TtlvStructure nonce = TtlvStructure.create();
             nonce = appendCredentialValue(nonce, 0x4200c9,
                     TtlvValue.ByteString(new byte[] {0x01, 0x02}, limits), limits);
@@ -1384,7 +1392,7 @@ class ControlledTlsPeerTest {
             return appendCredentialValue(structure, 0x4200cb,
                     TtlvValue.ByteString(new byte[] {0x05, 0x06}, limits), limits);
         }
-        if (targetId.contains("HASHED-PASSWORD")) {
+        if (modelRoute.endsWith("hashedpasswordcredential.fromttlv")) {
             TtlvStructure structure = TtlvStructure.create();
             structure = appendCredentialText(structure, 0x420099, "validator-user", limits);
             structure = appendCredentialValue(structure, 0x420092,
@@ -1393,7 +1401,7 @@ class ControlledTlsPeerTest {
             return appendCredentialValue(structure, 0x420157,
                     TtlvValue.ByteString(new byte[] {0x11, 0x22, 0x33, 0x44}, limits), limits);
         }
-        throw new IllegalArgumentException("No Credential Value fixture for the selected target");
+        throw new IllegalArgumentException("No Credential Value fixture for the selected API route");
     }
 
     private static TtlvStructure appendCredentialText(TtlvStructure structure, int rawTag,
@@ -2044,9 +2052,9 @@ class ControlledTlsPeerTest {
                     assertEquals(0x0aL, itemResult.operation());
                     assertEquals(3L, view.itemCount());
                     appendRouteEvent(events,
-                            "test-norm-enumeration-value-enum-value-key-format-type-raw-00000001",
-                            "java.typed-protocol.function.client_batch_item_response_raw_ttlv",
-                            "KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-RAW-00000001",
+                            KEY_FORMAT_RAW_CASE_ID,
+                            CLIENT_BATCH_ITEM_RAW_TTLV_ROUTE,
+                            KEY_FORMAT_RAW_TARGET_ID,
                             "org.kmipkit.extensions.ClientBatchItemResult.raw", null, null,
                             "decode", protocolVersion, null, null,
                             normalizedTreeSha256(getResponsePayload()));
@@ -2290,20 +2298,15 @@ class ControlledTlsPeerTest {
         return count;
     }
 
-    private static String credentialTypeModelRoute(String targetId) {
-        if (targetId.contains("USERNAME-AND-PASSWORD")) {
-            return "java.typed-protocol.model.org.kmipkit.credentials.usernameandpasswordcredential.fromttlv";
+    private static int expectedEnumerationRouteEvents(EnumerationFixture fixture) {
+        int routesPerVersion = 4;
+        if (fixture.attribute() != null) routesPerVersion += 3;
+        if (CRYPTOGRAPHIC_PARAMETER_BUILDER_ROUTES.containsKey(fixture.parentName())) routesPerVersion++;
+        if ("CREDENTIAL-TYPE".equals(fixture.parentName())) {
+            routesPerVersion++;
+            if (CREDENTIAL_TYPE_MODEL_ROUTES.containsKey(fixture.targetId())) routesPerVersion++;
         }
-        if (targetId.contains("DEVICE-00000002")) {
-            return "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv";
-        }
-        if (targetId.contains("ATTESTATION-00000003")) {
-            return "java.typed-protocol.model.org.kmipkit.credentials.attestationcredential.fromttlv";
-        }
-        if (targetId.contains("HASHED-PASSWORD")) {
-            return "java.typed-protocol.model.org.kmipkit.credentials.hashedpasswordcredential.fromttlv";
-        }
-        return null;
+        return fixture.protocolVersions().size() * routesPerVersion;
     }
 
     private static JsonNode findRouteEvent(JsonNode events, String routeId, String protocolVersion) {
