@@ -40,6 +40,46 @@ class InstallArtifactPathTests(unittest.TestCase):
         )
 
 
+class ReproducibleArtifactBuildEnvironmentTests(unittest.TestCase):
+    def test_cargo_flags_remap_temp_root_and_preserve_caller_rustflags(self):
+        temporary_root = Path("/tmp/kmipkit-java-source-with-spaces")
+
+        environment = INSTALL_ARTIFACT.cargo_environment_with_path_remapping(
+            {"RUSTFLAGS": "-C debuginfo=1"}, temporary_root
+        )
+
+        self.assertEqual(environment["RUSTFLAGS"], "-C debuginfo=1")
+        self.assertEqual(
+            environment["CARGO_ENCODED_RUSTFLAGS"].split("\x1f"),
+            [
+                "-C",
+                "debuginfo=1",
+                f"--remap-path-prefix={temporary_root.resolve()}=/kmipkit-build",
+            ],
+        )
+
+    def test_existing_encoded_rustflags_keep_precedence_and_are_preserved(self):
+        environment = INSTALL_ARTIFACT.cargo_environment_with_path_remapping(
+            {
+                "RUSTFLAGS": "--cfg ignored_when_encoded_flags_are_set",
+                "CARGO_ENCODED_RUSTFLAGS": "-C\x1fdebuginfo=0",
+            },
+            Path("/tmp/kmipkit-java-source-encoded"),
+        )
+
+        self.assertEqual(
+            environment["CARGO_ENCODED_RUSTFLAGS"].split("\x1f"),
+            [
+                "-C",
+                "debuginfo=0",
+                "--remap-path-prefix=/tmp/kmipkit-java-source-encoded=/kmipkit-build",
+            ],
+        )
+        self.assertEqual(
+            environment["RUSTFLAGS"], "--cfg ignored_when_encoded_flags_are_set"
+        )
+
+
 class InstalledRouteProbeWorkflowTests(unittest.TestCase):
     def test_java_workflow_probes_and_persists_installed_package_routes(self):
         workflow = Path(__file__).parents[3] / ".github" / "workflows" / "interop-java.yml"
