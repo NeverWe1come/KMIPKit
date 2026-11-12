@@ -5172,12 +5172,7 @@ fn response_route_invoked(
 /// The connection is restricted to a local raw-TLS TTLV fixture so CI cannot
 /// turn this evidence command into a probe against an external KMIP service.
 #[allow(clippy::too_many_lines)] // Keep fixture selection and its exact response calls auditable together.
-pub(crate) fn run_network(
-    matrix: &Path,
-    configuration: &[u8],
-    connection: &Connection,
-    output: &Path,
-) -> Result<bool> {
+pub(crate) fn run_network(matrix: &Path, connection: &Connection, output: &Path) -> Result<bool> {
     connection.validate()?;
     if connection.transport != "raw_tls"
         || connection.encoding != "TTLV"
@@ -5311,10 +5306,11 @@ pub(crate) fn run_network(
         events.push(event);
     }
     let version_text = connection.protocol_version.clone();
+    let configuration_fingerprint = crate::models::configuration_fingerprint(connection)?;
     let report = json!({
         "schema_version":"1.0", "run_id":format!("rust-response-{}", uuid::Uuid::new_v4()),
         "language":"rust", "server":{"id":connection.server_id,"product":"controlled-fixture",
-            "version":"offline-1","configuration_fingerprint":hash(configuration)},
+            "version":"offline-1","configuration_fingerprint":configuration_fingerprint},
         "library_commit":env!("KMIPKIT_LIBRARY_COMMIT"), "artifact_sha256":env!("KMIPKIT_ARTIFACT_SHA256"),
         "catalog_sha256":hash(include_bytes!("../../shared/catalog/kmipkit-1.0-test-catalog.json")),
         "route_manifest_sha256":hash(routes_bytes),

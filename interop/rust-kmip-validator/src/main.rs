@@ -97,7 +97,7 @@ fn matrix_network(matrix: &Path, connection: &Path, output: &Path) -> Result<boo
     let configuration = read(connection)?;
     let connection: Connection =
         serde_json::from_slice(&configuration).map_err(|_| "invalid connection contract")?;
-    matrix::run_network(matrix, &configuration, &connection, output)
+    matrix::run_network(matrix, &connection, output)
 }
 #[allow(clippy::too_many_lines)] // Keep the exhaustive CLI dispatch in one auditable match.
 fn dispatch(cli: Cli) -> Result<bool> {
