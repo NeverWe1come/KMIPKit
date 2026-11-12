@@ -25,6 +25,18 @@ ROOT = Path(__file__).resolve().parents[3]
 COVERAGE = ROOT / 'interop/shared/coverage'
 LANGUAGES = ('rust', 'c', 'java', 'python')
 ASYNC = {'cancel', 'poll', 'process', 'queryasyncrequests'}
+_BATCH_RESPONSE_TARGETS = {
+    # OASIS KMIP 2.0/2.1 §§8.5, 9.5 define response Batch Count.
+    'client_batch_response_item_count': [
+        'KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT',
+        'KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT',
+    ],
+    # OASIS KMIP 2.0/2.1 §§8.6, 9.7 define response Batch Item.
+    'client_batch_response_item_at': [
+        'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM',
+        'KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM',
+    ],
+}
 
 CHECKED_TAG_INPUTS = {
     ('rust', 'kmipkit_ttlv::Item::new'): 'crates/kmipkit-ttlv/src/item.rs',
@@ -522,6 +534,8 @@ def build_manifest(root=ROOT, commit='9a16cc90a12205101d22a38501a5e74c665df4dc')
                 target_ids = [operation_id] + sorted({target['target_id'] for target in targets
                     if target.get('operation_id') == operation_id
                     and target.get('role') == ('response' if action == 'decode' else 'request')})
+            elif function_id in _BATCH_RESPONSE_TARGETS:
+                target_ids = _BATCH_RESPONSE_TARGETS[function_id]
             else:
                 credential_targets = credential_function_target_ids(function_id, targets)
                 if credential_targets is not None:
