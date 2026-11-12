@@ -10,7 +10,8 @@ import unittest
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 MODULE_PATH = REPO_ROOT / "tools" / "api_manifest" / "audit_shared_rust_inventory.py"
-RUST_REPORT_PATH = REPO_ROOT / "specs/051-pre-send-validation/reports/rust-export-report-2026-11-12.json"
+REPORTS_DIR = REPO_ROOT / "specs" / "051-pre-send-validation" / "reports"
+RUST_REPORT_PATH = REPORTS_DIR / "rust-export-report-2026-11-12.json"
 EXPECTED_RUST_ONLY_DECLARATIONS = {
     "kmipkit_transport::HttpsTransport",
     "kmipkit_transport::HttpsTransport::new",

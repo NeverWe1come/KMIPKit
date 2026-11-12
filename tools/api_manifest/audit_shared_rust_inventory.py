@@ -90,8 +90,9 @@ RUST_ONLY_DECLARATIONS = {
 }
 DRAFT_SPEC_IDS = {"KMIPKIT-0010"}
 # The 0047 release-stack and 0048 snapshots remain immutable historical evidence.
-RUST_REPORT_PATH = Path("specs/051-pre-send-validation/reports/rust-export-report-2026-11-12.json")
-REPORT_PATH = Path("specs/051-pre-send-validation/reports/shared-rust-inventory-2026-11-12.json")
+_REPORTS_DIR = Path("specs") / "051-pre-send-validation" / "reports"
+RUST_REPORT_PATH = _REPORTS_DIR / "rust-export-report-2026-11-12.json"
+REPORT_PATH = _REPORTS_DIR / "shared-rust-inventory-2026-11-12.json"
 _RUST_AUDIT_SPEC = importlib.util.spec_from_file_location(
     "audit_rust_exports", Path(__file__).with_name("audit_rust_exports.py")
 )
