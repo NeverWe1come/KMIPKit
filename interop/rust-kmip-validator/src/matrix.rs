@@ -1901,12 +1901,12 @@ fn sample_for_route_at_version(
         let value = unique_identifier_value_variant(value_type)?;
         return Item::new(source.tag(), value).map_err(|_| "Unique Identifier fixture rejected");
     }
-    if !typed_item_route(symbol) {
-        return sample(target, elements);
-    }
     if typed_attribute_marker(symbol) == Some("VendorAttribute") {
         let model = vendor_attribute_item()?;
         return metadata_expected_target(&model, target, elements);
+    }
+    if !typed_item_route(symbol) {
+        return sample(target, elements);
     }
     let marker = typed_attribute_marker(symbol).ok_or("typed attribute marker missing")?;
     let attribute = elements
