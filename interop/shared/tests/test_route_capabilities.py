@@ -348,6 +348,30 @@ class RouteCapabilitiesTests(unittest.TestCase):
                 self.assertEqual(sorted(target_ids), sorted(route['normative_target_ids']), readers[reader])
                 self.assertEqual(['decode'], route['actions'], readers[reader])
 
+    def test_batch_error_continuation_builder_is_a_local_route_in_every_language(self):
+        # OASIS KMIP 2.0/2.1 §§8.2, 9.6, and 11.5 define this request option and its values.
+        symbols = {
+            'rust': 'kmipkit_client::ClientBatch::with_batch_error_continuation_option',
+            'c': 'kmipkit_client_batch_add_error_continuation_value',
+            'java': 'org.kmipkit.extensions.ClientBatch.addErrorContinuationValue',
+            'python': 'kmipkit.client.Batch.add_error_continuation_value',
+        }
+        expected = {
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION',
+            'KMIPKIT-ELEM-MESSAGE-FIELD-9-6-BATCH-ERROR-CONTINUATION-OPTION',
+            'KMIPKIT-ELEM-TAG-42000E',
+            'KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-CONTINUE-00000001',
+            'KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-STOP-00000002',
+            'KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-UNDO-00000003',
+            'KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-EXTENSIONS-8XXXXXXX',
+        }
+        routes = {(route['language'], route['public_api_symbol']): route for route in self.data['routes']}
+        for language, symbol in symbols.items():
+            route = routes[(language, symbol)]
+            self.assertEqual('local', route['mode'], symbol)
+            self.assertEqual(expected, set(route['normative_target_ids']), symbol)
+            self.assertIn('construct', route['actions'], symbol)
+
     def test_checked_tag_constructor_exclusions_are_source_backed_and_narrow(self):
         expected = {
             'rust': {'rust.generic-ttlv.item.new', 'rust.generic-ttlv.model.kmipkit.ttlv.structure.try.push'},
