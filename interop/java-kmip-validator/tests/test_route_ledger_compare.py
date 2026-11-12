@@ -14,6 +14,22 @@ COMPARE_ROUTE_LEDGER = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(COMPARE_ROUTE_LEDGER)
 
 
+def run_compare_cli(reference: Path, generated: Path) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [
+            sys.executable,
+            str(SCRIPT),
+            "--reference",
+            str(reference),
+            "--generated",
+            str(generated),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
 class RouteLedgerComparisonTests(unittest.TestCase):
     def test_cli_rejects_ledger_paths_outside_the_java_validator_root(self):
         ledger = {
@@ -29,19 +45,26 @@ class RouteLedgerComparisonTests(unittest.TestCase):
             reference.write_text(json.dumps(ledger), encoding="utf-8")
             generated.write_text(json.dumps(ledger), encoding="utf-8")
 
-            process = subprocess.run(
-                [
-                    sys.executable,
-                    str(SCRIPT),
-                    "--reference",
-                    str(reference),
-                    "--generated",
-                    str(generated),
-                ],
-                capture_output=True,
-                text=True,
-                check=False,
-            )
+            process = run_compare_cli(reference, generated)
+
+        self.assertNotEqual(process.returncode, 0)
+        self.assertIn("outside the allowed directories", process.stderr)
+
+    def test_cli_rejects_generated_ledger_outside_the_build_directory(self):
+        ledger = {
+            "artifact_sha256": "a" * 64,
+            "catalog_sha256": "c" * 64,
+            "executed_cells": 8398,
+            "pending_cells": 63105,
+        }
+        with tempfile.TemporaryDirectory(dir=SCRIPT.parents[1]) as allowed_directory:
+            with tempfile.TemporaryDirectory() as outside_directory:
+                reference = Path(allowed_directory) / "reference.json"
+                generated = Path(outside_directory) / "generated.json"
+                reference.write_text(json.dumps(ledger), encoding="utf-8")
+                generated.write_text(json.dumps(ledger), encoding="utf-8")
+
+                process = run_compare_cli(reference, generated)
 
         self.assertNotEqual(process.returncode, 0)
         self.assertIn("outside the allowed directories", process.stderr)
