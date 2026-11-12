@@ -409,6 +409,110 @@ fn key_format_type_request_payload(symbol: &str, raw: u32) -> Result<kmipkit::tt
     }
 }
 
+fn unique_identifier_request_payload(
+    symbol: &str,
+    identifier: kmipkit::protocol::UniqueIdentifier,
+) -> Result<kmipkit::ttlv::Structure> {
+    use kmipkit::protocol::{
+        AttributeSet, CreateSplitKeyRequest, ObjectType, OperationData, RevocationReason,
+        SecretBytes, SplitKeyMethod,
+    };
+
+    match symbol {
+        "kmipkit_protocol::CertifyRequest::with_unique_identifier" => {
+            kmipkit::protocol::CertifyRequest::new()
+                .with_certificate_request_type(1)
+                .with_certificate_request_value(kmipkit::protocol::SecretBytes::new(vec![0x30]))
+                .with_unique_identifier(identifier)
+                .into_ttlv_payload()
+        }
+        "kmipkit_protocol::CheckRequest::with_unique_identifier" => {
+            kmipkit::protocol::CheckRequest::new()
+                .with_unique_identifier(identifier)
+                .into_ttlv_payload()
+        }
+        "kmipkit_protocol::CreateSplitKeyRequest::with_unique_identifier" => {
+            CreateSplitKeyRequest::new(
+                ObjectType::from_raw(2),
+                2,
+                1,
+                SplitKeyMethod::from_raw(1),
+                AttributeSet::new(),
+            )
+            .with_unique_identifier(identifier)
+            .into_ttlv_payload()
+        }
+        "kmipkit_protocol::ExportRequest::with_unique_identifier" => {
+            kmipkit::protocol::ExportRequest::new()
+                .with_unique_identifier(identifier)
+                .into_ttlv_payload()
+        }
+        "kmipkit_protocol::GetRequest::with_unique_identifier" => {
+            kmipkit::protocol::GetRequest::new()
+                .with_unique_identifier(identifier)
+                .to_ttlv_payload()
+        }
+        "kmipkit_protocol::GetUsageAllocationRequest::with_unique_identifier" => {
+            kmipkit::protocol::GetUsageAllocationRequest::new(1)
+                .with_unique_identifier(identifier)
+                .to_ttlv_payload()
+        }
+        "kmipkit_protocol::MacRequest::with_unique_identifier" => {
+            kmipkit::protocol::MacRequest::new()
+                .with_data(OperationData::ByteString(SecretBytes::new(vec![0x5a])))
+                .with_unique_identifier(identifier)
+                .to_ttlv_payload()
+        }
+        "kmipkit_protocol::MacVerifyRequest::with_unique_identifier" => {
+            kmipkit::protocol::MacVerifyRequest::new()
+                .with_mac_data(SecretBytes::new(vec![0x5a]))
+                .with_unique_identifier(identifier)
+                .to_ttlv_payload()
+        }
+        "kmipkit_protocol::ObtainLeaseRequest::with_unique_identifier" => {
+            kmipkit::protocol::ObtainLeaseRequest::new()
+                .with_unique_identifier(identifier)
+                .into_ttlv_payload()
+        }
+        "kmipkit_protocol::RecertifyRequest::with_unique_identifier" => {
+            kmipkit::protocol::RecertifyRequest::new()
+                .with_certificate_request_type(1)
+                .with_certificate_request_value(SecretBytes::new(vec![0x30]))
+                .with_unique_identifier(identifier)
+                .into_ttlv_payload()
+        }
+        "kmipkit_protocol::RekeyRequest::with_unique_identifier" => {
+            kmipkit::protocol::RekeyRequest::new()
+                .with_unique_identifier(identifier)
+                .into_ttlv_payload()
+        }
+        "kmipkit_protocol::RevokeRequest::with_unique_identifier" => {
+            kmipkit::protocol::RevokeRequest::new(RevocationReason::from_raw(1))
+                .with_unique_identifier(identifier)
+                .into_ttlv_payload()
+        }
+        "kmipkit_protocol::SignatureVerifyRequest::with_unique_identifier" => {
+            kmipkit::protocol::SignatureVerifyRequest::new()
+                .with_signature_data(SecretBytes::new(vec![0x5a]))
+                .with_unique_identifier(identifier)
+                .to_ttlv_payload()
+        }
+        "kmipkit_protocol::SignRequest::with_unique_identifier" => {
+            kmipkit::protocol::SignRequest::new()
+                .with_digested_data(SecretBytes::new(vec![0x5a]))
+                .with_unique_identifier(identifier)
+                .to_ttlv_payload()
+        }
+        "kmipkit_protocol::ValidateRequest::with_unique_identifier" => {
+            kmipkit::protocol::ValidateRequest::new()
+                .with_unique_identifier(identifier)
+                .into_ttlv_payload()
+        }
+        _ => return Err("unsupported Unique Identifier request route"),
+    }
+    .map_err(|_| "Unique Identifier request fixture rejected")
+}
+
 const MANAGED_OBJECT_ROOTS: [&str; 9] = [
     "Certificate",
     "Certificate Request",
@@ -752,6 +856,24 @@ fn invoke(
                 _ => Err("Key Format Type fixture is not an Enumeration"),
             })?;
             let payload = key_format_type_request_payload(symbol, raw)?;
+            crate::driver::item(0x0042_0079, Value::structure(payload))
+        })());
+    }
+    if symbol.ends_with("::with_unique_identifier") {
+        return Some((|| {
+            let identifier = sample.with_value(|value| match value {
+                ValueView::TextString(value) => Ok(
+                    kmipkit::protocol::UniqueIdentifier::TextString(value.to_owned()),
+                ),
+                ValueView::Integer(value) => {
+                    Ok(kmipkit::protocol::UniqueIdentifier::Integer(*value))
+                }
+                ValueView::Enumeration(value) => {
+                    Ok(kmipkit::protocol::UniqueIdentifier::Enumeration(*value))
+                }
+                _ => Err("Unique Identifier fixture has an unsupported wire type"),
+            })?;
+            let payload = unique_identifier_request_payload(symbol, identifier)?;
             crate::driver::item(0x0042_0079, Value::structure(payload))
         })());
     }
