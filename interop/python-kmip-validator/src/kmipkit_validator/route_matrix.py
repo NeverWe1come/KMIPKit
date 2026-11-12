@@ -1106,31 +1106,63 @@ def _typed_attribute_cell(cell: dict, case: dict, target: dict) -> dict:
     from kmipkit.attribute_operations import AttributeSet
     from kmipkit.typed_attributes import StandardAttribute, TypedAttribute
 
-    samples = _generic_samples(case, target, 'kmipkit.ttlv.ttlv_item_create')
     attributes = {attribute.tag: attribute for attribute in StandardAttribute}
+    target_kind = _target_field(target, case['requires'], 'kind')
+    member_name = target.get('name', '')
+    if target_kind == 'structure_member':
+        by_id, _, elements = _catalog_model_data()
+        parent = next((by_id.get(parent_id, {}) for parent_id in target.get('parent_element_ids', [])
+                       if by_id.get(parent_id, {}).get('kind') == 'attribute'), None)
+        if parent is None:
+            raise RecipePending
+        source_parent = elements.get(parent['target_id'], {})
+        parent_tag = next((by_id.get(parent_id, {}) for parent_id in source_parent.get('parent_element_ids', [])
+                           if by_id.get(parent_id, {}).get('kind') == 'tag'), None)
+        if parent_tag is None:
+            tag_name = source_parent.get('source_name', parent['name'])
+            parent_tag = next((item for item in by_id.values()
+                               if item.get('kind') == 'tag' and item.get('name') == tag_name), None)
+        if parent_tag is None:
+            raise RecipePending
+        root_tag = int(parent_tag['wire_value'], 16)
+        field_samples = _generic_samples(case, target, 'kmipkit.ttlv.ttlv_item_create')
+        if parent['name'] == 'Vendor Attribute' and member_name == 'Vendor Identification':
+            # §4.60 Table 150 restricts this field to ASCII letters, digits, '_' and '.'.
+            field_samples = [(field_samples[0][0], 'Text String', 'KMIPKit')]
+        samples = [(root_tag, 'Structure', _typed_attribute_structure_member_items(
+            parent['name'], member_name, *field_sample
+        )) for field_sample in field_samples]
+    else:
+        samples = _generic_samples(case, target, 'kmipkit.ttlv.ttlv_item_create')
     if not samples or any(tag not in attributes for tag, _, _ in samples):
         raise RecipePending
     observed = []
     for tag, type_name, value in samples:
         attribute = attributes[tag]
-        if _target_field(target, case['requires'], 'kind') == 'tag':
+        if target_kind == 'tag':
             # Tag allocation cases have no prescribed value. Use the installed
             # attribute's exact catalogued scalar type instead of inventing one.
             scalar = {'Integer': ('Integer', 0), 'Enumeration': ('Enumeration', 1),
                       'DateTime': ('Date Time', 0), 'Interval': ('Interval', 0),
                       'Boolean': ('Boolean', True), 'TextString': ('Text String', 'fixture'),
-                      'ByteString': ('Byte String', b''), 'UniqueIdentifier': ('Text String', 'fixture')}
+                      'ByteString': ('Byte String', b''), 'UniqueIdentifier': ('Text String', 'fixture'),
+                      'Structure': ('Structure', None)}
             if attribute.value_kind not in scalar:
                 raise RecipePending
             type_name, value = scalar[attribute.value_kind]
         with ExitStack() as owned:
             if type_name == 'Structure':
-                members = _typed_attribute_structure_items(target.get('name', ''))
+                members = (value if target_kind == 'structure_member'
+                           else _typed_attribute_structure_items(target.get('name', '')))
                 if members is None:
                     raise RecipePending
-                children = [owned.enter_context(PythonKmipDriver._item(
-                    child_tag, _TTLV_TYPE_KINDS[child_type], child_value
-                )) for child_tag, child_type, child_value in members]
+                children = []
+                for child_tag, child_type, child_value in members:
+                    if child_type == 'Structure' and child_value is None:
+                        child_value = owned.enter_context(PythonKmipDriver._structure([]))
+                    children.append(owned.enter_context(PythonKmipDriver._item(
+                        child_tag, _TTLV_TYPE_KINDS[child_type], child_value
+                    )))
                 value = owned.enter_context(PythonKmipDriver._structure(children))
             original = owned.enter_context(PythonKmipDriver._item(tag, _TTLV_TYPE_KINDS[type_name], value))
             expected = item_tree(original)
@@ -1225,7 +1257,7 @@ _TYPED_ATTRIBUTE_STRUCTURE_FIELDS: dict[str, tuple[tuple[str, str, Any], ...]] =
     'Vendor Attribute': (
         ('Vendor Identification', 'Text String', 'KMIPKit'),
         ('Attribute Name', 'Text String', 'interop'),
-        ('Attribute Value', 'Text String', 'fixture'),
+        ('Attribute Value', 'Byte String', b'fixture'),
     ),
     # §4.54 (2.0)/§4.61 (2.1), Table 152.
     'X.509 Certificate Identifier': (
@@ -1242,6 +1274,8 @@ _TYPED_ATTRIBUTE_STRUCTURE_FIELDS: dict[str, tuple[tuple[str, str, Any], ...]] =
 def _typed_attribute_structure_items(attribute_name: str) -> list[tuple[int, str, Any]] | None:
     """Build minimal, table-shaped structures for catalogued direct attributes."""
     by_id, _, elements = _catalog_model_data()
+    if attribute_name == 'Attribute':
+        attribute_name = 'Vendor Attribute'
     plan = _TYPED_ATTRIBUTE_STRUCTURE_FIELDS.get(attribute_name)
     if plan is None:
         return None
@@ -1279,6 +1313,30 @@ def _typed_attribute_structure_items(attribute_name: str) -> list[tuple[int, str
             value = enum_value(value[1], value[2])
         result.append((tag_value(name), type_name, value))
     return result
+
+
+def _typed_attribute_structure_member_items(
+    attribute_name: str, member_name: str, tag: int, type_name: str, value: Any,
+) -> list[tuple[int, str, Any]]:
+    """Insert one exact catalog member into a valid minimal parent attribute."""
+    by_id, _, elements = _catalog_model_data()
+    members = _typed_attribute_structure_items(attribute_name)
+    if members is None:
+        raise RecipePending
+    if attribute_name == 'Cryptographic Parameters' and member_name != 'Cryptographic Algorithm':
+        # Its optional fields are alternatives; only construct the requested one.
+        members = []
+    elif attribute_name == 'Cryptographic Domain Parameters' and member_name != 'Qlength':
+        members = []
+    fields = {field_tag: (field_tag, field_type, field_value)
+              for field_tag, field_type, field_value in members}
+    fields[tag] = (tag, type_name, value)
+
+    attribute = next((item for item in by_id.values()
+                      if item.get('kind') == 'attribute' and item.get('name') == attribute_name), None)
+    if attribute is None:
+        raise RecipePending
+    return list(fields.values())
 
 
 def _crypto_parameters_cell(cell: dict, case: dict, target: dict) -> dict:
