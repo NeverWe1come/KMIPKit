@@ -14,6 +14,7 @@ SHARED = Path(__file__).resolve().parents[1]
 ROOT = SHARED.parents[1]
 sys.path.insert(0, str(SHARED / "tools"))
 from validate_route_evidence import (
+    _expected_tag_decode_rejection_code,
     _validate_batch_event,
     validate_collection,
     validate_parity_collection,
@@ -340,6 +341,27 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         self.catalog['test_cases'][0]['requires']['allocation'] = 'assigned'
         with self.assertRaisesRegex(ValueError, 'rejection is not expected'):
             self.validate(report)
+
+    def test_decode_rejection_classification_uses_the_expanded_normative_target(self):
+        case = {'requires': {'enum_type': 'Tag'}}
+        cell = {
+            'action': 'decode',
+            'mode': 'local',
+            'route_id': 'rust.generic-ttlv.codec.decode',
+            'public_api_symbol': 'kmipkit_ttlv::codec::decode',
+        }
+        self.assertEqual(
+            _expected_tag_decode_rejection_code(
+                cell, case, {'kind': 'tag', 'allocation': 'reserved'}
+            ),
+            'tag_reserved',
+        )
+        self.assertEqual(
+            _expected_tag_decode_rejection_code(
+                cell, case, {'kind': 'tag_range', 'allocation': 'unused'}
+            ),
+            'tag_not_allocated',
+        )
 
     def test_network_events_must_name_the_real_separate_execution_entrypoint(self):
         report = copy.deepcopy(self.report)

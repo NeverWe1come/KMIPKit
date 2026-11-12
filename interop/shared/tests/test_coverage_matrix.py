@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import copy
 import os
 from pathlib import Path
 import sys
@@ -60,6 +61,23 @@ class CoverageMatrixTests(unittest.TestCase):
             for language in ("rust", "c", "java", "python")
         }
         self.assertEqual(expected, observed)
+
+    def test_secret_data_factory_excludes_key_only_cryptographic_fields(self):
+        route_id = "python.typed-protocol.model.kmipkit.managed.objects.managedobject.secret.data"
+        excluded_targets = {
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-ALGORITHM",
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-LENGTH",
+        }
+        case_ids = {
+            "test-norm-structure-member-structure-member-3-1-key-block-cryptographic-algorithm",
+            "test-norm-structure-member-structure-member-3-1-key-block-cryptographic-length",
+        }
+        cases = [case for case in self.catalog["test_cases"] if case["case_id"] in case_ids]
+        self.assertEqual(excluded_targets,
+                         {case["requires"]["normative_target_id"] for case in cases})
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest)
+                 if cell["route_id"] == route_id and cell["case_id"] in case_ids]
+        self.assertFalse(cells, "Secret Data is not a key and cannot carry key cryptographic properties")
 
     def test_batch_workflow_cells_include_each_ordered_operation_target(self):
         case = next(case for case in self.catalog["test_cases"]
@@ -133,6 +151,24 @@ class CoverageMatrixTests(unittest.TestCase):
         self.assertNotIn('rust.generic-ttlv.function.ttlv_item_view_from_item', route_ids)
         self.assertIn('rust.generic-ttlv.model.kmipkit.ttlv.rawtag.new', route_ids)
         self.assertIn('rust.generic-ttlv.codec.decode', route_ids)
+
+    def test_source_backed_target_id_exclusions_apply_to_generic_routes(self):
+        target_id = 'KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES'
+        manifest = copy.deepcopy(self.manifest)
+        route = next(route for route in manifest['routes']
+                     if route['route_id'] == 'rust.generic-ttlv.item.new')
+        route['case_exclusions'] = [{
+            'target_ids': [target_id],
+            'reason': 'OASIS KMIP 2.0/2.1 §4.6 describes certificate contents, not a TTLV tag.',
+            'source_paths': ['specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html',
+                             'crates/kmipkit-ttlv/src/item.rs'],
+        }]
+        cells = list(iter_cells(self.catalog, manifest, languages=('rust',)))
+        self.assertFalse(any(cell['route_id'] == route['route_id']
+                             and cell['target_id'] == target_id for cell in cells))
+        self.assertTrue(any(cell['route_id'] == route['route_id']
+                            and cell['target_id'] == 'KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER'
+                            for cell in cells))
 
     def test_single_item_omission_case_does_not_require_option_setters(self):
         case_id = 'test-batch-single-item-options-omitted'
