@@ -2497,6 +2497,65 @@ mod tests {
     }
 
     #[test]
+    fn client_batch_builder_routes_invoke_the_named_public_methods() {
+        let catalog: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        let routes = [
+            (
+                "kmipkit_client::ClientBatch::with_asynchronous_indicator",
+                "KMIPKIT-ELEM-ENUM-VALUE-ASYNCHRONOUS-INDICATOR-EXTENSIONS-8XXXXXXX",
+            ),
+            (
+                "kmipkit_client::ClientBatch::with_authentication",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-AUTHENTICATION",
+            ),
+            (
+                "kmipkit_client::ClientBatch::with_batch_error_continuation_option",
+                "KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-CONTINUE-00000001",
+            ),
+            (
+                "kmipkit_client::ClientBatch::with_batch_order_option",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION",
+            ),
+            (
+                "kmipkit_client::ClientBatch::with_client_correlation_value",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-CLIENT-CORRELATION-VALUE",
+            ),
+            (
+                "kmipkit_client::ClientBatch::with_request_time_stamp",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP",
+            ),
+            (
+                "kmipkit_client::ClientBatchItem::with_unique_batch_item_id",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-UNIQUE-BATCH-ITEM-ID",
+            ),
+        ];
+
+        for (symbol, target_id) in routes {
+            let target = catalog["normative_targets"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|target| target["target_id"] == target_id)
+                .unwrap();
+            let expected = sample_for_route_at_version(symbol, target, elements, "2.1").unwrap();
+            let result = invoke(symbol, &expected, target, elements, "2.1")
+                .unwrap_or_else(|| panic!("{symbol} route is not executable"))
+                .unwrap_or_else(|error| panic!("{symbol} rejected its fixture: {error}"));
+            assert!(
+                crate::local_wire::target_hash(&result, &expected).is_ok(),
+                "{symbol} changed the normative value"
+            );
+        }
+    }
+
+    #[test]
     fn transparent_key_material_fixture_uses_its_normative_structure_type() {
         let catalog: Json = serde_json::from_str(include_str!(
             "../../shared/catalog/kmipkit-1.0-test-catalog.json"
