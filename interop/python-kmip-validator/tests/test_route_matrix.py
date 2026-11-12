@@ -1382,6 +1382,9 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(38, len(report['events']))
         self.assertEqual(symbols, {event['public_api_symbol'] for event in report['events']})
 
+    def test_supported_versions_accessor_covers_all_normative_discovery_targets(self):
+        self.assert_route_cells_pass({'kmipkit.client.BatchItemResult.supported_versions'})
+
     def test_decode_wire_digest_is_the_received_response(self):
         import hashlib
         from unittest.mock import patch
