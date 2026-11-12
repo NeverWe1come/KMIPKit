@@ -194,6 +194,32 @@ class RouteCapabilitiesTests(unittest.TestCase):
         self.assertEqual({'KMIPKIT-ELEM-ATTRIBUTE-SENSITIVE', 'KMIPKIT-ELEM-TAG-420120'},
                          set(route['normative_target_ids']))
 
+    def test_java_typed_attribute_routes_do_not_claim_same_named_reason_enum(self):
+        targets = {target['target_id'] for target in json.loads(
+            (SHARED / 'catalog/kmipkit-1.0-test-catalog.json').read_text())['normative_targets']}
+        sensitive_attribute = 'KMIPKIT-ELEM-ATTRIBUTE-SENSITIVE'
+        unrelated_reason = 'KMIPKIT-ELEM-ENUM-VALUE-RESULT-REASON-SENSITIVE-00000016'
+        symbols = {
+            'org.kmipkit.extensions.AttributeSet.tryNew',
+            'org.kmipkit.ttlv.TypedAttribute.create',
+            'org.kmipkit.ttlv.TypedAttribute.fromItem',
+        }
+        routes = {route['public_api_symbol']: route for route in self.data['routes']
+                  if route['language'] == 'java'}
+        self.assertTrue(unrelated_reason in targets)
+        for symbol in symbols:
+            route_targets = set(routes[symbol]['normative_target_ids'])
+            self.assertIn(sensitive_attribute, route_targets, symbol)
+            self.assertNotIn(unrelated_reason, route_targets, symbol)
+
+    def test_cryptographic_parameters_encoder_does_not_claim_shredding_enum_values(self):
+        unrelated_value = 'KMIPKIT-ELEM-ENUM-VALUE-SHREDDING-ALGORITHM-CRYPTOGRAPHIC-00000002'
+        routes = [route for route in self.data['routes']
+                  if route['public_api_symbol'].endswith('CryptographicParameters::into_ttlv')]
+        self.assertTrue(routes)
+        for route in routes:
+            self.assertNotIn(unrelated_value, route['normative_target_ids'], route['public_api_symbol'])
+
     def test_scalar_ttlv_converters_only_claim_targets_they_can_emit(self):
         routes = {route['public_api_symbol']: route for route in self.data['routes']}
         expected = {
