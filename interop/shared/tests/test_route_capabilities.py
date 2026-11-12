@@ -568,6 +568,30 @@ class RouteCapabilitiesTests(unittest.TestCase):
                 self.assertIn('specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html',
                               exclusion['source_paths'])
 
+    def test_request_timestamp_builder_excludes_response_and_extended_timestamp_shapes(self):
+        routes = {(route['language'], route['public_api_symbol']): route
+                  for route in self.data['routes']}
+        excluded_targets = {
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-5-TIME-STAMP',
+            'KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-TIMESTAMP',
+            'KMIPKIT-ELEM-TAG-420092',
+        }
+        for language, symbol in (
+            ('c', 'kmipkit_client_batch_set_request_time_stamp'),
+            ('rust', 'kmipkit_client::ClientBatch::with_request_time_stamp'),
+        ):
+            route = routes[(language, symbol)]
+            exclusions = [exclusion for exclusion in route.get('case_exclusions', [])
+                          if excluded_targets.intersection(exclusion.get('target_ids', []))]
+            self.assertEqual(1, len(exclusions))
+            exclusion = exclusions[0]
+            self.assertEqual(excluded_targets, set(exclusion['target_ids']))
+            self.assertIn('OASIS KMIP 2.0/2.1 §§8.2, 8.5, 9.11, and 9.20', exclusion['reason'])
+            self.assertIn('specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html',
+                          exclusion['source_paths'])
+            self.assertIn('specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html',
+                          exclusion['source_paths'])
+
     def test_reserved_tag_item_view_exclusions_require_decoder_rejection_sources(self):
         expected = {
             'rust': ('rust.generic-ttlv.function.ttlv_item_view_from_item',
