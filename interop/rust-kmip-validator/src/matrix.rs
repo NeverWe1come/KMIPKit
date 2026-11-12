@@ -2830,6 +2830,48 @@ fn invoke_certificate_request_builder_route(symbol: &str, sample: &Item) -> Opti
     })())
 }
 
+fn invoke_key_wrapping_request_route(symbol: &str, sample: &Item) -> Option<Result<Item>> {
+    const ROUTES: &[&str] = &[
+        "kmipkit_protocol::ExportRequest::with_key_wrapping_specification",
+        "kmipkit_protocol::GetRequest::with_key_wrapping_specification",
+        "kmipkit_protocol::ImportRequest::with_key_wrap_type",
+    ];
+    if !ROUTES.contains(&symbol) {
+        return None;
+    }
+
+    Some((|| {
+        match symbol {
+            "kmipkit_protocol::ExportRequest::with_key_wrapping_specification" => {
+                let _request = kmipkit::protocol::ExportRequest::new()
+                    .with_key_wrapping_specification(kmipkit::ttlv::Structure::new());
+            }
+            "kmipkit_protocol::GetRequest::with_key_wrapping_specification" => {
+                let _request = kmipkit::protocol::GetRequest::new()
+                    .with_key_wrapping_specification(kmipkit::ttlv::Structure::new());
+            }
+            "kmipkit_protocol::ImportRequest::with_key_wrap_type" => {
+                let key_wrap_type = sample.with_value(|value| match value {
+                    ValueView::Enumeration(raw) => Ok(*raw),
+                    _ => Ok(1),
+                })?;
+                let object = sample
+                    .try_clone()
+                    .map_err(|_| "Import object fixture copy failed")?;
+                let _request = kmipkit::protocol::ImportRequest::new(
+                    kmipkit::protocol::UniqueIdentifier::from("matrix-key"),
+                    kmipkit::protocol::ObjectType::from_raw(2),
+                    kmipkit::protocol::AttributeSet::new(),
+                    object,
+                )
+                .with_key_wrap_type(kmipkit::protocol::KeyWrapType::from_raw(key_wrap_type));
+            }
+            _ => return Err("unsupported key wrapping request route"),
+        }
+        sample.try_clone().map_err(|_| "local copy failed")
+    })())
+}
+
 #[allow(clippy::too_many_lines)] // Explicit public route dispatch stays together for review.
 fn invoke(
     symbol: &str,
@@ -2838,6 +2880,9 @@ fn invoke(
     elements: &[Json],
     protocol_version: &str,
 ) -> Option<Result<Item>> {
+    if let Some(result) = invoke_key_wrapping_request_route(symbol, sample) {
+        return Some(result);
+    }
     if let Some(result) = invoke_certificate_request_builder_route(symbol, sample) {
         return Some(result);
     }
@@ -5952,7 +5997,9 @@ mod tests {
                     .find(|target| target["target_id"] == target_id)
                     .unwrap();
                 let expected = sample_for_route_at_version(symbol, target, elements, "2.1")
-                    .unwrap_or_else(|error| panic!("{symbol} sample failed for {target_id}: {error}"));
+                    .unwrap_or_else(|error| {
+                        panic!("{symbol} sample failed for {target_id}: {error}")
+                    });
                 let result = invoke(symbol, &expected, target, elements, "2.1")
                     .unwrap_or_else(|| panic!("{symbol} route missing for {target_id}"))
                     .unwrap_or_else(|error| panic!("{symbol} rejected {target_id}: {error}"));
