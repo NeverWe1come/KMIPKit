@@ -1139,6 +1139,7 @@ _BATCH_RESULT_LIVE_ROUTES = {
     'kmipkit.client.BatchResult.item_at',
     'kmipkit.client.BatchResult.item_count',
 }
+_EXTENSION_INFORMATION_TTLV_ROUTE = 'kmipkit.extensions.extension_information_to_ttlv'
 _BATCH_ITEM_RESULT_VALUE_ROUTES.update(
     'kmipkit.client.BatchItemResult.' + member
     for member in ('private_key_unique_identifier', 'split_key_unique_identifiers')
@@ -1879,6 +1880,39 @@ def _batch_result_live_cell(cell: dict, target: dict,
             'transport_invocation_count': 1, 'peer_observed_response_count': 1}
 
 
+def _extension_information_ttlv_cell(cell: dict, target: dict,
+                                     trace: CallTrace | None) -> dict:
+    """Encode local Extension Information metadata and verify its ordered KMIP fields."""
+    from kmipkit import extensions, ttlv
+
+    with ExitStack() as owned:
+        information = extensions.create_extension_information('KMIPKit interop fixture')
+        owned.callback(information.close)
+        information = extensions.with_tag(information, 0x540001)
+        owned.callback(information.close)
+        information = extensions.with_type(information, ttlv.ItemType.TextString)
+        owned.callback(information.close)
+        structure = extensions.extension_information_to_ttlv(information)
+        owned.callback(structure.close)
+        with ttlv.ttlv_structure_view(structure) as view:
+            observed_tags = []
+            observed_types = []
+            for index in range(ttlv.ttlv_structure_view_item_count(view)):
+                with ttlv.ttlv_structure_view_item_at(view, index) as item:
+                    with ttlv.ttlv_item_view_tag(item) as tag:
+                        observed_tags.append(ttlv.tag_value(tag))
+                    observed_types.append(int(ttlv.ttlv_item_view_type(item)))
+        expected_tags = [0x4200A5, 0x4200A6, 0x4200A7]
+        if observed_tags != expected_tags or observed_types != [7, 2, 5]:
+            raise ValueError('Extension Information TTLV changed its required ordered fields')
+        if trace is not None:
+            trace.record_invocation(cell['public_api_symbol'])
+        response_digest = digest({'tags': observed_tags, 'types': observed_types,
+                                  'target': target.get('target_id')})
+    return {'request_tree_sha256': response_digest,
+            'response_tree_sha256': response_digest}
+
+
 def _query_response_field_cell(cell: dict, target: dict,
                                trace: CallTrace | None) -> dict:
     """Read QueryResponse field count and indexed values in their original order."""
@@ -1977,6 +2011,8 @@ def execute_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | Non
             return _async_outcome_response_cell(cell, case, target, trace)
         if cell['public_api_symbol'] in _BATCH_RESULT_LIVE_ROUTES:
             return _batch_result_live_cell(cell, target, trace)
+        if cell['public_api_symbol'] == _EXTENSION_INFORMATION_TTLV_ROUTE:
+            return _extension_information_ttlv_cell(cell, target, trace)
         if cell['public_api_symbol'] in _BATCH_ITEM_RESULT_VALUE_ROUTES:
             return _batch_item_result_value_cell(cell, case, target, trace)
         return _generic_cell(cell, case, target)
