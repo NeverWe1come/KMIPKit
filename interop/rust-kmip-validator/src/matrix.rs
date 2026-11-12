@@ -725,7 +725,7 @@ fn key_block_for_target(target: &Json, secret_data: bool) -> Result<kmipkit::pro
     let mut block = KeyBlock::try_new(KeyFormatType::from_raw(format))
         .map_err(|_| "Key Format Type fixture rejected")?
         .with_key_value(KeyBlockValue::Plaintext(value));
-    if target_id.contains("KEY-COMPRESSION-TYPE") {
+    if target_id.contains("KEY-COMPRESSION-TYPE") || target_id == "KMIPKIT-ELEM-TAG-420041" {
         block = block.with_key_compression_type(KeyCompressionType::from_raw(1));
     }
     let include_cryptographic_properties =
@@ -734,6 +734,7 @@ fn key_block_for_target(target: &Json, secret_data: bool) -> Result<kmipkit::pro
         block = block.with_cryptographic_properties(Some(3), Some(256));
     }
     if target_id.contains("KEY-WRAPPING-DATA")
+        || target_id == "KMIPKIT-ELEM-TAG-420046"
         || target_id.contains("ENCRYPTION-KEY-INFORMATION")
         || target_id.contains("MAC-SIGNATURE-KEY-INFORMATION")
     {
@@ -1163,7 +1164,13 @@ fn sample_for_route(symbol: &str, target: &Json, elements: &[Json]) -> Result<It
         let model = construct_key_block_fixture(target, elements)?;
         return metadata_expected_target(&model, target, elements);
     }
-    if symbol == "kmipkit_protocol::KeyBlock::with_key_value" {
+    if [
+        "kmipkit_protocol::KeyBlock::with_key_value",
+        "kmipkit_protocol::KeyBlock::with_key_compression_type",
+        "kmipkit_protocol::KeyBlock::with_key_wrapping_data",
+    ]
+    .contains(&symbol)
+    {
         let model = construct_key_block_fixture(target, elements)?;
         return metadata_expected_target(&model, target, elements);
     }
@@ -1388,7 +1395,13 @@ fn invoke(
             }),
         );
     }
-    if symbol == "kmipkit_protocol::KeyBlock::with_key_value" {
+    if [
+        "kmipkit_protocol::KeyBlock::with_key_value",
+        "kmipkit_protocol::KeyBlock::with_key_compression_type",
+        "kmipkit_protocol::KeyBlock::with_key_wrapping_data",
+    ]
+    .contains(&symbol)
+    {
         return Some(
             construct_key_block_fixture(target, elements).and_then(|model| {
                 crate::local_wire::roundtrip(&model)?;
