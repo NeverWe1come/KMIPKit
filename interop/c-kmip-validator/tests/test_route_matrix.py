@@ -793,6 +793,26 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all('kmipkit_client_execute' in check['public_api_trace_symbols']
                             for check in checks))
 
+    def test_id_placeholder_requires_every_followup_item_to_omit_unique_identifier(self):
+        from route_peer import assert_placeholder_usage, parse, tlv
+
+        def enumeration(tag, value):
+            return tlv(tag, 5, value.to_bytes(4, 'big'))
+
+        def batch_item(operation, unique_identifier=None):
+            payload = b'' if unique_identifier is None else tlv(0x420094, 7, unique_identifier.encode())
+            return tlv(0x42000F, 1, enumeration(0x42005C, operation)
+                       + tlv(0x420079, 1, payload))
+
+        items = [batch_item(1)] + [batch_item(operation) for operation in (18, 12, 19, 20)]
+        request = parse(tlv(0x420078, 1, b''.join(items)))
+        assert_placeholder_usage(request, 'test-batch-create-activate-destroy')
+
+        request_with_explicit_target = parse(tlv(
+            0x420078, 1, b''.join([items[0], items[1], batch_item(12, 'fixture-key'), *items[3:]])))
+        with self.assertRaisesRegex(ValueError, 'fixture_id_placeholder_explicit_target'):
+            assert_placeholder_usage(request_with_explicit_target, 'test-batch-create-activate-destroy')
+
 
     def test_two_item_batch_continuation_and_id_correlation(self):
         from artifact_support import ROOT
