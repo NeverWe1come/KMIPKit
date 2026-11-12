@@ -311,6 +311,43 @@ class RouteCapabilitiesTests(unittest.TestCase):
             self.assertEqual(6, len(route['combinations']), key)
             self.assertEqual('construct', route['actions'][0], key)
 
+    def test_batch_response_readers_only_claim_response_batch_fields(self):
+        # OASIS KMIP 2.0/2.1 §§8.5-8.6 and §§9.5, 9.7 define response Batch Count and Batch Item.
+        expected = {
+            'count': {
+                'KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT',
+                'KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT',
+            },
+            'at': {
+                'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM',
+                'KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM',
+            },
+        }
+        symbols = {
+            'rust': {
+                'count': 'kmipkit_client::ClientBatchResponse::len',
+                'at': 'kmipkit_client::ClientBatchResponse::get',
+            },
+            'c': {
+                'count': 'kmipkit_client_batch_response_item_count',
+                'at': 'kmipkit_client_batch_response_item_at',
+            },
+            'java': {
+                'count': 'org.kmipkit.extensions.ClientBatchResponse.itemCount',
+                'at': 'org.kmipkit.extensions.ClientBatchResponse.itemAt',
+            },
+            'python': {
+                'count': 'kmipkit.client.BatchResult.item_count',
+                'at': 'kmipkit.client.BatchResult.item_at',
+            },
+        }
+        routes = {(route['language'], route['public_api_symbol']): route for route in self.data['routes']}
+        for language, readers in symbols.items():
+            for reader, target_ids in expected.items():
+                route = routes[(language, readers[reader])]
+                self.assertEqual(sorted(target_ids), sorted(route['normative_target_ids']), readers[reader])
+                self.assertEqual(['decode'], route['actions'], readers[reader])
+
     def test_checked_tag_constructor_exclusions_are_source_backed_and_narrow(self):
         expected = {
             'rust': {'rust.generic-ttlv.item.new', 'rust.generic-ttlv.model.kmipkit.ttlv.structure.try.push'},
