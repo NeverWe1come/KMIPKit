@@ -856,7 +856,7 @@ class RouteMatrixTests(unittest.TestCase):
 
         recipe = recipe_for_case({'case_id': 'test-batch-placeholder-chain-resolves'}, None)
 
-        self.assertEqual(recipe, ((1, 18, 10, 19, 20), 'create_activate_get_placeholder_chain'))
+        self.assertEqual(recipe, ((1, 18, 10), 'batch_placeholder_chain'))
 
     def test_placeholder_chain_executes_typed_create_activate_get_batch(self):
         from artifact_support import ROOT
@@ -888,7 +888,7 @@ class RouteMatrixTests(unittest.TestCase):
                            if event['target_id'] == 'KMIPKIT-ELEM-OP-C2S-CREATE'
                            and event['action'] == 'send')
         self.assertEqual(create_send['peer_observed_operation_sequence'],
-                         ['Create', 'Activate', 'Get', 'Revoke', 'Destroy'])
+                         ['Create', 'Activate', 'Get'])
         for symbol in ('kmipkit_client_batch_item_create', 'kmipkit_client_batch_item_activate',
                        'kmipkit_client_batch_item_get'):
             self.assertTrue(any(event['public_api_symbol'] == symbol and event['action'] == 'send'
@@ -942,7 +942,7 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertIn(case_id, RECIPES, 'placeholder-chain peer recipe is missing')
         operations, workflow = RECIPES[case_id]
         self.assertEqual((1, 18, 10), operations[:3])
-        self.assertEqual('create_activate_get_placeholder_chain', workflow)
+        self.assertEqual('batch_placeholder_chain', workflow)
 
 
     def test_batch_placeholder_chain_resolves_the_same_object_and_cleans_up(self):
@@ -958,10 +958,9 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(len(checks), 12, 'placeholder chain must pass both versions over all wire transports')
         self.assertTrue(all(check['status'] == 'passed' for check in checks))
         self.assertTrue(all(event['peer_observed_operation_sequence'] ==
-                            ['Create', 'Activate', 'Get', 'Revoke', 'Destroy']
+                            ['Create', 'Activate', 'Get']
                             for event in events if event['action'] == 'send'))
-        self.assertTrue(all('destroyed' in event['peer_observed_effects']
-                            for event in events if event['action'] == 'send'))
+        self.assertTrue(all(check['peer_cleanup_operations'] == [19, 20] for check in checks))
         for symbol in ('kmipkit_client_batch_item_create', 'kmipkit_client_batch_item_activate',
                        'kmipkit_client_batch_item_get'):
             self.assertTrue(any(event['public_api_symbol'] == symbol and event['action'] == 'send'
@@ -971,6 +970,29 @@ class RouteMatrixTests(unittest.TestCase):
         for symbol in ('kmipkit_client_batch_item_revoke', 'kmipkit_client_batch_item_destroy'):
             self.assertTrue(all(symbol in check['public_api_trace_symbols'] for check in checks), symbol)
 
+
+    def test_placeholder_batch_evidence_matches_the_catalog_before_cleanup(self):
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+        from validate_route_evidence import _key, _validate_batch_event
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case = next(case for case in catalog['test_cases']
+                    if case['case_id'] == 'test-batch-placeholder-chain-resolves')
+        selected = {**catalog, 'test_cases': [case]}
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest,
+            protocol_versions=('2.1',), network_combinations=(('TTLV', 'raw_tls'),))
+        self.assertEqual(len(checks), 1)
+        self.assertEqual(checks[0]['status'], 'passed')
+        send_events = [event for event in events if event['action'] == 'send']
+        self.assertTrue(send_events)
+        for event in send_events:
+            try:
+                _validate_batch_event(event, case, catalog, _key(event))
+            except ValueError as error:
+                self.fail(str(error))
 
     def test_single_item_batch_omits_optional_batch_options(self):
         from artifact_support import ROOT
