@@ -55,6 +55,24 @@ class RouteCapabilitiesTests(unittest.TestCase):
         self.assertTrue(routes)
         self.assertTrue(any('KMIPKIT-ELEM-ATTRIBUTE-ACTIVATION-DATE' in r['normative_target_ids'] for r in routes))
 
+    def test_secret_data_key_property_exclusion_has_oasis_source_evidence(self):
+        route = next(route for route in self.data['routes']
+                     if route['language'] == 'python'
+                     and route['public_api_symbol'] ==
+                     'kmipkit.managed_objects.ManagedObject.secret_data')
+        exclusion = next(exclusion for exclusion in route['case_exclusions']
+                         if 'Cryptographic Algorithm and Cryptographic Length' in exclusion['reason'])
+        self.assertEqual({
+            'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-ALGORITHM',
+            'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-LENGTH',
+        }, set(exclusion['target_ids']))
+        self.assertIn('§2.7 Table 8', exclusion['reason'])
+        self.assertIn('§3.1', exclusion['reason'])
+        self.assertIn('specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html',
+                      exclusion['source_paths'])
+        self.assertIn('specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html',
+                      exclusion['source_paths'])
+
     def test_typed_attribute_marker_does_not_inherit_a_sibling_attribute_name(self):
         routes = [route for route in self.data['routes']
                   if route['language'] == 'rust' and 'typed::Comment>' in route['public_api_symbol']]
@@ -124,10 +142,86 @@ class RouteCapabilitiesTests(unittest.TestCase):
                      if route['language'] == 'rust'
                      and route['public_api_symbol'] == 'kmipkit_protocol::SecretData::try_from_item')
         self.assertIn('KMIPKIT-ELEM-OBJECT-STRUCTURE-SECRET-DATA', route['normative_target_ids'])
+        root_objects = {
+            'KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE',
+            'KMIPKIT-ELEM-OBJECT-STRUCTURE-CERTIFICATE-REQUEST',
+            'KMIPKIT-ELEM-OBJECT-STRUCTURE-OPAQUE-OBJECT',
+            'KMIPKIT-ELEM-OBJECT-STRUCTURE-PGP-KEY',
+            'KMIPKIT-ELEM-OBJECT-STRUCTURE-PRIVATE-KEY',
+            'KMIPKIT-ELEM-OBJECT-STRUCTURE-PUBLIC-KEY',
+            'KMIPKIT-ELEM-OBJECT-STRUCTURE-SPLIT-KEY',
+            'KMIPKIT-ELEM-OBJECT-STRUCTURE-SYMMETRIC-KEY',
+        }
+        self.assertFalse(root_objects.intersection(route['normative_target_ids']))
         self.assertNotIn('KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-ALGORITHM',
                          route['normative_target_ids'])
         self.assertNotIn('KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-LENGTH',
                          route['normative_target_ids'])
+
+    def test_secret_data_constructor_does_not_claim_inapplicable_key_block_crypto_fields(self):
+        # OASIS KMIP 2.0/2.1 §3.1 Table 11 excludes these fields; SecretData::try_new rejects them.
+        route = next(route for route in self.data['routes']
+                     if route['language'] == 'rust'
+                     and route['public_api_symbol'] == 'kmipkit_protocol::SecretData::try_new')
+        self.assertIn('KMIPKIT-ELEM-OBJECT-STRUCTURE-SECRET-DATA', route['normative_target_ids'])
+        self.assertNotIn('KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-ALGORITHM',
+                         route['normative_target_ids'])
+        self.assertNotIn('KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-LENGTH',
+                         route['normative_target_ids'])
+
+    def test_key_wrapping_setters_only_claim_their_scoped_kmip_members(self):
+        routes = {route['public_api_symbol']: set(route['normative_target_ids'])
+                  for route in self.data['routes'] if route['language'] == 'rust'}
+        expected_members = {
+            'kmipkit_protocol::EncryptionKeyInformation::with_cryptographic_parameters':
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-ENCRYPTION-KEY-INFORMATION-CRYPTOGRAPHIC-PARAMETERS',
+            'kmipkit_protocol::EncryptionKeyInformation::with_typed_cryptographic_parameters':
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-ENCRYPTION-KEY-INFORMATION-CRYPTOGRAPHIC-PARAMETERS',
+            'kmipkit_protocol::MacSignatureKeyInformation::with_cryptographic_parameters':
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-MAC-SIGNATURE-KEY-INFORMATION-CRYPTOGRAPHIC-PARAMETERS',
+            'kmipkit_protocol::MacSignatureKeyInformation::with_typed_cryptographic_parameters':
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-MAC-SIGNATURE-KEY-INFORMATION-CRYPTOGRAPHIC-PARAMETERS',
+            'kmipkit_protocol::KeyWrappingData::with_encoding_option':
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-KEY-WRAPPING-DATA-ENCODING-OPTION',
+            'kmipkit_protocol::KeyWrappingData::with_encryption_key_information':
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-KEY-WRAPPING-DATA-ENCRYPTION-KEY-INFORMATION',
+            'kmipkit_protocol::KeyWrappingData::with_iv_counter_nonce':
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-KEY-WRAPPING-DATA-IV-COUNTER-NONCE',
+            'kmipkit_protocol::KeyWrappingData::with_mac_signature':
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-KEY-WRAPPING-DATA-MAC-SIGNATURE',
+            'kmipkit_protocol::KeyWrappingData::with_mac_signature_key_information':
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-KEY-WRAPPING-DATA-MAC-SIGNATURE-KEY-INFORMATION',
+        }
+        typed_parameter_routes = {
+            'kmipkit_protocol::EncryptionKeyInformation::with_typed_cryptographic_parameters',
+            'kmipkit_protocol::MacSignatureKeyInformation::with_typed_cryptographic_parameters',
+        }
+        self.assertTrue((set(expected_members) - typed_parameter_routes) <= set(routes))
+        for symbol, member_id in expected_members.items():
+            if symbol not in routes:
+                continue
+            targets = routes[symbol]
+            self.assertIn(member_id, targets, symbol)
+            self.assertFalse(any(target_id.startswith('KMIPKIT-ELEM-STRUCTURE-MEMBER-7-18-')
+                                 for target_id in targets), symbol)
+            self.assertNotIn('KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-PARAMETERS', targets, symbol)
+        for symbol in (
+            'kmipkit_protocol::EncryptionKeyInformation::with_cryptographic_parameters',
+            'kmipkit_protocol::EncryptionKeyInformation::with_typed_cryptographic_parameters',
+        ):
+            self.assertNotIn(
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-MAC-SIGNATURE-KEY-INFORMATION-CRYPTOGRAPHIC-PARAMETERS',
+                routes[symbol], symbol)
+        for symbol in (
+            'kmipkit_protocol::MacSignatureKeyInformation::with_cryptographic_parameters',
+            'kmipkit_protocol::MacSignatureKeyInformation::with_typed_cryptographic_parameters',
+        ):
+            if symbol not in routes:
+                continue
+            self.assertNotIn(
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-ENCRYPTION-KEY-INFORMATION-CRYPTOGRAPHIC-PARAMETERS',
+                routes[symbol], symbol)
+        self.assertTrue(typed_parameter_routes <= set(routes))
 
     def test_object_type_raw_value_route_only_claims_its_own_enum_family(self):
         catalog = json.loads((SHARED / 'catalog/kmipkit-1.0-test-catalog.json').read_text())
@@ -436,12 +530,67 @@ class RouteCapabilitiesTests(unittest.TestCase):
                       if route['language'] == language}
             for route_id in route_ids:
                 route = routes[route_id]
-                self.assertEqual([{
+                exclusion = next(exclusion for exclusion in route['case_exclusions']
+                                 if 'target_kinds' in exclusion)
+                self.assertEqual({
                     'target_kinds': ['tag', 'tag_range'],
                     'allocations': ['reserved', 'unused'],
                     'reason': 'This constructor takes an allocation-checked Tag; RawTag::try_checked rejects reserved and unused allocations before an Item can be constructed.',
                     'source_paths': [route['source_paths'][0], 'crates/kmipkit-ttlv/src/tag.rs'],
-                }], route['case_exclusions'])
+                }, exclusion)
+
+    def test_attribute_reference_constructor_routes_respect_oasis_union_arms(self):
+        routes = {route['public_api_symbol']: route for route in self.data['routes']}
+        expected = {
+            'kmipkit_protocol::AttributeReference::name': {
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-5-5-ATTRIBUTE-REFERENCE',
+                'KMIPKIT-ELEM-TAG-42013B',
+            },
+            'kmipkit_protocol::AttributeReference::tag': {
+                'KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-5-ATTRIBUTE-REFERENCE',
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-5-5-ATTRIBUTE-NAME',
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-5-5-VENDOR-IDENTIFICATION',
+                'KMIPKIT-ELEM-TAG-42013B',
+            },
+        }
+
+        for symbol, target_ids in expected.items():
+            route = routes[symbol]
+            exclusions = [exclusion for exclusion in route.get('case_exclusions', [])
+                          if target_ids.intersection(exclusion.get('target_ids', []))]
+            self.assertEqual(target_ids, {target_id for exclusion in exclusions
+                                          for target_id in exclusion.get('target_ids', [])})
+            for exclusion in exclusions:
+                self.assertIn('OASIS KMIP 2.0 §5.5 Table 146', exclusion['reason'])
+                self.assertIn('OASIS KMIP 2.1 §5.5 Table 161', exclusion['reason'])
+                self.assertIn('specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html',
+                              exclusion['source_paths'])
+                self.assertIn('specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html',
+                              exclusion['source_paths'])
+
+    def test_request_timestamp_builder_excludes_response_and_extended_timestamp_shapes(self):
+        routes = {(route['language'], route['public_api_symbol']): route
+                  for route in self.data['routes']}
+        excluded_targets = {
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-5-TIME-STAMP',
+            'KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-TIMESTAMP',
+        }
+        for language, symbol in (
+            ('c', 'kmipkit_client_batch_set_request_time_stamp'),
+            ('rust', 'kmipkit_client::ClientBatch::with_request_time_stamp'),
+        ):
+            route = routes[(language, symbol)]
+            exclusions = [exclusion for exclusion in route.get('case_exclusions', [])
+                          if excluded_targets.intersection(exclusion.get('target_ids', []))]
+            self.assertEqual(1, len(exclusions))
+            exclusion = exclusions[0]
+            self.assertEqual(excluded_targets, set(exclusion['target_ids']))
+            self.assertIn('OASIS KMIP 2.0/2.1 §§8.2, 8.5, 9.11, and 9.20', exclusion['reason'])
+            self.assertNotIn('KMIPKIT-ELEM-TAG-420092', exclusion['target_ids'])
+            self.assertIn('specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html',
+                          exclusion['source_paths'])
+            self.assertIn('specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html',
+                          exclusion['source_paths'])
 
     def test_reserved_tag_item_view_exclusions_require_decoder_rejection_sources(self):
         expected = {
@@ -454,13 +603,48 @@ class RouteCapabilitiesTests(unittest.TestCase):
         }
         for language, (route_id, route_source) in expected.items():
             route = next(route for route in self.data['routes'] if route['route_id'] == route_id)
-            self.assertEqual([{
+            exclusion = next(exclusion for exclusion in route['case_exclusions']
+                             if 'target_kinds' in exclusion)
+            self.assertEqual({
                 'target_kinds': ['tag', 'tag_range'],
                 'allocations': ['reserved', 'unused'],
                 'reason': 'The TTLV decoder rejects reserved and unused allocations before it can return an Item; this accessor therefore has no valid Item input for the case.',
                 'source_paths': [route_source, 'crates/kmipkit-ttlv/src/codec/decoder.rs',
                                  'crates/kmipkit-ttlv/src/tag.rs'],
-            }], route['case_exclusions'])
+            }, exclusion)
+
+    def test_certificate_contents_are_excluded_from_generic_item_routes_with_oasis_sources(self):
+        expected_symbols = {
+            'rust': ['kmipkit_ttlv::Item::new', 'kmipkit_ttlv::Item::with_value',
+                     'kmipkit_ttlv::codec::decode'],
+            'c': ['kmipkit_ttlv_item_create', 'kmipkit_ttlv_decode'],
+            'java': ['org.kmipkit.ttlv.TtlvItem.create', 'org.kmipkit.ttlv.TtlvCodec.decode'],
+            'python': ['kmipkit.ttlv.ttlv_item_create', 'kmipkit.ttlv.ttlv_decode'],
+        }
+        target_id = 'KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES'
+        routes = {(route['language'], route['public_api_symbol']): route
+                  for route in self.data['routes']}
+        for language, symbols in expected_symbols.items():
+            for symbol in symbols:
+                route = routes[(language, symbol)]
+                exclusions = [exclusion for exclusion in route.get('case_exclusions', [])
+                              if target_id in exclusion.get('target_ids', [])]
+                self.assertEqual(1, len(exclusions), (language, symbol))
+                exclusion = exclusions[0]
+                self.assertIn('OASIS KMIP 2.0/2.1 §4.6 Table 39', exclusion['reason'])
+                self.assertIn('§2.2', exclusion['reason'])
+                self.assertIn('specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html',
+                              exclusion['source_paths'])
+                self.assertIn('specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html',
+                              exclusion['source_paths'])
+
+    def test_pinned_oasis_source_reader_accepts_windows_1252_html(self):
+        source = self.module.source(
+            ROOT,
+            '9a16cc90a12205101d22a38501a5e74c665df4dc',
+            'specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html',
+        )
+        self.assertIn('4.6 Certificate Attributes', source)
 
     def test_async_request_routes_use_the_exact_public_operation_executor(self):
         expected = {
@@ -553,6 +737,13 @@ class RouteCapabilitiesTests(unittest.TestCase):
         ids = route['normative_target_ids']
         self.assertTrue(any(target.startswith('KMIPKIT-ELEM-STRUCTURE-MEMBER-3-7-KEY-MATERIAL-') for target in ids))
         self.assertFalse(any(target.startswith('KMIPKIT-ELEM-STRUCTURE-MEMBER-3-8-KEY-MATERIAL-') for target in ids))
+
+    def test_key_material_byte_string_route_only_claims_the_generic_material_tag(self):
+        # OASIS KMIP 2.0/2.1 §11.25 assigns formats 1-6 and 22-23 ByteString
+        # material; formats 7-13 and 20-21 require a Structure (§§3.4-3.12).
+        route = next(route for route in self.data['routes']
+                     if route['public_api_symbol'] == 'kmipkit_protocol::KeyMaterial::byte_string')
+        self.assertEqual({'KMIPKIT-ELEM-TAG-420043'}, set(route['normative_target_ids']))
 
     def test_referenced_pkcs11_values_remain_covered_when_named_constants_are_absent(self):
         catalog = json.loads((SHARED / 'catalog/kmipkit-1.0-test-catalog.json').read_text())

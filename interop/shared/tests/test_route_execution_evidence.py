@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -12,6 +13,7 @@ SHARED = Path(__file__).resolve().parents[1]
 ROOT = SHARED.parents[1]
 sys.path.insert(0, str(SHARED / "tools"))
 from validate_route_evidence import (
+    _expected_tag_decode_rejection_code,
     _validate_batch_event,
     validate_collection,
     validate_parity_collection,
@@ -153,6 +155,73 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         schema = json.loads((SHARED / "schemas/route-execution-evidence.schema.json").read_text())
         jsonschema.validate(self.report, schema)
 
+    def test_single_item_batch_conforms_to_route_execution_evidence_schema(self):
+        try:
+            import jsonschema
+        except ImportError:
+            self.skipTest("jsonschema dependency is not installed")
+        report = copy.deepcopy(self.report)
+        send_event = next(event for event in report["events"] if event["action"] == "send")
+        send_event.update({
+            "batch_operation_sequence": ["Get"],
+            "peer_observed_operation_sequence": ["Get"],
+            "batch_item_count": 1,
+            "peer_observed_response_count": 1,
+        })
+        schema = json.loads((SHARED / "schemas/route-execution-evidence.schema.json").read_text())
+        jsonschema.validate(report, schema)
+
+    def test_batch_effects_schema_requires_both_sha256_peer_state_hashes(self):
+        try:
+            import jsonschema
+        except ImportError:
+            self.skipTest("jsonschema dependency is not installed")
+        report = copy.deepcopy(self.report)
+        send_event = next(event for event in report["events"] if event["action"] == "send")
+        peer_state = json.dumps({"objects": ["controlled-fixture-key"]},
+                                sort_keys=True, separators=(",", ":")).encode()
+        peer_state_sha256 = hashlib.sha256(peer_state).hexdigest()
+        send_event.update({
+            "batch_operation_sequence": ["Get", "Get"],
+            "peer_observed_operation_sequence": ["Get", "Get"],
+            "batch_item_count": 2,
+            "peer_observed_response_count": 2,
+            "peer_observed_effects": ["first_item_failed", "second_item_executed"],
+            "peer_observed_state_before_sha256": peer_state_sha256,
+            "peer_observed_state_after_sha256": peer_state_sha256,
+        })
+        schema = json.loads((SHARED / "schemas/route-execution-evidence.schema.json").read_text())
+        jsonschema.validate(report, schema)
+
+        send_event.pop("peer_observed_state_before_sha256")
+        with self.assertRaises(jsonschema.ValidationError):
+            jsonschema.validate(report, schema)
+
+        send_event["peer_observed_state_before_sha256"] = peer_state_sha256
+        send_event["peer_observed_state_after_sha256"] = "not-a-sha256"
+        with self.assertRaises(jsonschema.ValidationError):
+            jsonschema.validate(report, schema)
+
+    def test_expected_local_batch_rejection_conforms_without_peer_observation(self):
+        try:
+            import jsonschema
+        except ImportError:
+            self.skipTest("jsonschema dependency is not installed")
+        report = copy.deepcopy(self.report)
+        send_event = next(event for event in report["events"] if event["action"] == "send")
+        send_event.update({
+            "batch_operation_sequence": ["Activate", "Create"],
+            "batch_item_count": 2,
+            "request_delivery_state": "not_sent",
+            "transport_invocation_count": 0,
+            "local_rejection_code": "batch_placeholder_forward_reference",
+            "client_error_category": "validation",
+            "client_error_cause": "invalid_input",
+        })
+        send_event.pop("request_tree_sha256")
+        schema = json.loads((SHARED / "schemas/route-execution-evidence.schema.json").read_text())
+        jsonschema.validate(report, schema)
+
     def test_missing_action_fails_coverage_even_when_the_route_was_called(self):
         report = copy.deepcopy(self.report)
         report["events"].pop()
@@ -267,6 +336,27 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         self.catalog['test_cases'][0]['requires']['allocation'] = 'assigned'
         with self.assertRaisesRegex(ValueError, 'rejection is not expected'):
             self.validate(report)
+
+    def test_decode_rejection_classification_uses_the_expanded_normative_target(self):
+        case = {'requires': {'enum_type': 'Tag'}}
+        cell = {
+            'action': 'decode',
+            'mode': 'local',
+            'route_id': 'rust.generic-ttlv.codec.decode',
+            'public_api_symbol': 'kmipkit_ttlv::codec::decode',
+        }
+        self.assertEqual(
+            _expected_tag_decode_rejection_code(
+                cell, case, {'kind': 'tag', 'allocation': 'reserved'}
+            ),
+            'tag_reserved',
+        )
+        self.assertEqual(
+            _expected_tag_decode_rejection_code(
+                cell, case, {'kind': 'tag_range', 'allocation': 'unused'}
+            ),
+            'tag_not_allocated',
+        )
 
     def test_network_events_must_name_the_real_separate_execution_entrypoint(self):
         report = copy.deepcopy(self.report)
@@ -403,6 +493,7 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
     def test_controlled_peer_evidence_preserves_repeated_batch_item_order(self):
         case = {
             "case_id": "batch-get-stop",
+            "category": "batch_workflows",
             "requires": {"protocol_scenario": {
                 "parameters": {"items": ["Get(missing)", "Get(existing)"]},
                 "expected": {"first": "OperationFailed", "second": "OperationUndone", "response_count": 2},
@@ -429,6 +520,84 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         event["peer_observed_result_status_codes"] = [0, 3]
         with self.assertRaisesRegex(ValueError, "per-item status outcomes"):
             _validate_batch_event(event, case, catalog, ("batch-get-stop",))
+
+    def test_controlled_peer_effects_require_valid_before_and_after_state_hashes(self):
+        case = {
+            "case_id": "batch-get-continue",
+            "category": "batch_workflows",
+            "requires": {"protocol_scenario": {
+                "parameters": {"items": ["Get(missing)", "Get(existing)"]},
+                "expected": {"response_count": 2,
+                             "effects": ["first_item_failed", "second_item_executed"]},
+            }},
+        }
+        event = {
+            "status": "passed",
+            "batch_operation_sequence": ["Get", "Get"],
+            "peer_observed_operation_sequence": ["Get", "Get"],
+            "batch_item_count": 2,
+            "peer_observed_response_count": 2,
+            "peer_observed_effects": ["first_item_failed", "second_item_executed"],
+        }
+        with self.assertRaisesRegex(ValueError, "controlled peer state hashes"):
+            _validate_batch_event(event, case, {}, ("batch-get-continue", "send"))
+
+        peer_state = json.dumps({"objects": ["controlled-fixture-key"]},
+                                sort_keys=True, separators=(",", ":")).encode()
+        peer_state_sha256 = hashlib.sha256(peer_state).hexdigest()
+        event["peer_observed_state_before_sha256"] = peer_state_sha256
+        event["peer_observed_state_after_sha256"] = peer_state_sha256
+        _validate_batch_event(event, case, {}, ("batch-get-continue", "send"))
+
+        event["peer_observed_state_after_sha256"] = "invalid"
+        with self.assertRaisesRegex(ValueError, "controlled peer state hashes"):
+            _validate_batch_event(event, case, {}, ("batch-get-continue", "send"))
+
+    def test_expected_forward_placeholder_rejection_can_prove_no_send_without_peer(self):
+        case = {
+            "case_id": "test-batch-placeholder-forward-reference-rejected",
+            "category": "batch_workflows",
+            "requires": {"protocol_scenario": {
+                "parameters": {"items": [
+                    "Activate(IDPlaceholder from item 2)",
+                    "Create(unique-key)",
+                ]},
+                "expected": {"construction": "rejected_or_server_reports_protocol_error"},
+            }},
+        }
+        event = {
+            "status": "passed",
+            "batch_operation_sequence": ["Activate", "Create"],
+            "batch_item_count": 2,
+            "request_delivery_state": "not_sent",
+            "transport_invocation_count": 0,
+            "local_rejection_code": "batch_placeholder_forward_reference",
+            "client_error_category": "validation",
+            "client_error_cause": "invalid_input",
+        }
+
+        _validate_batch_event(event, case, {}, ("forward-placeholder", "send"))
+
+        event["transport_invocation_count"] = 1
+        with self.assertRaisesRegex(ValueError, "invoked the transport"):
+            _validate_batch_event(event, case, {}, ("forward-placeholder", "send"))
+
+    def test_async_lifecycle_steps_are_not_validated_as_a_single_batch(self):
+        case = {
+            "case_id": "test-async-lifecycle-poll",
+            "category": "asynchronous_workflows",
+            "requires": {"protocol_scenario": {
+                "parameters": {"operations_in_request_order": [
+                    "Create", "Query Asynchronous Requests", "Poll",
+                ]},
+                "expected": {"operation_order": [
+                    "Create", "Query Asynchronous Requests", "Poll",
+                ]},
+            }},
+        }
+        event = {"batch_operation_sequence": ["Poll"], "batch_item_count": 1}
+
+        _validate_batch_event(event, case, {}, ("async-poll",))
 
     def _four_language_fixture(self):
         reports = []

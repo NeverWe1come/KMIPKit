@@ -33,14 +33,20 @@ def _event_outcome(record: dict) -> dict:
     return {field: value for field, value in record.items() if field != "invocation_id"}
 
 
-def _expected_tag_decode_rejection_code(cell: dict, case: dict) -> str | None:
+def _expected_tag_decode_rejection_code(
+    cell: dict,
+    case: dict,
+    target: dict | None = None,
+) -> str | None:
     requires = case.get("requires", {})
     if (cell.get("action") != "decode" or cell.get("mode") != "local"
             or ".generic-ttlv." not in f".{cell.get('route_id', '')}."):
         return None
-    if requires.get("target_kind") not in {"tag", "tag_range"}:
+    target_kind = target.get("kind") if target is not None else requires.get("target_kind")
+    allocation = target.get("allocation") if target is not None else requires.get("allocation")
+    if target_kind not in {"tag", "tag_range"}:
         return None
-    code = {"reserved": "tag_reserved", "unused": "tag_not_allocated"}.get(requires.get("allocation"))
+    code = {"reserved": "tag_reserved", "unused": "tag_not_allocated"}.get(allocation)
     if code is None:
         return None
     symbol = re.sub(r"[^a-z0-9]", "", cell.get("public_api_symbol", "").casefold())
@@ -58,6 +64,8 @@ def _request_identity(record: dict) -> tuple:
 
 
 def _expected_batch_operations(case: dict) -> list[str] | None:
+    if case.get("category") != "batch_workflows":
+        return None
     scenario = case.get("requires", {}).get("protocol_scenario", {})
     if not isinstance(scenario, dict):
         return None
@@ -80,6 +88,22 @@ def _expected_batch_operations(case: dict) -> list[str] | None:
     if not ordered and len(scenario.get("operations", [])) > 1:
         ordered = scenario["operations"]
     return list(ordered) if len(ordered) > 1 else None
+
+
+def _validate_local_batch_rejection(event: dict, case: dict, key: tuple) -> None:
+    scenario = case.get("requires", {}).get("protocol_scenario", {})
+    expected = scenario.get("expected", {}) if isinstance(scenario, dict) else {}
+    if (case.get("category") != "batch_workflows"
+            or expected.get("construction") != "rejected_or_server_reports_protocol_error"):
+        raise ValueError(f"catalog does not allow a local batch construction rejection: {key}")
+    if event.get("transport_invocation_count") != 0:
+        raise ValueError(f"locally rejected batch invoked the transport: {key}")
+    if event.get("local_rejection_code") != "batch_placeholder_forward_reference":
+        raise ValueError(f"locally rejected batch lacks its safe rejection code: {key}")
+    if event.get("client_error_category") != "validation":
+        raise ValueError(f"locally rejected batch has the wrong client error category: {key}")
+    if event.get("client_error_cause") != "invalid_input":
+        raise ValueError(f"locally rejected batch has the wrong client error cause: {key}")
 
 
 def _ordinal(index: int) -> str:
@@ -137,6 +161,9 @@ def _validate_batch_event(event: dict, case: dict, catalog: dict, key: tuple) ->
         raise ValueError(f"batch item count does not match the catalog: {key}")
     if event.get("status", "passed") != "passed":
         return
+    if event.get("request_delivery_state") == "not_sent":
+        _validate_local_batch_rejection(event, case, key)
+        return
     if event.get("peer_observed_operation_sequence") != expected_operations:
         raise ValueError(f"controlled peer did not observe the catalog batch order: {key}")
     scenario = case.get("requires", {}).get("protocol_scenario", {})
@@ -152,8 +179,13 @@ def _validate_batch_event(event: dict, case: dict, catalog: dict, key: tuple) ->
         if expected_codes is not None and event.get(evidence_field) != expected_codes:
             raise ValueError(f"controlled peer per-item {field} outcomes do not match the catalog: {key}")
     expected_effects = expected.get("effects")
-    if expected_effects is not None and event.get("peer_observed_effects") != expected_effects:
-        raise ValueError(f"controlled peer per-item effects do not match the catalog: {key}")
+    if expected_effects is not None:
+        if event.get("peer_observed_effects") != expected_effects:
+            raise ValueError(f"controlled peer per-item effects do not match the catalog: {key}")
+        for field in ("peer_observed_state_before_sha256", "peer_observed_state_after_sha256"):
+            if (not isinstance(event.get(field), str)
+                    or not re.fullmatch(r"[0-9a-f]{64}", event[field])):
+                raise ValueError(f"controlled peer state hashes are missing or invalid: {key}")
 
 
 def _expected_cells(report: dict, catalog: dict, manifest: dict) -> dict[tuple, dict]:
@@ -237,6 +269,11 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
         raise ValueError("route evidence events must be an array")
     observed = {}
     case_by_id = {case["case_id"]: case for case in catalog["test_cases"]}
+    target_by_id = {
+        target["target_id"]: target
+        for target in catalog.get("normative_targets", [])
+        if isinstance(target, dict) and isinstance(target.get("target_id"), str)
+    }
     for event in events:
         if not isinstance(event, dict):
             raise ValueError("route evidence event must be an object")
@@ -275,7 +312,11 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
         if status == "passed":
             case = case_by_id[event["case_id"]]
             if event["action"] == "decode":
-                expected_rejection_code = _expected_tag_decode_rejection_code(planned, case)
+                expected_rejection_code = _expected_tag_decode_rejection_code(
+                    planned,
+                    case,
+                    target_by_id.get(planned["target_id"]),
+                )
                 outcome = event.get("decode_outcome")
                 if outcome == "rejected" or expected_rejection_code is not None:
                     if expected_rejection_code is None:
@@ -297,7 +338,14 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
                         raise ValueError(f"passed decode event requires a valid response tree hash: {key}")
             else:
                 tree_hash = event.get("request_tree_sha256")
-                if not isinstance(tree_hash, str) or not re.fullmatch(r"[0-9a-f]{64}", tree_hash):
+                local_batch_rejection = (
+                    event["action"] == "send"
+                    and event.get("request_delivery_state") == "not_sent"
+                    and event.get("batch_item_count") is not None
+                )
+                if local_batch_rejection:
+                    _validate_local_batch_rejection(event, case, key)
+                elif not isinstance(tree_hash, str) or not re.fullmatch(r"[0-9a-f]{64}", tree_hash):
                     raise ValueError(f"passed {event['action']} event requires a valid request tree hash: {key}")
         if "wire_bytes_deterministic" in event and not isinstance(event["wire_bytes_deterministic"], bool):
             raise ValueError(f"wire_bytes_deterministic must be a boolean: {key}")
@@ -314,16 +362,18 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
                 if event.get("transport_invocation_count") != 0:
                     raise ValueError(f"version-boundary request invoked the transport: {key}")
             elif event.get("request_delivery_state") == "not_sent":
-                raise ValueError(f"unexpected not-sent result for a network route cell: {key}")
+                _validate_local_batch_rejection(event, case, key)
             _validate_batch_event(event, case, catalog, key)
         observed[key] = event
 
     constructed = {
         _request_identity(event): event["request_tree_sha256"]
-        for event in observed.values() if event["action"] == "construct" and event.get("status") == "passed"
+        for event in observed.values()
+        if event["action"] == "construct" and event.get("status") == "passed"
     }
     for event in observed.values():
-        if event["action"] != "send" or event.get("status") != "passed":
+        if (event["action"] != "send" or event.get("status") != "passed"
+                or event.get("request_delivery_state") == "not_sent"):
             continue
         constructed_hash = constructed.get(_request_identity(event))
         if constructed_hash is not None and constructed_hash != event.get("request_tree_sha256"):
@@ -473,6 +523,9 @@ def validate_parity_collection(reports: list[dict], catalog: dict, manifest: dic
     for report in reports:
         for event in report["events"]:
             if event.get("status") != "passed" or event.get("action") not in {"construct", "send"}:
+                continue
+            if (event.get("action") == "send"
+                    and event.get("request_delivery_state") == "not_sent"):
                 continue
             identity = (
                 report["language"], event["case_id"], event["route_id"], event["target_id"],

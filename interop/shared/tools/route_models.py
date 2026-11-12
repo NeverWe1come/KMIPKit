@@ -22,6 +22,29 @@ _SCALAR_VALUE_KINDS = frozenset({'enumeration_value', 'bitmask_value', 'referenc
 _SECRET_DATA_INAPPLICABLE_KEY_BLOCK_FIELDS = {
     'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-ALGORITHM',
     'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-LENGTH'}
+_KEY_WRAPPING_MODEL_ROOTS = {
+    'EncryptionKeyInformation': 'KMIPKIT-ELEM-OBJECT-STRUCTURE-ENCRYPTION-KEY-INFORMATION',
+    'KeyWrappingData': 'KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-WRAPPING-DATA',
+    'MacSignatureKeyInformation': 'KMIPKIT-ELEM-OBJECT-STRUCTURE-MAC-SIGNATURE-KEY-INFORMATION'}
+_KEY_WRAPPING_SETTER_MEMBERS = {
+    ('EncryptionKeyInformation', 'with_cryptographic_parameters'):
+        'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-ENCRYPTION-KEY-INFORMATION-CRYPTOGRAPHIC-PARAMETERS',
+    ('EncryptionKeyInformation', 'with_typed_cryptographic_parameters'):
+        'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-ENCRYPTION-KEY-INFORMATION-CRYPTOGRAPHIC-PARAMETERS',
+    ('KeyWrappingData', 'with_encoding_option'):
+        'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-KEY-WRAPPING-DATA-ENCODING-OPTION',
+    ('KeyWrappingData', 'with_encryption_key_information'):
+        'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-KEY-WRAPPING-DATA-ENCRYPTION-KEY-INFORMATION',
+    ('KeyWrappingData', 'with_iv_counter_nonce'):
+        'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-KEY-WRAPPING-DATA-IV-COUNTER-NONCE',
+    ('KeyWrappingData', 'with_mac_signature'):
+        'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-KEY-WRAPPING-DATA-MAC-SIGNATURE',
+    ('KeyWrappingData', 'with_mac_signature_key_information'):
+        'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-KEY-WRAPPING-DATA-MAC-SIGNATURE-KEY-INFORMATION',
+    ('MacSignatureKeyInformation', 'with_cryptographic_parameters'):
+        'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-MAC-SIGNATURE-KEY-INFORMATION-CRYPTOGRAPHIC-PARAMETERS',
+    ('MacSignatureKeyInformation', 'with_typed_cryptographic_parameters'):
+        'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-3-MAC-SIGNATURE-KEY-INFORMATION-CRYPTOGRAPHIC-PARAMETERS'}
 
 
 def norm(value):
@@ -117,6 +140,17 @@ def subtree_target_ids(targets, roots, *, include_parent_tags=False, include_nam
     return sorted(selected)
 
 
+def key_wrapping_model_target_ids(owner, method, targets):
+    """Scope key-wrapping APIs to their exact KMIP 2.0/2.1 structure context."""
+    member = _KEY_WRAPPING_SETTER_MEMBERS.get((owner, method))
+    if member:
+        return subtree_target_ids(targets, [member], include_name_tags=True)
+    root = _KEY_WRAPPING_MODEL_ROOTS.get(owner)
+    if root and method in {'try_new', 'try_from_item', 'try_from_unique_identifier'}:
+        return subtree_target_ids(targets, [root], include_name_tags=True)
+    return None
+
+
 def credential_function_target_ids(function_id, targets):
     """Map credential TTLV converters to the credential branches they encode."""
     stem = function_id
@@ -148,9 +182,9 @@ def credential_function_target_ids(function_id, targets):
     return sorted(selected)
 
 
-def secret_data_parser_target_ids(targets, names, operation_id, object_item, object_type_targets):
-    """Return the Secret Data parser subtree without Key Block-inapplicable fields."""
-    candidates = target_ids(targets, names, all_objects=object_item, operation_id=operation_id,
+def secret_data_model_target_ids(targets, names, operation_id, object_item, object_type_targets):
+    """Return only the Secret Data subtree and omit inapplicable Key Block fields."""
+    candidates = target_ids(targets, names, operation_id=operation_id,
         exclude_target_ids=object_type_targets if object_item else ())
     return sorted(set(candidates) - _SECRET_DATA_INAPPLICABLE_KEY_BLOCK_FIELDS)
 
@@ -268,9 +302,9 @@ def model_inventory(root, commit, source, api, targets):
                 'Private Key', 'Public Key', 'Secret Data', 'Split Key', 'Symmetric Key'}
             exact_targets = [target['target_id'] for target in targets
                 if target['kind'] == 'object_structure' and target['name'] in root_object_names]
-        if owner == 'SecretData' and method == 'try_from_item':
-            # OASIS KMIP 2.1 §3.1 Table 11 excludes these Key Block fields for Secret Data.
-            exact_targets = secret_data_parser_target_ids(
+        if owner == 'SecretData' and method in {'try_from_item', 'try_new'}:
+            # OASIS KMIP 2.0/2.1 §3.1 Table 11 excludes these Key Block fields for Secret Data.
+            exact_targets = secret_data_model_target_ids(
                 targets, names, operation_id, is_object_item, object_type_targets)
         credential_targets = credential_function_target_ids(
             f'{_snake_case(owner)}_{method}', targets) \
@@ -278,6 +312,16 @@ def model_inventory(root, commit, source, api, targets):
         if credential_targets is not None:
             exact_targets = credential_targets
         raw_value_targets = scalar_enum_value_targets(targets, owner) if method == 'from_raw' else None
+        if owner == 'KeyMaterial' and method == 'byte_string':
+            # OASIS KMIP 2.0/2.1 §11.25 restricts this constructor to
+            # ByteString formats; transparent formats require Structure
+            # representations defined by §§3.4–3.12. The generic Key Material
+            # tag is the only target this route can represent without a
+            # format-specific fixture.
+            exact_targets = ['KMIPKIT-ELEM-TAG-420043']
+        key_wrapping_targets = key_wrapping_model_target_ids(owner, method, targets)
+        if key_wrapping_targets is not None:
+            exact_targets = key_wrapping_targets
         add('rust', symbol, selected, names, objects=owner == 'ManagedObject',
             operation_id=operation_id, object_item=is_object_item,
             exact_target_ids=raw_value_targets if method == 'from_raw' else exact_targets)
@@ -289,9 +333,12 @@ def model_inventory(root, commit, source, api, targets):
             continue
         path = 'bindings/c/include/kmipkit.h'
         if re.search(r'\b' + re.escape(mapped) + r'\s*\(', source(root, commit, path)):
+            c_exact_targets = key_wrapping_model_target_ids(owner, method, targets)
+            if c_exact_targets is None:
+                c_exact_targets = credential_targets
             add('c', mapped, path, names, objects=owner == 'ManagedObject',
                 operation_id=operation_id, object_item=is_object_item,
-                exact_target_ids=credential_targets)
+                exact_target_ids=c_exact_targets)
 
     # Open typed enumeration/mask wrappers that really construct a value.
     for path, text in rust_sources.items():
