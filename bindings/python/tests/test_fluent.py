@@ -439,6 +439,116 @@ def test_attribute_read_builders_preserve_omitted_identifier_and_reject_duplicat
         request.get_attributes(attribute_references=[duplicate, duplicate]).build()
 
 
+def test_attribute_read_builders_validate_and_expose_typed_batch_items() -> None:
+    request = fluent.Request(object())
+    identifier = extensions.UniqueIdentifier.text_string("attribute-read-key")
+    reference = extensions.AttributeReference.tag(0x42002A)
+    builder = request.get_attributes(
+        unique_identifier=identifier, attribute_references=[reference]
+    )
+    builder.validate()
+    with builder.to_batch_item() as item:
+        assert item.operation == 11
+
+    list_builder = request.get_attribute_list()
+    list_builder.validate()
+    with list_builder.to_batch_item() as item:
+        assert item.operation == 12
+
+    with pytest.raises(errors.KmipKitError):
+        builder.with_options(object())  # type: ignore[arg-type]
+    with pytest.raises(errors.KmipKitError):
+        builder.execute(object())  # type: ignore[arg-type]
+    with pytest.raises(errors.KmipKitError):
+        request.get_attributes(
+            unique_identifier=extensions.UniqueIdentifier.integer(-1),
+            attribute_references=[reference],
+        )
+    with pytest.raises(errors.KmipKitError):
+        request.get_attribute_list(
+            unique_identifier=extensions.UniqueIdentifier.integer(-1)
+        )
+
+    with pytest.raises(errors.KmipKitError):
+        request.get_attributes(attribute_references=object())  # type: ignore[arg-type]
+    with pytest.raises(errors.KmipKitError):
+        request.get_attributes(attribute_references=[object()])  # type: ignore[list-item]
+    with pytest.raises(errors.KmipKitError):
+        request.get_attributes(attribute_references=[reference] * 100_001)
+
+
+def test_direct_attributes_maps_native_call_failures_and_null_outputs(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class FakeClient:
+        def _pointer(self) -> object:
+            return fluent.ffi.NULL
+
+    class FakeLimits:
+        def _pointer(self) -> object:
+            return fluent.ffi.NULL
+
+    class FakeLibrary:
+        def __init__(self, function: object) -> None:
+            self.kmipkit_client_get_attributes_v1 = function
+
+    monkeypatch.setattr(fluent, "Client", FakeClient)
+    monkeypatch.setattr(fluent.ttlv, "CodecLimits", FakeLimits)
+    kmip_client = FakeClient()
+    limits = FakeLimits()
+    identifier = extensions.UniqueIdentifier.text_string("attribute-read-key")
+    references = (extensions.AttributeReference.tag(0x42002A),)
+
+    def raise_type_error(*_arguments: object) -> int:
+        raise TypeError("invalid native argument")
+
+    monkeypatch.setattr(fluent, "lib", FakeLibrary(raise_type_error))
+    with pytest.raises(errors.KmipKitError):
+        fluent._execute_direct_attributes(
+            kmip_client, identifier, references, limits, None
+        )
+
+    def return_without_response(*_arguments: object) -> int:
+        return 0
+
+    monkeypatch.setattr(fluent, "lib", FakeLibrary(return_without_response))
+    with pytest.raises(errors.KmipKitError):
+        fluent._execute_direct_attributes(
+            kmip_client, identifier, references, limits, None
+        )
+
+
+def test_direct_attributes_rejects_invalid_arguments_before_native_call(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class FakeClient:
+        def _pointer(self) -> object:
+            return fluent.ffi.NULL
+
+    class FakeLimits:
+        def _pointer(self) -> object:
+            return fluent.ffi.NULL
+
+    monkeypatch.setattr(fluent, "Client", FakeClient)
+    monkeypatch.setattr(fluent.ttlv, "CodecLimits", FakeLimits)
+    identifier = extensions.UniqueIdentifier.text_string("attribute-read-key")
+    reference = extensions.AttributeReference.tag(0x42002A)
+
+    invalid_inputs = (
+        (object(), FakeLimits(), identifier, (reference,), None),
+        (FakeClient(), object(), identifier, (reference,), None),
+        (FakeClient(), FakeLimits(), identifier, (reference,), object()),
+        (FakeClient(), FakeLimits(), extensions.UniqueIdentifier.integer(-1), (reference,), None),
+        (FakeClient(), FakeLimits(), identifier, object(), None),
+        (FakeClient(), FakeLimits(), identifier, (object(),), None),
+    )
+    for kmip_client, limits, unique_identifier, references, options in invalid_inputs:
+        with pytest.raises(errors.KmipKitError):
+            fluent._execute_direct_attributes(
+                kmip_client, unique_identifier, references, limits, options
+            )
+
+
 def test_operation_sets_batch_level_asynchronous_indicator() -> None:
     operation = fluent.Operation(
         object(), "get", extensions.UniqueIdentifier.text_string("key-1")

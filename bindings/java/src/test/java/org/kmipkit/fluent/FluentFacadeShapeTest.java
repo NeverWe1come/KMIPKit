@@ -101,16 +101,27 @@ final class FluentFacadeShapeTest {
         attributes.withOptions(RequestOptions.defaults()).asynchronousIndicator(1).validate();
         list.withOptions(RequestOptions.defaults()).asynchronousIndicator(2).validate();
         try (ClientBatchItem item = attributes.toBatchItem();
-                ClientBatchItem listItem = list.build()) {
+                ClientBatchItem listItem = list.toBatchItem()) {
             assertEquals(11, item.operation());
             assertEquals(12, listItem.operation());
         }
+        assertThrows(InvalidInputException.class,
+                () -> new GetAttributeListBuilder(null, UniqueIdentifier.integer(7)));
+        assertThrows(InvalidInputException.class,
+                () -> list.asynchronousIndicator(-1));
+        assertThrows(InvalidInputException.class,
+                () -> list.asynchronousIndicator(0x1_0000_0000L));
+        assertThrows(InvalidInputException.class,
+                () -> attributes.asynchronousIndicator(0x1_0000_0000L));
         AttributeReference duplicate = AttributeReference.tag(0x42002A);
         GetAttributesBuilder invalid = new GetAttributesBuilder(
                 null, id, List.of(duplicate, duplicate));
         assertThrows(InvalidInputException.class, invalid::build);
         assertThrows(InvalidInputException.class,
                 () -> new GetAttributesBuilder(null, id, null));
+        assertThrows(InvalidInputException.class,
+                () -> new GetAttributesBuilder(
+                        null, id, java.util.Arrays.asList((AttributeReference) null)));
     }
 
     @Test
@@ -148,9 +159,12 @@ final class FluentFacadeShapeTest {
                 assertEquals("attribute-read-key",
                         result.getAttributesResponse().orElseThrow().uniqueIdentifier());
             }
+            try (ClientBatchItem omittedIdentifier = client.request().getAttributeList().toBatchItem()) {
+                assertEquals(12, omittedIdentifier.operation());
+            }
             try (ClientBatchResponse response = client.request().getAttributeList(
                             UniqueIdentifier.textString("attribute-read-key"))
-                            .execute(limits);
+                            .asynchronousIndicator(2).execute(limits);
                     ClientBatchItemResult result = response.itemAt(0)) {
                 assertEquals(12, result.operation());
                 assertEquals(0, result.resultStatus());
@@ -171,6 +185,7 @@ final class FluentFacadeShapeTest {
         assertTrue(contains(requests.get(0), tagReference));
         assertTrue(contains(requests.get(0), nameReference));
         assertTrue(indexOf(requests.get(0), tagReference) < indexOf(requests.get(0), nameReference));
+        assertTrue(contains(requests.get(1), enumTtlv(0x420007, 2)));
         assertTrue(contains(requests.get(1), enumTtlv(0x42005c, 12)));
         assertTrue(peer.isDone());
     }

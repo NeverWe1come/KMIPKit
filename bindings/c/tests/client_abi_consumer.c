@@ -8625,6 +8625,10 @@ int kmipkit_client_abi_c_consumer_build_get_attribute_list_request(void) {
 }
 
 int kmipkit_client_abi_c_consumer_checks_fluent_attribute_read_entrypoints(void) {
+    static const uint8_t identifier_bytes[] = "attribute-read-key";
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    kmipkit_attribute_reference_v1_t reference = {0};
+    kmipkit_request_options_v1_t options = {0};
     kmipkit_client_batch_response_t *response = 0;
     if (kmipkit_client_get_attributes_v1(0, 0, 0, 0, 0, &response) == 0 || response != 0) {
         return 0;
@@ -8642,6 +8646,33 @@ int kmipkit_client_abi_c_consumer_checks_fluent_attribute_read_entrypoints(void)
     }
     if (kmipkit_client_get_attributes_v1(
             0, 0, duplicate_references, UINT64_C(2), 0, &response) == 0 || response != 0) {
+        return 0;
+    }
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = UINT32_C(1);
+    identifier.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+    identifier.text_data = identifier_bytes;
+    identifier.text_length = (uint64_t)(sizeof(identifier_bytes) - 1U);
+    reference.struct_size = (uint32_t)sizeof(reference);
+    reference.abi_version = UINT32_C(1);
+    reference.kind = KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG;
+    reference.tag_value = UINT32_C(0x0042002a);
+    if (kmipkit_client_get_attributes_v1(
+            0, &identifier, &reference, UINT64_C(1), 0, &response) == 0 || response != 0) {
+        return 0;
+    }
+    if (kmipkit_client_get_attributes_with_options_v1(
+            0, 0, 0, 0, 0, 0, &response) == 0 || response != 0 ||
+        kmipkit_client_get_attribute_list_with_options_v1(
+            0, 0, 0, 0, &response) == 0 || response != 0) {
+        return 0;
+    }
+    options.struct_size = (uint32_t)sizeof(options);
+    options.abi_version = UINT32_C(1);
+    if (kmipkit_client_get_attributes_with_options_v1(
+            0, 0, 0, 0, 0, &options, &response) == 0 || response != 0 ||
+        kmipkit_client_get_attribute_list_with_options_v1(
+            0, 0, 0, &options, &response) == 0 || response != 0) {
         return 0;
     }
     return 1;
