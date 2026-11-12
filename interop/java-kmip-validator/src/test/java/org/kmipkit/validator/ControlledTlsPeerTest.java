@@ -432,6 +432,26 @@ class ControlledTlsPeerTest {
                         "java.typed-protocol.function.client_batch_item_response_extension_count"),
                 "Extension Count must retain the exact Message Extension tag identity.");
         assertEquals(0, routeEventCount(report.path("events"), RESPONSE_BATCH_ITEM_CASE_ID,
+                        "java.typed-protocol.function.client_batch_item_response_raw_ttlv"),
+                "Raw response TTLV must not be attributed to the request Batch Item field.");
+        assertEquals(2, routeEventCount(report.path("events"),
+                        "test-norm-message-field-message-field-8-6-batch-item",
+                        "java.typed-protocol.function.client_batch_item_response_raw_ttlv"),
+                "Raw response TTLV must use the KMIP 2.x §8.6 Batch Item field.");
+        assertEquals(2, routeEventCount(report.path("events"),
+                        "test-norm-message-field-message-field-9-7-batch-item",
+                        "java.typed-protocol.function.client_batch_item_response_raw_ttlv"),
+                "Raw response TTLV must use the KMIP 2.x §9.7 Batch Item field.");
+        assertEquals(0, routeEventCount(report.path("events"), RESPONSE_BATCH_ITEM_CASE_ID,
+                        "java.typed-protocol.function.client_batch_item_response_extension_ttlv_at"),
+                "Extension TTLV access must not be attributed to the enclosing Batch Item field.");
+        for (String caseId : List.of("test-norm-message-field-message-field-8-6-message-extension",
+                "test-norm-message-field-message-field-9-13-message-extension", "test-norm-tag-tag-420051")) {
+            assertEquals(2, routeEventCount(report.path("events"), caseId,
+                            "java.typed-protocol.function.client_batch_item_response_extension_ttlv_at"),
+                    "Extension TTLV access must preserve each exact Message Extension identity: " + caseId);
+        }
+        assertEquals(0, routeEventCount(report.path("events"), RESPONSE_BATCH_ITEM_CASE_ID,
                         "java.typed-protocol.function.client_batch_response_item_count"),
                 "Batch Count access must not be attributed to the structural Batch Item case.");
         assertEquals(0, routeEventCount(report.path("events"), RESPONSE_BATCH_ITEM_CASE_ID,
