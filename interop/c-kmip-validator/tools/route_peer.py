@@ -54,6 +54,7 @@ class Codec:
         self.tags = {normalize(t['name']): int(t['wire_value'], 16)
                      for t in catalog['normative_targets'] if t['kind'] == 'tag'}
         self.values = {}
+        self.bitmask_tags = set()
         for target in catalog['normative_targets']:
             if target['kind'] not in ('enumeration_value', 'bitmask_value'):
                 continue
@@ -63,6 +64,8 @@ class Codec:
             name = re.sub('^KMIPKIT-ELEM-(ENUMERATION|BITMASK)-', '', parent)
             tag = self.tags.get(normalize(name))
             self.values[(tag, normalize(target['name']))] = int(target['wire_value'], 16)
+            if target['kind'] == 'bitmask_value' and tag is not None:
+                self.bitmask_tags.add(tag)
 
     def tag(self, value):
         return int(value, 16) if value.startswith('0x') else self.tags[normalize(value)]
@@ -79,6 +82,21 @@ class Codec:
         elif isinstance(value, str) and not re.fullmatch('-?[0-9]+', value):
             if value.startswith('0x'):
                 value = int(value, 16)
+            elif (tag, normalize(value)) in self.values:
+                value = self.values[(tag, normalize(value))]
+            elif tag in self.bitmask_tags:
+                remaining = normalize(value)
+                value = 0
+                names = sorted(((name, bit) for (bitmask_tag, name), bit in self.values.items()
+                                if bitmask_tag == tag), key=lambda entry: len(entry[0]), reverse=True)
+                while remaining:
+                    for name, bit in names:
+                        if remaining.startswith(name):
+                            value |= bit
+                            remaining = remaining[len(name):]
+                            break
+                    else:
+                        raise ValueError('fixture_invalid_named_bitmask')
             else:
                 value = sum(self.values[(tag, normalize(part))] for part in value.split())
         size = 8 if kind in (3, 6, 9, 11) else 4
@@ -644,7 +662,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     errors.append('fixture_connection_failed')
                                 except Exception as error:
                                     code = str(error)
-                                    errors.append(code if re.fullmatch('fixture_[a-z_]+', code) else 'controlled_peer_contract_failed')
+                                    errors.append(code if re.fullmatch('fixture_[a-z_]+', code)
+                                                  else 'controlled_peer_contract_failed')
                             thread = None
                             if not boundary:
                                 thread = threading.Thread(target=serve, daemon=True)
