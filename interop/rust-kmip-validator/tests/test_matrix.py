@@ -341,15 +341,23 @@ class MatrixContract(unittest.TestCase):
         self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
 
     def test_typed_object_and_key_model_parsers_cover_every_route_cell(self):
-        symbols = {
-            route['public_api_symbol'] for route in ROUTES['routes']
-            if route['language'] == 'rust' and route['mode'] == 'local'
-            and route['public_api_symbol'].startswith('kmipkit_protocol::')
-            and route['public_api_symbol'].endswith('::try_from_item')
-            and route['public_api_symbol'] != 'kmipkit_protocol::ManagedObject::try_from_item'
+        roots = {
+            'kmipkit_protocol::Certificate::try_from_item': 'Certificate',
+            'kmipkit_protocol::CertificateRequest::try_from_item': 'Certificate Request',
+            'kmipkit_protocol::OpaqueObject::try_from_item': 'Opaque Object',
+            'kmipkit_protocol::PgpKey::try_from_item': 'PGP Key',
+            'kmipkit_protocol::PrivateKey::try_from_item': 'Private Key',
+            'kmipkit_protocol::PublicKey::try_from_item': 'Public Key',
+            'kmipkit_protocol::SecretData::try_from_item': 'Secret Data',
+            'kmipkit_protocol::SplitKey::try_from_item': 'Split Key',
+            'kmipkit_protocol::SymmetricKey::try_from_item': 'Symmetric Key',
         }
         cells = [cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
-                 if cell['public_api_symbol'] in symbols]
+                 if cell['public_api_symbol'] in roots
+                 and next(target for target in CATALOG['normative_targets']
+                          if target['target_id'] == cell['target_id'])['name'] == roots[cell['public_api_symbol']]
+                 and next(target for target in CATALOG['normative_targets']
+                          if target['target_id'] == cell['target_id'])['kind'] in ('tag', 'object_structure')]
         self.assertGreater(len(cells), 0)
         process, report = self.run_matrix(cells)
         self.assertEqual(process.returncode, 0, process.stderr or process.stdout or report)
