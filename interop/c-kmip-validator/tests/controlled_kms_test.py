@@ -262,10 +262,12 @@ def main() -> int:
     )
     expected_operations += (37, 38, 39)
     expected_operations += (1, 18, 12, 19, 20)
+    expected_operations += (1, 18, 10, 19, 20)
     expected_operations += (10, 12, 10, 12, 10, 12, 10, 12)
     expected_cases += ("test-op-hash", "test-op-rng-retrieve", "test-op-rng-seed")
     expected_cases += ("test-neg-destroy-active-without-revoke",)
     expected_cases += ("test-batch-create-activate-destroy",)
+    expected_cases += ("test-batch-placeholder-chain-resolves",)
     expected_cases += (
         "test-batch-count-matches-items",
         "test-batch-unique-item-id-response-correlation",
@@ -338,6 +340,9 @@ def main() -> int:
                             if any(operation not in expected_operations for operation in operations):
                                 raise AssertionError(f"unexpected operation batch {operations!r} for {protocol_version}")
                             two_read_batch = operations == (10, 12)
+                            placeholder_chain = operations == (1, 18, 10)
+                            placeholder_cleanup = operations == (19, 20) and \
+                                tlv(0x420093, 8, b"placeholder-revoke-cleanup") in request
                             response_operations = operations
                             response_item_ids = None
                             if two_read_batch:
@@ -367,6 +372,26 @@ def main() -> int:
                             else:
                                 response_statuses = None
                                 response_reasons = None
+                            if placeholder_chain:
+                                expected_item_ids = (
+                                    b"placeholder-create", b"placeholder-activate", b"placeholder-get"
+                                )
+                                if (request.count(enumeration(0x420094, 1)) != 2 or
+                                        any(tlv(0x420093, 8, item_id) not in request
+                                            for item_id in expected_item_ids) or
+                                        enumeration(0x42000E, 1) not in request):
+                                    raise AssertionError("placeholder chain did not send two IDPlaceholder references")
+                                response_item_ids = expected_item_ids
+                            elif placeholder_cleanup:
+                                expected_cleanup_ids = (
+                                    b"placeholder-revoke-cleanup", b"placeholder-destroy-cleanup"
+                                )
+                                if (request.count(tlv(0x420094, 7, b"fixture-key-1")) != 2 or
+                                        any(tlv(0x420093, 8, item_id) not in request
+                                            for item_id in expected_cleanup_ids) or
+                                        operations != (19, 20)):
+                                    raise AssertionError("placeholder chain teardown did not use the returned identifier")
+                                response_item_ids = expected_cleanup_ids
                             create_lifecycle = operations == (1, 20)
                             check_lifecycle = operations == (1, 9, 19, 20)
                             activate_lifecycle = operations == (1, 18, 19, 20)

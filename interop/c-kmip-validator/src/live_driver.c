@@ -683,6 +683,74 @@ static int32_t create_revocation_item(
 }
 
 static bool create_authentication(kmip_live_client_t *client,
+                                  kmipkit_authentication_t **out_authentication);
+
+static bool cleanup_placeholder_chain_object(
+    kmip_live_client_t *client,
+    const kmipkit_unique_identifier_v1_t *unique_identifier,
+    int32_t *out_status) {
+    kmipkit_client_batch_t *batch = NULL;
+    kmipkit_client_batch_response_t *response = NULL;
+    kmipkit_client_batch_item_t *revoke_item = NULL;
+    kmipkit_client_batch_item_t *destroy_item = NULL;
+    kmipkit_client_batch_item_response_t *revoke_response = NULL;
+    kmipkit_client_batch_item_response_t *destroy_response = NULL;
+    kmipkit_client_batch_item_metadata_v2_t revoke_metadata = {
+        .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t),
+        .abi_version = 2
+    };
+    kmipkit_client_batch_item_metadata_v2_t destroy_metadata = {
+        .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t),
+        .abi_version = 2
+    };
+    uint64_t response_count = 0;
+    int32_t status = kmipkit_client_batch_create(&batch);
+    if (status == 0 && client->username_env[0] != '\0') {
+        kmipkit_authentication_t *authentication = NULL;
+        if (!create_authentication(client, &authentication)) {
+            status = KMIPKIT_ERROR_INVALID_INPUT;
+        } else {
+            status = kmipkit_client_batch_set_authentication(batch, authentication);
+            if (status != 0) kmipkit_authentication_release(authentication);
+        }
+    }
+    if (status == 0) status = create_revocation_item(unique_identifier, &revoke_item);
+    if (status == 0) status = kmipkit_client_batch_item_destroy(unique_identifier, &destroy_item);
+    if (status == 0) status = set_batch_item_id(&revoke_item, "placeholder-revoke-cleanup");
+    if (status == 0) status = set_batch_item_id(&destroy_item, "placeholder-destroy-cleanup");
+    if (status == 0) status = kmipkit_client_batch_set_order_option(batch, 1);
+    if (status == 0) status = kmipkit_client_batch_add_error_continuation_value(
+        batch, KMIPKIT_ENUMERATION_BATCH_ERROR_CONTINUATION_OPTION_CONTINUE);
+    if (status == 0) status = kmipkit_client_batch_add_item(batch, &revoke_item);
+    if (status == 0) status = kmipkit_client_batch_add_item(batch, &destroy_item);
+    if (status == 0) status = kmipkit_client_execute(client->client, &batch, client->limits, &response);
+    if (status == 0) status = kmipkit_client_batch_response_item_count(response, &response_count);
+    if (status == 0 && response_count == 2) {
+        status = kmipkit_client_batch_response_item_at(response, 0, &revoke_response);
+    } else if (status == 0) {
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    if (status == 0) status = kmipkit_client_batch_response_item_at(response, 1, &destroy_response);
+    if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
+        revoke_response, &revoke_metadata);
+    if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
+        destroy_response, &destroy_metadata);
+    bool valid = status == 0 &&
+        revoke_metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS &&
+        destroy_metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS &&
+        revoke_response_matches_created_key(revoke_response, unique_identifier, &status) &&
+        destroy_response_matches_key(destroy_response, unique_identifier, &status);
+    if (revoke_response) kmipkit_client_batch_item_response_release(revoke_response);
+    if (destroy_response) kmipkit_client_batch_item_response_release(destroy_response);
+    if (response) kmipkit_client_batch_response_release(response);
+    if (batch) kmipkit_client_batch_release(batch);
+    if (revoke_item) kmipkit_client_batch_item_release(revoke_item);
+    if (destroy_item) kmipkit_client_batch_item_release(destroy_item);
+    *out_status = status;
+    return valid;
+}
+
+static bool create_authentication(kmip_live_client_t *client,
                                   kmipkit_authentication_t **out_authentication) {
     const char *username = getenv(client->username_env);
     const char *password = getenv(client->password_env);
@@ -1522,6 +1590,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     bool register_certificate_workflow = certificate_attributes_workflow;
     bool batch_create_activate_get_attribute_list_revoke_destroy_workflow =
         strcmp(test_case->case_id, "test-batch-create-activate-destroy") == 0;
+    bool batch_placeholder_chain_workflow =
+        strcmp(test_case->case_id, "test-batch-placeholder-chain-resolves") == 0;
     bool read_back_attribute_workflow = test_case->attribute_reference_kind[0] != '\0';
     uint32_t read_back_attribute_tag = 0;
     uint32_t read_back_attribute_response_tag = 0;
@@ -1597,11 +1667,13 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         get_constraints_workflow || active_destroy_negative_workflow ||
         batch_create_activate_get_attribute_list_revoke_destroy_workflow;
     bool object_lifecycle_workflow = create_workflow ||
-        batch_create_activate_get_attribute_list_revoke_destroy_workflow || revoke_workflow ||
+        batch_create_activate_get_attribute_list_revoke_destroy_workflow ||
+        batch_placeholder_chain_workflow || revoke_workflow ||
         revoke_cleanup_workflow || get_workflow ||
         get_attributes_workflow || get_attribute_list_workflow || get_constraints_workflow;
     if (strcmp(test_case->operation, "Create") == 0 && !create_workflow &&
-        !batch_create_activate_get_attribute_list_revoke_destroy_workflow) {
+        !batch_create_activate_get_attribute_list_revoke_destroy_workflow &&
+        !batch_placeholder_chain_workflow) {
         return outcome_not_run("Create variations are not yet mapped to isolated C fixtures");
     }
     if (strcmp(test_case->operation, "Check") == 0 && !check_workflow) {
@@ -1789,9 +1861,16 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                         item, request_validation_diagnostic, sizeof(request_validation_diagnostic))) {
                     status = KMIPKIT_ERROR_INVALID_INPUT;
                 }
-                if (status == 0) status = create_revocation_item(&placeholder, &revoke_item);
+            } else if (batch_placeholder_chain_workflow) {
+                status = kmipkit_client_batch_item_activate(&placeholder, &activate_item);
                 if (status == 0 && !request_item_is_valid(
-                        revoke_item, request_validation_diagnostic, sizeof(request_validation_diagnostic))) {
+                        activate_item, request_validation_diagnostic, sizeof(request_validation_diagnostic))) {
+                    status = KMIPKIT_ERROR_INVALID_INPUT;
+                }
+                if (status == 0) status = kmipkit_client_batch_item_get(
+                    &placeholder, 0, 0, 0, 0, 0, 0, NULL, &item);
+                if (status == 0 && !request_item_is_valid(
+                        item, request_validation_diagnostic, sizeof(request_validation_diagnostic))) {
                     status = KMIPKIT_ERROR_INVALID_INPUT;
                 }
             } else if (active_destroy_negative_workflow) {
@@ -1862,7 +1941,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                 status = KMIPKIT_ERROR_INVALID_INPUT;
             }
         }
-        if (status == 0) {
+        if (status == 0 && !batch_placeholder_chain_workflow) {
             request_construction_step = "Destroy using ID Placeholder";
             status = kmipkit_client_batch_item_destroy(&placeholder, &cleanup_item);
             if (status == 0 && !request_item_is_valid(
@@ -1876,15 +1955,18 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                 status = set_batch_item_id(&item, "interop-create");
             } else {
                 status = set_batch_item_id(&setup_item,
-                    register_certificate_workflow ? "interop-register" : "interop-create");
+                    register_certificate_workflow ? "interop-register" :
+                    batch_placeholder_chain_workflow ? "placeholder-create" : "interop-create");
                 if (status == 0 && (active_destroy_negative_workflow ||
+                                    batch_placeholder_chain_workflow ||
                                     batch_create_activate_get_attribute_list_revoke_destroy_workflow)) {
                     status = set_batch_item_id(&activate_item,
                         active_destroy_negative_workflow ? "interop-activate-before-destroy" :
-                        "interop-activate");
+                        batch_placeholder_chain_workflow ? "placeholder-activate" : "interop-activate");
                 }
                 if (status == 0) status = set_batch_item_id(
-                    &item, active_destroy_negative_workflow ? "interop-destroy-active-target" :
+                    &item, batch_placeholder_chain_workflow ? "placeholder-get" :
+                           active_destroy_negative_workflow ? "interop-destroy-active-target" :
                            check_workflow ? "interop-check" :
                            activate_workflow ? "interop-activate" :
                            revoke_workflow ? "interop-revoke" :
@@ -1897,7 +1979,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                             "interop-revoke-cleanup" : "interop-revoke");
                 }
             }
-            if (status == 0) status = set_batch_item_id(&cleanup_item,
+            if (status == 0 && !batch_placeholder_chain_workflow) status = set_batch_item_id(&cleanup_item,
                 (destroy_workflow || active_destroy_negative_workflow) ?
                     "interop-destroy-cleanup" : "interop-destroy");
         }
@@ -1971,6 +2053,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             batch, KMIPKIT_ENUMERATION_BATCH_ERROR_CONTINUATION_OPTION_CONTINUE);
         if (status == 0) status = kmipkit_client_batch_add_item(batch, &setup_item);
         if (status == 0 && (active_destroy_negative_workflow ||
+                            batch_placeholder_chain_workflow ||
                             batch_create_activate_get_attribute_list_revoke_destroy_workflow)) {
             status = kmipkit_client_batch_add_item(batch, &activate_item);
         }
@@ -1978,7 +2061,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         if (status == 0 && revoke_cleanup_workflow) {
             status = kmipkit_client_batch_add_item(batch, &revoke_item);
         }
-        if (status == 0) status = kmipkit_client_batch_add_item(batch, &cleanup_item);
+        if (status == 0 && !batch_placeholder_chain_workflow) {
+            status = kmipkit_client_batch_add_item(batch, &cleanup_item);
+        }
     } else if (status == 0) {
         status = kmipkit_client_batch_add_item(batch, &item);
     }
@@ -2029,6 +2114,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     uint64_t response_count = 0;
     status = kmipkit_client_batch_response_item_count(response, &response_count);
     uint64_t expected_response_count = batch_two_read_items_workflow ? 2 : create_workflow ? 2 :
+        batch_placeholder_chain_workflow ? 3 :
         (active_destroy_negative_workflow ||
          batch_create_activate_get_attribute_list_revoke_destroy_workflow) ? 5 :
         revoke_cleanup_workflow ? 4 : object_lifecycle_workflow ? 3 : 1;
@@ -2080,6 +2166,62 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             outcome.library_failed = status != 0;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
                      "KMIPKit did not correlate both read responses by Unique Batch Item ID");
+            goto cleanup;
+        }
+        outcome.success = true;
+        outcome.library_validated = true;
+        goto cleanup;
+    }
+    if (batch_placeholder_chain_workflow) {
+        kmipkit_client_batch_item_metadata_v2_t create_metadata = {
+            .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t),
+            .abi_version = 2
+        };
+        kmipkit_client_batch_item_metadata_v2_t activate_metadata = {
+            .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t),
+            .abi_version = 2
+        };
+        kmipkit_client_batch_item_metadata_v2_t get_metadata = {
+            .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t),
+            .abi_version = 2
+        };
+        status = kmipkit_client_batch_response_item_at(response, 0, &setup_response_item);
+        if (status == 0) status = kmipkit_client_batch_response_item_at(
+            response, 1, &activate_response_item);
+        if (status == 0) status = kmipkit_client_batch_response_item_at(response, 2, &response_item);
+        if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
+            setup_response_item, &create_metadata);
+        if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
+            activate_response_item, &activate_metadata);
+        if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
+            response_item, &get_metadata);
+        uint32_t response_object_type = 0;
+        if (status == 0 && create_metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+            status = kmipkit_client_batch_item_response_create(
+                setup_response_item, &created_identifier_present,
+                &response_object_type, &created_identifier);
+        }
+        bool chain_resolved = status == 0 && created_identifier_present &&
+            response_object_type == requested_object_type &&
+            created_identifier.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING &&
+            created_identifier.text_length != 0 && created_identifier.text_data &&
+            create_metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS &&
+            activate_metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS &&
+            get_metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS &&
+            activate_response_matches_created_key(activate_response_item, &created_identifier, &status) &&
+            get_response_matches_created_key(response_item, &created_identifier, &status);
+        if (!chain_resolved) {
+            outcome.library_failed = status != 0;
+            outcome.library_validated = status == 0;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit did not resolve the Activate/Get placeholder chain to one object");
+            goto cleanup;
+        }
+        if (!cleanup_placeholder_chain_object(client, &created_identifier, &status)) {
+            outcome.library_failed = status != 0;
+            outcome.library_validated = status == 0;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit did not complete Revoke/Destroy fixture cleanup");
             goto cleanup;
         }
         outcome.success = true;

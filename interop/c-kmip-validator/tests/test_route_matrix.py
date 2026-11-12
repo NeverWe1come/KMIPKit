@@ -857,10 +857,13 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all(check['peer_request_operations'] == [1, 18, 10] for check in checks))
         self.assertTrue(all(check['peer_cleanup_operations'] == [19, 20] for check in checks))
         for symbol in ('kmipkit_client_batch_item_create', 'kmipkit_client_batch_item_activate',
-                       'kmipkit_client_batch_item_get', 'kmipkit_client_batch_item_revoke',
-                       'kmipkit_client_batch_item_destroy', 'kmipkit_client_execute'):
+                       'kmipkit_client_batch_item_get'):
             self.assertTrue(any(event['public_api_symbol'] == symbol and event['action'] == 'send'
                                 for event in events), symbol)
+        self.assertTrue(any(event['execution_api_symbol'] == 'kmipkit_client_execute' and
+                            event['action'] == 'send' for event in events))
+        for symbol in ('kmipkit_client_batch_item_revoke', 'kmipkit_client_batch_item_destroy'):
+            self.assertTrue(all(symbol in check['public_api_trace_symbols'] for check in checks), symbol)
 
 
     def test_single_item_batch_omits_optional_batch_options(self):
