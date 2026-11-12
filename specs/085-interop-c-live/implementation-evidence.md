@@ -55,3 +55,16 @@ Compiled C consumers still invoke the exported ABI and now resolve it from the
 same Rust rlib as the coverage process. This avoids a second uninstrumented
 native library and its Windows duplicate symbols; Windows requires exact-head
 CI verification. No library API or implementation was changed.
+
+### Exact placeholder batch and independent cleanup
+
+The shared evidence validator exposed a second regression: a successful
+five-operation peer recipe did not match the catalog's exact
+Create/Activate/Get scenario. The new installed-consumer regression
+`test_placeholder_batch_evidence_matches_the_catalog_before_cleanup` first
+failed with `batch request operation order does not match the catalog`.
+The driver and controlled peer now retain the three-operation batch and issue
+Revoke/Destroy separately, using the returned identifier. The five focused
+placeholder tests pass across both KMIP versions and all six wire pairs.
+The peer still rejects arbitrary identifiers and accepts the normative omitted
+or explicit ID Placeholder representation.
