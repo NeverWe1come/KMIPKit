@@ -3046,6 +3046,116 @@ mod tests {
         }
     }
 
+    /// OASIS KMIP 2.0/2.1 §§2.1–2.2, 4.60, 6.1.19, 6.1.24, 6.1.39, 8.3, 8.5–8.6, and 9.4.
+    #[test]
+    fn generic_ttlv_routes_cover_nested_objects_and_message_fields() {
+        let catalog: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        let cases = [
+            ("KMIPKIT-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE", 0x0042_0008),
+            ("KMIPKIT-ELEM-MESSAGE-FIELD-8-3-EPHEMERAL", 0x0042_0154),
+            (
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-REQUEST-PAYLOAD",
+                0x0042_0079,
+            ),
+            (
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-SERVER-HASHED-PASSWORD",
+                0x0042_0155,
+            ),
+            (
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-RESPONSE-PAYLOAD",
+                0x0042_007c,
+            ),
+            (
+                "KMIPKIT-ELEM-MESSAGE-FIELD-9-4-CREDENTIAL-MAY-BE-REPEATED",
+                0x0042_0023,
+            ),
+            ("KMIPKIT-PAYLOAD-CLIENT-EXPORT-RESPONSE-20-004", 0x0042_008f),
+            ("KMIPKIT-PAYLOAD-CLIENT-EXPORT-RESPONSE-21-004", 0x0042_008f),
+            ("KMIPKIT-PAYLOAD-CLIENT-GET-RESPONSE-20-003", 0x0042_008f),
+            ("KMIPKIT-PAYLOAD-CLIENT-GET-RESPONSE-21-003", 0x0042_008f),
+            ("KMIPKIT-PAYLOAD-CLIENT-IMPORT-REQUEST-20-006", 0x0042_008f),
+            ("KMIPKIT-PAYLOAD-CLIENT-IMPORT-REQUEST-21-006", 0x0042_008f),
+            (
+                "KMIPKIT-PAYLOAD-CLIENT-REGISTER-REQUEST-20-003",
+                0x0042_008f,
+            ),
+            (
+                "KMIPKIT-PAYLOAD-CLIENT-REGISTER-REQUEST-21-003",
+                0x0042_008f,
+            ),
+            ("KMIPKIT-PAYLOAD-SERVER-PUT-REQUEST-20-004", 0x0042_008f),
+            ("KMIPKIT-PAYLOAD-SERVER-PUT-REQUEST-21-004", 0x0042_008f),
+        ];
+        for (target_id, expected_tag) in cases {
+            let target = catalog["normative_targets"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|target| target["target_id"] == target_id)
+                .unwrap();
+            let sample = sample_for_route("kmipkit_ttlv::Item::new", target, elements);
+            assert!(sample.is_ok(), "{target_id}: {sample:?}");
+            let sample = sample.unwrap();
+            assert_eq!(sample.tag().raw(), expected_tag, "{target_id}");
+            for protocol_version in target["protocol_versions"].as_array().unwrap() {
+                let protocol_version = protocol_version.as_str().unwrap();
+                for symbol in [
+                    "kmipkit_ttlv::Item::new",
+                    "kmipkit_ttlv::Item::with_value",
+                    "kmipkit_ttlv::codec::decode",
+                ] {
+                    let result = invoke(symbol, &sample, target, elements, protocol_version);
+                    assert!(result.is_some(), "{symbol} omitted {target_id}");
+                    let result = result.unwrap();
+                    assert!(result.is_ok(), "{symbol} {target_id}: {result:?}");
+                    assert!(crate::local_wire::target_hash(&result.unwrap(), &sample).is_ok());
+                }
+            }
+        }
+        for target_id in [
+            "KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER",
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-21-UNIQUE-IDENTIFIER",
+        ] {
+            let target = catalog["normative_targets"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|target| target["target_id"] == target_id)
+                .unwrap();
+            for (symbol, expected_type) in [
+                (
+                    "kmipkit_ttlv::Value::text_string",
+                    kmipkit::ttlv::ItemType::TextString,
+                ),
+                (
+                    "kmipkit_ttlv::Value::enumeration",
+                    kmipkit::ttlv::ItemType::Enumeration,
+                ),
+                (
+                    "kmipkit_ttlv::Value::integer",
+                    kmipkit::ttlv::ItemType::Integer,
+                ),
+            ] {
+                let sample = sample_for_route(symbol, target, elements);
+                assert!(sample.is_ok(), "{symbol} {target_id}: {sample:?}");
+                let sample = sample.unwrap();
+                assert_eq!(sample.item_type(), expected_type, "{symbol} {target_id}");
+                let result = invoke(symbol, &sample, target, elements, "2.1");
+                assert!(result.is_some(), "{symbol} omitted {target_id}");
+                let result = result.unwrap();
+                assert!(result.is_ok(), "{symbol} {target_id}: {result:?}");
+                assert!(crate::local_wire::target_hash(&result.unwrap(), &sample).is_ok());
+            }
+        }
+    }
+
     #[test]
     fn vendor_attribute_target_uses_a_table_150_structure_fixture() {
         let cases: Json = serde_json::from_str(include_str!(
