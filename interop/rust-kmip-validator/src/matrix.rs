@@ -163,6 +163,15 @@ fn concrete_fixture_name(target_id: &str, kind: &str, name: &str) -> String {
     }
 }
 
+fn unique_identifier_value_variant(value_type: &str) -> Result<Value> {
+    match value_type {
+        "text_string" => Ok(Value::text_string("unique-identifier-fixture".to_owned())),
+        "enumeration" => Ok(Value::enumeration(1)),
+        "integer" => Ok(Value::integer(256)),
+        _ => Err("unsupported Unique Identifier value constructor"),
+    }
+}
+
 #[allow(clippy::too_many_lines)] // Exact source tag/type selection remains auditable in one recipe.
 fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
     if let Some(fixture) = crate::local_credentials::fixture(target) {
@@ -1723,12 +1732,7 @@ fn sample_for_route_at_version(
             .is_some_and(|encoding| encoding.contains("Text String, Enumeration or Integer"))
     {
         let source = sample(target, elements)?;
-        let value = match value_type {
-            "text_string" => Value::text_string("unique-identifier-fixture".to_owned()),
-            "enumeration" => Value::enumeration(1),
-            "integer" => Value::integer(256),
-            _ => return Err("unsupported Unique Identifier value constructor"),
-        };
+        let value = unique_identifier_value_variant(value_type)?;
         return Item::new(source.tag(), value).map_err(|_| "Unique Identifier fixture rejected");
     }
     if !typed_item_route(symbol) {
