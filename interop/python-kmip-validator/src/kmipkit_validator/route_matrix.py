@@ -524,13 +524,39 @@ _MANAGED_OBJECT_TYPES = {
 }
 
 
-def _managed_object_root_tree(name: str, elements: dict[str, dict]) -> list:
+def _managed_object_target_is_in_key_block(target: dict, elements: dict[str, dict]) -> bool:
+    """Determine whether a catalog target belongs to an object's nested Key Block."""
+    key_block_id = next((element_id for element_id, element in elements.items()
+                         if element.get('kind') == 'object_structure'
+                         and element.get('name') == 'Key Block'), None)
+    if key_block_id is None:
+        return False
+    pending = [target.get('target_id'), *target.get('parent_element_ids', [])]
+    visited = set()
+    while pending:
+        element_id = pending.pop()
+        if element_id == key_block_id:
+            return True
+        if not element_id or element_id in visited:
+            continue
+        visited.add(element_id)
+        element = elements.get(element_id)
+        if element is not None:
+            pending.extend(element.get('parent_element_ids', []))
+    return False
+
+
+def _managed_object_root_tree(name: str, elements: dict[str, dict],
+                              target: dict | None = None) -> list:
     """Build the required fields of one OASIS §§2.1-2.9 managed-object root."""
     object_tag = _managed_object_tag(elements, name)
-    key_block = [0x420040, 1, [
-        [0x420042, 5, 1],
-        [0x420045, 1, [[0x420043, 8, b'KMIPKitInterop01'.hex()]]],
-    ]]
+    if target is not None and _managed_object_target_is_in_key_block(target, elements):
+        key_block = _managed_object_tree(target)
+    else:
+        key_block = [0x420040, 1, [
+            [0x420042, 5, 1],
+            [0x420045, 1, [[0x420043, 8, b'KMIPKitInterop01'.hex()]]],
+        ]]
     fields = {
         'Certificate': [[0x42001D, 5, 1], [0x42001E, 8, b'certificate-fixture'.hex()]],
         'Certificate Request': [[0x420019, 5, 1], [0x420140, 8, b'certificate-request-fixture'.hex()]],
@@ -631,7 +657,7 @@ def _managed_object_cell(cell: dict, case: dict, target: dict) -> dict:
         'symmetric_key': 'Symmetric Key',
     }
     name = factory_names.get(symbol.rsplit('.', 1)[-1]) or _managed_object_root_name(target, elements)
-    tree = _managed_object_root_tree(name, elements)
+    tree = _managed_object_root_tree(name, elements, target)
     object_type = _MANAGED_OBJECT_TYPES[name]
     with ExitStack() as owned:
         fields = [owned.enter_context(_credential_item_from_tree(field, owned))
