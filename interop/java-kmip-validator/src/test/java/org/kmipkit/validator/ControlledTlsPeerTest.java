@@ -555,10 +555,13 @@ class ControlledTlsPeerTest {
                 * List.of("2.0", "2.1").size() * 4;
         int credentialEnvelopeEventCount = CREDENTIAL_TYPE_MODEL_CASE_IDS.size()
                 * List.of("2.0", "2.1").size();
+        int batchErrorContinuationEventCount = enumerationFixtures.stream()
+                .filter(fixture -> "BATCH-ERROR-CONTINUATION-OPTION".equals(fixture.parentName()))
+                .mapToInt(fixture -> fixture.protocolVersions().size()).sum();
         assertEquals(68 + enumerationEventCount + bitmaskEventCount + 94 + batchItemAccessorEventCount
                         + batchItemExtensionCountEventCount + batchItemGenericRouteEventCount
                         + batchItemAdditionalResponseRouteEventCount + credentialGenericRouteEventCount
-                        + credentialEnvelopeEventCount,
+                        + credentialEnvelopeEventCount + batchErrorContinuationEventCount,
                 report.path("events").size());
         long bitmaskEvents = 0;
         for (JsonNode event : report.path("events")) {
@@ -1511,8 +1514,24 @@ class ControlledTlsPeerTest {
                 appendTypedEnumerationRouteEvents(events, fixture, wire, protocolVersion, treeHash);
                 appendCryptographicParameterBuilderRouteEvent(events, fixture, protocolVersion, treeHash);
                 appendCredentialEnumerationRouteEvents(events, fixture, protocolVersion, treeHash);
+                appendBatchErrorContinuationRouteEvent(events, fixture, protocolVersion);
             }
         }
+    }
+
+    private static void appendBatchErrorContinuationRouteEvent(ArrayNode events,
+            EnumerationFixture fixture, String protocolVersion) throws Exception {
+        if (!"BATCH-ERROR-CONTINUATION-OPTION".equals(fixture.parentName())) return;
+        try (ClientBatch batch = ClientBatch.create()) {
+            assertTrue(batch.addErrorContinuationValue(fixture.value()) == batch,
+                    "The batch configuration API must retain the active ClientBatch handle.");
+        }
+        byte[] wire = item(0x42000e, 5, intBytes((int) fixture.value()));
+        String treeHash = normalizedTreeSha256(wire);
+        appendRouteEvent(events, fixture.caseId(),
+                "java.typed-protocol.function.client_batch_add_error_continuation_value",
+                fixture.targetId(), "org.kmipkit.extensions.ClientBatch.addErrorContinuationValue",
+                null, null, "construct", protocolVersion, null, treeHash, null);
     }
 
     private static long installedEnumerationValue(EnumerationFixture fixture) {
