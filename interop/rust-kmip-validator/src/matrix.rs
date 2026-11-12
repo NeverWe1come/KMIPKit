@@ -143,6 +143,9 @@ fn concrete_fixture_name(target_id: &str, kind: &str, name: &str) -> String {
         // Use one concrete assigned §4 attribute for the inventory's wildcard member.
         return "Cryptographic Algorithm".to_owned();
     }
+    if kind == "message_field" {
+        return name.split(',').next().unwrap_or(name).trim().to_owned();
+    }
     if kind != "structure_member" {
         return name.to_owned();
     }
@@ -186,6 +189,23 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
     }
     let target_id = target["target_id"].as_str().unwrap_or_default();
     name = concrete_fixture_name(target_id, kind, &name);
+    if kind == "operation_payload_field"
+        && ["Any Object (Section 2)", "All Objects"].contains(&name.as_str())
+    {
+        return crate::fixtures::object("Symmetric Key").map(|(_, object, _)| object);
+    }
+    if kind == "message_field" && name == "Credential" {
+        let authentication = message_authentication()?;
+        let credential = authentication
+            .as_structure()
+            .ok_or("authentication fixture is not a Structure")?
+            .children()
+            .first()
+            .ok_or("authentication fixture has no credential")?
+            .try_clone()
+            .map_err(|_| "credential fixture copy failed")?;
+        return Ok(credential);
+    }
     let operation = if kind == "operation" {
         operation_value(&name).ok_or("operation target needs a concrete public enum value")?
     } else {
@@ -193,6 +213,8 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
     };
     let tag = if kind == "operation" {
         0x0042_005c
+    } else if target_id == "KMIPKIT-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE" {
+        0x0042_0008
     } else if target_id == "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-VENDOR-SPECIFIC" {
         // §7.37 permits a vendor-specific tag; this exercises the public generic extension range.
         0x0054_0000
@@ -255,6 +277,16 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
     {
         // Exercise the concrete Enumeration branch of the attribute wildcard and wire union.
         "Enumeration"
+    } else if kind == "message_field"
+        && ["Request Payload", "Response Payload", "Credential"].contains(&name.as_str())
+    {
+        "Structure"
+    } else if kind == "message_field" && name == "Ephemeral" {
+        "Boolean"
+    } else if kind == "message_field" && name == "Server Hashed Password" {
+        "Byte String"
+    } else if target_id == "KMIPKIT-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE" {
+        "Structure"
     } else if target_id == "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-23-OBJECT-GROUP"
         || target_id == "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-VENDOR-SPECIFIC"
         || kind == "tag_range" && target["allocation"] == "extension"
@@ -347,7 +379,9 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
                 }
             })
     };
-    let value = if target["target_id"] == "KMIPKIT-ELEM-TAG-420008" {
+    let value = if target["target_id"] == "KMIPKIT-ELEM-TAG-420008"
+        || target_id == "KMIPKIT-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE"
+    {
         // KMIP 2.1 §4.60, Table 150 defines the required Vendor Attribute fields and order.
         vendor_attribute_value()?
     } else if [
@@ -1682,6 +1716,20 @@ fn sample_for_route_at_version(
         && target["kind"] == "object_structure"
     {
         return crate::fixtures::object(text(target, "name")?).map(|(_, item, _)| item);
+    }
+    if let Some(value_type) = symbol.strip_prefix("kmipkit_ttlv::Value::")
+        && target["source_encoding"]
+            .as_str()
+            .is_some_and(|encoding| encoding.contains("Text String, Enumeration or Integer"))
+    {
+        let source = sample(target, elements)?;
+        let value = match value_type {
+            "text_string" => Value::text_string("unique-identifier-fixture".to_owned()),
+            "enumeration" => Value::enumeration(1),
+            "integer" => Value::integer(256),
+            _ => return Err("unsupported Unique Identifier value constructor"),
+        };
+        return Item::new(source.tag(), value).map_err(|_| "Unique Identifier fixture rejected");
     }
     if !typed_item_route(symbol) {
         return sample(target, elements);
@@ -3048,6 +3096,7 @@ mod tests {
 
     /// OASIS KMIP 2.0/2.1 §§2.1–2.2, 4.60, 6.1.19, 6.1.24, 6.1.39, 8.3, 8.5–8.6, and 9.4.
     #[test]
+    #[allow(clippy::too_many_lines)] // Keep versioned fixture cases and route assertions auditable together.
     fn generic_ttlv_routes_cover_nested_objects_and_message_fields() {
         let catalog: Json = serde_json::from_str(include_str!(
             "../../shared/catalog/kmipkit-1.0-test-catalog.json"
