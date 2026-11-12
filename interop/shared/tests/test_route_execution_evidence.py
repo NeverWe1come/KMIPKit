@@ -154,6 +154,22 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         schema = json.loads((SHARED / "schemas/route-execution-evidence.schema.json").read_text())
         jsonschema.validate(self.report, schema)
 
+    def test_single_item_batch_conforms_to_route_execution_evidence_schema(self):
+        try:
+            import jsonschema
+        except ImportError:
+            self.skipTest("jsonschema dependency is not installed")
+        report = copy.deepcopy(self.report)
+        send_event = next(event for event in report["events"] if event["action"] == "send")
+        send_event.update({
+            "batch_operation_sequence": ["Get"],
+            "peer_observed_operation_sequence": ["Get"],
+            "batch_item_count": 1,
+            "peer_observed_response_count": 1,
+        })
+        schema = json.loads((SHARED / "schemas/route-execution-evidence.schema.json").read_text())
+        jsonschema.validate(report, schema)
+
     def test_missing_action_fails_coverage_even_when_the_route_was_called(self):
         report = copy.deepcopy(self.report)
         report["events"].pop()
