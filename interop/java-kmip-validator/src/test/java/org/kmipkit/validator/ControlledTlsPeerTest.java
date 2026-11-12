@@ -292,6 +292,10 @@ class ControlledTlsPeerTest {
         assertTrue(enumerationFixtures.stream().noneMatch(fixture -> fixture.caseId().equals(
                         "test-norm-enumeration-value-profile-name-reserved-00000001-00000103")),
                 "A finite Profile Name range must remain pending until each named value is represented.");
+        assertEquals(2, routeEventCount(report.path("events"),
+                        "test-norm-enumeration-value-key-format-type-raw-00000001",
+                        "java.typed-protocol.function.client_batch_item_response_raw_ttlv"),
+                "The controlled Get response must exercise raw TTLV access to the named Key Format Type value.");
         for (EnumerationFixture fixture : enumerationFixtures) {
             String builderRoute = CRYPTOGRAPHIC_PARAMETER_BUILDER_ROUTES.get(fixture.parentName());
             if (builderRoute != null) {
