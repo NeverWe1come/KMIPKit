@@ -135,7 +135,10 @@ def _generic_samples(case: dict, target: dict, symbol: str) -> list[tuple[int, s
                      and _normalized_name(entry.get('name', '')) in wanted), None)
 
     if kind in ('enumeration_value', 'referenced_enum_value', 'bitmask_value'):
-        raw_values = PythonKmipDriver._wire_representatives(requires['wire_value'])
+        wire_value = target.get('wire_value', requires.get('wire_value'))
+        if not isinstance(wire_value, str):
+            raise RecipePending
+        raw_values = PythonKmipDriver._wire_representatives(wire_value)
         parent_ids = target.get('parent_element_ids', [])
         parent = next((elements.get(value, {}) for value in parent_ids
                        if elements.get(value, {}).get('kind') in ('enumeration', 'bitmask')), {})

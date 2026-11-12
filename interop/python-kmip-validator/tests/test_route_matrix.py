@@ -128,14 +128,17 @@ class RouteMatrixTests(unittest.TestCase):
         manifest['routes'] = [route for route in manifest['routes']
                               if route['language'] == 'python'
                               and route['public_api_symbol'] in symbols]
+        manifest['routes'].append(next(route for route in self.manifest['routes']
+                                       if route['language'] == 'python'
+                                       and route['public_api_symbol'] == 'kmipkit.ttlv.ttlv_value_enumeration'))
 
         report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
 
         self.assertFalse(gaps)
-        self.assertEqual(8, len(report['events']))
+        self.assertEqual(16, len(report['events']))
         self.assertEqual(symbols, {event['public_api_symbol'] for event in report['events']})
         self.assertEqual({'KMIPKIT-ELEM-ENUM-VALUE-ADJUSTMENT-TYPE-' + name
-                          for name in ('DECREMENT-00000002', 'EXTENSIONS-80000000',
+                          for name in ('DECREMENT-00000002', 'EXTENSIONS-8XXXXXXX',
                                        'INCREMENT-00000001', 'NEGATE-00000003')},
                          {event['target_id'] for event in report['events']})
 
