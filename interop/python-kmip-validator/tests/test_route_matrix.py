@@ -52,6 +52,30 @@ class RouteMatrixTests(unittest.TestCase):
         schema = json.loads((ROOT / 'interop/shared/schemas/route-execution-evidence.schema.json').read_text())
         jsonschema.validate(report, schema)
 
+    def test_matrix_preloads_python_package_before_parallel_invocations(self):
+        from unittest.mock import patch
+
+        catalog, manifest = self.integer_fixture()
+        imported = []
+        import_module = self.runner.importlib.import_module
+        executor_type = self.runner.ThreadPoolExecutor
+
+        def track_import(name, *args, **kwargs):
+            imported.append(name)
+            return import_module(name, *args, **kwargs)
+
+        def checked_executor(*args, **kwargs):
+            self.assertIn('kmipkit', imported,
+                          'the package import must finish before route worker threads start')
+            return executor_type(*args, **kwargs)
+
+        with patch.object(self.runner.importlib, 'import_module', side_effect=track_import), \
+                patch.object(self.runner, 'ThreadPoolExecutor', side_effect=checked_executor):
+            report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+
+        self.assertFalse(gaps)
+        self.assertTrue(report['events'])
+
     def test_missing_recipe_is_pending_coverage_and_never_becomes_api_unavailability(self):
         catalog, manifest = self.integer_fixture()
         route = copy.deepcopy(manifest['routes'][0])
