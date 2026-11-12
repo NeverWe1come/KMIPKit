@@ -126,6 +126,24 @@ class ControlledTlsPeerTest {
             "java.typed-protocol.model.org.kmipkit.credentials.attestationcredential.fromttlv",
             "KMIPKIT-ELEM-ENUM-VALUE-CREDENTIAL-TYPE-HASHED-PASSWORD-00000005",
             "java.typed-protocol.model.org.kmipkit.credentials.hashedpasswordcredential.fromttlv");
+    private static final Map<String, String> CREDENTIAL_TYPE_MODEL_CASE_IDS = Map.of(
+            "KMIPKIT-ELEM-ENUM-VALUE-CREDENTIAL-TYPE-USERNAME-AND-PASSWORD-00000001",
+            "test-norm-credential-credential-username-and-password",
+            "KMIPKIT-ELEM-ENUM-VALUE-CREDENTIAL-TYPE-DEVICE-00000002",
+            "test-norm-credential-credential-device",
+            "KMIPKIT-ELEM-ENUM-VALUE-CREDENTIAL-TYPE-ATTESTATION-00000003",
+            "test-norm-credential-credential-attestation",
+            "KMIPKIT-ELEM-ENUM-VALUE-CREDENTIAL-TYPE-HASHED-PASSWORD-00000005",
+            "test-norm-credential-credential-hashed-password");
+    private static final Map<String, String> CREDENTIAL_TYPE_MODEL_TARGET_IDS = Map.of(
+            "KMIPKIT-ELEM-ENUM-VALUE-CREDENTIAL-TYPE-USERNAME-AND-PASSWORD-00000001",
+            "KMIPKIT-ELEM-CREDENTIAL-USERNAME-AND-PASSWORD",
+            "KMIPKIT-ELEM-ENUM-VALUE-CREDENTIAL-TYPE-DEVICE-00000002",
+            "KMIPKIT-ELEM-CREDENTIAL-DEVICE",
+            "KMIPKIT-ELEM-ENUM-VALUE-CREDENTIAL-TYPE-ATTESTATION-00000003",
+            "KMIPKIT-ELEM-CREDENTIAL-ATTESTATION",
+            "KMIPKIT-ELEM-ENUM-VALUE-CREDENTIAL-TYPE-HASHED-PASSWORD-00000005",
+            "KMIPKIT-ELEM-CREDENTIAL-HASHED-PASSWORD");
     @TempDir
     Path temporaryDirectory;
 
@@ -347,10 +365,15 @@ class ControlledTlsPeerTest {
                         "Every Credential Type value needs an installed fromRaw call: " + fixture.targetId());
                 String credentialRoute = CREDENTIAL_TYPE_MODEL_ROUTES.get(fixture.targetId());
                 if (credentialRoute != null) {
-                    assertEquals(fixture.protocolVersions().size(),
-                            routeEventCount(report.path("events"), fixture.caseId(), credentialRoute),
-                            "Every implemented Credential Value needs its exact installed fromTtlv call: "
-                                    + fixture.targetId());
+                    String credentialCaseId = CREDENTIAL_TYPE_MODEL_CASE_IDS.get(fixture.targetId());
+                    String credentialTargetId = CREDENTIAL_TYPE_MODEL_TARGET_IDS.get(fixture.targetId());
+                    for (String version : fixture.protocolVersions()) {
+                        assertEquals(credentialTargetId,
+                                findRouteEvent(report.path("events"), credentialCaseId,
+                                        credentialRoute, version, credentialTargetId)
+                                        .path("target_id").asText(),
+                                "Credential Value conversion evidence must use its structural catalog case.");
+                    }
                 }
             }
         }
@@ -2332,6 +2355,7 @@ class ControlledTlsPeerTest {
         genericEnumerationFixtures().forEach(fixture -> caseIds.add(fixture.caseId()));
         genericBitmaskFixtures().stream().map(BitmaskFixture::caseId).distinct().forEach(caseIds::add);
         genericDataTypeFixtures().forEach(fixture -> caseIds.add(fixture.caseId()));
+        CREDENTIAL_TYPE_MODEL_CASE_IDS.values().forEach(caseIds::add);
         report.putArray("protocol_versions").add("2.0").add("2.1");
         ObjectNode combination = mapper.createObjectNode();
         combination.put("encoding", "TTLV");
@@ -2393,7 +2417,7 @@ class ControlledTlsPeerTest {
                 found = event;
             }
         }
-        assertEquals(1, matches, "Each Endpoint Role generic route must execute exactly once per version.");
+        assertEquals(1, matches, "Each expected route must execute exactly once for its catalog case and version.");
         return found;
     }
 
