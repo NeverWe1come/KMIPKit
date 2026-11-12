@@ -1248,6 +1248,13 @@ class RouteMatrixTests(unittest.TestCase):
 
         self.assertIsNone(self.runner._batch_operations_for_case(route, ping))
 
+    def test_async_workflow_operations_are_not_mistaken_for_one_batch(self):
+        asynchronous = next(case for case in self.catalog['test_cases']
+                            if case['case_id'] == 'test-async-poll-repeated-pending-to-success')
+        route = {'execution_route_id': 'python.execute.typed-batch'}
+
+        self.assertIsNone(self.runner._batch_operations_for_case(route, asynchronous))
+
     def test_create_routes_validate_peer_rejection_and_all_wire_encodings(self):
         catalog = copy.deepcopy(self.catalog)
         catalog['test_cases'] = [case for case in self.catalog['test_cases']
