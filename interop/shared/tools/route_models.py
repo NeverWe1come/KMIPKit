@@ -251,6 +251,15 @@ def model_inventory(root, commit, source, api, targets):
                 'Private Key', 'Public Key', 'Secret Data', 'Split Key', 'Symmetric Key'}
             exact_targets = [target['target_id'] for target in targets
                 if target['kind'] == 'object_structure' and target['name'] in root_object_names]
+        if owner == 'SecretData' and method == 'try_from_item':
+            # OASIS KMIP 2.1 §3.1 Table 11 excludes these Key Block fields for Secret Data.
+            inapplicable = {
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-ALGORITHM',
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-LENGTH'}
+            exact_targets = [target_id for target_id in target_ids(
+                targets, names, all_objects=is_object_item, operation_id=operation_id,
+                exclude_target_ids=object_type_targets if is_object_item else ())
+                if target_id not in inapplicable]
         credential_targets = credential_function_target_ids(
             f'{_snake_case(owner)}_{method}', targets) \
             if method in {'from_ttlv', 'into_ttlv', 'try_from_ttlv'} else None
