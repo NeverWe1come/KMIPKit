@@ -162,6 +162,13 @@ def _credential_type_value_target_ids(targets, value_names):
         and norm(target['name']) in value_names}
 
 
+def managed_object_type_target_ids(targets):
+    """Return managed-object Object Type values, excluding the §4.36 attribute tag."""
+    return {target['target_id'] for target in targets
+        if target['kind'] == 'object_type' or
+        'KMIPKIT-ELEM-ENUMERATION-OBJECT-TYPE' in target.get('parent_element_ids', [])}
+
+
 def model_inventory(root, commit, source, api, targets):
     commit = validate_git_commit(commit)
     candidates = {}
@@ -169,9 +176,7 @@ def model_inventory(root, commit, source, api, targets):
     operations['setendpointrole'] = 'KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE'
     generated = source(root, commit, 'crates/kmipkit-protocol/src/typed_attributes_generated.rs')
     markers = re.findall(r'element_id: "([^"]+)",\s*source_name: "([^"]+)",\s*marker_name: "([^"]+)"', generated)
-    object_type_targets = {target['target_id'] for target in targets
-        if target['kind'] == 'object_type' or
-        'KMIPKIT-ELEM-ENUMERATION-OBJECT-TYPE' in target.get('parent_element_ids', [])}
+    object_type_targets = managed_object_type_target_ids(targets)
 
     def add(language, symbol, path, names, *, attributes=False, exclude_object_structures=False,
             objects=False, operation_id=None, object_item=False, exact_target_ids=None):
