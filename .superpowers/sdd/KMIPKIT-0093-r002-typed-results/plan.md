@@ -116,3 +116,40 @@ The focused 0093 and T102 tests pass together (8 tests). The manifest generator
 reports all 12 outputs verified after regeneration. The caller-copy note remains
 in C documentation; Java/Python runtime-copy limitations were already present
 and are covered by their existing binding documentation and tests.
+
+### Refactor and final verification evidence
+
+The implementation remains a single retained response owner and a shared
+checked renderer. No runtime implementation was duplicated: inspection
+confirmed the typed result, owner lifetime, and TTLV/JSON/XML paths were already
+implemented in the preceding 0095/0096 stack. R002 closes their 0093 contract
+mapping, traceability, and C caller-copy documentation. The T102 baseline
+normalization is limited to additive 0093 requirement links and this caller
+copy note; the focused parity tests assert the new behavior separately.
+
+Final validation on this branch head:
+
+- `cargo fmt --all --check` and
+  `cargo clippy --workspace --all-targets --all-features -- -D warnings` pass.
+- `cargo test -p kmipkit-client --all-features`: 880 unit tests, integration
+  tests, and doctests pass. `cargo test -p kmipkit-ffi --all-features`: 474
+  unit tests, 56 compiled C consumer tests, and the operation-parity test pass.
+- `cargo llvm-cov --workspace --all-features --summary-only --fail-under-lines 90`
+  passes at 92.57% workspace line coverage. Component gates pass at 96.08% for
+  the client and 90.64% for FFI.
+- `mvn -q -DargLine=-Djava.io.tmpdir=<worktree>/target/java-tmp verify` passes
+  all 708 Java tests (one skipped) at 94.95% line coverage. The explicit temp
+  directory keeps Java child-JVM fixtures off the full `/tmp` tmpfs.
+- A fresh Python 3.12 editable install built from this worktree passes the
+  response-view, raw-navigation, and async-result suites: 55 tests.
+- The 0093 contract and T102 response-view parity tests pass together: 8 tests.
+  `generate.py --check` verifies all 12 generated outputs.
+- The full C/Java/Python declaration audit reports complete exact matches for
+  1,998 C, 2,390 Java, and 2,597 Python declarations. The C binary and JNI
+  export audits pass.
+- `git diff --check` passes. No runtime source, OASIS source, or raw-message
+  submission surface changed.
+
+The development evidence is split across Red commits `42e210c84`,
+`3db2ed535`, and `f8e8394da`; Green commits `e509c6d4b` and `4079ab380`; and
+this final Refactor/documentation commit.
