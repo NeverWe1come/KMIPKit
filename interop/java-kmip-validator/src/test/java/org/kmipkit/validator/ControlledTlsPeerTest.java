@@ -117,6 +117,10 @@ class ControlledTlsPeerTest {
             "java.generic-ttlv.ttlv_item.create",
             "java.generic-ttlv.function.ttlv_item_view_from_item",
             "java.generic-ttlv.ttlv_codec.decode");
+    private static final String RESPONSE_BATCH_ITEM_CASE_ID =
+            "test-norm-message-field-message-field-8-4-batch-item";
+    private static final String RESPONSE_BATCH_ITEM_TARGET_ID =
+            "KMIPKIT-ELEM-MESSAGE-FIELD-8-4-BATCH-ITEM";
     private static final Map<String, String> CREDENTIAL_TYPE_MODEL_ROUTES = Map.of(
             "KMIPKIT-ELEM-ENUM-VALUE-CREDENTIAL-TYPE-USERNAME-AND-PASSWORD-00000001",
             "java.typed-protocol.model.org.kmipkit.credentials.usernameandpasswordcredential.fromttlv",
@@ -351,6 +355,12 @@ class ControlledTlsPeerTest {
                 ENDPOINT_ROLE_CLIENT_TARGET_ID, KmipValues.EndpointRole.CLIENT, "Client");
         assertEndpointRoleRouteEvidence(report.path("events"), ENDPOINT_ROLE_SERVER_CASE_ID,
                 ENDPOINT_ROLE_SERVER_TARGET_ID, KmipValues.EndpointRole.SERVER, "Server");
+        assertEquals(2, routeEventCount(report.path("events"), RESPONSE_BATCH_ITEM_CASE_ID,
+                        "java.typed-protocol.function.client_batch_response_item_at"),
+                "The installed batch item accessor must run against real KMIP 2.x response Batch Items.");
+        assertEquals(2, routeEventCount(report.path("events"), RESPONSE_BATCH_ITEM_CASE_ID,
+                        "java.typed-protocol.function.client_batch_response_item_count"),
+                "The installed batch count accessor must run against real KMIP 2.x response Batch Items.");
         for (EnumerationFixture fixture : enumerationFixtures) {
             String builderRoute = CRYPTOGRAPHIC_PARAMETER_BUILDER_ROUTES.get(fixture.parentName());
             if (builderRoute != null) {
