@@ -5,6 +5,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+static void initialize_identifier_v1(kmipkit_unique_identifier_v1_t *identifier) {
+    identifier->struct_size = (uint32_t)sizeof(*identifier);
+    identifier->abi_version = UINT32_C(1);
+}
+
 static int32_t execute_key_lifecycle(
     kmipkit_client_t *client, kmipkit_codec_limits_t *limits) {
     static const uint8_t key_name[] = "fluent-key";
@@ -47,8 +52,7 @@ static int32_t execute_key_lifecycle(
     if (status != 0 || create_item == 0) goto cleanup;
     metadata.struct_size = (uint32_t)sizeof(metadata);
     metadata.abi_version = UINT32_C(1);
-    identifier.struct_size = (uint32_t)sizeof(identifier);
-    identifier.abi_version = UINT32_C(1);
+    initialize_identifier_v1(&identifier);
     failure_step = 3;
     status = kmipkit_client_batch_item_response_metadata_v1(create_item, &metadata);
     if (status != 0 || metadata.result_status != 0) goto cleanup;
@@ -186,10 +190,8 @@ static int32_t execute_aes_gcm_journey(
     create_request.name_present = UINT8_C(1);
     create_request.name.data = key_name;
     create_request.name.length = (uint64_t)(sizeof(key_name) - 1);
-    identifier.struct_size = (uint32_t)sizeof(identifier);
-    identifier.abi_version = UINT32_C(1);
-    response_identifier.struct_size = (uint32_t)sizeof(response_identifier);
-    response_identifier.abi_version = UINT32_C(1);
+    initialize_identifier_v1(&identifier);
+    initialize_identifier_v1(&response_identifier);
     failure_step = 1;
     status = kmipkit_client_create_symmetric_key_v1(client, &create_request, limits, &create_response);
     if (status != 0 || create_response == NULL) goto cleanup;

@@ -16,4 +16,5 @@
 - C failure found during Green: the new journey had not initialized the versioned Unique Identifier output records before calling the typed response accessor. Initialized both records according to the public ABI contract; the C TLS journey then passed.
 - Runner hardening: `verify.sh` and `verify.ps1` now wait for the responder and require a successful exit, so a consumer cannot pass if the fixture rejected an exchange or failed to receive the full expected sequence.
 - Verification: `sh tests/consumers/0093-journeys/verify.sh` completed successfully on Linux. It built and ran all four consumers against the controlled listener, verified all 28 requests and the listener's successful exit; the C consumer was compiled with `-Wall -Wextra -Werror`. `git diff --check` passed.
-- Status: Green complete; Refactor follows in its own commit.
+- Refactor: centralized initialization of ABI-versioned Unique Identifier output records in the C consumer to prevent another uninitialized-record call. The full four-language mTLS journey passed again after this cleanup.
+- Status: Task 2 Red, Green, and Refactor complete in separate commits.
