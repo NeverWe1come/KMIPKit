@@ -296,6 +296,23 @@ class RouteMatrixTests(unittest.TestCase):
             'kmipkit.cryptographic_parameters.CryptographicParametersBuilder.digital_signature_algorithm',
         })
 
+    def test_key_wrapping_data_tag_routes_execute_catalogued_structure(self):
+        target_id = 'KMIPKIT-ELEM-TAG-420046'
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-norm-tag-tag-420046')
+        target = next(target for target in self.catalog['normative_targets']
+                      if target['target_id'] == target_id)
+        routes = {
+            'kmipkit.managed_objects.KeyWrappingData.from_fields': 'construct',
+            'kmipkit.managed_objects.KeyWrappingData.from_item': 'decode',
+        }
+        for symbol, action in routes.items():
+            with self.subTest(symbol=symbol):
+                cell = {'action': action, 'encoding': 'TTLV', 'protocol_version': '2.0',
+                        'public_api_symbol': symbol, 'transport': None}
+                result = self.runner.execute_cell(cell, case, target)
+                self.assertEqual(result['request_tree_sha256'], result['response_tree_sha256'])
+
     def test_scalar_payload_variants_roundtrip_the_exact_field_type_and_tag(self):
         catalog = copy.deepcopy(self.catalog)
         catalog['test_cases'] = [case for case in catalog['test_cases']
