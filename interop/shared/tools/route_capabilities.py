@@ -31,6 +31,10 @@ ASYNC = {'cancel', 'poll', 'process', 'queryasyncrequests'}
 _FUNCTION_TARGET_OVERRIDES = {
     ('java', 'client_batch_item_response_raw_ttlv'):
         ('KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-RAW-00000001',),
+    ('java', 'client_batch_response_item_at'):
+        ('KMIPKIT-ELEM-MESSAGE-FIELD-8-4-BATCH-ITEM',),
+    ('java', 'client_batch_response_item_count'):
+        ('KMIPKIT-ELEM-MESSAGE-FIELD-8-4-BATCH-ITEM',),
 }
 
 CHECKED_TAG_INPUTS = {
