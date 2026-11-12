@@ -97,6 +97,7 @@ class RouteCapabilitiesTests(unittest.TestCase):
                             for target in unknown_targets), unknown['normative_target_ids'])
 
     def test_managed_object_parser_route_only_claims_root_object_structures(self):
+        # OASIS KMIP 2.0/2.1 §§2.1–2.9 define managed-object roots; §3 structures are embedded models.
         catalog = json.loads((SHARED / 'catalog/kmipkit-1.0-test-catalog.json').read_text())
         targets = {target['target_id']: target for target in catalog['normative_targets']}
         route = next(route for route in self.data['routes']

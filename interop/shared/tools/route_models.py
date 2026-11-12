@@ -245,6 +245,12 @@ def model_inventory(root, commit, source, api, targets):
             target['kind'] == 'object_structure' and norm(target['name']) == norm(owner)
             for target in targets)
         exact_targets = ['KMIPKIT-RANGE-004'] if owner == 'ManagedObject' and method == 'unknown' else None
+        if owner == 'ManagedObject' and method == 'try_from_item':
+            root_object_names = {
+                'Certificate', 'Certificate Request', 'Opaque Object', 'PGP Key',
+                'Private Key', 'Public Key', 'Secret Data', 'Split Key', 'Symmetric Key'}
+            exact_targets = [target['target_id'] for target in targets
+                if target['kind'] == 'object_structure' and target['name'] in root_object_names]
         credential_targets = credential_function_target_ids(
             f'{_snake_case(owner)}_{method}', targets) \
             if method in {'from_ttlv', 'into_ttlv', 'try_from_ttlv'} else None
