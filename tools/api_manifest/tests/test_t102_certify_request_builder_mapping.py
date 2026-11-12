@@ -374,6 +374,12 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
             PKCS11_REQUEST_EXTENSIONS_C_DECLARATION_ID,
         } | PKCS11_REQUEST_EXTENSION_IDS | {
             target["id"] for target in REQUEST_CONSTRUCTION_TARGETS
+        } | {
+            # KMIPKIT-0096 promotes these Rust/Java routes and adds their fluent bindings.
+            "rust-observed-kmipkit-0096-attribute-at-root",
+            "rust-observed-kmipkit-0096-attribute-at-module",
+            "T096:java-fluent-crypto:attribute-item-at",
+            "T096:fluent-python:attribute-item-at",
         }
         other_declarations = copy.deepcopy([
             row for row in self.manifest["publicDeclarations"] if row["declarationId"] not in target_ids
