@@ -4,6 +4,7 @@ import importlib.util
 import hashlib
 import json
 import sys
+import tempfile
 import unittest
 
 TOOLS = Path(__file__).resolve().parents[1] / 'tools'
@@ -20,6 +21,21 @@ class RouteMatrixTests(unittest.TestCase):
     def test_nonexistent_recipe_is_pending_and_never_library_unavailable(self):
         self.assertEqual(self.runner.pending_reason({'public_api_symbol': 'kmipkit_client_batch_item_sign'}),
                          'validator_recipe_pending')
+
+    def test_route_evidence_output_cannot_escape_its_build_directory(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaisesRegex(ValueError, 'path_outside_allowed_root'):
+                self.runner.resolve_output_path(Path(directory) / 'outside.json')
+
+    def test_route_wrapper_inputs_and_output_are_confined_to_their_workspace_roots(self):
+        import generate_route_wrappers
+
+        with tempfile.TemporaryDirectory() as directory:
+            outside = Path(directory) / 'outside.json'
+            with self.assertRaisesRegex(ValueError, 'path_outside_allowed_root'):
+                generate_route_wrappers.resolve_manifest_path(outside)
+            with self.assertRaisesRegex(ValueError, 'path_outside_allowed_root'):
+                generate_route_wrappers.resolve_output_path(outside)
 
     def test_known_enum_fixture_preserves_exact_named_target_value(self):
         target = {'kind': 'enumeration_value', 'wire_value': '00000003',
