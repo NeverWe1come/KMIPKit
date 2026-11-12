@@ -1274,10 +1274,32 @@ class RouteMatrixTests(unittest.TestCase):
 
     def test_async_workflow_operations_are_not_mistaken_for_one_batch(self):
         asynchronous = next(case for case in self.catalog['test_cases']
-                            if case['case_id'] == 'test-async-poll-repeated-pending-to-success')
+                            if case['case_id'] == 'test-async-lifecycle-poll')
         route = {'execution_route_id': 'python.execute.typed-batch'}
 
         self.assertIsNone(self.runner._batch_operations_for_case(route, asynchronous))
+
+    def test_async_lifecycle_create_route_executes_as_a_single_request(self):
+        catalog = copy.deepcopy(self.catalog)
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-async-lifecycle-poll')
+        catalog['test_cases'] = [case]
+        operation_targets = set(case['requires']['protocol_scenario']['target_ids'])
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in self.manifest['routes']
+                              if route['language'] == 'python'
+                              and route.get('execution_route_id') in {
+                                  'python.execute.typed-batch', 'python.execute.poll',
+                                  'python.execute.queryasyncrequests'}
+                              and operation_targets.intersection(route['normative_target_ids'])]
+
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+
+        self.assertEqual([], gaps)
+        self.assertEqual(54, len(report['events']))
+        self.assertTrue(all(event['status'] == 'passed'
+                            and event.get('peer_observed_operation_sequence') is None
+                            for event in report['events']))
 
     def test_create_routes_validate_peer_rejection_and_all_wire_encodings(self):
         catalog = copy.deepcopy(self.catalog)
