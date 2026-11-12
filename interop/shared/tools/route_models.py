@@ -182,7 +182,7 @@ def model_inventory(root, commit, source, api, targets):
                 operation_id=operation_id,
                 exclude_subtree_kinds={'object_structure', 'operation_structure'}
                     if attributes or exclude_object_structures else (),
-                exclude_target_ids=object_type_targets if object_item else ()))
+                exclude_target_ids=object_type_targets if object_item or attributes else ()))
         if operation_id and any(norm(name) in operations and operations[norm(name)] == operation_id for name in names):
             ids = sorted(set(ids) | {target['target_id'] for target in targets
                 if target.get('operation_id') == operation_id and target.get('role', 'request') == 'request'})

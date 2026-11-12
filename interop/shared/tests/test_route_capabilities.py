@@ -67,6 +67,7 @@ class RouteCapabilitiesTests(unittest.TestCase):
             self.assertNotIn('KMIPKIT-ELEM-TAG-4200FC', targets)
 
     def test_attribute_container_routes_do_not_claim_managed_object_structures(self):
+        # OASIS KMIP 2.0/2.1 §11.34 Object Type Enumeration is distinct from the §4.36 Object Type Attribute.
         catalog = json.loads((SHARED / 'catalog/kmipkit-1.0-test-catalog.json').read_text())
         targets = {target['target_id']: target for target in catalog['normative_targets']}
         managed_object_type_values = {target_id for target_id, target in targets.items()
