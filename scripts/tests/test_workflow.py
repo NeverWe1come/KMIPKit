@@ -832,6 +832,15 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn('build-backend = "maturin"', python_project)
         self.assertIn('bindings = "cffi"', python_project)
 
+    def test_core_tests_build_the_ffi_library_before_linked_consumers(self) -> None:
+        contents = self.require_workflow()
+        core_job = self.require_job(contents, "core")
+        build_step = self.require_named_step(core_job, "Build C ABI library for FFI consumer tests")
+        workspace_test_step = self.require_named_step(core_job, "Run workspace tests")
+
+        self.assertIn("cargo build --locked -p kmipkit-ffi --features coverage-c-consumer", build_step.group(1))
+        self.assertLess(build_step.start(), workspace_test_step.start())
+
     def test_c_api_level_consumer_receives_expected_local_taxonomy(self) -> None:
         cmake = (REPOSITORY_ROOT / "bindings" / "c" / "CMakeLists.txt").read_text(
             encoding="utf-8"
