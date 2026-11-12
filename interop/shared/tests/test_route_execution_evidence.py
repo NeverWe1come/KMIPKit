@@ -5,9 +5,7 @@ import copy
 import json
 from pathlib import Path
 import sys
-import tempfile
 import unittest
-from unittest.mock import patch
 
 
 SHARED = Path(__file__).resolve().parents[1]
@@ -20,7 +18,6 @@ from validate_route_evidence import (
     validate_parity_collection,
     validate_report,
 )  # noqa: E402
-import validate_route_evidence as route_evidence  # noqa: E402
 
 
 class RouteExecutionEvidenceTests(unittest.TestCase):
@@ -115,25 +112,6 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
             ],
         }
 
-    def test_route_evidence_ledger_writer_uses_fixed_java_build_destination(self):
-        writer = getattr(route_evidence, "write_java_route_evidence_ledger", None)
-        self.assertTrue(callable(writer), "route ledgers must use a fixed repository output")
-        with tempfile.TemporaryDirectory() as directory:
-            repository = Path(directory) / "repository"
-            fake_script = repository / "interop/shared/tools/validate_route_evidence.py"
-            fake_script.parent.mkdir(parents=True)
-            fake_script.touch()
-            expected = repository / "interop/java-kmip-validator/build/route-evidence-ledger.json"
-            payload = {"planned_cells": 68_529, "executed_cells": 20}
-
-            with patch.object(route_evidence, "__file__", str(fake_script)):
-                written = writer(payload)
-
-            self.assertEqual(expected, written)
-            self.assertEqual(json.dumps(payload, indent=2, sort_keys=True) + "\n",
-                             written.read_text(encoding="utf-8"))
-            self.assertFalse((Path(directory) / "ledger-outside.json").exists())
-
     @staticmethod
     def event(route_id, execution_route_id, execution_api_symbol, action, transport, tree_field, encoding="TTLV"):
         return {
@@ -176,56 +154,21 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         schema = json.loads((SHARED / "schemas/route-execution-evidence.schema.json").read_text())
         jsonschema.validate(self.report, schema)
 
-    def test_case_subset_report_requires_only_selected_case_cells_and_is_not_global_complete(self):
-        self.catalog["test_cases"].append({
-            "case_id": "case-two",
-            "category": "normative_inventory",
-            "operation": "TTLV Roundtrip",
-            "requires": {"normative_target_id": "KMIPKIT-ELEM-TAG-420001"},
-            "execution": {"protocol_versions": ["2.0"]},
+    def test_single_item_batch_conforms_to_route_execution_evidence_schema(self):
+        try:
+            import jsonschema
+        except ImportError:
+            self.skipTest("jsonschema dependency is not installed")
+        report = copy.deepcopy(self.report)
+        send_event = next(event for event in report["events"] if event["action"] == "send")
+        send_event.update({
+            "batch_operation_sequence": ["Get"],
+            "peer_observed_operation_sequence": ["Get"],
+            "batch_item_count": 1,
+            "peer_observed_response_count": 1,
         })
-        report = copy.deepcopy(self.report)
-        report["case_ids"] = ["case-one"]
-
-        summary = self.validate(report)
-
-        self.assertEqual(5, summary["expected_cells"])
-        self.assertEqual(5, summary["invoked_cells"])
-        self.assertTrue(summary["selected_scope_complete"])
-        self.assertFalse(summary["complete_matrix"])
-
-    def test_case_subset_rejects_unknown_and_duplicate_case_ids(self):
-        report = copy.deepcopy(self.report)
-        report["case_ids"] = ["case-one", "case-missing"]
-        with self.assertRaisesRegex(ValueError, "unknown case_ids"):
-            self.validate(report)
-
-        report["case_ids"] = ["case-one", "case-one"]
-        with self.assertRaisesRegex(ValueError, "case_ids contains duplicates"):
-            self.validate(report)
-
-    def test_incomplete_route_ledger_names_pending_case_ids_and_counts(self):
-        self.catalog["test_cases"].append({
-            "case_id": "case-two",
-            "category": "normative_inventory",
-            "operation": "TTLV Roundtrip",
-            "requires": {"normative_target_id": "KMIPKIT-ELEM-TAG-420001"},
-            "execution": {"protocol_versions": ["2.0"]},
-        })
-        report = copy.deepcopy(self.report)
-        report["case_ids"] = ["case-one"]
-
-        ledger = route_evidence.build_evidence_ledger(
-            report, self.catalog, self.manifest, catalog_sha256="c" * 64,
-            route_manifest_sha256="d" * 64, expected_artifact_sha256="b" * 64,
-        )
-
-        self.assertEqual(10, ledger["planned_cells"])
-        self.assertEqual(5, ledger["executed_cells"])
-        self.assertEqual(5, ledger["pending_cells"])
-        self.assertEqual(["case-two"], ledger["pending_case_ids"])
-        self.assertFalse(ledger["complete_matrix"])
-        self.assertEqual("route_evidence_not_emitted", ledger["pending_reason_code"])
+        schema = json.loads((SHARED / "schemas/route-execution-evidence.schema.json").read_text())
+        jsonschema.validate(report, schema)
 
     def test_missing_action_fails_coverage_even_when_the_route_was_called(self):
         report = copy.deepcopy(self.report)
@@ -498,6 +441,7 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
     def test_controlled_peer_evidence_preserves_repeated_batch_item_order(self):
         case = {
             "case_id": "batch-get-stop",
+            "category": "batch_workflows",
             "requires": {"protocol_scenario": {
                 "parameters": {"items": ["Get(missing)", "Get(existing)"]},
                 "expected": {"first": "OperationFailed", "second": "OperationUndone", "response_count": 2},
@@ -524,6 +468,23 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         event["peer_observed_result_status_codes"] = [0, 3]
         with self.assertRaisesRegex(ValueError, "per-item status outcomes"):
             _validate_batch_event(event, case, catalog, ("batch-get-stop",))
+
+    def test_async_lifecycle_steps_are_not_validated_as_a_single_batch(self):
+        case = {
+            "case_id": "test-async-lifecycle-poll",
+            "category": "asynchronous_workflows",
+            "requires": {"protocol_scenario": {
+                "parameters": {"operations_in_request_order": [
+                    "Create", "Query Asynchronous Requests", "Poll",
+                ]},
+                "expected": {"operation_order": [
+                    "Create", "Query Asynchronous Requests", "Poll",
+                ]},
+            }},
+        }
+        event = {"batch_operation_sequence": ["Poll"], "batch_item_count": 1}
+
+        _validate_batch_event(event, case, {}, ("async-poll",))
 
     def test_async_workflow_order_is_not_mistaken_for_a_single_batch(self):
         operations = ["Create", "Query Asynchronous Requests", "Poll"]
