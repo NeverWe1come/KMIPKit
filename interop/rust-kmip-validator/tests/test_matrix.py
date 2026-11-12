@@ -297,7 +297,7 @@ class MatrixContract(unittest.TestCase):
             matrix = Path(directory) / 'one-cell.jsonl'
             matrix.write_text(json.dumps(self.cell('kmipkit_ttlv::Item::new')) + '\n')
             process = subprocess.run([sys.executable, str(ROOT / 'interop/rust-kmip-validator/tools/run_route_matrix.py'),
-                '--matrix', str(matrix), '--output-dir', directory, '--validator', str(VALIDATOR)],
+                '--matrix', str(matrix), '--output-dir', directory],
                 capture_output=True, text=True, timeout=30)
             self.assertNotEqual(process.returncode, 0)
             summary_path = Path(directory) / 'matrix-summary.json'

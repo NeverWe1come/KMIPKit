@@ -7,7 +7,6 @@ missing. Emitted events are actual runner calls, never copied planned rows.
 import argparse
 import hashlib
 import json
-import os
 from pathlib import Path
 import subprocess
 import sys
@@ -24,7 +23,6 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--matrix', type=Path)
     parser.add_argument('--output-dir', type=Path, default=ROOT / 'interop/rust-kmip-validator/results/routes')
-    parser.add_argument('--validator', type=Path, default=Path(os.environ.get('KMIPKIT_VALIDATOR_BIN', ROOT / 'interop/rust-kmip-validator/target/debug/rust-kmip-validator')))
     args = parser.parse_args()
     catalog_bytes = (ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_bytes()
     route_bytes = (ROOT / 'interop/shared/coverage/route-capabilities.json').read_bytes()
@@ -39,7 +37,8 @@ def main():
                     stream.write(json.dumps(cell, sort_keys=True, separators=(',', ':')) + '\n')
     evidence_path = args.output_dir / 'rust-local-route-evidence.json'
     evidence_path.unlink(missing_ok=True)
-    process = subprocess.run([str(args.validator), 'matrix-local', '--matrix', str(matrix),
+    validator = ROOT / 'interop/rust-kmip-validator/target/debug/rust-kmip-validator'
+    process = subprocess.run([str(validator), 'matrix-local', '--matrix', str(matrix),
                               '--output', str(evidence_path)], capture_output=True, text=True)
     summary = {'schema_valid': False, 'complete_matrix': False, 'invoked_local_cells': 0,
                'failed_local_cells': 0, 'gate_failure_code': 'runner_did_not_emit_evidence'}
