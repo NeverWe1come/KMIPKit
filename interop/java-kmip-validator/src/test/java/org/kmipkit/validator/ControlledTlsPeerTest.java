@@ -17,6 +17,11 @@ import org.kmipkit.extensions.UniqueIdentifier;
 import org.kmipkit.extensions.QueryResponse;
 import org.kmipkit.extensions.QueryResponseField;
 import org.kmipkit.extensions.QueryResponseFieldKind;
+import org.kmipkit.credentials.AttestationCredential;
+import org.kmipkit.credentials.CredentialType;
+import org.kmipkit.credentials.DeviceCredential;
+import org.kmipkit.credentials.HashedPasswordCredential;
+import org.kmipkit.credentials.UsernameAndPasswordCredential;
 import org.kmipkit.protocol.CryptographicParameters;
 import org.kmipkit.protocol.KmipValues;
 import org.kmipkit.ttlv.CodecLimits;
@@ -312,7 +317,10 @@ class ControlledTlsPeerTest {
                 .mapToInt(fixture -> fixture.protocolVersions().size()
                         * (4 + (fixture.attribute() == null ? 0 : 3)
                                 + (CRYPTOGRAPHIC_PARAMETER_BUILDER_ROUTES.containsKey(fixture.parentName())
-                                        ? 1 : 0))).sum();
+                                        ? 1 : 0)
+                                + ("CREDENTIAL-TYPE".equals(fixture.parentName())
+                                        ? 1 + (credentialTypeModelRoute(fixture.targetId()) == null ? 0 : 1)
+                                        : 0))).sum();
         int bitmaskEventCount = bitmaskFixtures.stream()
                 .mapToInt(fixture -> fixture.protocolVersions().size() * (4 + (fixture.attribute() == null ? 0 : 3)))
                 .sum();
@@ -1253,7 +1261,146 @@ class ControlledTlsPeerTest {
                         protocolVersion, fixture.value());
                 appendTypedEnumerationRouteEvents(events, fixture, wire, protocolVersion, treeHash);
                 appendCryptographicParameterBuilderRouteEvent(events, fixture, protocolVersion, treeHash);
+                appendCredentialEnumerationRouteEvents(events, fixture, protocolVersion, treeHash);
             }
+        }
+    }
+
+    private static void appendCredentialEnumerationRouteEvents(ArrayNode events,
+            EnumerationFixture fixture, String protocolVersion, String enumTreeHash) throws Exception {
+        if (!"CREDENTIAL-TYPE".equals(fixture.parentName())) return;
+        CredentialType credentialType = CredentialType.fromRaw(fixture.value());
+        assertEquals(fixture.value(), credentialType.raw());
+        appendRouteEvent(events, fixture.caseId(), CREDENTIAL_TYPE_FROM_RAW_ROUTE, fixture.targetId(),
+                "org.kmipkit.credentials.CredentialType.fromRaw", null, null,
+                "construct", protocolVersion, null, enumTreeHash, null);
+
+        String modelRoute = credentialTypeModelRoute(fixture.targetId());
+        if (modelRoute == null) return;
+        String modelSymbol;
+        String credentialTreeHash = normalizedTreeSha256(credentialValueWire(fixture.targetId()));
+        try (TtlvStructure structure = credentialValueStructure(fixture.targetId())) {
+            switch (modelRoute) {
+                case "java.typed-protocol.model.org.kmipkit.credentials.attestationcredential.fromttlv" -> {
+                    modelSymbol = "org.kmipkit.credentials.AttestationCredential.fromTtlv";
+                    try (AttestationCredential credential = AttestationCredential.fromTtlv(structure)) {
+                        assertTrue(Boolean.TRUE.equals(credential.withTtlv(view -> view.itemCount() > 0)));
+                    }
+                }
+                case "java.typed-protocol.model.org.kmipkit.credentials.devicecredential.fromttlv" -> {
+                    modelSymbol = "org.kmipkit.credentials.DeviceCredential.fromTtlv";
+                    try (DeviceCredential credential = DeviceCredential.fromTtlv(structure)) {
+                        assertTrue(Boolean.TRUE.equals(credential.withTtlv(view -> view.itemCount() > 0)));
+                    }
+                }
+                case "java.typed-protocol.model.org.kmipkit.credentials.hashedpasswordcredential.fromttlv" -> {
+                    modelSymbol = "org.kmipkit.credentials.HashedPasswordCredential.fromTtlv";
+                    try (HashedPasswordCredential credential = HashedPasswordCredential.fromTtlv(structure)) {
+                        assertTrue(Boolean.TRUE.equals(credential.withTtlv(view -> view.itemCount() > 0)));
+                    }
+                }
+                case "java.typed-protocol.model.org.kmipkit.credentials.usernameandpasswordcredential.fromttlv" -> {
+                    modelSymbol = "org.kmipkit.credentials.UsernameAndPasswordCredential.fromTtlv";
+                    try (UsernameAndPasswordCredential credential =
+                            UsernameAndPasswordCredential.fromTtlv(structure)) {
+                        assertTrue(Boolean.TRUE.equals(credential.withTtlv(view -> view.itemCount() > 0)));
+                    }
+                }
+                default -> throw new IllegalStateException("Unknown Credential Value model route: " + modelRoute);
+            }
+        }
+        appendRouteEvent(events, fixture.caseId(), modelRoute, fixture.targetId(), modelSymbol,
+                null, null, "construct", protocolVersion, null, credentialTreeHash, null);
+    }
+
+    private static byte[] credentialValueWire(String targetId) throws Exception {
+        if (targetId.contains("USERNAME-AND-PASSWORD")) {
+            return structure(0x420025,
+                    textItem(0x420099, "validator-user"),
+                    textItem(0x4200a1, "validator-password-fixture"));
+        }
+        if (targetId.contains("DEVICE-00000002")) {
+            return structure(0x420025,
+                    textItem(0x4200b0, "validator-serial"),
+                    textItem(0x4200a1, "validator-password-fixture"),
+                    textItem(0x4200a2, "validator-device-id"),
+                    textItem(0x4200ab, "validator-network-id"),
+                    textItem(0x4200a9, "validator-machine-id"),
+                    textItem(0x4200aa, "validator-media-id"));
+        }
+        if (targetId.contains("ATTESTATION-00000003")) {
+            return structure(0x420025,
+                    structure(0x4200c8,
+                            item(0x4200c9, 8, new byte[] {0x01, 0x02}),
+                            item(0x4200ca, 8, new byte[] {0x03, 0x04})),
+                    item(0x4200c7, 5, intBytes(1)),
+                    item(0x4200cb, 8, new byte[] {0x05, 0x06}));
+        }
+        if (targetId.contains("HASHED-PASSWORD")) {
+            return structure(0x420025,
+                    textItem(0x420099, "validator-user"),
+                    item(0x420092, 10, longBytes(1_800_000_000L)),
+                    item(0x420038, 5, intBytes(6)),
+                    item(0x420157, 8, new byte[] {0x11, 0x22, 0x33, 0x44}));
+        }
+        throw new IllegalArgumentException("No Credential Value wire fixture for the selected target");
+    }
+
+    private static byte[] textItem(int tag, String value) throws Exception {
+        return item(tag, 7, value.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static TtlvStructure credentialValueStructure(String targetId) throws Exception {
+        CodecLimits limits = CodecLimits.defaults();
+        if (targetId.contains("USERNAME-AND-PASSWORD")) {
+            TtlvStructure structure = TtlvStructure.create();
+            structure = appendCredentialText(structure, 0x420099, "validator-user", limits);
+            return appendCredentialText(structure, 0x4200a1, "validator-password-fixture", limits);
+        }
+        if (targetId.contains("DEVICE-00000002")) {
+            TtlvStructure structure = TtlvStructure.create();
+            structure = appendCredentialText(structure, 0x4200b0, "validator-serial", limits);
+            structure = appendCredentialText(structure, 0x4200a1, "validator-password-fixture", limits);
+            structure = appendCredentialText(structure, 0x4200a2, "validator-device-id", limits);
+            structure = appendCredentialText(structure, 0x4200ab, "validator-network-id", limits);
+            structure = appendCredentialText(structure, 0x4200a9, "validator-machine-id", limits);
+            return appendCredentialText(structure, 0x4200aa, "validator-media-id", limits);
+        }
+        if (targetId.contains("ATTESTATION-00000003")) {
+            TtlvStructure nonce = TtlvStructure.create();
+            nonce = appendCredentialValue(nonce, 0x4200c9,
+                    TtlvValue.ByteString(new byte[] {0x01, 0x02}, limits), limits);
+            nonce = appendCredentialValue(nonce, 0x4200ca,
+                    TtlvValue.ByteString(new byte[] {0x03, 0x04}, limits), limits);
+            TtlvStructure structure = TtlvStructure.create();
+            structure = appendCredentialValue(structure, 0x4200c8, TtlvValue.structure(nonce, limits), limits);
+            structure = appendCredentialValue(structure, 0x4200c7, TtlvValue.Enumeration(1), limits);
+            return appendCredentialValue(structure, 0x4200cb,
+                    TtlvValue.ByteString(new byte[] {0x05, 0x06}, limits), limits);
+        }
+        if (targetId.contains("HASHED-PASSWORD")) {
+            TtlvStructure structure = TtlvStructure.create();
+            structure = appendCredentialText(structure, 0x420099, "validator-user", limits);
+            structure = appendCredentialValue(structure, 0x420092,
+                    TtlvValue.DateTimeExtended(1_800_000_000L), limits);
+            structure = appendCredentialValue(structure, 0x420038, TtlvValue.Enumeration(6), limits);
+            return appendCredentialValue(structure, 0x420157,
+                    TtlvValue.ByteString(new byte[] {0x11, 0x22, 0x33, 0x44}, limits), limits);
+        }
+        throw new IllegalArgumentException("No Credential Value fixture for the selected target");
+    }
+
+    private static TtlvStructure appendCredentialText(TtlvStructure structure, int rawTag,
+            String fixtureValue, CodecLimits limits) {
+        return appendCredentialValue(structure, rawTag,
+                TtlvValue.TextString(fixtureValue.getBytes(StandardCharsets.UTF_8), limits), limits);
+    }
+
+    private static TtlvStructure appendCredentialValue(TtlvStructure structure, int rawTag,
+            TtlvValue value, CodecLimits limits) {
+        try (value; RawTag raw = RawTag.fromRaw(rawTag); Tag tag = raw.checked();
+                TtlvItem item = TtlvItem.create(tag, value, limits)) {
+            return TtlvStructure.withItem(structure, item, limits);
         }
     }
 
