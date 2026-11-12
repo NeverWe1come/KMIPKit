@@ -179,11 +179,13 @@ def _generic_samples(case: dict, target: dict, symbol: str) -> list[tuple[int, s
             raise RecipePending
         values = PythonKmipDriver._wire_representatives(target['wire_value'])
         return [(int(object_type_tag['wire_value'], 16), 'Enumeration', value) for value in values]
-    if kind == 'tag' and requires.get('allocation') in ('assigned', 'extension'):
-        return [(raw, 'Integer', 0) for raw in PythonKmipDriver._wire_representatives(requires['wire_value'])]
-    if kind == 'tag_range' and requires.get('allocation') == 'extension':
+    allocation = target.get('allocation', requires.get('allocation'))
+    wire_value = target.get('wire_value', requires.get('wire_value'))
+    if kind == 'tag' and allocation in ('assigned', 'extension') and isinstance(wire_value, str):
+        return [(raw, 'Integer', 0) for raw in PythonKmipDriver._wire_representatives(wire_value)]
+    if kind == 'tag_range' and allocation == 'extension' and isinstance(wire_value, str):
         import re
-        bounds = re.split(r'\s*[-–—]\s*', requires['wire_value'])
+        bounds = re.split(r'\s*[-–—]\s*', wire_value)
         return [(int(bound.upper().replace('X', fill), 16), 'Integer', 0)
                 for bound, fill in zip(bounds, ('0', 'F'), strict=True)]
     if kind in ('tag', 'tag_range'):
@@ -313,8 +315,9 @@ def _generic_cell(cell: dict, case: dict, target: dict) -> dict:
     from kmipkit import ttlv
 
     symbol = cell['public_api_symbol']
-    if case['requires'].get('target_kind') in ('tag', 'tag_range') and case['requires'].get('allocation') in ('reserved', 'unused'):
-        return _tag_rejection_cell(cell, case)
+    if (target.get('kind', case['requires'].get('target_kind')) in ('tag', 'tag_range')
+            and target.get('allocation', case['requires'].get('allocation')) in ('reserved', 'unused')):
+        return _tag_rejection_cell(cell, case, target)
     if symbol not in _GENERIC_SYMBOLS:
         raise RecipePending
     samples = _generic_samples(case, target, symbol)
@@ -1030,7 +1033,7 @@ def _typed_attribute_cell(cell: dict, case: dict, target: dict) -> dict:
     observed = []
     for tag, type_name, value in samples:
         attribute = attributes[tag]
-        if case['requires'].get('target_kind') == 'tag':
+        if target.get('kind', case['requires'].get('target_kind')) == 'tag':
             # Tag allocation cases have no prescribed value. Use the installed
             # attribute's exact catalogued scalar type instead of inventing one.
             scalar = {'Integer': ('Integer', 0), 'Enumeration': ('Enumeration', 1),
@@ -1145,18 +1148,22 @@ def _crypto_parameters_cell(cell: dict, case: dict, target: dict) -> dict:
     return {'request_tree_sha256': tree_hash, 'response_tree_sha256': tree_hash}
 
 
-def _tag_rejection_cell(cell: dict, case: dict) -> dict:
+def _tag_rejection_cell(cell: dict, case: dict, target: dict) -> dict:
     """Check all catalog range endpoints without constructing a nonexistent Item."""
     import re
     from kmipkit import errors, ttlv
 
     requires = case['requires']
-    if requires['target_kind'] == 'tag_range':
-        bounds = re.split(r'\s*[-–—]\s*', requires['wire_value'])
+    target_kind = target.get('kind', requires.get('target_kind'))
+    wire_value = target.get('wire_value', requires.get('wire_value'))
+    if not isinstance(wire_value, str):
+        raise RecipePending
+    if target_kind == 'tag_range':
+        bounds = re.split(r'\s*[-–—]\s*', wire_value)
         values = [int(bound.upper().replace('X', fill), 16)
                   for bound, fill in zip(bounds, ('0', 'F'), strict=True)]
     else:
-        values = PythonKmipDriver._wire_representatives(requires['wire_value'])
+        values = PythonKmipDriver._wire_representatives(wire_value)
     inputs = [[raw, 2, 0] for raw in values]
     symbol = cell['public_api_symbol']
     for tree in inputs:

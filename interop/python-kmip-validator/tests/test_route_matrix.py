@@ -287,8 +287,7 @@ class RouteMatrixTests(unittest.TestCase):
         catalog['test_cases'] = [case for case in self.catalog['test_cases']
                                  if case['case_id'] == 'test-enum-tag']
         symbols = {'kmipkit.ttlv.raw_tag_from_raw', 'kmipkit.ttlv.raw_tag_try_checked',
-                   'kmipkit.ttlv.ttlv_item_create', 'kmipkit.ttlv.ttlv_decode',
-                   'kmipkit.ttlv.ttlv_item_view_from_item'}
+                   'kmipkit.ttlv.ttlv_decode'}
         manifest = copy.deepcopy(self.manifest)
         manifest['routes'] = [route for route in self.manifest['routes']
                               if route['language'] == 'python'
