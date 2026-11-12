@@ -26,6 +26,13 @@ COVERAGE = ROOT / 'interop/shared/coverage'
 LANGUAGES = ('rust', 'c', 'java', 'python')
 ASYNC = {'cancel', 'poll', 'process', 'queryasyncrequests'}
 
+# The Java controlled Get fixture includes Key Format Type::Raw in the returned
+# item, and `ClientBatchItemResult.raw()` returns that exact TTLV tree.
+_FUNCTION_TARGET_OVERRIDES = {
+    ('java', 'client_batch_item_response_raw_ttlv'):
+        ('KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-RAW-00000001',),
+}
+
 CHECKED_TAG_INPUTS = {
     ('rust', 'kmipkit_ttlv::Item::new'): 'crates/kmipkit-ttlv/src/item.rs',
     ('rust', 'kmipkit_ttlv::Structure::try_push'): 'crates/kmipkit-ttlv/src/structure.rs',
@@ -543,6 +550,7 @@ def build_manifest(root=ROOT, commit='9a16cc90a12205101d22a38501a5e74c665df4dc')
                     if 'managedobject' in value:
                         target_ids.extend(target['target_id'] for target in targets
                             if target['kind'] in {'object_type', 'object_structure'})
+                    target_ids.extend(_FUNCTION_TARGET_OVERRIDES.get((language, function_id), ()))
                     target_ids = sorted(set(target_ids)) or ['*']
             network = action == 'construct' and '_to_batch_item' in function_id
             mode = 'network' if network else 'local'
