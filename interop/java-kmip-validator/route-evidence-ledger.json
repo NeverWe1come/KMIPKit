@@ -1012,12 +1012,201 @@
     "test-norm-tag-tag-420173",
     "test-norm-tag-tag-420174",
     "test-norm-tag-tag-420175",
+    "test-norm-pkcs11-function-001",
+    "test-norm-pkcs11-function-002",
+    "test-norm-pkcs11-function-003",
+    "test-norm-pkcs11-function-004",
+    "test-norm-pkcs11-function-005",
+    "test-norm-pkcs11-function-006",
+    "test-norm-pkcs11-function-007",
+    "test-norm-pkcs11-function-008",
+    "test-norm-pkcs11-function-009",
+    "test-norm-pkcs11-function-010",
+    "test-norm-pkcs11-function-011",
+    "test-norm-pkcs11-function-012",
+    "test-norm-pkcs11-function-013",
+    "test-norm-pkcs11-function-014",
+    "test-norm-pkcs11-function-015",
+    "test-norm-pkcs11-function-016",
+    "test-norm-pkcs11-function-017",
+    "test-norm-pkcs11-function-018",
+    "test-norm-pkcs11-function-019",
+    "test-norm-pkcs11-function-020",
+    "test-norm-pkcs11-function-021",
+    "test-norm-pkcs11-function-022",
+    "test-norm-pkcs11-function-023",
+    "test-norm-pkcs11-function-024",
+    "test-norm-pkcs11-function-025",
+    "test-norm-pkcs11-function-026",
+    "test-norm-pkcs11-function-027",
+    "test-norm-pkcs11-function-028",
+    "test-norm-pkcs11-function-029",
+    "test-norm-pkcs11-function-030",
+    "test-norm-pkcs11-function-031",
+    "test-norm-pkcs11-function-032",
+    "test-norm-pkcs11-function-033",
+    "test-norm-pkcs11-function-034",
+    "test-norm-pkcs11-function-035",
+    "test-norm-pkcs11-function-036",
+    "test-norm-pkcs11-function-037",
+    "test-norm-pkcs11-function-038",
+    "test-norm-pkcs11-function-039",
+    "test-norm-pkcs11-function-040",
+    "test-norm-pkcs11-function-041",
+    "test-norm-pkcs11-function-042",
+    "test-norm-pkcs11-function-043",
+    "test-norm-pkcs11-function-044",
+    "test-norm-pkcs11-function-045",
+    "test-norm-pkcs11-function-046",
+    "test-norm-pkcs11-function-047",
+    "test-norm-pkcs11-function-048",
+    "test-norm-pkcs11-function-049",
+    "test-norm-pkcs11-function-050",
+    "test-norm-pkcs11-function-051",
+    "test-norm-pkcs11-function-052",
+    "test-norm-pkcs11-function-053",
+    "test-norm-pkcs11-function-054",
+    "test-norm-pkcs11-function-055",
+    "test-norm-pkcs11-function-056",
+    "test-norm-pkcs11-function-057",
+    "test-norm-pkcs11-function-058",
+    "test-norm-pkcs11-function-059",
+    "test-norm-pkcs11-function-060",
+    "test-norm-pkcs11-function-061",
+    "test-norm-pkcs11-function-062",
+    "test-norm-pkcs11-function-063",
+    "test-norm-pkcs11-function-064",
+    "test-norm-pkcs11-function-065",
+    "test-norm-pkcs11-function-066",
+    "test-norm-pkcs11-function-067",
+    "test-norm-pkcs11-function-068",
+    "test-norm-pkcs11-function-069",
+    "test-norm-pkcs11-function-070",
+    "test-norm-pkcs11-function-071",
+    "test-norm-pkcs11-function-072",
+    "test-norm-pkcs11-function-073",
+    "test-norm-pkcs11-function-074",
+    "test-norm-pkcs11-function-075",
+    "test-norm-pkcs11-function-076",
+    "test-norm-pkcs11-function-077",
+    "test-norm-pkcs11-function-078",
+    "test-norm-pkcs11-function-079",
+    "test-norm-pkcs11-function-080",
+    "test-norm-pkcs11-function-081",
+    "test-norm-pkcs11-function-082",
+    "test-norm-pkcs11-function-083",
+    "test-norm-pkcs11-function-084",
+    "test-norm-pkcs11-function-085",
+    "test-norm-pkcs11-function-086",
+    "test-norm-pkcs11-function-087",
+    "test-norm-pkcs11-function-088",
+    "test-norm-pkcs11-function-089",
+    "test-norm-pkcs11-function-090",
+    "test-norm-pkcs11-function-091",
+    "test-norm-pkcs11-function-092",
+    "test-norm-pkcs11-return-ok",
+    "test-norm-pkcs11-return-cancel",
+    "test-norm-pkcs11-return-host-memory",
+    "test-norm-pkcs11-return-slot-id-invalid",
+    "test-norm-pkcs11-return-general-error",
+    "test-norm-pkcs11-return-function-failed",
+    "test-norm-pkcs11-return-arguments-bad",
+    "test-norm-pkcs11-return-no-event",
+    "test-norm-pkcs11-return-need-to-create-threads",
+    "test-norm-pkcs11-return-cant-lock",
+    "test-norm-pkcs11-return-attribute-read-only",
+    "test-norm-pkcs11-return-attribute-sensitive",
+    "test-norm-pkcs11-return-attribute-type-invalid",
+    "test-norm-pkcs11-return-attribute-value-invalid",
+    "test-norm-pkcs11-return-action-prohibited",
+    "test-norm-pkcs11-return-data-invalid",
+    "test-norm-pkcs11-return-data-len-range",
+    "test-norm-pkcs11-return-device-error",
+    "test-norm-pkcs11-return-device-memory",
+    "test-norm-pkcs11-return-device-removed",
+    "test-norm-pkcs11-return-encrypted-data-invalid",
+    "test-norm-pkcs11-return-encrypted-data-len-range",
+    "test-norm-pkcs11-return-aead-decrypt-failed",
+    "test-norm-pkcs11-return-function-canceled",
+    "test-norm-pkcs11-return-function-not-parallel",
+    "test-norm-pkcs11-return-function-not-supported",
+    "test-norm-pkcs11-return-key-handle-invalid",
+    "test-norm-pkcs11-return-key-size-range",
+    "test-norm-pkcs11-return-key-type-inconsistent",
+    "test-norm-pkcs11-return-key-not-needed",
+    "test-norm-pkcs11-return-key-changed",
+    "test-norm-pkcs11-return-key-needed",
+    "test-norm-pkcs11-return-key-indigestible",
+    "test-norm-pkcs11-return-key-function-not-permitted",
+    "test-norm-pkcs11-return-key-not-wrappable",
+    "test-norm-pkcs11-return-key-unextractable",
+    "test-norm-pkcs11-return-mechanism-invalid",
+    "test-norm-pkcs11-return-mechanism-param-invalid",
+    "test-norm-pkcs11-return-object-handle-invalid",
+    "test-norm-pkcs11-return-operation-active",
+    "test-norm-pkcs11-return-operation-not-initialized",
+    "test-norm-pkcs11-return-pin-incorrect",
+    "test-norm-pkcs11-return-pin-invalid",
+    "test-norm-pkcs11-return-pin-len-range",
+    "test-norm-pkcs11-return-pin-expired",
+    "test-norm-pkcs11-return-pin-locked",
+    "test-norm-pkcs11-return-session-closed",
+    "test-norm-pkcs11-return-session-count",
+    "test-norm-pkcs11-return-session-handle-invalid",
+    "test-norm-pkcs11-return-session-parallel-not-supported",
+    "test-norm-pkcs11-return-session-read-only",
+    "test-norm-pkcs11-return-session-exists",
+    "test-norm-pkcs11-return-session-read-only-exists",
+    "test-norm-pkcs11-return-session-read-write-so-exists",
+    "test-norm-pkcs11-return-signature-invalid",
+    "test-norm-pkcs11-return-signature-len-range",
+    "test-norm-pkcs11-return-template-incomplete",
+    "test-norm-pkcs11-return-template-inconsistent",
+    "test-norm-pkcs11-return-token-not-present",
+    "test-norm-pkcs11-return-token-not-recognized",
+    "test-norm-pkcs11-return-token-write-protected",
+    "test-norm-pkcs11-return-unwrapping-key-handle-invalid",
+    "test-norm-pkcs11-return-unwrapping-key-size-range",
+    "test-norm-pkcs11-return-unwrapping-key-type-inconsistent",
+    "test-norm-pkcs11-return-user-already-logged-in",
+    "test-norm-pkcs11-return-user-not-logged-in",
+    "test-norm-pkcs11-return-user-pin-not-initialized",
+    "test-norm-pkcs11-return-user-type-invalid",
+    "test-norm-pkcs11-return-user-another-already-logged-in",
+    "test-norm-pkcs11-return-user-too-many-types",
+    "test-norm-pkcs11-return-wrapped-key-invalid",
+    "test-norm-pkcs11-return-wrapped-key-len-range",
+    "test-norm-pkcs11-return-wrapping-key-handle-invalid",
+    "test-norm-pkcs11-return-wrapping-key-size-range",
+    "test-norm-pkcs11-return-wrapping-key-type-inconsistent",
+    "test-norm-pkcs11-return-random-seed-not-supported",
+    "test-norm-pkcs11-return-random-no-rng",
+    "test-norm-pkcs11-return-domain-params-invalid",
+    "test-norm-pkcs11-return-curve-not-supported",
+    "test-norm-pkcs11-return-buffer-too-small",
+    "test-norm-pkcs11-return-saved-state-invalid",
+    "test-norm-pkcs11-return-information-sensitive",
+    "test-norm-pkcs11-return-state-unsaveable",
+    "test-norm-pkcs11-return-cryptoki-not-initialized",
+    "test-norm-pkcs11-return-cryptoki-already-initialized",
+    "test-norm-pkcs11-return-mutex-bad",
+    "test-norm-pkcs11-return-mutex-not-locked",
+    "test-norm-pkcs11-return-new-pin-mode",
+    "test-norm-pkcs11-return-next-otp",
+    "test-norm-pkcs11-return-exceeded-max-iterations",
+    "test-norm-pkcs11-return-fips-self-test-failed",
+    "test-norm-pkcs11-return-library-load-failed",
+    "test-norm-pkcs11-return-pin-too-weak",
+    "test-norm-pkcs11-return-public-key-invalid",
+    "test-norm-pkcs11-return-function-rejected",
+    "test-norm-pkcs11-return-token-resource-exceeded",
+    "test-norm-pkcs11-return-vendor-defined",
     "test-norm-credential-credential-attestation",
     "test-norm-credential-credential-device",
     "test-norm-credential-credential-hashed-password",
     "test-norm-credential-credential-username-and-password"
   ],
-  "executed_cells": 10958,
+  "executed_cells": 12470,
   "language": "java",
   "library_commit": "9a16cc90a12205101d22a38501a5e74c665df4dc",
   "pending_case_ids": [
@@ -2084,195 +2273,6 @@
     "test-norm-payload-server-set-endpoint-role-request-21-001",
     "test-norm-payload-server-set-endpoint-role-response-20-001",
     "test-norm-payload-server-set-endpoint-role-response-21-001",
-    "test-norm-pkcs11-function-001",
-    "test-norm-pkcs11-function-002",
-    "test-norm-pkcs11-function-003",
-    "test-norm-pkcs11-function-004",
-    "test-norm-pkcs11-function-005",
-    "test-norm-pkcs11-function-006",
-    "test-norm-pkcs11-function-007",
-    "test-norm-pkcs11-function-008",
-    "test-norm-pkcs11-function-009",
-    "test-norm-pkcs11-function-010",
-    "test-norm-pkcs11-function-011",
-    "test-norm-pkcs11-function-012",
-    "test-norm-pkcs11-function-013",
-    "test-norm-pkcs11-function-014",
-    "test-norm-pkcs11-function-015",
-    "test-norm-pkcs11-function-016",
-    "test-norm-pkcs11-function-017",
-    "test-norm-pkcs11-function-018",
-    "test-norm-pkcs11-function-019",
-    "test-norm-pkcs11-function-020",
-    "test-norm-pkcs11-function-021",
-    "test-norm-pkcs11-function-022",
-    "test-norm-pkcs11-function-023",
-    "test-norm-pkcs11-function-024",
-    "test-norm-pkcs11-function-025",
-    "test-norm-pkcs11-function-026",
-    "test-norm-pkcs11-function-027",
-    "test-norm-pkcs11-function-028",
-    "test-norm-pkcs11-function-029",
-    "test-norm-pkcs11-function-030",
-    "test-norm-pkcs11-function-031",
-    "test-norm-pkcs11-function-032",
-    "test-norm-pkcs11-function-033",
-    "test-norm-pkcs11-function-034",
-    "test-norm-pkcs11-function-035",
-    "test-norm-pkcs11-function-036",
-    "test-norm-pkcs11-function-037",
-    "test-norm-pkcs11-function-038",
-    "test-norm-pkcs11-function-039",
-    "test-norm-pkcs11-function-040",
-    "test-norm-pkcs11-function-041",
-    "test-norm-pkcs11-function-042",
-    "test-norm-pkcs11-function-043",
-    "test-norm-pkcs11-function-044",
-    "test-norm-pkcs11-function-045",
-    "test-norm-pkcs11-function-046",
-    "test-norm-pkcs11-function-047",
-    "test-norm-pkcs11-function-048",
-    "test-norm-pkcs11-function-049",
-    "test-norm-pkcs11-function-050",
-    "test-norm-pkcs11-function-051",
-    "test-norm-pkcs11-function-052",
-    "test-norm-pkcs11-function-053",
-    "test-norm-pkcs11-function-054",
-    "test-norm-pkcs11-function-055",
-    "test-norm-pkcs11-function-056",
-    "test-norm-pkcs11-function-057",
-    "test-norm-pkcs11-function-058",
-    "test-norm-pkcs11-function-059",
-    "test-norm-pkcs11-function-060",
-    "test-norm-pkcs11-function-061",
-    "test-norm-pkcs11-function-062",
-    "test-norm-pkcs11-function-063",
-    "test-norm-pkcs11-function-064",
-    "test-norm-pkcs11-function-065",
-    "test-norm-pkcs11-function-066",
-    "test-norm-pkcs11-function-067",
-    "test-norm-pkcs11-function-068",
-    "test-norm-pkcs11-function-069",
-    "test-norm-pkcs11-function-070",
-    "test-norm-pkcs11-function-071",
-    "test-norm-pkcs11-function-072",
-    "test-norm-pkcs11-function-073",
-    "test-norm-pkcs11-function-074",
-    "test-norm-pkcs11-function-075",
-    "test-norm-pkcs11-function-076",
-    "test-norm-pkcs11-function-077",
-    "test-norm-pkcs11-function-078",
-    "test-norm-pkcs11-function-079",
-    "test-norm-pkcs11-function-080",
-    "test-norm-pkcs11-function-081",
-    "test-norm-pkcs11-function-082",
-    "test-norm-pkcs11-function-083",
-    "test-norm-pkcs11-function-084",
-    "test-norm-pkcs11-function-085",
-    "test-norm-pkcs11-function-086",
-    "test-norm-pkcs11-function-087",
-    "test-norm-pkcs11-function-088",
-    "test-norm-pkcs11-function-089",
-    "test-norm-pkcs11-function-090",
-    "test-norm-pkcs11-function-091",
-    "test-norm-pkcs11-function-092",
-    "test-norm-pkcs11-return-action-prohibited",
-    "test-norm-pkcs11-return-aead-decrypt-failed",
-    "test-norm-pkcs11-return-arguments-bad",
-    "test-norm-pkcs11-return-attribute-read-only",
-    "test-norm-pkcs11-return-attribute-sensitive",
-    "test-norm-pkcs11-return-attribute-type-invalid",
-    "test-norm-pkcs11-return-attribute-value-invalid",
-    "test-norm-pkcs11-return-buffer-too-small",
-    "test-norm-pkcs11-return-cancel",
-    "test-norm-pkcs11-return-cant-lock",
-    "test-norm-pkcs11-return-cryptoki-already-initialized",
-    "test-norm-pkcs11-return-cryptoki-not-initialized",
-    "test-norm-pkcs11-return-curve-not-supported",
-    "test-norm-pkcs11-return-data-invalid",
-    "test-norm-pkcs11-return-data-len-range",
-    "test-norm-pkcs11-return-device-error",
-    "test-norm-pkcs11-return-device-memory",
-    "test-norm-pkcs11-return-device-removed",
-    "test-norm-pkcs11-return-domain-params-invalid",
-    "test-norm-pkcs11-return-encrypted-data-invalid",
-    "test-norm-pkcs11-return-encrypted-data-len-range",
-    "test-norm-pkcs11-return-exceeded-max-iterations",
-    "test-norm-pkcs11-return-fips-self-test-failed",
-    "test-norm-pkcs11-return-function-canceled",
-    "test-norm-pkcs11-return-function-failed",
-    "test-norm-pkcs11-return-function-not-parallel",
-    "test-norm-pkcs11-return-function-not-supported",
-    "test-norm-pkcs11-return-function-rejected",
-    "test-norm-pkcs11-return-general-error",
-    "test-norm-pkcs11-return-host-memory",
-    "test-norm-pkcs11-return-information-sensitive",
-    "test-norm-pkcs11-return-key-changed",
-    "test-norm-pkcs11-return-key-function-not-permitted",
-    "test-norm-pkcs11-return-key-handle-invalid",
-    "test-norm-pkcs11-return-key-indigestible",
-    "test-norm-pkcs11-return-key-needed",
-    "test-norm-pkcs11-return-key-not-needed",
-    "test-norm-pkcs11-return-key-not-wrappable",
-    "test-norm-pkcs11-return-key-size-range",
-    "test-norm-pkcs11-return-key-type-inconsistent",
-    "test-norm-pkcs11-return-key-unextractable",
-    "test-norm-pkcs11-return-library-load-failed",
-    "test-norm-pkcs11-return-mechanism-invalid",
-    "test-norm-pkcs11-return-mechanism-param-invalid",
-    "test-norm-pkcs11-return-mutex-bad",
-    "test-norm-pkcs11-return-mutex-not-locked",
-    "test-norm-pkcs11-return-need-to-create-threads",
-    "test-norm-pkcs11-return-new-pin-mode",
-    "test-norm-pkcs11-return-next-otp",
-    "test-norm-pkcs11-return-no-event",
-    "test-norm-pkcs11-return-object-handle-invalid",
-    "test-norm-pkcs11-return-ok",
-    "test-norm-pkcs11-return-operation-active",
-    "test-norm-pkcs11-return-operation-not-initialized",
-    "test-norm-pkcs11-return-pin-expired",
-    "test-norm-pkcs11-return-pin-incorrect",
-    "test-norm-pkcs11-return-pin-invalid",
-    "test-norm-pkcs11-return-pin-len-range",
-    "test-norm-pkcs11-return-pin-locked",
-    "test-norm-pkcs11-return-pin-too-weak",
-    "test-norm-pkcs11-return-public-key-invalid",
-    "test-norm-pkcs11-return-random-no-rng",
-    "test-norm-pkcs11-return-random-seed-not-supported",
-    "test-norm-pkcs11-return-saved-state-invalid",
-    "test-norm-pkcs11-return-session-closed",
-    "test-norm-pkcs11-return-session-count",
-    "test-norm-pkcs11-return-session-exists",
-    "test-norm-pkcs11-return-session-handle-invalid",
-    "test-norm-pkcs11-return-session-parallel-not-supported",
-    "test-norm-pkcs11-return-session-read-only",
-    "test-norm-pkcs11-return-session-read-only-exists",
-    "test-norm-pkcs11-return-session-read-write-so-exists",
-    "test-norm-pkcs11-return-signature-invalid",
-    "test-norm-pkcs11-return-signature-len-range",
-    "test-norm-pkcs11-return-slot-id-invalid",
-    "test-norm-pkcs11-return-state-unsaveable",
-    "test-norm-pkcs11-return-template-incomplete",
-    "test-norm-pkcs11-return-template-inconsistent",
-    "test-norm-pkcs11-return-token-not-present",
-    "test-norm-pkcs11-return-token-not-recognized",
-    "test-norm-pkcs11-return-token-resource-exceeded",
-    "test-norm-pkcs11-return-token-write-protected",
-    "test-norm-pkcs11-return-unwrapping-key-handle-invalid",
-    "test-norm-pkcs11-return-unwrapping-key-size-range",
-    "test-norm-pkcs11-return-unwrapping-key-type-inconsistent",
-    "test-norm-pkcs11-return-user-already-logged-in",
-    "test-norm-pkcs11-return-user-another-already-logged-in",
-    "test-norm-pkcs11-return-user-not-logged-in",
-    "test-norm-pkcs11-return-user-pin-not-initialized",
-    "test-norm-pkcs11-return-user-too-many-types",
-    "test-norm-pkcs11-return-user-type-invalid",
-    "test-norm-pkcs11-return-vendor-defined",
-    "test-norm-pkcs11-return-wrapped-key-invalid",
-    "test-norm-pkcs11-return-wrapped-key-len-range",
-    "test-norm-pkcs11-return-wrapping-key-handle-invalid",
-    "test-norm-pkcs11-return-wrapping-key-size-range",
-    "test-norm-pkcs11-return-wrapping-key-type-inconsistent",
     "test-norm-structure-member-structure-member-2-1-certificate-certificate-type",
     "test-norm-structure-member-structure-member-2-1-certificate-certificate-value",
     "test-norm-structure-member-structure-member-2-2-certificate-request-certificate-request-type",
@@ -6956,762 +6956,6 @@
       "pending_cells": 6
     },
     {
-      "case_id": "test-norm-pkcs11-function-001",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-002",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-003",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-004",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-005",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-006",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-007",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-008",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-009",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-010",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-011",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-012",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-013",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-014",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-015",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-016",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-017",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-018",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-019",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-020",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-021",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-022",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-023",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-024",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-025",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-026",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-027",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-028",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-029",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-030",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-031",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-032",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-033",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-034",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-035",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-036",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-037",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-038",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-039",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-040",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-041",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-042",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-043",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-044",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-045",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-046",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-047",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-048",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-049",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-050",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-051",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-052",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-053",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-054",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-055",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-056",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-057",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-058",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-059",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-060",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-061",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-062",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-063",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-064",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-065",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-066",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-067",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-068",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-069",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-070",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-071",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-072",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-073",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-074",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-075",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-076",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-077",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-078",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-079",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-080",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-081",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-082",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-083",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-084",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-085",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-086",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-087",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-088",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-089",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-090",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-091",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-function-092",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-action-prohibited",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-aead-decrypt-failed",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-arguments-bad",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-attribute-read-only",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-attribute-sensitive",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-attribute-type-invalid",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-attribute-value-invalid",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-buffer-too-small",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-cancel",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-cant-lock",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-cryptoki-already-initialized",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-cryptoki-not-initialized",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-curve-not-supported",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-data-invalid",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-data-len-range",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-device-error",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-device-memory",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-device-removed",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-domain-params-invalid",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-encrypted-data-invalid",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-encrypted-data-len-range",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-exceeded-max-iterations",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-fips-self-test-failed",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-function-canceled",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-function-failed",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-function-not-parallel",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-function-not-supported",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-function-rejected",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-general-error",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-host-memory",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-information-sensitive",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-key-changed",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-key-function-not-permitted",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-key-handle-invalid",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-key-indigestible",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-key-needed",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-key-not-needed",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-key-not-wrappable",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-key-size-range",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-key-type-inconsistent",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-key-unextractable",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-library-load-failed",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-mechanism-invalid",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-mechanism-param-invalid",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-mutex-bad",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-mutex-not-locked",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-need-to-create-threads",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-new-pin-mode",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-next-otp",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-no-event",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-object-handle-invalid",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-ok",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-operation-active",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-operation-not-initialized",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-pin-expired",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-pin-incorrect",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-pin-invalid",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-pin-len-range",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-pin-locked",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-pin-too-weak",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-public-key-invalid",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-random-no-rng",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-random-seed-not-supported",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-saved-state-invalid",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-session-closed",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-session-count",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-session-exists",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-session-handle-invalid",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-session-parallel-not-supported",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-session-read-only",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-session-read-only-exists",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-session-read-write-so-exists",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-signature-invalid",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-signature-len-range",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-slot-id-invalid",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-state-unsaveable",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-template-incomplete",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-template-inconsistent",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-token-not-present",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-token-not-recognized",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-token-resource-exceeded",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-token-write-protected",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-unwrapping-key-handle-invalid",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-unwrapping-key-size-range",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-unwrapping-key-type-inconsistent",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-user-already-logged-in",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-user-another-already-logged-in",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-user-not-logged-in",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-user-pin-not-initialized",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-user-too-many-types",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-user-type-invalid",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-vendor-defined",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-wrapped-key-invalid",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-wrapped-key-len-range",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-wrapping-key-handle-invalid",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-wrapping-key-size-range",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-pkcs11-return-wrapping-key-type-inconsistent",
-      "pending_cells": 8
-    },
-    {
       "case_id": "test-norm-structure-member-structure-member-2-1-certificate-certificate-type",
       "pending_cells": 14
     },
@@ -9424,7 +8668,7 @@
       "pending_cells": 15
     }
   ],
-  "pending_cells": 60497,
+  "pending_cells": 58985,
   "pending_reason": "No validated per-cell route execution evidence is recorded for this cell.",
   "pending_reason_code": "route_evidence_not_emitted",
   "planned_cells": 71455,
@@ -9432,8 +8676,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 1054,
-      "pending_cells": 3030,
+      "executed_cells": 1243,
+      "pending_cells": 2841,
       "protocol_version": "2.0",
       "required_cells": 4084,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -9442,8 +8686,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 1070,
-      "pending_cells": 3109,
+      "executed_cells": 1259,
+      "pending_cells": 2920,
       "protocol_version": "2.1",
       "required_cells": 4179,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -9632,8 +8876,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 696,
-      "pending_cells": 1172,
+      "executed_cells": 885,
+      "pending_cells": 983,
       "protocol_version": "2.0",
       "required_cells": 1868,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
@@ -9642,8 +8886,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 712,
-      "pending_cells": 1183,
+      "executed_cells": 901,
+      "pending_cells": 994,
       "protocol_version": "2.1",
       "required_cells": 1895,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
@@ -9752,8 +8996,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 1078,
-      "pending_cells": 3053,
+      "executed_cells": 1267,
+      "pending_cells": 2864,
       "protocol_version": "2.0",
       "required_cells": 4131,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
@@ -9762,8 +9006,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 1094,
-      "pending_cells": 3132,
+      "executed_cells": 1283,
+      "pending_cells": 2943,
       "protocol_version": "2.1",
       "required_cells": 4226,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
@@ -9772,8 +9016,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 1054,
-      "pending_cells": 3029,
+      "executed_cells": 1243,
+      "pending_cells": 2840,
       "protocol_version": "2.0",
       "required_cells": 4083,
       "route_id": "java.generic-ttlv.ttlv_item.create",
@@ -9782,8 +9026,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 1070,
-      "pending_cells": 3108,
+      "executed_cells": 1259,
+      "pending_cells": 2919,
       "protocol_version": "2.1",
       "required_cells": 4178,
       "route_id": "java.generic-ttlv.ttlv_item.create",
@@ -35953,8 +35197,8 @@
   "route_manifest_sha256": "7e53ba3fd68e04a9a42885af657edda220ddbea54081ad4d1dd69467467ed1d4",
   "route_summary": [
     {
-      "executed_cells": 2124,
-      "pending_cells": 6139,
+      "executed_cells": 2502,
+      "pending_cells": 5761,
       "required_cells": 8263,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item"
     },
@@ -36013,8 +35257,8 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.datetimeextended"
     },
     {
-      "executed_cells": 1408,
-      "pending_cells": 2355,
+      "executed_cells": 1786,
+      "pending_cells": 1977,
       "required_cells": 3763,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration"
     },
@@ -36049,14 +35293,14 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring"
     },
     {
-      "executed_cells": 2172,
-      "pending_cells": 6185,
+      "executed_cells": 2550,
+      "pending_cells": 5807,
       "required_cells": 8357,
       "route_id": "java.generic-ttlv.ttlv_codec.decode"
     },
     {
-      "executed_cells": 2124,
-      "pending_cells": 6137,
+      "executed_cells": 2502,
+      "pending_cells": 5759,
       "required_cells": 8261,
       "route_id": "java.generic-ttlv.ttlv_item.create"
     },
@@ -37406,7 +36650,7 @@
     }
   ],
   "schema_version": "1.0",
-  "selected_scope_cells": 10958,
+  "selected_scope_cells": 12470,
   "selected_scope_complete": true,
   "vendor_interoperability_claim": false
 }

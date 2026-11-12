@@ -44,3 +44,24 @@ The local host's `/tmp` was full during development. Tests use
 `JAVA_TOOL_OPTIONS=-Djava.io.tmpdir=<worktree>/interop/java-kmip-validator/build/java-tmp`
 to retain private native extraction on the worktree filesystem. This changes
 no package, test assertion, matrix obligation, or CI gate.
+
+## Referenced PKCS#11 values
+
+Sources: OASIS KMIP 2.0/2.1 Specification §§11.38-11.39 and the catalog's
+SHA-256-pinned OASIS PKCS #11 3.0 headers (`pkcs11f.h` and `pkcs11t.h`).
+
+Red commit `d8c8d747d` requires each referenced value through all four
+applicable routes and fails because those route events were absent.
+
+The fixture invokes the installed Enumeration constructor, Item constructor,
+Item view and decoder for all 92 Function values and 97 Return Code values.
+It checks each exact unsigned value under tag `0x42015a` or `0x42015d`,
+including `CKR_VENDOR_DEFINED`'s high bit. The four routes must produce the
+same normalized tree hash for each case and protocol version. This does not
+invoke PKCS#11 functions or claim support for a vendor extension.
+
+The same focused Java test and shared validation commands pass with 12,470
+executed cells, zero failures and 58,985 pending out of 71,455 planned cells.
+PKCS#11 adds 1,512 validated cells; the two blocks together add 4,072 cells
+to the 8,398-cell baseline. The selected cases are complete; the full Java
+matrix remains incomplete.

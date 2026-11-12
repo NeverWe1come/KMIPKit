@@ -99,6 +99,49 @@ final class LocalCatalogRouteChecks {
         return false;
     }
 
+    // OASIS KMIP 2.0/2.1 §§11.38-11.39 reference the pinned PKCS#11 value inventories.
+    static void executeReferencedEnums(JsonNode catalog, String version, EvidenceSink sink) throws Exception {
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            JsonNode requires = testCase.path("requires");
+            if (!"referenced_enum_value".equals(requires.path("target_kind").asText())
+                    || !applies(testCase, version)) continue;
+            int tagCode = switch (requires.path("parent_name").asText()) {
+                case "PKCS#11 Function" -> 0x42015a;
+                case "PKCS#11 Return Code" -> 0x42015d;
+                default -> throw new AssertionError("Referenced enumeration has no source-backed tag fixture.");
+            };
+            String caseId = testCase.path("case_id").asText();
+            String targetId = requires.path("normative_target_id").asText();
+            long expected = Long.parseUnsignedLong(
+                    requires.path("wire_value").asText().replaceFirst("^0[xX]", ""), 16);
+            byte[] wire = scalarWire(tagCode, 5, (int) expected);
+            try (RawTag raw = RawTag.fromRaw(tagCode); Tag tag = raw.checked();
+                    TtlvValue value = TtlvValue.Enumeration(expected);
+                    TtlvItem item = TtlvItem.create(tag, value, CodecLimits.defaults());
+                    var view = item.view(); var viewedTag = view.tag(); var viewedValue = view.value()) {
+                assertEquals(tagCode, viewedTag.raw());
+                assertEquals(TtlvItemType.Enumeration, view.itemType());
+                assertEquals(expected, viewedValue.enumeration(),
+                        "The installed constructor must preserve each exact unsigned PKCS#11 value.");
+            }
+            emit(sink, caseId, targetId, "model.org.kmipkit.ttlv.ttlvvalue.enumeration",
+                    "org.kmipkit.ttlv.TtlvValue.Enumeration", "construct", wire);
+            emit(sink, caseId, targetId, "ttlv_item.create", "org.kmipkit.ttlv.TtlvItem.create",
+                    "construct", wire);
+            emit(sink, caseId, targetId, "function.ttlv_item_view_from_item",
+                    "org.kmipkit.ttlv.TtlvItem.view", "decode", wire);
+            try (TtlvItem decoded = TtlvCodec.decode(wire); var view = decoded.view();
+                    var viewedTag = view.tag(); var value = view.value()) {
+                assertEquals(tagCode, viewedTag.raw());
+                assertEquals(TtlvItemType.Enumeration, view.itemType());
+                assertEquals(expected, value.enumeration(),
+                        "The decoder must preserve assigned values and the vendor-defined high bit.");
+            }
+            emit(sink, caseId, targetId, "ttlv_codec.decode", "org.kmipkit.ttlv.TtlvCodec.decode",
+                    "decode", wire);
+        }
+    }
+
     private static void emit(EvidenceSink sink, String caseId, String targetId, String suffix,
             String symbol, String action, byte[] wire) throws Exception {
         sink.record(new Invocation(caseId, targetId, "java.generic-ttlv." + suffix,

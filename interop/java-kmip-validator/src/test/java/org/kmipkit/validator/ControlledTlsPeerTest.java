@@ -329,6 +329,8 @@ class ControlledTlsPeerTest {
             appendNormativeRequestMessageParseEvents(events, protocolVersion);
             LocalCatalogRouteChecks.executeTags(readRouteEvidenceCatalog(), protocolVersion, genericOnlyTagCaseIds(),
                     invocation -> appendLocalCatalogInvocation(events, protocolVersion, invocation));
+            LocalCatalogRouteChecks.executeReferencedEnums(readRouteEvidenceCatalog(), protocolVersion,
+                    invocation -> appendLocalCatalogInvocation(events, protocolVersion, invocation));
 
             byte[] serverCertificatePem = fixture("server-cert.pem");
             byte[] serverPrivateKeyPem = fixture("server-key.pem");
@@ -600,8 +602,14 @@ class ControlledTlsPeerTest {
                 .filter(fixture -> "BATCH-ERROR-CONTINUATION-OPTION".equals(fixture.parentName()))
                 .mapToInt(fixture -> fixture.protocolVersions().size()).sum();
         int genericTagEventCount = 0;
+        int referencedEnumEventCount = 0;
+        int referencedEnumCaseCount = 0;
         Set<String> genericTagCaseIds = genericOnlyTagCaseIds();
         for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
+            if ("referenced_enum_value".equals(testCase.path("requires").path("target_kind").asText())) {
+                referencedEnumEventCount += 4 * testCase.path("execution").path("protocol_versions").size();
+                referencedEnumCaseCount++;
+            }
             if (!genericTagCaseIds.contains(testCase.path("case_id").asText())) continue;
             int routes = "reserved".equals(testCase.path("requires").path("allocation").asText()) ? 3 : 5;
             genericTagEventCount += routes * testCase.path("execution").path("protocol_versions").size();
@@ -611,7 +619,7 @@ class ControlledTlsPeerTest {
                         + batchItemAdditionalResponseRouteEventCount + credentialGenericRouteEventCount
                         + normativeMessageFieldGenericRouteEventCount + normativeMessageFieldParserRouteEventCount
                         + normativeBatchItemAccessorRouteEventCount + credentialEnvelopeEventCount
-                        + batchErrorContinuationEventCount + genericTagEventCount,
+                        + batchErrorContinuationEventCount + genericTagEventCount + referencedEnumEventCount,
                 report.path("events").size());
         long bitmaskEvents = 0;
         for (JsonNode event : report.path("events")) {
@@ -632,7 +640,7 @@ class ControlledTlsPeerTest {
         long bitmaskCaseCount = bitmaskFixtures.stream().map(BitmaskFixture::caseId).distinct().count();
         long dataTypeCaseCount = dataTypeFixtures.stream().map(DataTypeFixture::caseId).distinct().count();
         assertEquals(15 + enumerationFixtures.size() + bitmaskCaseCount + dataTypeCaseCount
-                        + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + genericTagCaseIds.size(),
+                        + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + genericTagCaseIds.size() + referencedEnumCaseCount,
                 report.path("case_ids").size());
         List<String> expectedCredentialCaseIds = CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().toList();
         int credentialCaseStart = report.path("case_ids").size() - expectedCredentialCaseIds.size();
@@ -2714,6 +2722,11 @@ class ControlledTlsPeerTest {
         caseIds.add("test-norm-message-field-message-field-9-13-message-extension");
         caseIds.add("test-norm-tag-tag-420051");
         genericOnlyTagCaseIds().forEach(caseIds::add);
+        for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
+            if ("referenced_enum_value".equals(testCase.path("requires").path("target_kind").asText())) {
+                caseIds.add(testCase.path("case_id").asText());
+            }
+        }
         CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().forEach(caseIds::add);
         report.putArray("protocol_versions").add("2.0").add("2.1");
         ObjectNode combination = mapper.createObjectNode();
