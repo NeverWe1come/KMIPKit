@@ -18,6 +18,9 @@ _PROTOCOL_VERSION_TARGET_PREFIX = 'Protocol Version'
 _CREDENTIAL_OUTER_TARGET_ID = 'KMIPKIT-ELEM-CREDENTIAL-CREDENTIAL'
 _CREDENTIAL_TYPE_TARGET_ID = 'KMIPKIT-ELEM-ENUMERATION-CREDENTIAL-TYPE'
 _CREDENTIAL_CONVERTER_SUFFIXES = ('_into_ttlv', '_try_from_ttlv', '_from_ttlv')
+_SECRET_DATA_INAPPLICABLE_KEY_BLOCK_FIELDS = {
+    'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-ALGORITHM',
+    'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-LENGTH'}
 
 
 def norm(value):
@@ -143,6 +146,13 @@ def credential_function_target_ids(function_id, targets):
     return sorted(selected)
 
 
+def secret_data_parser_target_ids(targets, names, operation_id, object_item, object_type_targets):
+    """Return the Secret Data parser subtree without Key Block-inapplicable fields."""
+    candidates = target_ids(targets, names, all_objects=object_item, operation_id=operation_id,
+        exclude_target_ids=object_type_targets if object_item else ())
+    return sorted(set(candidates) - _SECRET_DATA_INAPPLICABLE_KEY_BLOCK_FIELDS)
+
+
 def _credential_type_value_target_ids(targets, value_names):
     return {target['target_id'] for target in targets
         if target['kind'] == 'enumeration_value'
@@ -253,13 +263,8 @@ def model_inventory(root, commit, source, api, targets):
                 if target['kind'] == 'object_structure' and target['name'] in root_object_names]
         if owner == 'SecretData' and method == 'try_from_item':
             # OASIS KMIP 2.1 §3.1 Table 11 excludes these Key Block fields for Secret Data.
-            inapplicable = {
-                'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-ALGORITHM',
-                'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-LENGTH'}
-            exact_targets = [target_id for target_id in target_ids(
-                targets, names, all_objects=is_object_item, operation_id=operation_id,
-                exclude_target_ids=object_type_targets if is_object_item else ())
-                if target_id not in inapplicable]
+            exact_targets = secret_data_parser_target_ids(
+                targets, names, operation_id, is_object_item, object_type_targets)
         credential_targets = credential_function_target_ids(
             f'{_snake_case(owner)}_{method}', targets) \
             if method in {'from_ttlv', 'into_ttlv', 'try_from_ttlv'} else None
