@@ -261,6 +261,13 @@ fn symmetric_builder_request(
 fn create_key_pair_request_v1(
     request: *const kmipkit_create_key_pair_request_v1_t,
 ) -> FfiResult<CreateKeyPairRequest> {
+    create_key_pair_request_with_attributes_v1(request, None)
+}
+
+fn create_key_pair_request_with_attributes_v1(
+    request: *const kmipkit_create_key_pair_request_v1_t,
+    additional: Option<&AttributeSet>,
+) -> FfiResult<CreateKeyPairRequest> {
     if request.is_null() || !request.is_aligned() {
         return Err(ERROR_INVALID_INPUT);
     }
@@ -291,6 +298,13 @@ fn create_key_pair_request_v1(
                 .map_err(|_| ERROR_INVALID_INPUT)?,
         )
         .map_err(|_| ERROR_INVALID_INPUT)?;
+    if let Some(additional) = additional {
+        for attribute in additional.as_items() {
+            common_attributes
+                .try_push(attribute.try_clone().map_err(model_status)?)
+                .map_err(|_| ERROR_INVALID_INPUT)?;
+        }
+    }
     let mut key_pair = CreateKeyPairRequest::new().with_common_attributes(common_attributes);
 
     if request.private_usage_mask_present == 1 {
@@ -373,6 +387,43 @@ pub unsafe extern "C" fn kmipkit_client_create_key_pair_with_options_v1(
             ClientRequest::CreateKeyPair(request),
             limits,
             Some(options),
+            out_response,
+        )
+    })
+}
+
+/// Executes one Create Key Pair exchange with additional typed Common Attributes.
+///
+/// The v1 request layout is unchanged. The attribute set is borrowed for this
+/// call and copied into the typed request; duplicate singleton attributes fail
+/// local validation before transport.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_create_key_pair_with_common_attributes_v1(
+    client: *mut kmipkit_client_t,
+    request: *const kmipkit_create_key_pair_request_v1_t,
+    attributes: *mut kmipkit_attribute_set_t,
+    limits: *mut kmipkit_codec_limits_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let handle = read_handle!(attributes, AttributeSet);
+        let HandleValue::AttributeSet(attributes) = &handle.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let request = {
+            let Ok(attributes) = attributes.lock() else {
+                return record_ffi_error(ERROR_INTERNAL);
+            };
+            match create_key_pair_request_with_attributes_v1(request, Some(&attributes)) {
+                Ok(request) => request,
+                Err(status) => return record_ffi_error(status),
+            }
+        };
+        execute_simple_request(
+            client,
+            ClientRequest::CreateKeyPair(request),
+            limits,
+            None,
             out_response,
         )
     })
@@ -895,6 +946,33 @@ mod key_pair_tests {
         let parsed = create_key_pair_request_v1(&raw const input).expect("optional usage masks");
         assert!(!parsed.has_private_key_attributes());
         assert!(!parsed.has_public_key_attributes());
+    }
+
+    #[test]
+    fn key_pair_v1_additional_common_attributes_preserve_layout_and_reject_duplicates() {
+        // The original public v1 record stays 28 bytes with four-byte alignment.
+        assert_eq!(
+            std::mem::size_of::<kmipkit_create_key_pair_request_v1_t>(),
+            28
+        );
+        let input = request();
+        let mut additional = AttributeSet::new();
+        additional
+            .try_push_typed(
+                Attribute::<typed::CryptographicDomainParameters>::new(Structure::new())
+                    .expect("typed domain parameters"),
+            )
+            .expect("one common attribute");
+        assert!(
+            create_key_pair_request_with_attributes_v1(&raw const input, Some(&additional)).is_ok()
+        );
+        additional
+            .try_push_typed(Attribute::<typed::CryptographicAlgorithm>::new(6).expect("algorithm"))
+            .expect("additional algorithm");
+        assert!(matches!(
+            create_key_pair_request_with_attributes_v1(&raw const input, Some(&additional)),
+            Err(ERROR_INVALID_INPUT)
+        ));
     }
 
     #[test]

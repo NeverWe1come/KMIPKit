@@ -36049,6 +36049,11 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::build",
     ),
     (
+        "rust-observed-kmipkit-0097-415e367943568c9c9d95",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::common_attribute",
+    ),
+    (
         "rust-observed-kmipkit-0097-a4f7e8567c65c32bef60",
         "rust-kmipkit-client",
         "kmipkit_client::fluent::CreateKeyPairBuilder<'a>::execute",

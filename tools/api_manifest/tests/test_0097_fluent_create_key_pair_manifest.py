@@ -15,7 +15,7 @@ METHODS = {
 JOURNEY_METHODS = {
     "algorithm", "length", "private_usage_mask", "public_usage_mask",
     "with_options", "with_asynchronous_indicator", "build", "to_batch_item",
-    "execute", "validate",
+    "execute", "validate", "common_attribute",
 }
 
 

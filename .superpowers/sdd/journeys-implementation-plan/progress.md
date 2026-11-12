@@ -41,3 +41,11 @@
 - Red: the tightened fixture rejects the current Rust key-pair request for
   missing Cryptographic Domain Parameters / Recommended Curve P-256.
 - Evidence and final verification are recorded in `task-3-report.md`.
+- Green: all four consumers now send typed Cryptographic Domain Parameters
+  containing the catalogued Recommended Curve P-256. The C v1 input remains
+  28 bytes; a new direct adapter accepts an existing Attribute Set. Java/Python
+  expose typed common-attribute setters. Java Sign/Signature Verify builders
+  close through try-with-resources.
+- Fresh results: the 40-exchange journey, Python 30, Java 15, FFI 3, manifest 13,
+  fixture 2 and documentation 4 tests pass. Generation verifies 12 outputs;
+  the refreshed export audit and all-feature FFI/test Clippy pass.

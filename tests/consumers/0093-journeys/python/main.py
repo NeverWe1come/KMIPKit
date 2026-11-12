@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 
 from kmipkit import client, cryptographic_parameters, extensions, protocol_values, ttlv
+from kmipkit.typed_attributes import StandardAttribute, TypedAttribute
 
 
 AES_GCM_PLAINTEXT = b"KMIPKit AES-GCM journey"
@@ -138,15 +139,23 @@ def _ecdsa_sha256_parameters() -> cryptographic_parameters.CryptographicParamete
 def execute_key_pair_signature_journey(
     kmip_client: client.Client, limits: ttlv.CodecLimits
 ) -> None:
-    created = (
-        kmip_client.request()
-        .create_key_pair()
-        .algorithm(protocol_values.CryptographicAlgorithm.ECDSA)
-        .length(256)
-        .private_usage_mask(protocol_values.CryptographicUsageMask.SIGN)
-        .public_usage_mask(protocol_values.CryptographicUsageMask.VERIFY)
-        .execute(limits)
-    )
+    with ttlv.raw_tag_from_raw(0x420075) as raw, ttlv.raw_tag_try_checked(raw) as tag:
+        curve = ttlv.ttlv_value_enumeration(protocol_values.RecommendedCurve.P_256)
+        curve_item = ttlv.ttlv_item_create(tag, curve, limits)
+        domain = ttlv.ttlv_structure_with_item(ttlv.ttlv_structure_create(), curve_item, limits)
+    with ttlv.ttlv_value_structure(domain, limits) as value, TypedAttribute.create(
+        StandardAttribute.CRYPTOGRAPHIC_DOMAIN_PARAMETERS, value
+    ) as domain_attribute:
+        created = (
+            kmip_client.request()
+            .create_key_pair()
+            .algorithm(protocol_values.CryptographicAlgorithm.ECDSA)
+            .length(256)
+            .common_attribute(domain_attribute)
+            .private_usage_mask(protocol_values.CryptographicUsageMask.SIGN)
+            .public_usage_mask(protocol_values.CryptographicUsageMask.VERIFY)
+            .execute(limits)
+        )
     try:
         create_item = created.items[0]
         assert create_item.operation == protocol_values.Operation.CREATE_KEY_PAIR

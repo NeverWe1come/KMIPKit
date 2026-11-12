@@ -14,6 +14,13 @@
 | FR-012 server direction | KMIP 2.1 §6.2, KMIPKIT-0066, ADR-0021 | Listener handler fixtures; no client send for server-only operation |
 | FR-013 journeys | KMIP 2.1 operation tables and Profiles §§5.3–5.5 | F001.1: the four consumers in `tests/consumers/0093-journeys/` perform typed Create → Get → Destroy. F001.2: they create an AES-256 key and execute explicit AES-GCM Encrypt/Decrypt with fixture-checked IV, AAD, tag, ciphertext and plaintext. F001.3: they create ECDSA P-256 key pairs, sign and verify fixture bytes using the returned private/public identifiers and explicit SHA-256 parameters. All three run over the controlled TLS 1.3/mTLS responder in `tests/consumers/0093-journeys/local_journey_responder.py`, which validates decoded requests and returns encoded TTLV responses; its runner requires all 40 ordered connections to pass. F001.4 and F001.5 remain open. |
 
+Task 3 review evidence explicitly checks Recommended Curve P-256 inside typed
+Cryptographic Domain Parameters in Common Attributes (KMIP 2.1 sections 4.14,
+6.1.2 and 11.45). `tests/consumers/0093-journeys/test_local_journey_responder.py`
+rejects absent, empty, wrong-type and secp256k1 curve selections. The Java Sign
+and Signature Verify consumers close their native builders with
+try-with-resources, including failures during execution or response inspection.
+
 The next catalog slice expands this table to one row per assigned operation
 and one row per normative client requirement. A static count alone does not
 establish implementation or conformance.

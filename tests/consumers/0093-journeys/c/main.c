@@ -337,6 +337,54 @@ cleanup:
     return status;
 }
 
+/* KMIP 2.1 sections 4.14 and 11.45: typed domain parameters select P-256. */
+static int32_t p256_common_attributes(
+    kmipkit_codec_limits_t *limits, kmipkit_attribute_set_t **out_attributes) {
+    kmipkit_raw_tag_t *raw = NULL;
+    kmipkit_tag_t *tag = NULL;
+    kmipkit_ttlv_value_t *curve = NULL;
+    kmipkit_ttlv_value_t *domain_value = NULL;
+    kmipkit_ttlv_item_t *curve_item = NULL;
+    kmipkit_ttlv_item_t *domain_attribute = NULL;
+    kmipkit_ttlv_structure_t *domain = NULL;
+    kmipkit_ttlv_structure_t *empty = NULL;
+    int32_t status = kmipkit_ttlv_raw_tag_create(UINT32_C(0x420075), &raw);
+    if (status == 0) status = kmipkit_ttlv_raw_tag_try_checked(raw, &tag);
+    if (status == 0) status = kmipkit_ttlv_value_enumeration(
+        KMIPKIT_ENUMERATION_RECOMMENDED_CURVE_P_256, &curve);
+    if (status == 0) {
+        status = kmipkit_ttlv_item_create(tag, curve, limits, &curve_item);
+        curve = NULL; /* Consumed by item_create, including failure. */
+    }
+    if (status == 0) status = kmipkit_ttlv_structure_create(&domain);
+    if (status == 0) {
+        kmipkit_ttlv_structure_t *source = domain;
+        kmipkit_ttlv_item_t *item = curve_item;
+        domain = NULL;
+        curve_item = NULL;
+        status = kmipkit_ttlv_structure_with_item(source, item, limits, &domain);
+    }
+    if (status == 0) {
+        status = kmipkit_ttlv_value_structure(domain, limits, &domain_value);
+        domain = NULL;
+    }
+    if (status == 0) status = kmipkit_typed_attribute_from_value(
+        UINT32_C(0x420029), domain_value, &domain_attribute);
+    if (status == 0) status = kmipkit_ttlv_structure_create(&empty);
+    if (status == 0) status = kmipkit_attribute_set_create(empty, out_attributes);
+    if (status == 0) status = kmipkit_attribute_set_try_push_typed(
+        *out_attributes, UINT32_C(0x420029), domain_attribute);
+    kmipkit_ttlv_structure_release(empty);
+    kmipkit_ttlv_structure_release(domain);
+    kmipkit_ttlv_item_release(domain_attribute);
+    kmipkit_ttlv_item_release(curve_item);
+    kmipkit_ttlv_value_release(domain_value);
+    kmipkit_ttlv_value_release(curve);
+    kmipkit_tag_release(tag);
+    kmipkit_raw_tag_release(raw);
+    return status;
+}
+
 static int32_t execute_key_pair_signature_journey(
     kmipkit_client_t *client, kmipkit_codec_limits_t *limits) {
     static const uint8_t message[] = "KMIPKit ECDSA signature journey";
@@ -345,6 +393,7 @@ static int32_t execute_key_pair_signature_journey(
         0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0x02, 0x21, 0x00, 0x33, 0x44,
         0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff, 0x00, 0x11};
     kmipkit_create_key_pair_request_v1_t request = {0};
+    kmipkit_attribute_set_t *common_attributes = NULL;
     kmipkit_cryptographic_parameters_fields_v1_t parameter_fields = {0};
     kmipkit_cryptographic_parameters_t *parameters = NULL;
     kmipkit_client_batch_response_t *create_response = NULL;
@@ -393,7 +442,9 @@ static int32_t execute_key_pair_signature_journey(
     if (status != KMIPKIT_ERROR_INVALID_INPUT || create_response != NULL) return 115;
     request.private_usage_mask_present = UINT8_C(1);
     failure_step = 1;
-    status = kmipkit_client_create_key_pair_v1(client, &request, limits, &create_response);
+    status = p256_common_attributes(limits, &common_attributes);
+    if (status == 0) status = kmipkit_client_create_key_pair_with_common_attributes_v1(
+        client, &request, common_attributes, limits, &create_response);
     if (status != 0 || create_response == NULL) goto cleanup;
     failure_step = 2;
     status = kmipkit_client_batch_response_item_at(create_response, UINT64_C(0), &create_item);
@@ -489,6 +540,7 @@ static int32_t execute_key_pair_signature_journey(
 
 cleanup:
     if (status == 0 && failure_step != 0) status = 113;
+    kmipkit_attribute_set_release(common_attributes);
     kmipkit_client_batch_item_response_release(verify_item);
     kmipkit_client_batch_response_release(verify_response);
     kmipkit_client_batch_item_response_release(sign_item);

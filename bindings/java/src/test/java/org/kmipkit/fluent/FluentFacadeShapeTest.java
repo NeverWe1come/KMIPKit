@@ -48,6 +48,7 @@ final class FluentFacadeShapeTest {
             assertEquals(2, item.operation());
         }
         assertThrows(InvalidInputException.class, () -> builder.algorithm(-1));
+        assertThrows(InvalidInputException.class, () -> builder.commonAttribute(null));
         assertThrows(InvalidInputException.class, () -> builder.withOptions(null));
         assertThrows(InvalidInputException.class, () -> builder.asynchronousIndicator(-1));
     }

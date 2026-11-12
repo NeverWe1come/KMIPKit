@@ -1,11 +1,14 @@
 use kmipkit::{
     Client, CryptographicUsageMask,
     client_config::ClientConfiguration,
-    protocol::{CryptographicParameters, CryptographicParametersBuilder, UniqueIdentifier},
+    protocol::{
+        Attribute, CryptographicParameters, CryptographicParametersBuilder, UniqueIdentifier,
+        attribute::typed, named_values_generated::values::enumeration::recommended_curve,
+    },
     transport_config::{
         CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, TransportConfig, TrustSource,
     },
-    ttlv::codec::CodecLimits,
+    ttlv::{Item, RawTag, Structure, Value, codec::CodecLimits},
 };
 
 const AES_GCM_PLAINTEXT: &[u8] = b"KMIPKit AES-GCM journey";
@@ -188,11 +191,19 @@ fn execute_key_pair_signature_journey(
     client: &mut Client,
     limits: &CodecLimits,
 ) -> Result<(), Box<dyn std::error::Error>> {
+    let mut domain_parameters = Structure::new();
+    domain_parameters.try_push(Item::new(
+        RawTag::new(0x420075)?.try_checked()?,
+        Value::enumeration(recommended_curve::P_256),
+    )?)?;
     let created = client
         .request()
         .create_key_pair()
         .algorithm(kmipkit::protocol::CryptographicAlgorithm::from_raw(6))
         .length(256)
+        .common_attribute(Attribute::<typed::CryptographicDomainParameters>::new(
+            domain_parameters,
+        )?)
         .private_usage_mask(CryptographicUsageMask::SIGN)
         .public_usage_mask(CryptographicUsageMask::VERIFY)
         .execute(limits)?;

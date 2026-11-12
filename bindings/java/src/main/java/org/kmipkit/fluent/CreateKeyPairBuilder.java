@@ -1,5 +1,7 @@
 package org.kmipkit.fluent;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.client.KmipClient;
 import org.kmipkit.extensions.AttributeSet;
@@ -22,6 +24,7 @@ public final class CreateKeyPairBuilder {
     private Integer publicUsageMask;
     private RequestOptions options;
     private Long asynchronousIndicator;
+    private final List<TypedAttribute> commonAttributes = new ArrayList<>();
 
     CreateKeyPairBuilder(KmipClient client) {
         this.client = client;
@@ -50,6 +53,13 @@ public final class CreateKeyPairBuilder {
         return this;
     }
 
+    /** Adds a typed common attribute, borrowed until build or execute completes. */
+    public CreateKeyPairBuilder commonAttribute(TypedAttribute value) {
+        if (value == null) throw new InvalidInputException("common attribute is required");
+        commonAttributes.add(value);
+        return this;
+    }
+
     public CreateKeyPairBuilder withOptions(RequestOptions value) {
         if (value == null) throw new InvalidInputException("request options are invalid");
         options = value;
@@ -70,15 +80,25 @@ public final class CreateKeyPairBuilder {
         if (algorithm == null || length == null) {
             throw new InvalidInputException("Create Key Pair requires algorithm and length");
         }
-        try (TtlvStructure common = attributes(
-                     StandardAttribute.CRYPTOGRAPHIC_ALGORITHM,
-                     TtlvValue.Enumeration(algorithm),
-                     StandardAttribute.CRYPTOGRAPHIC_LENGTH,
-                     TtlvValue.Integer(length));
+        try (TtlvStructure common = commonAttributes();
              TtlvStructure privateAttributes = optionalUsage(privateUsageMask);
              TtlvStructure publicAttributes = optionalUsage(publicUsageMask)) {
             return ClientBatchItem.createKeyPair(
                     common, privateAttributes, publicAttributes, null, null, null);
+        }
+    }
+
+    private TtlvStructure commonAttributes() {
+        try (TtlvStructure base = attributes(
+                     StandardAttribute.CRYPTOGRAPHIC_ALGORITHM,
+                     TtlvValue.Enumeration(algorithm),
+                     StandardAttribute.CRYPTOGRAPHIC_LENGTH,
+                     TtlvValue.Integer(length));
+             AttributeSet values = AttributeSet.tryNew(base)) {
+            for (TypedAttribute attribute : commonAttributes) {
+                values.tryPushTyped(attribute.attribute(), attribute);
+            }
+            return values.intoItems();
         }
     }
 

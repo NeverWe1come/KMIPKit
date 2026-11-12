@@ -3315,6 +3315,8 @@ int32_t kmipkit_client_batch_item_response_xml(kmipkit_client_batch_item_respons
 int32_t kmipkit_client_create_key_pair_v1(kmipkit_client_t * client, const kmipkit_create_key_pair_request_v1_t * request, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
 /* KMIPKIT-0093-FR-011 */
 int32_t kmipkit_client_create_key_pair_with_options_v1(kmipkit_client_t * client, const kmipkit_create_key_pair_request_v1_t * request, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);
+/* KMIPKIT-0093-FR-011 */
+int32_t kmipkit_client_create_key_pair_with_common_attributes_v1(kmipkit_client_t * client, const kmipkit_create_key_pair_request_v1_t * request, kmipkit_attribute_set_t * attributes, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
 /* KMIPKIT-0006-FR-021, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_message_extension_view_ttlv(kmipkit_message_extension_view_t * extension, kmipkit_ttlv_structure_t ** out_structure);
 /* KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */

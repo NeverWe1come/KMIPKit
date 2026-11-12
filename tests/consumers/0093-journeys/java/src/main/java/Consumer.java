@@ -12,10 +12,18 @@ import org.kmipkit.extensions.TransportConfiguration;
 import org.kmipkit.extensions.UniqueIdentifier;
 import org.kmipkit.fluent.CreateKeyPairBuilder;
 import org.kmipkit.fluent.SymmetricKeyBuilder;
+import org.kmipkit.fluent.SignBuilder;
+import org.kmipkit.fluent.SignatureVerifyBuilder;
 import org.kmipkit.protocol.KmipValues;
 import org.kmipkit.protocol.CryptographicParameters;
 import org.kmipkit.ttlv.CodecLimits;
 import org.kmipkit.ttlv.TtlvStructure;
+import org.kmipkit.ttlv.RawTag;
+import org.kmipkit.ttlv.Tag;
+import org.kmipkit.ttlv.TtlvItem;
+import org.kmipkit.ttlv.TtlvValue;
+import org.kmipkit.ttlv.TypedAttribute;
+import org.kmipkit.ttlv.StandardAttribute;
 
 public final class Consumer {
     private static final byte[] AES_GCM_PLAINTEXT = "KMIPKit AES-GCM journey".getBytes(java.nio.charset.StandardCharsets.UTF_8);
@@ -173,7 +181,16 @@ public final class Consumer {
                     .algorithm(KmipValues.CryptographicAlgorithm.ECDSA).length(256)
                     .privateUsageMask((int) KmipValues.CryptographicUsageMask.SIGN)
                     .publicUsageMask((int) KmipValues.CryptographicUsageMask.VERIFY);
-        try (ClientBatchResponse created = builder.execute(limits);
+        try (RawTag raw = RawTag.fromRaw(0x420075);
+                Tag tag = raw.checked();
+                TtlvValue curve = TtlvValue.Enumeration(KmipValues.RecommendedCurve.P_256);
+                TtlvItem curveItem = TtlvItem.create(tag, curve, limits);
+                TtlvStructure empty = TtlvStructure.create();
+                TtlvStructure domain = TtlvStructure.withItem(empty, curveItem, limits);
+                TtlvValue domainValue = TtlvValue.structure(domain, limits);
+                TypedAttribute domainAttribute = TypedAttribute.create(
+                        StandardAttribute.CRYPTOGRAPHIC_DOMAIN_PARAMETERS, domainValue);
+                ClientBatchResponse created = builder.commonAttribute(domainAttribute).execute(limits);
                 ClientBatchItemResult item = created.itemAt(0)) {
             if (!item.outcomeKind().isCompleted() || item.resultStatus() != 0) {
                 throw new IllegalStateException("Create Key Pair did not complete successfully");
@@ -189,7 +206,8 @@ public final class Consumer {
                         .hashingAlgorithm(KmipValues.HashingAlgorithm.SHA_256)
                         .digitalSignatureAlgorithm(KmipValues.DigitalSignatureAlgorithm.ECDSA_WITH_SHA256)
                         .build();
-                ClientBatchResponse signed = client.request().sign()
+                SignBuilder signBuilder = client.request().sign();
+                ClientBatchResponse signed = signBuilder
                         .uniqueIdentifier(privateIdentifier).data(SIGNATURE_PLAINTEXT)
                         .cryptographicParameters(parameters).execute(limits);
                 ClientBatchItemResult item = signed.itemAt(0)) {
@@ -213,7 +231,8 @@ public final class Consumer {
                         .hashingAlgorithm(KmipValues.HashingAlgorithm.SHA_256)
                         .digitalSignatureAlgorithm(KmipValues.DigitalSignatureAlgorithm.ECDSA_WITH_SHA256)
                         .build();
-                ClientBatchResponse verified = client.request().signatureVerify()
+                SignatureVerifyBuilder verifyBuilder = client.request().signatureVerify();
+                ClientBatchResponse verified = verifyBuilder
                         .uniqueIdentifier(publicIdentifier).data(SIGNATURE_PLAINTEXT)
                         .signatureData(signature).cryptographicParameters(parameters).execute(limits);
                 ClientBatchItemResult item = verified.itemAt(0)) {

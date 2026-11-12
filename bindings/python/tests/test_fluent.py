@@ -40,6 +40,7 @@ def test_key_pair_builder_requires_explicit_algorithm_and_length() -> None:
     ("length", 0), ("length", True),
     ("private_usage_mask", -1), ("public_usage_mask", 1 << 31),
     ("with_options", None), ("asynchronous_indicator", -1),
+    ("common_attribute", None),
 ])
 def test_key_pair_builder_rejects_invalid_semantic_fields(method: str, value: object) -> None:
     with pytest.raises(errors.KmipKitError):

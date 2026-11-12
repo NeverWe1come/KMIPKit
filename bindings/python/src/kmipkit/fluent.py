@@ -163,6 +163,7 @@ class CreateKeyPairBuilder:
         self._length: int | None = None
         self._private_usage_mask: int | None = None
         self._public_usage_mask: int | None = None
+        self._common_attributes: list[TypedAttribute] = []
         self._options: RequestOptions | None = None
         self._asynchronous_indicator: int | None = None
 
@@ -192,6 +193,13 @@ class CreateKeyPairBuilder:
         if not isinstance(options, RequestOptions):
             errors.raise_for_status(4)
         self._options = options
+        return self
+
+    def common_attribute(self, value: TypedAttribute) -> Self:
+        """Add a typed common attribute borrowed until build or execute completes."""
+        if not isinstance(value, TypedAttribute):
+            errors.raise_for_status(4)
+        self._common_attributes.append(value)
         return self
 
     def asynchronous_indicator(self, value: int) -> Self:
@@ -234,19 +242,30 @@ class CreateKeyPairBuilder:
             structure.close()
             raise
 
+    def _common_attribute_structure(self, limits: ttlv.CodecLimits) -> ttlv.Structure:
+        structure = self._attribute_structure(
+            [
+                (StandardAttribute.CRYPTOGRAPHIC_ALGORITHM, self._algorithm, True),
+                (StandardAttribute.CRYPTOGRAPHIC_LENGTH, self._length, False),
+            ],
+            limits,
+        )
+        try:
+            for attribute in self._common_attributes:
+                with attribute.as_item() as item:
+                    structure = ttlv.ttlv_structure_with_item(structure, item, limits)
+            return structure
+        except Exception:
+            structure.close()
+            raise
+
     def build(self) -> extensions.ClientBatchItem:
         """Create a local typed request; sending still requires explicit execute."""
         if self._algorithm is None or self._length is None:
             errors.raise_for_status(4)
         with (
             ttlv.codec_limits_defaults() as limits,
-            self._attribute_structure(
-                [
-                    (StandardAttribute.CRYPTOGRAPHIC_ALGORITHM, self._algorithm, True),
-                    (StandardAttribute.CRYPTOGRAPHIC_LENGTH, self._length, False),
-                ],
-                limits,
-            ) as common,
+            self._common_attribute_structure(limits) as common,
             self._attribute_structure(
                 [(StandardAttribute.CRYPTOGRAPHIC_USAGE_MASK, self._private_usage_mask, False)]
                 if self._private_usage_mask is not None

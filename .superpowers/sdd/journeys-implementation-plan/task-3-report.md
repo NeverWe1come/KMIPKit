@@ -242,3 +242,76 @@ Pair because the explicit P-256 domain parameters were absent. Log:
 `/tmp/kmipkit-task3-fix1-red.log`. The fixture also has two passing focused
 contracts that require exact P-256 and reject missing, wrong-type, empty and
 secp256k1 domain selections.
+
+### Fix round 1 Green implementation and verification
+
+- Rust uses its existing typed `common_attribute` method with
+  `Attribute<CryptographicDomainParameters>` containing the catalogued
+  Recommended Curve P-256 Enumeration. No new Rust fluent method is needed.
+- Java/Python expose `commonAttribute(TypedAttribute)` /
+  `common_attribute(TypedAttribute)`; those inputs are explicitly borrowed until
+  build/execute finishes, while each built typed request owns its copy.
+- C adds `kmipkit_client_create_key_pair_with_common_attributes_v1`, accepting
+  the existing v1 record and an existing typed Attribute Set handle. It copies
+  those attributes into the request, validates duplicate singleton attributes,
+  and executes once. The original v1 fields, size (28 bytes), functions and
+  behavior are unchanged. No implicit P-256 default is applied to other callers.
+- All four consumers construct the same typed domain-parameter attribute and
+  use the catalogued P-256 constant. The fixture requires its exact nested
+  Enumeration encoding, not merely ECDSA plus a 256-bit length.
+- Java SignBuilder and SignatureVerifyBuilder are declared as resources before
+  their execution/response resources. They therefore close on successful paths
+  and while unwinding an execution or response-inspection failure. The existing
+  Java builder lifecycle test now also asserts that Sign/Signature Verify reject
+  build calls after close; there is no native handle census for the consumer.
+- The manifest adds exactly three binding declarations (16,396 -> 16,399),
+  promotes the existing canonical Rust common-attribute declaration, and
+  regenerates the API output and binding audit snapshot through pinned tools.
+  The currently supported canonical key-pair subset has 13 declarations;
+  33 other exact paths remain blocked.
+
+Fresh Green commands and results:
+
+1. `sh tests/consumers/0093-journeys/verify.sh` — exit 0; 40 ordered TLS 1.3/mTLS
+   requests accepted, including explicit P-256 in Rust/C/Java/Python; C still
+   compiles with warnings treated as errors.
+   Log: `/tmp/kmipkit-task3-fix1-green.log`.
+2. `uv run --locked --python 3.12 --project tests/consumers/0093-journeys/python --with pytest python -m pytest bindings/python/tests/test_fluent.py -q`
+   — 30 passed. Log: `/tmp/kmipkit-task3-fix1-python.log`.
+3. `mvn -f bindings/java/pom.xml -Dtest=org.kmipkit.fluent.FluentFacadeShapeTest,org.kmipkit.fluent.FluentCryptoApiShapeTest -Dexec.skip=true -Dmaven.compiler.useIncrementalCompilation=false test`
+   — 15 passed, no failures/errors/skips.
+   Log: `/tmp/kmipkit-task3-fix1-java.log`.
+4. `cargo test -p kmipkit-ffi --lib --all-features key_pair_v1 -- --nocapture`
+   — 3 passed, including unchanged v1 layout, additional attributes and rejection
+   of duplicate singleton attributes. Log: `/tmp/kmipkit-task3-fix1-ffi.log`.
+5. `uv run --python 3.12 --no-project --with jsonschema==4.26.0 python -B -m unittest tools.api_manifest.tests.test_0097_fluent_create_key_pair_manifest tools.api_manifest.tests.test_t102_crypto_operation_error_trait_exclusions tools.api_manifest.tests.test_t102_join_split_key_secret_data_type_mapping -v`
+   — 13 passed. Log: `/tmp/kmipkit-task3-fix1-contracts.log`.
+6. `uv run --python 3.12 --no-project python -B -m unittest discover -s tests/consumers/0093-journeys -p test_local_journey_responder.py -v`
+   — 2 passed. Log: `/tmp/kmipkit-task3-fix1-fixture-contracts.log`.
+7. `python3 tools/api_manifest/generate.py --write`, then
+   `python3 tools/api_manifest/generate.py --check` — 12 outputs verified.
+   Logs: `/tmp/kmipkit-task3-fix1-generate.log`,
+   `/tmp/kmipkit-task3-fix1-manifest-check.log`.
+8. `python3 tools/api_manifest/audit_binding_exports.py --report specs/043-public-api-bindings/reports/binding-export-report-2026-11-12-key-pair-journeys.json --check`
+   — exit 0; all inventories complete, with 2,012 C, 2,402 Java and 2,611 Python
+   exact manifest matches. Log: `/tmp/kmipkit-task3-fix1-export-report.log`.
+9. `uv run --python 3.12 --no-project python -B -m unittest tools.api_manifest.tests.test_c_api_docs -v`
+   — 4 passed. Log: `/tmp/kmipkit-task3-fix1-docs.log`.
+10. `cargo clippy -p kmipkit-ffi --lib --tests --all-features -- -D warnings`
+    — passed. Log: `/tmp/kmipkit-task3-fix1-clippy.log`.
+11. `cargo fmt --all --check`,
+    `cargo fmt --manifest-path tests/consumers/0093-journeys/rust/Cargo.toml -- --check`
+    and `git diff --check` — passed. Log: `/tmp/kmipkit-task3-fix1-fmt.log`.
+
+Red review-fix commit: `f0bd6c743`.
+Green review-fix commit: the commit containing these typed common-attribute
+adapters, explicit curve selections, Java resource scopes and regenerated evidence.
+Refactor verification follows after the Green commit.
+
+Self-review: no invented algorithm/curve code, no C layout break, no curve
+inference from key length, and no request retry. Native ownership of all newly
+constructed domain-parameter values is scoped; C releases its helper handles,
+and Java/Python build requests while borrowed attributes are still alive.
+Only the listed worktree is modified, and the unrelated untracked Python
+lockfile remains untouched. The prior unrelated candidate-exclusion baseline
+failure and cross-platform/coverage scope limits remain as documented above.
