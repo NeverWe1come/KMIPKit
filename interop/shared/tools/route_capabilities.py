@@ -137,6 +137,15 @@ def _case_exclusions(root, commit, language, symbol):
     return exclusions
 
 
+def _decode_source(path, content):
+    try:
+        return content.decode('utf-8')
+    except UnicodeDecodeError:
+        if path.startswith('specification/oasis/') and path.endswith('.html'):
+            return content.decode('cp1252')
+        raise
+
+
 def normalized(value):
     return re.sub('[^a-z0-9]', '', value.lower()).replace('asynchronous', 'async')
 
@@ -162,12 +171,7 @@ def source(root, commit, path):
     content = subprocess.check_output(
         ['git', '-C', str(root), 'cat-file', 'blob', f'{commit}:{path}']
     )  # NOSONAR: commit and path are restricted to validated Git identifiers
-    try:
-        return content.decode('utf-8')
-    except UnicodeDecodeError:
-        if path.startswith('specification/oasis/') and path.endswith('.html'):
-            return content.decode('cp1252')
-        raise
+    return _decode_source(path, content)
 
 
 @lru_cache(maxsize=4)
