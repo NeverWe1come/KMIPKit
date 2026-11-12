@@ -2716,6 +2716,19 @@ def _batch_workflow_cell(cell: dict, case: dict, target: dict,
         isinstance(parameters, dict)
         and parameters.get('placeholder_direction') == 'later item to earlier item'
     )
+    forward_placeholder_send = forward_placeholder_rejection and cell.get('action') == 'send'
+    if forward_placeholder_rejection and not forward_placeholder_send:
+        single_operation = workflow_operation or case.get('operation')
+        if single_operation not in operations:
+            single_operation = operations[0]
+        item_index = cell.get('workflow_item_index')
+        if (isinstance(item_index, int) and 0 <= item_index < len(item_specs)
+                and item_specs[item_index]['operation'] == single_operation):
+            item_specs = [item_specs[item_index]]
+        else:
+            item_specs = [next(spec for spec in item_specs
+                               if spec['operation'] == single_operation)]
+        operations = [single_operation]
     status_codes = _batch_result_codes(case, protocol_values.ResultStatus, 'status', len(operations),
                                        [status] * len(operations))
     reason_defaults = [reason if code == status else None for code in status_codes]
@@ -2724,7 +2737,7 @@ def _batch_workflow_cell(cell: dict, case: dict, target: dict,
     peer = ControlledTlsPeer(
         status=status,
         reason=reason,
-        expect_no_connection=forward_placeholder_rejection,
+        expect_no_connection=forward_placeholder_send,
         encoding=cell['encoding'],
         transport=cell['transport'],
         protocol_version=cell['protocol_version'],
@@ -2780,11 +2793,15 @@ def _batch_workflow_cell(cell: dict, case: dict, target: dict,
             }
             has_prior_create = any(name in {'Create', 'Create Key Pair', 'Create Split Key'}
                                    for name in operations[:index])
-            if (forward_placeholder_rejection
+            if (forward_placeholder_send
                     and operation.replace(' ', '').casefold() in identifier_operations
                     and 'idplaceholderfromitem' in detail):
                 identifier = extensions.UniqueIdentifier.enumeration(
                     protocol_values.UniqueIdentifier.ID_PLACEHOLDER)
+            elif (forward_placeholder_rejection and not forward_placeholder_send
+                  and operation.replace(' ', '').casefold() in identifier_operations):
+                identifier = extensions.UniqueIdentifier.text_string(
+                    f"KMIPKit-route-forward-reference-{case['case_id']}-{index}")
             elif (operation.replace(' ', '').casefold() in identifier_operations
                   and 'idplaceholder' not in detail and not has_prior_create):
                 object_label = ('missing' if 'missing' in detail else 'existing')
@@ -2815,7 +2832,7 @@ def _batch_workflow_cell(cell: dict, case: dict, target: dict,
                 trace.record_invocation(cell['execution_api_symbol'])
             response = driver._client.execute(batch, limits)
         except errors.ClientExecutionError as error:
-            if forward_placeholder_rejection:
+            if forward_placeholder_send:
                 response_ttlv = error.response_ttlv
                 if response_ttlv is not None:
                     response_ttlv.close()
@@ -2845,7 +2862,7 @@ def _batch_workflow_cell(cell: dict, case: dict, target: dict,
             driver.close()
         peer.close()
 
-    if forward_placeholder_rejection:
+    if forward_placeholder_send:
         if not local_rejection or peer.requests or peer.responses:
             raise ValueError('forward placeholder was not rejected locally before transport')
         return {
