@@ -2436,6 +2436,52 @@ mod tests {
         }
     }
 
+    /// KMIP 2.0/2.1 §§8.1–8.6 and §§9.1–9.21 define the message parser fields.
+    #[test]
+    fn message_parsers_execute_every_normative_target() {
+        let catalog: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let manifest: Json = serde_json::from_str(include_str!(
+            "../../shared/coverage/route-capabilities.json"
+        ))
+        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        for symbol in [
+            "kmipkit_protocol::RequestMessage::try_from_ttlv",
+            "kmipkit_protocol::ResponseMessage::try_from_ttlv",
+        ] {
+            let route = manifest["routes"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|route| route["public_api_symbol"] == symbol)
+                .unwrap();
+            for target_id in route["normative_target_ids"].as_array().unwrap() {
+                let target_id = target_id.as_str().unwrap();
+                let target = catalog["normative_targets"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .find(|target| target["target_id"] == target_id)
+                    .unwrap();
+                let fixture = sample_for_route(symbol, target, elements);
+                assert!(fixture.is_ok(), "{symbol} {target_id}: {fixture:?}");
+                let fixture = fixture.unwrap();
+                let result = invoke(symbol, &fixture, target, elements, "2.1");
+                assert!(result.is_some(), "{symbol} {target_id}: no parser route");
+                let result = result.unwrap();
+                assert!(result.is_ok(), "{symbol} {target_id}: {result:?}");
+                let projection = crate::local_wire::target_hash(&result.unwrap(), &fixture);
+                assert!(projection.is_ok(), "{symbol} {target_id}: {projection:?}");
+            }
+        }
+    }
+
     #[test]
     fn vendor_attribute_target_uses_a_table_150_structure_fixture() {
         let cases: Json = serde_json::from_str(include_str!(
