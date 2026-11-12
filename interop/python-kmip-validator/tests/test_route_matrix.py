@@ -1221,12 +1221,19 @@ class RouteMatrixTests(unittest.TestCase):
         report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
 
         expected = ['Create', 'Activate', 'Get Attribute List', 'Revoke', 'Destroy']
+        from kmipkit_validator.contract import SHARED, _validate
+        _validate(report, SHARED / 'schemas/route-execution-evidence.schema.json',
+                  'route evidence violates the shared schema')
         self.assertEqual([], gaps)
         self.assertEqual(90, len(report['events']))
         self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
         self.assertTrue(all(event.get('batch_operation_sequence') == expected
                             for event in report['events']))
+        self.assertTrue(all(event.get('peer_observed_operation_sequence') == expected
+                            for event in report['events']))
         self.assertTrue(all(event.get('batch_item_count') == len(expected)
+                            for event in report['events']))
+        self.assertTrue(all(event.get('peer_observed_response_count') == len(expected)
                             for event in report['events']))
 
     def test_single_operation_client_execute_route_uses_a_single_batch_item(self):
