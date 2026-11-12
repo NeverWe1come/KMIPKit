@@ -820,6 +820,34 @@ class RouteMatrixTests(unittest.TestCase):
 
         self.assertEqual(recipe, ((1, 18, 10), 'create_activate_get_placeholder_chain'))
 
+    def test_placeholder_chain_executes_typed_create_activate_get_batch(self):
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-batch-placeholder-chain-resolves'
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12, 'placeholder chain must run over both versions and six wire transports')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks))
+        expected_operations = {
+            'KMIPKIT-ELEM-OP-C2S-CREATE',
+            'KMIPKIT-ELEM-OP-C2S-ACTIVATE',
+            'KMIPKIT-ELEM-OP-C2S-GET',
+        }
+        self.assertTrue(expected_operations <= {event['target_id'] for event in events})
+        for symbol in ('kmipkit_client_batch_item_create', 'kmipkit_client_batch_item_activate',
+                       'kmipkit_client_batch_item_get'):
+            self.assertTrue(any(event['public_api_symbol'] == symbol and event['action'] == 'send'
+                                for event in events), symbol)
+        self.assertTrue(all('kmipkit_client_execute' in check['public_api_trace_symbols']
+                            for check in checks))
+
 
     def test_two_item_batch_continuation_and_id_correlation(self):
         from artifact_support import ROOT
