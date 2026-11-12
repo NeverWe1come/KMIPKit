@@ -593,6 +593,8 @@ def execute_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | Non
             return _credential_cell(cell, case, target)
         if cell['public_api_symbol'].startswith('kmipkit.async_operations.'):
             return _async_request_cell(cell, case, target)
+        # AttributeSet lives in attribute_operations but exercises typed model
+        # behavior; resolve exact route ownership before module-wide dispatch.
         if cell['public_api_symbol'] in _TYPED_ATTRIBUTE_SYMBOLS:
             return _typed_attribute_cell(cell, case, target)
         if cell['public_api_symbol'].startswith('kmipkit.attribute_operations.'):
