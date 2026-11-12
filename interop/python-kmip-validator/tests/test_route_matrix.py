@@ -375,6 +375,35 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(credential_type_targets,
                          {event['target_id'] for event in report['events']})
 
+    def test_all_public_credential_routes_execute_each_normative_target(self):
+        # OASIS KMIP 2.0/2.1 §§8.2, 9.4, 9.11 and 9.14 define Authentication,
+        # Credential, Credential Value, Credential Type, and Nonce wire shapes.
+        from coverage_matrix import _case_obligations, _operation_ids
+
+        symbols = {route['public_api_symbol'] for route in self.manifest['routes']
+                   if route['language'] == 'python'
+                   and route['public_api_symbol'].startswith('kmipkit.credentials.')}
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in self.manifest['routes']
+                              if route['language'] == 'python'
+                              and route['public_api_symbol'].startswith('kmipkit.credentials.')]
+        target_ids = {target_id for route in manifest['routes']
+                      for target_id in route['normative_target_ids']}
+        operation_ids = _operation_ids(self.catalog)
+        catalog = copy.deepcopy(self.catalog)
+        catalog['test_cases'] = [case for case in self.catalog['test_cases']
+                                 if (obligations := _case_obligations(
+                                     case, operation_ids, self.catalog['normative_targets']))
+                                 and all(item['target_id'] in target_ids for item in obligations)]
+
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+
+        self.assertEqual(0, len(gaps), f'{len(gaps)} credential route cells lack executable recipes')
+        self.assertEqual(len(list(iter_cells(catalog, manifest, languages=('python',)))),
+                         len(report['events']))
+        self.assertEqual(symbols, {event['public_api_symbol'] for event in report['events']})
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
     def test_reserved_tag_routes_check_rejection_without_a_fabricated_item(self):
         catalog = copy.deepcopy(self.catalog)
         catalog['test_cases'] = [case for case in catalog['test_cases']
