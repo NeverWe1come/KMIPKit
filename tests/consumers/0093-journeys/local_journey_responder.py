@@ -12,6 +12,13 @@ import struct
 
 _AES_GCM_JOURNEY_OPERATIONS = (1, 10, 20, 1, 0x1F, 0x20, 20)
 EXPECTED_CONSUMER_OPERATIONS = _AES_GCM_JOURNEY_OPERATIONS * 4
+LIFECYCLE_IDENTIFIER = b"fluent-key"
+AES_GCM_IDENTIFIER = b"fluent-aes-gcm-key"
+AES_GCM_PLAINTEXT = bytes.fromhex("4b4d49504b6974204145532d47434d206a6f75726e6579")
+AES_GCM_CIPHERTEXT = bytes.fromhex("0c4f9f4b8e8cb63bcc04c4a6f6aa354de9b9f2469e1e26")
+AES_GCM_IV = bytes.fromhex("000102030405060708090a0b")
+AES_GCM_AAD = b"kmipkit-gcm-aad"
+AES_GCM_TAG = bytes.fromhex("b516ad2a79bf55d147482f13feed6ea6")
 
 
 def _item(tag: int, item_type: int, value: bytes) -> bytes:
@@ -23,7 +30,7 @@ def _structure(tag: int, *children: bytes) -> bytes:
     return _item(tag, 1, b"".join(children))
 
 
-def _response(operation: int) -> bytes:
+def _response(operation: int, identifier: bytes) -> bytes:
     version = _structure(
         0x420069,
         _item(0x42006A, 2, struct.pack(">i", 2)),
@@ -39,17 +46,31 @@ def _response(operation: int) -> bytes:
         payload = _structure(
             0x42007C,
             _item(0x420057, 5, struct.pack(">I", 2)),
-            _item(0x420094, 7, b"fluent-key"),
+            _item(0x420094, 7, identifier),
         )
     elif operation == 10:
         payload = _structure(
             0x42007C,
             _item(0x420057, 5, struct.pack(">I", 2)),
-            _item(0x420094, 7, b"fluent-key"),
+            _item(0x420094, 7, identifier),
             _structure(0x42008F),
         )
     elif operation == 20:
-        payload = _structure(0x42007C, _item(0x420094, 7, b"fluent-key"))
+        payload = _structure(0x42007C, _item(0x420094, 7, identifier))
+    elif operation == 0x1F:
+        payload = _structure(
+            0x42007C,
+            _item(0x420094, 7, identifier),
+            _item(0x4200C2, 8, AES_GCM_CIPHERTEXT),
+            _item(0x42003D, 8, AES_GCM_IV),
+            _item(0x4200FF, 8, AES_GCM_TAG),
+        )
+    elif operation == 0x20:
+        payload = _structure(
+            0x42007C,
+            _item(0x420094, 7, identifier),
+            _item(0x4200C2, 8, AES_GCM_PLAINTEXT),
+        )
     else:
         raise RuntimeError(f"fixture received unsupported KMIP operation {operation:#x}")
     response_item = _structure(
@@ -140,17 +161,23 @@ def _validate_operation(
     operation: int,
     fields: list[tuple[int, int, bytes]],
     header_fields: list[tuple[int, int, bytes]],
+    expected_identifier: bytes,
 ) -> None:
     payloads = [value for tag, kind, value in fields if tag == 0x420079 and kind == 1]
-    if operation in (1, 10, 20) and len(payloads) != 1:
+    if operation in (1, 10, 20, 0x1F, 0x20) and len(payloads) != 1:
         raise RuntimeError(
-            "lifecycle request must contain one Request Payload; "
+            "journey request must contain one Request Payload; "
             f"operation={operation} tags={[hex(tag) for tag, _kind, _value in fields]}"
         )
     if operation == 1:
         payload = _children(payloads[0])
         flattened_payload = _flatten(payload)
         values = {tag: (kind, value) for tag, kind, value in flattened_payload}
+        names = [
+            value for tag, kind, value in flattened_payload if tag == 0x420098 and kind == 7
+        ]
+        if names != [expected_identifier]:
+            raise RuntimeError("Create did not use the expected journey key name")
         if values.get(0x420057) != (5, struct.pack(">I", 2)):
             raise RuntimeError("Create did not select Symmetric Key")
         if values.get(0x420028) != (5, struct.pack(">I", 3)):
@@ -165,8 +192,41 @@ def _validate_operation(
     elif operation in (10, 20):
         payload = _children(payloads[0])
         identifiers = [value for tag, kind, value in payload if tag == 0x420094 and kind == 7]
-        if identifiers != [b"fluent-key"]:
+        if identifiers != [expected_identifier]:
             raise RuntimeError("Get or Destroy did not use the returned Unique Identifier")
+    elif operation in (0x1F, 0x20):
+        payload = _children(payloads[0])
+        flattened_payload = _flatten(payload)
+
+        def values_for(tag: int) -> list[tuple[int, bytes]]:
+            return [(kind, value) for field_tag, kind, value in flattened_payload if field_tag == tag]
+
+        if values_for(0x420094) != [(7, expected_identifier)]:
+            raise RuntimeError("AES-GCM request did not use the Create response identifier")
+        if values_for(0x4200C2) != [
+            (8, AES_GCM_PLAINTEXT if operation == 0x1F else AES_GCM_CIPHERTEXT)
+        ]:
+            raise RuntimeError("AES-GCM request Data did not match the known fixture vector")
+        if values_for(0x42003D) != [(8, AES_GCM_IV)]:
+            raise RuntimeError("AES-GCM request omitted or changed the explicit IV")
+        if values_for(0x4200FE) != [(8, AES_GCM_AAD)]:
+            raise RuntimeError("AES-GCM request omitted or changed explicit AAD")
+        if operation == 0x20 and values_for(0x4200FF) != [(8, AES_GCM_TAG)]:
+            raise RuntimeError("Decrypt did not use the Encrypt response authentication tag")
+        parameters = [
+            value for tag, kind, value in payload if tag == 0x42002B and kind == 1
+        ]
+        if len(parameters) != 1:
+            raise RuntimeError("AES-GCM request must carry one Cryptographic Parameters structure")
+        parameter_values = {tag: (kind, value) for tag, kind, value in _flatten(_children(parameters[0]))}
+        if parameter_values.get(0x420011) != (5, struct.pack(">I", 9)):
+            raise RuntimeError("AES-GCM Block Cipher Mode was not explicitly GCM")
+        if parameter_values.get(0x420028) != (5, struct.pack(">I", 3)):
+            raise RuntimeError("AES-GCM Cryptographic Algorithm was not explicitly AES")
+        if parameter_values.get(0x4200CD) != (2, struct.pack(">i", 96)):
+            raise RuntimeError("AES-GCM IV Length was not explicitly 96 bits")
+        if parameter_values.get(0x4200CE) != (2, struct.pack(">i", 128)):
+            raise RuntimeError("AES-GCM Tag Length was not explicitly 128 bits")
     if operation in (10, 20):
         indicators = [value for tag, kind, value in header_fields if tag == 0x420007 and kind == 5]
         if operation == 10 and indicators not in ([], [struct.pack(">I", 1)]):
@@ -216,8 +276,12 @@ def main() -> None:
                             f"index={connection_index} expected={expected_operation:#x} "
                             f"received={operation:#x}"
                         )
-                    _validate_operation(operation, fields, header_fields)
-                    stream.sendall(_response(operation))
+                    journey_offset = connection_index % len(_AES_GCM_JOURNEY_OPERATIONS)
+                    expected_identifier = (
+                        AES_GCM_IDENTIFIER if journey_offset >= 3 else LIFECYCLE_IDENTIFIER
+                    )
+                    _validate_operation(operation, fields, header_fields, expected_identifier)
+                    stream.sendall(_response(operation, expected_identifier))
         finally:
             args.pid_file.unlink(missing_ok=True)
 

@@ -91,6 +91,13 @@ try {
     uv run --locked --python 3.12 --project (Join-Path $consumerRoot 'python') `
         python (Join-Path $consumerRoot 'python\main.py')
     if ($LASTEXITCODE -ne 0) { throw "Python consumer failed with exit code $LASTEXITCODE." }
+
+    # The fixture exits only after validating every expected request and sending
+    # every encoded response; require its process to complete successfully.
+    $server.WaitForExit()
+    if ($server.ExitCode -ne 0) {
+        throw "The loopback mTLS journey fixture rejected or missed an expected exchange (exit code $($server.ExitCode))."
+    }
 }
 finally {
     Pop-Location

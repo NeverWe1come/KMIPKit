@@ -63,3 +63,10 @@ mvn -q -f "$consumer_root/java/pom.xml" \
 
 uv run --locked --python 3.12 --project "$consumer_root/python" \
     python "$consumer_root/python/main.py"
+# The listener exits only after decoding every expected request and writing its
+# corresponding encoded response. A successful client run is insufficient if
+# the fixture rejected a later exchange or never observed the full sequence.
+if ! wait "$responder_pid"; then
+    echo "The loopback mTLS journey fixture rejected or missed an expected exchange." >&2
+    exit 1
+fi
