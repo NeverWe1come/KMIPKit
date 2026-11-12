@@ -1344,6 +1344,34 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(event['peer_observed_state_before_sha256'],
                          event['peer_observed_state_after_sha256'])
 
+    def test_batch_effects_are_observed_from_json_and_xml_requests(self):
+        expected_by_case = {
+            'test-batch-stop-on-first-failure': [
+                'first_item_failed', 'second_item_not_executed'],
+            'test-batch-continue-after-failure': [
+                'first_item_failed', 'second_item_executed'],
+        }
+        for case_id, expected_effects in expected_by_case.items():
+            case = next(case for case in self.catalog['test_cases']
+                        if case['case_id'] == case_id)
+            for encoding in ('JSON', 'XML'):
+                with self.subTest(case_id=case_id, encoding=encoding):
+                    cell = next(cell for cell in iter_cells(
+                        self.catalog, self.manifest, languages=('python',))
+                        if cell['case_id'] == case_id
+                        and cell['public_api_symbol'] == 'kmipkit.extensions.client_batch_item_get'
+                        and cell['workflow_item_index'] == 0
+                        and cell['action'] == 'send'
+                        and cell['protocol_version'] == '2.1'
+                        and cell['encoding'] == encoding
+                        and cell['transport'] == 'raw_tls')
+                    target = next(target for target in self.catalog['normative_targets']
+                                  if target['target_id'] == cell['target_id'])
+                    kind, event = self.runner._execute_matrix_cell(cell, case, target)
+                    self.assertEqual('event', kind)
+                    self.assertEqual('passed', event['status'])
+                    self.assertEqual(expected_effects, event['peer_observed_effects'])
+
     def test_forward_placeholder_rejection_records_only_verified_local_state(self):
         from unittest.mock import patch
         from kmipkit_validator.controlled_peer import ControlledTlsPeer
