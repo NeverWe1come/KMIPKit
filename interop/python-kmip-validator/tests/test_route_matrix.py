@@ -282,6 +282,28 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertGreater(len(report['events']), 3000)
         self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
 
+    def test_tag_enum_expansion_uses_each_normative_target_wire_value(self):
+        catalog = copy.deepcopy(self.catalog)
+        catalog['test_cases'] = [case for case in self.catalog['test_cases']
+                                 if case['case_id'] == 'test-enum-tag']
+        symbols = {'kmipkit.ttlv.raw_tag_from_raw', 'kmipkit.ttlv.raw_tag_try_checked',
+                   'kmipkit.ttlv.ttlv_item_create', 'kmipkit.ttlv.ttlv_decode',
+                   'kmipkit.ttlv.ttlv_item_view_from_item'}
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in self.manifest['routes']
+                              if route['language'] == 'python'
+                              and route['public_api_symbol'] in symbols]
+
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+
+        self.assertEqual(0, len(gaps), f'{len(gaps)} expanded Tag targets lack generic recipes')
+        self.assertTrue(report['events'])
+        self.assertEqual(symbols, {event['public_api_symbol'] for event in report['events']})
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+        tag_targets = {target['target_id'] for target in self.catalog['normative_targets']
+                       if target['kind'] in ('tag', 'tag_range')}
+        self.assertLessEqual(tag_targets, {event['target_id'] for event in report['events']})
+
     def test_generic_routes_exercise_every_public_ttlv_data_type(self):
         catalog = copy.deepcopy(self.catalog)
         catalog['test_cases'] = [case for case in self.catalog['test_cases']
