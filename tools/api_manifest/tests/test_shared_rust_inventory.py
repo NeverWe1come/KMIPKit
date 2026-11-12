@@ -80,6 +80,12 @@ class SharedRustInventoryTests(unittest.TestCase):
         self.assertIn("KMIPKIT-0044-FR-001", owner_requirements)
         self.assertIn("KMIPKIT-0044-FR-007", owner_requirements)
 
+    def test_approved_implementation_spec_local_requirement_ids_are_recognized(self) -> None:
+        owner_requirements = AUDIT._read_approved_owner("KMIPKIT-0095", REPO_ROOT)
+
+        self.assertIn("KMIPKIT-0095-FR-001", owner_requirements)
+        self.assertIn("KMIPKIT-0095-FR-005", owner_requirements)
+
     def test_direct_maintainer_approval_record_authorizes_approved_implementation_scope(self) -> None:
         owner_requirements = AUDIT._read_approved_owner(
             "KMIPKIT-0053",
