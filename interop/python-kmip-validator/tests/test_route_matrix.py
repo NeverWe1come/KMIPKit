@@ -246,6 +246,52 @@ class RouteMatrixTests(unittest.TestCase):
         ]])
         self.assertEqual({expected}, {event['request_tree_sha256'] for event in typed_events})
 
+    def test_typed_attribute_routes_construct_catalogued_attribute_structures(self):
+        # OASIS KMIP 2.0/2.1 §§4.4, 4.14, 4.16, 4.21, 4.27, 4.31, 4.32, 4.46,
+        # 4.47, 4.52/4.59, 4.53/4.60–4.63. The catalog binds each case to its
+        # versioned table and normative reference.
+        structure_cases = {
+            'test-attr-application-specific-information',
+            'test-attr-cryptographic-domain-parameters',
+            'test-attr-cryptographic-parameters', 'test-attr-digest',
+            'test-attr-key-value-location', 'test-attr-link', 'test-attr-name',
+            'test-attr-random-number-generator', 'test-attr-revocation-reason',
+            'test-attr-rotate-name', 'test-attr-usage-limits',
+            'test-attr-vendor-attribute', 'test-attr-x.509-certificate-identifier',
+            'test-attr-x.509-certificate-issuer', 'test-attr-x.509-certificate-subject',
+        }
+        catalog = copy.deepcopy(self.catalog)
+        target_kinds = {target['target_id']: target['kind']
+                        for target in self.catalog['normative_targets']}
+        catalog['test_cases'] = [case for case in self.catalog['test_cases']
+                                 if case['case_id'] in structure_cases
+                                 and target_kinds.get(case['requires'].get('normative_target_id')) == 'attribute']
+        for case in catalog['test_cases']:
+            case.pop('operation', None)
+            for field in ('operation_id', 'operation_sequence', 'protocol_scenario'):
+                case['requires'].pop(field, None)
+        symbols = {'kmipkit.typed_attributes.TypedAttribute.create',
+                   'kmipkit.typed_attributes.TypedAttribute.from_item',
+                   'kmipkit.attribute_operations.AttributeSet.try_new',
+                   'kmipkit.attribute_operations.AttributeSet.try_push',
+                   'kmipkit.attribute_operations.AttributeSet.try_push_typed'}
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in self.manifest['routes']
+                              if route['language'] == 'python'
+                              and route['public_api_symbol'] in symbols]
+        attribute_ids = {target['target_id'] for target in self.catalog['normative_targets']
+                         if target['kind'] == 'attribute'}
+        for route in manifest['routes']:
+            route['normative_target_ids'] = [target_id for target_id in route['normative_target_ids']
+                                             if target_id in attribute_ids]
+
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+
+        self.assertEqual(0, len(gaps), f'{len(gaps)} catalogued typed-attribute structures lack recipes')
+        self.assertTrue(report['events'])
+        self.assertEqual(symbols, {event['public_api_symbol'] for event in report['events']})
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
     def test_credential_type_enum_routes_preserve_each_normative_value(self):
         # OASIS KMIP 2.0/2.1 §11.11 defines the Credential Type discriminator values.
         catalog = copy.deepcopy(self.catalog)
