@@ -1120,6 +1120,58 @@ fn expected_tag_decode_rejection(
     Some((u32::from_str_radix(&start, 16).ok()?, rejection_code))
 }
 
+fn raw_tag_route_event(row: &Json, target: &Json, invocation: usize) -> Option<Json> {
+    let symbol = row["public_api_symbol"].as_str()?;
+    if ![
+        "kmipkit_ttlv::RawTag::new",
+        "kmipkit_ttlv::RawTag::try_checked",
+    ]
+    .contains(&symbol)
+        || target["kind"] != "tag"
+    {
+        return None;
+    }
+    let raw = unsigned_wire_value(target["wire_value"].as_str()?)?;
+    let tag = kmipkit::ttlv::RawTag::new(raw).ok()?;
+    let (expected, result_value) = if symbol == "kmipkit_ttlv::RawTag::new" {
+        (true, json!(["RawTag", tag.raw()]))
+    } else {
+        let should_be_checked = matches!(target["allocation"].as_str()?, "assigned" | "extension");
+        let checked = tag.try_checked();
+        let matched = match checked {
+            Ok(checked) => should_be_checked && checked.raw() == raw,
+            Err(_) => !should_be_checked,
+        };
+        let value_kind = if should_be_checked { "Tag" } else { "rejected" };
+        (
+            matched,
+            json!(["RawTag::try_checked", value_kind, tag.raw()]),
+        )
+    };
+    let digest = hash(&serde_json::to_vec(&result_value).ok()?);
+    let mut event = json!({
+        "case_id": row["case_id"], "route_id": row["route_id"], "target_id": row["target_id"],
+        "public_api_symbol": symbol, "execution_route_id": null, "execution_api_symbol": null,
+        "invocation_id": format!("rust-local-{invocation}"), "action": row["action"],
+        "protocol_version": row["protocol_version"], "encoding": "TTLV", "transport": null,
+        "status": if expected { "passed" } else { "failed" }, "invocation_count": 1,
+        "request_tree_sha256": digest
+    });
+    for field in [
+        "workflow_step_index",
+        "workflow_operation",
+        "workflow_item_index",
+    ] {
+        if let Some(value) = row.get(field) {
+            event[field] = value.clone();
+        }
+    }
+    if !expected {
+        event["failure_code"] = "tag_allocation_result_mismatch".into();
+    }
+    Some(event)
+}
+
 fn reserved_tag_ttlv(raw_tag: u32) -> [u8; 16] {
     let tag = raw_tag.to_be_bytes();
     [
@@ -1209,6 +1261,10 @@ pub(crate) fn run(matrix: &Path, output: &Path) -> Result<bool> {
             } else {
                 event["failure_code"] = "expected_tag_rejection_not_observed".into();
             }
+            events.push(event);
+            continue;
+        }
+        if let Some(event) = raw_tag_route_event(row, target, events.len()) {
             events.push(event);
             continue;
         }
