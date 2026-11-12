@@ -1526,7 +1526,7 @@ class ControlledTlsPeerTest {
             assertTrue(batch.addErrorContinuationValue(fixture.value()) == batch,
                     "The batch configuration API must retain the active ClientBatch handle.");
         }
-        byte[] wire = item(0x42000e, 5, intBytes((int) fixture.value()));
+        byte[] wire = item(fixture.rawTag(), 5, intBytes((int) fixture.value()));
         String treeHash = normalizedTreeSha256(wire);
         appendRouteEvent(events, fixture.caseId(),
                 "java.typed-protocol.function.client_batch_add_error_continuation_value",
