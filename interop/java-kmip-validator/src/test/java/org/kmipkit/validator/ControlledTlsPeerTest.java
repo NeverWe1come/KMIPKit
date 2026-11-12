@@ -416,6 +416,10 @@ class ControlledTlsPeerTest {
                         "java.typed-protocol.function.client_batch_response_item_count"),
                 "The installed batch count accessor must read response Batch Count in KMIP 2.0 and 2.1.");
         assertEquals(2, routeEventCount(report.path("events"),
+                        "test-norm-message-field-message-field-8-5-batch-count",
+                        "java.typed-protocol.model.org.kmipkit.message.responsemessage.fromttlv"),
+                "The response message parser must be exercised against the exact Batch Count case.");
+        assertEquals(2, routeEventCount(report.path("events"),
                         "test-norm-message-field-message-field-9-5-batch-count",
                         "java.typed-protocol.function.client_batch_response_item_count"),
                 "The installed batch count accessor must read the KMIP 2.1 response Batch Count field.");
