@@ -130,6 +130,15 @@ fn timeout(seconds: u64, nanoseconds: u32) -> FfiResult<Option<Duration>> {
     }
 }
 
+fn optional_text_input(span: kmipkit_byte_span_v1_t) -> FfiResult<Option<String>> {
+    if span.length == 0 && span.data.is_null() {
+        return Ok(None);
+    }
+    let bytes = input_span(span.data, span.length, MAX_TEXT_BYTES)?;
+    let text = std::str::from_utf8(bytes).map_err(|_| ERROR_INVALID_INPUT)?;
+    Ok(Some(text.to_owned()))
+}
+
 fn request_item_view(
     batch: &Arc<kmipkit_client::IncomingServerBatch>,
     index: usize,
@@ -139,6 +148,37 @@ fn request_item_view(
         .into_iter()
         .nth(index)
         .ok_or(ERROR_INVALID_INPUT)
+}
+
+fn update_server_response_builder(
+    builder: *mut kmipkit_server_response_builder_t,
+    request: *mut kmipkit_server_request_item_t,
+    update: impl FnOnce(&mut ServerResponseAccumulator, u32, Option<Vec<u8>>) -> FfiResult<()>,
+) -> FfiResult<()> {
+    let request_handle = reference_handle(request, Kind::ServerRequestItem)?;
+    let HandleValue::ServerRequestItem(request) = &request_handle.value else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    let builder_handle = reference_handle(builder, Kind::ServerResponseBuilder)?;
+    let HandleValue::ServerResponseBuilder(builder) = &builder_handle.value else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    let mut builder = builder.lock().map_err(|_| ERROR_INTERNAL)?;
+    let accumulator = builder.as_mut().ok_or(ERROR_INVALID_INPUT)?;
+    if !Arc::ptr_eq(&accumulator.batch, &request.batch)
+        || request.index >= accumulator.added_items.len()
+        || accumulator.added_items[request.index]
+    {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    let view = request_item_view(&request.batch, request.index)?;
+    update(
+        accumulator,
+        view.operation(),
+        view.unique_batch_item_id().map(<[u8]>::to_vec),
+    )?;
+    accumulator.added_items[request.index] = true;
+    Ok(())
 }
 
 fn request_item_owner(
@@ -604,7 +644,13 @@ fn read_put_object_field_value(
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn kmipkit_server_put_object_field_read(
+/// Reads one validated field from a typed incoming Put object.
+///
+/// # Safety
+/// `out_present` must point to aligned writable `u8` storage. Every non-null
+/// output pointer must point to aligned writable storage of its declared type
+/// for the duration of the call.
+pub unsafe extern "C" fn kmipkit_server_put_object_field_read(
     object: *mut kmipkit_server_put_object_t,
     field_tag: u32,
     read_kind: u32,
@@ -1120,18 +1166,7 @@ pub extern "C" fn kmipkit_server_query_response_create(
             extension_tag_count,
             MAX_VALIDATE_INPUT_ITEMS
         ));
-        let vendor_identification = if vendor_identification.length == 0
-            && vendor_identification.data.is_null()
-        {
-            None
-        } else {
-            let bytes = try_ffi!(input_span(
-                vendor_identification.data,
-                vendor_identification.length,
-                MAX_TEXT_BYTES
-            ));
-            Some(try_ffi!(std::str::from_utf8(bytes).map_err(|_| ERROR_INVALID_INPUT)).to_owned())
-        };
+        let vendor_identification = try_ffi!(optional_text_input(vendor_identification));
         let (batch, index) = try_ffi!(request_item_owner(request));
         let view = try_ffi!(request_item_view(&batch, index));
         let Some(request) = view.as_query() else {
@@ -1165,18 +1200,7 @@ pub extern "C" fn kmipkit_server_set_endpoint_role_response_create(
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = out_slot!(out_response_item);
-        let vendor_identification = if vendor_identification.length == 0
-            && vendor_identification.data.is_null()
-        {
-            None
-        } else {
-            let bytes = try_ffi!(input_span(
-                vendor_identification.data,
-                vendor_identification.length,
-                MAX_TEXT_BYTES
-            ));
-            Some(try_ffi!(std::str::from_utf8(bytes).map_err(|_| ERROR_INVALID_INPUT)).to_owned())
-        };
+        let vendor_identification = try_ffi!(optional_text_input(vendor_identification));
         let (batch, index) = try_ffi!(request_item_owner(request));
         let view = try_ffi!(request_item_view(&batch, index));
         if view.as_set_endpoint_role().is_none() {
@@ -1201,46 +1225,28 @@ pub extern "C" fn kmipkit_server_response_builder_add_success(
     response_item: *mut kmipkit_server_response_item_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        let request_handle = read_handle!(request, ServerRequestItem);
-        let HandleValue::ServerRequestItem(request) = &request_handle.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
         let response_item = read_handle!(response_item, ServerResponseItem);
         let HandleValue::ServerResponseItem(response_item) = &response_item.value else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
-        let builder_handle = read_handle!(builder, ServerResponseBuilder);
-        let HandleValue::ServerResponseBuilder(builder) = &builder_handle.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Ok(mut builder) = builder.lock() else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
-        let Some(accumulator) = builder.as_mut() else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        if !Arc::ptr_eq(&accumulator.batch, &request.batch)
-            || request.index >= accumulator.added_items.len()
-            || accumulator.added_items[request.index]
-        {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        }
-        let view = try_ffi!(request_item_view(&request.batch, request.index));
-        if view.operation() != response_item.operation {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        }
-        let unique_id = view.unique_batch_item_id().map(<[u8]>::to_vec);
-        let Ok(payload) = response_item.payload.view().try_clone() else {
-            return record_ffi_error(ERROR_RESOURCE_LIMIT);
-        };
-        if accumulator
-            .builder
-            .add_success_item(response_item.operation, unique_id, payload)
-            .is_err()
-        {
-            return record_ffi_error(ERROR_PROTOCOL);
-        }
-        accumulator.added_items[request.index] = true;
+        try_ffi!(update_server_response_builder(
+            builder,
+            request,
+            |accumulator, operation, unique_id| {
+                if operation != response_item.operation {
+                    return Err(ERROR_INVALID_INPUT);
+                }
+                let payload = response_item
+                    .payload
+                    .view()
+                    .try_clone()
+                    .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+                accumulator
+                    .builder
+                    .add_success_item(response_item.operation, unique_id, payload)
+                    .map_err(|_| ERROR_PROTOCOL)
+            }
+        ));
         SUCCESS
     })
 }
@@ -1263,53 +1269,25 @@ pub extern "C" fn kmipkit_server_response_builder_add_failure(
         {
             return record_ffi_error(ERROR_INVALID_INPUT);
         }
-        let message = if result_message.length == 0 && result_message.data.is_null() {
-            None
-        } else {
-            let bytes = try_ffi!(input_span(
-                result_message.data,
-                result_message.length,
-                MAX_TEXT_BYTES
-            ));
-            Some(try_ffi!(std::str::from_utf8(bytes).map_err(|_| ERROR_INVALID_INPUT)).to_owned())
-        };
-        let request_handle = read_handle!(request, ServerRequestItem);
-        let HandleValue::ServerRequestItem(request) = &request_handle.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let builder_handle = read_handle!(builder, ServerResponseBuilder);
-        let HandleValue::ServerResponseBuilder(builder) = &builder_handle.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Ok(mut builder) = builder.lock() else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
-        let Some(accumulator) = builder.as_mut() else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        if !Arc::ptr_eq(&accumulator.batch, &request.batch)
-            || request.index >= accumulator.added_items.len()
-            || accumulator.added_items[request.index]
-        {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        }
-        let view = try_ffi!(request_item_view(&request.batch, request.index));
+        let message = try_ffi!(optional_text_input(result_message));
         let reason = (has_result_reason == 1)
             .then(|| kmipkit_protocol::ResultReason::from_raw(result_reason));
-        if accumulator
-            .builder
-            .add_failure_item(
-                view.operation(),
-                view.unique_batch_item_id().map(<[u8]>::to_vec),
-                kmipkit_protocol::ResultStatus::from_raw(result_status),
-                reason,
-                message,
-            )
-            .is_err()
-        {
-            return record_ffi_error(ERROR_PROTOCOL);
-        }
-        accumulator.added_items[request.index] = true;
+        try_ffi!(update_server_response_builder(
+            builder,
+            request,
+            |accumulator, operation, unique_id| {
+                accumulator
+                    .builder
+                    .add_failure_item(
+                        operation,
+                        unique_id,
+                        kmipkit_protocol::ResultStatus::from_raw(result_status),
+                        reason,
+                        message,
+                    )
+                    .map_err(|_| ERROR_PROTOCOL)
+            }
+        ));
         SUCCESS
     })
 }
