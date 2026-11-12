@@ -2057,7 +2057,20 @@ def _batch_operations_for_case(cell: dict, case: dict) -> list[str] | None:
         return None
     scenario = case.get('requires', {}).get('protocol_scenario', {})
     parameters = scenario.get('parameters', {}) if isinstance(scenario, dict) else {}
-    operations = parameters.get('operations_in_request_order', []) if isinstance(parameters, dict) else []
+    items = parameters.get('items', []) if isinstance(parameters, dict) else []
+    operations = []
+    if items:
+        if not isinstance(items, list):
+            raise RecipePending
+        for item in items:
+            if isinstance(item, str) and item:
+                operations.append(item.split('(', 1)[0].strip())
+            elif isinstance(item, dict) and isinstance(item.get('operation'), str):
+                operations.append(item['operation'])
+            else:
+                raise RecipePending
+    else:
+        operations = parameters.get('operations_in_request_order', []) if isinstance(parameters, dict) else []
     if not operations and isinstance(scenario, dict):
         expected = scenario.get('expected', {})
         operations = expected.get('operation_order', []) if isinstance(expected, dict) else []
@@ -2065,7 +2078,7 @@ def _batch_operations_for_case(cell: dict, case: dict) -> list[str] | None:
         return None
     if not isinstance(operations, list):
         raise RecipePending
-    if len(operations) < 2:
+    if len(operations) < 2 and not items:
         return None
     if any(not isinstance(operation, str) or not operation for operation in operations):
         raise RecipePending
@@ -2084,10 +2097,11 @@ def _execute_typed_batch(driver: PythonKmipDriver, case: dict, cell: dict,
     authentication = None
     response = None
     try:
-        batch.set_ordered(True)
-        batch.add_error_continuation_value(
-            protocol_values.BatchErrorContinuationOption.CONTINUE
-        )
+        if len(operations) > 1:
+            batch.set_ordered(True)
+            batch.add_error_continuation_value(
+                protocol_values.BatchErrorContinuationOption.CONTINUE
+            )
         for index, operation in enumerate(operations, start=1):
             route_case = {**case, 'operation': operation}
             symbol = cell['public_api_symbol']
@@ -2097,12 +2111,12 @@ def _execute_typed_batch(driver: PythonKmipDriver, case: dict, cell: dict,
                 item = driver._build_high_level_item(route_case, identifier, name=name)
             else:
                 item = driver._build_item(route_case, identifier, name=name)
-            # KMIP requires a distinct Unique Batch Item ID on each item in a
-            # multi-item request. Keep these fixture IDs deterministic so the
-            # request remains reproducible without exposing any user data.
-            item = driver._extensions.with_unique_batch_item_id(
-                item, f'kmipkit-interop-item-{index:02d}'.encode('ascii')
-            )
+            if len(operations) > 1:
+                # Keep multi-item correlation IDs deterministic without exposing
+                # user data. A one-item batch does not need this optional field.
+                item = driver._extensions.with_unique_batch_item_id(
+                    item, f'kmipkit-interop-item-{index:02d}'.encode('ascii')
+                )
             items.append(item)
             batch.add_item(item)
         if batch.item_count != len(operations):
