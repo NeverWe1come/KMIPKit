@@ -1783,6 +1783,84 @@ fn sample_for_route_at_version(
     crate::driver::item(tag, value)
 }
 
+fn invoke_client_batch_route(symbol: &str, sample: &Item) -> Option<Result<Item>> {
+    const CLIENT_BATCH_ROUTES: &[&str] = &[
+        "kmipkit_client::ClientBatch::with_asynchronous_indicator",
+        "kmipkit_client::ClientBatch::with_authentication",
+        "kmipkit_client::ClientBatch::with_batch_error_continuation_option",
+        "kmipkit_client::ClientBatch::with_batch_order_option",
+        "kmipkit_client::ClientBatch::with_client_correlation_value",
+        "kmipkit_client::ClientBatch::with_request_time_stamp",
+        "kmipkit_client::ClientBatchItem::with_unique_batch_item_id",
+    ];
+    if !CLIENT_BATCH_ROUTES.contains(&symbol) {
+        return None;
+    }
+    Some((|| {
+        match symbol {
+            "kmipkit_client::ClientBatch::with_asynchronous_indicator" => {
+                let value = sample.with_value(|value| match value {
+                    ValueView::Enumeration(value) => Ok(*value),
+                    _ => Err("Asynchronous Indicator fixture is not an Enumeration"),
+                })?;
+                let _batch = kmipkit::ClientBatch::empty().with_asynchronous_indicator(value);
+            }
+            "kmipkit_client::ClientBatch::with_authentication" => {
+                let structure = sample
+                    .as_structure()
+                    .ok_or("Authentication fixture is not a Structure")?
+                    .try_clone()
+                    .map_err(|_| "Authentication fixture copy failed")?;
+                let authentication = kmipkit::protocol::Authentication::try_from_ttlv(structure)
+                    .map_err(|_| "Authentication fixture rejected")?;
+                let _batch = kmipkit::ClientBatch::empty().with_authentication(authentication);
+            }
+            "kmipkit_client::ClientBatch::with_batch_error_continuation_option" => {
+                let value = sample.with_value(|value| match value {
+                    ValueView::Enumeration(value) => Ok(*value),
+                    _ => Err("Batch Error Continuation Option fixture is not an Enumeration"),
+                })?;
+                let _batch =
+                    kmipkit::ClientBatch::empty().with_batch_error_continuation_option(value);
+            }
+            "kmipkit_client::ClientBatch::with_batch_order_option" => {
+                let value = sample.with_value(|value| match value {
+                    ValueView::Boolean(value) => Ok(*value),
+                    _ => Err("Batch Order Option fixture is not a Boolean"),
+                })?;
+                let _batch = kmipkit::ClientBatch::empty().with_batch_order_option(value);
+            }
+            "kmipkit_client::ClientBatch::with_client_correlation_value" => {
+                let value = sample.with_value(|value| match value {
+                    ValueView::TextString(value) => Ok(value.to_owned()),
+                    _ => Err("Client Correlation Value fixture is not a Text String"),
+                })?;
+                let _batch = kmipkit::ClientBatch::empty().with_client_correlation_value(value);
+            }
+            "kmipkit_client::ClientBatch::with_request_time_stamp" => {
+                let value = sample.with_value(|value| match value {
+                    ValueView::DateTime(value) => Ok(*value),
+                    _ => Err("Request Time Stamp fixture is not a Date-Time"),
+                })?;
+                let _batch = kmipkit::ClientBatch::empty().with_request_time_stamp(value);
+            }
+            "kmipkit_client::ClientBatchItem::with_unique_batch_item_id" => {
+                let value = sample.with_value(|value| match value {
+                    ValueView::ByteString(value) => Ok(value.to_vec()),
+                    _ => Err("Unique Batch Item ID fixture is not a Byte String"),
+                })?;
+                let item =
+                    kmipkit::ClientBatchItem::ping().with_unique_batch_item_id(value.clone());
+                if item.unique_batch_item_id() != Some(value.as_slice()) {
+                    return Err("Unique Batch Item ID was not preserved");
+                }
+            }
+            _ => return Err("unsupported ClientBatch route"),
+        }
+        sample.try_clone().map_err(|_| "local copy failed")
+    })())
+}
+
 #[allow(clippy::too_many_lines)] // Explicit public route dispatch stays together for review.
 fn invoke(
     symbol: &str,
@@ -1791,6 +1869,9 @@ fn invoke(
     elements: &[Json],
     protocol_version: &str,
 ) -> Option<Result<Item>> {
+    if let Some(result) = invoke_client_batch_route(symbol, sample) {
+        return Some(result);
+    }
     if let Some(result) = crate::local_credentials::invoke(symbol, sample, target, elements) {
         return Some(result);
     }
