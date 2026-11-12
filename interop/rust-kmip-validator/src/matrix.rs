@@ -4832,6 +4832,31 @@ mod tests {
     }
 
     #[test]
+    fn key_block_parser_route_handles_its_normative_tag_target() {
+        // OASIS KMIP 2.0/2.1 §§3.1 and 3.10 define Key Block as a TTLV structure.
+        let catalog: Json = serde_json::from_str(include_str!(
+            "../../shared/catalog/kmipkit-1.0-test-catalog.json"
+        ))
+        .unwrap();
+        let specification: Json =
+            serde_json::from_str(include_str!("../../../specification/catalog/kmip-2.1.json"))
+                .unwrap();
+        let elements = specification["elements"].as_array().unwrap();
+        let target = catalog["normative_targets"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|target| target["target_id"] == "KMIPKIT-ELEM-TAG-420040")
+            .unwrap();
+        let symbol = "kmipkit_protocol::KeyBlock::try_from_item";
+        let expected = sample_for_route(symbol, target, elements).unwrap();
+        let result = invoke(symbol, &expected, target, elements, "2.1");
+        assert!(result.is_some(), "KeyBlock parser tag route is not executable");
+        let result = result.unwrap().unwrap();
+        assert!(crate::local_wire::target_hash(&result, &expected).is_ok());
+    }
+
+    #[test]
     fn generic_structure_constructor_wraps_a_primitive_normative_target() {
         let catalog: Json = serde_json::from_str(include_str!(
             "../../shared/catalog/kmipkit-1.0-test-catalog.json"
@@ -6424,6 +6449,7 @@ mod tests {
                 .unwrap();
         let elements = specification["elements"].as_array().unwrap();
         let cases = [
+            ("KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES", 0x0042_0008),
             ("KMIPKIT-ELEM-ATTRIBUTE-VENDOR-ATTRIBUTE", 0x0042_0008),
             ("KMIPKIT-ELEM-MESSAGE-FIELD-8-3-EPHEMERAL", 0x0042_0154),
             (
@@ -6470,6 +6496,15 @@ mod tests {
             assert!(sample.is_ok(), "{target_id}: {sample:?}");
             let sample = sample.unwrap();
             assert_eq!(sample.tag().raw(), expected_tag, "{target_id}");
+            if target_id == "KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES" {
+                let fields = sample.as_structure().unwrap().children();
+                assert_eq!(fields.len(), 2);
+                assert_eq!(fields[0].tag().raw(), 0x0042_000a);
+                assert_eq!(fields[1].tag().raw(), 0x0042_000b);
+                let attributes = fields[1].as_structure().unwrap().children();
+                assert_eq!(attributes.len(), 1);
+                assert_eq!(attributes[0].tag().raw(), 0x0042_0108);
+            }
             for protocol_version in target["protocol_versions"].as_array().unwrap() {
                 let protocol_version = protocol_version.as_str().unwrap();
                 for symbol in [

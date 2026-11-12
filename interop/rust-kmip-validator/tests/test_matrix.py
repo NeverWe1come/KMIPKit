@@ -521,7 +521,7 @@ class MatrixContract(unittest.TestCase):
         self.assertIsNone(report)
 
     def test_unfinished_recipe_cannot_be_reported_as_api_unavailable(self):
-        cell = self.cell('kmipkit_client::ClientBatchOutcome::Activate', None)
+        cell = self.cell('kmipkit_client::ClientBatchOutcome::asynchronous_correlation_value', None)
         process, report = self.run_matrix([cell])
         self.assertNotEqual(process.returncode, 0)
         self.assertIsNotNone(report, process.stderr)
