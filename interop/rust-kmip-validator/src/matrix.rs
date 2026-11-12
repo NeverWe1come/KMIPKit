@@ -554,6 +554,228 @@ fn typed_object_root(symbol: &str) -> Option<&'static str> {
     }
 }
 
+fn typed_object_constructor_root(symbol: &str) -> Option<&'static str> {
+    match symbol {
+        "kmipkit_protocol::Certificate::try_new" => Some("Certificate"),
+        "kmipkit_protocol::CertificateRequest::try_new" => Some("Certificate Request"),
+        "kmipkit_protocol::OpaqueObject::try_new" => Some("Opaque Object"),
+        "kmipkit_protocol::PgpKey::try_new" => Some("PGP Key"),
+        "kmipkit_protocol::PrivateKey::try_new" => Some("Private Key"),
+        "kmipkit_protocol::PublicKey::try_new" => Some("Public Key"),
+        "kmipkit_protocol::SecretData::try_new" => Some("Secret Data"),
+        "kmipkit_protocol::SplitKey::try_new" => Some("Split Key"),
+        "kmipkit_protocol::SymmetricKey::try_new" => Some("Symmetric Key"),
+        _ => None,
+    }
+}
+
+fn key_material_format_for_target(target: &Json) -> Option<u32> {
+    let section = target["source_refs"]
+        .as_array()?
+        .iter()
+        .find_map(|source| source["section"].as_str())?;
+    let raw = match section {
+        "3.4" => 7,
+        "3.5" => 8,
+        "3.6" => 9,
+        "3.7" => 10,
+        "3.8" => 11,
+        "3.9" => 12,
+        "3.10" => 13,
+        "3.11" => 20,
+        "3.12" => 21,
+        _ => return None,
+    };
+    Some(raw)
+}
+
+fn transparent_key_material(format: u32) -> Result<Item> {
+    use kmipkit::protocol::{
+        TransparentDhPrivateKey, TransparentDhPublicKey, TransparentDsaPrivateKey,
+        TransparentDsaPublicKey, TransparentEcPrivateKey, TransparentEcPublicKey,
+        TransparentRsaPrivateKey, TransparentRsaPublicKey, TransparentSymmetricKey,
+    };
+    let component = || vec![0x31, 0x41];
+    match format {
+        7 => TransparentSymmetricKey::try_new(vec![0x41; 16])
+            .map(TransparentSymmetricKey::into_item)
+            .map_err(|_| "transparent symmetric key fixture rejected"),
+        8 => TransparentDsaPrivateKey::try_new(component(), component(), component(), component())
+            .map(TransparentDsaPrivateKey::into_item)
+            .map_err(|_| "transparent DSA private key fixture rejected"),
+        9 => TransparentDsaPublicKey::try_new(component(), component(), component(), component())
+            .map(TransparentDsaPublicKey::into_item)
+            .map_err(|_| "transparent DSA public key fixture rejected"),
+        10 => TransparentRsaPrivateKey::try_from_components(
+            component(),
+            Some(component()),
+            Some(component()),
+            Some(component()),
+            Some(component()),
+            Some(component()),
+            Some(component()),
+            Some(component()),
+        )
+        .map(TransparentRsaPrivateKey::into_item)
+        .map_err(|_| "transparent RSA private key fixture rejected"),
+        11 => TransparentRsaPublicKey::try_new(component(), component())
+            .map(TransparentRsaPublicKey::into_item)
+            .map_err(|_| "transparent RSA public key fixture rejected"),
+        12 => TransparentDhPrivateKey::try_new(
+            component(),
+            component(),
+            component(),
+            Some(component()),
+            Some(component()),
+        )
+        .map(TransparentDhPrivateKey::into_item)
+        .map_err(|_| "transparent DH private key fixture rejected"),
+        13 => TransparentDhPublicKey::try_new(
+            component(),
+            component(),
+            component(),
+            Some(component()),
+            Some(component()),
+        )
+        .map(TransparentDhPublicKey::into_item)
+        .map_err(|_| "transparent DH public key fixture rejected"),
+        20 => TransparentEcPrivateKey::try_new(1, component())
+            .map(TransparentEcPrivateKey::into_item)
+            .map_err(|_| "transparent EC private key fixture rejected"),
+        21 => TransparentEcPublicKey::try_new(1, component())
+            .map(TransparentEcPublicKey::into_item)
+            .map_err(|_| "transparent EC public key fixture rejected"),
+        _ => Err("unsupported transparent Key Format Type fixture"),
+    }
+}
+
+fn key_block_for_target(target: &Json, secret_data: bool) -> Result<kmipkit::protocol::KeyBlock> {
+    use kmipkit::protocol::{
+        AttributeSet, EncryptionKeyInformation, KeyBlock, KeyBlockValue, KeyCompressionType,
+        KeyFormatType, KeyMaterial, KeyValue, KeyWrappingData, MacSignatureKeyInformation,
+        SecretBytes,
+    };
+
+    let format = key_material_format_for_target(target).unwrap_or(1);
+    let material_item = if format == 1 {
+        KeyMaterial::byte_string(format, vec![0x41; 32])
+            .map_err(|_| "raw key material fixture rejected")?
+            .into_item()
+    } else {
+        transparent_key_material(format)?
+    };
+    let material = KeyMaterial::try_from_item(material_item, KeyFormatType::from_raw(format))
+        .map_err(|_| "Key Material fixture rejected")?;
+    let target_id = target["target_id"].as_str().unwrap_or_default();
+    let key_value_attributes = target_id.contains("KEY-VALUE-ATTRIBUTES");
+    let attributes = key_value_attributes.then(AttributeSet::new);
+    let value =
+        KeyValue::try_new(material, attributes).map_err(|_| "Key Value fixture rejected")?;
+    let mut block = KeyBlock::try_new(KeyFormatType::from_raw(format))
+        .map_err(|_| "Key Format Type fixture rejected")?
+        .with_key_value(KeyBlockValue::Plaintext(value));
+    if target_id.contains("KEY-COMPRESSION-TYPE") {
+        block = block.with_key_compression_type(KeyCompressionType::from_raw(1));
+    }
+    let include_cryptographic_properties =
+        target_id.contains("CRYPTOGRAPHIC-ALGORITHM") || target_id.contains("CRYPTOGRAPHIC-LENGTH");
+    if !secret_data || include_cryptographic_properties {
+        block = block.with_cryptographic_properties(Some(3), Some(256));
+    }
+    if target_id.contains("KEY-WRAPPING-DATA")
+        || target_id.contains("ENCRYPTION-KEY-INFORMATION")
+        || target_id.contains("MAC-SIGNATURE-KEY-INFORMATION")
+    {
+        let encryption = EncryptionKeyInformation::try_new("kmipkit-encryption-key".to_owned())
+            .and_then(|value| value.with_cryptographic_parameters(kmipkit::ttlv::Structure::new()))
+            .map_err(|_| "encryption key information fixture rejected")?;
+        let mac = MacSignatureKeyInformation::try_new("kmipkit-mac-key".to_owned())
+            .and_then(|value| value.with_cryptographic_parameters(kmipkit::ttlv::Structure::new()))
+            .map_err(|_| "MAC key information fixture rejected")?;
+        let wrapping = KeyWrappingData::try_new(1)
+            .map_err(|_| "key wrapping fixture rejected")?
+            .with_encryption_key_information(encryption)
+            .with_mac_signature_key_information(mac)
+            .with_mac_signature(vec![0x5a])
+            .with_iv_counter_nonce(vec![0x41])
+            .with_encoding_option(1);
+        block = KeyBlock::try_new(KeyFormatType::from_raw(format))
+            .map_err(|_| "Key Format Type fixture rejected")?
+            .with_key_value(KeyBlockValue::Wrapped(SecretBytes::new(vec![0x41; 16])))
+            .with_key_wrapping_data(wrapping);
+    }
+    Ok(block)
+}
+
+fn construct_typed_object(symbol: &str, target: &Json) -> Option<Result<Item>> {
+    use kmipkit::protocol::{
+        Certificate, CertificateRequest, OpaqueObject, PgpKey, PrivateKey, PublicKey, SecretData,
+        SplitKey, SplitKeyMethod, SymmetricKey,
+    };
+
+    let result = match symbol {
+        "kmipkit_protocol::Certificate::try_new" => {
+            Certificate::try_new(1, crate::fixtures::CERTIFICATE.to_vec())
+                .map(Certificate::into_item)
+                .map_err(|_| "Certificate constructor rejected")
+        }
+        "kmipkit_protocol::CertificateRequest::try_new" => {
+            CertificateRequest::try_new(1, crate::fixtures::CSR.to_vec())
+                .map(CertificateRequest::into_item)
+                .map_err(|_| "Certificate Request constructor rejected")
+        }
+        "kmipkit_protocol::OpaqueObject::try_new" => {
+            OpaqueObject::try_new(1, b"dedicated fixture".to_vec())
+                .map(OpaqueObject::into_item)
+                .map_err(|_| "Opaque Object constructor rejected")
+        }
+        "kmipkit_protocol::PgpKey::try_new" => key_block_for_target(target, false)
+            .and_then(|key_block| PgpKey::try_new(4, key_block).map_err(|_| "invalid PGP key"))
+            .map(PgpKey::into_item)
+            .map_err(|_| "PGP Key constructor rejected"),
+        "kmipkit_protocol::PrivateKey::try_new" => key_block_for_target(target, false)
+            .and_then(|key_block| PrivateKey::try_new(key_block).map_err(|_| "invalid private key"))
+            .map(PrivateKey::into_item)
+            .map_err(|_| "Private Key constructor rejected"),
+        "kmipkit_protocol::PublicKey::try_new" => key_block_for_target(target, false)
+            .and_then(|key_block| PublicKey::try_new(key_block).map_err(|_| "invalid public key"))
+            .map(PublicKey::into_item)
+            .map_err(|_| "Public Key constructor rejected"),
+        "kmipkit_protocol::SecretData::try_new" => key_block_for_target(target, true)
+            .and_then(|key_block| {
+                SecretData::try_new(1, key_block).map_err(|_| "invalid secret data")
+            })
+            .map(SecretData::into_item)
+            .map_err(|_| "Secret Data constructor rejected"),
+        "kmipkit_protocol::SplitKey::try_new" => key_block_for_target(target, false)
+            .and_then(|key_block| {
+                let prime_field_size = target["target_id"]
+                    .as_str()
+                    .is_some_and(|id| id.contains("PRIME-FIELD-SIZE"))
+                    .then(|| vec![0x11]);
+                SplitKey::try_new(
+                    key_block,
+                    1,
+                    SplitKeyMethod::from_raw(1),
+                    2,
+                    2,
+                    prime_field_size,
+                )
+                .map_err(|_| "invalid split key")
+            })
+            .map(SplitKey::into_item)
+            .map_err(|_| "Split Key constructor rejected"),
+        "kmipkit_protocol::SymmetricKey::try_new" => key_block_for_target(target, false)
+            .and_then(|key_block| {
+                SymmetricKey::try_new(key_block).map_err(|_| "invalid symmetric key")
+            })
+            .map(SymmetricKey::into_item)
+            .map_err(|_| "Symmetric Key constructor rejected"),
+        _ => return None,
+    };
+    Some(result)
+}
+
 fn invoke_typed_object_parser(symbol: &str, object: Item) -> Option<Result<Item>> {
     let result = match symbol {
         "kmipkit_protocol::Certificate::try_from_item" => {
@@ -638,12 +860,55 @@ fn collect_tagged_items(item: &Item, raw_tag: u32, matches: &mut Vec<Item>) -> R
     Ok(())
 }
 
+fn collect_direct_tagged_items(item: &Item, raw_tag: u32, matches: &mut Vec<Item>) -> Result<()> {
+    item.with_value(|value| {
+        let ValueView::Structure(structure) = value else {
+            return Ok(());
+        };
+        for child in structure.children() {
+            if child.tag().raw() == raw_tag {
+                matches.push(child.try_clone().map_err(|_| "fixture item copy failed")?);
+            }
+        }
+        Ok(())
+    })
+}
+
+fn target_parent_tag(target: &Json, elements: &[Json]) -> Option<u32> {
+    let parent_id = target["parent_element_ids"].as_array()?.first()?.as_str()?;
+    let parent_name = elements
+        .iter()
+        .find(|element| element["element_id"] == parent_id)?["name"]
+        .as_str()?;
+    let tag = elements
+        .iter()
+        .find(|element| element["kind"] == "tag" && element["name"] == parent_name)?;
+    u32::from_str_radix(tag["wire_value"].as_str()?.trim_start_matches("0x"), 16).ok()
+}
+
 fn object_root_fixture(
     root_name: &str,
     target: &Json,
     elements: &[Json],
 ) -> Result<(u32, Item, Item)> {
-    let (object_type, object, _) = crate::fixtures::object(root_name)?;
+    let (object_type, fallback_object, _) = crate::fixtures::object(root_name)?;
+    let constructor = match root_name {
+        "Certificate" => "kmipkit_protocol::Certificate::try_new",
+        "Certificate Request" => "kmipkit_protocol::CertificateRequest::try_new",
+        "Opaque Object" => "kmipkit_protocol::OpaqueObject::try_new",
+        "PGP Key" => "kmipkit_protocol::PgpKey::try_new",
+        "Private Key" => "kmipkit_protocol::PrivateKey::try_new",
+        "Public Key" => "kmipkit_protocol::PublicKey::try_new",
+        "Secret Data" => "kmipkit_protocol::SecretData::try_new",
+        "Split Key" => "kmipkit_protocol::SplitKey::try_new",
+        "Symmetric Key" => "kmipkit_protocol::SymmetricKey::try_new",
+        _ => return Err("unsupported managed object fixture"),
+    };
+    let object = if let Some(object) = construct_typed_object(constructor, target) {
+        object?
+    } else {
+        fallback_object
+    };
     let expected = if target["kind"] == "object_structure" && target["name"] == root_name {
         object
             .try_clone()
@@ -651,7 +916,17 @@ fn object_root_fixture(
     } else {
         let target_item = sample(target, elements)?;
         let mut matching_items = Vec::new();
-        collect_tagged_items(&object, target_item.tag().raw(), &mut matching_items)?;
+        if target["kind"] == "structure_member"
+            && let Some(parent_tag) = target_parent_tag(target, elements)
+        {
+            let mut parents = Vec::new();
+            collect_tagged_items(&object, parent_tag, &mut parents)?;
+            for parent in &parents {
+                collect_direct_tagged_items(&parent, target_item.tag().raw(), &mut matching_items)?;
+            }
+        } else {
+            collect_tagged_items(&object, target_item.tag().raw(), &mut matching_items)?;
+        }
         match matching_items.as_slice() {
             [matched] => matched
                 .try_clone()
@@ -660,6 +935,17 @@ fn object_root_fixture(
             _ => return Err("Managed Object target is ambiguous in fixture"),
         }
     };
+    let expected_type = sample(target, elements)?.item_type();
+    let source_encoding = target["source_encoding"].as_str().unwrap_or_default();
+    let encoding_is_union = target["name"] == "Key Value"
+        && source_encoding.contains("Byte String")
+        && source_encoding.contains("Structure");
+    if !matches!(target["kind"].as_str(), Some("tag" | "object_type"))
+        && !encoding_is_union
+        && expected.item_type() != expected_type
+    {
+        return Err("managed object fixture does not match target Item Type");
+    }
     Ok((object_type.raw(), object, expected))
 }
 
@@ -687,7 +973,7 @@ fn key_block_fixture(target: &Json, elements: &[Json]) -> Result<(Item, Item)> {
 
 fn construct_key_block_fixture(target: &Json, elements: &[Json]) -> Result<Item> {
     let secret_data = managed_object_root_name(target, elements) == Some("Secret Data");
-    crate::fixtures::key_block(secret_data)?
+    key_block_for_target(target, secret_data)?
         .try_into_item()
         .map_err(|_| "Key Block constructor rejected")
 }
@@ -775,7 +1061,17 @@ fn metadata_expected_target(model: &Item, target: &Json, elements: &[Json]) -> R
             .map_err(|_| "metadata fixture copy failed");
     }
     let mut tagged_items = Vec::new();
-    collect_tagged_items(model, expected.tag().raw(), &mut tagged_items)?;
+    if target["kind"] == "structure_member"
+        && let Some(parent_tag) = target_parent_tag(target, elements)
+    {
+        let mut parents = Vec::new();
+        collect_tagged_items(model, parent_tag, &mut parents)?;
+        for parent in &parents {
+            collect_direct_tagged_items(parent, expected.tag().raw(), &mut tagged_items)?;
+        }
+    } else {
+        collect_tagged_items(model, expected.tag().raw(), &mut tagged_items)?;
+    }
     match tagged_items.as_slice() {
         [found_item] => found_item
             .try_clone()
@@ -785,13 +1081,12 @@ fn metadata_expected_target(model: &Item, target: &Json, elements: &[Json]) -> R
 }
 
 fn sample_for_route(symbol: &str, target: &Json, elements: &[Json]) -> Result<Item> {
-    if [
-        "kmipkit_protocol::KeyBlock::try_from_item",
-        "kmipkit_protocol::KeyBlock::try_new",
-    ]
-    .contains(&symbol)
-    {
+    if symbol == "kmipkit_protocol::KeyBlock::try_from_item" {
         return key_block_fixture(target, elements).map(|(_, expected)| expected);
+    }
+    if symbol == "kmipkit_protocol::KeyBlock::try_new" {
+        let model = construct_key_block_fixture(target, elements)?;
+        return metadata_expected_target(&model, target, elements);
     }
     if symbol == "kmipkit_protocol::ManagedObject::try_from_item"
         || typed_object_root(symbol).is_some()
@@ -801,6 +1096,10 @@ fn sample_for_route(symbol: &str, target: &Json, elements: &[Json]) -> Result<It
         } else {
             managed_object_fixture(target, elements)?
         };
+        return Ok(expected);
+    }
+    if let Some(root_name) = typed_object_constructor_root(symbol) {
+        let (_, _, expected) = object_root_fixture(root_name, target, elements)?;
         return Ok(expected);
     }
     if [
@@ -938,15 +1237,32 @@ fn invoke(
         return Some(
             kmipkit::protocol::KeyBlock::try_from_item(key_block)
                 .and_then(kmipkit::protocol::KeyBlock::try_into_item)
-                .map_err(|_| "Key Block parser rejected"),
+                .map_err(|_| "Key Block parser rejected")
+                .and_then(|model| {
+                    crate::local_wire::roundtrip(&model)?;
+                    metadata_expected_target(&model, target, elements)
+                }),
         );
     }
     if symbol == "kmipkit_protocol::KeyBlock::try_new" {
-        return Some(construct_key_block_fixture(target, elements));
+        return Some(
+            construct_key_block_fixture(target, elements).and_then(|model| {
+                crate::local_wire::roundtrip(&model)?;
+                metadata_expected_target(&model, target, elements)
+            }),
+        );
+    }
+    if let Some(result) = construct_typed_object(symbol, target) {
+        return Some(result.and_then(|object| metadata_expected_target(&object, target, elements)));
     }
     if let Some(root) = typed_object_root(symbol) {
         let (_, object, _) = object_root_fixture(root, target, elements).ok()?;
-        return invoke_typed_object_parser(symbol, object);
+        return invoke_typed_object_parser(symbol, object).map(|result| {
+            result.and_then(|model| {
+                crate::local_wire::roundtrip(&model)?;
+                metadata_expected_target(&model, target, elements)
+            })
+        });
     }
     if [
         "kmipkit_protocol::EncryptionKeyInformation::try_from_item",
