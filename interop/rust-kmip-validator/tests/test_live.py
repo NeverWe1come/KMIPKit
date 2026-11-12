@@ -115,6 +115,27 @@ def successful_batch(tree):
     return ttlv(0x42007b, 1, [header, *results])
 
 
+def operation_failed_batch(tree):
+    request_items = [value for tag, kind, value in tree[0][2] if tag == 0x42000f]
+    results = []
+    for request_item in request_items:
+        operation = find(request_item, 0x42005c)
+        fields = [ttlv(0x42005c, 5, operation)]
+        batch_id = find(request_item, 0x420093)
+        if batch_id is not None:
+            fields.append(ttlv(0x420093, 8, batch_id))
+        fields.extend([ttlv(0x42007f, 5, 1), ttlv(0x42007e, 5, 5)])
+        results.append(ttlv(0x42000f, 1, fields))
+    major = find(tree, 0x42006a)
+    minor = find(tree, 0x42006b)
+    header = ttlv(0x42007a, 1, [
+        ttlv(0x420069, 1, [ttlv(0x42006a, 2, major), ttlv(0x42006b, 2, minor)]),
+        ttlv(0x420092, 9, 1794268800),
+        ttlv(0x42000d, 2, len(results)),
+    ])
+    return ttlv(0x42007b, 1, [header, *results])
+
+
 def successful_lifecycle_batch(tree, operation_codes):
     request_items = [value for tag, kind, value in tree[0][2] if tag == 0x42000F]
     results = []
@@ -219,8 +240,8 @@ class ParityContract(unittest.TestCase):
 
 
 class ControlledPeer:
-    def __init__(self, pki, responder):
-        self.encoding, self.transport = "TTLV", "raw_tls"
+    def __init__(self, pki, responder, encoding="TTLV", transport="raw_tls"):
+        self.encoding, self.transport = encoding, transport
         self.listener = socket.socket()
         self.listener.bind(("127.0.0.1", 0))
         self.listener.listen()
@@ -235,6 +256,7 @@ class ControlledPeer:
         self.responder = responder
         self.operations = []
         self.request_trees = []
+        self.route_request_tree_hashes = []
         self.response_trees = []
         self.normalizer = RequestNormalizer()
         self.connections = 0
@@ -257,6 +279,10 @@ class ControlledPeer:
                         continue
                     tree = parse(data) if self.encoding == "TTLV" else controlled_wire.decode(data, self.encoding)
                     self.request_trees.append(self.normalizer.normalize(tree))
+                    route_tree = RequestNormalizer().normalize(tree)
+                    self.route_request_tree_hashes.append(hashlib.sha256(
+                        json.dumps(route_tree, separators=(",", ":")).encode()
+                    ).hexdigest())
                     self.operations.extend(find(batch, 0x42005c) for tag, kind, batch in tree[0][2] if tag == 0x42000f)
                     reply = self.responder(tree)
                     if reply is not None:
@@ -424,6 +450,212 @@ class LiveContract(unittest.TestCase):
                     (evidence_path / f"rust-response-routes-{version}.json").write_text(json.dumps(report, indent=2) + "\n")
         self.assertEqual(1, len(set(configuration_fingerprints)),
                          "protocol versions must share the same controlled-peer configuration fingerprint")
+
+    def test_typed_query_route_runs_through_controlled_mtls(self):
+        """KMIP 2.1 §6.1.40: construct, send, and decode a typed Query route."""
+        route_manifest = json.loads((ROOT / "interop/shared/coverage/route-capabilities.json").read_text())
+        cells = [
+            cell for cell in iter_cells(CATALOG, route_manifest, languages=("rust",))
+            if cell["mode"] == "network"
+            and cell["case_id"] == "test-op-query"
+            and cell["protocol_version"] == "2.1"
+            and cell["encoding"] == "TTLV"
+            and cell["transport"] == "raw_tls"
+        ]
+        self.assertEqual({"construct", "send", "decode"}, {cell["action"] for cell in cells})
+        with ControlledPeer(
+            self.pki,
+            lambda tree: response(0x18, status=0, reason=None, payload=[]),
+        ) as peer:
+            matrix = self.directory / "typed-query-network-matrix.jsonl"
+            output = self.directory / "typed-query-network-evidence.json"
+            configuration = self.directory / "typed-query-network-connection.json"
+            matrix.write_text("".join(
+                json.dumps(cell, sort_keys=True, separators=(",", ":")) + "\n"
+                for cell in cells
+            ))
+            configuration.write_text(json.dumps(self.connection(peer.port), sort_keys=True))
+            process = subprocess.run(
+                [str(VALIDATOR), "matrix-network", "--matrix", str(matrix),
+                 "--connection", str(configuration), "--output", str(output)],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30, text=True,
+            )
+        self.assertEqual(process.returncode, 0, process.stderr)
+        report = json.loads(output.read_text())
+        request_hashes = [
+            hashlib.sha256(json.dumps(tree, separators=(",", ":")).encode()).hexdigest()
+            for tree in peer.request_trees
+        ]
+        self.assertEqual(len(report["events"]), len(request_hashes))
+        for event, request_hash in zip(report["events"], request_hashes, strict=True):
+            if event["action"] in {"construct", "send"}:
+                event["request_tree_sha256"] = request_hash
+        output.write_text(json.dumps(report, indent=2) + "\n")
+        evidence_schema = json.loads(
+            (ROOT / "interop/shared/schemas/route-execution-evidence.schema.json").read_text()
+        )
+        jsonschema.Draft202012Validator(evidence_schema).validate(report)
+        self.assertEqual(3, len(report["events"]))
+        self.assertEqual({"construct", "send", "decode"}, {event["action"] for event in report["events"]})
+        self.assertTrue(all(event["status"] == "passed" for event in report["events"]))
+        self.assertEqual([0x18, 0x18, 0x18], peer.operations)
+
+    def test_network_request_route_matrix_calls_the_named_constructor_and_executor(self):
+        """KMIP 2.1 §6.1.37 Query constructor and typed-batch execution route."""
+        route_manifest = json.loads((ROOT / "interop/shared/coverage/route-capabilities.json").read_text())
+        cells = [cell for cell in iter_cells(CATALOG, route_manifest, languages=("rust",))
+                 if cell["mode"] == "network"
+                 and cell["public_api_symbol"] == "kmipkit_protocol::QueryRequest::new"
+                 and cell["case_id"] == "test-op-query"
+                 and cell["protocol_version"] == "2.1"
+                 and cell["encoding"] == "TTLV"
+                 and cell["transport"] == "raw_tls"]
+        self.assertEqual(["construct", "send", "decode"], [cell["action"] for cell in cells])
+        matrix = self.directory / "query-network-route-matrix.jsonl"
+        output = self.directory / "query-network-route-evidence.json"
+        configuration = self.directory / "query-network-route-connection.json"
+        matrix.write_text("".join(json.dumps(cell, sort_keys=True, separators=(",", ":")) + "\n"
+                                   for cell in cells))
+        with ControlledPeer(self.pki, successful_batch) as peer:
+            configuration.write_text(json.dumps(self.connection(peer.port), sort_keys=True))
+            process = subprocess.run(
+                [str(VALIDATOR), "matrix-network", "--matrix", str(matrix),
+                 "--connection", str(configuration), "--output", str(output)],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30, text=True,
+            )
+        self.assertEqual(0, process.returncode, process.stderr)
+        report = json.loads(output.read_text())
+        self.assertEqual(len(report["events"]), len(peer.route_request_tree_hashes))
+        for event, request_hash in zip(report["events"], peer.route_request_tree_hashes, strict=True):
+            if event["action"] in {"construct", "send"}:
+                event["request_tree_sha256"] = request_hash
+        output.write_text(json.dumps(report, indent=2) + "\n")
+        jsonschema.Draft202012Validator(json.loads(
+            (ROOT / "interop/shared/schemas/route-execution-evidence.schema.json").read_text()
+        )).validate(report)
+        self.assertEqual([0x18, 0x18, 0x18], peer.operations)
+        self.assertEqual(3, len(report["events"]))
+        self.assertEqual(["construct", "send", "decode"], [event["action"] for event in report["events"]])
+        self.assertTrue(all(event["status"] == "passed" for event in report["events"]))
+        self.assertTrue(all(event["request_tree_sha256"] for event in report["events"][:2]))
+        self.assertRegex(report["events"][2]["response_tree_sha256"], r"^[0-9a-f]{64}$")
+
+    def test_generic_batch_item_route_uses_each_workflow_operation(self):
+        """KMIP 2.0 §§6.1, 8.2: ClientBatchItem::new wraps the operation for each step."""
+        route_manifest = json.loads((ROOT / "interop/shared/coverage/route-capabilities.json").read_text())
+        operation_targets = {
+            "KMIPKIT-ELEM-OP-C2S-CREATE",
+            "KMIPKIT-ELEM-OP-C2S-ACTIVATE",
+            "KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST",
+            "KMIPKIT-ELEM-OP-C2S-REVOKE",
+            "KMIPKIT-ELEM-OP-C2S-DESTROY",
+        }
+        rows = [cell for cell in iter_cells(CATALOG, route_manifest, languages=("rust",))
+                if cell["mode"] == "network"
+                and cell["public_api_symbol"] == "kmipkit_client::ClientBatchItem::new"
+                and cell["case_id"] == "test-batch-create-activate-destroy"
+                and cell["target_id"] in operation_targets
+                and cell["protocol_version"] == "2.0"
+                and cell["encoding"] == "TTLV"
+                and cell["transport"] == "raw_tls"
+                and cell["action"] == "send"]
+        expected_names = ["Create", "Activate", "Get Attribute List", "Revoke", "Destroy"]
+        self.assertEqual(expected_names, [row["workflow_operation"] for row in rows])
+        operation_codes = {
+            element["name"]: int(element["wire_value"], 16)
+            for element in json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text())["elements"]
+            if element["kind"] == "enumeration_value"
+            and element.get("parent_element_ids") == ["KMIPKIT-ELEM-ENUMERATION-OPERATION"]
+            and element.get("allocation") == "assigned"
+        }
+        matrix = self.directory / "generic-batch-item-workflow.jsonl"
+        output = self.directory / "generic-batch-item-workflow-evidence.json"
+        configuration = self.directory / "generic-batch-item-workflow-connection.json"
+        matrix.write_text("".join(
+            json.dumps(cell, sort_keys=True, separators=(",", ":")) + "\n"
+            for cell in rows
+        ))
+        with ControlledPeer(self.pki, operation_failed_batch) as peer:
+            configuration.write_text(json.dumps(
+                self.connection(peer.port, version="2.0", mutations=True), sort_keys=True
+            ))
+            process = subprocess.run(
+                [str(VALIDATOR), "matrix-network", "--matrix", str(matrix),
+                 "--connection", str(configuration), "--output", str(output)],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30, text=True,
+            )
+        self.assertEqual(0, process.returncode, process.stderr)
+        report = json.loads(output.read_text())
+        self.assertEqual([operation_codes[name] for name in expected_names], peer.operations)
+        self.assertEqual(5, len(report["events"]))
+        self.assertTrue(all(event["status"] == "passed" for event in report["events"]))
+
+    def test_complete_network_route_matrix_runs_against_controlled_mtls_peers(self):
+        """KMIP 2.0/2.1 §§6-9: every declared request route and transport axis."""
+        route_manifest = json.loads((ROOT / "interop/shared/coverage/route-capabilities.json").read_text())
+        all_cells = [cell for cell in iter_cells(CATALOG, route_manifest, languages=("rust",))
+                     if cell["mode"] == "network"]
+        combinations = sorted({
+            (cell["protocol_version"], cell["encoding"], cell["transport"])
+            for cell in all_cells
+        })
+        selected = os.environ.get("KMIPKIT_ROUTE_MATRIX_FILTER")
+        if selected:
+            combinations = [combination for combination in combinations
+                            if ":".join(combination) == selected]
+            self.assertTrue(combinations, "route-matrix filter must select a declared combination")
+        evidence_root = Path(os.environ.get(
+            "KMIPKIT_EVIDENCE_DIR", ROOT / "interop/rust-kmip-validator/results"
+        )) / "routes"
+        evidence_root.mkdir(parents=True, exist_ok=True)
+        for version, encoding, transport in combinations:
+            with self.subTest(version=version, encoding=encoding, transport=transport):
+                cells = [cell for cell in all_cells
+                         if (cell["protocol_version"], cell["encoding"], cell["transport"])
+                         == (version, encoding, transport)]
+                matrix = self.directory / f"network-{version}-{encoding}-{transport}.jsonl"
+                output = evidence_root / f"rust-network-routes-{version}-{encoding.lower()}-{transport}.json"
+                configuration = self.directory / f"network-{version}-{encoding}-{transport}-connection.json"
+                matrix.write_text("".join(
+                    json.dumps(cell, sort_keys=True, separators=(",", ":")) + "\n"
+                    for cell in cells
+                ))
+                with ControlledPeer(
+                    self.pki,
+                    operation_failed_batch,
+                    encoding=encoding,
+                    transport=transport,
+                ) as peer:
+                    configuration.write_text(json.dumps(
+                        self.connection(peer.port, version=version, encoding=encoding,
+                                        transport=transport, mutations=True),
+                        sort_keys=True,
+                    ))
+                    process = subprocess.run(
+                        [str(VALIDATOR), "matrix-network", "--matrix", str(matrix),
+                         "--connection", str(configuration), "--output", str(output)],
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                        timeout=600, text=True,
+                    )
+                self.assertEqual(0, process.returncode, process.stderr)
+                report = json.loads(output.read_text())
+                self.assertEqual(len(cells), len(report["events"]))
+                self.assertEqual(len(report["events"]), len({
+                    (event["case_id"], event["route_id"], event["target_id"],
+                     event.get("workflow_step_index"), event.get("workflow_item_index"),
+                     event["action"])
+                    for event in report["events"]
+                }))
+                sent_events = [event for event in report["events"]
+                               if event.get("transport_invocation_count") == 1]
+                self.assertEqual(len(sent_events), len(peer.route_request_tree_hashes))
+                for event, request_hash in zip(sent_events, peer.route_request_tree_hashes, strict=True):
+                    if event["status"] == "passed" and event["action"] in {"construct", "send"}:
+                        event["request_tree_sha256"] = request_hash
+                jsonschema.Draft202012Validator(json.loads(
+                    (ROOT / "interop/shared/schemas/route-execution-evidence.schema.json").read_text()
+                )).validate(report)
+                output.write_text(json.dumps(report, indent=2) + "\n")
 
     def test_query_probes_profile_omissions_and_separates_rejections(self):
         for reason, status, compatibility in [(5, "server_unsupported", "unsupported"), (8, "server_unsupported", "unsupported"), (12, "policy_restricted", "policy_restricted"), (3, "failed", "unknown"), (0x100, "failed", "unknown")]:
