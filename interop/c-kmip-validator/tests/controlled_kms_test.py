@@ -98,6 +98,8 @@ def response(operations: tuple[int, ...], protocol_minor: int,
         elif operation == 1:
             payload_value = enumeration(0x420057, created_object_type) + \
                 tlv(0x420094, 7, b"fixture-key-1")
+        elif operation == 3:
+            payload_value = tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 11:
             if selected_attribute_wire is not None:
                 attributes = selected_attribute_wire
@@ -123,6 +125,7 @@ def response(operations: tuple[int, ...], protocol_minor: int,
         elif operation == 56:
             payload_value = tlv(0x420168, 1, b"")
         unique_batch_item_id = {
+            3: b"interop-register",
             1: b"interop-create",
             11: b"interop-attributes",
             12: b"interop-attributes",

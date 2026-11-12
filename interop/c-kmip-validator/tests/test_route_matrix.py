@@ -750,6 +750,9 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all(check['status'] == 'passed' for check in checks))
         self.assertTrue(all(check['request_attribute_reference_tags'] == [] and
                             check['request_attribute_reference_names'] == [] for check in checks))
+        required_register_attributes = {'42001D', '420028', '42002A', '42002C', '4200AD'}
+        self.assertTrue(all(required_register_attributes <=
+                            set(check['request_certificate_attribute_tags']) for check in checks))
         self.assertTrue(all(check['response_attribute_tags'] == expected_tags for check in checks))
         for symbol in ('kmipkit_client_batch_item_get_attributes',
                        'kmipkit_client_batch_item_get_attributes_from_request'):

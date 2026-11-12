@@ -34,6 +34,17 @@ from validate_route_evidence import _key
 TYPES = ('', 'Structure', 'Integer', 'LongInteger', 'BigInteger', 'Enumeration',
          'Boolean', 'TextString', 'ByteString', 'DateTime', 'Interval', 'DateTimeExtended')
 
+CERTIFICATE_ATTRIBUTE_FIELDS = (
+    'Certificate Subject CN', 'Certificate Subject O', 'Certificate Subject OU',
+    'Certificate Subject Email', 'Certificate Subject C', 'Certificate Subject ST',
+    'Certificate Subject L', 'Certificate Subject UID', 'Certificate Subject Serial Number',
+    'Certificate Subject Title', 'Certificate Subject DC', 'Certificate Subject DN Qualifier',
+    'Certificate Issuer CN', 'Certificate Issuer O', 'Certificate Issuer OU',
+    'Certificate Issuer Email', 'Certificate Issuer C', 'Certificate Issuer ST',
+    'Certificate Issuer L', 'Certificate Issuer UID', 'Certificate Issuer Serial Number',
+    'Certificate Issuer Title', 'Certificate Issuer DC', 'Certificate Issuer DN Qualifier',
+)
+
 def normalize(name: str) -> str:
     return re.sub('[^a-z0-9]', '', name.lower())
 
@@ -279,6 +290,31 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None):
             raise ValueError('fixture_id_placeholder_missing')
         if len(list(descendants(node, 0x420093))) != len(expected):
             raise ValueError('fixture_batch_item_identity_missing')
+    if expected[0] == 3:
+        register_item = next(item for item in node[2]
+                             if item[0] == 0x42000F and numbers(item, 0x42005C) == [3])
+        request_payload = next((item for item in register_item[2]
+                                if item[0] == 0x420079 and item[1] == 1), None)
+        attributes = next((item for item in request_payload[2]
+                           if item[0] == 0x420125 and item[1] == 1), None) if request_payload else None
+        certificate = next(descendants(register_item, 0x420013), None)
+        certificate_value = next(descendants(register_item, 0x42001E), None)
+        if certificate is None or certificate[1] != 1 or numbers(certificate, 0x42001D) != [1]:
+            raise ValueError('fixture_register_certificate_shape_mismatch')
+        if certificate_value is None or certificate_value[1] != 8:
+            raise ValueError('fixture_register_certificate_value_mismatch')
+        if attributes is None or attributes[1] != 1:
+            raise ValueError('fixture_register_certificate_attributes_missing')
+        certificate_attribute_tags = {item[0] for item in attributes[2]}
+        required_certificate_attributes = {0x42001D, 0x420028, 0x42002A, 0x42002C, 0x4200AD}
+        certificate_length = numbers(attributes, 0x4200AD)
+        if not required_certificate_attributes <= certificate_attribute_tags:
+            raise ValueError('fixture_register_certificate_attribute_tags_mismatch')
+        if (numbers(attributes, 0x42001D) != [1] or numbers(attributes, 0x420028) != [4] or
+                numbers(attributes, 0x42002A) != [2048] or numbers(attributes, 0x42002C) != [3]):
+            raise ValueError('fixture_register_certificate_attribute_values_mismatch')
+        if len(certificate_length) != 1 or certificate_length[0] != len(certificate_value[2]):
+            raise ValueError('fixture_register_certificate_length_mismatch')
     if case_id == 'test-attr-cryptographic-algorithm' and numbers(node, 0x42013B) != [0x420028]:
         raise ValueError('fixture_attribute_reference_mismatch')
     if case_id == 'test-attr-cryptographic-length' and numbers(node, 0x42013B) != [0x42002A]:
@@ -289,11 +325,15 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None):
         if attribute_fixture['attribute_reference_kind'] == 'tag':
             matches = numbers(target_item, 0x42013B) == [
                 int(attribute_fixture['attribute_reference_tag'], 16)]
-        else:
+        elif attribute_fixture['attribute_reference_kind'] == 'name':
             matches = (text_values(target_item, 0x42000A) == [
                 attribute_fixture['attribute_reference_name']] and
                 text_values(target_item, 0x42009D) == [
                     attribute_fixture['attribute_vendor_identification']])
+        else:
+            matches = (not list(descendants(target_item, 0x42013B)) and
+                       not text_values(target_item, 0x42000A) and
+                       not text_values(target_item, 0x42009D))
         if not matches:
             raise ValueError('fixture_attribute_reference_mismatch')
     if selected_recipe[1] == 'query' and numbers(node, 0x420074) != [1]:
@@ -335,6 +375,17 @@ def read_back_attribute_fixture(case, catalog, version, attributes):
                    if row.get('target_id') == target_id), None)
     if target is None:
         return None
+    if target.get('name') == 'Certificate Attributes':
+        trees = [attributes.scalar(name, 7, 'fixture-certificate-field')
+                 for name in CERTIFICATE_ATTRIBUTE_FIELDS]
+        fields = ','.join(f'{tag:06X}:{item_type}' for tag, item_type, _ in trees)
+        return {
+            'attribute_reference_kind': 'all',
+            'attribute_response_fields': fields,
+            'attribute_response_tags': [f'{tag:06X}' for tag, _, _ in trees],
+            'attribute_response_wire': b''.join(fixture_wire(tree) for tree in trees),
+            'register_certificate': True,
+        }
     fixtures = attributes.fixtures(target, version)
     if not fixtures:
         return None
@@ -375,6 +426,8 @@ def recipe_for_case(case, attribute_fixture):
     if recipe is not None:
         return recipe
     if attribute_fixture is not None:
+        if attribute_fixture.get('register_certificate'):
+            return ((3, 11, 20), 'get_attributes')
         return ((1, 11, 20), 'get_attributes')
     return None
 
@@ -382,7 +435,7 @@ def recipe_for_case(case, attribute_fixture):
 
 def verify_lifecycle(operations, response_tree):
     """Check the fixture state machine against every ordered response item."""
-    if not operations or operations[0] != 1:
+    if not operations or operations[0] not in (1, 3):
         return []
     state = None
     effects, expected_statuses, expected_reasons = [], [], []
@@ -390,7 +443,7 @@ def verify_lifecycle(operations, response_tree):
               12: 'attribute_list_retrieved', 56: 'constraints_retrieved'}
     for operation in operations:
         status, reason = 0, 0
-        if operation == 1:
+        if operation in (1, 3):
             if state is not None:
                 raise ValueError('fixture_duplicate_create')
             state = 'pre_active'
@@ -481,7 +534,7 @@ def verify_consumer_provenance(report, artifact_sha256, catalog_sha256):
         raise ValueError('consumer_artifact_provenance_mismatch')
 
 
-def case_for_controlled_exchange(case, attribute_fixture=None):
+def case_for_controlled_exchange(case, attribute_fixture=None, certificate_object_path=None):
     """Run opaque request constructors through the controlled peer."""
     if (case['case_id'] in CONTROLLED_PEER_LOCAL_MODEL_CASES
             and case.get('execution', {}).get('mode') == 'local_model'):
@@ -494,8 +547,10 @@ def case_for_controlled_exchange(case, attribute_fixture=None):
             'attribute_reference_name': attribute_fixture.get('attribute_reference_name', ''),
             'attribute_vendor_identification': attribute_fixture.get(
                 'attribute_vendor_identification', ''),
-            'attribute_response_tag': attribute_fixture['attribute_response_tag'],
-            'attribute_response_type': attribute_fixture['attribute_response_type'],
+            'attribute_response_tag': attribute_fixture.get('attribute_response_tag', ''),
+            'attribute_response_type': attribute_fixture.get('attribute_response_type', ''),
+            'attribute_response_fields': attribute_fixture.get('attribute_response_fields', ''),
+            'certificate_object_path': certificate_object_path or '',
         }}
     return case
 
@@ -525,7 +580,12 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
         cells_by_case.setdefault(cell['case_id'], []).append(cell)
     with tempfile.TemporaryDirectory(prefix='kmipkit-c-route-peer-') as raw:
         directory = Path(raw)
-        ca, cert, key, client_cert, client_key = certificate_files(shutil.which('openssl') or 'openssl', directory)
+        openssl = shutil.which('openssl') or 'openssl'
+        ca, cert, key, client_cert, client_key = certificate_files(openssl, directory)
+        certificate_der = directory / 'server-certificate.der'
+        subprocess.run([openssl, 'x509', '-in', str(cert), '-outform', 'DER',
+                        '-out', str(certificate_der)], check=True,
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         context.minimum_version = ssl.TLSVersion.TLSv1_3
         context.load_cert_chain(cert, key)
@@ -561,7 +621,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         assert_recipe(request_tree, case_id, version, recipe, attribute_fixture)
                                         selected_tag = {'test-attr-cryptographic-algorithm': 0x420028,
                                                         'test-attr-cryptographic-length': 0x42002A}.get(
-                                                            case_id, int(attribute_fixture['attribute_response_tag'], 16)
+                                                            case_id, int(attribute_fixture.get(
+                                                                'attribute_response_tag', '000000'), 16)
                                                             if attribute_fixture else 0)
                                         object_type = 4 if case_id == 'test-obj-private-key' else 3 if case_id == 'test-obj-public-key' else 2
                                         response_wire = response(
@@ -601,7 +662,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                             connection_path, catalog_path, result_path, trace_path = (directory / name for name in ('connection.json', 'catalog.json', 'result.json', 'calls.tsv'))
                             trace_path.unlink(missing_ok=True)
                             connection_path.write_text(json.dumps(config))
-                            peer_case = case_for_controlled_exchange(case, attribute_fixture)
+                            peer_case = case_for_controlled_exchange(
+                                case, attribute_fixture,
+                                str(certificate_der) if attribute_fixture and
+                                attribute_fixture.get('register_certificate') else None)
                             catalog_path.write_text(json.dumps({**catalog, 'test_cases': [peer_case]}))
                             run = subprocess.run([str(binary.resolve()), 'run', '--connection', str(connection_path),
                                 '--catalog', str(catalog_path), '--allow-mutations', '--output', str(result_path)],
@@ -644,6 +708,16 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         f'{item[0]:06X}' for item in next(
                                             descendants(observation[0][1], 0x420125))[2]],
                                 }
+                                if attribute_fixture.get('attribute_reference_kind') == 'all':
+                                    register_item = next(item for item in observation[0][0][2]
+                                                         if item[0] == 0x42000F and
+                                                         numbers(item, 0x42005C) == [3])
+                                    register_payload = next(item for item in register_item[2]
+                                                            if item[0] == 0x420079 and item[1] == 1)
+                                    register_attributes = next(item for item in register_payload[2]
+                                                               if item[0] == 0x420125 and item[1] == 1)
+                                    attribute_check['request_certificate_attribute_tags'] = [
+                                        f'{item[0]:06X}' for item in register_attributes[2]]
                             checks.append({'case_id': case_id, 'constructor_variant': variant, 'protocol_version': version, 'encoding': encoding,
                                            'transport': transport, 'status': 'passed' if observation and not code and run.returncode == 0 else 'failed',
                                            'consumer_case_status': (result.get('cases') or [{}])[0].get('status', 'missing'),

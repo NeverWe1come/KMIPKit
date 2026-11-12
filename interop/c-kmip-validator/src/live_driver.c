@@ -270,6 +270,31 @@ static bool attributes_contain_typed_tag(kmipkit_ttlv_structure_t *attributes,
     return valid && found;
 }
 
+static bool attributes_contain_field_list(kmipkit_ttlv_structure_t *attributes,
+                                          const char *field_list) {
+    if (!field_list || field_list[0] == '\0' ||
+        strlen(field_list) >= KMIP_MAX_NAME_LEN) return false;
+    char remaining[KMIP_MAX_NAME_LEN];
+    memcpy(remaining, field_list, strlen(field_list) + 1);
+    size_t field_count = 0;
+    char *field = remaining;
+    while (field && *field) {
+        char *next = strchr(field, ',');
+        if (next) *next++ = '\0';
+        char *separator = strchr(field, ':');
+        if (!separator || separator == field || separator[1] == '\0') return false;
+        *separator++ = '\0';
+        uint32_t tag = 0;
+        uint8_t item_type = 0;
+        if (!parse_attribute_reference_tag(field, &tag) ||
+            !parse_attribute_response_type(separator, &item_type) ||
+            !attributes_contain_typed_tag(attributes, tag, item_type)) return false;
+        ++field_count;
+        field = next;
+    }
+    return field_count > 0;
+}
+
 static bool text_value_matches(kmipkit_ttlv_value_view_t *value,
                                const uint8_t *expected,
                                uint64_t expected_length) {
@@ -1330,6 +1355,95 @@ static int32_t build_get_attributes_item(
     return status;
 }
 
+static int32_t build_certificate_register_item(
+    kmip_live_client_t *client,
+    const char *certificate_path,
+    kmipkit_client_batch_item_t **out_item) {
+    if (!client || !certificate_path || certificate_path[0] == '\0' || !out_item) return -1;
+    FILE *source = fopen(certificate_path, "rb");
+    if (!source) return -1;
+    int32_t status = 0;
+    uint8_t *certificate_data = NULL;
+    kmipkit_ttlv_structure_t *certificate_attributes = NULL;
+    kmipkit_ttlv_structure_t *certificate_fields = NULL;
+    kmipkit_ttlv_value_t *type_value = NULL;
+    kmipkit_ttlv_value_t *certificate_value = NULL;
+    kmipkit_ttlv_value_t *object_value = NULL;
+    kmipkit_raw_tag_t *raw_tag = NULL;
+    kmipkit_tag_t *tag = NULL;
+    kmipkit_ttlv_item_t *object_item = NULL;
+    kmipkit_register_request_t *request = NULL;
+    if (fseek(source, 0, SEEK_END) != 0) status = -1;
+    long file_length = status == 0 ? ftell(source) : -1;
+    if (file_length <= 0 || (unsigned long)file_length > KMIP_MAX_REQUEST_BYTES ||
+        fseek(source, 0, SEEK_SET) != 0) status = -1;
+    if (status == 0) {
+        certificate_data = malloc((size_t)file_length);
+        if (!certificate_data) status = KMIPKIT_ERROR_RESOURCE_LIMIT;
+    }
+    if (status == 0 && fread(certificate_data, 1, (size_t)file_length, source) != (size_t)file_length) {
+        status = -1;
+    }
+    (void)fclose(source);
+    if (status == 0 && file_length > INT32_MAX) status = -1;
+    if (status == 0 && !create_cryptographic_key_attributes(
+            client, KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_RSA, 2048,
+            &certificate_attributes)) status = -1;
+    if (status == 0 && kmipkit_ttlv_value_integer(
+            (int32_t)(KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_SIGN |
+                      KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_VERIFY), &type_value) == 0 &&
+        append_ttlv_value(client, &certificate_attributes, UINT32_C(0x42002C), &type_value)) {
+        status = kmipkit_ttlv_value_enumeration(
+            KMIPKIT_ENUMERATION_CERTIFICATE_TYPE_X_509, &type_value);
+    } else {
+        status = -1;
+    }
+    if (status == 0 && !append_ttlv_value(
+            client, &certificate_attributes, UINT32_C(0x42001D), &type_value)) status = -1;
+    if (status == 0 && kmipkit_ttlv_value_integer((int32_t)file_length, &type_value) != 0) status = -1;
+    if (status == 0 && !append_ttlv_value(
+            client, &certificate_attributes, UINT32_C(0x4200AD), &type_value)) status = -1;
+    if (status == 0) status = kmipkit_ttlv_structure_create(&certificate_fields);
+    if (status == 0) status = kmipkit_ttlv_value_enumeration(
+        KMIPKIT_ENUMERATION_CERTIFICATE_TYPE_X_509, &type_value);
+    if (status == 0 && !append_ttlv_value(
+            client, &certificate_fields, UINT32_C(0x42001D), &type_value)) status = -1;
+    if (type_value) kmipkit_ttlv_value_release(type_value);
+    if (status == 0) status = kmipkit_ttlv_value_byte_string(
+        client->limits, certificate_data, (uint64_t)file_length, &certificate_value);
+    if (status == 0 && !append_ttlv_value(
+            client, &certificate_fields, UINT32_C(0x42001E), &certificate_value)) status = -1;
+    if (certificate_value) kmipkit_ttlv_value_release(certificate_value);
+    if (status == 0) status = kmipkit_ttlv_value_structure(
+        certificate_fields, client->limits, &object_value);
+    if (status == 0) certificate_fields = NULL;
+    if (status == 0) status = kmipkit_ttlv_raw_tag_create(UINT32_C(0x420013), &raw_tag);
+    if (status == 0) status = kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag);
+    if (status == 0) status = kmipkit_ttlv_item_create(
+        tag, object_value, client->limits, &object_item);
+    if (status == 0) {
+        kmipkit_ttlv_structure_t *owned_attributes = certificate_attributes;
+        certificate_attributes = NULL;
+        status = kmipkit_register_request_create(
+            KMIPKIT_ENUMERATION_OBJECT_TYPE_CERTIFICATE, owned_attributes, object_item, &request);
+    }
+    if (status == 0) status = kmipkit_client_batch_item_register(request, out_item);
+    if (request) kmipkit_register_request_release(request);
+    if (object_item) kmipkit_ttlv_item_release(object_item);
+    if (tag) kmipkit_tag_release(tag);
+    if (raw_tag) kmipkit_raw_tag_release(raw_tag);
+    if (object_value) kmipkit_ttlv_value_release(object_value);
+    if (certificate_attributes) kmipkit_ttlv_structure_release(certificate_attributes);
+    if (certificate_fields) kmipkit_ttlv_structure_release(certificate_fields);
+    if (type_value) kmipkit_ttlv_value_release(type_value);
+    if (certificate_value) kmipkit_ttlv_value_release(certificate_value);
+    if (certificate_data) {
+        memset(certificate_data, 0, (size_t)(file_length > 0 ? file_length : 0));
+        free(certificate_data);
+    }
+    return status;
+}
+
 static int32_t build_get_attribute_list_item(
     const kmipkit_unique_identifier_v1_t *identifier,
     kmipkit_client_batch_item_t **out_item) {
@@ -1403,6 +1517,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         strcmp(test_case->case_id, "test-attr-cryptographic-algorithm") == 0;
     bool cryptographic_length_attribute_workflow =
         strcmp(test_case->case_id, "test-attr-cryptographic-length") == 0;
+    bool certificate_attributes_workflow =
+        strcmp(test_case->case_id, "test-attr-certificate-attributes") == 0;
+    bool register_certificate_workflow = certificate_attributes_workflow;
     bool read_back_attribute_workflow = test_case->attribute_reference_kind[0] != '\0';
     uint32_t read_back_attribute_tag = 0;
     uint32_t read_back_attribute_response_tag = 0;
@@ -1411,18 +1528,24 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         strcmp(test_case->attribute_reference_kind, "tag") == 0;
     bool attribute_reference_by_name =
         strcmp(test_case->attribute_reference_kind, "name") == 0;
+    bool attribute_reference_by_all =
+        strcmp(test_case->attribute_reference_kind, "all") == 0;
     if (read_back_attribute_workflow &&
-        ((!attribute_reference_by_tag && !attribute_reference_by_name) ||
+        ((!attribute_reference_by_tag && !attribute_reference_by_name && !attribute_reference_by_all) ||
          (attribute_reference_by_tag &&
           !parse_attribute_reference_tag(test_case->attribute_reference_tag,
                                          &read_back_attribute_tag)) ||
-         !parse_attribute_reference_tag(test_case->attribute_response_tag,
-                                        &read_back_attribute_response_tag) ||
-         !parse_attribute_response_type(test_case->attribute_response_type,
-                                        &read_back_attribute_type) ||
+         (!attribute_reference_by_all &&
+          (!parse_attribute_reference_tag(test_case->attribute_response_tag,
+                                          &read_back_attribute_response_tag) ||
+           !parse_attribute_response_type(test_case->attribute_response_type,
+                                          &read_back_attribute_type))) ||
          (attribute_reference_by_name &&
           (!test_case->attribute_reference_name[0] ||
-           !test_case->attribute_vendor_identification[0])))) {
+           !test_case->attribute_vendor_identification[0])) ||
+         (attribute_reference_by_all &&
+          (!test_case->attribute_response_fields[0] ||
+           !test_case->certificate_object_path[0])))) {
         return outcome_failed("read-back attribute fixture metadata is invalid");
     }
     bool hash_workflow = strcmp(test_case->case_id, "test-op-hash") == 0;
@@ -1452,6 +1575,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     uint32_t requested_object_type = private_key_workflow ?
         KMIPKIT_ENUMERATION_OBJECT_TYPE_PRIVATE_KEY : public_key_workflow ?
         KMIPKIT_ENUMERATION_OBJECT_TYPE_PUBLIC_KEY :
+        certificate_attributes_workflow ? KMIPKIT_ENUMERATION_OBJECT_TYPE_CERTIFICATE :
         KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY;
     bool revoke_workflow = strcmp(test_case->case_id, "test-op-revoke") == 0;
     bool activate_workflow = strcmp(test_case->case_id, "test-op-activate") == 0;
@@ -1561,15 +1685,22 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION,
             .enumeration_value = KMIPKIT_ENUMERATION_UNIQUE_IDENTIFIER_ID_PLACEHOLDER
         };
-        request_construction_step = rsa_key_workflow ? "RSA key Attributes" :
-            "symmetric key Attributes";
-        status = (rsa_key_workflow ?
+        request_construction_step = register_certificate_workflow ? "Register Certificate" :
+            rsa_key_workflow ? "RSA key Attributes" : "symmetric key Attributes";
+        status = register_certificate_workflow ? 0 : (rsa_key_workflow ?
             create_rsa_key_attributes(client, &request_attributes) :
             create_symmetric_key_attributes(client, &request_attributes)) ? 0 : -1;
         if (status == 0 && create_storage_masks_workflow) {
             status = kmipkit_ttlv_structure_create(&request_storage_masks);
         }
-        if (status == 0) {
+        if (status == 0 && register_certificate_workflow) {
+            status = build_certificate_register_item(
+                client, test_case->certificate_object_path, &setup_item);
+            if (status == 0 && !request_item_is_valid(
+                    setup_item, request_validation_diagnostic, sizeof(request_validation_diagnostic))) {
+                status = KMIPKIT_ERROR_INVALID_INPUT;
+            }
+        } else if (status == 0) {
             request_construction_step = rsa_key_workflow ? "Create RSA Key" :
                 "Create Symmetric Key";
             kmipkit_client_batch_item_t **create_item = create_workflow ? &item : &setup_item;
@@ -1607,7 +1738,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             } else if (get_workflow) {
                 status = kmipkit_client_batch_item_get(&placeholder, 0, 0, 0, 0, 0, 0, NULL, &item);
             } else if (get_attributes_workflow) {
-                if (read_back_attribute_workflow || cryptographic_algorithm_attribute_workflow ||
+                if ((read_back_attribute_workflow && !attribute_reference_by_all) ||
+                    cryptographic_algorithm_attribute_workflow ||
                     cryptographic_length_attribute_workflow) {
                     kmipkit_attribute_reference_v1_t attribute_reference = {
                         .struct_size = (uint32_t)sizeof(kmipkit_attribute_reference_v1_t),
@@ -1662,7 +1794,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             if (create_workflow) {
                 status = set_batch_item_id(&item, "interop-create");
             } else {
-                status = set_batch_item_id(&setup_item, "interop-create");
+                status = set_batch_item_id(&setup_item,
+                    register_certificate_workflow ? "interop-register" : "interop-create");
                 if (status == 0 && active_destroy_negative_workflow) {
                     status = set_batch_item_id(&activate_item, "interop-activate-before-destroy");
                 }
@@ -1909,10 +2042,14 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             goto cleanup;
         }
         uint32_t response_object_type = 0;
-        status = kmipkit_client_batch_item_response_create(
-            setup_response_item, &created_identifier_present, &response_object_type, &created_identifier);
+        status = register_certificate_workflow ?
+            kmipkit_client_batch_item_response_register(
+                setup_response_item, &created_identifier_present, &created_identifier) :
+            kmipkit_client_batch_item_response_create(
+                setup_response_item, &created_identifier_present,
+                &response_object_type, &created_identifier);
         if (status != 0 || !created_identifier_present ||
-            response_object_type != requested_object_type ||
+            (!register_certificate_workflow && response_object_type != requested_object_type) ||
             created_identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
             created_identifier.text_length == 0 || !created_identifier.text_data) {
             outcome.library_failed = status != 0;
@@ -2237,7 +2374,10 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         status = kmipkit_client_batch_item_response_get_attributes(
             response_item, &present, &response_identifier, &response_attributes);
         bool attributes_valid = response_attributes &&
-            (read_back_attribute_workflow ?
+            (attribute_reference_by_all ?
+                attributes_contain_field_list(response_attributes,
+                                              test_case->attribute_response_fields) :
+             read_back_attribute_workflow ?
                 attributes_contain_typed_tag(response_attributes, read_back_attribute_response_tag,
                                              read_back_attribute_type) :
              cryptographic_algorithm_attribute_workflow ?
