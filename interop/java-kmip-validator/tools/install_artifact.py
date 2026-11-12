@@ -9,6 +9,7 @@ import json
 import os
 import platform
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -66,6 +67,21 @@ def resolve_pin_file(pin_file: Path, project_root: Path) -> Path:
     return resolved
 
 
+def cargo_environment_with_path_remapping(
+    environment: dict[str, str], temporary_root: Path
+) -> dict[str, str]:
+    """Preserve caller Rust flags and normalize paths inside the isolated build root."""
+    result = environment.copy()
+    encoded_flags = result.get("CARGO_ENCODED_RUSTFLAGS")
+    if encoded_flags:
+        flags = encoded_flags.split("\x1f")
+    else:
+        flags = shlex.split(result.get("RUSTFLAGS", ""))
+    flags.append(f"--remap-path-prefix={temporary_root.resolve()}=/kmipkit-build")
+    result["CARGO_ENCODED_RUSTFLAGS"] = "\x1f".join(flags)
+    return result
+
+
 def extract_git_archive(repository: Path, commit: str, destination: Path) -> None:
     archive = subprocess.run(
         ["git", "-C", str(repository), "archive", "--format=tar", commit],
@@ -111,6 +127,7 @@ def install(repository: Path, commit: str, release_ref: str, maven_repository: P
         env["GRADLE_USER_HOME"] = str(tool_home / "gradle")
         env["CARGO_HOME"] = str(tool_home / "cargo")
         env["CARGO_TARGET_DIR"] = str(tool_home / "cargo-target")
+        env = cargo_environment_with_path_remapping(env, temp_root)
         wrapper = source_root / "bindings" / "java" / "gradlew"
         if os.name == "nt":
             command = [str(wrapper.with_suffix(".bat")), "--no-daemon", "-p", str(wrapper.parent), "nativeJar"]
