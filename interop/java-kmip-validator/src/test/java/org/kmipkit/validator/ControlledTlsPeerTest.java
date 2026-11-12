@@ -24,6 +24,7 @@ import org.kmipkit.credentials.DeviceCredential;
 import org.kmipkit.credentials.HashedPasswordCredential;
 import org.kmipkit.credentials.UsernameAndPasswordCredential;
 import org.kmipkit.message.ResponseMessage;
+import org.kmipkit.message.RequestMessage;
 import org.kmipkit.protocol.CryptographicParameters;
 import org.kmipkit.protocol.KmipValues;
 import org.kmipkit.ttlv.CodecLimits;
@@ -297,6 +298,8 @@ class ControlledTlsPeerTest {
             appendGenericEnumerationRouteEvents(events, enumerationFixtures, protocolVersion);
             appendGenericBitmaskRouteEvents(events, bitmaskFixtures, protocolVersion);
             appendGenericDataTypeRouteEvents(events, dataTypeFixtures, dataTypeVectors, protocolVersion);
+            appendNormativeMessageFieldGenericRouteEvents(events, protocolVersion);
+            appendNormativeRequestMessageParseEvents(events, protocolVersion);
 
             byte[] serverCertificatePem = fixture("server-cert.pem");
             byte[] serverPrivateKeyPem = fixture("server-key.pem");
@@ -555,6 +558,9 @@ class ControlledTlsPeerTest {
         int batchItemExtensionCountEventCount = List.of("2.0", "2.1").size() * 3;
         int batchItemGenericRouteEventCount = List.of("2.0", "2.1").size() * 4;
         int batchItemAdditionalResponseRouteEventCount = List.of("2.0", "2.1").size() * 11;
+        int normativeMessageFieldGenericRouteEventCount = List.of("2.0", "2.1").size() * 27;
+        int normativeMessageFieldParserRouteEventCount = List.of("2.0", "2.1").size() * 9;
+        int normativeBatchItemAccessorRouteEventCount = List.of("2.0", "2.1").size() * 10;
         int credentialGenericRouteEventCount = CREDENTIAL_TYPE_MODEL_CASE_IDS.size()
                 * List.of("2.0", "2.1").size() * 4;
         int credentialEnvelopeEventCount = CREDENTIAL_TYPE_MODEL_CASE_IDS.size()
@@ -565,7 +571,9 @@ class ControlledTlsPeerTest {
         assertEquals(68 + enumerationEventCount + bitmaskEventCount + 94 + batchItemAccessorEventCount
                         + batchItemExtensionCountEventCount + batchItemGenericRouteEventCount
                         + batchItemAdditionalResponseRouteEventCount + credentialGenericRouteEventCount
-                        + credentialEnvelopeEventCount + batchErrorContinuationEventCount,
+                        + normativeMessageFieldGenericRouteEventCount + normativeMessageFieldParserRouteEventCount
+                        + normativeBatchItemAccessorRouteEventCount + credentialEnvelopeEventCount
+                        + batchErrorContinuationEventCount,
                 report.path("events").size());
         long bitmaskEvents = 0;
         for (JsonNode event : report.path("events")) {
@@ -2969,6 +2977,10 @@ class ControlledTlsPeerTest {
                         "org.kmipkit.extensions.ClientBatchItemResult.pendingCorrelationValue",
                         null, null, "decode", protocolVersion, null, null,
                         normalizedTreeSha256(responseBytes));
+                appendBatchItemFieldRouteEvents(events,
+                        "java.typed-protocol.function.client_batch_item_response_pending_correlation_value",
+                        "org.kmipkit.extensions.ClientBatchItemResult.pendingCorrelationValue",
+                        protocolVersion, normalizedTreeSha256(responseBytes));
             }
         } finally {
             listener.close();
@@ -3018,6 +3030,164 @@ class ControlledTlsPeerTest {
                 "decode", protocolVersion, null, null, treeHash);
     }
 
+    private static void appendNormativeMessageFieldGenericRouteEvents(ArrayNode events,
+            String protocolVersion) throws Exception {
+        appendMessageFieldIntegerRoutes(events, "test-norm-message-field-message-field-8-5-batch-count",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT", protocolVersion, false);
+        appendMessageFieldIntegerRoutes(events, "test-norm-message-field-message-field-9-5-batch-count",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT", protocolVersion, true);
+
+        appendMessageFieldStructureRoutes(events, "test-norm-message-field-message-field-8-6-batch-item",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM", 0x42000f,
+                queryResponseBatchItem(), batchItemStructure(), protocolVersion, true, false);
+        appendMessageFieldStructureRoutes(events, "test-norm-message-field-message-field-9-7-batch-item",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM", 0x42000f,
+                queryResponseBatchItem(), batchItemStructure(), protocolVersion, true, false);
+        appendMessageFieldStructureRoutes(events, "test-norm-message-field-message-field-8-6-message-extension",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION", 0x420051,
+                messageExtensionWire(), messageExtensionStructure(), protocolVersion, false, false);
+        appendMessageFieldStructureRoutes(events, "test-norm-message-field-message-field-9-13-message-extension",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION", 0x420051,
+                messageExtensionWire(), messageExtensionStructure(), protocolVersion, true, false);
+        appendMessageFieldStructureRoutes(events, "test-norm-tag-tag-420051",
+                "KMIPKIT-ELEM-TAG-420051", 0x420051,
+                messageExtensionWire(), messageExtensionStructure(), protocolVersion, false, true);
+    }
+
+    private static void appendMessageFieldIntegerRoutes(ArrayNode events, String caseId, String targetId,
+            String protocolVersion, boolean recordValueConstructor) throws Exception {
+        int rawTag = 0x42000d;
+        int value = 1;
+        byte[] wire = item(rawTag, 2, intBytes(value));
+        String treeHash = normalizedTreeSha256(wire);
+        try (TtlvValue ttlvValue = TtlvValue.Integer(value)) {
+            if (recordValueConstructor) {
+                appendRouteEvent(events, caseId,
+                        "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer",
+                        targetId, "org.kmipkit.ttlv.TtlvValue.Integer", null, null,
+                        "construct", protocolVersion, null, treeHash, null);
+            }
+            appendLocalTtlvRoundtripEvents(events, caseId, targetId, rawTag,
+                    TtlvItemType.Integer, ttlvValue, wire, protocolVersion, value);
+        }
+    }
+
+    private static void appendMessageFieldStructureRoutes(ArrayNode events, String caseId, String targetId,
+            int rawTag, byte[] wire, TtlvStructure content, String protocolVersion,
+            boolean recordStructureConstructor, boolean recordRawTag) throws Exception {
+        String treeHash = normalizedTreeSha256(wire);
+        CodecLimits limits = CodecLimits.defaults();
+        try (content;
+                TtlvValue value = TtlvValue.structure(content, limits);
+                RawTag raw = RawTag.fromRaw(rawTag);
+                Tag tag = raw.checked();
+                TtlvItem item = TtlvItem.create(tag, value, limits);
+                var view = item.view();
+                var itemValue = view.value();
+                var structureView = itemValue.structure()) {
+            assertEquals(rawTag, view.tag().raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertTrue(structureView.itemCount() > 0);
+            if (recordRawTag) {
+                appendRouteEvent(events, caseId,
+                        "java.generic-ttlv.model.org.kmipkit.ttlv.rawtag.fromraw",
+                        targetId, "org.kmipkit.ttlv.RawTag.fromRaw", null, null,
+                        "construct", protocolVersion, null, treeHash, null);
+                appendRouteEvent(events, caseId,
+                        "java.generic-ttlv.model.org.kmipkit.ttlv.rawtag.checked",
+                        targetId, "org.kmipkit.ttlv.RawTag.checked", null, null,
+                        "construct", protocolVersion, null, treeHash, null);
+            }
+            if (recordStructureConstructor) {
+                appendRouteEvent(events, caseId,
+                        "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
+                        targetId, "org.kmipkit.ttlv.TtlvValue.structure", null, null,
+                        "construct", protocolVersion, null, treeHash, null);
+            }
+            appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_item.create",
+                    targetId, "org.kmipkit.ttlv.TtlvItem.create", null, null,
+                    "construct", protocolVersion, null, treeHash, null);
+            appendRouteEvent(events, caseId, "java.generic-ttlv.function.ttlv_item_view_from_item",
+                    targetId, "org.kmipkit.ttlv.TtlvItem.view", null, null,
+                    "decode", protocolVersion, null, null, treeHash);
+        }
+        try (TtlvItem decoded = TtlvCodec.decode(wire);
+                var view = decoded.view();
+                var decodedValue = view.value();
+                var structureView = decodedValue.structure()) {
+            assertEquals(rawTag, view.tag().raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertTrue(structureView.itemCount() > 0);
+        }
+        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_codec.decode",
+                targetId, "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
+                "decode", protocolVersion, null, null, treeHash);
+    }
+
+    private static void appendNormativeRequestMessageParseEvents(ArrayNode events,
+            String protocolVersion) throws Exception {
+        int minorVersion = "2.0".equals(protocolVersion) ? 0 : 1;
+        String treeHash = normalizedTreeSha256(requestMessageWire(minorVersion));
+        try (RequestMessage message = RequestMessage.fromTtlv(requestMessageStructure(minorVersion));
+                var header = message.header();
+                var item = message.batchItemAt(0)) {
+            assertEquals(1, header.batchCount());
+            assertEquals(1, message.batchItemCount());
+            assertEquals(0x18L, item.operation().orElseThrow());
+            assertEquals(1L, item.extensionCount());
+        }
+        for (String[] field : List.of(
+                new String[] {"test-norm-message-field-message-field-9-5-batch-count",
+                        "KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT"},
+                new String[] {"test-norm-message-field-message-field-9-7-batch-item",
+                        "KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM"},
+                new String[] {"test-norm-message-field-message-field-9-13-message-extension",
+                        "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION"})) {
+            appendRouteEvent(events, field[0],
+                    "java.typed-protocol.model.org.kmipkit.message.requestmessage.fromttlv",
+                    field[1], "org.kmipkit.message.RequestMessage.fromTtlv", null, null,
+                    "construct", protocolVersion, null, treeHash, null);
+        }
+    }
+
+    private static TtlvStructure requestMessageStructure(int protocolMinorVersion) {
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvStructure version = TtlvStructure.create();
+        version = appendTtlvItem(version, 0x42006a, TtlvValue.Integer(2), limits);
+        version = appendTtlvItem(version, 0x42006b, TtlvValue.Integer(protocolMinorVersion), limits);
+        TtlvStructure header = TtlvStructure.create();
+        header = appendTtlvItem(header, 0x420069, TtlvValue.structure(version, limits), limits);
+        header = appendTtlvItem(header, 0x420092, TtlvValue.DateTime(1), limits);
+        header = appendTtlvItem(header, 0x42000d, TtlvValue.Integer(1), limits);
+
+        TtlvStructure payload = TtlvStructure.create();
+        payload = appendTtlvItem(payload, 0x420074, TtlvValue.Enumeration(1), limits);
+        TtlvStructure requestItem = TtlvStructure.create();
+        requestItem = appendTtlvItem(requestItem, 0x42005c, TtlvValue.Enumeration(0x18), limits);
+        requestItem = appendTtlvItem(requestItem, 0x420093,
+                TtlvValue.ByteString("item-0".getBytes(StandardCharsets.US_ASCII), limits), limits);
+        requestItem = appendTtlvItem(requestItem, 0x420079, TtlvValue.structure(payload, limits), limits);
+        requestItem = appendTtlvItem(requestItem, 0x420051,
+                TtlvValue.structure(messageExtensionStructure(), limits), limits);
+
+        TtlvStructure message = TtlvStructure.create();
+        message = appendTtlvItem(message, 0x420077, TtlvValue.structure(header, limits), limits);
+        return appendTtlvItem(message, 0x42000f, TtlvValue.structure(requestItem, limits), limits);
+    }
+
+    private static byte[] requestMessageWire(int protocolMinorVersion) throws Exception {
+        byte[] version = structure(0x420069,
+                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(protocolMinorVersion)));
+        byte[] header = structure(0x420077, version,
+                item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(1)));
+        byte[] requestPayload = structure(0x420079, item(0x420074, 5, intBytes(1)));
+        byte[] requestItem = structure(0x42000f,
+                item(0x42005c, 5, intBytes(0x18)),
+                item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)),
+                requestPayload, messageExtensionWire());
+        return structure(0x420078, header, requestItem);
+    }
+
     private static void assertBatchItemResponseRouteEvidence(ArrayNode events,
             ClientBatchItemResult result, String protocolVersion, String responseHash) throws Exception {
         try (TtlvStructure raw = result.raw().orElseThrow(); var view = raw.view()) {
@@ -3060,23 +3230,35 @@ class ControlledTlsPeerTest {
                 "java.typed-protocol.function.client_batch_item_response_header_ttlv",
                 RESPONSE_BATCH_ITEM_TARGET_ID, "org.kmipkit.extensions.ClientBatchItemResult.responseHeaderTtlv",
                 null, null, "decode", protocolVersion, null, null, responseHash);
+        appendBatchItemFieldRouteEvents(events,
+                "java.typed-protocol.function.client_batch_item_response_header_ttlv",
+                "org.kmipkit.extensions.ClientBatchItemResult.responseHeaderTtlv", protocolVersion, responseHash);
 
         assertEquals(4, result.metadata().length);
         appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
                 "java.typed-protocol.function.client_batch_item_response_metadata_v1",
                 RESPONSE_BATCH_ITEM_TARGET_ID, "org.kmipkit.extensions.ClientBatchItemResult.metadata",
                 null, null, "decode", protocolVersion, null, null, responseHash);
+        appendBatchItemFieldRouteEvents(events,
+                "java.typed-protocol.function.client_batch_item_response_metadata_v1",
+                "org.kmipkit.extensions.ClientBatchItemResult.metadata", protocolVersion, responseHash);
         assertEquals(0x18L, result.metadataV2().operation());
         appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
                 "java.typed-protocol.function.client_batch_item_response_metadata_v2",
                 RESPONSE_BATCH_ITEM_TARGET_ID, "org.kmipkit.extensions.ClientBatchItemResult.metadataV2",
                 null, null, "decode", protocolVersion, null, null, responseHash);
+        appendBatchItemFieldRouteEvents(events,
+                "java.typed-protocol.function.client_batch_item_response_metadata_v2",
+                "org.kmipkit.extensions.ClientBatchItemResult.metadataV2", protocolVersion, responseHash);
         assertArrayEquals("item-0".getBytes(StandardCharsets.US_ASCII),
                 result.uniqueBatchItemId().orElseThrow());
         appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
                 "java.typed-protocol.function.client_batch_item_response_unique_batch_item_id",
                 RESPONSE_BATCH_ITEM_TARGET_ID, "org.kmipkit.extensions.ClientBatchItemResult.uniqueBatchItemId",
                 null, null, "decode", protocolVersion, null, null, responseHash);
+        appendBatchItemFieldRouteEvents(events,
+                "java.typed-protocol.function.client_batch_item_response_unique_batch_item_id",
+                "org.kmipkit.extensions.ClientBatchItemResult.uniqueBatchItemId", protocolVersion, responseHash);
 
         try (ResponseMessage message = ResponseMessage.fromTtlv(responseMessageStructure(
                 "2.0".equals(protocolVersion) ? 0 : 1)); var item = message.batchItemAt(0)) {
@@ -3087,6 +3269,36 @@ class ControlledTlsPeerTest {
                 "java.typed-protocol.model.org.kmipkit.message.responsemessage.fromttlv",
                 RESPONSE_BATCH_ITEM_TARGET_ID, "org.kmipkit.message.ResponseMessage.fromTtlv",
                 null, null, "construct", protocolVersion, null, responseHash, null);
+        for (String[] field : List.of(
+                new String[] {"test-norm-message-field-message-field-8-5-batch-count",
+                        "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT"},
+                new String[] {"test-norm-message-field-message-field-8-6-batch-item",
+                        "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM"},
+                new String[] {"test-norm-message-field-message-field-8-6-message-extension",
+                        "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION"},
+                new String[] {"test-norm-message-field-message-field-9-5-batch-count",
+                        "KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT"},
+                new String[] {"test-norm-message-field-message-field-9-7-batch-item",
+                        "KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM"},
+                new String[] {"test-norm-message-field-message-field-9-13-message-extension",
+                        "KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION"})) {
+            appendRouteEvent(events, field[0],
+                    "java.typed-protocol.model.org.kmipkit.message.responsemessage.fromttlv",
+                    field[1], "org.kmipkit.message.ResponseMessage.fromTtlv", null, null,
+                    "construct", protocolVersion, null, responseHash, null);
+        }
+    }
+
+    private static void appendBatchItemFieldRouteEvents(ArrayNode events, String routeId,
+            String publicApiSymbol, String protocolVersion, String responseHash) {
+        for (String[] field : List.of(
+                new String[] {"test-norm-message-field-message-field-8-6-batch-item",
+                        "KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM"},
+                new String[] {"test-norm-message-field-message-field-9-7-batch-item",
+                        "KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM"})) {
+            appendRouteEvent(events, field[0], routeId, field[1], publicApiSymbol,
+                    null, null, "decode", protocolVersion, null, null, responseHash);
+        }
     }
 
     private static TtlvStructure batchItemStructure() {
