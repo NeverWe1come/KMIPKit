@@ -30,7 +30,7 @@ Dependent work branches from the unmerged parent head while review is pending.
 
 - [x] R001 Fail a test that transcodes one retained response tree to TTLV hex,
   JSON and XML while preserving unknown values, order, status and ownership.
-- [ ] R002 Implement shared checked transcoding and typed batch-result
+- [x] R002 Implement shared checked transcoding and typed batch-result
   conversion; verify secret-safe diagnostics and foreign copy contracts.
 - [ ] E001 Fail tests for wrong-type, reserved, misplaced, repeated and
   version-incompatible expert tags, plus accepted typed Item insertion.
