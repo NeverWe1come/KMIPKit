@@ -38,3 +38,12 @@ opaque batch type in its foreign declarations, matching the C header.
 
 The same Rust 1.100.0 command passes 50 C ABI tests and one operation-parity
 test (exit 0), including compiled C calls and mutual-TLS fixture exchanges.
+
+## Collector regression: Red
+
+`python3 -B -m unittest scripts.tests.test_ffi_coverage_collector -v`
+fails all three behavioral fixtures before the collector repair. The fixtures
+report the real pre-1.100 and 1.100 executable layouts, including spaces in
+paths, and require a missing C consumer executable to fail before export.
+The collector incorrectly requires unused native ABI libraries and rebuilds
+test executable paths under `debug/deps` instead of using Cargo's paths.
