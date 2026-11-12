@@ -37,6 +37,15 @@ _BATCH_RESPONSE_TARGETS = {
         'KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM',
     ],
 }
+_BATCH_ERROR_CONTINUATION_TARGETS = [
+    'KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-CONTINUE-00000001',
+    'KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-EXTENSIONS-8XXXXXXX',
+    'KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-STOP-00000002',
+    'KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-UNDO-00000003',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-9-6-BATCH-ERROR-CONTINUATION-OPTION',
+    'KMIPKIT-ELEM-TAG-42000E',
+]
 
 CHECKED_TAG_INPUTS = {
     ('rust', 'kmipkit_ttlv::Item::new'): 'crates/kmipkit-ttlv/src/item.rs',
@@ -175,6 +184,8 @@ def _function_route_kind(function_id):
         return 'decode'
     if any(token in value for token in ('_to_ttlv', '_into_ttlv')):
         return 'encode'
+    if value == 'client_batch_add_error_continuation_value':
+        return 'construct'
     if '_to_batch_item' in value:
         return 'construct'
     return None
@@ -222,6 +233,8 @@ def _function_target_ids(function_id, operation_id, action, targets):
             and target.get('role') == ('response' if action == 'decode' else 'request')})
     if function_id in _BATCH_RESPONSE_TARGETS:
         return _BATCH_RESPONSE_TARGETS[function_id]
+    if function_id == 'client_batch_add_error_continuation_value':
+        return _BATCH_ERROR_CONTINUATION_TARGETS
     credential_targets = credential_function_target_ids(function_id, targets)
     if credential_targets is not None:
         return credential_targets
