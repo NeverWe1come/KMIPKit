@@ -154,6 +154,23 @@ def _generic_samples(case: dict, target: dict, symbol: str) -> list[tuple[int, s
         return next((entry for entry in by_id.values() if entry.get('kind') == 'tag'
                      and _normalized_name(entry.get('name', '')) in wanted), None)
 
+    if target_id == 'KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES':
+        attribute_tag = find_tag('Attribute')
+        name_tag = find_tag('Attribute Name')
+        value_tag = find_tag('Attribute Value')
+        if attribute_tag is None or name_tag is None or value_tag is None:
+            raise RecipePending
+        return [(int(attribute_tag['wire_value'], 16), 'Structure', [
+            [int(name_tag['wire_value'], 16), 7, b'Certificate Type'.hex()],
+            [int(value_tag['wire_value'], 16), 5, 1],
+        ])]
+    if target_id in {
+        'KMIPKIT-PAYLOAD-SERVER-PUT-REQUEST-20-004',
+        'KMIPKIT-PAYLOAD-SERVER-PUT-REQUEST-21-004',
+    }:
+        object_tree = _managed_object_root_tree('Opaque Object', elements)
+        return [(object_tree[0], 'Structure', object_tree[2])]
+
     if kind in ('enumeration_value', 'referenced_enum_value', 'bitmask_value'):
         wire_value = target.get('wire_value', requires.get('wire_value'))
         if not isinstance(wire_value, str):
@@ -278,6 +295,10 @@ def _generic_samples(case: dict, target: dict, symbol: str) -> list[tuple[int, s
         else:
             raise RecipePending
         type_names = PythonKmipDriver._catalog_value_types(case, target, element_types)
+        source_encoding_types = {'ByteString': 'Byte String', 'TextString': 'Text String'}
+        if (kind in {'operation_structure', 'structure_member'}
+                and target.get('source_encoding') in source_encoding_types):
+            type_names = {source_encoding_types[target['source_encoding']]}
         if normalized_target_name == 'objecttypeobjecttypes':
             object_type_tag = find_tag('Object Type')
             object_types_tag = find_tag('Object Types')
@@ -347,13 +368,19 @@ def _generic_cell(cell: dict, case: dict, target: dict) -> dict:
     for tag, name, value in samples:
         with ExitStack() as owned:
             if name == 'Structure':
-                structure_children = []
-                if symbol == 'kmipkit.ttlv.ttlv_structure_with_item':
+                if value is not None:
+                    structure_children = [
+                        owned.enter_context(_credential_item_from_tree(child, owned))
+                        for child in value
+                    ]
+                    value = owned.enter_context(PythonKmipDriver._structure(structure_children))
+                elif symbol == 'kmipkit.ttlv.ttlv_structure_with_item':
                     child = owned.enter_context(PythonKmipDriver._item(0x4200FF, 'integer', 7))
                     children = owned.enter_context(ttlv.ttlv_structure_create())
                     limits = owned.enter_context(ttlv.codec_limits_defaults())
                     value = owned.enter_context(ttlv.ttlv_structure_with_item(children, child, limits))
                 else:
+                    structure_children = []
                     if target.get('kind') == 'attribute' and _normalized_name(target.get('name', '')) == 'vendorattribute':
                         structure_children = [
                             owned.enter_context(PythonKmipDriver._item(0x42009D, 'text', 'KMIPKit.Interop')),
