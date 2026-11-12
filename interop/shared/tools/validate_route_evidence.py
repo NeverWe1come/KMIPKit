@@ -180,7 +180,8 @@ def _expected_cells(report: dict, catalog: dict, manifest: dict) -> dict[tuple, 
 
 def validate_report(report: dict, catalog: dict, manifest: dict, *,
                     catalog_sha256: str, route_manifest_sha256: str,
-                    expected_artifact_sha256: str) -> dict:
+                    expected_artifact_sha256: str,
+                    scope_cells: list[dict] | None = None) -> dict:
     """Validate one runner-emitted evidence report against installed provenance."""
     if report.get("schema_version") != "1.0":
         raise ValueError("route evidence schema_version must be 1.0")
@@ -235,9 +236,28 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
     if not seen_combinations <= supported_combinations:
         raise ValueError("route evidence selects an encoding/transport pair absent from the public API")
 
-    expected = _expected_cells(report, catalog, manifest)
-    if not expected:
+    all_expected = _expected_cells(report, catalog, manifest)
+    if not all_expected:
         raise ValueError("route evidence selection has no applicable route cells")
+    if scope_cells is None:
+        expected = all_expected
+    else:
+        if not isinstance(scope_cells, list) or not scope_cells:
+            raise ValueError("route evidence scope must contain planned route cells")
+        scope_keys = []
+        for cell in scope_cells:
+            if not isinstance(cell, dict):
+                raise ValueError("route evidence scope cell must be an object")
+            try:
+                scope_keys.append(_key(cell))
+            except KeyError as error:
+                raise ValueError(f"route evidence scope cell is missing {error.args[0]}") from error
+        if len(scope_keys) != len(set(scope_keys)):
+            raise ValueError("route evidence scope contains duplicate route cells")
+        unplanned_scope = set(scope_keys) - set(all_expected)
+        if unplanned_scope:
+            raise ValueError(f"route evidence scope contains unplanned route cells: {sorted(unplanned_scope)[:10]!r}")
+        expected = {key: all_expected[key] for key in scope_keys}
     events = report.get("events")
     if not isinstance(events, list):
         raise ValueError("route evidence events must be an array")
@@ -255,8 +275,10 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
             key = _key(event)
         except KeyError as error:
             raise ValueError(f"route evidence event is missing {error.args[0]}") from error
-        if key not in expected:
+        if key not in all_expected:
             raise ValueError(f"unplanned route execution cell: {key}")
+        if key not in expected:
+            raise ValueError(f"route execution cell is outside the declared route scope: {key}")
         if key in observed:
             raise ValueError(f"duplicate route execution cell: {key}")
         status = event.get("status")
@@ -271,7 +293,7 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
             raise ValueError(f"route execution invocation_count is invalid for {key}")
         if status == "failed" and (not isinstance(event.get("failure_code"), str) or not event["failure_code"]):
             raise ValueError(f"failed route execution requires a sanitized failure_code: {key}")
-        planned = expected[key]
+        planned = all_expected[key]
         if event.get("target_id") != planned["target_id"]:
             raise ValueError(f"normative target does not match the planned route cell: {key}")
         for field in ("workflow_step_index", "workflow_operation", "workflow_item_index"):
@@ -347,19 +369,26 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
     missing = sorted(set(expected) - set(observed))
     if missing:
         raise ValueError(f"missing route execution cells: {missing[:10]!r}")
-    failed = sum(event["status"] == "failed" for event in observed.values())
+    scoped_observed = {
+        key: event for key, event in observed.items() if key in expected
+    }
+    failed = sum(event["status"] == "failed" for event in scoped_observed.values())
     all_versions = set(catalog.get("target_versions", []))
     all_network_combinations = {
         (combination["encoding"], combination["transport"])
         for route in manifest["routes"] if route["mode"] == "network"
         for combination in route["combinations"]
     }
-    complete_matrix = (set(selected_versions) == all_versions and seen_combinations == all_network_combinations)
+    complete_matrix = (
+        scope_cells is None
+        and set(selected_versions) == all_versions
+        and seen_combinations == all_network_combinations
+    )
     return {
         "run_id": report["run_id"],
         "language": language,
         "expected_cells": len(expected),
-        "invoked_cells": sum(event["invocation_count"] > 0 for event in observed.values()),
+        "invoked_cells": sum(event["invocation_count"] > 0 for event in scoped_observed.values()),
         "failed_cells": failed,
         "selected_scope_complete": True,
         "complete_matrix": complete_matrix,
@@ -369,25 +398,41 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
 
 def validate_collection(reports: list[dict], catalog: dict, manifest: dict, *,
                         catalog_sha256: str, route_manifest_sha256: str,
-                        expected_artifact_sha256: str) -> dict:
+                        expected_artifact_sha256: str,
+                        scope_cells_by_run: dict[str, list[dict]] | None = None) -> dict:
     """Require selected run reports collectively to cover the complete matrix."""
     if not reports:
         raise ValueError("route evidence collection must include at least one report")
-    summaries = [validate_report(
-        report, catalog, manifest, catalog_sha256=catalog_sha256,
-        route_manifest_sha256=route_manifest_sha256,
-        expected_artifact_sha256=expected_artifact_sha256,
-    ) for report in reports]
+    run_ids = [report.get("run_id") for report in reports]
+    if scope_cells_by_run is not None and (
+        not isinstance(scope_cells_by_run, dict)
+        or set(scope_cells_by_run) != set(run_ids)
+        or len(run_ids) != len(set(run_ids))
+    ):
+        raise ValueError("scoped route evidence requires one explicit cell scope per unique run")
+    summaries = []
+    for report in reports:
+        scope = None if scope_cells_by_run is None else scope_cells_by_run[report["run_id"]]
+        summaries.append(validate_report(
+            report, catalog, manifest, catalog_sha256=catalog_sha256,
+            route_manifest_sha256=route_manifest_sha256,
+            expected_artifact_sha256=expected_artifact_sha256,
+            scope_cells=scope,
+        ))
     languages = {summary["language"] for summary in summaries}
-    run_ids = [summary["run_id"] for summary in summaries]
     if len(languages) != 1:
         raise ValueError("route evidence collection must contain one language")
     if len(run_ids) != len(set(run_ids)):
         raise ValueError("route evidence collection contains duplicate run_id values")
+    network_reports = [
+        report for report in reports
+        if any(event.get("transport") is not None for event in report["events"])
+    ]
+    identity_reports = network_reports or reports
     server_identities = {
         (report["server"]["id"], report["server"]["product"], report["server"]["version"],
          report["server"]["configuration_fingerprint"])
-        for report in reports
+        for report in identity_reports
     }
     if len(server_identities) != 1:
         identities = {(item[0], item[1], item[2]) for item in server_identities}
@@ -430,12 +475,13 @@ def validate_collection(reports: list[dict], catalog: dict, manifest: dict, *,
     missing = sorted(set(expected) - observed)
     if missing:
         raise ValueError(f"route evidence collection misses full matrix cells: {missing[:10]!r}")
+    server_report = identity_reports[0]
     return {
         "language": language,
-        "server": {"id": reports[0]["server"]["id"],
-                   "product": reports[0]["server"]["product"],
-                   "version": reports[0]["server"]["version"],
-                   "configuration_fingerprint": reports[0]["server"]["configuration_fingerprint"]},
+        "server": {"id": server_report["server"]["id"],
+                   "product": server_report["server"]["product"],
+                   "version": server_report["server"]["version"],
+                   "configuration_fingerprint": server_report["server"]["configuration_fingerprint"]},
         "library_commit": manifest["library_commit"],
         "artifact_sha256": expected_artifact_sha256,
         "catalog_sha256": catalog_sha256,

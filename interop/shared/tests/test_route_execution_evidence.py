@@ -148,8 +148,10 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
 
     def test_scoped_report_validates_exact_cells_without_claiming_full_matrix(self):
         scope = self.report["events"][:2]
+        report = copy.deepcopy(self.report)
+        report["events"] = copy.deepcopy(scope)
         summary = validate_report(
-            self.report,
+            report,
             self.catalog,
             self.manifest,
             catalog_sha256="c" * 64,
@@ -165,6 +167,7 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
     def test_scoped_report_rejects_missing_or_out_of_scope_events(self):
         scope = self.report["events"][:2]
         report = copy.deepcopy(self.report)
+        report["events"] = copy.deepcopy(scope)
         report["events"].pop(0)
         with self.assertRaisesRegex(ValueError, "missing route execution cells"):
             validate_report(
@@ -177,6 +180,8 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
                 scope_cells=scope,
             )
         report = copy.deepcopy(self.report)
+        report["events"] = copy.deepcopy(scope)
+        report["events"].append(copy.deepcopy(self.report["events"][-1]))
         with self.assertRaisesRegex(ValueError, "outside the declared route scope"):
             validate_report(
                 report,
@@ -454,6 +459,7 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         self.assertEqual(5, summary["observed_cells"])
 
         del network["events"][-1]
+        del scopes[network["run_id"]][-1]
         with self.assertRaisesRegex(ValueError, "misses full matrix cells"):
             validate_collection(
                 [local, network], self.catalog, self.manifest,
