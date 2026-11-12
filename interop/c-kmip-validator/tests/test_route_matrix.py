@@ -833,6 +833,15 @@ class RouteMatrixTests(unittest.TestCase):
                 self.assertIn('kmipkit_client_batch_add_error_continuation_value', symbols)
 
 
+    def test_batch_placeholder_chain_has_an_exact_peer_recipe(self):
+        from route_peer import RECIPES
+        case_id = 'test-batch-placeholder-chain-resolves'
+        self.assertIn(case_id, RECIPES, 'placeholder-chain peer recipe is missing')
+        operations, workflow = RECIPES[case_id]
+        self.assertEqual((1, 18, 10), operations[:3])
+        self.assertEqual('batch_placeholder_chain', workflow)
+
+
     def test_single_item_batch_omits_optional_batch_options(self):
         from artifact_support import ROOT
         from route_peer import RECIPES, execute_network_cells
