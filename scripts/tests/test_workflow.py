@@ -44,6 +44,10 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIsNotNone(match, f"The {job} job must exist.")
         return match.group(1)
 
+    def read_ffi_coverage_collector(self) -> str:
+        collector = REPOSITORY_ROOT / "scripts" / "collect_ffi_coverage.sh"
+        return collector.read_text(encoding="utf-8")
+
     def read_gradle_wrapper_properties(self) -> dict[str, str]:
         wrapper_properties = REPOSITORY_ROOT / "bindings/java/gradle/wrapper/gradle-wrapper.properties"
         return {
@@ -1063,9 +1067,7 @@ class WorkflowContractTests(unittest.TestCase):
     def test_linux_coverage_job_collects_and_uploads_the_ffi_c_consumer_report(self) -> None:
         contents = self.require_workflow()
         job = self.require_job(contents, "coverage")
-        collector = (REPOSITORY_ROOT / "scripts" / "collect_ffi_coverage.sh").read_text(
-            encoding="utf-8"
-        )
+        collector = self.read_ffi_coverage_collector()
 
         self.assertRegex(job, r"(?ms)^\s+- platform: ubuntu\s*\n\s+os: ubuntu-latest")
         self.assertIn("- name: Collect C consumer FFI coverage", job)
@@ -1108,9 +1110,7 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("pattern: coverage-*", gate)
 
     def test_ffi_coverage_collection_runs_unit_and_public_c_consumer_targets(self) -> None:
-        collector = (REPOSITORY_ROOT / "scripts" / "collect_ffi_coverage.sh").read_text(
-            encoding="utf-8"
-        )
+        collector = self.read_ffi_coverage_collector()
 
         self.assertIn(
             "cargo llvm-cov --no-clean -p kmipkit-ffi --all-targets --all-features --locked",
@@ -1122,9 +1122,7 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn('for test_binary in "${test_binaries[@]}"', collector)
 
     def test_ffi_coverage_collector_finds_artifacts_in_cargo_build_script_output(self) -> None:
-        collector = (REPOSITORY_ROOT / "scripts" / "collect_ffi_coverage.sh").read_text(
-            encoding="utf-8"
-        )
+        collector = self.read_ffi_coverage_collector()
 
         self.assertIn('find "${artifact_root}" -type f -name "${artifact_name}"', collector)
         self.assertIn("'libkmipkit_ffi.so'", collector)
