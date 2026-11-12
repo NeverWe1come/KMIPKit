@@ -139,6 +139,7 @@ class InstalledRouteProbeWorkflowTests(unittest.TestCase):
             "--artifact build/maven-repository/org/kmipkit/kmipkit-java/1.0.0/kmipkit-java-1.0.0-linux-glibc-x86_64.jar",
             "--provenance build/artifact-manifest.json",
             "| tee build/route-capability-probe.json",
+            "tools/compare_route_ledger.py",
             "name: Upload Java route capability evidence",
             "name: java-route-capability-evidence",
             "path: interop/java-kmip-validator/build/route-capability-probe.json",
@@ -154,6 +155,7 @@ class InstalledRouteProbeWorkflowTests(unittest.TestCase):
             content.index("name: Probe installed Java package public routes"),
             content.index("name: Upload Java route capability evidence"),
         )
+        self.assertIn("python3 -B -m unittest discover -s tests -p 'test_*.py' -v", content)
 
 
 if __name__ == "__main__":

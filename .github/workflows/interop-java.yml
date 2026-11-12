@@ -112,7 +112,7 @@ jobs:
           retention-days: 30
 
       - name: Test Java artifact installer path validation
-        run: python3 -B -m unittest discover -s tests -p 'test_install_artifact.py' -v
+        run: python3 -B -m unittest discover -s tests -p 'test_*.py' -v
 
       - name: Test Java 17 consumer against the installed artifact
         run: |
@@ -140,7 +140,9 @@ jobs:
             --report build/route-execution-evidence.json \
             --artifact-sha256 "$JAVA_ARTIFACT_SHA256" \
             --write-ledger
-          cmp route-evidence-ledger.json build/route-evidence-ledger.json
+          python3 tools/compare_route_ledger.py \
+            --reference route-evidence-ledger.json \
+            --generated build/route-evidence-ledger.json
 
       - name: Upload Java route execution evidence and coverage ledger
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1

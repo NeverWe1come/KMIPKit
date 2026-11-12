@@ -91,10 +91,12 @@ TTLV API. The pinned public `TtlvCodec` exposes no generic encode operation;
 typed request bytes are instead checked as captured by the controlled peer.
 CI validates these per-cell events against the shared matrix,
 uploads `route-execution-evidence.json` with the generated ledger, and compares
-that ledger with the checked-in `route-evidence-ledger.json`. These recipes
-execute 4,240 of 71,525 planned Java route cells, with no failed cells; the
-ledger keeps the other 67,285 pending and does not imply vendor
-interoperability or full-matrix completion. Local TTLV recipes exercise 41
+stable coverage fields with the checked-in `route-evidence-ledger.json` using
+`tools/compare_route_ledger.py`. The generated ledger retains the artifact
+SHA-256 for each build; that build-specific digest is not used as a coverage
+baseline. These recipes execute 8,398 of 71,503 planned Java route cells, with
+no failed cells; the ledger keeps the other 63,105 pending and does not imply
+vendor interoperability or full-matrix completion. Local TTLV recipes exercise 41
 enumeration families and all six bitmask catalog cases through the applicable
 installed constructors, item views, decoders, and typed attribute wrappers.
 The finite Profile Name reserved range
