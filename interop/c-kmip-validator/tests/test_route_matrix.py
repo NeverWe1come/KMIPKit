@@ -791,6 +791,32 @@ class RouteMatrixTests(unittest.TestCase):
                                 for event in events), symbol)
 
 
+    def test_single_item_batch_omits_optional_batch_options(self):
+        from artifact_support import ROOT
+        from route_peer import RECIPES, execute_network_cells
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-batch-single-item-options-omitted'
+        self.assertIn(case_id, RECIPES, 'single-item batch peer recipe is missing')
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+        self.assertEqual(len(checks), 12, 'single-item batch must pass both versions over all six wire transports')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks))
+        expected_targets = {
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT',
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION',
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION',
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-3-BATCH-ITEM',
+            'KMIPKIT-ELEM-OP-C2S-GET',
+        }
+        self.assertTrue(expected_targets <= {event['target_id'] for event in events})
+        for symbol in ('kmipkit_client_batch_item_get', 'kmipkit_client_batch_create',
+                       'kmipkit_client_batch_add_item', 'kmipkit_client_execute'):
+            self.assertTrue(any(event['public_api_symbol'] == symbol and event['action'] == 'send'
+                                for event in events), symbol)
+
     def test_hash_and_rng_cases_call_their_public_routes_and_check_responses(self):
         from artifact_support import ROOT
         from route_peer import RECIPES, execute_network_cells
