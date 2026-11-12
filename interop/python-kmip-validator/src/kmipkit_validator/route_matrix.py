@@ -84,31 +84,46 @@ class CallTrace:
         sys.setprofile(self.previous)
 
 
+def _item_view_tree(view) -> list:
+    """Read one ordered TTLV node through public views."""
+    from kmipkit import ttlv
+
+    with ttlv.ttlv_item_view_tag(view) as tag:
+        raw = ttlv.tag_value(tag)
+    kind = int(ttlv.ttlv_item_view_type(view))
+    with ttlv.ttlv_item_view_value(view) as value:
+        if kind == 1:
+            with ttlv.ttlv_value_view_structure(value) as children:
+                result = []
+                for index in range(ttlv.ttlv_structure_view_item_count(children)):
+                    with ttlv.ttlv_structure_view_item_at(children, index) as child:
+                        result.append(_item_view_tree(child))
+        elif kind in (4, 7, 8):
+            result = ttlv.ttlv_value_view_bytes(value).hex()
+        else:
+            getter = {2: 'integer', 3: 'long_integer', 5: 'enumeration', 6: 'boolean',
+                      9: 'date_time', 10: 'interval', 11: 'date_time_extended'}[kind]
+            result = getattr(ttlv, 'ttlv_value_view_' + getter)(value)
+    return [raw, kind, result]
+
+
+def structure_tree(structure) -> list:
+    """Read an owned generic TTLV Structure in wire order through public views."""
+    from kmipkit import ttlv
+
+    with ttlv.ttlv_structure_view(structure) as view:
+        children = []
+        for index in range(ttlv.ttlv_structure_view_item_count(view)):
+            with ttlv.ttlv_structure_view_item_at(view, index) as child:
+                children.append(_item_view_tree(child))
+        return children
+
+
 def item_tree(item) -> list:
     """Read ordered, numeric TTLV through public views; never return it in reports."""
     from kmipkit import ttlv
-
-    def view_tree(view):
-        with ttlv.ttlv_item_view_tag(view) as tag:
-            raw = ttlv.tag_value(tag)
-        kind = int(ttlv.ttlv_item_view_type(view))
-        with ttlv.ttlv_item_view_value(view) as value:
-            if kind == 1:
-                with ttlv.ttlv_value_view_structure(value) as children:
-                    result = []
-                    for index in range(ttlv.ttlv_structure_view_item_count(children)):
-                        with ttlv.ttlv_structure_view_item_at(children, index) as child:
-                            result.append(view_tree(child))
-            elif kind in (4, 7, 8):
-                result = ttlv.ttlv_value_view_bytes(value).hex()
-            else:
-                getter = {2: 'integer', 3: 'long_integer', 5: 'enumeration', 6: 'boolean',
-                          9: 'date_time', 10: 'interval', 11: 'date_time_extended'}[kind]
-                result = getattr(ttlv, 'ttlv_value_view_' + getter)(value)
-        return [raw, kind, result]
-
     with ttlv.ttlv_item_view_from_item(item) as view:
-        return view_tree(view)
+        return _item_view_tree(view)
 
 
 def encode_fixture(tree: list) -> bytes:
@@ -1142,6 +1157,10 @@ _BATCH_RESULT_LIVE_ROUTES = {
     'kmipkit.client.BatchResult.item_at',
     'kmipkit.client.BatchResult.item_count',
 }
+_BATCH_ITEM_RESULT_EXTENSION_ROUTES = {
+    'kmipkit.client.BatchItemResult.extension_count',
+    'kmipkit.client.BatchItemResult.extension_ttlv_at',
+}
 _EXTENSION_INFORMATION_TTLV_ROUTE = 'kmipkit.extensions.extension_information_to_ttlv'
 _BATCH_ITEM_RESULT_VALUE_ROUTES.update(
     'kmipkit.client.BatchItemResult.' + member
@@ -1980,7 +1999,8 @@ def _cell_operation(cell: dict, case: dict) -> str:
 
 def execute_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | None = None) -> dict:
     if cell['transport'] is None:
-        if cell['public_api_symbol'] == 'kmipkit.client.BatchItemResult.supported_versions':
+        if (cell['public_api_symbol'] == 'kmipkit.client.BatchItemResult.supported_versions'
+                or cell['public_api_symbol'] in _BATCH_ITEM_RESULT_EXTENSION_ROUTES):
             return _positive_fixture_cell(cell, case, target, trace=trace)
         if cell['public_api_symbol'].startswith('kmipkit.credentials.'):
             return _credential_cell(cell, case, target)
@@ -2140,8 +2160,12 @@ def _ping_tree(wire: bytes, encoding: str) -> list:
     def binary_nodes(data):
         nodes = []
         for tag, kind, value in parse_children(data):
-            result = binary_nodes(value) if kind == 1 else scalar(
-                tag, kind, int.from_bytes(value, 'big', signed=kind in (2, 9)))
+            if kind == 1:
+                result = binary_nodes(value)
+            elif kind in (4, 7, 8):
+                result = value.hex()
+            else:
+                result = scalar(tag, kind, int.from_bytes(value, 'big', signed=kind in (2, 9)))
             nodes.append([tag, kind, result])
         return nodes
 
@@ -2423,22 +2447,32 @@ def _positive_fixture_cell(cell: dict, case: dict, target: dict, *, trace: CallT
         'KMIPKIT-PAYLOAD-CLIENT-DISCOVER-VERSIONS-RESPONSE-20-001',
         'KMIPKIT-PAYLOAD-CLIENT-DISCOVER-VERSIONS-RESPONSE-21-001',
     }
-    if (case['case_id'] != 'test-op-discover-versions'
-            and case.get('operation') != 'Discover Versions'):
+    extension_targets = {
+        'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION',
+        'KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION',
+        'KMIPKIT-ELEM-TAG-420051',
+    }
+    symbol = cell['public_api_symbol']
+    extension_route = symbol in _BATCH_ITEM_RESULT_EXTENSION_ROUTES
+    if extension_route:
+        if target.get('target_id') not in extension_targets:
+            raise RecipePending
+    elif (case.get('operation') != 'Discover Versions'
+          or target.get('target_id') not in discovery_targets
+          or symbol not in (
+              'kmipkit.extensions.client_batch_item_discover_versions',
+              'kmipkit.client.BatchItemResult.supported_versions',
+          )):
         raise RecipePending
-    if (target.get('target_id') not in discovery_targets
-            or cell['protocol_version'] not in ('2.0', '2.1')
-            or cell['public_api_symbol'] not in (
-                'kmipkit.extensions.client_batch_item_discover_versions',
-                'kmipkit.client.BatchItemResult.supported_versions',
-            )):
+    if cell['protocol_version'] not in ('2.0', '2.1'):
         raise RecipePending
     encoding = cell['encoding'] if cell['transport'] is not None else 'TTLV'
     transport = cell['transport'] if cell['transport'] is not None else 'raw_tls'
     major, minor = (int(part) for part in cell['protocol_version'].split('.'))
     versions = ((2, 1),)
     peer = ControlledTlsPeer(encoding=encoding, transport=transport,
-                             protocol_version=cell['protocol_version'])
+                             protocol_version=cell['protocol_version'],
+                             include_response_extension=extension_route)
     connection = {
         'server_id': 'controlled-fixture', 'protocol_version': cell['protocol_version'],
         'transport': transport, 'encoding': encoding, 'api_level': 'typed-protocol',
@@ -2467,10 +2501,26 @@ def _positive_fixture_cell(cell: dict, case: dict, target: dict, *, trace: CallT
                                 for version in (supported_versions or ()))
         if supported_versions is None or actual_versions != versions:
             raise ValueError('Discover Versions response versions did not preserve order')
-        if cell['public_api_symbol'] == 'kmipkit.client.BatchItemResult.supported_versions':
+        if symbol == 'kmipkit.client.BatchItemResult.supported_versions':
             if trace is None:
                 raise ValueError('data-member route has no invocation trace')
-            trace.record_invocation(cell['public_api_symbol'])
+            trace.record_invocation(symbol)
+        extension_tree = [0x420051, 1, [
+            [0x42009D, 7, b'KMIPKit.Interop'.hex()],
+            [0x420026, 6, False],
+            [0x42009C, 1, [[0x540001, 8, b'fixture'.hex()]]],
+        ]]
+        if extension_route:
+            if item_result.extension_count != 1:
+                raise ValueError('Message Extension count did not preserve the response extension')
+            if symbol.endswith('.extension_ttlv_at'):
+                with item_result.extension_ttlv_at(0) as extension:
+                    actual_extension = [0x420051, 1, structure_tree(extension)]
+                if actual_extension != extension_tree:
+                    raise ValueError('Message Extension accessor changed its ordered TTLV tree')
+            if trace is None:
+                raise ValueError('Message Extension route has no invocation trace')
+            trace.record_invocation(symbol)
     finally:
         if response is not None:
             response.close()
@@ -2491,13 +2541,18 @@ def _positive_fixture_cell(cell: dict, case: dict, target: dict, *, trace: CallT
                        [0x4200D3, 6, True], [0x42000D, 2, 1]]],
         [0x42000F, 1, [[0x42005C, 5, operation], [0x420079, 1, [
             [0x420069, 1, [[0x42006A, 2, 2], [0x42006B, 2, 1]]]]]]]]]
+    response_batch_item = [
+        [0x42005C, 5, operation], [0x42007F, 5, 0],
+        [0x42007C, 1, [[0x420069, 1, [[0x42006A, 2, version_major],
+                                      [0x42006B, 2, version_minor]]]
+                       for version_major, version_minor in versions]],
+    ]
+    if extension_route:
+        response_batch_item.append(extension_tree)
     expected_response = [0x42007B, 1, [
         [0x42007A, 1, [[0x420069, 1, [[0x42006A, 2, major], [0x42006B, 2, minor]]],
                        [0x420092, 9, '<normalized-time-stamp>'], [0x42000D, 2, 1]]],
-        [0x42000F, 1, [[0x42005C, 5, operation], [0x42007F, 5, 0],
-                       [0x42007C, 1, [[0x420069, 1, [[0x42006A, 2, version_major],
-                                                           [0x42006B, 2, version_minor]]]
-                                      for version_major, version_minor in versions]]]]]]
+        [0x42000F, 1, response_batch_item]]]
     if request != expected_request or actual_response != expected_response:
         raise ValueError('Discover Versions request or response shape assertion failed')
     return {'request_tree_sha256': digest(request), 'response_tree_sha256': digest(actual_response),

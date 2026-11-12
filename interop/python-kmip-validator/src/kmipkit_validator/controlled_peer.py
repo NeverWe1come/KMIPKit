@@ -27,6 +27,16 @@ def enumeration(tag: int, value: int) -> bytes:
     return item(tag, 5, struct.pack(">I", value))
 
 
+def response_message_extension() -> bytes:
+    """Create a standards-shaped extension with a synthetic, non-secret payload."""
+    return structure(
+        0x420051,
+        item(0x42009D, 7, b"KMIPKit.Interop"),
+        item(0x420026, 6, struct.pack(">Q", 0)),
+        structure(0x42009C, item(0x540001, 8, b"fixture")),
+    )
+
+
 def exact(stream: ssl.SSLSocket, size: int) -> bytes:
     buffer = bytearray()
     while len(buffer) < size:
@@ -71,7 +81,8 @@ def find_value(tree: list[tuple[int, int, bytes]], tag: int) -> bytes | None:
 
 def ping_response(request: bytes, status: int, reason: int | None, protocol_minor: int = 1,
                   cancellation_result: int | None = None,
-                  asynchronous_correlation_value: bytes | None = None) -> bytes:
+                  asynchronous_correlation_value: bytes | None = None,
+                  include_response_extension: bool = False) -> bytes:
     tree = parse_children(request[8:])
     operation_bytes = find_value(tree, 0x42005C)
     batch_id = find_value(tree, 0x420093)
@@ -91,6 +102,8 @@ def ping_response(request: bytes, status: int, reason: int | None, protocol_mino
         if cancellation_result is not None:
             response_payload.append(enumeration(0x420012, cancellation_result))
         payload.append(structure(0x42007C, *response_payload))
+    if include_response_extension:
+        payload.append(response_message_extension())
     version = structure(
         0x420069,
         item(0x42006A, 2, struct.pack(">i", 2)),
@@ -111,6 +124,7 @@ def discover_versions_response(
     reason: int | None,
     protocol_minor: int,
     supported_versions: tuple[tuple[int, int], ...] | None = None,
+    include_response_extension: bool = False,
 ) -> bytes:
     """Return a deterministic, operation-shaped Discover Versions response."""
     tree = parse_children(request[8:])
@@ -137,6 +151,8 @@ def discover_versions_response(
             for major, minor in versions
         ]
         payload.append(structure(0x42007C, *version_items))
+    if include_response_extension:
+        payload.append(response_message_extension())
     version = structure(
         0x420069,
         item(0x42006A, 2, struct.pack(">i", 2)),
@@ -330,6 +346,7 @@ class ControlledTlsPeer:
         protocol_version: str = "2.1",
         cancellation_result: int | None = None,
         asynchronous_correlation_value: bytes | None = None,
+        include_response_extension: bool = False,
     ) -> None:
         self.status = status
         self.reason = reason
@@ -339,6 +356,7 @@ class ControlledTlsPeer:
         self.protocol_minor = int(protocol_version.split(".")[1])
         self.cancellation_result = cancellation_result
         self.asynchronous_correlation_value = asynchronous_correlation_value
+        self.include_response_extension = include_response_extension
         self.listener = socket.socket()
         self.listener.bind(("127.0.0.1", 0))
         self.listener.listen(1)
@@ -380,12 +398,14 @@ class ControlledTlsPeer:
                 if self.encoding == "TTLV":
                     if normalized_operation_name(str(self.request_observation["operation"])) == "discoverversions":
                         response = discover_versions_response(
-                            request, self.status, self.reason, self.protocol_minor
+                            request, self.status, self.reason, self.protocol_minor,
+                            include_response_extension=self.include_response_extension,
                         )
                     else:
                         response = ping_response(
                             request, self.status, self.reason, self.protocol_minor,
                             self.cancellation_result, self.asynchronous_correlation_value,
+                            self.include_response_extension,
                         )
                 else:
                     response = text_response(
