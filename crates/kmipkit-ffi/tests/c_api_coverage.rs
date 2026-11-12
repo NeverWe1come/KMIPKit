@@ -12,6 +12,13 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::thread;
 use std::time::{Duration, Instant};
 
+#[path = "support/ffi_link_exports.rs"]
+mod ffi_link_exports;
+use ffi_link_exports::{
+    kmipkit_codec_limits_create, kmipkit_codec_limits_defaults, kmipkit_codec_limits_release,
+    kmipkit_last_error_get,
+};
+
 #[link(name = "kmipkit_nonce_abi_c_consumer", kind = "static")]
 unsafe extern "C" {
     fn kmipkit_nonce_c_consumer_round_trip(out_item_count: *mut u64) -> i32;
@@ -1008,23 +1015,6 @@ fn c_abi_consumer_matches_shared_registry_cleanup_fixture() {
         result, 0,
         "the C ABI must match registry fixture values and cleanup"
     );
-}
-
-unsafe extern "C" {
-    fn kmipkit_codec_limits_defaults(out_limits: *mut *mut kmipkit_codec_limits_t) -> i32;
-    fn kmipkit_codec_limits_create(
-        max_message_bytes: u64,
-        max_structure_depth: u64,
-        max_elements: u64,
-        out_limits: *mut *mut kmipkit_codec_limits_t,
-    ) -> i32;
-    fn kmipkit_codec_limits_release(limits: *mut kmipkit_codec_limits_t);
-    fn kmipkit_last_error_get(
-        out_status: *mut i32,
-        out_category: *mut u32,
-        out_cause: *mut u32,
-        out_delivery: *mut u32,
-    ) -> i32;
 }
 
 #[test]

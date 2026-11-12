@@ -138,6 +138,15 @@ The result was 1/1 operation parity test and 50/50 C API coverage tests. The
 full `cargo +1.100.0 test --workspace --all-features --locked` command then
 passed with the FFI package artifacts cleaned and rebuilt.
 
+## Refactor: centralize Rust-backed ABI declarations
+
+The `extern "C"` declarations used by both integration tests now live in
+`crates/kmipkit-ffi/tests/support/ffi_link_exports.rs`. This keeps the
+Rust-crate linkage assumption and pointer types in one test-only module. After
+the extraction, `cargo +1.100.0 fmt --all --check` and the same two focused
+Rust 1.100.0 tests passed again (50 C API coverage tests and one operation
+parity test).
+
 ## Remaining limitations
 
 Controlled local TLS results are not vendor interoperability evidence. No Cosmian, CipherTrust or ESKM endpoint was

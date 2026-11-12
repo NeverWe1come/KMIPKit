@@ -1,6 +1,8 @@
 #![cfg(feature = "coverage-c-consumer")]
 
-use kmipkit_ffi::kmipkit_client_batch_t;
+#[path = "support/ffi_link_exports.rs"]
+mod ffi_link_exports;
+use ffi_link_exports::{kmipkit_client_batch_create, kmipkit_client_batch_release};
 
 #[link(name = "kmipkit_operation_parity_0053_consumer", kind = "static")]
 unsafe extern "C" {
@@ -10,14 +12,9 @@ unsafe extern "C" {
 #[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
 unsafe extern "C" {}
 
-unsafe extern "C" {
-    fn kmipkit_client_batch_create(out_batch: *mut *mut kmipkit_client_batch_t) -> i32;
-    fn kmipkit_client_batch_release(batch: *mut kmipkit_client_batch_t);
-}
-
 #[test]
 fn compiled_c_consumer_invokes_all_56_client_operation_routes() {
-    let mut batch: *mut kmipkit_client_batch_t = core::ptr::null_mut();
+    let mut batch = core::ptr::null_mut();
     // SAFETY: the null output is writable, and the created batch is released below.
     assert_eq!(unsafe { kmipkit_client_batch_create(&raw mut batch) }, 0);
     assert!(!batch.is_null());
