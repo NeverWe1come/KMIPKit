@@ -3635,12 +3635,15 @@ def render_public_java_parity(projection: dict[str, Any]) -> str:
 
 def _compressed_java_parity_chunks(chunks: list[str]) -> list[str]:
     """Gzip stable JSON chunks independently to keep javac's fixture AST bounded."""
-    return [
-        base64.b64encode(
+    compressed_chunks = []
+    for chunk in chunks:
+        compressed = bytearray(
             gzip.compress(chunk.encode("utf-8"), compresslevel=9, mtime=0)
-        ).decode("ascii")
-        for chunk in chunks
-    ]
+        )
+        # Python 3.12 delegates mtime=0 compression to zlib, which writes the host OS here.
+        compressed[9] = 0xFF
+        compressed_chunks.append(base64.b64encode(compressed).decode("ascii"))
+    return compressed_chunks
 
 
 def _split_json_text(value: str, *, max_chars: int = 8_000) -> list[str]:
