@@ -1424,6 +1424,29 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
         self.assertLessEqual(set(targets), {event['target_id'] for event in report['events']})
 
+    def test_generic_ttlv_scalar_routes_use_catalogued_source_encoding(self):
+        case_ids = {
+            'test-norm-operation-structure-operation-structure-7-16-interop-identifier',
+            'test-norm-structure-member-structure-member-7-27-pkcs-11-input-parameters',
+        }
+        catalog = copy.deepcopy(self.catalog)
+        catalog['test_cases'] = [case for case in self.catalog['test_cases']
+                                 if case['case_id'] in case_ids]
+        symbols = {'kmipkit.ttlv.ttlv_value_text_string',
+                   'kmipkit.ttlv.ttlv_value_byte_string'}
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in self.manifest['routes']
+                              if route['language'] == 'python'
+                              and route['public_api_symbol'] in symbols]
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+        self.assertEqual([], gaps)
+        self.assertEqual(4, len(report['events']))
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+        self.assertEqual({
+            'KMIPKIT-ELEM-OPERATION-STRUCTURE-7-16-INTEROP-IDENTIFIER',
+            'KMIPKIT-ELEM-STRUCTURE-MEMBER-7-27-PKCS-11-INPUT-PARAMETERS',
+        }, {event['target_id'] for event in report['events']})
+
     def test_ci_requires_shared_changes_and_matrix_completeness(self):
         workflow = (ROOT / '.github/workflows/interop-python.yml').read_text()
         self.assertIn('python -m kmipkit_validator matrix', workflow)
