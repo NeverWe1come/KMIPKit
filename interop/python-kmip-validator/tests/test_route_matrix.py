@@ -433,6 +433,38 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(symbols, {event['public_api_symbol'] for event in report['events']})
         self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
 
+    def test_attribute_request_constructors_and_encoders_execute_normative_fields(self):
+        # OASIS KMIP 2.1 §§6.1.2, 6.1.3, 6.1.13, 6.1.20, 6.1.21, 6.1.34,
+        # and 6.1.51 define the selected attribute operation payload tables.
+        from coverage_matrix import _case_obligations, _operation_ids
+
+        symbols = {route['public_api_symbol'] for route in self.manifest['routes']
+                   if route['language'] == 'python'
+                   and route['public_api_symbol'].startswith('kmipkit.attribute_operations.')
+                   and route['public_api_symbol'].rsplit('.', 1)[0].endswith('Request')
+                   and (route['public_api_symbol'].endswith('.create')
+                        or route['public_api_symbol'].endswith('.to_ttlv_payload'))}
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in self.manifest['routes']
+                              if route['language'] == 'python'
+                              and route['public_api_symbol'] in symbols]
+        target_ids = {target_id for route in manifest['routes']
+                      for target_id in route['normative_target_ids']}
+        operation_ids = _operation_ids(self.catalog)
+        catalog = copy.deepcopy(self.catalog)
+        catalog['test_cases'] = [case for case in self.catalog['test_cases']
+                                 if (obligations := _case_obligations(
+                                     case, operation_ids, self.catalog['normative_targets']))
+                                 and all(item['target_id'] in target_ids for item in obligations)]
+
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+
+        self.assertEqual(0, len(gaps), f'{len(gaps)} attribute request cells lack recipes')
+        self.assertEqual(len(list(iter_cells(catalog, manifest, languages=('python',)))),
+                         len(report['events']))
+        self.assertEqual(symbols, {event['public_api_symbol'] for event in report['events']})
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+
     def test_reserved_tag_routes_check_rejection_without_a_fabricated_item(self):
         catalog = copy.deepcopy(self.catalog)
         catalog['test_cases'] = [case for case in catalog['test_cases']
