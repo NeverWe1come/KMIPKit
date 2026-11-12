@@ -694,16 +694,13 @@ pub unsafe extern "C" fn kmipkit_server_put_object_field_read(
             unsafe { out_integer.write(0) };
         }
         if !out_child.is_null() {
-            // SAFETY: Optional non-null output is caller-provided writable storage.
-            unsafe { out_child.write(ptr::null_mut()) };
+            out_slot!(out_child);
         }
         if !out_secret.is_null() {
-            // SAFETY: Optional non-null output is caller-provided writable storage.
-            unsafe { out_secret.write(ptr::null_mut()) };
+            out_slot!(out_secret);
         }
         if !out_secret_text.is_null() {
-            // SAFETY: Optional non-null output is caller-provided writable storage.
-            unsafe { out_secret_text.write(ptr::null_mut()) };
+            out_slot!(out_secret_text);
         }
         let handle = read_handle!(object, ServerPutObject);
         let HandleValue::ServerPutObject(owner) = &handle.value else {
