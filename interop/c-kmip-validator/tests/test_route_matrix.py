@@ -723,6 +723,40 @@ class RouteMatrixTests(unittest.TestCase):
                                 for event in events), symbol)
 
 
+    def test_certificate_attributes_read_back_all_section_46_fields_without_reference(self):
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-attr-certificate-attributes'
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases'] if case['case_id'] == case_id]}
+        field_names = [
+            'Certificate Subject CN', 'Certificate Subject O', 'Certificate Subject OU',
+            'Certificate Subject Email', 'Certificate Subject C', 'Certificate Subject ST',
+            'Certificate Subject L', 'Certificate Subject UID', 'Certificate Subject Serial Number',
+            'Certificate Subject Title', 'Certificate Subject DC', 'Certificate Subject DN Qualifier',
+            'Certificate Issuer CN', 'Certificate Issuer O', 'Certificate Issuer OU',
+            'Certificate Issuer Email', 'Certificate Issuer C', 'Certificate Issuer ST',
+            'Certificate Issuer L', 'Certificate Issuer UID', 'Certificate Issuer Serial Number',
+            'Certificate Issuer Title', 'Certificate Issuer DC', 'Certificate Issuer DN Qualifier',
+        ]
+        tags = {target['name']: target['wire_value'].upper() for target in catalog['normative_targets']
+                if target['kind'] == 'tag' and target['name'] in field_names}
+        expected_tags = [tags[name] for name in field_names]
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest,
+            protocol_versions=('2.1',), network_combinations=(('TTLV', 'raw_tls'),))
+        self.assertEqual(len(checks), 2, 'certificate attribute aggregate must use both Get Attributes constructors')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks))
+        self.assertTrue(all(check['request_attribute_reference_tags'] == [] and
+                            check['request_attribute_reference_names'] == [] for check in checks))
+        self.assertTrue(all(check['response_attribute_tags'] == expected_tags for check in checks))
+        for symbol in ('kmipkit_client_batch_item_get_attributes',
+                       'kmipkit_client_batch_item_get_attributes_from_request'):
+            self.assertTrue(any(event['public_api_symbol'] == symbol and event['action'] == 'send'
+                                for event in events), symbol)
+
+
     def test_hash_and_rng_cases_call_their_public_routes_and_check_responses(self):
         from artifact_support import ROOT
         from route_peer import RECIPES, execute_network_cells
