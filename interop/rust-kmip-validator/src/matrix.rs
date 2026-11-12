@@ -685,6 +685,13 @@ fn key_block_fixture(target: &Json, elements: &[Json]) -> Result<(Item, Item)> {
     }
 }
 
+fn construct_key_block_fixture(target: &Json, elements: &[Json]) -> Result<Item> {
+    let secret_data = managed_object_root_name(target, elements) == Some("Secret Data");
+    crate::fixtures::key_block(secret_data)?
+        .try_into_item()
+        .map_err(|_| "Key Block constructor rejected")
+}
+
 fn metadata_key_information(mac: bool, include_parameters: bool) -> Result<Item> {
     use kmipkit::protocol::{EncryptionKeyInformation, MacSignatureKeyInformation};
 
@@ -935,12 +942,7 @@ fn invoke(
         );
     }
     if symbol == "kmipkit_protocol::KeyBlock::try_new" {
-        let secret_data = managed_object_root_name(target, elements) == Some("Secret Data");
-        return Some(crate::fixtures::key_block(secret_data).and_then(|key_block| {
-            key_block
-                .try_into_item()
-                .map_err(|_| "Key Block constructor rejected")
-        }));
+        return Some(construct_key_block_fixture(target, elements));
     }
     if let Some(root) = typed_object_root(symbol) {
         let (_, object, _) = object_root_fixture(root, target, elements).ok()?;
@@ -1444,13 +1446,14 @@ mod tests {
             .unwrap()
             .iter()
             .find(|target| {
-                target["target_id"]
-                    == "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-7-SECRET-DATA-KEY-BLOCK"
+                target["target_id"] == "KMIPKIT-ELEM-STRUCTURE-MEMBER-2-7-SECRET-DATA-KEY-BLOCK"
             })
             .unwrap();
         let symbol = "kmipkit_protocol::KeyBlock::try_new";
         let expected = sample_for_route(symbol, target, elements).unwrap();
-        let result = invoke(symbol, &expected, target, elements, "2.1").unwrap().unwrap();
+        let result = invoke(symbol, &expected, target, elements, "2.1")
+            .unwrap()
+            .unwrap();
         assert!(crate::local_wire::target_hash(&result, &expected).is_ok());
     }
 
