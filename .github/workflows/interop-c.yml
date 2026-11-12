@@ -48,7 +48,7 @@ jobs:
       - name: Verify installed C ABI provenance
         run: python3 interop/c-kmip-validator/tools/verify_artifact.py
 
-      - name: Install pinned evidence schema validator
+      - name: Install schema dependency for CTest and route evidence
         run: python3 -m pip install --only-binary ':all:' jsonschema==4.23.0
 
       - name: Configure CMake
