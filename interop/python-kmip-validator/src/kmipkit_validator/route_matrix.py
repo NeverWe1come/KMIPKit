@@ -374,6 +374,170 @@ def _generic_cell(cell: dict, case: dict, target: dict) -> dict:
     return {'request_tree_sha256': tree_hash, 'response_tree_sha256': tree_hash}
 
 
+def _operation_structure_ttlv_cell(cell: dict, case: dict, target: dict,
+                                    trace: CallTrace | None) -> dict:
+    """Build a catalogued Operation Structure child in a generic Structure."""
+    from kmipkit import ttlv
+
+    symbol = cell['public_api_symbol']
+    samples = _generic_samples(case, target, 'kmipkit.ttlv.ttlv_item_create')
+    if not samples:
+        raise RecipePending
+    tag, source_type, _ = samples[0]
+    encoded_type = target.get('source_encoding', source_type).split(',', 1)[0].strip()
+    type_name = next((name for name in _TTLV_TYPE_KINDS
+                      if _normalized_name(name) == _normalized_name(encoded_type)), None)
+    if type_name is None:
+        raise RecipePending
+    neutral_values = {
+        'Integer': 1024,
+        'Long Integer': 1024,
+        'Enumeration': 1,
+        'Boolean': True,
+        'Text String': 'KMIPKit.Interop',
+        'Byte String': b'KMIPKit.Interop',
+        'Date Time': 1,
+        'Date Time Extended': 1,
+        'Interval': 1,
+    }
+    if type_name not in neutral_values:
+        raise RecipePending
+    value = neutral_values[type_name]
+    kind_name = _TTLV_TYPE_KINDS.get(type_name)
+    if kind_name is None:
+        raise RecipePending
+
+    with ExitStack() as owned:
+        structure = owned.enter_context(ttlv.ttlv_structure_create())
+        if symbol == 'kmipkit.ttlv.ttlv_structure_create':
+            with ttlv.ttlv_structure_view(structure) as empty_view:
+                if ttlv.ttlv_structure_view_item_count(empty_view) != 0:
+                    raise ValueError('new generic Structure unexpectedly contains children')
+        limits = owned.enter_context(ttlv.codec_limits_defaults())
+        child = owned.enter_context(PythonKmipDriver._item(tag, kind_name, value))
+        expected_child = item_tree(child)
+        populated = owned.enter_context(ttlv.ttlv_structure_with_item(structure, child, limits))
+        with ttlv.ttlv_structure_view(populated) as view:
+            if ttlv.ttlv_structure_view_item_count(view) != 1:
+                raise ValueError('generic Structure did not retain its catalogued child')
+            with ttlv.ttlv_structure_view_item_at(view, 0) as child_view:
+                with ttlv.ttlv_item_view_tag(child_view) as observed_tag:
+                    raw_tag = ttlv.tag_value(observed_tag)
+                observed_kind = int(ttlv.ttlv_item_view_type(child_view))
+                with ttlv.ttlv_item_view_value(child_view) as observed_value:
+                    if observed_kind in (4, 7, 8):
+                        decoded_value = ttlv.ttlv_value_view_bytes(observed_value).hex()
+                    else:
+                        getter = {2: 'integer', 3: 'long_integer', 5: 'enumeration',
+                                  6: 'boolean', 9: 'date_time', 10: 'interval',
+                                  11: 'date_time_extended'}.get(observed_kind)
+                        if getter is None:
+                            raise ValueError('Operation Structure scalar type changed unexpectedly')
+                        decoded_value = getattr(ttlv, 'ttlv_value_view_' + getter)(observed_value)
+                observed_child = [raw_tag, observed_kind, decoded_value]
+        if observed_child != expected_child or observed_child[0] != tag:
+            raise ValueError('generic Structure child changed its catalogued tag or value')
+        roundtrip = owned.enter_context(ttlv.ttlv_decode(encode_fixture(observed_child)))
+        if item_tree(roundtrip) != observed_child:
+            raise ValueError('Operation Structure child did not survive TTLV roundtrip')
+        if trace is not None:
+            trace.record_invocation(symbol)
+    tree_hash = digest({'target': target['target_id'], 'child': observed_child})
+    return {'request_tree_sha256': tree_hash, 'response_tree_sha256': tree_hash}
+
+
+def _certificate_attributes_ttlv_cell(cell: dict, target: dict,
+                                      trace: CallTrace | None) -> dict:
+    """View the Certificate Attributes grouping through its generic Attributes tree."""
+    from kmipkit import ttlv
+
+    with ExitStack() as owned:
+        attributes = []
+        for name, kind, value in (
+                ('Certificate Type', 'enumeration', 1),
+                ('Certificate Length', 'integer', 1024)):
+            fields = [
+                owned.enter_context(PythonKmipDriver._item(0x42000A, 'text', name)),
+                owned.enter_context(PythonKmipDriver._item(0x42000B, kind, value)),
+            ]
+            attribute = owned.enter_context(PythonKmipDriver._structure(fields))
+            attributes.append(owned.enter_context(
+                PythonKmipDriver._item(0x420008, 'structure', attribute)
+            ))
+        values = owned.enter_context(PythonKmipDriver._structure(attributes))
+        item = owned.enter_context(PythonKmipDriver._item(0x420125, 'structure', values))
+        observed = item_tree(item)
+        expected = [0x420125, 1, [
+            [0x420008, 1, [[0x42000A, 7, '43657274696669636174652054797065'],
+                           [0x42000B, 5, 1]]],
+            [0x420008, 1, [[0x42000A, 7, '4365727469666963617465204c656e677468'],
+                           [0x42000B, 2, 1024]]],
+        ]]
+        if observed != expected:
+            raise ValueError('Certificate Attributes tree changed its named typed values')
+        with ttlv.ttlv_item_view_from_item(item) as view:
+            if (int(ttlv.tag_value(ttlv.ttlv_item_view_tag(view))) != 0x420125
+                    or int(ttlv.ttlv_item_view_type(view)) != 1):
+                raise ValueError('Certificate Attributes generic view changed its root')
+            with ttlv.ttlv_item_view_value(view) as value:
+                with ttlv.ttlv_value_view_structure(value) as children:
+                    if ttlv.ttlv_structure_view_item_count(children) != 2:
+                        raise ValueError('Certificate Attributes view changed its attribute count')
+        if trace is not None:
+            trace.record_invocation(cell['public_api_symbol'])
+    tree_hash = digest({'target': target.get('target_id'), 'tree': observed})
+    return {'request_tree_sha256': tree_hash, 'response_tree_sha256': tree_hash}
+
+
+def _server_put_ttlv_cell(cell: dict, target: dict,
+                          trace: CallTrace | None) -> dict:
+    """Create or decode the full generic TTLV form of a server Put request."""
+    from kmipkit import protocol_values, ttlv
+
+    major, minor = (int(part) for part in cell['protocol_version'].split('.'))
+    object_tree = [0x42008F, 1, [[0x420040, 1, [
+        [0x420042, 5, 1],
+        [0x420045, 1, [[0x420043, 8, b'KMIPKitPutObject01'.hex()]]],
+    ]]]]
+    request_tree = [0x420078, 1, [
+        [0x420077, 1, [
+            [0x420069, 1, [[0x42006A, 2, major], [0x42006B, 2, minor]]],
+            [0x420092, 9, 1],
+            [0x42000D, 2, 1],
+        ]],
+        [0x42000F, 1, [[0x42005C, 5, protocol_values.Operation.PUT],
+                       [0x420079, 1, [
+                           [0x420094, 7, b'KMIPKit-put-object'.hex()],
+                           [0x420070, 5, protocol_values.PutFunction.NEW],
+                           object_tree,
+                       ]]]],
+    ]]
+    wire = encode_fixture(request_tree)
+    symbol = cell['public_api_symbol']
+    with ExitStack() as owned:
+        if symbol == 'kmipkit.ttlv.ttlv_decode':
+            observed_item = owned.enter_context(ttlv.ttlv_decode(wire))
+        else:
+            observed_item = owned.enter_context(_credential_item_from_tree(request_tree, owned))
+        observed = item_tree(observed_item)
+        if observed != request_tree:
+            raise ValueError('generic server Put TTLV changed its complete request tree')
+        if symbol == 'kmipkit.ttlv.ttlv_item_view_from_item':
+            with ttlv.ttlv_item_view_from_item(observed_item) as view:
+                if (int(ttlv.tag_value(ttlv.ttlv_item_view_tag(view))) != 0x420078
+                        or int(ttlv.ttlv_item_view_type(view)) != 1):
+                    raise ValueError('server Put generic view changed its Request Message root')
+                with ttlv.ttlv_item_view_value(view) as value:
+                    with ttlv.ttlv_value_view_structure(value) as children:
+                        if ttlv.ttlv_structure_view_item_count(children) != 2:
+                            raise ValueError('server Put view changed its header and batch item')
+        if trace is not None:
+            trace.record_invocation(symbol)
+    tree_hash = digest({'target': target.get('target_id'), 'tree': observed})
+    return {'request_tree_sha256': tree_hash, 'response_tree_sha256': tree_hash,
+            'wire_bytes_sha256': hashlib.sha256(wire).hexdigest()}
+
+
 def _managed_object_tag(elements: dict, name: str) -> int:
     normalized = _normalized_name(name)
     entry = next((item for item in elements.values()
@@ -480,7 +644,7 @@ def _managed_object_tree(target: dict) -> list:
     target_id = target['target_id']
     has_wrapping_target = any(marker in target_id for marker in (
         'KEY-WRAPPING-DATA', 'ENCRYPTION-KEY-INFORMATION',
-        'MAC-SIGNATURE-KEY-INFORMATION'))
+        'MAC-SIGNATURE-KEY-INFORMATION')) or target_id.endswith('TAG-420046')
     key_material_ids = []
     if kind == 'object_structure' and element.get('name') == 'Key Material':
         key_material_ids.append(element['element_id'])
@@ -1103,6 +1267,166 @@ _BATCH_ITEM_RESULT_VALUE_ROUTES.update(
     'kmipkit.client.BatchItemResult.' + member
     for member in _BATCH_ITEM_RESULT_RESPONSE_MEMBERS
 )
+_NATIVE_BATCH_RESULT_ROUTES = {
+    'kmipkit.client.BatchItemResult.raw',
+    'kmipkit.client.BatchItemResult.response_header_ttlv',
+    'kmipkit.client.BatchItemResult.extension_count',
+    'kmipkit.client.BatchItemResult.extension_ttlv_at',
+    'kmipkit.client.BatchResult.item_count',
+    'kmipkit.client.BatchResult.item_at',
+}
+
+
+def _native_batch_result_cell(cell: dict, case: dict, target: dict,
+                              trace: CallTrace | None) -> dict:
+    """Call native-backed batch response accessors on a real controlled exchange."""
+    import struct
+    from kmipkit import extensions, protocol_values, ttlv
+    from .controlled_peer import (
+        ControlledTlsPeer, PKI, batch_response, item, structure,
+    )
+
+    symbol = cell['public_api_symbol']
+    if symbol.endswith('.raw'):
+        operation = 'Get'
+        status = protocol_values.ResultStatus.OPERATION_FAILED
+        reason = protocol_values.ResultReason.OPERATION_NOT_SUPPORTED
+        response_payloads = None
+    elif symbol.startswith('kmipkit.client.BatchResult.'):
+        operation = 'Discover Versions'
+        status = protocol_values.ResultStatus.OPERATION_FAILED
+        reason = protocol_values.ResultReason.OPERATION_NOT_SUPPORTED
+        response_payloads = None
+    else:
+        operation = 'Log'
+        status = protocol_values.ResultStatus.OPERATION_FAILED
+        reason = protocol_values.ResultReason.OPERATION_NOT_SUPPORTED
+        response_payloads = None
+
+    extension_tree = structure(
+        0x420051,
+        item(0x42009D, 7, b'KMIPKit.Interop'),
+        item(0x420026, 6, b'\x00' * 8),
+        structure(0x42009C, item(0x540001, 2, struct.pack('>i', 7))),
+    )
+    response_extensions = ([extension_tree] if symbol.endswith('.extension_count')
+                           or symbol.endswith('.extension_ttlv_at') else None)
+    item_count = 2 if symbol.endswith('.item_count') or symbol.endswith('.item_at') else 1
+    operations = [operation] * item_count
+    peer = ControlledTlsPeer(
+        status=status, reason=reason, encoding='TTLV', transport='raw_tls',
+        protocol_version=cell['protocol_version'],
+        response_builder=lambda request, encoding, minor: batch_response(
+            request, encoding, operations, status, reason, minor,
+            response_payloads=response_payloads,
+            response_extensions=response_extensions,
+        ),
+    )
+    connection = {
+        'server_id': 'controlled-fixture', 'protocol_version': cell['protocol_version'],
+        'transport': 'raw_tls', 'encoding': 'TTLV', 'api_level': 'typed-protocol',
+        'endpoints': {'raw_tls': {'host': '127.0.0.1', 'port': peer.port},
+                      'https': {'url': f'https://127.0.0.1:{peer.port}/kmip'}},
+        'tls': {'ca_cert_path': str(PKI / 'server-cert.pem'),
+                'client_cert_path': str(PKI / 'client-cert.pem'),
+                'client_key_path': str(PKI / 'client-key.pem'), 'server_name_override': 'localhost',
+                'connect_timeout_seconds': 5, 'read_timeout_seconds': 5},
+    }
+    driver = batch = limits = result = request_item = None
+    request_items = []
+    copied = None
+    try:
+        driver = PythonKmipDriver(connection)
+        batch = driver._client_module.Batch.create()
+        limits = ttlv.codec_limits_defaults()
+        for index in range(item_count):
+            if operation == 'Get':
+                request_item = extensions.client_batch_item_get(
+                    extensions.UniqueIdentifier.text_string('validator-get-object')
+                )
+            elif operation == 'Discover Versions':
+                request_item = extensions.client_batch_item_discover_versions()
+            else:
+                request_item = extensions.client_batch_item_log('KMIPKit controlled result fixture')
+            if item_count > 1:
+                request_item = driver._extensions.with_unique_batch_item_id(
+                    request_item, f'kmipkit-result-{index + 1:02d}'.encode('ascii')
+                )
+            batch.add_item(request_item)
+            request_items.append(request_item)
+            request_item = None
+        result = driver._client.execute(batch, limits)
+        expected_count = item_count
+        actual_count = result.item_count()
+        if actual_count != expected_count:
+            raise ValueError('controlled native batch result changed its item count')
+        selected_index = item_count - 1 if symbol.endswith('.item_at') else 0
+        response_item = result.item_at(selected_index)
+        if symbol.endswith('.item_count'):
+            actual = actual_count
+            if actual != 2:
+                raise ValueError('BatchResult.item_count did not report both response items')
+        elif symbol.endswith('.item_at'):
+            actual = response_item.operation
+            expected_operation = (protocol_values.Operation.DISCOVER_VERSIONS
+                                  if symbol.startswith('kmipkit.client.BatchResult.')
+                                  else protocol_values.Operation.LOG)
+            if (actual != expected_operation
+                    or response_item.result_status != status):
+                raise ValueError('BatchResult.item_at did not return the ordered second result')
+        elif symbol.endswith('.response_header_ttlv'):
+            copied = response_item.response_header_ttlv()
+            with PythonKmipDriver._item(0x42007A, 'structure', copied) as wrapped:
+                tree = item_tree(wrapped)
+            if tree[0] != 0x42007A or not any(child[0] == 0x42000D for child in tree[2]):
+                raise ValueError('response header TTLV omitted its root or Batch Count')
+            actual = tree
+        elif symbol.endswith('.raw'):
+            copied = response_item.raw()
+            if copied is not None:
+                raise ValueError('failed Get response unexpectedly exposed a Response Payload')
+            actual = None
+        elif symbol.endswith('.extension_count'):
+            actual = response_item.extension_count
+            if actual != 1:
+                raise ValueError('response extension count did not preserve the received extension')
+        else:
+            copied = response_item.extension_ttlv_at(0)
+            with PythonKmipDriver._item(0x420051, 'structure', copied) as wrapped:
+                actual = item_tree(wrapped)
+            if actual != [0x420051, 1, [
+                    [0x42009D, 7, b'KMIPKit.Interop'.hex()],
+                    [0x420026, 6, False],
+                    [0x42009C, 1, [[0x540001, 2, 7]]],
+            ]]:
+                raise ValueError('response extension TTLV changed its ordered fields')
+        if trace is not None:
+            trace.record_invocation(symbol)
+        if len(peer.requests) != 1 or len(peer.responses) != 1:
+            raise ValueError('native response accessor fixture did not exchange one message')
+        digest_value = digest({'accessor': symbol, 'target': target.get('target_id'),
+                               'observed': actual})
+        return {'request_tree_sha256': digest_value, 'response_tree_sha256': digest_value,
+                'wire_bytes_sha256': hashlib.sha256(peer.requests[0]).hexdigest(),
+                'request_delivery_state': 'response_received', 'transport_invocation_count': 1,
+                'peer_observed_response_count': item_count,
+                'peer_observed_result_status_codes': [status] * item_count}
+    finally:
+        if copied is not None:
+            copied.close()
+        if request_item is not None:
+            request_item.close()
+        for request_item in request_items:
+            request_item.close()
+        if result is not None:
+            result.close()
+        if limits is not None:
+            limits.close()
+        if batch is not None:
+            batch.close()
+        if driver is not None:
+            driver.close()
+        peer.close()
 _TYPED_RESPONSE_TTLV_ROUTES = {
     'kmipkit.client.' + response_type + '.' + member
     for response_type in (
@@ -1841,8 +2165,25 @@ def _cell_operation(cell: dict, case: dict) -> str:
 
 def execute_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | None = None) -> dict:
     if cell['transport'] is None:
+        if (target.get('kind') == 'operation_structure'
+                and cell['public_api_symbol'] in {
+                    'kmipkit.ttlv.ttlv_structure_create',
+                    'kmipkit.ttlv.ttlv_structure_with_item'}):
+            return _operation_structure_ttlv_cell(cell, case, target, trace)
+        if (cell['public_api_symbol'] == 'kmipkit.ttlv.ttlv_item_view_from_item'
+                and target.get('target_id') == 'KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES'):
+            return _certificate_attributes_ttlv_cell(cell, target, trace)
+        if (target.get('target_id') in {
+                'KMIPKIT-PAYLOAD-SERVER-PUT-REQUEST-20-004',
+                'KMIPKIT-PAYLOAD-SERVER-PUT-REQUEST-21-004'}
+                and cell['public_api_symbol'] in {
+                    'kmipkit.ttlv.ttlv_decode', 'kmipkit.ttlv.ttlv_item_create',
+                    'kmipkit.ttlv.ttlv_item_view_from_item'}):
+            return _server_put_ttlv_cell(cell, target, trace)
         if cell['public_api_symbol'] == 'kmipkit.client.BatchItemResult.supported_versions':
             return _positive_fixture_cell(cell, case, target, trace=trace)
+        if cell['public_api_symbol'] in _NATIVE_BATCH_RESULT_ROUTES:
+            return _native_batch_result_cell(cell, case, target, trace)
         if cell['public_api_symbol'].startswith('kmipkit.credentials.'):
             return _credential_cell(cell, case, target)
         if cell['public_api_symbol'].startswith('kmipkit.async_operations.'):
@@ -1855,6 +2196,8 @@ def execute_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | Non
             return _attribute_request_cell(cell, case, target)
         if cell['public_api_symbol'].startswith('kmipkit.managed_objects.'):
             return _managed_object_cell(cell, case, target)
+        if cell['public_api_symbol'] == 'kmipkit.extensions.extension_information_to_ttlv':
+            return _extension_information_cell(cell, target, trace)
         if cell['public_api_symbol'].startswith('kmipkit.cryptographic_parameters.'):
             return _crypto_parameters_cell(cell, case, target)
         if cell['public_api_symbol'].startswith('kmipkit.messages.'):
@@ -1878,6 +2221,12 @@ def execute_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | Non
         return _generic_cell(cell, case, target)
     if case['case_id'] == 'test-op-discover-versions':
         return _positive_fixture_cell(cell, case, target, trace=trace)
+    if (case.get('requires', {}).get('workflow_type') == 'batch_id_placeholder'
+            and cell.get('workflow_operation') is not None):
+        return _batch_workflow_cell(cell, case, trace=trace)
+    if (case.get('requires', {}).get('workflow_type') == 'batch_id_placeholder'
+            and target.get('kind') == 'operation'):
+        case = {**case, 'operation': target.get('name', case['operation'])}
     return _network_cell(cell, case, target, trace=trace)
 
 
@@ -2270,12 +2619,147 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
             **({'peer_observed_result_reason_codes': [peer_reason]} if peer_reason is not None else {})}
 
 
+def _batch_workflow_cell(cell: dict, case: dict,
+                         *, trace: CallTrace | None) -> dict:
+    """Send the catalogued ordered batch using omitted IDs for placeholder consumers."""
+    from kmipkit import protocol_values, ttlv
+    from .controlled_peer import ControlledTlsPeer, PKI, batch_response
+
+    scenario = case.get('requires', {}).get('protocol_scenario', {})
+    operations = scenario.get('operations') if isinstance(scenario, dict) else None
+    if not isinstance(operations, list) or not operations:
+        raise RecipePending
+    if cell.get('workflow_operation') not in operations:
+        raise ValueError('batch route operation is absent from the catalog workflow')
+
+    status = protocol_values.ResultStatus.OPERATION_FAILED
+    reason = protocol_values.ResultReason.OPERATION_NOT_SUPPORTED
+    peer = ControlledTlsPeer(
+        status=status,
+        reason=reason,
+        encoding=cell['encoding'],
+        transport=cell['transport'],
+        protocol_version=cell['protocol_version'],
+        response_builder=lambda request, encoding, minor: batch_response(
+            request, encoding, operations, status, reason, minor),
+    )
+    connection = {
+        'server_id': 'controlled-fixture', 'protocol_version': cell['protocol_version'],
+        'transport': cell['transport'], 'encoding': cell['encoding'], 'api_level': 'typed-protocol',
+        'endpoints': {'raw_tls': {'host': '127.0.0.1', 'port': peer.port},
+                      'https': {'url': f'https://127.0.0.1:{peer.port}/kmip'}},
+        'tls': {'ca_cert_path': str(PKI / 'server-cert.pem'),
+                'client_cert_path': str(PKI / 'client-cert.pem'),
+                'client_key_path': str(PKI / 'client-key.pem'), 'server_name_override': 'localhost',
+                'connect_timeout_seconds': 5, 'read_timeout_seconds': 5},
+    }
+    driver = None
+    batch = None
+    limits = None
+    response = None
+    try:
+        driver = PythonKmipDriver(connection)
+        batch = driver._client_module.Batch.create()
+        limits = ttlv.codec_limits_defaults()
+        for index, operation in enumerate(operations):
+            item_case = {**case, 'operation': operation}
+            if (operation == 'Get Attribute List'
+                    and cell['public_api_symbol']
+                    == 'kmipkit.attribute_operations.GetAttributeListRequest.to_batch_item'):
+                item = driver._build_high_level_item(
+                    item_case, None, name=f"KMIPKit-route-{case['case_id']}-{index}")
+            else:
+                item = driver._build_item(
+                    item_case, None, name=f"KMIPKit-route-{case['case_id']}-{index}")
+            item = driver._extensions.with_unique_batch_item_id(
+                item, f"kmipkit-route-{index + 1:02d}".encode('ascii'))
+            batch.add_item(item)
+        response = driver._client.execute(batch, limits)
+        if response.item_count() != len(operations):
+            raise ValueError('typed batch response count differs from the ordered request')
+        status_codes = [int(response.item_at(index).result_status)
+                        for index in range(response.item_count())]
+        reason_codes = [int(response.item_at(index).result_reason)
+                        if response.item_at(index).result_reason is not None else None
+                        for index in range(response.item_count())]
+        if status_codes != [status] * len(operations) or reason_codes != [reason] * len(operations):
+            raise ValueError('controlled batch peer response did not preserve ordered item outcomes')
+    finally:
+        if response is not None:
+            response.close()
+        if limits is not None:
+            limits.close()
+        if batch is not None:
+            batch.close()
+        if driver is not None:
+            driver.close()
+        peer.close()
+
+    if len(peer.requests) != 1 or len(peer.responses) != 1:
+        raise ValueError('controlled batch fixture did not exchange exactly one message')
+    request = _network_tree(peer.requests[0], cell['encoding'])
+    response_tree = _network_tree(peer.responses[0], cell['encoding'])
+    request_items = _batch_message_items(request)
+    response_items = _batch_message_items(response_tree)
+    request_operations = _batch_message_operations(request)
+    response_operations = _batch_message_operations(response_tree)
+    if request_operations != operations or response_operations != operations:
+        raise ValueError('controlled peer did not observe the complete ordered batch')
+    if any(any(tag == 0x420094 for tag, _, _ in item) for item in request_items[1:]):
+        raise ValueError('a placeholder-consuming batch item encoded a Unique Identifier')
+    if peer.request_observation.get('batch_count') != len(operations):
+        raise ValueError('controlled peer observed a different batch count')
+    observed_status_codes = [next(value for tag, _, value in item if tag == 0x42007F)
+                             for item in response_items]
+    observed_reason_codes = [next((value for tag, _, value in item if tag == 0x42007E), None)
+                             for item in response_items]
+    return {
+        'request_tree_sha256': digest(request),
+        'response_tree_sha256': digest(response_tree),
+        'wire_bytes_sha256': hashlib.sha256(peer.requests[0]).hexdigest(),
+        'request_delivery_state': 'response_received',
+        'transport_invocation_count': 1,
+        'peer_observed_response_count': len(response_items),
+        'peer_observed_result_status_codes': observed_status_codes,
+        'peer_observed_result_reason_codes': observed_reason_codes,
+        'batch_operation_sequence': operations,
+        'peer_observed_operation_sequence': request_operations,
+        'batch_item_count': len(request_items),
+    }
+
+
+def _batch_message_items(message: list) -> list[list]:
+    fields = message
+    if (len(message) == 1 and message[0][1] == 1
+            and any(tag == 0x42000F for tag, _, _ in message[0][2])):
+        fields = message[0][2]
+    items = [value for tag, kind, value in fields if tag == 0x42000F and kind == 1]
+    if not items:
+        raise ValueError('controlled batch message has no BatchItem structures')
+    return items
+
+
+def _batch_message_operations(message: list) -> list[str]:
+    from kmipkit import protocol_values
+
+    operation_names = []
+    for item in _batch_message_items(message):
+        operation_value = next((value for tag, _, value in item if tag == 0x42005C), None)
+        if operation_value is None:
+            raise ValueError('controlled batch item omitted its Operation')
+        operation_name = protocol_values.Operation.name(operation_value)
+        if operation_name is None:
+            raise ValueError('controlled batch item used an unknown Operation')
+        operation_names.append(operation_name)
+    return operation_names
+
+
 def _positive_fixture_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | None) -> dict:
     """Execute Discover Versions against a positive peer and check typed output."""
     from .controlled_peer import ControlledTlsPeer, PKI
     from kmipkit import extensions, protocol_values
 
-    if (case['case_id'] != 'test-op-discover-versions'
+    if (case.get('operation') != 'Discover Versions'
             or cell['protocol_version'] not in ('2.0', '2.1')
             or cell['public_api_symbol'] not in (
                 'kmipkit.extensions.client_batch_item_discover_versions',
@@ -3254,6 +3738,30 @@ def _typed_attribute_structure_member_items(
     if attribute is None:
         raise RecipePending
     return list(fields.values())
+
+
+def _extension_information_cell(cell: dict, target: dict,
+                               trace: CallTrace | None) -> dict:
+    """Encode the required Extension Name and verify the complete TTLV structure."""
+    from kmipkit import extensions
+
+    with ExitStack() as owned:
+        information = owned.enter_context(
+            extensions.create_extension_information('KMIPKit.Interop')
+        )
+        structure = owned.enter_context(extensions.extension_information_to_ttlv(information))
+        item = owned.enter_context(PythonKmipDriver._item(0x4200A4, 'structure', structure))
+        tree = item_tree(item)
+        expected = [0x4200A4, 1, [[0x4200A5, 7, '4b4d49504b69742e496e7465726f70']]]
+        if tree != expected:
+            raise ValueError('Extension Information changed its ordered Extension Name field')
+        if target.get('kind') == 'tag' and tree[0] != int(target.get('wire_value', '0'), 16):
+            raise ValueError('Extension Information root tag differs from the target')
+        if trace is None:
+            raise ValueError('Extension Information route has no invocation trace')
+        trace.record_invocation(cell['public_api_symbol'])
+    tree_hash = digest(tree)
+    return {'request_tree_sha256': tree_hash, 'response_tree_sha256': tree_hash}
 
 
 def _crypto_parameters_cell(cell: dict, case: dict, target: dict) -> dict:

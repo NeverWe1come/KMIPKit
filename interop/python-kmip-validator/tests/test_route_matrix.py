@@ -1258,9 +1258,12 @@ class RouteMatrixTests(unittest.TestCase):
             with trace:
                 event = self.runner.execute_cell(cell, case, target, trace=trace)
 
-        self.assertEqual({'Get Attribute List'}, {peer.request_observation['operation'] for peer in peers})
+        operation_order = case['requires']['protocol_scenario']['operations']
+        self.assertEqual([operation_order], [peer.request_observation['batch_operations']
+                                             for peer in peers])
+        self.assertIn('Get Attribute List', peers[0].request_observation['batch_operations'])
         self.assertTrue(set(symbols) <= trace.observed)
-        self.assertEqual([protocol_values.ResultStatus.OPERATION_FAILED],
+        self.assertEqual([protocol_values.ResultStatus.OPERATION_FAILED] * len(operation_order),
                          event['peer_observed_result_status_codes'])
 
     def test_batch_workflow_send_executes_the_complete_ordered_placeholder_batch(self):
@@ -1662,7 +1665,7 @@ class RouteMatrixTests(unittest.TestCase):
                               and route['public_api_symbol'] in symbols]
         report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
         self.assertEqual([], gaps)
-        self.assertEqual(6, len(report['events']))
+        self.assertEqual(12, len(report['events']))
         self.assertEqual(symbols, {event['public_api_symbol'] for event in report['events']})
         self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
 
@@ -1677,7 +1680,7 @@ class RouteMatrixTests(unittest.TestCase):
                               'kmipkit.ttlv.ttlv_item_view_from_item']
         report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
         self.assertEqual([], gaps)
-        self.assertEqual(2, len(report['events']))
+        self.assertEqual(4, len(report['events']))
         self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
 
     def test_key_wrapping_data_tag_has_complete_model_constructor_routes(self):
