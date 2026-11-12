@@ -1316,6 +1316,31 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(len(operation_order), event['peer_observed_response_count'])
         self.assertTrue(set(symbols) <= trace.observed)
 
+    def test_batch_primary_operation_routes_execute_without_workflow_step(self):
+        case_id = 'test-batch-register-encrypt-decrypt-destroy'
+        case = next(case for case in self.catalog['test_cases'] if case['case_id'] == case_id)
+        symbols = {
+            'kmipkit.extensions.client_batch_item_create': 'KMIPKIT-ELEM-OP-C2S-CREATE',
+            'kmipkit.extensions.client_batch_item_decrypt': 'KMIPKIT-ELEM-OP-C2S-DECRYPT',
+        }
+        for symbol, target_id in symbols.items():
+            with self.subTest(symbol=symbol):
+                cell = next(cell for cell in iter_cells(self.catalog, self.manifest,
+                                                        languages=('python',))
+                            if cell['case_id'] == case_id
+                            and cell['public_api_symbol'] == symbol
+                            and cell['target_id'] == target_id
+                            and cell['protocol_version'] == '2.0'
+                            and cell['encoding'] == 'TTLV'
+                            and cell['transport'] == 'raw_tls'
+                            and cell['action'] == 'construct')
+                target = next(target for target in self.catalog['normative_targets']
+                              if target['target_id'] == target_id)
+                kind, event = self.runner._execute_matrix_cell(cell, case, target)
+                self.assertEqual('event', kind, event)
+                self.assertEqual('passed', event['status'])
+                self.assertEqual(1, event['peer_observed_result_status_codes'][0])
+
     def test_batch_workflow_invokes_get_attribute_list_request_builder(self):
         case = next(case for case in self.catalog['test_cases']
                     if case['case_id'] == 'test-batch-create-activate-destroy')
