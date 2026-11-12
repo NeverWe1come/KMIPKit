@@ -138,6 +138,28 @@ fn vendor_attribute_value() -> Result<Value> {
     Ok(Value::structure(fields))
 }
 
+fn concrete_fixture_name(target_id: &str, kind: &str, name: &str) -> String {
+    if target_id.contains("ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES") {
+        // Use one concrete assigned §4 attribute for the inventory's wildcard member.
+        return "Cryptographic Algorithm".to_owned();
+    }
+    if kind != "structure_member" {
+        return name.to_owned();
+    }
+    let name = name
+        .split('|')
+        .next()
+        .unwrap_or(name)
+        .trim()
+        .trim_end_matches(',')
+        .trim();
+    match name {
+        "Alternative failover endpoints" => "Alternate Failover Endpoints".to_owned(),
+        "Timestamp" => "Time Stamp".to_owned(),
+        _ => name.to_owned(),
+    }
+}
+
 #[allow(clippy::too_many_lines)] // Exact source tag/type selection remains auditable in one recipe.
 fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
     if let Some(fixture) = crate::local_credentials::fixture(target) {
@@ -163,26 +185,7 @@ fn sample(target: &Json, elements: &[Json]) -> Result<Item> {
             .to_owned();
     }
     let target_id = target["target_id"].as_str().unwrap_or_default();
-    if target_id.contains("ANY-ATTRIBUTE-IN-4-OBJECT-ATTRIBUTES") {
-        // Use one concrete assigned §4 attribute for the inventory's wildcard member.
-        name = "Cryptographic Algorithm".to_owned();
-    } else if kind == "structure_member" {
-        name = name
-            .split('|')
-            .next()
-            .unwrap_or(&name)
-            .trim()
-            .trim_end_matches(',')
-            .trim()
-            .to_owned();
-        match name.as_str() {
-            "Alternative failover endpoints" => {
-                name = "Alternate Failover Endpoints".to_owned();
-            }
-            "Timestamp" => name = "Time Stamp".to_owned(),
-            _ => {}
-        }
-    }
+    name = concrete_fixture_name(target_id, kind, &name);
     let operation = if kind == "operation" {
         operation_value(&name).ok_or("operation target needs a concrete public enum value")?
     } else {
