@@ -187,6 +187,12 @@ def response(operations: tuple[int, ...], protocol_minor: int,
     return tlv(0x42007B, 1, header + b"".join(batch_items))
 
 
+def include_delegated_login(operations: tuple[int, ...],
+                            cases: tuple[str, ...]) -> tuple[tuple[int, ...], tuple[str, ...]]:
+    """Add the catalog's first-run Delegated Login to the controlled peer plan."""
+    return (47, *operations), ("test-op-delegated-login", *cases)
+
+
 def read_exact(stream: ssl.SSLSocket, length: int) -> bytes:
     chunks = bytearray()
     while len(chunks) < length:
@@ -277,6 +283,8 @@ def main() -> int:
               "test-attr-cryptographic-algorithm", "test-attr-cryptographic-length",
               "test-obj-symmetric-key", "test-obj-private-key", "test-obj-public-key")
     )
+    expected_operations, expected_cases = include_delegated_login(
+        expected_operations, expected_cases)
     expected_operations += (37, 38, 39)
     expected_operations += (39, 37, 38)
     expected_operations += (1, 13, 19, 20)
