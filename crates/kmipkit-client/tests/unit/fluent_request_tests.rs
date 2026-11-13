@@ -1061,6 +1061,19 @@ fn obtain_lease_builder_preserves_identifier_and_executes_once() {
 }
 
 #[test]
+fn obtain_lease_builder_validates_placeholder_request_without_sending() {
+    let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+
+    client
+        .request()
+        .obtain_lease()
+        .validate()
+        .expect("an omitted identifier is valid for an ID Placeholder batch item");
+
+    assert_eq!(transport.borrow().exchange_count(), 0);
+}
+
+#[test]
 fn execute_exposes_pending_correlation_without_polling() {
     let response = response_bytes(1, 2, Some(b"pending-correlation"));
     let (mut client, fake, _) = client_for(ExchangeScript::Success {

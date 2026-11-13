@@ -3522,7 +3522,7 @@ impl<'a> ObtainLeaseBuilder<'a> {
     ///
     /// Returns a sanitized construction error if protocol validation fails.
     pub fn validate(&self) -> Result<(), FluentBuildError> {
-        validate_fluent_request(&obtain_lease_request(self.unique_identifier.clone()))
+        validated_obtain_lease_request(self.unique_identifier.clone()).map(|_| ())
     }
 
     /// Builds the existing typed Obtain Lease request without sending it.
@@ -3531,9 +3531,7 @@ impl<'a> ObtainLeaseBuilder<'a> {
     ///
     /// Returns a sanitized construction error if protocol validation fails.
     pub fn build_request(self) -> Result<ObtainLeaseRequest, FluentBuildError> {
-        let request = obtain_lease_request(self.unique_identifier);
-        validate_fluent_request(&request)?;
-        Ok(request)
+        validated_obtain_lease_request(self.unique_identifier)
     }
 
     /// Converts Obtain Lease to the existing typed client batch item.
@@ -3562,8 +3560,8 @@ impl<'a> ObtainLeaseBuilder<'a> {
             options,
             asynchronous_indicator,
         } = self;
-        let request = obtain_lease_request(unique_identifier);
-        validate_fluent_request(&request).map_err(fluent_client_validation_error)?;
+        let request = validated_obtain_lease_request(unique_identifier)
+            .map_err(fluent_client_validation_error)?;
         execute_fluent_request(
             client,
             ClientRequest::ObtainLease(request),
@@ -3581,6 +3579,14 @@ fn obtain_lease_request(unique_identifier: Option<UniqueIdentifier>) -> ObtainLe
         }
         None => ObtainLeaseRequest::new(),
     }
+}
+
+fn validated_obtain_lease_request(
+    unique_identifier: Option<UniqueIdentifier>,
+) -> Result<ObtainLeaseRequest, FluentBuildError> {
+    let request = obtain_lease_request(unique_identifier);
+    validate_fluent_request(&request)?;
+    Ok(request)
 }
 
 /// A fluent builder for the empty typed Get Constraints request.
