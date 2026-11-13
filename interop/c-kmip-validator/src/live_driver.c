@@ -180,15 +180,13 @@ static bool item_view_has_tag(kmipkit_ttlv_item_view_t *item,
     return valid;
 }
 
-static bool register_payload_matches_identifier(
+static int32_t register_payload_identifier_status(
     kmipkit_ttlv_structure_view_t *payload_view,
-    const kmipkit_unique_identifier_v1_t *expected_identifier,
-    int32_t *out_status) {
-    if (!payload_view || !expected_identifier || !out_status ||
+    const kmipkit_unique_identifier_v1_t *expected_identifier) {
+    if (!payload_view || !expected_identifier ||
         expected_identifier->kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
         !expected_identifier->text_data || expected_identifier->text_length == 0) {
-        if (out_status) *out_status = KMIPKIT_ERROR_INVALID_INPUT;
-        return false;
+        return KMIPKIT_ERROR_INVALID_INPUT;
     }
     uint64_t item_count = 0;
     int32_t status = kmipkit_ttlv_structure_view_item_count(payload_view, &item_count);
@@ -224,8 +222,7 @@ static bool register_payload_matches_identifier(
     if (status == 0 && (!identifier_found || !identifier_matches)) {
         status = KMIPKIT_ERROR_INVALID_INPUT;
     }
-    *out_status = status;
-    return status == 0;
+    return status;
 }
 
 static bool register_response_ttlv_matches_identifier(
@@ -234,7 +231,7 @@ static bool register_response_ttlv_matches_identifier(
     int32_t *out_status) {
     if (!out_status) return false;
     *out_status = KMIPKIT_ERROR_INVALID_INPUT;
-    if (!response_item || !expected_identifier || !out_status ||
+    if (!response_item || !expected_identifier ||
         expected_identifier->kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
         !expected_identifier->text_data || expected_identifier->text_length == 0) {
         return false;
@@ -261,10 +258,8 @@ static bool register_response_ttlv_matches_identifier(
             } else {
                 payload_found = true;
                 status = kmipkit_ttlv_value_view_structure(value_view, &payload_view);
-                if (status == 0 && !register_payload_matches_identifier(
-                    payload_view, expected_identifier, &status)) {
-                    if (status == 0) status = KMIPKIT_ERROR_INVALID_INPUT;
-                }
+                if (status == 0) status = register_payload_identifier_status(
+                    payload_view, expected_identifier);
             }
         }
         if (payload_view) kmipkit_ttlv_structure_view_release(payload_view);

@@ -158,3 +158,9 @@ This Register path is one executable operation recipe, not completion of the C
 interoperability implementation. In the same matrix, the largest remaining
 gaps include the Register/Encrypt/Decrypt batch (304 cells), asynchronous
 Cancel outcomes, and multiple operation and object routes. The PR remains WIP.
+
+### Refactor verification
+
+The response-TTLV comparison now returns the typed status directly instead of
+combining a boolean with an output status. After that refactor, the CMake build
+and CTest passed 7/7, and the focused installed Register exchange passed 1/1.
