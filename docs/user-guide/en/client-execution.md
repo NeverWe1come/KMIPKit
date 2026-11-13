@@ -107,6 +107,16 @@ Ok(())
 fn main() {}
 ```
 
+For expert extensions, Rust also accepts an explicit TTLV `Item` through
+`attribute_item()`. `attribute_at(FluentAttributePosition::ObjectAttributes
+{ index })` places that item at a zero-based position in the final ordered
+Object Attributes list. The index includes semantic fields such as algorithm,
+length, usage mask, and name, as well as append-only expert attributes. The
+builder validates catalogued TTLV types, the Vendor Attribute structure, and
+the final typed request before sending; duplicate or out-of-range positions
+fail with delivery state `NotSent`. This path cannot address a message header,
+batch item, or transport, and it does not enable arbitrary message submission.
+
 The same scoped flow is available in Java (`client.request().createSymmetricKey()`),
 Python (`client.request().create_symmetric_key()`), and C. Java and Python
 builders expose `aes256()` / `aes_256()`, `usageMask()` / `usage_mask()`,

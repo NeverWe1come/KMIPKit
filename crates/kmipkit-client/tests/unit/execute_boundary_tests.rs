@@ -1064,7 +1064,8 @@ impl BoundaryAudit {
                     || server_request_dispatcher && index == 2
                     || fluent_explicit_attribute_item
                         && (signature.ident == "attribute_item" && index == 1
-                            || signature.ident == "vendor_attribute" && index == 3)
+                            || signature.ident == "vendor_attribute" && index == 3
+                            || signature.ident == "attribute_at" && index == 2)
                 {
                     continue;
                 }
@@ -2315,7 +2316,7 @@ fn is_exact_fluent_explicit_attribute_item(
         || impl_type.is_none_or(|name| !matches!(name, "CreateSymmetricKeyBuilder"))
         || !matches!(
             signature.ident.to_string().as_str(),
-            "attribute_item" | "vendor_attribute"
+            "attribute_item" | "vendor_attribute" | "attribute_at"
         )
         || !signature.generics.params.is_empty()
         || signature.generics.where_clause.is_some()
@@ -2352,6 +2353,13 @@ fn is_exact_fluent_explicit_attribute_item(
         return signature.inputs.len() == 2
             && is_receiver(signature.inputs.first())
             && is_item(signature.inputs.get(1));
+    }
+    if signature.ident == "attribute_at" {
+        return signature.inputs.len() == 3
+            && is_receiver(signature.inputs.first())
+            && matches!(signature.inputs.get(1), Some(syn::FnArg::Typed(argument))
+                if is_plain_type_path(&argument.ty, "FluentAttributePosition"))
+            && is_item(signature.inputs.get(2));
     }
     signature.inputs.len() == 4
         && is_receiver(signature.inputs.first())

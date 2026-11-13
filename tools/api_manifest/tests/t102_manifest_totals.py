@@ -15,7 +15,8 @@ def without_0047_versioned_values(rows: list[dict[str, Any]]) -> list[dict[str, 
 T102_BLOCKED_CANDIDATES = 0
 # KMIPKIT-0091 adds fluent DX declarations; KMIPKIT-0095 adds response view
 # declarations and Rust trait exclusions pending cross-language adapters.
-T102_PUBLIC_DECLARATIONS = 13_880
+# KMIPKIT-0096 adds four root/module expert attribute declarations.
+T102_PUBLIC_DECLARATIONS = 13_884
 T102_KMIP30_DRAFT_ROUTE_DECLARATIONS = 36
 T102_APPROVED_EXCLUSIONS = 18_964
 T102_RUST_AUDIT_MANIFEST = 3_287
