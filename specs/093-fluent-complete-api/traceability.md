@@ -27,3 +27,24 @@ The generated operation matrix now records one row per assigned operation and
 direction. Full field-level and normative client requirement coverage remains
 owned by the corresponding implementation slices. A static count or test
 reference alone does not establish execution success or conformance.
+
+## Generic Rust Create builder
+
+`RequestBuilder::create` and `CreateBuilder` implement the Rust construction
+slice of FR-004, FR-005, FR-006, FR-007, and FR-011 over `CreateRequest` and
+`ClientRequest::Create` (OASIS KMIP v2.1 §6.1.8, Tables 186–187).
+`fluent_request_tests::generic_create_builder_*` verifies the explicit Object
+Type, prebuilt ordered attributes and optional Protection Storage Masks,
+empty default attributes without cryptographic choices, unknown-value
+preservation, existing cardinality validation, sanitized `NotSent` errors
+with zero exchanges, batch conversion, explicit exchange options and
+Asynchronous Indicator, the default KMIP 2.1 header, and Success/Pending
+results with exactly one exchange. Local tests use the existing scripted
+transport and production typed executor; this slice alone does not establish
+four-language parity, external interoperability, or profile conformance.
+
+`execute_boundary_tests::generic_create_masks_exception_accepts_only_its_exact_typed_setter`
+checks that the existing AST boundary permits only the operation-specific
+`CreateBuilder::protection_storage_masks(Structure) -> Self` signature;
+wrong inputs, outputs, scope, builder names, and execution methods remain
+rejected.

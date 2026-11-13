@@ -167,8 +167,9 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
 # The snapshot includes approved KMIPKIT-0099 Create Split Key and KMIPKIT-0100
 # Register declarations, KMIPKIT-0101 lifecycle declarations, and KMIPKIT-0102
 # fluent cryptographic operation builders.
-# Includes the approved KMIPKIT-0093 inventory reconciliation.
-DECLARATIONS_SHA256 = "f7135798e5dda09e972d28ef5608c87cd89c986873ea56986422cdfcbe56c25f"
+# Includes the approved KMIPKIT-0093 inventory reconciliation and Rust
+# CreateBuilder surface.
+DECLARATIONS_SHA256 = "523fc02245a3daf6103764c04ecc647f53f5ebfb38f581bfc270a6e9c9984cba"
 OPERATIONS_SHA256 = "2a6eb9fb6823b3456b3fb10b6d4af8477be9f1a1f68c06c252bb4873b272f3bc"
 
 

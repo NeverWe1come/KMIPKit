@@ -767517,6 +767517,342 @@
           "name": "kmipkit.fluent.CreateKeyPairBuilder.common_attribute"
         }
       }
+    },
+    {
+      "declarationId": "rust-observed-83201efb61a8baf4bae1",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::CreateBuilder",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+    },
+    {
+      "declarationId": "rust-observed-b006f54549f4d1ec0112",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateBuilder<'a>::attributes",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+    },
+    {
+      "declarationId": "rust-observed-a9ba7fb3da542abfc10b",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateBuilder<'a>::build_request",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+    },
+    {
+      "declarationId": "rust-observed-b1a8d2ae35d21ffc920d",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateBuilder<'a>::execute",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+    },
+    {
+      "declarationId": "rust-observed-a591e89743a49b4e61e4",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateBuilder<'a>::object_type",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+    },
+    {
+      "declarationId": "rust-observed-fbf7a2689d87b6fa4150",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateBuilder<'a>::protection_storage_masks",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+    },
+    {
+      "declarationId": "rust-observed-e458c890e31b084018fe",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateBuilder<'a>::to_batch_item",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+    },
+    {
+      "declarationId": "rust-observed-2d1a10b73efd59ba7bfd",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateBuilder<'a>::validate",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+    },
+    {
+      "declarationId": "rust-observed-7233c7469e673654f478",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateBuilder<'a>::with_asynchronous_indicator",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+    },
+    {
+      "declarationId": "rust-observed-b5e0c2840ec7c47fef71",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateBuilder<'a>::with_options",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+    },
+    {
+      "declarationId": "rust-observed-62507295cea761ee9cc3",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::FluentBuildError::MissingCreateObjectType",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-ca764276bbdb1f3297ed",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RequestBuilder<'a>::create",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+    },
+    {
+      "declarationId": "rust-observed-5497d9ca1731fa486742",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::fluent::CreateBuilder",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-64bb813d2268a6076d73",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateBuilder<'a>::attributes",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-78fae2d1c64d409369f3",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateBuilder<'a>::build_request",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-db1947a057f4b3a5582e",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateBuilder<'a>::execute",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-b8c13ee919062245f7ff",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateBuilder<'a>::object_type",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-d406438c8745be79597a",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateBuilder<'a>::protection_storage_masks",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-a926ef6509c2ea6c3e69",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateBuilder<'a>::to_batch_item",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-96d3fd92db42bb92d105",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateBuilder<'a>::validate",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-1b903f440a9ec89db1c8",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateBuilder<'a>::with_asynchronous_indicator",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-e6afdd201755d09c344b",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateBuilder<'a>::with_options",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-d3d40f7ccc044e351f28",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::fluent::FluentBuildError::MissingCreateObjectType",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-79a9768cfa5fac15b767",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RequestBuilder<'a>::create",
+      "capabilityId": "public_binding_surface",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-011"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0093",
+      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
     }
   ],
   "approvedExclusions": [
@@ -770992,6 +771328,18 @@
     },
     {
       "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseJson",
+      "reason": "JNI plumbing for the typed response renderer; no independent product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation."
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and KMIPKIT-0095-FR-003. Applications use ClientBatchItemResult.json(CodecLimits), returning an AutoCloseable native zeroizing owner."
+    },
+    {
+      "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseLocate",
       "reason": "Internal JNI bridge for ClientBatchItemResult.locateResponse; it has no independent Java product capability.",
       "approvalSource": {
@@ -771388,6 +771736,18 @@
     },
     {
       "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseTtlvHex",
+      "reason": "JNI plumbing for the typed response renderer; no independent product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation."
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and KMIPKIT-0095-FR-003. Applications use ClientBatchItemResult.ttlvHex(CodecLimits), returning an AutoCloseable native zeroizing owner."
+    },
+    {
+      "packageId": "java-kmipkit",
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseUniqueBatchItemId",
       "reason": "This public static member is a raw-handle JNI bridge entry point. Java exposes it for native binding dispatch; applications are directed to the typed org.kmipkit.extensions and org.kmipkit.ttlv facade. The bridge member has no independent product-level capability.",
       "approvalSource": {
@@ -771409,6 +771769,18 @@
         "evidence": "**Status**: Approved for implementation"
       },
       "evidence": "Reviewed against KMIPKIT-0043-FR-008 and KMIPKIT-0043-FR-021. NativeExtensionRegistry.java documents the class as an internal JNI bridge and directs applications to typed facades; the member is called by those facade implementations. See docs/architecture/ffi-and-bindings.md for the supported Java-to-C boundary and internal bridge scope."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseXml",
+      "reason": "JNI plumbing for the typed response renderer; no independent product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation."
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and KMIPKIT-0095-FR-003. Applications use ClientBatchItemResult.xml(CodecLimits), returning an AutoCloseable native zeroizing owner."
     },
     {
       "packageId": "java-kmipkit",
@@ -937646,6 +938018,114 @@
     },
     {
       "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::CreateBuilder<'a> as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::CreateBuilder<'a> as core::borrow::Borrow<kmipkit_client::fluent::CreateBuilder<'a>>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::CreateBuilder<'a> as core::borrow::BorrowMut<kmipkit_client::fluent::CreateBuilder<'a>>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::CreateBuilder<'a> as core::convert::From<kmipkit_client::fluent::CreateBuilder<'a>>>::from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::CreateBuilder<'a> as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::CreateBuilder<'a> as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::CreateBuilder<'a> as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::CreateBuilder<'a> as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::CreateBuilder<'a> as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
       "exportName": "<kmipkit_client::CreateKeyPairBuilder<'a> as core::any::Any>::type_id",
       "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Key Pair builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
       "approvalSource": {
@@ -945628,6 +946108,114 @@
     {
       "packageId": "rust-kmipkit-client",
       "exportName": "<kmipkit_client::fluent::ArchiveBuilder<'a> as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::CreateBuilder<'a> as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::CreateBuilder<'a> as core::borrow::Borrow<kmipkit_client::fluent::CreateBuilder<'a>>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::CreateBuilder<'a> as core::borrow::BorrowMut<kmipkit_client::fluent::CreateBuilder<'a>>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::CreateBuilder<'a> as core::convert::From<kmipkit_client::fluent::CreateBuilder<'a>>>::from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::CreateBuilder<'a> as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::CreateBuilder<'a> as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::CreateBuilder<'a> as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::CreateBuilder<'a> as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved",
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions."
+      },
+      "evidence": "KMIPKIT-0093-FR-011"
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::CreateBuilder<'a> as core::convert::TryInto<U>>::try_into",
       "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping.",
       "approvalSource": {
         "kind": "feature-specification",
@@ -1073677,42 +1074265,6 @@
         "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "evidence": "The helper is explicitly documented for language bindings and used as internal adapter plumbing. The four-language owned value constructors and lifecycle APIs represent the product capability."
-    },
-    {
-      "packageId": "java-kmipkit",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseTtlvHex",
-      "reason": "JNI plumbing for the typed response renderer; no independent product capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/095-fluent-response-views/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation."
-      },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and KMIPKIT-0095-FR-003. Applications use ClientBatchItemResult.ttlvHex(CodecLimits), returning an AutoCloseable native zeroizing owner."
-    },
-    {
-      "packageId": "java-kmipkit",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseJson",
-      "reason": "JNI plumbing for the typed response renderer; no independent product capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/095-fluent-response-views/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation."
-      },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and KMIPKIT-0095-FR-003. Applications use ClientBatchItemResult.json(CodecLimits), returning an AutoCloseable native zeroizing owner."
-    },
-    {
-      "packageId": "java-kmipkit",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseXml",
-      "reason": "JNI plumbing for the typed response renderer; no independent product capability.",
-      "approvalSource": {
-        "kind": "feature-specification",
-        "path": "specs/095-fluent-response-views/spec.md",
-        "status": "Approved",
-        "evidence": "**Status**: Approved for implementation."
-      },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and KMIPKIT-0095-FR-003. Applications use ClientBatchItemResult.xml(CodecLimits), returning an AutoCloseable native zeroizing owner."
     }
   ],
   "apiLevels": [

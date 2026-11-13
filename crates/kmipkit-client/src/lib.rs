@@ -378,7 +378,7 @@ pub use execute::{
     ResponseEncodingError,
 };
 pub use fluent::{
-    ActivateBuilder, ArchiveBuilder, CreateKeyPairBuilder, CreateSplitKeyBuilder,
+    ActivateBuilder, ArchiveBuilder, CreateBuilder, CreateKeyPairBuilder, CreateSplitKeyBuilder,
     CreateSymmetricKeyBuilder, CryptographicUsageMask, DecryptBuilder, DestroyBuilder,
     EncryptBuilder, FluentAttributePosition, FluentBuildError, GetBuilder, HashBuilder,
     LocateBuilder, MacBuilder, MacVerifyBuilder, RecertifyBuilder, RecoverBuilder, RegisterBuilder,
