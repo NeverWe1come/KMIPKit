@@ -1926,8 +1926,8 @@ fn generic_create_builder_preserves_pending_without_follow_up() {
 fn kmip30_fluent_builders_cover_all_assigned_client_routes() {
     use crate::ClientRequest;
     use kmipkit_protocol::{
-        CreateCredentialObject, CredentialType, PasswordCredentialObject,
-        PasswordCredentialObjectFields, SecretText,
+        CreateCredentialObject, PasswordCredentialObject, PasswordCredentialObjectFields,
+        SecretText,
     };
 
     let mut client = failed_request_client();
@@ -1939,7 +1939,6 @@ fn kmip30_fluent_builders_cover_all_assigned_client_routes() {
         client
             .request()
             .create_credential(
-                CredentialType::from_raw(5),
                 AttributeSet::new(),
                 CreateCredentialObject::PasswordCredential(
                     PasswordCredentialObject::try_new(PasswordCredentialObjectFields {
@@ -1964,15 +1963,14 @@ fn kmip30_fluent_builders_cover_all_assigned_client_routes() {
 }
 
 #[test]
-fn kmip30_create_credential_rejects_a_type_that_does_not_match_its_object() {
-    let mut client = failed_request_client();
-    let builder = client.request().create_credential(
+fn kmip30_create_credential_request_rejects_a_type_that_does_not_match_its_object() {
+    let request = kmipkit_protocol::CreateCredentialRequest::new(
         kmipkit_protocol::CredentialType::HashedPassword,
         AttributeSet::new(),
         kmip30_password_credential(),
     );
 
-    assert!(builder.validate().is_err());
+    assert!(request.into_ttlv_payload().is_err());
 }
 
 #[test]
@@ -2007,11 +2005,7 @@ fn kmip30_fluent_batch_conversion_preserves_all_seven_operation_codes_without_se
             .to_batch_item(),
         client
             .request()
-            .create_credential(
-                kmipkit_protocol::CredentialType::from_raw(5),
-                AttributeSet::new(),
-                kmip30_password_credential(),
-            )
+            .create_credential(AttributeSet::new(), kmip30_password_credential())
             .to_batch_item(),
         client.request().deactivate(id()).to_batch_item(),
         client.request().encapsulate(id()).to_batch_item(),
@@ -2071,11 +2065,7 @@ fn kmip30_fluent_execute_encodes_all_explicit_v3_routes_once_with_not_sent_failu
     assert_route!(obliterate(id()), 0x3d);
     assert_route!(create_user(AttributeSet::new()), 0x3e);
     assert_route!(
-        create_credential(
-            kmipkit_protocol::CredentialType::from_raw(5),
-            AttributeSet::new(),
-            kmip30_password_credential()
-        ),
+        create_credential(AttributeSet::new(), kmip30_password_credential()),
         0x3f
     );
     assert_route!(deactivate(id()), 0x40);
@@ -2103,7 +2093,6 @@ fn kmip30_fluent_all_routes_reject_explicit_incompatible_versions_before_transpo
     assert_version_gate!(obliterate(id()));
     assert_version_gate!(create_user(AttributeSet::new()));
     assert_version_gate!(create_credential(
-        kmipkit_protocol::CredentialType::from_raw(5),
         AttributeSet::new(),
         kmip30_password_credential()
     ));
@@ -2164,11 +2153,7 @@ fn kmip30_fluent_create_builders_preserve_attribute_order_and_closed_credential_
     assert_kmip30_ordered_attributes(&payload.view().children()[0]);
     let request = client
         .request()
-        .create_credential(
-            kmipkit_protocol::CredentialType::from_raw(5),
-            kmip30_ordered_attributes(),
-            kmip30_password_credential(),
-        )
+        .create_credential(kmip30_ordered_attributes(), kmip30_password_credential())
         .build();
     assert!(!format!("{request:?}").contains("CREDENTIAL_PRIVATE_SENTINEL"));
     let crate::ClientRequest::CreateCredential(credential) = request else {
@@ -2177,7 +2162,7 @@ fn kmip30_fluent_create_builders_preserve_attribute_order_and_closed_credential_
     let payload = credential.into_ttlv_payload().unwrap();
     let fields = payload.view();
     assert_eq!(fields.children()[0].tag().raw(), 0x0042_0024);
-    assert_eq!(read_enumeration(&fields.children()[0]), Some(5));
+    assert_eq!(read_enumeration(&fields.children()[0]), Some(1));
     assert_kmip30_ordered_attributes(&fields.children()[1]);
     assert_eq!(fields.children()[2].tag().raw(), 0x0042_01A1);
     let credential = fields.children()[2].as_structure().unwrap();

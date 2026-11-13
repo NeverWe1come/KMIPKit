@@ -39,7 +39,7 @@ int kmipkit_c_kmip30_builders_probe(void) {
     CHECK(kmipkit_codec_limits_defaults(&limits));
     ASSERT(kmipkit_create_group_builder_create(NULL, &builder) == KMIPKIT_ERROR_INVALID_INPUT && builder == NULL);
     ASSERT(kmipkit_create_user_builder_create(NULL, &builder) == KMIPKIT_ERROR_INVALID_INPUT && builder == NULL);
-    ASSERT(kmipkit_create_credential_builder_create(1, attributes, NULL, &builder) == KMIPKIT_ERROR_INVALID_INPUT && builder == NULL);
+    ASSERT(kmipkit_create_credential_builder_create(attributes, NULL, &builder) == KMIPKIT_ERROR_INVALID_INPUT && builder == NULL);
     ASSERT(kmipkit_deactivate_builder_create(NULL, &builder) == KMIPKIT_ERROR_INVALID_INPUT && builder == NULL);
     ASSERT(kmipkit_decapsulate_builder_create(&id, NULL, &builder) == KMIPKIT_ERROR_INVALID_INPUT && builder == NULL);
     ASSERT(kmipkit_encapsulate_builder_create(NULL, &builder) == KMIPKIT_ERROR_INVALID_INPUT && builder == NULL);
@@ -82,7 +82,7 @@ int kmipkit_c_kmip30_builders_probe(void) {
     CHECK(kmipkit_create_credential_object_password(&bytes, NULL, 0, 0, NULL, 0, 0, &object));
     for (uint32_t index = 0; index < 7; ++index) {
         switch (index) {
-        case 0: CHECK(kmipkit_create_credential_builder_create(1, attributes, object, &builder)); break;
+        case 0: CHECK(kmipkit_create_credential_builder_create(attributes, object, &builder)); break;
         case 1: CHECK(kmipkit_create_group_builder_create(attributes, &builder)); break;
         case 2: CHECK(kmipkit_create_user_builder_create(attributes, &builder)); break;
         case 3: CHECK(kmipkit_deactivate_builder_create(&id, &builder)); break;
@@ -118,7 +118,7 @@ int kmipkit_c_kmip30_builders_probe(void) {
         ASSERT(kmipkit_kmip30_operation_builder_validate(builder) == KMIPKIT_ERROR_INVALID_INPUT);
         builder = NULL;
     }
-    CHECK(kmipkit_create_credential_builder_create(1, attributes, object, &builder));
+    CHECK(kmipkit_create_credential_builder_create(attributes, object, &builder));
     kmipkit_create_credential_object_release(object);
     kmipkit_attribute_set_release(attributes);
     memset(caller_bytes, 0, sizeof(caller_bytes));
@@ -162,7 +162,7 @@ int kmipkit_c_kmip30_exchange_probe(kmipkit_client_t *client, kmipkit_codec_limi
     CHECK(kmipkit_create_credential_object_password(&bytes, NULL, 0, 0, NULL, 0, 0, &object));
     if (builder_path) {
         switch (operation_index) {
-        case 0: CHECK(kmipkit_create_credential_builder_create(1, attributes, object, &builder)); break;
+        case 0: CHECK(kmipkit_create_credential_builder_create(attributes, object, &builder)); break;
         case 1: CHECK(kmipkit_create_group_builder_create(attributes, &builder)); break;
         case 2: CHECK(kmipkit_create_user_builder_create(attributes, &builder)); break;
         case 3: CHECK(kmipkit_deactivate_builder_create(&id, &builder)); break;

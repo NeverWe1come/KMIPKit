@@ -4,9 +4,9 @@
 #include "kmipkit.h"
 typedef struct kmipkit_kmip30_operation_builder_t kmipkit_kmip30_operation_builder_t;
 typedef struct kmipkit_create_credential_object_t kmipkit_create_credential_object_t;
-int32_t kmipkit_create_credential_builder_create(uint32_t credential_type, kmipkit_attribute_set_t *attributes, kmipkit_create_credential_object_t *object, kmipkit_kmip30_operation_builder_t **out_builder);
-int32_t kmipkit_client_create_credential_v1(kmipkit_client_t *client, uint32_t credential_type, kmipkit_attribute_set_t *attributes, kmipkit_create_credential_object_t *object, kmipkit_codec_limits_t *limits, kmipkit_client_batch_response_t **out_response);
-int32_t kmipkit_client_create_credential_with_options_v1(kmipkit_client_t *client, uint32_t credential_type, kmipkit_attribute_set_t *attributes, kmipkit_create_credential_object_t *object, kmipkit_codec_limits_t *limits, const kmipkit_request_options_v1_t *options, kmipkit_client_batch_response_t **out_response);
+int32_t kmipkit_create_credential_builder_create(kmipkit_attribute_set_t *attributes, kmipkit_create_credential_object_t *object, kmipkit_kmip30_operation_builder_t **out_builder);
+int32_t kmipkit_client_create_credential_v1(kmipkit_client_t *client, kmipkit_attribute_set_t *attributes, kmipkit_create_credential_object_t *object, kmipkit_codec_limits_t *limits, kmipkit_client_batch_response_t **out_response);
+int32_t kmipkit_client_create_credential_with_options_v1(kmipkit_client_t *client, kmipkit_attribute_set_t *attributes, kmipkit_create_credential_object_t *object, kmipkit_codec_limits_t *limits, const kmipkit_request_options_v1_t *options, kmipkit_client_batch_response_t **out_response);
 int32_t kmipkit_create_group_builder_create(kmipkit_attribute_set_t *attributes, kmipkit_kmip30_operation_builder_t **out_builder);
 int32_t kmipkit_client_create_group_v1(kmipkit_client_t *client, kmipkit_attribute_set_t *attributes, kmipkit_codec_limits_t *limits, kmipkit_client_batch_response_t **out_response);
 int32_t kmipkit_client_create_group_with_options_v1(kmipkit_client_t *client, kmipkit_attribute_set_t *attributes, kmipkit_codec_limits_t *limits, const kmipkit_request_options_v1_t *options, kmipkit_client_batch_response_t **out_response);
