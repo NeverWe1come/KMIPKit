@@ -328,6 +328,8 @@ fn execute_batch_id_placeholder_journey(
     client: &mut Client,
     limits: &CodecLimits,
 ) -> Result<(), Box<dyn std::error::Error>> {
+    const CREATE_BATCH_ITEM_ID: &[u8] = b"create-placeholder-source";
+    const GET_BATCH_ITEM_ID: &[u8] = b"get-placeholder-target";
     let create_item = client
         .request()
         .create_symmetric_key()
@@ -335,12 +337,12 @@ fn execute_batch_id_placeholder_journey(
         .usage_mask(CryptographicUsageMask::ENCRYPT | CryptographicUsageMask::DECRYPT)
         .name("fluent-batch-placeholder")
         .to_batch_item()?
-        .with_unique_batch_item_id(b"create-placeholder-source".to_vec());
+        .with_unique_batch_item_id(CREATE_BATCH_ITEM_ID.to_vec());
     let get_item = client
         .request()
         .get(UniqueIdentifier::Enumeration(1))
         .to_batch_item()
-        .with_unique_batch_item_id(b"get-placeholder-target".to_vec());
+        .with_unique_batch_item_id(GET_BATCH_ITEM_ID.to_vec());
     let mut batch = ClientBatch::new(create_item).with_batch_order_option(true);
     batch.push(get_item);
 
@@ -357,7 +359,7 @@ fn execute_batch_id_placeholder_journey(
         .unique_identifier()
         .ok_or("batch Create omitted its server-assigned identifier")?;
     if create_result.outcome().operation().raw() != 1
-        || create_result.unique_batch_item_id() != Some(&b"create-placeholder-source"[..])
+        || create_result.unique_batch_item_id() != Some(CREATE_BATCH_ITEM_ID)
         || create_response.result().status().raw() != 0
         || identifier != &UniqueIdentifier::from("server-created-batch-key")
     {
@@ -370,7 +372,7 @@ fn execute_batch_id_placeholder_journey(
         .get_response()
         .ok_or("placeholder Get did not return its typed successful response")?;
     if get_result.outcome().operation().raw() != 10
-        || get_result.unique_batch_item_id() != Some(&b"get-placeholder-target"[..])
+        || get_result.unique_batch_item_id() != Some(GET_BATCH_ITEM_ID)
         || get_response.result().status().raw() != 0
         || get_response.unique_identifier() != Some(identifier)
         || get_response.object().is_none()

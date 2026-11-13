@@ -280,6 +280,8 @@ def execute_expert_attribute_journey(
 def execute_batch_id_placeholder_journey(
     kmip_client: client.Client, limits: ttlv.CodecLimits
 ) -> None:
+    create_batch_item_id = b"create-placeholder-source"
+    get_batch_item_id = b"get-placeholder-target"
     with kmip_client.request().create_symmetric_key() as builder:
         create_item = (
             builder.aes_256()
@@ -291,13 +293,13 @@ def execute_batch_id_placeholder_journey(
             .to_batch_item()
         )
     create_item = extensions.with_unique_batch_item_id(
-        create_item, b"create-placeholder-source"
+        create_item, create_batch_item_id
     )
     get_item = extensions.with_unique_batch_item_id(
         kmip_client.request()
         .get(extensions.UniqueIdentifier.enumeration(1))
         .to_batch_item(),
-        b"get-placeholder-target",
+        get_batch_item_id,
     )
     with client.Batch.create() as batch:
         batch.set_ordered(True).add_item(create_item).add_item(get_item)
@@ -306,7 +308,7 @@ def execute_batch_id_placeholder_journey(
         assert len(response.items) == 2
         create_result, get_result = response.items
         assert create_result.operation == protocol_values.Operation.CREATE
-        assert create_result.unique_batch_item_id == b"create-placeholder-source"
+        assert create_result.unique_batch_item_id == create_batch_item_id
         assert create_result.outcome is client.BatchOutcome.COMPLETED
         assert create_result.result_status == 0
         identifier = create_result.unique_identifier
@@ -314,7 +316,7 @@ def execute_batch_id_placeholder_journey(
             "server-created-batch-key"
         )
         assert get_result.operation == protocol_values.Operation.GET
-        assert get_result.unique_batch_item_id == b"get-placeholder-target"
+        assert get_result.unique_batch_item_id == get_batch_item_id
         assert get_result.outcome is client.BatchOutcome.COMPLETED
         assert get_result.result_status == 0
         get_response = get_result.get_response()

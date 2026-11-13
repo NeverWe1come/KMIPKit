@@ -111,17 +111,19 @@ public final class Consumer {
 
     private static void executeBatchIdPlaceholderJourney(KmipClient client, CodecLimits limits)
             throws org.kmipkit.ClientOperationException {
+        byte[] createBatchItemId = "create-placeholder-source".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        byte[] getBatchItemId = "get-placeholder-target".getBytes(java.nio.charset.StandardCharsets.UTF_8);
         ClientBatchItem createItem;
         try (SymmetricKeyBuilder createBuilder = client.request().createSymmetricKey()) {
             createItem = createBuilder.aes256().usageMask((int) (
                                 KmipValues.CryptographicUsageMask.ENCRYPT
                                         | KmipValues.CryptographicUsageMask.DECRYPT))
                     .name("fluent-batch-placeholder").toBatchItem()
-                    .withUniqueBatchItemId("create-placeholder-source".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                    .withUniqueBatchItemId(createBatchItemId);
         }
         ClientBatchItem getItem = client.request()
                 .get(UniqueIdentifier.enumeration(1)).toBatchItem()
-                .withUniqueBatchItemId("get-placeholder-target".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                .withUniqueBatchItemId(getBatchItemId);
         try (createItem; getItem; ClientBatch batch = ClientBatch.create()) {
             batch.ordered(true).add(createItem).add(getItem);
             try (ClientBatchResponse response = client.execute(batch, limits);
@@ -132,13 +134,12 @@ public final class Consumer {
                 UniqueIdentifier identifier = createResponse.uniqueIdentifier();
                 if (response.itemCount() != 2 || !createResult.outcomeKind().isCompleted()
                         || createResult.resultStatus() != 0 || createResult.operation() != 1
-                        || !Arrays.equals(createResult.uniqueBatchItemId().orElseThrow(),
-                                "create-placeholder-source".getBytes(java.nio.charset.StandardCharsets.UTF_8))
+                        || !Arrays.equals(createResult.uniqueBatchItemId().orElseThrow(), createBatchItemId)
                         || !identifier.text().equals("server-created-batch-key")
                         || !getResult.outcomeKind().isCompleted() || getResult.resultStatus() != 0
                         || getResult.operation() != 10
                         || !Arrays.equals(getResult.uniqueBatchItemId().orElseThrow(),
-                                "get-placeholder-target".getBytes(java.nio.charset.StandardCharsets.UTF_8))
+                                getBatchItemId)
                         || !getResponse.uniqueIdentifier().orElseThrow().text().equals(identifier.text())
                         || getResponse.object().isEmpty()) {
                     throw new IllegalStateException("batch ID Placeholder did not resolve to the created object");
