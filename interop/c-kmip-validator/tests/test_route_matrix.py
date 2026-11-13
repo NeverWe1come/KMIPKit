@@ -363,6 +363,29 @@ class RouteMatrixTests(unittest.TestCase):
                 self.assertIn(symbol, result['invoked_symbols'])
                 self.assertEqual(result['constructed_wire'], result['decoded_wire'])
 
+    def test_generic_structure_recipes_include_normative_child_items(self):
+        """OASIS KMIP 2.1 §7.2 and §8.1 define nested Structure members."""
+        from artifact_support import INSTALL, ROOT
+        from route_ttlv import TreeAbi, encode
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        targets = {item['target_id']: item for item in catalog['normative_targets']}
+        tags = {item['name']: int(item['wire_value'], 16)
+                for item in catalog['normative_targets'] if item['kind'] == 'tag'}
+        abi = TreeAbi(INSTALL / 'lib/libkmipkit_ffi.so')
+        for target_id in (
+            'KMIPKIT-ELEM-OPERATION-STRUCTURE-7-2-ASYNCHRONOUS-REQUEST',
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-1-REQUEST-HEADER',
+        ):
+            with self.subTest(target_id=target_id):
+                trees = self.runner.generic_tree_fixtures(targets[target_id], catalog, tags, '2.1')
+                self.assertTrue(trees)
+                self.assertTrue(any(tree[1] == 1 and tree[2] for tree in trees))
+                result = abi.roundtrip(encode(next(tree for tree in trees if tree[1] == 1 and tree[2])))
+                self.assertIn('kmipkit_ttlv_structure_with_item', result['invoked_symbols'])
+                self.assertIn('kmipkit_ttlv_value_structure', result['invoked_symbols'])
+                self.assertEqual(result['constructed_wire'], result['decoded_wire'])
+
     def test_reserved_tag_is_not_constructed_as_an_assigned_ttlv_item(self):
         from artifact_support import ROOT
         catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
