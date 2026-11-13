@@ -923,3 +923,44 @@ validator accepts 21,848 invoked cells with zero failed cells and
 Refactor/documentation updates the checked-in ledger, traceability, README, and
 this evidence. Profile Information structure-member coverage and the full Java
 matrix remain pending.
+
+## Per-target bitmask value route completion
+
+Sources: OASIS KMIP 2.0 and 2.1 §§12.1–12.3 (Cryptographic Usage Mask,
+Protection Storage Mask, and Storage Status Mask). The Java controlled-peer
+fixture derives per-value cases directly from the catalog and requires one
+fixture for each of the 44 local bitmask value cases. It invokes the applicable
+generic Integer constructor, Item creation, Item view, and decoder routes; the
+two bitmasks with typed attributes additionally run `TypedAttribute.create`,
+`TypedAttribute.fromItem`, and `AttributeSet.tryNew`. Reserved and extension
+bits retain the exact catalogued bit pattern. This closes 592 per-value route,
+version cells: 350 Cryptographic Usage Mask, 210 Protection Storage Mask, and
+32 Storage Status Mask.
+
+Red commit `e0635863` added a catalog-derived completeness assertion and failed
+because no per-target bitmask cases had Java fixtures. Green commit `17bf07eb`
+adds target-specific fixtures alongside the existing six aggregate cases and
+emits only the routes applicable to each mask's public attribute surface.
+
+Verification against installed release commit
+`489fafc79ef89db2524eafa7a6c6482f5cf75d97` (artifact SHA-256
+`830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e`):
+
+```sh
+bash ../../bindings/java/gradlew --no-daemon --max-workers=2 \
+  --init-script build/java-test-tmp.init.gradle \
+  -Dkmipkit.test.tmp="$PWD/build/java-tmp" \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813c \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+```
+
+The Java suite passes 54 tests with no failures, errors, or skips. The shared
+validator accepts 22,440 invoked cells with zero failed cells and
+`selected_scope_complete=true`; 49,015 of 71,455 planned cells remain pending.
+Refactor/documentation updates the ledger, traceability, README, and this
+evidence. The complete Java matrix remains pending.

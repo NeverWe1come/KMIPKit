@@ -790,6 +790,50 @@
     "test-bitmask-cryptographic-usage-mask-all-combinations",
     "test-bitmask-protection-storage-mask-all-combinations",
     "test-bitmask-storage-status-mask-all-combinations",
+    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-authenticate-00100000",
+    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-certificate-sign-00001000",
+    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-crl-sign-00002000",
+    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-decrypt-00000008",
+    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-derive-key-00000200",
+    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-encrypt-00000004",
+    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-extensions-xxx00000",
+    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-fpe-decrypt-00800000",
+    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-fpe-encrypt-00400000",
+    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-key-agreement-00000800",
+    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-mac-generate-00000080",
+    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-mac-verify-00000100",
+    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-reserved-00000040",
+    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-reserved-00000400",
+    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-reserved-00004000",
+    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-reserved-00008000",
+    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-reserved-00010000",
+    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-reserved-00020000",
+    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-reserved-00040000",
+    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-reserved-00080000",
+    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-sign-00000001",
+    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-unrestricted-00200000",
+    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-unwrap-key-00000020",
+    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-verify-00000002",
+    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-wrap-key-00000010",
+    "test-norm-bitmask-value-bitmask-value-protection-storage-mask-container-00000080",
+    "test-norm-bitmask-value-bitmask-value-protection-storage-mask-extensions-xxxxxxx0",
+    "test-norm-bitmask-value-bitmask-value-protection-storage-mask-hardware-00000002",
+    "test-norm-bitmask-value-bitmask-value-protection-storage-mask-hypervisor-00000020",
+    "test-norm-bitmask-value-bitmask-value-protection-storage-mask-off-premises-00000200",
+    "test-norm-bitmask-value-bitmask-value-protection-storage-mask-off-system-00000010",
+    "test-norm-bitmask-value-bitmask-value-protection-storage-mask-on-premises-00000100",
+    "test-norm-bitmask-value-bitmask-value-protection-storage-mask-on-processor-00000004",
+    "test-norm-bitmask-value-bitmask-value-protection-storage-mask-on-system-00000008",
+    "test-norm-bitmask-value-bitmask-value-protection-storage-mask-operating-system-00000040",
+    "test-norm-bitmask-value-bitmask-value-protection-storage-mask-outsourced-00000800",
+    "test-norm-bitmask-value-bitmask-value-protection-storage-mask-same-jurisdiction-00002000",
+    "test-norm-bitmask-value-bitmask-value-protection-storage-mask-self-managed-00000400",
+    "test-norm-bitmask-value-bitmask-value-protection-storage-mask-software-00000001",
+    "test-norm-bitmask-value-bitmask-value-protection-storage-mask-validated-00001000",
+    "test-norm-bitmask-value-bitmask-value-storage-status-mask-archival-storage-00000002",
+    "test-norm-bitmask-value-bitmask-value-storage-status-mask-destroyed-storage-00000004",
+    "test-norm-bitmask-value-bitmask-value-storage-status-mask-extensions-xxxxxxx0",
+    "test-norm-bitmask-value-bitmask-value-storage-status-mask-on-line-storage-00000001",
     "test-norm-data-type-data-type-big-integer",
     "test-norm-data-type-data-type-boolean",
     "test-norm-data-type-data-type-byte-string",
@@ -1328,7 +1372,7 @@
     "test-norm-credential-credential-hashed-password",
     "test-norm-credential-credential-username-and-password"
   ],
-  "executed_cells": 21848,
+  "executed_cells": 22440,
   "language": "java",
   "library_commit": "489fafc79ef89db2524eafa7a6c6482f5cf75d97",
   "pending_case_ids": [
@@ -1456,50 +1500,6 @@
     "test-norm-attribute-structure-attribute-structure-5-5-attribute-reference",
     "test-norm-attribute-structure-attribute-structure-5-6-current-attribute",
     "test-norm-attribute-structure-attribute-structure-5-7-new-attribute",
-    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-authenticate-00100000",
-    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-certificate-sign-00001000",
-    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-crl-sign-00002000",
-    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-decrypt-00000008",
-    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-derive-key-00000200",
-    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-encrypt-00000004",
-    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-extensions-xxx00000",
-    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-fpe-decrypt-00800000",
-    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-fpe-encrypt-00400000",
-    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-key-agreement-00000800",
-    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-mac-generate-00000080",
-    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-mac-verify-00000100",
-    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-reserved-00000040",
-    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-reserved-00000400",
-    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-reserved-00004000",
-    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-reserved-00008000",
-    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-reserved-00010000",
-    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-reserved-00020000",
-    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-reserved-00040000",
-    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-reserved-00080000",
-    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-sign-00000001",
-    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-unrestricted-00200000",
-    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-unwrap-key-00000020",
-    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-verify-00000002",
-    "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-wrap-key-00000010",
-    "test-norm-bitmask-value-bitmask-value-protection-storage-mask-container-00000080",
-    "test-norm-bitmask-value-bitmask-value-protection-storage-mask-extensions-xxxxxxx0",
-    "test-norm-bitmask-value-bitmask-value-protection-storage-mask-hardware-00000002",
-    "test-norm-bitmask-value-bitmask-value-protection-storage-mask-hypervisor-00000020",
-    "test-norm-bitmask-value-bitmask-value-protection-storage-mask-off-premises-00000200",
-    "test-norm-bitmask-value-bitmask-value-protection-storage-mask-off-system-00000010",
-    "test-norm-bitmask-value-bitmask-value-protection-storage-mask-on-premises-00000100",
-    "test-norm-bitmask-value-bitmask-value-protection-storage-mask-on-processor-00000004",
-    "test-norm-bitmask-value-bitmask-value-protection-storage-mask-on-system-00000008",
-    "test-norm-bitmask-value-bitmask-value-protection-storage-mask-operating-system-00000040",
-    "test-norm-bitmask-value-bitmask-value-protection-storage-mask-outsourced-00000800",
-    "test-norm-bitmask-value-bitmask-value-protection-storage-mask-same-jurisdiction-00002000",
-    "test-norm-bitmask-value-bitmask-value-protection-storage-mask-self-managed-00000400",
-    "test-norm-bitmask-value-bitmask-value-protection-storage-mask-software-00000001",
-    "test-norm-bitmask-value-bitmask-value-protection-storage-mask-validated-00001000",
-    "test-norm-bitmask-value-bitmask-value-storage-status-mask-archival-storage-00000002",
-    "test-norm-bitmask-value-bitmask-value-storage-status-mask-destroyed-storage-00000004",
-    "test-norm-bitmask-value-bitmask-value-storage-status-mask-extensions-xxxxxxx0",
-    "test-norm-bitmask-value-bitmask-value-storage-status-mask-on-line-storage-00000001",
     "test-norm-credential-credential-credential",
     "test-norm-credential-credential-one-time-password",
     "test-norm-credential-credential-ticket",
@@ -3198,182 +3198,6 @@
     {
       "case_id": "test-norm-attribute-structure-attribute-structure-5-7-new-attribute",
       "pending_cells": 10
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-authenticate-00100000",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-certificate-sign-00001000",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-crl-sign-00002000",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-decrypt-00000008",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-derive-key-00000200",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-encrypt-00000004",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-extensions-xxx00000",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-fpe-decrypt-00800000",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-fpe-encrypt-00400000",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-key-agreement-00000800",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-mac-generate-00000080",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-mac-verify-00000100",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-reserved-00000040",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-reserved-00000400",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-reserved-00004000",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-reserved-00008000",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-reserved-00010000",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-reserved-00020000",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-reserved-00040000",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-reserved-00080000",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-sign-00000001",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-unrestricted-00200000",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-unwrap-key-00000020",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-verify-00000002",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-cryptographic-usage-mask-wrap-key-00000010",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-protection-storage-mask-container-00000080",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-protection-storage-mask-extensions-xxxxxxx0",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-protection-storage-mask-hardware-00000002",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-protection-storage-mask-hypervisor-00000020",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-protection-storage-mask-off-premises-00000200",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-protection-storage-mask-off-system-00000010",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-protection-storage-mask-on-premises-00000100",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-protection-storage-mask-on-processor-00000004",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-protection-storage-mask-on-system-00000008",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-protection-storage-mask-operating-system-00000040",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-protection-storage-mask-outsourced-00000800",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-protection-storage-mask-same-jurisdiction-00002000",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-protection-storage-mask-self-managed-00000400",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-protection-storage-mask-software-00000001",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-protection-storage-mask-validated-00001000",
-      "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-storage-status-mask-archival-storage-00000002",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-storage-status-mask-destroyed-storage-00000004",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-storage-status-mask-extensions-xxxxxxx0",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-bitmask-value-bitmask-value-storage-status-mask-on-line-storage-00000001",
-      "pending_cells": 8
     },
     {
       "case_id": "test-norm-credential-credential-credential",
@@ -8180,7 +8004,7 @@
       "pending_cells": 15
     }
   ],
-  "pending_cells": 49607,
+  "pending_cells": 49015,
   "pending_reason": "No validated per-cell route execution evidence is recorded for this cell.",
   "pending_reason_code": "route_evidence_not_emitted",
   "planned_cells": 71455,
@@ -8188,8 +8012,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2197,
-      "pending_cells": 1887,
+      "executed_cells": 2241,
+      "pending_cells": 1843,
       "protocol_version": "2.0",
       "required_cells": 4084,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -8198,8 +8022,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2220,
-      "pending_cells": 1959,
+      "executed_cells": 2264,
+      "pending_cells": 1915,
       "protocol_version": "2.1",
       "required_cells": 4179,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -8408,8 +8232,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 90,
-      "pending_cells": 77,
+      "executed_cells": 134,
+      "pending_cells": 33,
       "protocol_version": "2.0",
       "required_cells": 167,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer",
@@ -8418,8 +8242,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 90,
-      "pending_cells": 78,
+      "executed_cells": 134,
+      "pending_cells": 34,
       "protocol_version": "2.1",
       "required_cells": 168,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer",
@@ -8508,8 +8332,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2221,
-      "pending_cells": 1910,
+      "executed_cells": 2265,
+      "pending_cells": 1866,
       "protocol_version": "2.0",
       "required_cells": 4131,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
@@ -8518,8 +8342,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2244,
-      "pending_cells": 1982,
+      "executed_cells": 2288,
+      "pending_cells": 1938,
       "protocol_version": "2.1",
       "required_cells": 4226,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
@@ -8528,8 +8352,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 2197,
-      "pending_cells": 1886,
+      "executed_cells": 2241,
+      "pending_cells": 1842,
       "protocol_version": "2.0",
       "required_cells": 4083,
       "route_id": "java.generic-ttlv.ttlv_item.create",
@@ -8538,8 +8362,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 2220,
-      "pending_cells": 1958,
+      "executed_cells": 2264,
+      "pending_cells": 1914,
       "protocol_version": "2.1",
       "required_cells": 4178,
       "route_id": "java.generic-ttlv.ttlv_item.create",
@@ -32988,8 +32812,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 446,
-      "pending_cells": 141,
+      "executed_cells": 486,
+      "pending_cells": 101,
       "protocol_version": "2.0",
       "required_cells": 587,
       "route_id": "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
@@ -32998,8 +32822,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 446,
-      "pending_cells": 150,
+      "executed_cells": 486,
+      "pending_cells": 110,
       "protocol_version": "2.1",
       "required_cells": 596,
       "route_id": "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
@@ -33888,8 +33712,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 446,
-      "pending_cells": 141,
+      "executed_cells": 486,
+      "pending_cells": 101,
       "protocol_version": "2.0",
       "required_cells": 587,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
@@ -33898,8 +33722,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 446,
-      "pending_cells": 150,
+      "executed_cells": 486,
+      "pending_cells": 110,
       "protocol_version": "2.1",
       "required_cells": 596,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
@@ -33908,8 +33732,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 446,
-      "pending_cells": 141,
+      "executed_cells": 486,
+      "pending_cells": 101,
       "protocol_version": "2.0",
       "required_cells": 587,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
@@ -33918,8 +33742,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 446,
-      "pending_cells": 150,
+      "executed_cells": 486,
+      "pending_cells": 110,
       "protocol_version": "2.1",
       "required_cells": 596,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
@@ -34709,8 +34533,8 @@
   "route_manifest_sha256": "b3867835e3f1f69308a3030f83be87e2728af852da3a82414a78a4ea91482ac5",
   "route_summary": [
     {
-      "executed_cells": 4417,
-      "pending_cells": 3846,
+      "executed_cells": 4505,
+      "pending_cells": 3758,
       "required_cells": 8263,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item"
     },
@@ -34775,8 +34599,8 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration"
     },
     {
-      "executed_cells": 180,
-      "pending_cells": 155,
+      "executed_cells": 268,
+      "pending_cells": 67,
       "required_cells": 335,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer"
     },
@@ -34805,14 +34629,14 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring"
     },
     {
-      "executed_cells": 4465,
-      "pending_cells": 3892,
+      "executed_cells": 4553,
+      "pending_cells": 3804,
       "required_cells": 8357,
       "route_id": "java.generic-ttlv.ttlv_codec.decode"
     },
     {
-      "executed_cells": 4417,
-      "pending_cells": 3844,
+      "executed_cells": 4505,
+      "pending_cells": 3756,
       "required_cells": 8261,
       "route_id": "java.generic-ttlv.ttlv_item.create"
     },
@@ -35849,8 +35673,8 @@
       "route_id": "java.typed-protocol.model.org.kmipkit.credentials.usernameandpasswordcredential.fromttlv"
     },
     {
-      "executed_cells": 892,
-      "pending_cells": 291,
+      "executed_cells": 972,
+      "pending_cells": 211,
       "required_cells": 1183,
       "route_id": "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew"
     },
@@ -36119,14 +35943,14 @@
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.symmetrickey"
     },
     {
-      "executed_cells": 892,
-      "pending_cells": 291,
+      "executed_cells": 972,
+      "pending_cells": 211,
       "required_cells": 1183,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create"
     },
     {
-      "executed_cells": 892,
-      "pending_cells": 291,
+      "executed_cells": 972,
+      "pending_cells": 211,
       "required_cells": 1183,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem"
     },
@@ -36162,7 +35986,7 @@
     }
   ],
   "schema_version": "1.0",
-  "selected_scope_cells": 21848,
+  "selected_scope_cells": 22440,
   "selected_scope_complete": true,
   "vendor_interoperability_claim": false
 }
