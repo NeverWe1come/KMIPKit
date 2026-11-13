@@ -737,3 +737,37 @@ validator accepts 19,362 invoked cells with zero failures and
 `selected_scope_complete=true`; 52,093 of 71,455 planned cells remain pending.
 Hashing Algorithm's local scope is complete; the Java matrix and vendor server
 interoperability are not.
+
+## Link Type enumeration route completion
+
+Source: OASIS KMIP 2.0 and 2.1 §11.28 (Link Type Enumeration). The aggregate
+local case covers all 15 catalogued values through four generic TTLV routes in
+both protocol versions, adding 120 cells. Each value is constructed as a
+generic Enumeration, wrapped in an Item, read through its Item view, and
+decoded from deterministic TTLV bytes.
+
+Red commit `3166a664f` requires all 15 aggregate targets and fails because the
+case has no local fixtures. Green commit `0275a6635` adds all catalogued
+values to the local enum fixtures. Refactor commit `2dd170ef3` reuses a shared
+generic enum-scope helper for Link Type and the other generic-only matrices.
+
+Verification against installed release commit
+`489fafc79ef89db2524eafa7a6c6482f5cf75d97`:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+```
+
+The Java suite passes 52 tests with no failures, errors, or skips. The shared
+validator accepts 19,482 invoked cells with zero failures and
+`selected_scope_complete=true`; 51,973 of 71,455 planned cells remain pending.
+Link Type's local scope is complete; the Java matrix and vendor server
+interoperability are not.
