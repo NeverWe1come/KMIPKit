@@ -2066,6 +2066,16 @@ static kmip_execution_outcome_t execute_attribute_mutation_case(
             !same_text_identifier(&created_identifier, &seed_identifier)) {
             outcome.library_failed = status != 0;
             outcome.library_validated = status == 0;
+            outcome.has_result_status_code = status == 0;
+            outcome.result_status_code = seed_metadata.result_status;
+            outcome.has_result_reason_code = status == 0 && seed_metadata.has_result_reason != 0;
+            outcome.result_reason_code = seed_metadata.result_reason;
+            outcome.server_unsupported = status == 0 && seed_metadata.has_result_reason != 0 &&
+                (seed_metadata.result_reason == KMIPKIT_ENUMERATION_RESULT_REASON_OPERATION_NOT_SUPPORTED ||
+                 seed_metadata.result_reason == KMIPKIT_ENUMERATION_RESULT_REASON_FEATURE_NOT_SUPPORTED);
+            outcome.policy_restricted = status == 0 && seed_metadata.has_result_reason != 0 &&
+                (seed_metadata.result_reason == KMIPKIT_ENUMERATION_RESULT_REASON_NOT_AUTHORISED ||
+                 seed_metadata.result_reason == KMIPKIT_ENUMERATION_RESULT_REASON_PERMISSION_DENIED);
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
                      "KMIPKit could not seed the isolated Delete Attribute Comment fixture");
             goto cleanup;

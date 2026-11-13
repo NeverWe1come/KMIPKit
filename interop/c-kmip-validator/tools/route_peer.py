@@ -670,7 +670,8 @@ class PeerState:
         state = json.dumps(state_value, sort_keys=True, separators=(',', ':'))
         return hashlib.sha256(state.encode()).hexdigest()
 
-    def execute(self, request_tree, *, continued_batch=False):
+    def execute(self, request_tree, *, continued_batch=False, rejected_operation=None,
+                rejection_status=1, rejection_reason=5):
         before = self.digest()
         effects, statuses, reasons = [], [], []
         placeholder = None
@@ -685,7 +686,9 @@ class PeerState:
             identifiers = text_values(item, UNIQUE_IDENTIFIER_TAG)
             identifier = identifiers[0] if identifiers else placeholder
             status, reason = 0, 0
-            if operation in (1, 3):
+            if operation == rejected_operation:
+                status, reason, effect = rejection_status, rejection_reason, 'operation_rejected'
+            elif operation in (1, 3):
                 identifier = 'fixture-key-1'
                 if identifier in self.objects:
                     raise ValueError('fixture_duplicate_create')
@@ -882,7 +885,8 @@ def case_for_controlled_exchange(case, attribute_fixture=None, register_object_p
 def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0', '2.1'),
                           network_combinations=(('TTLV', 'raw_tls'), ('TTLV', 'https'),
                                                 ('JSON', 'raw_tls'), ('JSON', 'https'),
-                                                ('XML', 'raw_tls'), ('XML', 'https'))):
+                                                ('XML', 'raw_tls'), ('XML', 'https')),
+                          peer_rejection=None):
     codec = Codec(catalog)
     targets_by_id = {target['target_id']: target for target in catalog['normative_targets']}
     events, keys, checks = [], set(), []
@@ -942,6 +946,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                         }.get(recipe[1])
                         mutation_exchange_index = 2 if delete_attribute_recipe else 1
                         attribute_cleanup_exchange_index = 3 if delete_attribute_recipe else 2
+                        reject_case = peer_rejection is not None and peer_rejection.get('case_id') == case_id
                         if version == '2.0' and case_id in ('test-op-discover-versions', 'test-op-login', 'test-op-get-constraints', 'test-op-ping'):
                             continue
                         observation, errors = [], []
@@ -957,6 +962,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                 try:
                                     exchange_count = 4 if delete_attribute_recipe else 3 if attribute_mutation_recipe else (
                                         2 if placeholder_chain_recipe else 1)
+                                    seed_rejected = False
                                     accepted, _ = server.accept()
                                     stream = context.wrap_socket(accepted, server_side=True)
                                     for exchange_index in range(exchange_count):
@@ -979,10 +985,14 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         stream.settimeout(5)
                                         wire = read_request(stream, encoding, transport, initial)
                                         request_tree = codec.decode(wire, encoding)
+                                        reject_this_exchange = reject_case and exchange_index == peer_rejection.get(
+                                            'exchange_index')
                                         cleanup_exchange = (
                                             placeholder_chain_recipe and exchange_index == 1) or (
                                             attribute_mutation_recipe and
-                                            exchange_index == attribute_cleanup_exchange_index)
+                                            (exchange_index == attribute_cleanup_exchange_index or
+                                             (delete_attribute_recipe and seed_rejected and
+                                              exchange_index == attribute_cleanup_exchange_index - 1)))
                                         if cleanup_exchange:
                                             if placeholder_chain_recipe:
                                                 assert_placeholder_cleanup_request(request_tree, version)
@@ -1024,10 +1034,12 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 (b'interop-create',)
                                                 if exchange_index == 0 else
                                                 (b'interop-delete-attribute',)
-                                                if delete_attribute_recipe and exchange_index == mutation_exchange_index else
-                                                (b'interop-attributes',)
-                                                if exchange_index != attribute_cleanup_exchange_index else
-                                                (b'interop-revoke', b'interop-destroy'))
+                                                if delete_attribute_recipe and
+                                                exchange_index == mutation_exchange_index and
+                                                not cleanup_exchange else
+                                                (b'interop-revoke', b'interop-destroy')
+                                                if cleanup_exchange else
+                                                (b'interop-attributes',))
                                         if recipe[1] in ('batch_count_two_read_items',
                                                          'batch_order_false_two_read_items',
                                                          'batch_continue_after_failure'):
@@ -1037,7 +1049,13 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 response_item_ids = (b'item-b', b'item-a')
                                         state_evidence = peer_state.execute(
                                             request_tree,
-                                            continued_batch=recipe[1] == 'batch_continue_after_failure')
+                                            continued_batch=recipe[1] == 'batch_continue_after_failure',
+                                            rejected_operation=peer_rejection.get('operation')
+                                            if reject_this_exchange else None,
+                                            rejection_status=peer_rejection.get('result_status', 1)
+                                            if reject_this_exchange else 1,
+                                            rejection_reason=peer_rejection.get('result_reason', 5)
+                                            if reject_this_exchange else 5)
                                         response_statuses = tuple(state_evidence['statuses'])
                                         response_reasons = tuple(reason or None for reason in state_evidence['reasons'])
                                         if response_operations != recipe[0] and not cleanup_exchange:
@@ -1054,6 +1072,16 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         response_tree = parse(response_wire)
                                         if placeholder_chain_recipe:
                                             verify_placeholder_chain_response(response_tree, response_operations)
+                                        elif reject_this_exchange:
+                                            response_items = [item for item in response_tree[2]
+                                                              if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+                                            if ([numbers(item, 0x42005C) for item in response_items] !=
+                                                    [[peer_rejection['operation']]] or
+                                                    [numbers(item, 0x42007F) for item in response_items] !=
+                                                    [[peer_rejection['result_status']]] or
+                                                    [numbers(item, 0x42007E) for item in response_items] !=
+                                                    [[peer_rejection['result_reason']]]):
+                                                raise ValueError('fixture_rejection_response_mismatch')
                                         elif attribute_mutation_recipe:
                                             response_items = [item for item in response_tree[2]
                                                               if item[0] == BATCH_ITEM_TAG and item[1] == 1]
@@ -1070,6 +1098,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             encoded_response = (f'HTTP/1.1 200 OK\r\nContent-Type: {content_type}\r\nContent-Length: {len(encoded_response)}\r\nConnection: close\r\n\r\n'.encode() + encoded_response)
                                         stream.sendall(encoded_response)
                                         observation.append((request_tree, response_tree, state_evidence))
+                                        if reject_this_exchange:
+                                            seed_rejected = True
+                                        elif seed_rejected and cleanup_exchange:
+                                            break
                                     stream.close()
                                 except TimeoutError:
                                     errors.append('fixture_peer_accept_timeout')
@@ -1120,7 +1152,14 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                 thread.join(20 if attribute_mutation_recipe else 6)
                             result = json.loads(result_path.read_text()) if result_path.exists() else {}
                             verify_consumer_provenance(result, artifact_sha256, catalog_sha256)
-                            case_passed = bool(result.get('cases') and result['cases'][0]['status'] == 'passed')
+                            result_case = (result.get('cases') or [{}])[0]
+                            expected_rejection_status = ('server_unsupported'
+                                if peer_rejection and peer_rejection.get('result_reason') in (5, 8) else
+                                'policy_restricted'
+                                if peer_rejection and peer_rejection.get('result_reason') in (12, 57) else None)
+                            expected_rejection_observed = reject_case and result_case.get('status') == expected_rejection_status
+                            case_passed = bool(result_case and (
+                                result_case.get('status') == 'passed' or expected_rejection_observed))
                             trace = [line.split('\t') for line in trace_path.read_text().splitlines()] if trace_path.exists() else []
                             called_symbols = {symbol for symbol, status in trace if status == '0'}
                             invoked_symbols = {symbol for symbol, _ in trace}
@@ -1167,8 +1206,21 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                            'transport': transport, 'status': 'passed' if observation and not code and run.returncode == 0 else 'failed',
                                            'consumer_case_status': (result.get('cases') or [{}])[0].get('status', 'missing'),
                                            'consumer_server_compatibility': (result.get('cases') or [{}])[0].get('server_compatibility', 'missing'),
+                                           'consumer_library_correctness': (result.get('cases') or [{}])[0].get('library_correctness', 'missing'),
+                                           'consumer_result_status_code': (result.get('cases') or [{}])[0].get('result_status_code'),
+                                           'consumer_result_reason_code': (result.get('cases') or [{}])[0].get('result_reason_code'),
                                            'consumer_diagnostic': (result.get('cases') or [{}])[0].get('diagnostic', ''),
                                            'public_api_trace_symbols': sorted(invoked_symbols),
+                                           **({'peer_seed_operations': [peer_rejection['operation']],
+                                               'peer_seed_effects': observation[1][2]['effects'],
+                                               'peer_cleanup_operations': [
+                                                   numbers(item, 0x42005C)[0]
+                                                   for item in observation[-1][0][2]
+                                                   if item[0] == 0x42000F],
+                                               'peer_final_state_matches_setup':
+                                                   observation[0][2]['peer_observed_state_before_sha256'] ==
+                                                   observation[-1][2]['peer_observed_state_after_sha256']}
+                                              if expected_rejection_observed and len(observation) == 3 else {}),
                                            **({'peer_response_operation_values': [
                                                numbers(item, 0x42005C)[0]
                                                for item in observation[0][1][2]
