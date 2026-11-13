@@ -1,7 +1,6 @@
 use kmipkit_protocol::attribute::typed;
 use kmipkit_protocol::{
-    Attribute, AttributeDefinition, CreateRequest, CurrentAttribute, NewAttribute,
-    UniqueIdentifier,
+    Attribute, AttributeDefinition, CreateRequest, CurrentAttribute, NewAttribute, UniqueIdentifier,
 };
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestOptions;
@@ -749,7 +748,7 @@ fn attribute_mutation_builders_preserve_typed_selectors_and_existing_requests() 
                     .expect("Comment is a catalogued Text String"),
             ))
             .to_batch_item()
-            .expect("Add Attribute converts to the existing batch item" )
+            .expect("Add Attribute converts to the existing batch item")
             .operation(),
         13
     );
@@ -821,4 +820,24 @@ fn attribute_mutation_builders_preserve_typed_selectors_and_existing_requests() 
             .operation(),
         49
     );
+}
+
+#[test]
+fn invalid_attribute_mutation_is_rejected_without_sending() {
+    let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let error = client
+        .request()
+        .add_attribute()
+        .new_attribute(NewAttribute::new(item(
+            typed::CryptographicLength::TAG,
+            Value::text_string("wrong-ttlv-type".to_owned()),
+        )))
+        .execute(&CodecLimits::defaults())
+        .expect_err("a catalogued attribute with the wrong TTLV type is rejected locally");
+
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert_eq!(fake.borrow().exchange_count(), 0);
 }
