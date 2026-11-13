@@ -65,6 +65,7 @@ mod wire_codec_common;
 #[allow(dead_code)] // The private codecs are connected by KMIPKIT-0057.
 mod xml_codec;
 
+mod attribute_tags_generated;
 mod error;
 pub mod extension_registry;
 pub mod fluent;
@@ -178,6 +179,10 @@ mod fluent_create_key_pair_tests;
 #[cfg(test)]
 #[path = "../tests/unit/fluent_create_split_key_tests.rs"]
 mod fluent_create_split_key_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/fluent_register_tests.rs"]
+mod fluent_register_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/create_key_pair_execution_tests.rs"]
@@ -366,7 +371,8 @@ pub use execute::{
 };
 pub use fluent::{
     CreateKeyPairBuilder, CreateSplitKeyBuilder, CreateSymmetricKeyBuilder, CryptographicUsageMask,
-    DestroyBuilder, FluentAttributePosition, FluentBuildError, GetBuilder, RequestBuilder,
+    DestroyBuilder, FluentAttributePosition, FluentBuildError, GetBuilder, RegisterBuilder,
+    RequestBuilder,
 };
 pub use kmipkit_protocol::{
     ProfileObjectState, ProfileTransport, ProfileValidationContext, ProfileValidationError,

@@ -855,6 +855,10 @@ pub(crate) fn object_tag_matches_type(object_type: ObjectType, tag: u32) -> bool
         8 => Some(OPAQUE_OBJECT),
         9 => Some(PGP_KEY),
         10 => Some(CERTIFICATE_REQUEST),
+        13 => Some(0x0042_01A1),
+        14 => Some(0x0042_01A6),
+        15 => Some(0x0042_01A7),
+        16 => Some(0x0042_01AF),
         _ => None,
     };
     expected_tag.map_or_else(|| !known_object_tag(tag), |expected| expected == tag)

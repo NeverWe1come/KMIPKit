@@ -158,8 +158,9 @@ BLOCKED_AFTER = 221
 # Snapshot includes final 0049 and exact 0050 constructor mappings.
 # The snapshot includes the approved KMIPKIT-0052 async typed-reader routes.
 # The snapshot includes the final KMIPKIT-0053 verified operation surfaces.
-# The snapshot includes the 50 approved KMIPKIT-0099 fluent Create Split Key declarations.
-DECLARATIONS_SHA256 = "92481d28003158e0d2a4b796ea8e0ec469e35cdd54e9dd25c6638cac95e6b9a7"
+# The snapshot includes approved KMIPKIT-0099 Create Split Key and KMIPKIT-0100
+# Register declarations.
+DECLARATIONS_SHA256 = "d55b2c26d49f08283fc70874e95d281c771cbf6caa9e8476e9d5623bb133aaa9"
 OPERATIONS_SHA256 = "2a6eb9fb6823b3456b3fb10b6d4af8477be9f1a1f68c06c252bb4873b272f3bc"
 
 

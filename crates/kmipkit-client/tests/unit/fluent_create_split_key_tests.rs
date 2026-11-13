@@ -13,7 +13,7 @@ use kmipkit_protocol::{
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::{RequestDeliveryState, RequestOptions, TimeoutLimit, WireEncoding};
 use kmipkit_ttlv::codec::{CodecLimits, decode_with_limits};
-use kmipkit_ttlv::{Item, RawTag, Structure, Value};
+use kmipkit_ttlv::{Item, RawTag, Structure, Value, ValueView};
 
 use crate::asynchronous_execution_test_support::{client_for, client_for_with_options_observer};
 use crate::execute::{
@@ -269,12 +269,15 @@ fn split_key_builder_preserves_typed_prebuilt_vendor_and_positioned_attributes()
     prebuilt
         .try_push_typed(Attribute::<typed::Extractable>::new(false).unwrap())
         .unwrap();
-    let unknown_value = item(0x0042_005C, Value::text_string("opaque-value".to_owned()));
+    let explicit_value = item(
+        typed::ContactInformation::TAG,
+        Value::text_string("opaque-value".to_owned()),
+    );
     let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
     let request = valid_builder(&mut client)
         .attribute(Attribute::<typed::Description>::new("typed value".to_owned()).unwrap())
         .attributes(prebuilt)
-        .attribute_item(unknown_value)
+        .attribute_item(explicit_value)
         .vendor_attribute(
             "Vendor_Name.1",
             "region",
@@ -297,7 +300,7 @@ fn split_key_builder_preserves_typed_prebuilt_vendor_and_positioned_attributes()
             typed::Description::TAG,
             typed::Sensitive::TAG,
             typed::Extractable::TAG,
-            0x0042_005C,
+            typed::ContactInformation::TAG,
             typed::VendorAttribute::TAG,
         ]
     );
@@ -312,7 +315,8 @@ fn split_key_builder_preserves_typed_prebuilt_vendor_and_positioned_attributes()
 }
 
 #[test]
-fn split_key_builder_rejects_malformed_attributes_duplicate_positions_and_extensions() {
+fn split_key_builder_rejects_malformed_attributes_and_duplicate_positions_but_preserves_extensions()
+{
     let (mut client, _, _) = client_for(ExchangeScript::FailBeforeWrite);
     let invalid_vendor = Attribute::<typed::VendorAttribute>::new(Structure::new())
         .expect("a Vendor Attribute type can hold an empty Structure before set validation");
@@ -363,12 +367,15 @@ fn split_key_builder_rejects_malformed_attributes_duplicate_positions_and_extens
                 extension,
             ),
         };
-        assert_eq!(
-            builder.validate(),
-            Err(FluentBuildError::MessageExtensionTagNotObjectAttribute)
+        assert_eq!(builder.validate(), Ok(()));
+        let request = builder
+            .build_request()
+            .expect("explicit extension Items remain raw Object Attribute entries");
+        assert_eq!(request.attributes().as_items()[0].tag().raw(), tag);
+        assert!(
+            request.attributes().as_items()[0]
+                .with_value(|value| matches!(value, ValueView::Boolean(true)))
         );
-        let error = builder.execute(&CodecLimits::defaults()).unwrap_err();
-        assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
         assert_eq!(transport.borrow().exchange_count(), 0);
     }
 }

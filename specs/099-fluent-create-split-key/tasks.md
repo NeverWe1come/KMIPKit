@@ -21,8 +21,10 @@ closed typed request and execution boundaries.
   optional Protection Storage Masks, and an empty but present Attributes
   Structure.
 - [x] Add tests for typed attributes, explicit unknown TTLV Items, valid
-  Vendor Attribute construction, duplicate/final-position errors, and
-  Message Extension tag rejection before transport.
+  Vendor Attribute construction, duplicate/final-position errors, and the
+  original Message Extension tag rejection rule. KMIPKIT-0093 supersedes that
+  rule: allocated tags now pass only as explicit raw TTLV Items and remain
+  unchanged in the Object Attributes list.
 - [x] Add tests for typed batch conversion and controlled Success, Failure,
   Pending, repeated response IDs in wire order, exact correlation, and one
   exchange without retry/Poll.

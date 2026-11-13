@@ -298,14 +298,16 @@ estructura Attributes permanece presente aunque esté vacía, como exige KMIP.
 
 `attribute(Attribute<D>)`, `attribute_item(Item)` y `attributes(AttributeSet)`
 admiten atributos tipados y expertos y conservan su orden. `vendor_attribute(...)`
-construye una estructura KMIP Vendor Attribute válida; los tags Message
-Extension se rechazan como atributos del objeto. `validate()` y `build_request()`
-validan localmente sin usar el transporte, y `to_batch_item()` crea el elemento
-tipado existente. `execute()` realiza como máximo un intercambio tipado.
-Success, Failure, Pending, la correlación y el estado de entrega siguen siendo
-explícitos; no hay reintento ni Poll automático. El cliente conserva la versión
-de protocolo configurada y las opciones del intercambio se pasan por separado
-con `with_options`.
+construye una estructura KMIP Vendor Attribute válida. Los tags asignados pero
+desconocidos, incluidos los tags de extensión `0x54xxxx`, requieren un `Item`
+TTLV explícito y se conservan sin cambios como atributos del objeto; no se
+reinterpretan como Vendor Attribute. `validate()` y `build_request()` validan
+localmente sin usar el transporte, y `to_batch_item()` crea el elemento tipado
+existente. `execute()` realiza como máximo un intercambio tipado. Success,
+Failure, Pending, la correlación y el estado de entrega siguen siendo explícitos;
+no hay reintento ni Poll automático. El cliente conserva la versión de protocolo
+configurada y las opciones del intercambio se pasan por separado con
+`with_options`.
 
 
 ## Métodos directos y opciones por intercambio

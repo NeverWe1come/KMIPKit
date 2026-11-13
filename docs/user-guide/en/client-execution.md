@@ -288,13 +288,14 @@ present as required by KMIP.
 `attribute(Attribute<D>)`, `attribute_item(Item)`, and `attributes(AttributeSet)`
 support typed and expert attributes while preserving insertion order.
 `vendor_attribute(...)` constructs the KMIP Vendor Attribute structure;
-Message Extension tags are rejected as Object Attributes. `validate()` and
-`build_request()` perform local typed validation without using the transport,
-and `to_batch_item()` returns the existing typed batch item. `execute()` uses
-one typed exchange. Success, Failure, Pending, correlation, and delivery state
-remain explicit; it does not retry or Poll automatically. The client keeps its
-configured protocol version and exchange options are supplied separately with
-`with_options`.
+unknown allocated tags, including `0x54xxxx` extension tags, require an
+explicit TTLV `Item` and remain unchanged as Object Attributes. They are not
+reinterpreted as Vendor Attributes. `validate()` and `build_request()` perform
+local typed validation without using the transport, and `to_batch_item()`
+returns the existing typed batch item. `execute()` uses one typed exchange.
+Success, Failure, Pending, correlation, and delivery state remain explicit; it
+does not retry or Poll automatically. The client keeps its configured protocol
+version and exchange options are supplied separately with `with_options`.
 
 
 ## Direct operation methods and per-exchange options

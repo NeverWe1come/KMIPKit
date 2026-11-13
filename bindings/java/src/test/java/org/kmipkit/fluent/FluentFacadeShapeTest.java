@@ -104,7 +104,7 @@ final class FluentFacadeShapeTest {
                 Tag descriptionTag = descriptionRaw.checked();
                 TtlvValue description = TtlvValue.TextString(
                         "managed without TTLV tags".getBytes(java.nio.charset.StandardCharsets.UTF_8), limits);
-                RawTag expertRaw = RawTag.fromRaw(0x4200fe);
+                RawTag expertRaw = RawTag.fromRaw(0x540001);
                 Tag expertTag = expertRaw.checked();
                 TtlvValue expertValue = TtlvValue.TextString(
                         "expert value".getBytes(java.nio.charset.StandardCharsets.UTF_8), limits);
