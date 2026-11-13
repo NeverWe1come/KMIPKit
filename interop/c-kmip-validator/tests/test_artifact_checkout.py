@@ -9,6 +9,15 @@ ROOT = Path(__file__).resolve().parents[3]
 WORKFLOW = ROOT / ".github/workflows/interop-c.yml"
 
 
+def shared_route_source_pin():
+    manifest = json.loads(
+        (ROOT / "interop/shared/coverage/route-capabilities.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    return manifest["library_commit"]
+
+
 class ArtifactCheckoutContractTests(unittest.TestCase):
     def test_every_catalog_enum_and_bitmask_has_a_typed_probe(self):
         catalog = json.loads(
@@ -125,12 +134,7 @@ class ArtifactCheckoutContractTests(unittest.TestCase):
         self.assertIn(f"/install/{pin}", workflow)
         self.assertIn(pin, readme)
         self.assertIn("**Base**: source commit pinned in", spec)
-        manifest = json.loads(
-            (ROOT / "interop/shared/coverage/route-capabilities.json").read_text(
-                encoding="utf-8"
-            )
-        )
-        self.assertEqual(pin, manifest["library_commit"])
+        self.assertEqual(pin, shared_route_source_pin())
 
         subprocess.run(
             ["git", "cat-file", "-e", f"{pin}^{{tree}}"], cwd=ROOT, check=True
@@ -141,20 +145,10 @@ class ArtifactCheckoutContractTests(unittest.TestCase):
             encoding="utf-8"
         )
         pin = re.search(r'^PIN = "([0-9a-f]{40})"$', support, re.MULTILINE).group(1)
-        manifest = json.loads(
-            (ROOT / "interop/shared/coverage/route-capabilities.json").read_text(
-                encoding="utf-8"
-            )
-        )
-        self.assertEqual(pin, manifest["library_commit"])
+        self.assertEqual(pin, shared_route_source_pin())
 
     def test_every_c_artifact_identity_uses_the_shared_source_pin(self):
-        manifest = json.loads(
-            (ROOT / "interop/shared/coverage/route-capabilities.json").read_text(
-                encoding="utf-8"
-            )
-        )
-        pin = manifest["library_commit"]
+        pin = shared_route_source_pin()
         support = (ROOT / "interop/c-kmip-validator/tools/artifact_support.py").read_text(
             encoding="utf-8"
         )
