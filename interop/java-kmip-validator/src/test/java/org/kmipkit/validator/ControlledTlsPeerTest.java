@@ -370,6 +370,9 @@ class ControlledTlsPeerTest {
                 localEnumerationFixtures, "PADDING-METHOD");
         assertEquals(11, paddingMethodTargets.size(),
                 "The Padding Method aggregate must cover every catalogued value.");
+        List<String> profileNameTargets = enumerationTargetIds(localEnumerationFixtures, "PROFILE-NAME");
+        assertEquals(43, profileNameTargets.size(),
+                "The Profile Name aggregate must cover every assigned, reserved, and extension target.");
         List<BitmaskFixture> bitmaskFixtures = genericBitmaskFixtures();
         List<DataTypeFixture> dataTypeFixtures = genericDataTypeFixtures();
         Map<String, JsonNode> dataTypeVectors = dataTypeBoundaryVectors();
