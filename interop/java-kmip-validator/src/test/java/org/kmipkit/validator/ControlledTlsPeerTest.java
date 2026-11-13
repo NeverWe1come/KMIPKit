@@ -317,6 +317,7 @@ class ControlledTlsPeerTest {
         Map<String, JsonNode> dataTypeVectors = dataTypeBoundaryVectors();
         byte[] queryOperation = queryOperationTtlv();
         String requestTreeHash = normalizedTreeSha256(queryOperation);
+        int typedTagIdentityEventCount = 0;
 
         for (String protocolVersion : List.of("2.0", "2.1")) {
             appendLocalQueryRouteEvents(events, protocolVersion, requestTreeHash);
@@ -328,6 +329,13 @@ class ControlledTlsPeerTest {
             appendNormativeMessageFieldGenericRouteEvents(events, protocolVersion);
             appendNormativeRequestMessageParseEvents(events, protocolVersion);
             LocalCatalogRouteChecks.executeTags(readRouteEvidenceCatalog(), protocolVersion, genericOnlyTagCaseIds(),
+                    invocation -> appendLocalCatalogInvocation(events, protocolVersion, invocation));
+            Set<String> typedTagIdentityCases = missingTypedTagIdentityCaseIds(events, protocolVersion);
+            typedTagIdentityEventCount += typedTagIdentityCases.size() * 8;
+            LocalCatalogRouteChecks.executeTags(readRouteEvidenceCatalog(), protocolVersion, typedTagIdentityCases,
+                    invocation -> appendLocalCatalogInvocation(events, protocolVersion, invocation));
+            LocalCatalogRouteChecks.executeTagIdentities(readRouteEvidenceCatalog(), protocolVersion,
+                    typedTagIdentityCases,
                     invocation -> appendLocalCatalogInvocation(events, protocolVersion, invocation));
             LocalCatalogRouteChecks.executeReferencedEnums(readRouteEvidenceCatalog(), protocolVersion,
                     invocation -> appendLocalCatalogInvocation(events, protocolVersion, invocation));
@@ -436,6 +444,7 @@ class ControlledTlsPeerTest {
         JsonNode report = new ObjectMapper().readTree(reportPath.toFile());
         assertEquals("java", report.path("language").asText());
         assertGenericOnlyTagInventoryEvidence(report.path("events"));
+        assertTypedTagIdentityEvidence(report.path("events"));
         assertReferencedPkcs11Evidence(report.path("events"));
         assertTrue(enumerationFixtures.stream().noneMatch(fixture -> fixture.caseId().equals(
                         "test-norm-enumeration-value-profile-name-reserved-00000001-00000103")),
@@ -619,7 +628,8 @@ class ControlledTlsPeerTest {
                         + batchItemAdditionalResponseRouteEventCount + credentialGenericRouteEventCount
                         + normativeMessageFieldGenericRouteEventCount + normativeMessageFieldParserRouteEventCount
                         + normativeBatchItemAccessorRouteEventCount + credentialEnvelopeEventCount
-                        + batchErrorContinuationEventCount + genericTagEventCount + referencedEnumEventCount,
+                        + batchErrorContinuationEventCount + genericTagEventCount + typedTagIdentityEventCount
+                        + referencedEnumEventCount,
                 report.path("events").size());
         long bitmaskEvents = 0;
         for (JsonNode event : report.path("events")) {
@@ -640,7 +650,8 @@ class ControlledTlsPeerTest {
         long bitmaskCaseCount = bitmaskFixtures.stream().map(BitmaskFixture::caseId).distinct().count();
         long dataTypeCaseCount = dataTypeFixtures.stream().map(DataTypeFixture::caseId).distinct().count();
         assertEquals(15 + enumerationFixtures.size() + bitmaskCaseCount + dataTypeCaseCount
-                        + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + genericTagCaseIds.size() + referencedEnumCaseCount,
+                        + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + genericTagCaseIds.size()
+                        + typedTagIdentityCaseIds().size() + referencedEnumCaseCount,
                 report.path("case_ids").size());
         List<String> expectedCredentialCaseIds = CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().toList();
         int credentialCaseStart = report.path("case_ids").size() - expectedCredentialCaseIds.size();
@@ -2722,6 +2733,9 @@ class ControlledTlsPeerTest {
         caseIds.add("test-norm-message-field-message-field-9-13-message-extension");
         caseIds.add("test-norm-tag-tag-420051");
         genericOnlyTagCaseIds().forEach(caseIds::add);
+        typedTagIdentityCaseIds().stream()
+                .filter(caseId -> !"test-norm-tag-tag-420051".equals(caseId))
+                .forEach(caseIds::add);
         for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
             if ("referenced_enum_value".equals(testCase.path("requires").path("target_kind").asText())) {
                 caseIds.add(testCase.path("case_id").asText());
@@ -2812,6 +2826,127 @@ class ControlledTlsPeerTest {
         return selected;
     }
 
+    private static Set<String> missingTypedTagIdentityCaseIds(JsonNode events, String version) throws Exception {
+        Set<String> typedCaseIds = typedTagIdentityCaseIds();
+        Set<String> missing = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
+            JsonNode requires = testCase.path("requires");
+            String caseId = testCase.path("case_id").asText();
+            String targetId = requires.path("normative_target_id").asText();
+            if (!"tag".equals(requires.path("target_kind").asText())
+                    || !typedCaseIds.contains(caseId)
+                    || !appliesToVersion(testCase, version)) continue;
+            boolean fromRawPresent = hasRouteEvent(events, caseId,
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.rawtag.fromraw", version, targetId);
+            boolean checkedPresent = hasRouteEvent(events, caseId,
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.rawtag.checked", version, targetId);
+            assertEquals(fromRawPresent, checkedPresent,
+                    "RawTag.fromRaw and RawTag.checked evidence must be recorded together for " + caseId);
+            if (!fromRawPresent) missing.add(caseId);
+        }
+        return missing;
+    }
+
+    private static void assertTypedTagIdentityEvidence(JsonNode events) throws Exception {
+        Set<String> typedCaseIds = typedTagIdentityCaseIds();
+        for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
+            JsonNode requires = testCase.path("requires");
+            String caseId = testCase.path("case_id").asText();
+            String targetId = requires.path("normative_target_id").asText();
+            if (!"tag".equals(requires.path("target_kind").asText()) || !typedCaseIds.contains(caseId)) continue;
+            for (JsonNode version : testCase.path("execution").path("protocol_versions")) {
+                for (String route : List.of(
+                        "java.generic-ttlv.model.org.kmipkit.ttlv.rawtag.fromraw",
+                        "java.generic-ttlv.model.org.kmipkit.ttlv.rawtag.checked",
+                        "java.generic-ttlv.ttlv_item.create",
+                        "java.generic-ttlv.function.ttlv_item_view_from_item",
+                        "java.generic-ttlv.ttlv_codec.decode",
+                        "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                        "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+                        "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew")) {
+                    JsonNode event = findRouteEvent(events, caseId, route, version.asText(), targetId);
+                    assertEquals("passed", event.path("status").asText());
+                    assertEquals(1, event.path("invocation_count").asInt());
+                }
+            }
+        }
+    }
+
+    private static Set<String> typedTagIdentityCaseIds() throws Exception {
+        JsonNode manifest = new ObjectMapper().readTree(
+                Path.of("../shared/coverage/route-capabilities.json").toFile());
+        Set<String> supportedTypedRoutes = Set.of(
+                "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
+                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem");
+        Set<String> selected = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
+            JsonNode requires = testCase.path("requires");
+            if (!"tag".equals(requires.path("target_kind").asText())) continue;
+            String targetId = requires.path("normative_target_id").asText();
+            int tagCode = Integer.parseUnsignedInt(
+                    requires.path("wire_value").asText().replaceFirst("^0[xX]", ""), 16);
+            if (standardAttributeForTag(tagCode) == null) continue;
+
+            Set<String> typedRouteIds = new java.util.HashSet<>();
+            for (JsonNode route : manifest.path("routes")) {
+                if (!"java".equals(route.path("language").asText())
+                        || "generic-ttlv".equals(route.path("api_level").asText())
+                        || !"local".equals(route.path("mode").asText())
+                        || !routeSupportsCategory(route, testCase.path("category").asText())
+                        || !routeSupportsVersion(route, testCase)
+                        || !routeSupportsTarget(route, targetId)) continue;
+                typedRouteIds.add(route.path("route_id").asText());
+            }
+            if (supportedTypedRoutes.equals(typedRouteIds)) {
+                selected.add(testCase.path("case_id").asText());
+            }
+        }
+        assertTrue(!selected.isEmpty(), "The Java typed attribute route fixtures must cover catalogued Tags.");
+        return selected;
+    }
+
+    private static boolean routeSupportsVersion(JsonNode route, JsonNode testCase) {
+        for (JsonNode version : testCase.path("execution").path("protocol_versions")) {
+            for (JsonNode supported : route.path("protocol_versions")) {
+                if (version.asText().equals(supported.asText())) return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean routeSupportsCategory(JsonNode route, String category) {
+        for (JsonNode supported : route.path("case_categories")) {
+            if (category.equals(supported.asText())) return true;
+        }
+        return false;
+    }
+
+    private static boolean routeSupportsTarget(JsonNode route, String targetId) {
+        for (JsonNode target : route.path("normative_target_ids")) {
+            if ("*".equals(target.asText()) || targetId.equals(target.asText())) return true;
+        }
+        return false;
+    }
+
+    private static boolean appliesToVersion(JsonNode testCase, String version) {
+        for (JsonNode candidate : testCase.path("execution").path("protocol_versions")) {
+            if (version.equals(candidate.asText())) return true;
+        }
+        return false;
+    }
+
+    private static boolean hasRouteEvent(JsonNode events, String caseId, String routeId,
+            String version, String targetId) {
+        for (JsonNode event : events) {
+            if (caseId.equals(event.path("case_id").asText())
+                    && routeId.equals(event.path("route_id").asText())
+                    && version.equals(event.path("protocol_version").asText())
+                    && targetId.equals(event.path("target_id").asText())) return true;
+        }
+        return false;
+    }
+
     // OASIS KMIP 2.0/2.1 §§11.38-11.39: exact referenced PKCS#11 function/return values.
     private static void assertReferencedPkcs11Evidence(JsonNode events) throws Exception {
         for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
@@ -2879,7 +3014,8 @@ class ControlledTlsPeerTest {
                 found = event;
             }
         }
-        assertEquals(1, matches, "Each expected route must execute exactly once for its catalog case and version.");
+        assertEquals(1, matches, "Each expected route must execute exactly once for its catalog case and version: "
+                + caseId + " / " + routeId + " / " + protocolVersion + " / " + targetId);
         return found;
     }
 

@@ -1012,6 +1012,65 @@
     "test-norm-tag-tag-420173",
     "test-norm-tag-tag-420174",
     "test-norm-tag-tag-420175",
+    "test-norm-tag-tag-420001",
+    "test-norm-tag-tag-420004",
+    "test-norm-tag-tag-420005",
+    "test-norm-tag-tag-420008",
+    "test-norm-tag-tag-42001d",
+    "test-norm-tag-tag-420020",
+    "test-norm-tag-tag-420021",
+    "test-norm-tag-tag-420022",
+    "test-norm-tag-tag-420029",
+    "test-norm-tag-tag-42002a",
+    "test-norm-tag-tag-42002c",
+    "test-norm-tag-tag-42002f",
+    "test-norm-tag-tag-420033",
+    "test-norm-tag-tag-420034",
+    "test-norm-tag-tag-420039",
+    "test-norm-tag-tag-420042",
+    "test-norm-tag-tag-420048",
+    "test-norm-tag-tag-420049",
+    "test-norm-tag-tag-42004a",
+    "test-norm-tag-tag-420053",
+    "test-norm-tag-tag-420056",
+    "test-norm-tag-tag-420057",
+    "test-norm-tag-tag-420059",
+    "test-norm-tag-tag-420067",
+    "test-norm-tag-tag-420068",
+    "test-norm-tag-tag-420081",
+    "test-norm-tag-tag-42008d",
+    "test-norm-tag-tag-420094",
+    "test-norm-tag-tag-420095",
+    "test-norm-tag-tag-4200a8",
+    "test-norm-tag-tag-4200ad",
+    "test-norm-tag-tag-4200b5",
+    "test-norm-tag-tag-4200b6",
+    "test-norm-tag-tag-4200b7",
+    "test-norm-tag-tag-4200b8",
+    "test-norm-tag-tag-4200bb",
+    "test-norm-tag-tag-4200bc",
+    "test-norm-tag-tag-4200bf",
+    "test-norm-tag-tag-4200de",
+    "test-norm-tag-tag-4200fb",
+    "test-norm-tag-tag-4200fc",
+    "test-norm-tag-tag-4200fd",
+    "test-norm-tag-tag-420120",
+    "test-norm-tag-tag-420121",
+    "test-norm-tag-tag-420122",
+    "test-norm-tag-tag-420123",
+    "test-norm-tag-tag-420136",
+    "test-norm-tag-tag-42013a",
+    "test-norm-tag-tag-420145",
+    "test-norm-tag-tag-420146",
+    "test-norm-tag-tag-420147",
+    "test-norm-tag-tag-42015e",
+    "test-norm-tag-tag-42016a",
+    "test-norm-tag-tag-42016b",
+    "test-norm-tag-tag-42016c",
+    "test-norm-tag-tag-42016d",
+    "test-norm-tag-tag-42016e",
+    "test-norm-tag-tag-42016f",
+    "test-norm-tag-tag-420172",
     "test-norm-pkcs11-function-001",
     "test-norm-pkcs11-function-002",
     "test-norm-pkcs11-function-003",
@@ -1206,7 +1265,7 @@
     "test-norm-credential-credential-hashed-password",
     "test-norm-credential-credential-username-and-password"
   ],
-  "executed_cells": 12470,
+  "executed_cells": 13414,
   "language": "java",
   "library_commit": "9a16cc90a12205101d22a38501a5e74c665df4dc",
   "pending_case_ids": [
@@ -2514,77 +2573,39 @@
     "test-norm-structure-member-structure-member-9-11-ticket-ticket",
     "test-norm-structure-member-structure-member-9-11-username-and-password-password",
     "test-norm-structure-member-structure-member-9-11-username-and-password-username",
-    "test-norm-tag-tag-420001",
-    "test-norm-tag-tag-420004",
-    "test-norm-tag-tag-420005",
-    "test-norm-tag-tag-420008",
     "test-norm-tag-tag-42000c",
     "test-norm-tag-tag-42000e",
     "test-norm-tag-tag-42000f",
     "test-norm-tag-tag-420011",
     "test-norm-tag-tag-420013",
     "test-norm-tag-tag-420018",
-    "test-norm-tag-tag-42001d",
-    "test-norm-tag-tag-420020",
-    "test-norm-tag-tag-420021",
-    "test-norm-tag-tag-420022",
     "test-norm-tag-tag-420023",
     "test-norm-tag-tag-420024",
     "test-norm-tag-tag-420025",
     "test-norm-tag-tag-420028",
-    "test-norm-tag-tag-420029",
-    "test-norm-tag-tag-42002a",
     "test-norm-tag-tag-42002b",
-    "test-norm-tag-tag-42002c",
-    "test-norm-tag-tag-42002f",
-    "test-norm-tag-tag-420033",
-    "test-norm-tag-tag-420034",
     "test-norm-tag-tag-420038",
-    "test-norm-tag-tag-420039",
     "test-norm-tag-tag-420040",
-    "test-norm-tag-tag-420042",
     "test-norm-tag-tag-420043",
     "test-norm-tag-tag-420045",
     "test-norm-tag-tag-420046",
-    "test-norm-tag-tag-420048",
-    "test-norm-tag-tag-420049",
-    "test-norm-tag-tag-42004a",
-    "test-norm-tag-tag-420053",
-    "test-norm-tag-tag-420056",
-    "test-norm-tag-tag-420057",
-    "test-norm-tag-tag-420059",
     "test-norm-tag-tag-42005b",
     "test-norm-tag-tag-42005c",
     "test-norm-tag-tag-42005f",
     "test-norm-tag-tag-420064",
-    "test-norm-tag-tag-420067",
-    "test-norm-tag-tag-420068",
     "test-norm-tag-tag-42006d",
     "test-norm-tag-tag-420078",
     "test-norm-tag-tag-42007a",
     "test-norm-tag-tag-42007b",
     "test-norm-tag-tag-42007c",
-    "test-norm-tag-tag-420081",
     "test-norm-tag-tag-420083",
     "test-norm-tag-tag-420085",
     "test-norm-tag-tag-420089",
-    "test-norm-tag-tag-42008d",
     "test-norm-tag-tag-42008f",
     "test-norm-tag-tag-420093",
-    "test-norm-tag-tag-420094",
-    "test-norm-tag-tag-420095",
     "test-norm-tag-tag-4200a4",
-    "test-norm-tag-tag-4200a8",
-    "test-norm-tag-tag-4200ad",
     "test-norm-tag-tag-4200ae",
-    "test-norm-tag-tag-4200b5",
-    "test-norm-tag-tag-4200b6",
-    "test-norm-tag-tag-4200b7",
-    "test-norm-tag-tag-4200b8",
-    "test-norm-tag-tag-4200bb",
-    "test-norm-tag-tag-4200bc",
     "test-norm-tag-tag-4200bd",
-    "test-norm-tag-tag-4200bf",
     "test-norm-tag-tag-4200c5",
     "test-norm-tag-tag-4200c8",
     "test-norm-tag-tag-4200cd",
@@ -2594,34 +2615,13 @@
     "test-norm-tag-tag-4200d1",
     "test-norm-tag-tag-4200d2",
     "test-norm-tag-tag-4200d6",
-    "test-norm-tag-tag-4200de",
-    "test-norm-tag-tag-4200fb",
-    "test-norm-tag-tag-4200fc",
-    "test-norm-tag-tag-4200fd",
     "test-norm-tag-tag-420100",
     "test-norm-tag-tag-420101",
     "test-norm-tag-tag-420102",
     "test-norm-tag-tag-420103",
     "test-norm-tag-tag-420104",
-    "test-norm-tag-tag-420120",
-    "test-norm-tag-tag-420121",
-    "test-norm-tag-tag-420122",
-    "test-norm-tag-tag-420123",
-    "test-norm-tag-tag-420136",
-    "test-norm-tag-tag-42013a",
-    "test-norm-tag-tag-420145",
-    "test-norm-tag-tag-420146",
-    "test-norm-tag-tag-420147",
     "test-norm-tag-tag-42014f",
     "test-norm-tag-tag-420157",
-    "test-norm-tag-tag-42015e",
-    "test-norm-tag-tag-42016a",
-    "test-norm-tag-tag-42016b",
-    "test-norm-tag-tag-42016c",
-    "test-norm-tag-tag-42016d",
-    "test-norm-tag-tag-42016e",
-    "test-norm-tag-tag-42016f",
-    "test-norm-tag-tag-420172",
     "test-norm-tag-tag-420176",
     "test-obj-certificate",
     "test-obj-certificate-request",
@@ -7920,22 +7920,6 @@
       "pending_cells": 12
     },
     {
-      "case_id": "test-norm-tag-tag-420001",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-420004",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-420005",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-420008",
-      "pending_cells": 16
-    },
-    {
       "case_id": "test-norm-tag-tag-42000c",
       "pending_cells": 14
     },
@@ -7960,22 +7944,6 @@
       "pending_cells": 12
     },
     {
-      "case_id": "test-norm-tag-tag-42001d",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-420020",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-420021",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-420022",
-      "pending_cells": 16
-    },
-    {
       "case_id": "test-norm-tag-tag-420023",
       "pending_cells": 12
     },
@@ -7992,48 +7960,16 @@
       "pending_cells": 18
     },
     {
-      "case_id": "test-norm-tag-tag-420029",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-42002a",
-      "pending_cells": 16
-    },
-    {
       "case_id": "test-norm-tag-tag-42002b",
       "pending_cells": 24
-    },
-    {
-      "case_id": "test-norm-tag-tag-42002c",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-42002f",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-420033",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-420034",
-      "pending_cells": 16
     },
     {
       "case_id": "test-norm-tag-tag-420038",
       "pending_cells": 12
     },
     {
-      "case_id": "test-norm-tag-tag-420039",
-      "pending_cells": 16
-    },
-    {
       "case_id": "test-norm-tag-tag-420040",
       "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-tag-tag-420042",
-      "pending_cells": 16
     },
     {
       "case_id": "test-norm-tag-tag-420043",
@@ -8046,34 +7982,6 @@
     {
       "case_id": "test-norm-tag-tag-420046",
       "pending_cells": 14
-    },
-    {
-      "case_id": "test-norm-tag-tag-420048",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-420049",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-42004a",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-420053",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-420056",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-420057",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-420059",
-      "pending_cells": 16
     },
     {
       "case_id": "test-norm-tag-tag-42005b",
@@ -8090,14 +7998,6 @@
     {
       "case_id": "test-norm-tag-tag-420064",
       "pending_cells": 12
-    },
-    {
-      "case_id": "test-norm-tag-tag-420067",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-420068",
-      "pending_cells": 16
     },
     {
       "case_id": "test-norm-tag-tag-42006d",
@@ -8120,10 +8020,6 @@
       "pending_cells": 12
     },
     {
-      "case_id": "test-norm-tag-tag-420081",
-      "pending_cells": 16
-    },
-    {
       "case_id": "test-norm-tag-tag-420083",
       "pending_cells": 12
     },
@@ -8136,10 +8032,6 @@
       "pending_cells": 12
     },
     {
-      "case_id": "test-norm-tag-tag-42008d",
-      "pending_cells": 16
-    },
-    {
       "case_id": "test-norm-tag-tag-42008f",
       "pending_cells": 12
     },
@@ -8148,60 +8040,16 @@
       "pending_cells": 12
     },
     {
-      "case_id": "test-norm-tag-tag-420094",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-420095",
-      "pending_cells": 16
-    },
-    {
       "case_id": "test-norm-tag-tag-4200a4",
       "pending_cells": 12
-    },
-    {
-      "case_id": "test-norm-tag-tag-4200a8",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-4200ad",
-      "pending_cells": 16
     },
     {
       "case_id": "test-norm-tag-tag-4200ae",
       "pending_cells": 18
     },
     {
-      "case_id": "test-norm-tag-tag-4200b5",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-4200b6",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-4200b7",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-4200b8",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-4200bb",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-4200bc",
-      "pending_cells": 16
-    },
-    {
       "case_id": "test-norm-tag-tag-4200bd",
       "pending_cells": 12
-    },
-    {
-      "case_id": "test-norm-tag-tag-4200bf",
-      "pending_cells": 16
     },
     {
       "case_id": "test-norm-tag-tag-4200c5",
@@ -8240,22 +8088,6 @@
       "pending_cells": 12
     },
     {
-      "case_id": "test-norm-tag-tag-4200de",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-4200fb",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-4200fc",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-4200fd",
-      "pending_cells": 16
-    },
-    {
       "case_id": "test-norm-tag-tag-420100",
       "pending_cells": 12
     },
@@ -8276,80 +8108,12 @@
       "pending_cells": 12
     },
     {
-      "case_id": "test-norm-tag-tag-420120",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-420121",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-420122",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-420123",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-420136",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-42013a",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-420145",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-420146",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-420147",
-      "pending_cells": 16
-    },
-    {
       "case_id": "test-norm-tag-tag-42014f",
       "pending_cells": 12
     },
     {
       "case_id": "test-norm-tag-tag-420157",
       "pending_cells": 12
-    },
-    {
-      "case_id": "test-norm-tag-tag-42015e",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-42016a",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-42016b",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-42016c",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-42016d",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-42016e",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-42016f",
-      "pending_cells": 16
-    },
-    {
-      "case_id": "test-norm-tag-tag-420172",
-      "pending_cells": 16
     },
     {
       "case_id": "test-norm-tag-tag-420176",
@@ -8668,7 +8432,7 @@
       "pending_cells": 15
     }
   ],
-  "pending_cells": 58985,
+  "pending_cells": 58041,
   "pending_reason": "No validated per-cell route execution evidence is recorded for this cell.",
   "pending_reason_code": "route_evidence_not_emitted",
   "planned_cells": 71455,
@@ -8676,8 +8440,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 1243,
-      "pending_cells": 2841,
+      "executed_cells": 1302,
+      "pending_cells": 2782,
       "protocol_version": "2.0",
       "required_cells": 4084,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -8686,8 +8450,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 1259,
-      "pending_cells": 2920,
+      "executed_cells": 1318,
+      "pending_cells": 2861,
       "protocol_version": "2.1",
       "required_cells": 4179,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -8696,8 +8460,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 265,
-      "pending_cells": 483,
+      "executed_cells": 324,
+      "pending_cells": 424,
       "protocol_version": "2.0",
       "required_cells": 748,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.rawtag.checked",
@@ -8706,8 +8470,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 265,
-      "pending_cells": 483,
+      "executed_cells": 324,
+      "pending_cells": 424,
       "protocol_version": "2.1",
       "required_cells": 748,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.rawtag.checked",
@@ -8716,8 +8480,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 265,
-      "pending_cells": 483,
+      "executed_cells": 324,
+      "pending_cells": 424,
       "protocol_version": "2.0",
       "required_cells": 748,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.rawtag.fromraw",
@@ -8726,8 +8490,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 265,
-      "pending_cells": 483,
+      "executed_cells": 324,
+      "pending_cells": 424,
       "protocol_version": "2.1",
       "required_cells": 748,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.rawtag.fromraw",
@@ -8996,8 +8760,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 1267,
-      "pending_cells": 2864,
+      "executed_cells": 1326,
+      "pending_cells": 2805,
       "protocol_version": "2.0",
       "required_cells": 4131,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
@@ -9006,8 +8770,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 1283,
-      "pending_cells": 2943,
+      "executed_cells": 1342,
+      "pending_cells": 2884,
       "protocol_version": "2.1",
       "required_cells": 4226,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
@@ -9016,8 +8780,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 1243,
-      "pending_cells": 2840,
+      "executed_cells": 1302,
+      "pending_cells": 2781,
       "protocol_version": "2.0",
       "required_cells": 4083,
       "route_id": "java.generic-ttlv.ttlv_item.create",
@@ -9026,8 +8790,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 1259,
-      "pending_cells": 2919,
+      "executed_cells": 1318,
+      "pending_cells": 2860,
       "protocol_version": "2.1",
       "required_cells": 4178,
       "route_id": "java.generic-ttlv.ttlv_item.create",
@@ -33476,8 +33240,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 234,
-      "pending_cells": 353,
+      "executed_cells": 293,
+      "pending_cells": 294,
       "protocol_version": "2.0",
       "required_cells": 587,
       "route_id": "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
@@ -33486,8 +33250,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 234,
-      "pending_cells": 362,
+      "executed_cells": 293,
+      "pending_cells": 303,
       "protocol_version": "2.1",
       "required_cells": 596,
       "route_id": "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
@@ -34376,8 +34140,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 234,
-      "pending_cells": 353,
+      "executed_cells": 293,
+      "pending_cells": 294,
       "protocol_version": "2.0",
       "required_cells": 587,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
@@ -34386,8 +34150,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 234,
-      "pending_cells": 362,
+      "executed_cells": 293,
+      "pending_cells": 303,
       "protocol_version": "2.1",
       "required_cells": 596,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
@@ -34396,8 +34160,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 234,
-      "pending_cells": 353,
+      "executed_cells": 293,
+      "pending_cells": 294,
       "protocol_version": "2.0",
       "required_cells": 587,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
@@ -34406,8 +34170,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 234,
-      "pending_cells": 362,
+      "executed_cells": 293,
+      "pending_cells": 303,
       "protocol_version": "2.1",
       "required_cells": 596,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
@@ -35197,20 +34961,20 @@
   "route_manifest_sha256": "b57cad2dccc15f9a58fb251b7bd39434c2c4c2678bc1673d8bb0eccc051770da",
   "route_summary": [
     {
-      "executed_cells": 2502,
-      "pending_cells": 5761,
+      "executed_cells": 2620,
+      "pending_cells": 5643,
       "required_cells": 8263,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item"
     },
     {
-      "executed_cells": 530,
-      "pending_cells": 966,
+      "executed_cells": 648,
+      "pending_cells": 848,
       "required_cells": 1496,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.rawtag.checked"
     },
     {
-      "executed_cells": 530,
-      "pending_cells": 966,
+      "executed_cells": 648,
+      "pending_cells": 848,
       "required_cells": 1496,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.rawtag.fromraw"
     },
@@ -35293,14 +35057,14 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring"
     },
     {
-      "executed_cells": 2550,
-      "pending_cells": 5807,
+      "executed_cells": 2668,
+      "pending_cells": 5689,
       "required_cells": 8357,
       "route_id": "java.generic-ttlv.ttlv_codec.decode"
     },
     {
-      "executed_cells": 2502,
-      "pending_cells": 5759,
+      "executed_cells": 2620,
+      "pending_cells": 5641,
       "required_cells": 8261,
       "route_id": "java.generic-ttlv.ttlv_item.create"
     },
@@ -36337,8 +36101,8 @@
       "route_id": "java.typed-protocol.model.org.kmipkit.credentials.usernameandpasswordcredential.fromttlv"
     },
     {
-      "executed_cells": 468,
-      "pending_cells": 715,
+      "executed_cells": 586,
+      "pending_cells": 597,
       "required_cells": 1183,
       "route_id": "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew"
     },
@@ -36607,14 +36371,14 @@
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.managedobject.symmetrickey"
     },
     {
-      "executed_cells": 468,
-      "pending_cells": 715,
+      "executed_cells": 586,
+      "pending_cells": 597,
       "required_cells": 1183,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create"
     },
     {
-      "executed_cells": 468,
-      "pending_cells": 715,
+      "executed_cells": 586,
+      "pending_cells": 597,
       "required_cells": 1183,
       "route_id": "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem"
     },
@@ -36650,7 +36414,7 @@
     }
   ],
   "schema_version": "1.0",
-  "selected_scope_cells": 12470,
+  "selected_scope_cells": 13414,
   "selected_scope_complete": true,
   "vendor_interoperability_claim": false
 }

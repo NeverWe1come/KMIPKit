@@ -100,8 +100,8 @@ baseline, regenerate the checked-in ledger with
 rejects generated ledgers that do not record successful invocations.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
-baseline. These recipes execute 12,470 of 71,455 planned Java route cells, with
-no failed cells; the ledger keeps the other 58,985 pending and does not imply
+baseline. These recipes execute 13,414 of 71,455 planned Java route cells, with
+no failed cells; the ledger keeps the other 58,041 pending and does not imply
 vendor interoperability or full-matrix completion. Local TTLV recipes exercise 41
 enumeration families and all six bitmask catalog cases through the applicable
 installed constructors, item views, decoders, and typed attribute wrappers.
