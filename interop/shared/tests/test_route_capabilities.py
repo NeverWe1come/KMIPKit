@@ -647,7 +647,7 @@ class RouteCapabilitiesTests(unittest.TestCase):
     def test_pinned_oasis_source_reader_accepts_windows_1252_html(self):
         source = self.module.source(
             ROOT,
-            CANDIDATE_COMMIT,
+            PINNED_RELEASE_COMMIT,
             'specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html',
         )
         self.assertIn('4.6 Certificate Attributes', source)
