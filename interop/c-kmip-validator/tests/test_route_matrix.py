@@ -865,6 +865,33 @@ class RouteMatrixTests(unittest.TestCase):
 
         self.assertEqual(recipe, ((3, 20), 'register'))
 
+    def test_register_operation_executes_the_installed_request_and_response_routes(self):
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-op-register'
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12, 'Register must pass both versions and six encoding/transport cells')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks))
+        self.assertTrue(any(event['target_id'] == 'KMIPKIT-ELEM-OP-C2S-REGISTER'
+                            and event['action'] == 'send' for event in events))
+        required_symbols = {
+            'kmipkit_register_request_create',
+            'kmipkit_client_batch_item_register',
+            'kmipkit_client_batch_item_response_register',
+            'kmipkit_client_batch_item_destroy',
+            'kmipkit_client_execute',
+        }
+        self.assertTrue(all(required_symbols <= set(check['public_api_trace_symbols'])
+                            for check in checks))
+
     def test_placeholder_chain_executes_typed_create_activate_get_batch(self):
         from artifact_support import ROOT
         from route_peer import execute_network_cells
