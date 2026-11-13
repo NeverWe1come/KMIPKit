@@ -120,8 +120,8 @@ limitation is changed by this phase.
 Final checks after the refactor:
 
 - Full Java consumer suite: 52 tests passed, no failures, errors, or skips.
-- Shared route evidence validator: 16,322 executed cells, zero failed cells,
-  55,133 pending cells, and `selected_scope_complete=true`.
+- Shared route evidence validator: 16,890 executed cells, zero failed cells,
+  54,565 pending cells, and `selected_scope_complete=true`.
 - `python3 tools/compare_route_ledger.py`: generated coverage matches the
   checked-in reference.
 - `git diff --check`: passed.
@@ -388,3 +388,40 @@ The shared validator accepts 14,810 invoked cells with zero failures and
 56,645 pending, and 71,455 planned cells. The Cryptographic Algorithm enum
 route family is complete for this local scope. Other KMIP operations, values,
 attributes, and protocol routes remain pending.
+
+## Recommended Curve enumeration route completion
+
+Sources: OASIS KMIP 2.0 §11.44, KMIP 2.1 §11.45, and §10.1 (TTLV
+Enumeration representation). The aggregate local case contains 71 catalogued
+values, including its catalogued extension value, and runs under both protocol
+versions through `TtlvValue.Enumeration`, `TtlvItem.create`, `TtlvItem.view`,
+and `TtlvCodec.decode`. This is 568 value/route/version cells on the installed
+artifact pinned to `9a16cc90a12205101d22a38501a5e74c665df4dc`.
+
+Red commit `4b7ea6735` requires all 71 target IDs and the four generic routes;
+the focused test fails because the aggregate has zero local route fixtures.
+Green commit `020b34f18` adds the case to the catalog-driven local enumeration
+scope. The focused test passes for every target, route, and version. Refactor
+commit `17d13256c` extracts shared enum target selection for the Recommended
+Curve and Cryptographic Algorithm assertions without changing the matrix.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 37d7eeae9e64644fd7cdde4bfd64b7da5ccbb0bf2be53a949826eb62dc3aaf86 \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+```
+
+The full installed Java consumer suite passes 52 tests with no failures,
+errors, or skips. The shared validator accepts 16,890 cells with zero
+failures and `selected_scope_complete=true`; the generated ledger records
+16,890 executed, 54,565 pending, and 71,455 planned cells. This completes
+Recommended Curve's local TTLV route scope; all other pending matrix work
+remains open.
