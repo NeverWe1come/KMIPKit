@@ -101,8 +101,8 @@ baseline, regenerate the checked-in ledger with
 rejects generated ledgers that do not record successful invocations.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
-baseline. These recipes execute 19,936 of 71,455 planned Java route cells, with
-no failed cells; the ledger keeps the other 51,519 pending and does not imply
+baseline. These recipes execute 21,840 of 71,455 planned Java route cells, with
+no failed cells; the ledger keeps the other 49,615 pending and does not imply
 vendor interoperability or full-matrix completion. Local TTLV recipes exercise 51
 enumeration families and all six bitmask catalog cases through the applicable
 installed constructors, item views, decoders, and typed attribute wrappers.
@@ -134,7 +134,10 @@ in KMIP 2.0 and 2.1 (§§4.16, 11.12).
 All 43 Profile Name targets complete four generic TTLV routes in KMIP 2.0 and
 2.1 (§11.41), including the catalogued reserved-range boundary and extension
 allocation. The target-specific reserved-range and Profile Information
-structure-member cases remain pending.
+structure-member cases remain pending. Catalog-driven local enumeration fixtures
+also now cover all 58 eligible aggregate cases whose enum targets have a
+same-named standalone tag, preventing newly catalogued eligible aggregates
+from silently remaining without generic-route evidence.
 Other enum families, attribute routes, and operations remain pending. The
 Activation Date recipe exercises generic and typed TTLV routes, both public
 Get Attributes constructors, the typed response reader, and both protocol

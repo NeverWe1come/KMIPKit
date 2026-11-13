@@ -844,3 +844,43 @@ python3 tools/compare_route_ledger.py
 
 The complete Java route matrix and deployed-server interoperability remain
 incomplete.
+
+## Catalog-driven local enumeration aggregate coverage
+
+The local controlled-peer suite now derives its eligible generic enum aggregate
+case IDs from the pinned route catalog. It requires fixtures for every local
+`test-enum-*` case whose enum value has a same-named standalone tag, instead of
+maintaining a hand-curated list. The inventory assertion independently checks
+that the fixture set matches the catalog-derived case set. Credential model
+routes are recorded only by their per-value cases to avoid duplicate route
+events when aggregate values are replayed.
+
+Red commit `1b923e88` added the catalog-derived completeness assertion. The
+focused controlled-peer test failed as expected: only 27 of 58 eligible case
+IDs had aggregate fixtures. Green commit `71cc7083` removed the fixed allowlist,
+generates those local aggregate fixtures from the catalog, and avoids duplicate
+Credential model evidence.
+
+Verification against installed release commit
+`489fafc79ef89db2524eafa7a6c6482f5cf75d97` (artifact SHA-256
+`830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e`):
+
+```sh
+bash ../../bindings/java/gradlew --no-daemon --max-workers=2 \
+  --init-script build/java-test-tmp.init.gradle \
+  -Dkmipkit.test.tmp="$PWD/build/java-tmp" \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+```
+
+The full Java suite passes 52 tests with no failures, errors, or skips. The
+shared validator accepts all 21,840 invoked cells with zero failed cells and
+`selected_scope_complete=true`; the checked-in ledger records 49,615 pending
+cells out of 71,455 planned. Refactor/documentation updates the ledger,
+traceability and validator README. The remaining matrix and deployed-server
+interoperability are still incomplete.
