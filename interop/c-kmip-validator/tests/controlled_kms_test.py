@@ -102,6 +102,12 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                 1,
                 enumeration(0x42014A, 1) + tlv(0x42014B, 8, b"controlled-login-ticket"),
             )
+        elif operation == 47:
+            payload_value = tlv(
+                0x420149,
+                1,
+                enumeration(0x42014A, 1) + tlv(0x42014B, 8, b"controlled-delegated-login-ticket"),
+            )
         elif operation == 1:
             payload_value = enumeration(0x420057, created_object_type) + \
                 tlv(0x420094, 7, b"fixture-key-1")
