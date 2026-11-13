@@ -1858,15 +1858,88 @@ static int32_t build_comment_attribute_mutation_item(
     return status;
 }
 
+static bool delete_attribute_payload_matches(
+    kmipkit_ttlv_structure_t *payload,
+    const kmipkit_unique_identifier_v1_t *identifier) {
+    kmipkit_ttlv_structure_view_t *payload_view = NULL;
+    kmipkit_ttlv_item_view_t *identifier_item = NULL;
+    kmipkit_ttlv_item_view_t *reference_item = NULL;
+    kmipkit_ttlv_value_view_t *identifier_value = NULL;
+    kmipkit_ttlv_value_view_t *reference_value = NULL;
+    uint64_t payload_count = 0;
+    uint64_t identifier_length = 0;
+    uint32_t reference_tag = 0;
+    int32_t status = kmipkit_ttlv_structure_view(payload, &payload_view);
+    if (status == 0) status = kmipkit_ttlv_structure_view_item_count(payload_view, &payload_count);
+    if (status == 0 && payload_count != 2) status = KMIPKIT_ERROR_INVALID_INPUT;
+    if (status == 0) status = kmipkit_ttlv_structure_view_item_at(payload_view, 0, &identifier_item);
+    if (status == 0 && !item_view_has_tag(
+            identifier_item, UINT32_C(0x420094), KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING,
+            &identifier_value)) status = KMIPKIT_ERROR_INVALID_INPUT;
+    if (status == 0) status = kmipkit_ttlv_value_view_byte_length(
+        identifier_value, &identifier_length);
+    bool identifier_matches = status == 0 && identifier_length == identifier->text_length;
+    for (uint64_t index = 0; identifier_matches && index < identifier_length; ++index) {
+        uint8_t byte = 0;
+        status = kmipkit_ttlv_value_view_byte_at(identifier_value, index, &byte);
+        identifier_matches = status == 0 && byte == identifier->text_data[index];
+    }
+    if (status == 0 && !identifier_matches) status = KMIPKIT_ERROR_INVALID_INPUT;
+    if (status == 0) status = kmipkit_ttlv_structure_view_item_at(payload_view, 1, &reference_item);
+    if (status == 0 && !item_view_has_tag(
+            reference_item, UINT32_C(0x42013B), KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION,
+            &reference_value)) status = KMIPKIT_ERROR_INVALID_INPUT;
+    if (status == 0) status = kmipkit_ttlv_value_view_enumeration(reference_value, &reference_tag);
+    if (payload_view) kmipkit_ttlv_structure_view_release(payload_view);
+    if (identifier_item) kmipkit_ttlv_item_view_release(identifier_item);
+    if (reference_item) kmipkit_ttlv_item_view_release(reference_item);
+    if (identifier_value) kmipkit_ttlv_value_view_release(identifier_value);
+    if (reference_value) kmipkit_ttlv_value_view_release(reference_value);
+    return status == 0 && identifier_matches && reference_tag == UINT32_C(0x4200FD);
+}
+
+static int32_t build_delete_comment_attribute_item(
+    const kmipkit_unique_identifier_v1_t *identifier,
+    kmipkit_client_batch_item_t **out_item) {
+    kmipkit_attribute_reference_v1_t reference = {
+        .struct_size = (uint32_t)sizeof(kmipkit_attribute_reference_v1_t),
+        .abi_version = 1,
+        .kind = KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG,
+        .tag_value = UINT32_C(0x4200FD)
+    };
+    kmipkit_delete_attribute_request_t *request = NULL;
+    kmipkit_ttlv_structure_t *payload = NULL;
+    int32_t status = 0;
+    if (standalone_attribute_route_selected()) {
+        status = kmipkit_delete_attribute_request_create(identifier, NULL, &reference, &request);
+        if (status == 0) status = kmipkit_delete_attribute_request_to_ttlv_payload(request, &payload);
+        if (status == 0 && !delete_attribute_payload_matches(payload, identifier)) {
+            status = KMIPKIT_ERROR_INVALID_INPUT;
+        }
+        if (status == 0) status = kmipkit_client_batch_item_delete_attribute_from_request(
+            request, out_item);
+    } else {
+        status = kmipkit_client_batch_item_delete_attribute(identifier, NULL, &reference, out_item);
+    }
+    if (payload) kmipkit_ttlv_structure_release(payload);
+    if (request) kmipkit_delete_attribute_request_release(request);
+    return status;
+}
+
 static kmip_execution_outcome_t execute_attribute_mutation_case(
     kmip_live_client_t *client,
-    bool set_attribute) {
+    bool set_attribute,
+    bool delete_attribute) {
     kmip_execution_outcome_t outcome = { .executed = true };
     kmipkit_ttlv_structure_t *attributes = NULL;
     kmipkit_client_batch_item_t *create_item = NULL;
     kmipkit_client_batch_t *create_batch = NULL;
     kmipkit_client_batch_response_t *create_response = NULL;
     kmipkit_client_batch_item_response_t *create_item_response = NULL;
+    kmipkit_client_batch_item_t *seed_item = NULL;
+    kmipkit_client_batch_t *seed_batch = NULL;
+    kmipkit_client_batch_response_t *seed_response = NULL;
+    kmipkit_client_batch_item_response_t *seed_item_response = NULL;
     kmipkit_client_batch_item_t *mutation_item = NULL;
     kmipkit_client_batch_t *mutation_batch = NULL;
     kmipkit_client_batch_response_t *mutation_response = NULL;
@@ -1876,6 +1949,7 @@ static kmip_execution_outcome_t execute_attribute_mutation_case(
         .abi_version = 1
     };
     uint8_t identifier_present = 0;
+    bool cleanup_needed = false;
     uint32_t object_type = 0;
     uint64_t response_count = 0;
     int32_t status = create_symmetric_key_attributes(client, &attributes) ? 0 :
@@ -1919,7 +1993,8 @@ static kmip_execution_outcome_t execute_attribute_mutation_case(
             (create_metadata.result_reason == KMIPKIT_ENUMERATION_RESULT_REASON_NOT_AUTHORISED ||
              create_metadata.result_reason == KMIPKIT_ENUMERATION_RESULT_REASON_PERMISSION_DENIED);
         snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                 set_attribute ?
+                 delete_attribute ?
+                    "server rejected the isolated Delete Attribute setup Create" : set_attribute ?
                     "server rejected the isolated Set Attribute setup Create" :
                     "server rejected the isolated Add Attribute setup Create");
         goto cleanup;
@@ -1932,15 +2007,66 @@ static kmip_execution_outcome_t execute_attribute_mutation_case(
         !created_identifier.text_data || created_identifier.text_length == 0) {
         outcome.library_failed = status != 0;
         snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                 set_attribute ?
+                 delete_attribute ?
+                    "KMIPKit did not return the created Delete Attribute fixture identifier" : set_attribute ?
                     "KMIPKit did not return the created Set Attribute fixture identifier" :
                     "KMIPKit did not return the created Add Attribute fixture identifier");
         goto cleanup;
     }
+    cleanup_needed = true;
 
-    status = build_comment_attribute_mutation_item(
+    if (delete_attribute) {
+        status = build_comment_attribute_mutation_item(
+            client, &created_identifier, false, &seed_item);
+        if (status == 0) status = set_batch_item_id(&seed_item, "interop-attributes");
+        if (status == 0) status = kmipkit_client_batch_create(&seed_batch);
+        if (status == 0 && client->username_env[0] != '\0') {
+            kmipkit_authentication_t *authentication = NULL;
+            if (!create_authentication(client, &authentication)) status = KMIPKIT_ERROR_INVALID_INPUT;
+            else {
+                status = kmipkit_client_batch_set_authentication(seed_batch, authentication);
+                if (status != 0) kmipkit_authentication_release(authentication);
+            }
+        }
+        if (status == 0) status = kmipkit_client_batch_add_item(seed_batch, &seed_item);
+        if (status == 0) status = kmipkit_client_execute(
+            client->client, &seed_batch, client->limits, &seed_response);
+        response_count = 0;
+        if (status == 0) status = kmipkit_client_batch_response_item_count(seed_response, &response_count);
+        if (status == 0 && response_count == 1) status = kmipkit_client_batch_response_item_at(
+            seed_response, 0, &seed_item_response);
+        else if (status == 0) status = KMIPKIT_ERROR_INVALID_INPUT;
+        kmipkit_client_batch_item_metadata_v2_t seed_metadata = {
+            .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t),
+            .abi_version = 2
+        };
+        if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
+            seed_item_response, &seed_metadata);
+        uint8_t seed_present = 0;
+        kmipkit_unique_identifier_v1_t seed_identifier = {
+            .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+            .abi_version = 1
+        };
+        if (status == 0 && seed_metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+            status = kmipkit_client_batch_item_response_add_attribute(
+                seed_item_response, &seed_present, &seed_identifier);
+        }
+        if (status != 0 || !seed_present ||
+            seed_metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS ||
+            !same_text_identifier(&created_identifier, &seed_identifier)) {
+            outcome.library_failed = status != 0;
+            outcome.library_validated = status == 0;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit could not seed the isolated Delete Attribute Comment fixture");
+            goto cleanup;
+        }
+    }
+
+    status = delete_attribute ? build_delete_comment_attribute_item(
+        &created_identifier, &mutation_item) : build_comment_attribute_mutation_item(
         client, &created_identifier, set_attribute, &mutation_item);
-    if (status == 0) status = set_batch_item_id(&mutation_item, "interop-attributes");
+    if (status == 0) status = set_batch_item_id(
+        &mutation_item, delete_attribute ? "interop-delete-attribute" : "interop-attributes");
     if (status == 0) status = kmipkit_client_batch_create(&mutation_batch);
     if (status == 0 && client->username_env[0] != '\0') {
         kmipkit_authentication_t *authentication = NULL;
@@ -1971,7 +2097,9 @@ static kmip_execution_outcome_t execute_attribute_mutation_case(
         .abi_version = 1
     };
     if (status == 0 && mutation_metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
-        status = set_attribute ? kmipkit_client_batch_item_response_set_attribute(
+        status = delete_attribute ? kmipkit_client_batch_item_response_delete_attribute(
+            mutation_item_response, &mutation_present, &mutation_identifier) : set_attribute ?
+            kmipkit_client_batch_item_response_set_attribute(
             mutation_item_response, &mutation_present, &mutation_identifier) :
             kmipkit_client_batch_item_response_add_attribute(
                 mutation_item_response, &mutation_present, &mutation_identifier);
@@ -1993,7 +2121,8 @@ static kmip_execution_outcome_t execute_attribute_mutation_case(
             (mutation_metadata.result_reason == KMIPKIT_ENUMERATION_RESULT_REASON_NOT_AUTHORISED ||
              mutation_metadata.result_reason == KMIPKIT_ENUMERATION_RESULT_REASON_PERMISSION_DENIED);
         snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                 set_attribute ?
+                 delete_attribute ?
+                    "KMIPKit Delete Attribute response did not return the created object's identifier" : set_attribute ?
                     "KMIPKit Set Attribute response did not return the created object's identifier" :
                     "KMIPKit Add Attribute response did not return the created object's identifier");
     } else {
@@ -2002,16 +2131,31 @@ static kmip_execution_outcome_t execute_attribute_mutation_case(
         outcome.has_result_status_code = true;
         outcome.result_status_code = mutation_metadata.result_status;
     }
+    cleanup_needed = false;
     if (!cleanup_placeholder_chain_object(client, &created_identifier, false, &status)) {
         outcome.success = false;
         outcome.library_failed = status != 0;
         snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                 set_attribute ?
+                 delete_attribute ?
+                    "KMIPKit could not clean up the isolated Delete Attribute fixture" : set_attribute ?
                     "KMIPKit could not clean up the isolated Set Attribute fixture" :
                     "KMIPKit could not clean up the isolated Add Attribute fixture");
     }
 
 cleanup:
+    if (cleanup_needed) {
+        cleanup_needed = false;
+        if (!cleanup_placeholder_chain_object(client, &created_identifier, false, &status)) {
+            outcome.success = false;
+            outcome.library_failed = status != 0;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit could not clean up the isolated attribute mutation fixture");
+        }
+    }
+    if (seed_item_response) kmipkit_client_batch_item_response_release(seed_item_response);
+    if (seed_response) kmipkit_client_batch_response_release(seed_response);
+    if (seed_batch) kmipkit_client_batch_release(seed_batch);
+    if (seed_item) kmipkit_client_batch_item_release(seed_item);
     if (mutation_item_response) kmipkit_client_batch_item_response_release(mutation_item_response);
     if (mutation_response) kmipkit_client_batch_response_release(mutation_response);
     if (mutation_batch) kmipkit_client_batch_release(mutation_batch);
@@ -2066,9 +2210,12 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         return outcome_not_run("catalog mode is not supported by the C validator");
     }
     if (strcmp(test_case->case_id, "test-op-add-attribute") == 0 ||
-        strcmp(test_case->case_id, "test-op-set-attribute") == 0) {
+        strcmp(test_case->case_id, "test-op-set-attribute") == 0 ||
+        strcmp(test_case->case_id, "test-op-delete-attribute") == 0) {
         return execute_attribute_mutation_case(
-            client, strcmp(test_case->case_id, "test-op-set-attribute") == 0);
+            client,
+            strcmp(test_case->case_id, "test-op-set-attribute") == 0,
+            strcmp(test_case->case_id, "test-op-delete-attribute") == 0);
     }
     if (strcmp(test_case->operation, "Discover Versions") == 0 &&
         client->protocol_minor == 0) {

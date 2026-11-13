@@ -244,3 +244,29 @@ Verification on the implementation worktree:
 
 The PR remains WIP while the C catalogue has outstanding operation, object,
 attribute, batch, asynchronous, and normative constructor routes.
+
+### Delete Attribute and cleanup-state evidence
+
+The installed consumer now exercises Delete Attribute with both direct and
+standalone request constructors. It creates an isolated symmetric key, seeds a
+Comment attribute, deletes that attribute by its exact Tag reference, checks the
+typed response identifier, then revokes and destroys the key. The controlled
+peer verifies the seed, mutation, cleanup operation order, and restoration of
+the initial fixture state. The placeholder-chain recipe also reports the
+observed revoke/destroy cleanup operations and final state.
+
+Verification against the shared route-manifest source commit
+`8281fef2e9ca211fde1e1d8e21525a672287eead`:
+
+- Artifact build and provenance verification passed; library SHA-256 is
+  `e2b7a9c21c22551cbbf5ff55d7c1997525413bc2adbe958577283e95e6993d7b`.
+- The focused Delete Attribute controlled-peer test passed all 24 combinations
+  (two protocol versions, six encoding/transport pairs, and two constructors).
+- CTest passed 7/7, including all 80 route-matrix contract tests and the
+  controlled KMIP 2.0/2.1 TLS peers.
+- The full matrix recorded 66,728 expected cells, 37,170 invoked, zero failed,
+  and 29,558 pending. Add Attribute, Set Attribute, and Delete Attribute each
+  recorded 80 passed events, including 24 controlled-peer exchanges.
+- The completeness validator continues to fail on the pending recipe cells.
+  This branch is not ready for review until the remaining matrix routes and
+  exact-head CI pass.
