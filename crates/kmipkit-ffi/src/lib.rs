@@ -10,6 +10,11 @@ mod public_api_generated;
 #[path = "../tests/support/profile_readiness_identifier_parity_tests.rs"]
 mod profile_readiness_identifier_parity_tests;
 
+#[cfg(all(test, feature = "coverage-c-consumer"))]
+#[allow(unsafe_code)]
+#[path = "../tests/support/c_api_coverage_tests.rs"]
+mod c_api_coverage_tests;
+
 #[repr(C)]
 pub struct kmipkit_extension_identity_t {
     _private: [u8; 0],
