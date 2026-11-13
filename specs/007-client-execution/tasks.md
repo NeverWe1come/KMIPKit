@@ -58,3 +58,11 @@ T001 → T002 → (T003–T008 Red) → (T009 || T010 Green) → T011 → T012 �
 ```
 
 T002 is complete. T010/T011 cannot be split into a production callsite and later lifecycle test: the sole callsite, private permit boundary, and owner-through-transport integration test must land together and pass CI before merge, enablement, or release. TLS/HTTPS, C ABI, Java, Python, and additional operation request variants require their own approved scope and do not get silently added to these tasks.
+
+## Approved 2026-11-13 response-cardinality amendment
+
+- [x] T020 Update FR-006/FR-018, acceptance scenarios, measurable outcomes, contract, English/Spanish guides, checklist, approval record, and compliance traceability for the maintainer-approved KMIPKIT-0092 Stop response case. Keep the omission rule explicitly labeled as KMIPKit policy because OASIS §11.5/Table 434 does not explicitly settle response omission.
+- [ ] T021 [RED COMMIT] Add client-level fake-transport tests for a partial effective-Stop response containing `Operation Failed`, default Stop, returned-item order and IDs, and no synthetic results. Add fail-closed tests for empty/no-failure partial responses, Continue, Undo, excess items, duplicate/unknown IDs, and operation mismatch. The tests must compile and fail behaviorally before implementation.
+- [ ] T022 [GREEN COMMIT] Implement the bounded partial association policy in `Client::execute`: accept only FR-018 cases, continue validating every returned item, preserve matching request indices, and materialize only returned outcomes in request order. Retain strict complete cardinality for all other cases.
+- [ ] T023 [REFACTOR COMMIT] Clarify Rust result-accessor documentation for the returned-results collection, remove duplicate policy logic, and update generated/curated traceability with the final test IDs.
+- [ ] T024 Run focused Rust tests, formatting, Clippy, relevant workspace tests, coverage and traceability checks; resolve red CI; open a `[WIP]` draft PR to `release/1.0.0`, and remove `[WIP]` only after all applicable exact-head CI is green.
