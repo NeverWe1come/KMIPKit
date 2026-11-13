@@ -64,6 +64,10 @@ def _request_identity(record: dict) -> tuple:
 
 
 def _expected_batch_operations(case: dict) -> list[str] | None:
+    # A multi-step asynchronous lifecycle is a sequence of exchanges, not one
+    # Batch Item collection. Only catalogued batch workflow cases use this rule.
+    if case.get("category") != "batch_workflows":
+        return None
     scenario = case.get("requires", {}).get("protocol_scenario", {})
     if not isinstance(scenario, dict):
         return None
@@ -332,6 +336,17 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
                     tree_hash = event.get("response_tree_sha256")
                     if not isinstance(tree_hash, str) or not re.fullmatch(r"[0-9a-f]{64}", tree_hash):
                         raise ValueError(f"passed decode event requires a valid response tree hash: {key}")
+            elif (
+                event.get("request_delivery_state") == "not_sent"
+                and (
+                    event["action"] != "send"
+                    or str(case_by_id[event["case_id"]].get("requires", {}).get(
+                        "expected_status", ""
+                    )).casefold().replace("_", "") == "notsent"
+                )
+            ):
+                if event.get("transport_invocation_count") != 0:
+                    raise ValueError(f"a not-sent route invocation must prove transport count zero: {key}")
             else:
                 tree_hash = event.get("request_tree_sha256")
                 if not isinstance(tree_hash, str) or not re.fullmatch(r"[0-9a-f]{64}", tree_hash):
@@ -357,7 +372,10 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
 
     constructed = {
         _request_identity(event): event["request_tree_sha256"]
-        for event in observed.values() if event["action"] == "construct" and event.get("status") == "passed"
+        for event in observed.values()
+        if event["action"] == "construct"
+        and event.get("status") == "passed"
+        and isinstance(event.get("request_tree_sha256"), str)
     }
     for event in observed.values():
         if event["action"] != "send" or event.get("status") != "passed":

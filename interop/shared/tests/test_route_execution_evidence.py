@@ -13,6 +13,7 @@ ROOT = SHARED.parents[1]
 sys.path.insert(0, str(SHARED / "tools"))
 from validate_route_evidence import (
     _expected_tag_decode_rejection_code,
+    _expected_batch_operations,
     _validate_batch_event,
     validate_collection,
     validate_parity_collection,
@@ -146,6 +147,29 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         self.assertEqual(5, summary["expected_cells"])
         self.assertEqual(5, summary["invoked_cells"])
 
+    def test_version_boundary_send_can_prove_not_sent_without_request_hash(self):
+        self.catalog["test_cases"][0]["requires"]["expected_status"] = "NotSent"
+        report = copy.deepcopy(self.report)
+        construct = next(event for event in report["events"] if event["action"] == "construct")
+        send = next(event for event in report["events"] if event["action"] == "send")
+        construct.pop("request_tree_sha256")
+        construct["request_delivery_state"] = "not_sent"
+        construct["transport_invocation_count"] = 0
+        send.pop("request_tree_sha256")
+        send["request_delivery_state"] = "not_sent"
+        send["transport_invocation_count"] = 0
+        report["events"] = [construct, send]
+        summary = validate_report(
+            report,
+            self.catalog,
+            self.manifest,
+            catalog_sha256="c" * 64,
+            route_manifest_sha256="d" * 64,
+            expected_artifact_sha256="b" * 64,
+            scope_cells=[construct, send],
+        )
+        self.assertTrue(summary["all_invocations_passed"])
+
     def test_scoped_report_validates_exact_cells_without_claiming_full_matrix(self):
         scope = self.report["events"][:2]
         report = copy.deepcopy(self.report)
@@ -223,7 +247,7 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         send_event["transport_invocation_count"] = 0
         self.assertTrue(self.validate(report)["selected_scope_complete"])
         send_event["transport_invocation_count"] = 1
-        with self.assertRaisesRegex(ValueError, "invoked the transport"):
+        with self.assertRaisesRegex(ValueError, "not-sent route invocation must prove transport count zero"):
             self.validate(report)
 
     def test_expected_reserved_tag_decode_rejection_needs_input_hash_not_response_tree(self):
@@ -503,6 +527,7 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
     def test_controlled_peer_evidence_preserves_repeated_batch_item_order(self):
         case = {
             "case_id": "batch-get-stop",
+            "category": "batch_workflows",
             "requires": {"protocol_scenario": {
                 "parameters": {"items": ["Get(missing)", "Get(existing)"]},
                 "expected": {"first": "OperationFailed", "second": "OperationUndone", "response_count": 2},
@@ -529,6 +554,19 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         event["peer_observed_result_status_codes"] = [0, 3]
         with self.assertRaisesRegex(ValueError, "per-item status outcomes"):
             _validate_batch_event(event, case, catalog, ("batch-get-stop",))
+
+    def test_async_lifecycle_is_not_misclassified_as_one_batch(self):
+        case = {
+            "case_id": "async-create-query-poll",
+            "category": "asynchronous_workflows",
+            "requires": {"protocol_scenario": {
+                "operations": ["Create", "Query Asynchronous Requests", "Poll"],
+                "parameters": {"operations_in_request_order": [
+                    "Create", "Query Asynchronous Requests", "Poll"
+                ]},
+            }},
+        }
+        self.assertIsNone(_expected_batch_operations(case))
 
     def _four_language_fixture(self):
         reports = []

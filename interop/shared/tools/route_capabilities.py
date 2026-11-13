@@ -332,6 +332,18 @@ def construction_inventory(root, commit):
     py_text = source(root, commit, py_path)
     java_path = 'bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItem.java'
     java_text = source(root, commit, java_path)
+    rust_client_path = 'crates/kmipkit-client/src/execute.rs'
+    rust_client_text = source(root, commit, rust_client_path)
+    rust_batch_item_impl = re.search(r'impl ClientBatchItem\s*\{', rust_client_text)
+    if rust_batch_item_impl is None:
+        raise ValueError('missing ClientBatchItem implementation in the pinned Rust package')
+    depth, end = 1, rust_batch_item_impl.end()
+    while depth and end < len(rust_client_text):
+        depth += (rust_client_text[end] == '{') - (rust_client_text[end] == '}')
+        end += 1
+    rust_batch_item_methods = set(re.findall(
+        r'pub\s+(?:const\s+)?fn\s+(\w+)\s*\(',
+        rust_client_text[rust_batch_item_impl.end():end - 1]))
     for key, op in operations.items():
         if key in {'register', 'revoke'}:
             request_type = key.title() + 'Request'
@@ -345,9 +357,10 @@ def construction_inventory(root, commit):
             if batch_item is None:
                 raise ValueError(f'missing public batch item constructor metadata: {batch_item_id}')
             rust_symbol = function_entrypoint(batch_item, 'rust')
-            if rust_symbol:
+            rust_method = rust_symbol.rsplit('::', 1)[-1] if rust_symbol else None
+            if rust_symbol and rust_method in rust_batch_item_methods:
                 inventory.append(('rust', rust_symbol, op['operationId'],
-                                  'crates/kmipkit-client/src/execute.rs', 'network'))
+                                  rust_client_path, 'network'))
         if key in ASYNC:
             request_type = {'queryasyncrequests': 'QueryAsyncRequestsRequest'}.get(key, key.title() + 'Request')
             snake = 'query_async_requests' if key == 'queryasyncrequests' else key
@@ -371,6 +384,9 @@ def construction_inventory(root, commit):
         for suffix in sorted(set(re.findall(r'public static ClientBatchItem (\w+)\(', java_text))):
             if normalized(suffix.removesuffix('Object')) == key:
                 inventory.append(('java', f'org.kmipkit.extensions.ClientBatchItem.{suffix}', op['operationId'], java_path, 'network'))
+    if 'new' not in rust_batch_item_methods:
+        raise ValueError('missing Rust ClientBatchItem::new public constructor')
+    inventory.append(('rust', 'kmipkit_client::ClientBatchItem::new', '', rust_client_path, 'network'))
     inventory.extend([
         ('rust', 'kmipkit_ttlv::Item::new', '', 'crates/kmipkit-ttlv/src/item.rs', 'local'),
         ('rust', 'kmipkit_ttlv::codec::decode', '', 'crates/kmipkit-ttlv/src/codec/decoder.rs', 'local'),
@@ -484,6 +500,14 @@ def _request_operation_targets(operation_id, targets):
         if target.get('operation_id') == operation_id and target.get('role') == 'request'})
 
 
+def _client_request_targets(targets):
+    """Bind the generic Rust batch-item constructor to client request obligations."""
+    operation_ids = {target['target_id'] for target in targets
+        if target['kind'] == 'operation' and target['target_id'].startswith('KMIPKIT-ELEM-OP-C2S-')}
+    return sorted(operation_ids | {target['target_id'] for target in targets
+        if target.get('operation_id') in operation_ids and target.get('role') == 'request'})
+
+
 def build_manifest(root=ROOT, commit='9a16cc90a12205101d22a38501a5e74c665df4dc'):
     """Generate constructor identities from the exact package's public sources."""
     commit = validate_git_commit(commit)
@@ -509,7 +533,7 @@ def build_manifest(root=ROOT, commit='9a16cc90a12205101d22a38501a5e74c665df4dc')
         data['execution_routes'].append({'execution_route_id': language + '.execute.typed-batch',
             'language': language, 'public_api_symbol': symbol, 'source_paths': [path]})
     for language, symbol, operation_id, path, mode in construction_inventory(root, commit):
-        generic = not operation_id
+        generic = not operation_id and symbol != 'kmipkit_client::ClientBatchItem::new'
         family = 'generic-ttlv' if generic else 'typed-protocol'
         parts = symbol.replace('::', '.').split('.')
         suffix = '.'.join(parts[-2:]) if language in {'rust', 'java', 'python'} else parts[-1]
@@ -538,7 +562,8 @@ def build_manifest(root=ROOT, commit='9a16cc90a12205101d22a38501a5e74c665df4dc')
         data['routes'].append({'route_id': route_id, 'language': language, 'api_level': family,
             'mode': mode, 'public_api_symbol': symbol,
             'operation_ids': [operation_id] if operation_id else [],
-            'normative_target_ids': _request_operation_targets(operation_id, targets) if operation_id else ['*'],
+            'normative_target_ids': (_request_operation_targets(operation_id, targets) if operation_id else
+                _client_request_targets(targets) if symbol == 'kmipkit_client::ClientBatchItem::new' else ['*']),
             'case_categories': categories + ['normative_inventory'], 'protocol_versions': ['2.0', '2.1'],
             'combinations': combinations, 'actions': ['decode'] if generic and 'decode' in symbol else ['construct'],
             'source_paths': [path], 'artifact_commit': commit,
