@@ -1010,7 +1010,7 @@ pub extern "C" fn kmipkit_kmip30_operation_builder_set_asynchronous_indicator(
     indicator: u32,
 ) -> i32 {
     ffi_entrypoint(|| {
-        if !(1..=3).contains(&indicator) && !(0x8000_0000..=u32::MAX).contains(&indicator) {
+        if !(1..=3).contains(&indicator) && !(0x8000_0000..=0x8FFF_FFFF).contains(&indicator) {
             return record_ffi_error(ERROR_INVALID_INPUT);
         }
         try_ffi!(update_builder(builder, |builder| {
