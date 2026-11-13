@@ -270,6 +270,7 @@ def main() -> int:
         raise AssertionError(f"unsupported fixture protocol version {protocol_version!r}")
     protocol_minor = int(protocol_version.split(".")[1])
     registered_key_batch = (3, 18, 31, 32, 19, 20)
+    stop_on_first_failure_batch = (10, 10)
     registered_key_batch_item_ids = (
         b"crypto-register", b"crypto-activate", b"crypto-encrypt",
         b"crypto-decrypt", b"crypto-revoke", b"crypto-destroy",
@@ -308,6 +309,7 @@ def main() -> int:
     expected_operations += (1, 18, 10, 19, 20)
     expected_operations += (10, 12, 10, 12, 10, 12, 10, 12)
     expected_operations += registered_key_batch
+    expected_operations += stop_on_first_failure_batch
     expected_cases += ("test-op-hash", "test-op-rng-retrieve", "test-op-rng-seed")
     expected_cases += (
         "test-crypto-hash-sha_256-0",
@@ -315,6 +317,7 @@ def main() -> int:
         "test-crypto-rng-seed-rng-32",
     )
     expected_cases += ("test-batch-register-encrypt-decrypt-destroy",)
+    expected_cases += ("test-batch-stop-on-first-failure",)
     expected_cases += ("test-neg-destroy-active-without-revoke",)
     expected_cases += ("test-op-add-attribute",)
     expected_cases += ("test-op-set-attribute",)
@@ -408,6 +411,19 @@ def main() -> int:
                                         "registered-key batch omitted or duplicated a unique item ID"
                                     )
                                 response_item_ids = registered_key_batch_item_ids
+                            if operations == stop_on_first_failure_batch:
+                                if (request.count(integer(0x42000D, 2)) != 1 or
+                                        request.count(tlv(0x420094, 7, b"missing-key")) != 1 or
+                                        request.count(tlv(0x420094, 7, b"fixture-key-1")) != 1 or
+                                        request.count(tlv(0x420093, 8, b"item-a")) != 1 or
+                                        request.count(tlv(0x420093, 8, b"item-b")) != 1 or
+                                        enumeration(0x42000E, 2) not in request or
+                                        enumeration(0x42000E, 1) in request):
+                                    raise AssertionError("Stop-on-first-failure batch fields mismatch")
+                                response_operations = (10,)
+                                response_item_ids = (b"item-a",)
+                                response_statuses = (1,)
+                                response_reasons = (55,)
                             if two_read_batch:
                                 continue_after_failure = tlv(0x420094, 7, b"missing-key") in request
                                 expected_fixture_identifiers = 1 if continue_after_failure else 2
@@ -432,7 +448,7 @@ def main() -> int:
                                     response_item_ids = (b"item-b", b"item-a")
                                     response_statuses = None
                                     response_reasons = None
-                            else:
+                            elif operations != stop_on_first_failure_batch:
                                 response_statuses = None
                                 response_reasons = None
                             if placeholder_chain:
