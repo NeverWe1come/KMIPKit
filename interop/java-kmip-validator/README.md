@@ -100,9 +100,9 @@ baseline, regenerate the checked-in ledger with
 rejects generated ledgers that do not record successful invocations.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
-baseline. These recipes execute 17,994 of 71,455 planned Java route cells, with
-no failed cells; the ledger keeps the other 53,461 pending and does not imply
-vendor interoperability or full-matrix completion. Local TTLV recipes exercise 44
+baseline. These recipes execute 18,314 of 71,455 planned Java route cells, with
+no failed cells; the ledger keeps the other 53,141 pending and does not imply
+vendor interoperability or full-matrix completion. Local TTLV recipes exercise 45
 enumeration families and all six bitmask catalog cases through the applicable
 installed constructors, item views, decoders, and typed attribute wrappers.
 All 19 Block Cipher Mode values now complete their five applicable generic and
@@ -156,7 +156,10 @@ Three values first assigned in KMIP 2.1 are also round-tripped as unknown
 Enumeration values in KMIP 2.0.
 The Operation aggregate exercises all 60 values through the same four routes
 in KMIP 2.0 and 2.1 (§11.36 in both), adding 480 cells. Six Operation values
-first assigned in KMIP 2.1 are also preserved as unknown in KMIP 2.0.
+first assigned in KMIP 2.1 are also preserved as unknown in KMIP 2.0. The Digital
+Signature Algorithm aggregate covers all 20 values through generic TTLV,
+typed attribute, AttributeSet, and Cryptographic Parameters builder routes in
+both versions (§§4.16, 11.16), adding 320 cells.
 
 The recorded [development evidence](../../specs/092-interop-api-route-exhaustiveness/java-route-expansion-evidence.md)
 keeps the Red/Green/Refactor commands and the distinction between this completed

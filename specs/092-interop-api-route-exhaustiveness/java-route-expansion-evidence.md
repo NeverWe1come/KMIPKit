@@ -120,8 +120,8 @@ limitation is changed by this phase.
 Final checks after the refactor:
 
 - Full Java consumer suite: 52 tests passed, no failures, errors, or skips.
-- Shared route evidence validator: 17,994 executed cells, zero failed cells,
-  53,461 pending cells, and `selected_scope_complete=true`.
+- Shared route evidence validator: 18,314 executed cells, zero failed cells,
+  53,141 pending cells, and `selected_scope_complete=true`.
 - `python3 tools/compare_route_ledger.py`: generated coverage matches the
   checked-in reference.
 - `git diff --check`: passed.
@@ -504,3 +504,40 @@ skips. The shared validator accepts 17,994 cells with zero failures and
 `selected_scope_complete=true`; the generated ledger records 17,994 executed,
 53,461 pending, and 71,455 planned. This completes Operation's local generic
 TTLV scope; the overall Java matrix remains incomplete.
+
+## Digital Signature Algorithm enumeration route completion
+
+Sources: OASIS KMIP 2.0 and 2.1 §11.16, §4.16 (Cryptographic Parameters),
+and §10.1 (TTLV Enumeration representation). The local aggregate case covers
+all 20 catalogued values under both protocol versions through eight applicable
+routes: four generic TTLV routes, `TypedAttribute.create`,
+`TypedAttribute.fromItem`, `AttributeSet.tryNew`, and
+`CryptographicParameters.Builder.digitalSignatureAlgorithm`. This adds 320
+value/route/version cells.
+
+Red commit `4ee2f0438` asserts all 20 values and fails because the aggregate
+case has no local fixtures. Green commit `c3ebeffff` adds the case to the
+catalog-driven local enumeration scope and invokes each installed generic,
+typed attribute, and Cryptographic Parameters builder route. Refactor commit
+`921b68352` obtains the builder route from the shared route map used by the
+other Cryptographic Parameters enum recipes.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 37d7eeae9e64644fd7cdde4bfd64b7da5ccbb0bf2be53a949826eb62dc3aaf86 \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+```
+
+The full Java consumer suite passes 52 tests with no failures, errors, or
+skips. The shared validator accepts 18,314 cells with zero failures and
+`selected_scope_complete=true`; the generated ledger records 18,314 executed,
+53,141 pending, and 71,455 planned. This completes Digital Signature
+Algorithm's local route scope; the full Java matrix remains incomplete.
