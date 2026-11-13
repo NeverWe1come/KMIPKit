@@ -36,6 +36,7 @@ one and links both directions.
 - [ADR-0021: Server-to-Client operations and role inversion scope for KMIPKit](0021-server-to-client-operations-scope.md) (Accepted)
 - [ADR-0022: Multi-version modern KMIP architecture](0022-multi-version-modern-kmip-architecture.md) (Accepted)
 - [ADR-0023: Cloud KMS stateless sidecar proxy architecture](0023-cloud-kms-stateless-proxy.md) (Accepted)
+- [ADR-0024: Complete fluent API boundary](0024-complete-fluent-api-boundary.md) (Proposed)
 
 ## Template
 
