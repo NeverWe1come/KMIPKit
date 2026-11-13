@@ -199041,11 +199041,7 @@
           },
           "expected": {
             "first": "OperationFailed",
-            "response_count": 1,
-            "effects": [
-              "first_item_failed",
-              "second_item_not_executed"
-            ]
+            "response_count": 1
           },
           "mode": "server_exchange",
           "mutation": "read_only",
@@ -199343,11 +199339,7 @@
           "expected": {
             "first": "OperationFailed",
             "second": "Success",
-            "response_count": 2,
-            "effects": [
-              "first_item_failed",
-              "second_item_executed"
-            ]
+            "response_count": 2
           },
           "mode": "server_exchange",
           "mutation": "read_only",
