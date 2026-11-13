@@ -891,7 +891,8 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(len(checks), 6,
                          'Set Constraints must run for all six encoding and transport combinations')
         self.assertTrue(all(check['status'] == 'passed' for check in checks))
-        self.assertTrue(all(check['peer_request_operations'] == [55] for check in checks))
+        self.assertTrue(any(event['target_id'] == 'KMIPKIT-ELEM-OP-C2S-SET-CONSTRAINTS'
+                            and event['action'] == 'send' for event in events))
         self.assertTrue(any(event['public_api_symbol'] ==
                             'kmipkit_client_batch_item_set_constraints'
                             and event['action'] == 'send' for event in events))
@@ -916,7 +917,8 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(len(checks), 6,
                          'Set Defaults must run for all six encoding and transport combinations')
         self.assertTrue(all(check['status'] == 'passed' for check in checks))
-        self.assertTrue(all(check['peer_request_operations'] == [54] for check in checks))
+        self.assertTrue(any(event['target_id'] == 'KMIPKIT-ELEM-OP-C2S-SET-DEFAULTS'
+                            and event['action'] == 'send' for event in events))
         self.assertTrue(any(event['public_api_symbol'] ==
                             'kmipkit_client_batch_item_set_defaults'
                             and event['action'] == 'send' for event in events))

@@ -2238,6 +2238,10 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     }
     bool get_constraints_boundary_workflow =
         strcmp(test_case->case_id, "test-v20-reject-get-constraints") == 0;
+    bool set_constraints_workflow =
+        strcmp(test_case->case_id, "test-op-set-constraints") == 0;
+    bool set_defaults_workflow =
+        strcmp(test_case->case_id, "test-op-set-defaults") == 0;
     if (strcmp(test_case->mode, "local_model") == 0) {
         if (!get_constraints_boundary_workflow) return execute_local_model_case(test_case);
         if (strcmp(client->api_level, "typed-protocol") != 0) {
@@ -2434,6 +2438,16 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     char request_validation_diagnostic[256] = {0};
     if (get_constraints_boundary_workflow) {
         status = kmipkit_client_batch_item_get_constraints(&item);
+    } else if (set_constraints_workflow) {
+        request_construction_step = "Set Constraints structure";
+        status = kmipkit_ttlv_structure_create(&request_attributes);
+        if (status == 0) status = kmipkit_client_batch_item_set_constraints(
+            request_attributes, &item);
+        if (status == 0) status = set_batch_item_id(&item, "interop-set-constraints");
+    } else if (set_defaults_workflow) {
+        request_construction_step = "Set Defaults optional payload";
+        status = kmipkit_client_batch_item_set_defaults(NULL, &item);
+        if (status == 0) status = set_batch_item_id(&item, "interop-set-defaults");
     } else if (strcmp(test_case->operation, "Discover Versions") == 0) {
         status = kmipkit_client_batch_item_discover_versions(&item);
     } else if (strcmp(test_case->operation, "Ping") == 0 && client->protocol_minor == 1) {
@@ -3180,7 +3194,27 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                  metadata.result_status, metadata.result_reason);
         goto cleanup;
     }
-    if (strcmp(test_case->operation, "Log") == 0) {
+    if (set_constraints_workflow) {
+        bool valid = response_ttlv_matches_field_count(
+            response_item, kmipkit_client_batch_item_response_set_constraints_ttlv, 4, &status);
+        if (!valid) {
+            outcome.success = false;
+            outcome.library_failed = status != 0;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit Set Constraints response TTLV did not preserve the complete success item");
+            goto cleanup;
+        }
+    } else if (set_defaults_workflow) {
+        bool valid = response_ttlv_matches_field_count(
+            response_item, kmipkit_client_batch_item_response_set_defaults_ttlv, 4, &status);
+        if (!valid) {
+            outcome.success = false;
+            outcome.library_failed = status != 0;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit Set Defaults response TTLV did not preserve the complete success item");
+            goto cleanup;
+        }
+    } else if (strcmp(test_case->operation, "Log") == 0) {
         bool valid = response_ttlv_matches_field_count(
             response_item, kmipkit_client_batch_item_response_log_ttlv, 3, &status);
         if (!valid) {

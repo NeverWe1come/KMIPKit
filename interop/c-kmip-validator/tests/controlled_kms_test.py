@@ -135,6 +135,8 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                                     13: b"interop-attributes",
                                     15: b"interop-delete-attribute",
                                     49: b"interop-attributes",
+                                    54: b"interop-set-defaults",
+                                    55: b"interop-set-constraints",
                                     1: b"interop-create",
                                     11: b"interop-attributes",
                                     12: b"interop-attributes",
@@ -266,6 +268,8 @@ def main() -> int:
     expected_operations += (39, 37, 38)
     expected_operations += (1, 13, 19, 20)
     expected_operations += (1, 49, 19, 20)
+    if protocol_version == "2.1":
+        expected_operations += (55, 54)
     expected_operations += (1, 13, 15, 19, 20)
     expected_operations += (1, 18, 12, 19, 20)
     expected_operations += (1, 18, 10, 19, 20)
@@ -279,6 +283,8 @@ def main() -> int:
     expected_cases += ("test-neg-destroy-active-without-revoke",)
     expected_cases += ("test-op-add-attribute",)
     expected_cases += ("test-op-set-attribute",)
+    if protocol_version == "2.1":
+        expected_cases += ("test-op-set-constraints", "test-op-set-defaults")
     expected_cases += ("test-op-delete-attribute",)
     expected_cases += ("test-batch-create-activate-destroy",)
     expected_cases += ("test-batch-placeholder-chain-resolves",)

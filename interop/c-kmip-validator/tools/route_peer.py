@@ -263,6 +263,8 @@ RECIPES = {
     'test-op-register': ((3, 20), 'register'),
     'test-op-add-attribute': ((1, 13, 19, 20), 'add_attribute'),
     'test-op-set-attribute': ((1, 49, 19, 20), 'set_attribute'),
+    'test-op-set-constraints': ((55,), 'set_constraints'),
+    'test-op-set-defaults': ((54,), 'set_defaults'),
     'test-op-delete-attribute': ((1, 13, 15, 19, 20), 'delete_attribute'),
     'test-obj-certificate': ((3, 20), 'register'),
     'test-obj-certificate-request': ((3, 20), 'register_certificate_request'),
@@ -406,6 +408,22 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None):
             summary = [(len(item[2]), hashlib.sha256(item[2]).hexdigest()[:12])
                        for item in comments]
             raise ValueError(f'fixture_attribute_mutation_comment_mismatch:{observed}:{summary}')
+    if selected_recipe[1] == 'set_constraints':
+        items = [item for item in node[2]
+                 if item[0] == BATCH_ITEM_TAG and numbers(item, 0x42005C) == [55]]
+        payloads = [item for item in items[0][2]
+                    if item[0] == REQUEST_PAYLOAD_TAG and item[1] == 1] if len(items) == 1 else []
+        constraints = [item for item in payloads[0][2]
+                       if item[0] == 0x420168 and item[1] == 1] if len(payloads) == 1 else []
+        if len(constraints) != 1 or constraints[0][2]:
+            raise ValueError('fixture_set_constraints_shape_mismatch')
+    if selected_recipe[1] == 'set_defaults':
+        items = [item for item in node[2]
+                 if item[0] == BATCH_ITEM_TAG and numbers(item, 0x42005C) == [54]]
+        payloads = [item for item in items[0][2]
+                    if item[0] == REQUEST_PAYLOAD_TAG and item[1] == 1] if len(items) == 1 else []
+        if len(payloads) != 1 or list(descendants(payloads[0], 0x420152)):
+            raise ValueError('fixture_set_defaults_omission_mismatch')
     if selected_recipe[1] == 'delete_attribute':
         items = [item for item in node[2]
                  if item[0] == BATCH_ITEM_TAG and numbers(item, 0x42005C) == [15]]
@@ -1014,6 +1032,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             if text_values(request_tree, UNIQUE_IDENTIFIER_TAG) != ['fixture-key-1']:
                                                 raise ValueError('fixture_attribute_mutation_identifier_mismatch')
                                             response_operations = (attribute_mutation_operation,)
+                                        elif recipe[1] in ('set_constraints', 'set_defaults'):
+                                            assert_recipe(request_tree, case_id, version, recipe, attribute_fixture)
+                                            response_operations = recipe[0]
                                         else:
                                             assert_recipe(request_tree, case_id, version, recipe, attribute_fixture)
                                             response_operations = recipe[0]
@@ -1090,6 +1111,13 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                     [numbers(item, 0x42007F) for item in response_items] !=
                                                     [[0] for _ in response_operations]):
                                                 raise ValueError('fixture_attribute_mutation_response_mismatch')
+                                        elif recipe[1] in ('set_constraints', 'set_defaults'):
+                                            response_items = [item for item in response_tree[2]
+                                                              if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+                                            if ([numbers(item, 0x42005C) for item in response_items] !=
+                                                    [[recipe[0][0]]] or
+                                                    [numbers(item, 0x42007F) for item in response_items] != [[0]]):
+                                                raise ValueError('fixture_global_operation_response_mismatch')
                                         else:
                                             verify_lifecycle(recipe[0], response_tree)
                                         encoded_response = codec.encode(response_wire, encoding)
