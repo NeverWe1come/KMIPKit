@@ -27,3 +27,11 @@ The library exists at
 `target/ci-110-layout/debug/build/kmipkit-ffi/40dc6e8db935a7b9/out/libkmipkit_ffi.so`;
 there is no `debug/deps` directory. This reproduces the hosted failure with the
 same toolchain, before any implementation changes.
+
+### Coverage object regression
+
+`python3 -B -m unittest scripts.tests.test_ffi_coverage_objects -v` fails before
+adding the artifact resolver (3 tests, 6 assertion failures: resolver absent).
+The regression requires all four existing export inputs (DSO, static library,
+FFI unit test, C consumer test) for both Cargo layouts, including spaces in
+paths, and fails closed when any required file is missing.
