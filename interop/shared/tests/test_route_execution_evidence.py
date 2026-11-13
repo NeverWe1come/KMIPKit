@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -170,6 +171,57 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         schema = json.loads((SHARED / "schemas/route-execution-evidence.schema.json").read_text())
         jsonschema.validate(report, schema)
 
+    def test_batch_effects_schema_requires_both_sha256_peer_state_hashes(self):
+        try:
+            import jsonschema
+        except ImportError:
+            self.skipTest("jsonschema dependency is not installed")
+        report = copy.deepcopy(self.report)
+        send_event = next(event for event in report["events"] if event["action"] == "send")
+        peer_state = json.dumps({"objects": ["controlled-fixture-key"]},
+                                sort_keys=True, separators=(",", ":")).encode()
+        peer_state_sha256 = hashlib.sha256(peer_state).hexdigest()
+        send_event.update({
+            "batch_operation_sequence": ["Get", "Get"],
+            "peer_observed_operation_sequence": ["Get", "Get"],
+            "batch_item_count": 2,
+            "peer_observed_response_count": 2,
+            "peer_observed_effects": ["first_item_failed", "second_item_executed"],
+            "peer_observed_state_before_sha256": peer_state_sha256,
+            "peer_observed_state_after_sha256": peer_state_sha256,
+        })
+        schema = json.loads((SHARED / "schemas/route-execution-evidence.schema.json").read_text())
+        jsonschema.validate(report, schema)
+
+        send_event.pop("peer_observed_state_before_sha256")
+        with self.assertRaises(jsonschema.ValidationError):
+            jsonschema.validate(report, schema)
+
+        send_event["peer_observed_state_before_sha256"] = peer_state_sha256
+        send_event["peer_observed_state_after_sha256"] = "not-a-sha256"
+        with self.assertRaises(jsonschema.ValidationError):
+            jsonschema.validate(report, schema)
+
+    def test_expected_local_batch_rejection_conforms_without_peer_observation(self):
+        try:
+            import jsonschema
+        except ImportError:
+            self.skipTest("jsonschema dependency is not installed")
+        report = copy.deepcopy(self.report)
+        send_event = next(event for event in report["events"] if event["action"] == "send")
+        send_event.update({
+            "batch_operation_sequence": ["Activate", "Create"],
+            "batch_item_count": 2,
+            "request_delivery_state": "not_sent",
+            "transport_invocation_count": 0,
+            "local_rejection_code": "batch_placeholder_forward_reference",
+            "client_error_category": "validation",
+            "client_error_cause": "invalid_input",
+        })
+        send_event.pop("request_tree_sha256")
+        schema = json.loads((SHARED / "schemas/route-execution-evidence.schema.json").read_text())
+        jsonschema.validate(report, schema)
+
     def test_missing_action_fails_coverage_even_when_the_route_was_called(self):
         report = copy.deepcopy(self.report)
         report["events"].pop()
@@ -192,8 +244,18 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         send_event["transport_invocation_count"] = 0
         self.assertTrue(self.validate(report)["selected_scope_complete"])
         send_event["transport_invocation_count"] = 1
-        with self.assertRaisesRegex(ValueError, "invoked the transport"):
+        with self.assertRaisesRegex(ValueError, "not-sent route invocation must prove transport count zero"):
             self.validate(report)
+
+    def test_expected_not_sent_boundary_can_prove_no_request_was_constructed(self):
+        self.catalog["test_cases"][0]["requires"]["expected_status"] = "NotSent"
+        report = copy.deepcopy(self.report)
+        report["events"] = [event for event in report["events"] if event["action"] != "decode"]
+        for event in report["events"]:
+            event.pop("request_tree_sha256", None)
+            event["request_delivery_state"] = "not_sent"
+            event["transport_invocation_count"] = 0
+        self.assertTrue(self.validate(report)["selected_scope_complete"])
 
     def test_expected_reserved_tag_decode_rejection_needs_input_hash_not_response_tree(self):
         self.catalog['test_cases'][0]['requires'] = {
@@ -468,6 +530,67 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         event["peer_observed_result_status_codes"] = [0, 3]
         with self.assertRaisesRegex(ValueError, "per-item status outcomes"):
             _validate_batch_event(event, case, catalog, ("batch-get-stop",))
+
+    def test_controlled_peer_effects_require_valid_before_and_after_state_hashes(self):
+        case = {
+            "case_id": "batch-get-continue",
+            "category": "batch_workflows",
+            "requires": {"protocol_scenario": {
+                "parameters": {"items": ["Get(missing)", "Get(existing)"]},
+                "expected": {"response_count": 2,
+                             "effects": ["first_item_failed", "second_item_executed"]},
+            }},
+        }
+        event = {
+            "status": "passed",
+            "batch_operation_sequence": ["Get", "Get"],
+            "peer_observed_operation_sequence": ["Get", "Get"],
+            "batch_item_count": 2,
+            "peer_observed_response_count": 2,
+            "peer_observed_effects": ["first_item_failed", "second_item_executed"],
+        }
+        with self.assertRaisesRegex(ValueError, "controlled peer state hashes"):
+            _validate_batch_event(event, case, {}, ("batch-get-continue", "send"))
+
+        peer_state = json.dumps({"objects": ["controlled-fixture-key"]},
+                                sort_keys=True, separators=(",", ":")).encode()
+        peer_state_sha256 = hashlib.sha256(peer_state).hexdigest()
+        event["peer_observed_state_before_sha256"] = peer_state_sha256
+        event["peer_observed_state_after_sha256"] = peer_state_sha256
+        _validate_batch_event(event, case, {}, ("batch-get-continue", "send"))
+
+        event["peer_observed_state_after_sha256"] = "invalid"
+        with self.assertRaisesRegex(ValueError, "controlled peer state hashes"):
+            _validate_batch_event(event, case, {}, ("batch-get-continue", "send"))
+
+    def test_expected_forward_placeholder_rejection_can_prove_no_send_without_peer(self):
+        case = {
+            "case_id": "test-batch-placeholder-forward-reference-rejected",
+            "category": "batch_workflows",
+            "requires": {"protocol_scenario": {
+                "parameters": {"items": [
+                    "Activate(IDPlaceholder from item 2)",
+                    "Create(unique-key)",
+                ]},
+                "expected": {"construction": "rejected_or_server_reports_protocol_error"},
+            }},
+        }
+        event = {
+            "status": "passed",
+            "batch_operation_sequence": ["Activate", "Create"],
+            "batch_item_count": 2,
+            "request_delivery_state": "not_sent",
+            "transport_invocation_count": 0,
+            "local_rejection_code": "batch_placeholder_forward_reference",
+            "client_error_category": "validation",
+            "client_error_cause": "invalid_input",
+        }
+
+        _validate_batch_event(event, case, {}, ("forward-placeholder", "send"))
+
+        event["transport_invocation_count"] = 1
+        with self.assertRaisesRegex(ValueError, "invoked the transport"):
+            _validate_batch_event(event, case, {}, ("forward-placeholder", "send"))
 
     def test_async_lifecycle_steps_are_not_validated_as_a_single_batch(self):
         case = {

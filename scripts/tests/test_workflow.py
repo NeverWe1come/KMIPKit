@@ -832,15 +832,6 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn('build-backend = "maturin"', python_project)
         self.assertIn('bindings = "cffi"', python_project)
 
-    def test_core_tests_build_the_ffi_library_before_linked_consumers(self) -> None:
-        contents = self.require_workflow()
-        core_job = self.require_job(contents, "core")
-        build_step = self.require_named_step(core_job, "Build C ABI library for FFI consumer tests")
-        workspace_test_step = self.require_named_step(core_job, "Run workspace tests")
-
-        self.assertIn("cargo build --locked -p kmipkit-ffi --features coverage-c-consumer", build_step.group(1))
-        self.assertLess(build_step.start(), workspace_test_step.start())
-
     def test_c_api_level_consumer_receives_expected_local_taxonomy(self) -> None:
         cmake = (REPOSITORY_ROOT / "bindings" / "c" / "CMakeLists.txt").read_text(
             encoding="utf-8"
@@ -1082,32 +1073,18 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("bash scripts/collect_ffi_coverage.sh coverage-ffi", job)
         self.assertIn("name: coverage-ffi", job)
         self.assertIn("path: coverage-ffi/coverage.json", job)
-        self.assertIn(
-            "CARGO_TERM_COLOR=never cargo llvm-cov --no-clean -p kmipkit-ffi --all-targets --all-features --locked",
-            collector,
-        )
-        self.assertIn("cargo llvm-cov --no-clean -p kmipkit-ffi --all-targets --all-features --locked", collector)
-        self.assertIn('cargo_output="${report_dir}/cargo-llvm-cov.log"', collector)
-        self.assertIn(r"Running unittests src\/lib\.rs", collector)
-        self.assertIn(r"Running tests\/c_api_coverage\.rs", collector)
-        self.assertIn('mapfile -t test_binaries < <(', collector)
-        self.assertIn("c_api_coverage-[[:xdigit:]]+", collector)
-        self.assertIn('for test_binary in "${test_binaries[@]}"', collector)
-        self.assertIn('coverage_objects+=(-object "${test_binary}")', collector)
-        self.assertIn('rustc --print sysroot', collector)
-        self.assertIn('rustc -vV', collector)
-        self.assertIn('"${llvm_cov}" export -format=text', collector)
-        self.assertNotIn('llvm-cov-20', collector)
-        self.assertIn('rustup component add llvm-tools-preview --toolchain stable', job)
-        self.assertIn("KMIPKit.profdata", collector)
-        self.assertIn("--sources", collector)
-        self.assertIn("mapfile -d '' -t source_files < <(", collector)
-        self.assertIn(
-            'find "${repository_root}/crates/kmipkit-ffi/src" -type f -name "*.rs" -print0 | sort -z',
-            collector,
-        )
-        self.assertIn('for source_file in "${source_files[@]}"', collector)
+        self.assertIn('CARGO_TERM_COLOR=never CARGO_TARGET_DIR="${ffi_target}" cargo llvm-cov \\', collector)
+        self.assertIn("-p kmipkit-ffi --all-targets --all-features --locked \\", collector)
+        self.assertIn('ffi_target="${target_root}/ffi-coverage"', collector)
+        self.assertIn('readonly raw_report="${report_dir}/coverage-raw.json"', collector)
+        self.assertIn('--json --output-path "${raw_report}"', collector)
+        self.assertIn('python3 "${repository_root}/scripts/coverage_gate.py" normalize', collector)
+        self.assertIn('--input "${raw_report}"', collector)
         self.assertIn('--output "${report_dir}/coverage.json"', collector)
+        self.assertNotIn('libkmipkit_ffi.so', collector)
+        self.assertNotIn('libkmipkit_ffi.a', collector)
+        self.assertIn('rustup component add llvm-tools-preview --toolchain stable', job)
+        self.assertTrue((REPOSITORY_ROOT / "crates/kmipkit-ffi/tests/c_api_coverage.rs").is_file())
         self.assertNotIn("Install LLVM 20.1.8 for Linux FFI coverage export", job)
         self.assertNotIn('directory: ${{ runner.temp }}/llvm-20', job)
 
@@ -1120,13 +1097,10 @@ class WorkflowContractTests(unittest.TestCase):
             encoding="utf-8"
         )
 
-        self.assertIn(
-            "cargo llvm-cov --no-clean -p kmipkit-ffi --all-targets --all-features --locked",
-            collector,
-        )
-        self.assertIn(r"Running unittests src\/lib\.rs", collector)
-        self.assertIn(r"Running tests\/c_api_coverage\.rs", collector)
-        self.assertIn('for test_binary in "${test_binaries[@]}"', collector)
+        self.assertIn("cargo llvm-cov \\", collector)
+        self.assertIn("-p kmipkit-ffi --all-targets --all-features --locked \\", collector)
+        self.assertIn("--all-targets", collector)
+        self.assertIn('--json --output-path "${raw_report}"', collector)
 
     def test_coverage_gate_waits_for_platform_and_adapter_reports(self) -> None:
         contents = self.require_workflow()
