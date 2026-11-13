@@ -116,7 +116,7 @@ class BatchIdPlaceholderJourneyContractTests(unittest.TestCase):
             _item(0x42000D, 2, struct.pack(">i", declared_count)),
         ]
         if ordered:
-            header_fields.append(_item(0x42000E, 6, b"\x01"))
+            header_fields.append(_item(0x420010, 6, b"\x01"))
         header = _structure(0x420077, *header_fields)
         body = header + b"".join(items)
         return _item(0x420078, 1, body)
@@ -145,7 +145,7 @@ class BatchIdPlaceholderJourneyContractTests(unittest.TestCase):
             [b"create-placeholder-source", b"get-placeholder-target"],
         )
         self.assertIn((0x42000D, 2, struct.pack(">i", 2)), header)
-        self.assertIn((0x42000E, 6, b"\x01"), header)
+        self.assertIn((0x420010, 6, b"\x01"), header)
 
     def test_batch_parser_rejects_declared_count_that_disagrees_with_items(self) -> None:
         parser = getattr(responder, "_request_batch", None)
@@ -169,8 +169,8 @@ class BatchIdPlaceholderJourneyContractTests(unittest.TestCase):
         unordered, unordered_header = responder._request_batch(
             self._request_frame(
                 (
-                    self._batch_item(1, self._create_payload()),
-                    self._batch_item(10, _item(0x420094, 5, struct.pack(">I", 1))),
+                    self._batch_item(1, self._create_payload(), b"create-placeholder-source"),
+                    self._batch_item(10, _item(0x420094, 5, struct.pack(">I", 1)), b"get-placeholder-target"),
                 ),
                 ordered=False,
             )
@@ -192,8 +192,8 @@ class BatchIdPlaceholderJourneyContractTests(unittest.TestCase):
         wrong_identifier, wrong_header = responder._request_batch(
             self._request_frame(
                 (
-                    self._batch_item(1, self._create_payload()),
-                    self._batch_item(10, _item(0x420094, 7, b"guessed-key-id")),
+                    self._batch_item(1, self._create_payload(), b"create-placeholder-source"),
+                    self._batch_item(10, _item(0x420094, 7, b"guessed-key-id"), b"get-placeholder-target"),
                 )
             )
         )
@@ -203,8 +203,8 @@ class BatchIdPlaceholderJourneyContractTests(unittest.TestCase):
         reversed_items, reversed_header = responder._request_batch(
             self._request_frame(
                 (
-                    self._batch_item(10, _item(0x420094, 5, struct.pack(">I", 1))),
-                    self._batch_item(1, self._create_payload()),
+                    self._batch_item(10, _item(0x420094, 5, struct.pack(">I", 1)), b"get-placeholder-target"),
+                    self._batch_item(1, self._create_payload(), b"create-placeholder-source"),
                 )
             )
         )
