@@ -148,6 +148,53 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         self.assertEqual(5, summary["expected_cells"])
         self.assertEqual(5, summary["invoked_cells"])
 
+    def test_scoped_report_validates_exact_cells_without_claiming_full_matrix(self):
+        scope = self.report["events"][:2]
+        report = copy.deepcopy(self.report)
+        report["events"] = copy.deepcopy(scope)
+        summary = validate_report(
+            report,
+            self.catalog,
+            self.manifest,
+            catalog_sha256="c" * 64,
+            route_manifest_sha256="d" * 64,
+            expected_artifact_sha256="b" * 64,
+            scope_cells=scope,
+        )
+        self.assertTrue(summary["selected_scope_complete"])
+        self.assertFalse(summary["complete_matrix"])
+        self.assertEqual(2, summary["expected_cells"])
+        self.assertEqual(2, summary["invoked_cells"])
+
+    def test_scoped_report_rejects_missing_or_out_of_scope_events(self):
+        scope = self.report["events"][:2]
+        report = copy.deepcopy(self.report)
+        report["events"] = copy.deepcopy(scope)
+        report["events"].pop(0)
+        with self.assertRaisesRegex(ValueError, "missing route execution cells"):
+            validate_report(
+                report,
+                self.catalog,
+                self.manifest,
+                catalog_sha256="c" * 64,
+                route_manifest_sha256="d" * 64,
+                expected_artifact_sha256="b" * 64,
+                scope_cells=scope,
+            )
+        report = copy.deepcopy(self.report)
+        report["events"] = copy.deepcopy(scope)
+        report["events"].append(copy.deepcopy(self.report["events"][-1]))
+        with self.assertRaisesRegex(ValueError, "outside the declared route scope"):
+            validate_report(
+                report,
+                self.catalog,
+                self.manifest,
+                catalog_sha256="c" * 64,
+                route_manifest_sha256="d" * 64,
+                expected_artifact_sha256="b" * 64,
+                scope_cells=scope,
+            )
+
     def test_report_conforms_to_route_execution_evidence_schema(self):
         try:
             import jsonschema
