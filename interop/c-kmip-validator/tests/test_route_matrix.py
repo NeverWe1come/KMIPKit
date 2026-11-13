@@ -1279,6 +1279,21 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(result['values_checked'], expected)
         self.assertIn('kmipkit_ttlv_value_enumeration', result['invoked_symbols'])
 
+    def test_normative_item_type_value_case_uses_item_type_route_recipe(self):
+        executor = self.value_executor()
+        case = next(item for item in executor.catalog['test_cases']
+                    if item['case_id'] ==
+                    'test-norm-enumeration-value-enum-value-item-type-big-integer-00000004')
+        target = next(item for item in executor.catalog['normative_targets']
+                      if item['target_id'] == case['requires']['normative_target_id'])
+
+        result = executor.execute(case, '2.1', target)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result['known_values_checked'], 11)
+        self.assertIn('kmipkit_ttlv_item_create', result['invoked_symbols'])
+        self.assertIn('kmipkit_ttlv_decode', result['invoked_symbols'])
+
 
     def test_attribute_request_routes_are_independently_executed(self):
         from artifact_support import ROOT
