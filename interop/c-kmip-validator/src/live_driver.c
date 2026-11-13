@@ -3020,7 +3020,23 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     bool get_attributes_workflow = strcmp(test_case->case_id, "test-op-get-attributes") == 0 ||
         cryptographic_algorithm_attribute_workflow || cryptographic_length_attribute_workflow ||
         read_back_attribute_workflow;
-    bool get_attribute_list_workflow = strcmp(test_case->case_id, "test-op-get-attribute-list") == 0;
+    bool normative_get_attribute_list_payload_workflow =
+        strcmp(test_case->case_id,
+               "test-norm-payload-client-get-attribute-list-request-20-001") == 0 ||
+        strcmp(test_case->case_id,
+               "test-norm-payload-client-get-attribute-list-request-21-001") == 0;
+    bool get_attribute_list_workflow = strcmp(test_case->case_id, "test-op-get-attribute-list") == 0 ||
+        normative_get_attribute_list_payload_workflow;
+    const char *get_attribute_list_identifier_text =
+        getenv("KMIPKIT_C_ATTRIBUTE_REQUEST_IDENTIFIER");
+    const kmipkit_unique_identifier_v1_t get_attribute_list_identifier = {
+        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+        .abi_version = 1,
+        .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
+        .text_data = (const uint8_t *)get_attribute_list_identifier_text,
+        .text_length = get_attribute_list_identifier_text ?
+            (uint64_t)strlen(get_attribute_list_identifier_text) : 0
+    };
     bool get_constraints_workflow = strcmp(test_case->case_id, "test-op-get-constraints") == 0;
     bool get_usage_allocation_workflow =
         strcmp(test_case->case_id, "test-op-get-usage-allocation") == 0 ||
@@ -3430,7 +3446,12 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                 status = build_comment_attribute_mutation_item(
                     client, &placeholder, false, &item);
             } else {
-                status = build_get_attribute_list_item(NULL, &item);
+                const kmipkit_unique_identifier_v1_t *identifier =
+                    normative_get_attribute_list_payload_workflow &&
+                        get_attribute_list_identifier_text &&
+                        get_attribute_list_identifier_text[0] ?
+                        &get_attribute_list_identifier : NULL;
+                status = build_get_attribute_list_item(identifier, &item);
             }
             if (status == 0 && !request_item_is_valid(
                     item, request_validation_diagnostic, sizeof(request_validation_diagnostic))) {

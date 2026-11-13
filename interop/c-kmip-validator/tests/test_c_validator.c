@@ -29,6 +29,53 @@ static kmip_execution_outcome_t test_execute_case(
     return outcome;
 }
 
+static void test_get_attribute_list_request_identifier_forms(void) {
+    static const uint8_t identifier_bytes[] = "fixture-key-1";
+    const kmipkit_unique_identifier_v1_t identifier = {
+        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+        .abi_version = 1,
+        .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
+        .text_data = identifier_bytes,
+        .text_length = sizeof(identifier_bytes) - 1
+    };
+
+    for (uint8_t include_identifier = 0; include_identifier <= 1; ++include_identifier) {
+        kmipkit_get_attribute_list_request_t *request = NULL;
+        kmipkit_ttlv_structure_t *payload = NULL;
+        kmipkit_ttlv_structure_view_t *payload_view = NULL;
+        kmipkit_client_batch_item_t *batch_item = NULL;
+        kmipkit_client_batch_item_t *direct_item = NULL;
+        uint64_t payload_item_count = UINT64_MAX;
+        uint32_t operation = 0;
+        uint32_t direct_operation = 0;
+
+        assert(kmipkit_get_attribute_list_request_create(
+            include_identifier ? &identifier : NULL, &request) == 0);
+        assert(request != NULL);
+        assert(kmipkit_get_attribute_list_request_to_ttlv_payload(request, &payload) == 0);
+        assert(payload != NULL);
+        assert(kmipkit_ttlv_structure_view(payload, &payload_view) == 0);
+        assert(payload_view != NULL);
+        assert(kmipkit_ttlv_structure_view_item_count(payload_view, &payload_item_count) == 0);
+        assert(payload_item_count == (uint64_t)include_identifier);
+        assert(kmipkit_client_batch_item_get_attribute_list_from_request(request, &batch_item) == 0);
+        assert(batch_item != NULL);
+        assert(kmipkit_client_batch_item_operation(batch_item, &operation) == 0);
+        assert(operation == KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTE_LIST);
+        assert(kmipkit_client_batch_item_get_attribute_list(
+            include_identifier ? &identifier : NULL, &direct_item) == 0);
+        assert(direct_item != NULL);
+        assert(kmipkit_client_batch_item_operation(direct_item, &direct_operation) == 0);
+        assert(direct_operation == KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTE_LIST);
+
+        kmipkit_client_batch_item_release(batch_item);
+        kmipkit_client_batch_item_release(direct_item);
+        kmipkit_ttlv_structure_view_release(payload_view);
+        kmipkit_ttlv_structure_release(payload);
+        kmipkit_get_attribute_list_request_release(request);
+    }
+}
+
 int main(void) {
     printf("Running C validator unit tests...\n");
 
@@ -76,6 +123,9 @@ int main(void) {
     assert(kmipkit_client_batch_item_operation(public_item, &operation) == 0);
     assert(operation == KMIPKIT_ENUMERATION_OPERATION_DISCOVER_VERSIONS);
     kmipkit_client_batch_item_release(public_item);
+
+    // 0aa. The installed typed request API supports both optional identifier branches.
+    test_get_attribute_list_request_identifier_forms();
 
     // 0b. Generic TTLV construction and navigation use the installed library.
     kmipkit_raw_tag_t *raw_tag = NULL;

@@ -307,6 +307,8 @@ RECIPES = {
     'test-norm-payload-client-get-request-21-001': ((1, 10, 20), 'get'),
     'test-op-get-attributes': ((1, 11, 20), 'get_attributes'),
     'test-op-get-attribute-list': ((1, 12, 20), 'get_attribute_list'),
+    'test-norm-payload-client-get-attribute-list-request-20-001': ((1, 12, 20), 'get_attribute_list'),
+    'test-norm-payload-client-get-attribute-list-request-21-001': ((1, 12, 20), 'get_attribute_list'),
     'test-op-check': ((1, 9, 19, 20), 'check'),
     'test-op-activate': ((1, 18, 19, 20), 'activate'),
     'test-op-revoke': ((1, 19, 20), 'revoke'),
@@ -341,6 +343,8 @@ CONTROLLED_PEER_LOCAL_MODEL_CASES = frozenset({
     'test-batch-single-item-options-omitted',
     'test-norm-payload-client-get-request-20-001',
     'test-norm-payload-client-get-request-21-001',
+    'test-norm-payload-client-get-attribute-list-request-20-001',
+    'test-norm-payload-client-get-attribute-list-request-21-001',
     'test-norm-payload-client-get-usage-allocation-request-20-001',
     'test-norm-payload-client-get-usage-allocation-request-21-001',
     'test-norm-payload-client-query-request-20-001',
@@ -527,6 +531,8 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         if numbers(node, 0x42000E) != [1]:
             raise ValueError('fixture_cleanup_continuation_missing')
         implicit_target = case_id in ('test-op-get-attributes', 'test-op-get-attribute-list',
+            'test-norm-payload-client-get-attribute-list-request-20-001',
+            'test-norm-payload-client-get-attribute-list-request-21-001',
             'test-batch-create-activate-destroy', 'test-attr-cryptographic-algorithm',
             'test-attr-cryptographic-length', 'test-op-get-constraints',
             'test-norm-payload-client-get-usage-allocation-request-20-001',
@@ -537,6 +543,15 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
             raise ValueError('fixture_id_placeholder_missing')
         if len(list(descendants(node, 0x420093))) != len(expected):
             raise ValueError('fixture_batch_item_identity_missing')
+        if case_id in {
+                'test-norm-payload-client-get-attribute-list-request-20-001',
+                'test-norm-payload-client-get-attribute-list-request-21-001'}:
+            attribute_list_items = [item for item in node[2]
+                                    if item[0] == BATCH_ITEM_TAG and item[1] == 1 and
+                                    numbers(item, 0x42005C) == [12]]
+            if (len(attribute_list_items) != 1 or
+                    text_values(attribute_list_items[0], UNIQUE_IDENTIFIER_TAG) != ['fixture-key-1']):
+                raise ValueError('fixture_get_attribute_list_identifier_mismatch')
         if selected_recipe[1] == 'batch_placeholder_chain':
             items = [child for child in node[2] if child[0] == 0x42000F and child[1] == 1]
             if ([numbers(item, 0x42005C) for item in items] != [[1], [18], [10]] or
@@ -1241,6 +1256,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
              'test-norm-payload-client-get-usage-allocation-request-20-001',
              'test-norm-payload-client-get-usage-allocation-request-21-001'} else
          ('direct', 'standalone') if case['case_id'] in {'test-op-get-attributes', 'test-op-get-attribute-list',
+                                                         'test-norm-payload-client-get-attribute-list-request-20-001',
+                                                         'test-norm-payload-client-get-attribute-list-request-21-001',
                                                          'test-op-add-attribute', 'test-op-set-attribute',
                                                          'test-op-delete-attribute'}
          or case['case_id'] in attribute_case_ids else ('direct',))]
@@ -1547,6 +1564,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     'explicit' if variant == 'usage-allocation-explicit' else 'omitted')
                             else:
                                 run_environment['KMIPKIT_C_ATTRIBUTE_REQUEST_ROUTE'] = variant
+                            if case_id in {
+                                    'test-norm-payload-client-get-attribute-list-request-20-001',
+                                    'test-norm-payload-client-get-attribute-list-request-21-001'}:
+                                run_environment['KMIPKIT_C_ATTRIBUTE_REQUEST_IDENTIFIER'] = 'fixture-key-1'
                             run = subprocess.run([str(binary.resolve()), 'run', '--connection', str(connection_path),
                                 '--catalog', str(catalog_path), '--allow-mutations', '--output', str(result_path)],
                                 cwd=ROOT, capture_output=True,
@@ -1680,7 +1701,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                if item[0] == BATCH_ITEM_TAG]}
                                                if observation and case_id in {
                                                    'test-norm-payload-client-get-usage-allocation-request-20-001',
-                                                   'test-norm-payload-client-get-usage-allocation-request-21-001'} else {}),
+                                                   'test-norm-payload-client-get-usage-allocation-request-21-001',
+                                                   'test-norm-payload-client-get-attribute-list-request-20-001',
+                                                   'test-norm-payload-client-get-attribute-list-request-21-001'} else {}),
                                            **(peer_cleanup_evidence(observation, include_state_hash=True)
                                               if placeholder_chain_recipe and len(observation) == 2 else {}),
                                            **({'peer_request_operations': [
@@ -1803,10 +1826,11 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                     targets_by_id, codec)
                                                            for item in descendants(response_tree, BATCH_ITEM_TAG))):
                                             continue
-                                    elif (not is_network or target.get('role') != 'request'
-                                            or not any(request_payload_field_present(target, item,
-                                                targets_by_id, codec)
-                                                       for item in descendants(request_tree, BATCH_ITEM_TAG))):
+                                    elif (target.get('role') != 'request' or
+                                          not any(request_payload_field_present(target, item,
+                                              targets_by_id, codec)
+                                                  for item in descendants(request_tree, BATCH_ITEM_TAG)) or
+                                          (cell['action'] != 'encode' and not is_network)):
                                         continue
                                 else:
                                     continue
