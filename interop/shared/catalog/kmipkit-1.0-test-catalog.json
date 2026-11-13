@@ -56275,7 +56275,7 @@
         "assertions": [
           "response_matches_operation_contract"
         ],
-        "mutation": "read_only",
+        "mutation": "mutating",
         "status": "planned"
       }
     },
@@ -56377,7 +56377,7 @@
         "assertions": [
           "response_matches_operation_contract"
         ],
-        "mutation": "read_only",
+        "mutation": "mutating",
         "status": "planned"
       }
     },
@@ -56479,7 +56479,7 @@
         "assertions": [
           "response_matches_operation_contract"
         ],
-        "mutation": "read_only",
+        "mutation": "mutating",
         "status": "planned"
       }
     },
@@ -56530,7 +56530,7 @@
         "assertions": [
           "response_matches_operation_contract"
         ],
-        "mutation": "read_only",
+        "mutation": "mutating",
         "status": "planned"
       }
     },
