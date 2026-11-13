@@ -1,5 +1,6 @@
 """Executable KMIPKIT-0092 route evidence regression contracts."""
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -54,7 +55,7 @@ class PinnedSourceContract(unittest.TestCase):
                 self.assertIsNotNone(match)
                 self.assertEqual(expected, match.group(1))
         readme_match = re.search(
-            r'from source commit `([0-9a-f]{40})`',
+            r'from release commit `([0-9a-f]{40})`',
             (ROOT / 'interop/rust-kmip-validator/README.md').read_text(),
         )
         self.assertIsNotNone(readme_match)
@@ -82,6 +83,44 @@ class PinnedSourceContract(unittest.TestCase):
                 'artifact_sha256': '0' * 64,
             }))
             self.assertFalse(artifact_matches_pin(bundle, provenance))
+
+    def test_rust_build_caches_are_isolated_by_installed_release_commit(self):
+        source = ROOT / 'interop/rust-kmip-validator/tools/artifact_paths.py'
+        self.assertTrue(source.is_file(), 'consumer build paths must be keyed by installed source commit')
+        module_spec = importlib.util.spec_from_file_location('artifact_paths', source)
+        self.assertIsNotNone(module_spec)
+        self.assertIsNotNone(module_spec.loader)
+        module = importlib.util.module_from_spec(module_spec)
+        module_spec.loader.exec_module(module)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            provenance = root / 'interop/.local/rust-live/provenance.json'
+            provenance.parent.mkdir(parents=True)
+            provenance.write_text(json.dumps({
+                'library_commit': EXPECTED_SOURCE_COMMIT,
+                'artifact_sha256': 'a' * 64,
+            }))
+            expected_target = root / 'interop/rust-kmip-validator/target'
+            self.assertEqual(
+                expected_target / f'consumer-{EXPECTED_SOURCE_COMMIT}',
+                module.rust_target_dir(root),
+            )
+            self.assertEqual(
+                expected_target / f'coverage-{EXPECTED_SOURCE_COMMIT}',
+                module.coverage_target_dir(root),
+            )
+            self.assertEqual(
+                root / 'interop/.local/rust-test-server' / f'harness-target-{EXPECTED_SOURCE_COMMIT}',
+                module.test_server_target_dir(root),
+            )
+            provenance.write_text(json.dumps({
+                'library_commit': '8281fef2e9ca211fde1e1d8e21525a672287eead',
+                'artifact_sha256': 'b' * 64,
+            }))
+            self.assertNotEqual(
+                expected_target / f'consumer-{EXPECTED_SOURCE_COMMIT}',
+                module.rust_target_dir(root),
+            )
 
 
 class MatrixContract(unittest.TestCase):
