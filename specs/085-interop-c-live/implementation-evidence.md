@@ -306,3 +306,44 @@ Verification on the current C worktree:
 This is incremental evidence only. Thousands of C route cells and the Rust,
 Java, and Python validators still require implementation and exact-head CI.
 The PR remains a WIP draft.
+
+### Get Usage Allocation optional identifier and Locate placeholder route
+
+The KMIP 2.0 §6.1.22 Table 214 and KMIP 2.1 §6.1.23 Table 232 recipes now
+execute a three-item ordered batch: Locate the fixture's single active,
+usage-limited object; allocate one unit using its explicit Unique Identifier;
+then allocate one unit with Unique Identifier omitted. The omission consumes
+the ID Placeholder established by Locate. Get Usage Allocation is not itself
+one of the ID Placeholder producers listed in §6.1, so an earlier explicit
+Get Usage Allocation request cannot establish the value for the omitted form.
+The controlled peer checks the exact request fields, unique batch item IDs,
+response correlation, success statuses, and returned identifiers. The C
+consumer checks the typed Locate result and each typed allocation result.
+
+Red/Green/Refactor evidence:
+
+- Red commit `939b6aaf`: updated the failing route contract to require a
+  preceding placeholder producer. The old two-item recipe failed its
+  operation-order and fixture-shape assertions; its installed TLS exchange
+  had previously been rejected locally with `InvalidInput` and `NotSent`.
+- Green commit `13a885bf`: added the Locate producer and the explicit and
+  omitted Get Usage Allocation items; updated the peer state model and added
+  the actual TLS route test.
+- Refactor: extracted the typed Locate-response check into a dedicated helper
+  and recorded the normative behavior and verification here.
+
+Verification on the current implementation head:
+
+- Focused Get Usage Allocation route tests: 9/9 passed.
+- The installed C consumer passed all 12 controlled TLS 1.3/mTLS cells across
+  KMIP 2.0 and 2.1, TTLV/JSON/XML, and raw TLS/HTTPS. Each exchange sent the
+  ordered Locate/Get Usage Allocation/Get Usage Allocation batch and verified
+  the omitted identifier response against the Locate result.
+- CTest: 7/7 passed, including route-matrix contracts, both controlled TLS
+  peers, artifact checkout history, and the offline generic route.
+- `cmake --build interop/c-kmip-validator/build --parallel 4` and
+  `git diff --check` passed.
+
+This closes the two optional-identifier recipe rows only. The C route matrix
+and the remaining language validators still have outstanding routes; the PR
+remains WIP until the full matrix and exact-head CI gates are green.

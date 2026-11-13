@@ -780,6 +780,33 @@ static bool get_usage_allocation_response_matches_identifier(
         same_text_identifier(created_identifier, &allocation_identifier);
 }
 
+static bool locate_response_matches_single_identifier(
+    kmipkit_client_batch_item_response_t *response_item,
+    const kmipkit_unique_identifier_v1_t *expected_identifier,
+    int32_t *out_status) {
+    uint8_t present = 0;
+    uint8_t payload_present = 0;
+    uint8_t located_items_present = 0;
+    int32_t located_items = 0;
+    uint64_t identifier_count = 0;
+    kmipkit_unique_identifier_v1_t located_identifier = {
+        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+        .abi_version = 1
+    };
+    int32_t status = kmipkit_client_batch_item_response_locate(
+        response_item, &present, &payload_present, &located_items_present,
+        &located_items, &identifier_count);
+    if (status == 0 && identifier_count == 1) {
+        status = kmipkit_client_batch_item_response_locate_unique_identifier_at(
+            response_item, 0, &located_identifier);
+    } else if (status == 0) {
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    *out_status = status;
+    return status == 0 && present && payload_present && located_items_present &&
+        located_items == 1 && same_text_identifier(expected_identifier, &located_identifier);
+}
+
 static bool query_response_ttlv_matches_field_count(
     kmipkit_client_batch_item_response_t *response_item,
     uint64_t expected_field_count,
@@ -2538,6 +2565,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             status = KMIPKIT_ERROR_INVALID_INPUT;
         }
     } else if (get_usage_allocation_identifier_variants_workflow) {
+        /* KMIP §6.1 names Locate as a placeholder producer; Get Usage Allocation
+         * itself does not replace the placeholder after its explicit-ID item. */
         static const uint8_t fixture_identifier[] = "fixture-key-1";
         const kmipkit_unique_identifier_v1_t explicit_identifier = {
             .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
@@ -2962,28 +2991,10 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                     memcmp(id.data, expected_item_id, expected_item_id_length) == 0 &&
                     metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS;
                 if (index == 0) {
-                    uint8_t present = 0;
-                    uint8_t payload_present = 0;
-                    uint8_t located_items_present = 0;
-                    int32_t located_items = 0;
-                    uint64_t identifier_count = 0;
-                    kmipkit_unique_identifier_v1_t located_identifier = {
-                        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
-                        .abi_version = 1
-                    };
-                    status = kmipkit_client_batch_item_response_locate(
-                        *response_slot, &present, &payload_present, &located_items_present,
-                        &located_items, &identifier_count);
-                    if (status == 0 && identifier_count == 1) {
-                        status = kmipkit_client_batch_item_response_locate_unique_identifier_at(
-                            *response_slot, 0, &located_identifier);
-                    } else if (status == 0) {
-                        status = KMIPKIT_ERROR_INVALID_INPUT;
-                    }
-                    get_matched = status == 0 && response_item_id_valid &&
+                    get_matched = response_item_id_valid &&
                         metadata.operation == KMIPKIT_ENUMERATION_OPERATION_LOCATE &&
-                        present && payload_present && located_items_present && located_items == 1 &&
-                        same_text_identifier(&expected_allocation_identifier, &located_identifier);
+                        locate_response_matches_single_identifier(
+                            *response_slot, &expected_allocation_identifier, &status);
                     if (status == 0 && !get_matched) status = KMIPKIT_ERROR_INVALID_INPUT;
                 } else {
                     bool allocation_response_valid = response_item_id_valid &&
@@ -3000,9 +3011,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                 }
                 if (status != 0) {
                     break;
-                } else {
-                    continue;
                 }
+                continue;
             } else {
                 bool expected_get_status = continue_after_failure_workflow &&
                     metadata.operation == KMIPKIT_ENUMERATION_OPERATION_GET &&

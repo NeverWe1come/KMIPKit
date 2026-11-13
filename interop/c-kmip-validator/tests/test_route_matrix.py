@@ -112,6 +112,7 @@ class RouteMatrixTests(unittest.TestCase):
             assert_recipe(request, 'test-norm-payload-client-get-usage-allocation-request-21-001', '2.1')
 
     def test_get_usage_allocation_identifier_forms_execute_after_locate_placeholder(self):
+        """KMIP v2.0 §6.1.22 Table 214 and v2.1 §6.1.23 Table 232 specify the optional identifier; §6.1 defines the Locate placeholder producer."""
         from artifact_support import ROOT
         from route_peer import execute_network_cells
 
