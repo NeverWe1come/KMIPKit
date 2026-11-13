@@ -143,7 +143,7 @@ class ArtifactCheckoutContractTests(unittest.TestCase):
         self.assertIn(pin, readme)
         self.assertIn("**Base**: `release/1.0.0` at", spec)
         self.assertEqual(pin, shared_route_source_pin())
-        self.assertEqual(pin, "9a16cc90a12205101d22a38501a5e74c665df4dc")
+        self.assertEqual(pin, "489fafc79ef89db2524eafa7a6c6482f5cf75d97")
 
         subprocess.run(
             ["git", "cat-file", "-e", f"{pin}^{{tree}}"], cwd=ROOT, check=True
