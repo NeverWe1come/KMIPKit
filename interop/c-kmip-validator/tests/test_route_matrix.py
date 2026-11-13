@@ -323,6 +323,46 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertIn('kmipkit_ttlv_value_date_time', result['invoked_symbols'])
         self.assertEqual(result['constructed_wire'], result['decoded_wire'])
 
+    def test_generic_ttlv_value_constructors_are_catalogued_for_route_execution(self):
+        expected = {
+            'kmipkit_ttlv_value_long_integer', 'kmipkit_ttlv_value_boolean',
+            'kmipkit_ttlv_value_interval', 'kmipkit_ttlv_value_date_time_extended',
+            'kmipkit_ttlv_value_big_integer', 'kmipkit_ttlv_value_text_string',
+            'kmipkit_ttlv_value_byte_string', 'kmipkit_ttlv_value_structure',
+        }
+
+        self.assertLessEqual(expected, self.runner.LOCAL_SYMBOLS)
+
+    def test_generic_ttlv_constructors_roundtrip_binary_string_and_structure_members(self):
+        """OASIS KMIP 2.1 §7.2, §7.40, and §9.10 require their declared TTLV value types."""
+        from artifact_support import INSTALL, ROOT
+        from route_ttlv import TreeAbi, encode
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        targets = {item['target_id']: item for item in catalog['normative_targets']}
+        tags = {item['name']: int(item['wire_value'], 16)
+                for item in catalog['normative_targets'] if item['kind'] == 'tag'}
+        abi = TreeAbi(INSTALL / 'lib/libkmipkit_ffi.so')
+        cases = (
+            ('KMIPKIT-ELEM-STRUCTURE-MEMBER-7-2-ASYNCHRONOUS-CORRELATION-VALUE',
+             'kmipkit_ttlv_value_byte_string'),
+            ('KMIPKIT-ELEM-MESSAGE-FIELD-9-10-SERVER-CORRELATION-VALUE',
+             'kmipkit_ttlv_value_text_string'),
+            ('KMIPKIT-ELEM-STRUCTURE-MEMBER-2-8-SPLIT-KEY-PRIME-FIELD-SIZE',
+             'kmipkit_ttlv_value_big_integer'),
+            ('KMIPKIT-ELEM-MESSAGE-FIELD-8-1-REQUEST-HEADER',
+             'kmipkit_ttlv_value_structure'),
+        )
+
+        for target_id, symbol in cases:
+            with self.subTest(target_id=target_id):
+                target = targets[target_id]
+                trees = self.runner.generic_tree_fixtures(target, catalog, tags, '2.1')
+                self.assertTrue(trees)
+                result = abi.roundtrip(encode(trees[0]))
+                self.assertIn(symbol, result['invoked_symbols'])
+                self.assertEqual(result['constructed_wire'], result['decoded_wire'])
+
     def test_reserved_tag_is_not_constructed_as_an_assigned_ttlv_item(self):
         from artifact_support import ROOT
         catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
