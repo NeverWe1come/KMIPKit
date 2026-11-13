@@ -339,7 +339,7 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertIn('kmipkit_ttlv_item_create', result['invoked_symbols'])
 
     def test_ephemeral_boolean_field_roundtrips_for_both_kmip_versions(self):
-        """OASIS KMIP 2.0 §8.3/Table 358 and KMIP 2.1 §8.3/Table 396 define Ephemeral as Boolean."""
+        """OASIS KMIP 2.0 §8.3/Table 358 and KMIP 2.1 §8.3/Table 396 define Ephemeral as Boolean; §10.1 defines its eight-octet encoding."""
         from artifact_support import INSTALL, ROOT
         from route_ttlv import TreeAbi, encode
 
@@ -349,6 +349,7 @@ class RouteMatrixTests(unittest.TestCase):
         tags = {item['name']: int(item['wire_value'], 16)
                 for item in catalog['normative_targets'] if item['kind'] == 'tag'}
         abi = TreeAbi(INSTALL / 'lib/libkmipkit_ffi.so')
+        self.assertIn('kmipkit_request_message_from_ttlv', self.runner.LOCAL_SYMBOLS)
 
         for version in ('2.0', '2.1'):
             with self.subTest(protocol_version=version):
@@ -358,7 +359,7 @@ class RouteMatrixTests(unittest.TestCase):
                             for tree in trees]
                 self.assertEqual(booleans, [
                     (tags['Ephemeral'], 6, bytes(8)),
-                    (tags['Ephemeral'], 6, bytes.fromhex('0100000000000000')),
+                    (tags['Ephemeral'], 6, bytes.fromhex('0000000000000001')),
                 ])
                 for tree in trees:
                     result = abi.roundtrip(encode(tree))
