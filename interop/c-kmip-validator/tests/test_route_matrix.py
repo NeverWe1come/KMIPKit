@@ -484,6 +484,27 @@ class RouteMatrixTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'interop_function_sequence_mismatch'):
             assert_interop_request(request((1, 3, 2)), '2.1')
 
+    def test_interop_peer_models_begin_end_reset_without_retaining_identifier(self):
+        """OASIS KMIP 2.0 §6.1.25 and KMIP 2.1 §6.1.26 define test-state controls."""
+        from route_peer import PeerState, parse, tlv
+
+        items = []
+        for function in (1, 2, 3):
+            payload = tlv(0x420160, 5, function.to_bytes(4, 'big'))
+            payload += tlv(0x420161, 7, b'private-fixture-identifier')
+            batch_item = tlv(0x42005C, 5, (52).to_bytes(4, 'big'))
+            batch_item += tlv(0x420079, 1, payload)
+            items.append(tlv(0x42000F, 1, batch_item))
+        request = parse(tlv(0x420078, 1, b''.join(items)))
+        state = PeerState()
+
+        evidence = state.execute(request)
+
+        self.assertEqual(evidence['effects'], ['interop_begun', 'interop_ended', 'interop_reset'])
+        self.assertEqual(evidence['peer_observed_state_before_sha256'],
+                         evidence['peer_observed_state_after_sha256'])
+        self.assertNotIn(b'private-fixture-identifier', repr(state.__dict__).encode())
+
     def test_logout_peer_requires_the_ticket_returned_by_login(self):
         """OASIS KMIP 2.0 §6.1.30 and 2.1 §6.1.31 require Logout's Ticket."""
         from route_peer import assert_login_logout_exchange, parse, tlv
