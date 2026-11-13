@@ -662,6 +662,35 @@ class RouteMatrixTests(unittest.TestCase):
                                 event['public_api_symbol'] == 'kmipkit_client_batch_item_get'
                                 for event in events))
 
+    def test_normative_get_attribute_list_request_payload_routes_execute_in_both_versions(self):
+        """OASIS KMIP 2.0 §6.1.21/Table 211 and KMIP 2.1 §6.1.21/Table 226 define this payload."""
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_ids = {
+            'test-norm-payload-client-get-attribute-list-request-20-001',
+            'test-norm-payload-client-get-attribute-list-request-21-001',
+        }
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] in case_ids]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks))
+        for case_id in case_ids:
+            case_checks = [check for check in checks if check['case_id'] == case_id]
+            self.assertEqual(len(case_checks), 6)
+            self.assertTrue(all('kmipkit_client_batch_item_get_attribute_list_from_request'
+                                in check['public_api_trace_symbols'] for check in case_checks))
+            self.assertTrue(any(event['case_id'] == case_id and
+                                event['public_api_symbol'] ==
+                                'kmipkit_client_batch_item_get_attribute_list_from_request'
+                                for event in events))
+
     def test_reserved_tag_is_not_constructed_as_an_assigned_ttlv_item(self):
         from artifact_support import ROOT
         catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
