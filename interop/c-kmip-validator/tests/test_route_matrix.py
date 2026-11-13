@@ -746,7 +746,7 @@ class RouteMatrixTests(unittest.TestCase):
                                                if case['case_id'] in expected]}
         events, _, checks = execute_network_cells(
             ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest,
-            protocol_versions=('2.1',), network_combinations=(('TTLV', 'raw_tls'),))
+            protocol_versions=('2.0', '2.1'), network_combinations=(('TTLV', 'raw_tls'),))
         self.assertTrue(checks and all(check['status'] == 'passed' for check in checks))
         for case_id, symbol in expected.items():
             with self.subTest(case_id=case_id):
@@ -755,6 +755,9 @@ class RouteMatrixTests(unittest.TestCase):
                                     event['action'] == 'decode' and
                                     event['transport'] is None and
                                     event['status'] == 'passed' for event in events), symbol)
+                self.assertEqual({event['protocol_version'] for event in events
+                                  if event['case_id'] == case_id and
+                                  event['public_api_symbol'] == symbol}, {'2.0', '2.1'})
 
     def test_add_attribute_operation_runs_from_the_installed_c_consumer(self):
         from artifact_support import ROOT
