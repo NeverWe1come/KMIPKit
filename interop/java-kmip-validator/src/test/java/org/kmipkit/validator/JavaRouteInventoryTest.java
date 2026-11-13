@@ -16,11 +16,14 @@ class JavaRouteInventoryTest {
         var catalog = CatalogLoader.load(Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json"));
         var inventory = JavaRouteInventory.classify(catalog);
         var catalogOperations = catalog.cases().stream()
+                .filter(testCase -> "server_exchange".equals(testCase.execution().mode()))
                 .map(CatalogLoader.CatalogCase::operation)
                 .collect(Collectors.toSet());
 
         assertEquals(catalogOperations, inventory.keySet());
         assertEquals(59, inventory.size());
+        assertFalse(inventory.containsKey("Adjustment Type"),
+                "Local normative values are not server operation routes.");
         assertEquals(JavaRouteInventory.Status.EXECUTABLE_TYPED, inventory.get("Query").status());
         assertEquals(JavaRouteInventory.Status.TYPED_API_PENDING, inventory.get("Log").status());
         assertTrue(inventory.get("Log").reason().contains("server log"));

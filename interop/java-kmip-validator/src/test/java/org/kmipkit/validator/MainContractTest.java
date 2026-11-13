@@ -35,10 +35,19 @@ class MainContractTest {
                 "--artifact-manifest", manifest.toString(), "--output-dir", output.toString());
 
         JsonNode report = new ObjectMapper().readTree(output.resolve("results.json").toFile());
-        assertEquals(212, report.path("summary").path("total").asInt());
-        assertEquals(67, report.path("summary").path("passed").asInt());
+        var loadedCatalog = CatalogLoader.load(catalog);
+        long expectedTotal = loadedCatalog.cases().stream()
+                .filter(testCase -> testCase.execution().protocolVersions().contains("2.1")).count();
+        long expectedLocalChecks = loadedCatalog.cases().stream()
+                .filter(testCase -> testCase.execution().protocolVersions().contains("2.1"))
+                .filter(testCase -> "local_model".equals(testCase.execution().mode()))
+                .filter(testCase -> testCase.requires().hasNonNull("enum_type")
+                        || testCase.requires().hasNonNull("bitmask_type")).count();
+        assertEquals(expectedTotal, report.path("summary").path("total").asInt());
+        assertEquals(expectedLocalChecks, report.path("summary").path("passed").asInt());
         assertEquals(0, report.path("summary").path("policy_restricted").asInt());
-        assertEquals(145, report.path("summary").path("not_run").asInt());
+        assertEquals(expectedTotal - expectedLocalChecks, report.path("summary").path("not_run").asInt());
+        assertEquals(0, report.path("summary").path("failed").asInt());
         for (JsonNode result : report.path("cases")) {
             if ("policy_restricted".equals(result.path("status").asText())) {
                 assertEquals("unknown", result.path("server_compatibility").asText());
@@ -53,12 +62,43 @@ class MainContractTest {
     }
 
     @Test
-    void planDoesNotCountKmip20RoutesBlockedByThePinnedArtifact() throws Exception {
+    void planAllowsImplementedTypedRoutesForKmip20FromThePinnedReleaseArtifact() throws Exception {
         Path connection = connection("2.0", "typed-protocol");
         String plan = assertCommandOutput(0, "plan", "--connection", connection.toString(),
                 "--catalog", "../shared/catalog/kmipkit-1.0-test-catalog.json");
-        assertTrue(plan.contains("Server exchanges executable through selected Java API level: 0"));
-        assertTrue(plan.contains("KMIP 2.0 live routes are blocked by the pinned artifact"));
+        assertTrue(plan.contains("Server exchanges executable through selected Java API level: 4"));
+        assertTrue(!plan.contains("KMIP 2.0 live routes are blocked by the pinned artifact"));
+    }
+
+    @Test
+    void unsupportedNormativeTtlvTargetIsReportedAsCoveragePendingNotLibraryFailure() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode catalog = (ObjectNode) mapper.readTree(
+                Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json").toFile());
+        JsonNode localTag = catalog.path("test_cases").findParents("case_id").stream()
+                .filter(testCase -> "local_model".equals(testCase.path("execution").path("mode").asText()))
+                .filter(testCase -> testCase.path("execution").path("protocol_versions").isArray()
+                        && java.util.stream.StreamSupport.stream(
+                                testCase.path("execution").path("protocol_versions").spliterator(), false)
+                                .anyMatch(version -> "2.1".equals(version.asText())))
+                .filter(testCase -> !testCase.path("requires").hasNonNull("enum_type"))
+                .filter(testCase -> !testCase.path("requires").hasNonNull("bitmask_type"))
+                .findFirst().orElseThrow();
+        var selected = mapper.createArrayNode().add(localTag.deepCopy());
+        catalog.set("test_cases", selected);
+        ((ObjectNode) catalog.path("statistics")).put("total_cases", 1);
+        Path catalogFile = temporaryDirectory.resolve("unsupported-local-ttlv-catalog.json");
+        mapper.writeValue(catalogFile.toFile(), catalog);
+        Path output = temporaryDirectory.resolve("unsupported-local-ttlv-report");
+
+        assertCommand(0, "run", "--connection", connection().toString(), "--catalog", catalogFile.toString(),
+                "--artifact-manifest", Path.of(System.getProperty("kmipkit.artifactManifest")).toString(),
+                "--output-dir", output.toString());
+
+        JsonNode result = mapper.readTree(output.resolve("results.json").toFile()).path("cases").get(0);
+        assertEquals("not_run", result.path("status").asText());
+        assertEquals("unknown", result.path("server_compatibility").asText());
+        assertTrue(result.path("diagnostic").asText().contains("No Java generic TTLV recipe"));
     }
 
     @Test
