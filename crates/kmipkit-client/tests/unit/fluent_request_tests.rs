@@ -1964,6 +1964,18 @@ fn kmip30_fluent_builders_cover_all_assigned_client_routes() {
 }
 
 #[test]
+fn kmip30_create_credential_rejects_a_type_that_does_not_match_its_object() {
+    let mut client = failed_request_client();
+    let builder = client.request().create_credential(
+        kmipkit_protocol::CredentialType::HashedPassword,
+        AttributeSet::new(),
+        kmip30_password_credential(),
+    );
+
+    assert!(builder.validate().is_err());
+}
+
+#[test]
 fn kmip30_fluent_execute_requires_an_explicit_v3_version() {
     let (mut client, transport, captured) = client_for(ExchangeScript::FailBeforeWrite);
     let builder = client.request().create_group(AttributeSet::new());
