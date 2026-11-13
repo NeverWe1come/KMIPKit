@@ -56,9 +56,11 @@ version, catalog digest, exact library commit and installed library digest.
 The capability profile is informational; it never suppresses a probe.
 
 The pinned release artifact preserves the configured KMIP version. Controlled
-TLS fixtures exercise Discover Versions, Ping, Locate, Query, Log, Login, and
-Logout. The Logout recipe obtains the Ticket from a successful KMIP 2.1 Login,
-returns it in the Logout request, and checks the empty Logout response payload.
+TLS fixtures exercise Discover Versions, Ping, Locate, Query, Log, Login,
+Logout, and Interop. The Logout recipe obtains the Ticket from a successful
+KMIP 2.1 Login, returns it in the Logout request, and checks the empty Logout
+response payload. Interop sends Begin, End, and Reset in an ordered batch with
+distinct batch-item IDs and checks each successful empty response.
 The ordered Create/Destroy, Create/Activate/Revoke/Destroy,
 Create/Check/Revoke/Destroy, Create/Revoke/Destroy, Create/Destroy/Revoke/Destroy,
 Create/Get/Destroy, Create/Get Attributes/Destroy, Create/Get Attribute

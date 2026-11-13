@@ -7,11 +7,11 @@ network recipes. Library sources are unchanged.
 
 | Requirement | C evidence and remaining work |
 |---|---|
-| KMIPKIT-0092-FR-001, FR-006 | Shared matrix generator, installed header/symbol/constant probe, exact `release/1.0.0` pin `9a16cc90a12205101d22a38501a5e74c665df4dc`, library digest, compiled-consumer provenance comparison. |
+| KMIPKIT-0092-FR-001, FR-006 | Shared matrix generator, installed header/symbol/constant probe, exact `release/1.0.0` pin `489fafc79ef89db2524eafa7a6c6482f5cf75d97`, library digest, compiled-consumer provenance comparison. |
 | KMIPKIT-0092-FR-002, FR-007, FR-009 | Per-cell evidence and explicit pending sidecar; duplicate protection; common schema and validator in CI. Incomplete recipes keep the gate failing. |
 | KMIPKIT-0092-FR-003 | Exact assigned scalar values, reserved-tag rejection, typed attributes, and cryptographic-parameter field/TTLV round trips are checked locally. Broader semantic branch/model recipes remain pending. No absent encoder/send/high-level API is fabricated. |
 | KMIPKIT-0092-FR-004 | Ordered, redacted tree digests are retained per cell. Cross-language digest normalization/parity is pending. |
-| KMIPKIT-0092-FR-005 | Controlled peers parse all six encoding/transport pairs, check recipe fields, numeric ordered results, lifecycle transitions and deletion. Check, Get Attribute List, Log, and Revoke response TTLV accessors are read and structurally checked. Cryptographic, asynchronous, and remaining positive operation recipes are pending. |
+| KMIPKIT-0092-FR-005 | Controlled peers parse all six encoding/transport pairs, check recipe fields, numeric ordered results, lifecycle transitions and deletion. Check, Get Attribute List, Log, Revoke, and Interop response TTLV accessors are read and structurally checked. Cryptographic, asynchronous, and remaining positive operation recipes are pending. |
 | KMIPKIT-0092-FR-008 | Reports contain public identities, axes, digests, sanitized failure codes and numeric outcomes. Request bodies and fixture keys/tickets never enter evidence. |
 
 The exact OASIS document and section remain on each case in the generated shared
@@ -590,3 +590,32 @@ only and is never recorded in diagnostics, fixture reports, or matrix evidence.
 
 This recipe verifies KMIPKit against a controlled peer only. External KMS
 compatibility and the remaining C route recipes are still unverified.
+
+### Interop Begin, End, and Reset
+
+The installed C validator executes the KMIP Interop operation as one ordered
+three-item batch: Begin, End, then Reset. Each item has a unique Batch Item ID,
+as required for multi-item batches; the peer checks the ordered function values
+and one shared identifier without recording the identifier. It returns three
+successful responses with matching item IDs and empty Response Payloads. The C
+consumer checks operation and status metadata for every item and exercises the
+generic Interop response-TTLV accessor for the complete item shape. The peer
+also models the transient test state using only a SHA-256 identifier key and
+reports only the public transition labels. This follows OASIS KMIP 2.0
+§6.1.25/Table 223 and KMIP 2.1 §6.1.26/Tables 241–243.
+
+- Red commits `4337c0254`, `abaface48`, `150afe86e`, and `f885a79b2` added
+  executable-recipe, ordered-fields, state-transition, and unique batch-ID
+  regressions. The missing-recipe and missing-ID checks were observed failing.
+- Green commit `c4cf549c3` implements the typed C batch, response checks, and
+  controlled peer behavior. The first live attempt exposed the KMIPKit rule
+  that every item in a multi-item batch needs a unique Batch Item ID; the
+  request and response fixtures now preserve and check those IDs.
+- Verification: CMake build passed; the three focused Interop tests passed;
+  the controlled peer passed all 12 version/encoding/transport combinations
+  (KMIP 2.0 and 2.1; TTLV, JSON, XML; raw TLS and HTTPS); CTest passed 7/7,
+  including the full C route-contract suite and the KMIP 2.0/2.1 TLS fixtures.
+- The full C route-matrix completeness gate remains incomplete. These results
+  demonstrate the installed C consumer against a controlled peer only; no
+  external KMS compatibility is asserted. Interop's test-state mutation must
+  be classified and gated by the shared catalog update in PR #180.
