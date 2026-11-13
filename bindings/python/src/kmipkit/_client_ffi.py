@@ -276,6 +276,7 @@ ffi.cdef(
     int32_t kmipkit_symmetric_key_builder_set_name(kmipkit_symmetric_key_builder_t *, const uint8_t *, uint64_t);
     int32_t kmipkit_symmetric_key_builder_add_catalogued_attribute(kmipkit_symmetric_key_builder_t *, uint32_t, kmipkit_ttlv_value_t *);
     int32_t kmipkit_symmetric_key_builder_add_attribute_item(kmipkit_symmetric_key_builder_t *, kmipkit_ttlv_item_t *);
+    int32_t kmipkit_symmetric_key_builder_insert_attribute_item(kmipkit_symmetric_key_builder_t *, uint64_t, kmipkit_ttlv_item_t *);
     int32_t kmipkit_symmetric_key_builder_add_vendor_attribute(kmipkit_symmetric_key_builder_t *, const uint8_t *, uint64_t, const uint8_t *, uint64_t, kmipkit_ttlv_item_t *);
     int32_t kmipkit_symmetric_key_builder_build_batch_item(kmipkit_symmetric_key_builder_t *, kmipkit_client_batch_item_t **);
     int32_t kmipkit_symmetric_key_builder_execute_v1(kmipkit_symmetric_key_builder_t *, kmipkit_client_t *, kmipkit_codec_limits_t *, kmipkit_client_batch_response_t **);

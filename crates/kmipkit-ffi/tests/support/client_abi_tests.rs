@@ -10052,6 +10052,68 @@ fn ffi_last_error_snapshots_are_isolated_between_threads() {
 }
 
 #[test]
+fn ffi_symmetric_builder_validation_delivery_preserves_internal_failure_metadata() {
+    // KMIPKIT-0096-FR-003; KMIP v2.1 sections 4-5; ADR-0012 pre-send validation.
+    // Corrupt/empty owners must fail closed; internal lock failures retain their category.
+    let poisoned = Mutex::new(Some(
+        kmipkit_client::fluent::CreateSymmetricKeyBuilder::detached(),
+    ));
+    let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        let _guard = poisoned
+            .lock()
+            .expect("test builder lock is initially healthy");
+        panic!("poison the isolated builder test mutex");
+    }));
+    let cases = [
+        (
+            HandleValue::Structure(Structure::new()),
+            ERROR_INVALID_INPUT,
+            ERROR_CATEGORY_VALIDATION,
+            ERROR_CAUSE_INVALID_INPUT,
+            DELIVERY_STATE_NOT_SENT,
+        ),
+        (
+            HandleValue::SymmetricKeyBuilder(Mutex::new(None)),
+            ERROR_INVALID_INPUT,
+            ERROR_CATEGORY_VALIDATION,
+            ERROR_CAUSE_INVALID_INPUT,
+            DELIVERY_STATE_NOT_SENT,
+        ),
+        (
+            HandleValue::SymmetricKeyBuilder(poisoned),
+            ERROR_INTERNAL,
+            ERROR_CATEGORY_OTHER,
+            ERROR_CAUSE_OTHER,
+            DELIVERY_STATE_NONE,
+        ),
+    ];
+    for (owner, expected_status, expected_category, expected_cause, expected_delivery) in cases {
+        let builder = make_handle(Kind::SymmetricKeyBuilder, owner);
+        let mut output = ptr::null_mut();
+        assert_eq!(
+            super::fluent::kmipkit_symmetric_key_builder_build_batch_item(builder, &mut output),
+            expected_status
+        );
+        assert!(output.is_null());
+        let (mut status, mut category, mut cause, mut delivery) = (0, 0, 0, 0);
+        assert_eq!(
+            kmipkit_last_error_get(&mut status, &mut category, &mut cause, &mut delivery),
+            SUCCESS
+        );
+        assert_eq!(
+            (status, category, cause, delivery),
+            (
+                expected_status,
+                expected_category,
+                expected_cause,
+                expected_delivery
+            )
+        );
+        super::fluent::kmipkit_symmetric_key_builder_release(builder);
+    }
+}
+
+#[test]
 fn ffi_constructs_a_client_from_validated_https_configuration() {
     let pki = EphemeralPki::generate().expect("ephemeral PKI generation succeeds");
     let identity = pki.client_identity();

@@ -153,6 +153,12 @@ REQUEST_CONSTRUCTION_REQUIREMENTS = {
 }
 BLOCKED_BEFORE = 224
 BLOCKED_AFTER = 221
+KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
+    "rust-observed-kmipkit-0096-attribute-at-root",
+    "rust-observed-kmipkit-0096-attribute-at-module",
+    "T096:java-fluent-crypto:attribute-item-at",
+    "T096:fluent-python:attribute-item-at",
+}
 # The non-target snapshot includes subsequent approved T102 manifest slices.
 # Includes the reviewed 0047 release stack and complete 0048/0049 inventories.
 # Snapshot includes final 0049 and exact 0050 constructor mappings.
@@ -162,7 +168,7 @@ BLOCKED_AFTER = 221
 # Register declarations, KMIPKIT-0101 lifecycle declarations, and KMIPKIT-0102
 # fluent cryptographic operation builders.
 # Includes the approved KMIPKIT-0093 inventory reconciliation.
-DECLARATIONS_SHA256 = "eb93c010d543229309e75ccc0f857130cfecc7bc68432b635697880729ac9fef"
+DECLARATIONS_SHA256 = "6846ad1c1a5b0ff75017aec603a9d48897d092d2a98ec77a6490d96f6faa353a"
 OPERATIONS_SHA256 = "2a6eb9fb6823b3456b3fb10b6d4af8477be9f1a1f68c06c252bb4873b272f3bc"
 
 
@@ -374,7 +380,7 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
             PKCS11_REQUEST_EXTENSIONS_C_DECLARATION_ID,
         } | PKCS11_REQUEST_EXTENSION_IDS | {
             target["id"] for target in REQUEST_CONSTRUCTION_TARGETS
-        }
+        } | KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS
         other_declarations = copy.deepcopy([
             row for row in self.manifest["publicDeclarations"] if row["declarationId"] not in target_ids
         ])
