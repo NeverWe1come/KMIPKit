@@ -221,6 +221,56 @@ class ModelCases:
                 self.abi.release('ttlv_item', handle)
             self.abi.release('codec_limits', limits)
 
+    def _execute_revocation_reason(self, target: dict, protocol_version: str) -> dict:
+        symbol = 'kmipkit_revocation_reason_create'
+        self.abi.bind(symbol, [C.c_uint32, C.c_uint8, C.c_void_p, C.c_uint64,
+                               C.POINTER(C.c_void_p)])
+        release = getattr(self.abi.library, 'kmipkit_revocation_reason_release')
+        release.argtypes, release.restype = [C.c_void_p], None
+        limits = C.c_void_p()
+        invoked_symbols = set()
+        normalized_samples = []
+        reason_code_parent = 'KMIPKIT-ELEM-ENUMERATION-REVOCATION-REASON-CODE'
+        codes = sorted({int(item['wire_value'], 16) for item in self.catalog['normative_targets']
+                        if item['kind'] == 'enumeration_value'
+                        and reason_code_parent in item.get('parent_element_ids', [])
+                        and protocol_version in item.get('protocol_versions', [])
+                        and len(item.get('wire_value', '')) == 8
+                        and all(character in '0123456789abcdefABCDEF'
+                                for character in item['wire_value'])})
+        codes.append(0x80000000)
+        reason_tag = self._tag('Revocation Reason')
+        code_tag = self._tag('Revocation Reason Code')
+        message_tag = self._tag('Revocation Message')
+        message = b'KMIPKit interop revocation reason'
+        message_buffer = C.create_string_buffer(message)
+        try:
+            self.abi.call('kmipkit_codec_limits_defaults', C.byref(limits))
+            for code in codes:
+                for has_message in (False, True):
+                    reason = C.c_void_p()
+                    message_pointer = C.cast(message_buffer, C.c_void_p) if has_message else C.c_void_p()
+                    self.abi.call(symbol, code, int(has_message), message_pointer,
+                                  len(message) if has_message else 0, C.byref(reason))
+                    invoked_symbols.update(self.abi.called)
+                    release(reason)
+                    fields = [(code_tag, 5, code.to_bytes(4, 'big'))]
+                    if has_message:
+                        fields.append((message_tag, 7, message))
+                    expected = normalized((reason_tag, 1, fields))
+                    item = self.abi.construct((reason_tag, 1, fields), limits)
+                    try:
+                        normalized_samples.append(self._read_and_check(
+                            item, expected, 'revocation_reason_ttlv_tree_mismatch'))
+                    finally:
+                        self.abi.release('ttlv_item', item)
+            return {'sample_count': len(normalized_samples),
+                    'normalized_tree': normalized_samples[-1],
+                    'tree_sha256': digest(normalized_samples),
+                    'invoked_symbols': invoked_symbols}
+        finally:
+            self.abi.release('codec_limits', limits)
+
     def _execute_key_block_tree(self, key_block_tree: tuple) -> dict:
         limits = C.c_void_p()
         owned: list[C.c_void_p] = []
@@ -770,6 +820,14 @@ class ModelCases:
 
     def execute(self, target: dict, protocol_version: str,
                 public_api_symbol: str | None = None) -> dict | None:
+        if (target.get('target_id') == 'KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY'
+                and public_api_symbol == 'kmipkit_symmetric_key_from_fields'):
+            self.abi.called.clear()
+            return self._execute_symmetric_key(protocol_version)
+        if (target.get('target_id') == 'KMIPKIT-ELEM-ATTRIBUTE-REVOCATION-REASON'
+                and public_api_symbol == 'kmipkit_revocation_reason_create'):
+            self.abi.called.clear()
+            return self._execute_revocation_reason(target, protocol_version)
         if public_api_symbol in {'kmipkit_secret_bytes_into_ttlv_value',
                                  'kmipkit_secret_text_into_ttlv_value'}:
             self.abi.called.clear()

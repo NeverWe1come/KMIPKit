@@ -463,6 +463,7 @@ class RouteMatrixTests(unittest.TestCase):
 
         self.assertIsNotNone(result)
         self.assertIn('kmipkit_revocation_reason_create', result['invoked_symbols'])
+        self.assertEqual(result['sample_count'], 16)
 
     def test_named_managed_object_recipes_cover_catalogued_object_structures(self):
         from artifact_support import INSTALL, ROOT
