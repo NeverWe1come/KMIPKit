@@ -444,6 +444,13 @@ class RouteMatrixTests(unittest.TestCase):
         case = next(case for case in catalog['test_cases'] if case['case_id'] == 'test-op-logout')
         self.assertEqual(route_peer.recipe_for_case(case, None), ((45, 46), 'login_logout'))
 
+    def test_logout_matrix_credits_the_logout_exchange_not_its_login_prerequisite(self):
+        """OASIS KMIP 2.0 §6.1.30 and KMIP 2.1 §6.1.31 define the target exchange."""
+        from route_peer import target_operation_exchange_index
+
+        self.assertEqual(target_operation_exchange_index(((45, 46), 'login_logout')), 1)
+        self.assertEqual(target_operation_exchange_index(((45,), 'login')), 0)
+
     def test_logout_peer_requires_the_ticket_returned_by_login(self):
         """OASIS KMIP 2.0 §6.1.30 and 2.1 §6.1.31 require Logout's Ticket."""
         from route_peer import assert_login_logout_exchange, parse, tlv
