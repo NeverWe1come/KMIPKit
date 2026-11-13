@@ -13,8 +13,8 @@ use kmipkit_protocol::{
     DeleteAttributeRequest, DestroyRequest, DiscoverVersionsRequest, EncryptRequest,
     GetConstraintsRequest, GetRequest, GetUsageAllocationRequest, HashRequest, LocateRequest,
     MacRequest, MacVerifyRequest, ManagedObject, ModifyAttributeRequest, NewAttribute,
-    ObjectGroupMember, ObjectType, OpaqueObjectContext, OperationData, PingRequest,
-    ProtocolVersion, QueryFunction, QueryRequest, RecertifyRequest, RecoverRequest,
+    ObjectGroupMember, ObjectType, ObtainLeaseRequest, OpaqueObjectContext, OperationData,
+    PingRequest, ProtocolVersion, QueryFunction, QueryRequest, RecertifyRequest, RecoverRequest,
     RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest,
     SecretBytes, SetAttributeRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
     StorageStatusMask, UniqueIdentifier, ValidateKmipRequest,
@@ -386,6 +386,12 @@ impl<'a> RequestBuilder<'a> {
     #[must_use]
     pub fn get_usage_allocation(self) -> GetUsageAllocationBuilder<'a> {
         GetUsageAllocationBuilder::new(self.client)
+    }
+
+    /// Begins constructing an Obtain Lease request.
+    #[must_use]
+    pub fn obtain_lease(self) -> ObtainLeaseBuilder<'a> {
+        ObtainLeaseBuilder::new(self.client)
     }
 
     /// Begins constructing a typed Destroy request for an explicit identifier.
@@ -3466,6 +3472,115 @@ fn get_usage_allocation_request(
         Some(unique_identifier) => request.with_unique_identifier(unique_identifier),
         None => request,
     })
+}
+
+/// A fluent builder for the existing typed Obtain Lease request.
+pub struct ObtainLeaseBuilder<'a> {
+    client: &'a mut Client,
+    unique_identifier: Option<UniqueIdentifier>,
+    options: Option<RequestOptions>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl<'a> ObtainLeaseBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            client,
+            unique_identifier: None,
+            options: None,
+            asynchronous_indicator: None,
+        }
+    }
+
+    /// Selects the object by its explicit identifier.
+    ///
+    /// Omit this field only when the request is part of an ordered batch whose
+    /// preceding operation supplies the intended ID Placeholder.
+    #[must_use]
+    pub fn unique_identifier(mut self, value: UniqueIdentifier) -> Self {
+        self.unique_identifier = Some(value);
+        self
+    }
+
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.options = Some(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.asynchronous_indicator = Some(value);
+        self
+    }
+
+    /// Validates the typed Obtain Lease request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error if protocol validation fails.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        validate_fluent_request(&obtain_lease_request(self.unique_identifier.clone()))
+    }
+
+    /// Builds the existing typed Obtain Lease request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error if protocol validation fails.
+    pub fn build_request(self) -> Result<ObtainLeaseRequest, FluentBuildError> {
+        let request = obtain_lease_request(self.unique_identifier);
+        validate_fluent_request(&request)?;
+        Ok(request)
+    }
+
+    /// Converts Obtain Lease to the existing typed client batch item.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error if protocol validation fails.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build_request()
+            .map(|request| ClientBatchItem::new(ClientRequest::ObtainLease(request)))
+    }
+
+    /// Executes one typed exchange and returns the existing operation result.
+    ///
+    /// # Errors
+    ///
+    /// Returns a not-sent validation error before transport if validation
+    /// fails, or the existing client error for exchange and decoding failures.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let Self {
+            client,
+            unique_identifier,
+            options,
+            asynchronous_indicator,
+        } = self;
+        let request = obtain_lease_request(unique_identifier);
+        validate_fluent_request(&request).map_err(fluent_client_validation_error)?;
+        execute_fluent_request(
+            client,
+            ClientRequest::ObtainLease(request),
+            asynchronous_indicator,
+            options,
+            limits,
+        )
+    }
+}
+
+fn obtain_lease_request(unique_identifier: Option<UniqueIdentifier>) -> ObtainLeaseRequest {
+    match unique_identifier {
+        Some(unique_identifier) => {
+            ObtainLeaseRequest::new().with_unique_identifier(unique_identifier)
+        }
+        None => ObtainLeaseRequest::new(),
+    }
 }
 
 /// A fluent builder for the empty typed Get Constraints request.
