@@ -133,22 +133,6 @@ class ControlledTlsPeerTest {
             "test-norm-message-field-message-field-8-4-batch-item";
     // Exercise KMIP 2.1-assigned values as unknown Enumeration values in KMIP 2.0.
     private static final Set<String> ENUMS_WITH_KMIP_2_1_ONLY_VALUES = Set.of("Operation", "Result Reason");
-    private static final Set<String> LOCAL_ENUMERATION_SCOPE_CASE_IDS = Set.of(
-            "test-enum-block-cipher-mode", "test-enum-rotate-name-type", "test-enum-key-format-type",
-            "test-enum-digital-signature-algorithm", "test-enum-operation",
-            "test-enum-result-reason",
-            "test-enum-recommended-curve",
-            "test-enum-nist-key-type",
-            "test-enum-key-role-type",
-            "test-enum-hashing-algorithm",
-            "test-enum-link-type",
-            "test-enum-padding-method",
-            "test-enum-opaque-data-type",
-            "test-enum-processing-stage", "test-enum-ticket-type", "test-enum-mask-generator",
-            "test-enum-encoding-option", "test-enum-endpoint-role", "test-enum-key-value-location-type",
-            "test-enum-key-wrap-type", "test-enum-name-type", "test-enum-object-group-member",
-            "test-enum-put-function", "test-enum-secret-data-type", "test-enum-usage-limits-unit",
-            "test-enum-cryptographic-algorithm", "test-enum-profile-name");
     private static final String RESPONSE_BATCH_ITEM_TARGET_ID =
             "KMIPKIT-ELEM-MESSAGE-FIELD-8-4-BATCH-ITEM";
     private static final List<NormativeTarget> RESPONSE_MESSAGE_PARSE_TARGETS = List.of(
@@ -1813,7 +1797,7 @@ class ControlledTlsPeerTest {
                         protocolVersion, fixture.value());
                 appendTypedEnumerationRouteEvents(events, fixture, wire, protocolVersion, treeHash);
                 appendCryptographicParameterBuilderRouteEvent(events, fixture, protocolVersion, treeHash);
-                appendCredentialEnumerationRouteEvents(events, fixture, protocolVersion, treeHash);
+                appendCredentialEnumerationRouteEvents(events, fixture, protocolVersion, treeHash, true);
                 appendBatchErrorContinuationRouteEvent(events, fixture, protocolVersion);
             }
         }
@@ -1821,13 +1805,14 @@ class ControlledTlsPeerTest {
 
     private static List<EnumerationFixture> genericLocalEnumerationFixtures() throws Exception {
         JsonNode catalog = readRouteEvidenceCatalog();
+        Set<String> localEnumerationCases = cataloguedLocalEnumerationCaseIds(catalog);
         List<JsonNode> targets = new ArrayList<>();
         for (JsonNode target : catalog.path("normative_targets")) targets.add(target);
 
         var fixtures = new ArrayList<EnumerationFixture>();
         for (JsonNode testCase : catalog.path("test_cases")) {
             String enumType = testCase.path("requires").path("enum_type").asText();
-            if (!LOCAL_ENUMERATION_SCOPE_CASE_IDS.contains(testCase.path("case_id").asText())
+            if (!localEnumerationCases.contains(testCase.path("case_id").asText())
                     || enumType.isEmpty()
                     || !"local_model".equals(testCase.path("execution").path("mode").asText())) {
                 continue;
@@ -1975,7 +1960,7 @@ class ControlledTlsPeerTest {
                 appendCryptographicParameterBuilderRouteEvent(events, fixture, protocolVersion,
                         normalizedTreeSha256(wire));
                 appendCredentialEnumerationRouteEvents(events, fixture, protocolVersion,
-                        normalizedTreeSha256(wire));
+                        normalizedTreeSha256(wire), false);
                 appendBatchErrorContinuationRouteEvent(events, fixture, protocolVersion);
             }
         }
@@ -2036,7 +2021,8 @@ class ControlledTlsPeerTest {
     }
 
     private static void appendCredentialEnumerationRouteEvents(ArrayNode events,
-            EnumerationFixture fixture, String protocolVersion, String enumTreeHash) throws Exception {
+            EnumerationFixture fixture, String protocolVersion, String enumTreeHash,
+            boolean includeCredentialModels) throws Exception {
         if (!"CREDENTIAL-TYPE".equals(fixture.parentName())) return;
         CredentialType credentialType = CredentialType.fromRaw(fixture.value());
         assertEquals(fixture.value(), credentialType.raw());
@@ -2044,6 +2030,7 @@ class ControlledTlsPeerTest {
                 "org.kmipkit.credentials.CredentialType.fromRaw", null, null,
                 "construct", protocolVersion, null, enumTreeHash, null);
 
+        if (!includeCredentialModels) return;
         String modelRoute = CREDENTIAL_TYPE_MODEL_ROUTES.get(fixture.targetId());
         if (modelRoute == null) return;
         String modelCaseId = CREDENTIAL_TYPE_MODEL_CASE_IDS.get(fixture.targetId());
