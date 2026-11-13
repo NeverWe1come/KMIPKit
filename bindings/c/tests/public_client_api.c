@@ -469,13 +469,19 @@ int kmipkit_public_fluent_lifecycle_probe(
     kmipkit_client_batch_item_response_t *get_item = NULL;
     kmipkit_client_batch_response_t *destroy_response = NULL;
     kmipkit_client_batch_item_response_t *destroy_item = NULL;
+    kmipkit_client_batch_response_t *direct_response = NULL;
+    kmipkit_client_batch_item_response_t *direct_item = NULL;
     kmipkit_ttlv_structure_t *get_object = NULL;
+    kmipkit_ttlv_structure_t *empty_attributes = NULL;
+    kmipkit_attribute_set_t *locate_attributes = NULL;
+    kmipkit_revocation_reason_t *revocation_reason = NULL;
     kmipkit_byte_span_v1_t client_certificates[2] = {{0}};
     kmipkit_byte_span_v1_t trust_certificates[1] = {{0}};
     kmipkit_mtls_client_config_v1_t tls = {0};
     kmipkit_symmetric_key_request_v1_t request = {0};
     kmipkit_request_options_v1_t request_options = {0};
     kmipkit_unique_identifier_v1_t identifier = {0};
+    kmipkit_unique_identifier_v1_t direct_identifier = {0};
     uint8_t create_present = 0;
     uint32_t create_object_type = 0;
     uint8_t get_present = 0;
@@ -555,6 +561,28 @@ int kmipkit_public_fluent_lifecycle_probe(
     tls.client_certificate_count = UINT64_C(2);
     REQUIRE_LIFECYCLE_C_API(kmipkit_client_create_mtls_v1(configuration, &tls, &client), 6);
     REQUIRE_LIFECYCLE_C_API(kmipkit_codec_limits_defaults(&limits), 7);
+    direct_identifier.struct_size = (uint32_t)sizeof(direct_identifier);
+    direct_identifier.abi_version = UINT32_C(1);
+    direct_identifier.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+    direct_identifier.text_data = expected_identifier;
+    direct_identifier.text_length = (uint64_t)(sizeof(expected_identifier) - 1);
+
+    /* Required identifiers are rejected locally without opening a connection. */
+    if (kmipkit_client_activate_by_id_v1(client, NULL, limits, &direct_response) !=
+            KMIPKIT_ERROR_INVALID_INPUT || direct_response != NULL) {
+        result = 24;
+        goto lifecycle_cleanup;
+    }
+    if (kmipkit_client_locate_v1(
+            client, (kmipkit_attribute_set_t *)configuration, limits, &direct_response) !=
+            KMIPKIT_ERROR_INVALID_INPUT || direct_response != NULL ||
+        kmipkit_client_revoke_by_id_v1(
+            client, &direct_identifier, (kmipkit_revocation_reason_t *)configuration,
+            UINT8_C(0), INT64_C(0), limits, &direct_response) !=
+            KMIPKIT_ERROR_INVALID_INPUT || direct_response != NULL) {
+        result = 50;
+        goto lifecycle_cleanup;
+    }
 
     request.struct_size = (uint32_t)sizeof(request);
     request.abi_version = UINT32_C(1);
@@ -588,7 +616,6 @@ int kmipkit_public_fluent_lifecycle_probe(
         result = 12;
         goto lifecycle_cleanup;
     }
-
     REQUIRE_LIFECYCLE_C_API(kmipkit_client_get_by_id_with_options_v1(
         client, &identifier, limits, &request_options, &get_response), 13);
     REQUIRE_LIFECYCLE_C_API(
@@ -602,8 +629,121 @@ int kmipkit_public_fluent_lifecycle_probe(
         goto lifecycle_cleanup;
     }
 
+    REQUIRE_LIFECYCLE_C_API(kmipkit_client_activate_by_id_v1(
+        client, &direct_identifier, limits, &direct_response), 25);
+    REQUIRE_LIFECYCLE_C_API(kmipkit_client_batch_response_item_at(
+        direct_response, UINT64_C(0), &direct_item), 26);
+    create_present = UINT8_C(0);
+    REQUIRE_LIFECYCLE_C_API(kmipkit_client_batch_item_response_activate(
+        direct_item, &create_present, &identifier), 27);
+    if (create_present != UINT8_C(1)) {
+        result = 28;
+        goto lifecycle_cleanup;
+    }
+    kmipkit_client_batch_item_response_release(direct_item);
+    direct_item = NULL;
+    kmipkit_client_batch_response_release(direct_response);
+    direct_response = NULL;
+
+    REQUIRE_LIFECYCLE_C_API(kmipkit_client_archive_by_id_with_options_v1(
+        client, &direct_identifier, limits, &request_options, &direct_response), 29);
+    REQUIRE_LIFECYCLE_C_API(kmipkit_client_batch_response_item_at(
+        direct_response, UINT64_C(0), &direct_item), 30);
+    create_present = UINT8_C(0);
+    REQUIRE_LIFECYCLE_C_API(kmipkit_client_batch_item_response_archive(
+        direct_item, &create_present, &identifier), 31);
+    if (create_present != UINT8_C(1)) {
+        result = 32;
+        goto lifecycle_cleanup;
+    }
+    kmipkit_client_batch_item_response_release(direct_item);
+    direct_item = NULL;
+    kmipkit_client_batch_response_release(direct_response);
+    direct_response = NULL;
+
+    REQUIRE_LIFECYCLE_C_API(kmipkit_ttlv_structure_create(&empty_attributes), 33);
+    REQUIRE_LIFECYCLE_C_API(kmipkit_attribute_set_create(empty_attributes, &locate_attributes), 34);
+    REQUIRE_LIFECYCLE_C_API(kmipkit_client_locate_v1(
+        client, locate_attributes, limits, &direct_response), 35);
+    REQUIRE_LIFECYCLE_C_API(kmipkit_client_batch_response_item_at(
+        direct_response, UINT64_C(0), &direct_item), 36);
+    {
+        uint8_t locate_present = UINT8_C(0);
+        uint8_t locate_payload_present = UINT8_C(0);
+        uint8_t located_items_present = UINT8_C(0);
+        int32_t located_items = 0;
+        uint64_t identifier_count = UINT64_C(0);
+        kmipkit_unique_identifier_v1_t located_identifier = {0};
+        REQUIRE_LIFECYCLE_C_API(kmipkit_client_batch_item_response_locate(
+            direct_item, &locate_present, &locate_payload_present,
+            &located_items_present, &located_items, &identifier_count), 37);
+        if (locate_present != UINT8_C(1) || locate_payload_present != UINT8_C(1) ||
+            located_items_present != UINT8_C(1) || located_items != 1 ||
+            identifier_count != UINT64_C(1)) {
+            result = 38;
+            goto lifecycle_cleanup;
+        }
+        located_identifier.struct_size = (uint32_t)sizeof(located_identifier);
+        located_identifier.abi_version = UINT32_C(1);
+        REQUIRE_LIFECYCLE_C_API(kmipkit_client_batch_item_response_locate_unique_identifier_at(
+            direct_item, UINT64_C(0), &located_identifier), 48);
+        if (located_identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
+            located_identifier.text_length != (uint64_t)(sizeof(expected_identifier) - 1) ||
+            memcmp(located_identifier.text_data, expected_identifier,
+                   sizeof(expected_identifier) - 1) != 0) {
+            result = 49;
+            goto lifecycle_cleanup;
+        }
+    }
+    kmipkit_client_batch_item_response_release(direct_item);
+    direct_item = NULL;
+    kmipkit_client_batch_response_release(direct_response);
+    direct_response = NULL;
+    kmipkit_attribute_set_release(locate_attributes);
+    locate_attributes = NULL;
+    kmipkit_ttlv_structure_release(empty_attributes);
+    empty_attributes = NULL;
+
+    REQUIRE_LIFECYCLE_C_API(kmipkit_client_recover_by_id_with_options_v1(
+        client, &direct_identifier, limits, &request_options, &direct_response), 39);
+    REQUIRE_LIFECYCLE_C_API(kmipkit_client_batch_response_item_at(
+        direct_response, UINT64_C(0), &direct_item), 40);
+    create_present = UINT8_C(0);
+    REQUIRE_LIFECYCLE_C_API(kmipkit_client_batch_item_response_recover(
+        direct_item, &create_present, &identifier), 41);
+    if (create_present != UINT8_C(1)) {
+        result = 42;
+        goto lifecycle_cleanup;
+    }
+    kmipkit_client_batch_item_response_release(direct_item);
+    direct_item = NULL;
+    kmipkit_client_batch_response_release(direct_response);
+    direct_response = NULL;
+
+    REQUIRE_LIFECYCLE_C_API(kmipkit_revocation_reason_create(
+        KMIPKIT_ENUMERATION_REVOCATION_REASON_CODE_KEY_COMPROMISE,
+        UINT8_C(0), NULL, UINT64_C(0), &revocation_reason), 43);
+    REQUIRE_LIFECYCLE_C_API(kmipkit_client_revoke_by_id_v1(
+        client, &direct_identifier, revocation_reason, UINT8_C(1), INT64_C(1),
+        limits, &direct_response), 44);
+    REQUIRE_LIFECYCLE_C_API(kmipkit_client_batch_response_item_at(
+        direct_response, UINT64_C(0), &direct_item), 45);
+    create_present = UINT8_C(0);
+    REQUIRE_LIFECYCLE_C_API(kmipkit_client_batch_item_response_revoke(
+        direct_item, &create_present, &identifier), 46);
+    if (create_present != UINT8_C(1)) {
+        result = 47;
+        goto lifecycle_cleanup;
+    }
+    kmipkit_client_batch_item_response_release(direct_item);
+    direct_item = NULL;
+    kmipkit_client_batch_response_release(direct_response);
+    direct_response = NULL;
+    kmipkit_revocation_reason_release(revocation_reason);
+    revocation_reason = NULL;
+
     REQUIRE_LIFECYCLE_C_API(kmipkit_client_destroy_by_id_with_options_v1(
-        client, &identifier, limits, &request_options, &destroy_response), 17);
+        client, &direct_identifier, limits, &request_options, &destroy_response), 17);
     REQUIRE_LIFECYCLE_C_API(kmipkit_client_batch_response_item_at(
         destroy_response, UINT64_C(0), &destroy_item), 18);
     REQUIRE_LIFECYCLE_C_API(kmipkit_client_batch_item_response_destroy(
@@ -611,6 +751,11 @@ int kmipkit_public_fluent_lifecycle_probe(
     result = destroy_present == UINT8_C(1) ? 0 : 20;
 
 lifecycle_cleanup:
+    kmipkit_revocation_reason_release(revocation_reason);
+    kmipkit_attribute_set_release(locate_attributes);
+    kmipkit_ttlv_structure_release(empty_attributes);
+    kmipkit_client_batch_item_response_release(direct_item);
+    kmipkit_client_batch_response_release(direct_response);
     kmipkit_ttlv_structure_release(get_object);
     kmipkit_client_batch_item_response_release(destroy_item);
     kmipkit_client_batch_response_release(destroy_response);

@@ -638,6 +638,23 @@ fn required_lifecycle_identifier(
     }
 }
 
+/// Borrows the caller's exchange-local options after checking null and alignment.
+///
+/// # Safety
+///
+/// A non-null `options` pointer must reference an initialized v1 record that is
+/// readable for the returned lifetime. The caller must keep the record alive
+/// until the synchronous exchange call returns.
+unsafe fn borrow_fluent_request_options<'a>(
+    options: *const kmipkit_request_options_v1_t,
+) -> FfiResult<&'a kmipkit_request_options_v1_t> {
+    if options.is_null() || !options.is_aligned() {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    // SAFETY: The caller guarantees the initialized record remains readable for `'a`.
+    Ok(unsafe { &*options })
+}
+
 fn copy_fluent_attribute_set(attributes: *mut kmipkit_attribute_set_t) -> FfiResult<AttributeSet> {
     let handle = reference_handle(attributes, Kind::AttributeSet)?;
     let HandleValue::AttributeSet(attributes) = &handle.value else {
@@ -722,11 +739,10 @@ pub unsafe extern "C" fn kmipkit_client_activate_by_id_with_options_v1(
     out_response: *mut *mut kmipkit_client_batch_response_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        if options.is_null() || !options.is_aligned() {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        }
-        // SAFETY: The validated pointer is read only for this synchronous call.
-        let options = unsafe { &*options };
+        let options = match unsafe { borrow_fluent_request_options(options) } {
+            Ok(options) => options,
+            Err(status) => return record_ffi_error(status),
+        };
         let identifier = match required_lifecycle_identifier(unique_identifier) {
             Ok(identifier) => identifier,
             Err(status) => return record_ffi_error(status),
@@ -780,11 +796,10 @@ pub unsafe extern "C" fn kmipkit_client_archive_by_id_with_options_v1(
     out_response: *mut *mut kmipkit_client_batch_response_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        if options.is_null() || !options.is_aligned() {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        }
-        // SAFETY: The validated pointer is read only for this synchronous call.
-        let options = unsafe { &*options };
+        let options = match unsafe { borrow_fluent_request_options(options) } {
+            Ok(options) => options,
+            Err(status) => return record_ffi_error(status),
+        };
         let identifier = match required_lifecycle_identifier(unique_identifier) {
             Ok(identifier) => identifier,
             Err(status) => return record_ffi_error(status),
@@ -838,11 +853,10 @@ pub unsafe extern "C" fn kmipkit_client_locate_with_options_v1(
     out_response: *mut *mut kmipkit_client_batch_response_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        if options.is_null() || !options.is_aligned() {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        }
-        // SAFETY: The validated pointer is read only for this synchronous call.
-        let options = unsafe { &*options };
+        let options = match unsafe { borrow_fluent_request_options(options) } {
+            Ok(options) => options,
+            Err(status) => return record_ffi_error(status),
+        };
         let attributes = match copy_fluent_attribute_set(attributes) {
             Ok(attributes) => attributes,
             Err(status) => return record_ffi_error(status),
@@ -896,11 +910,10 @@ pub unsafe extern "C" fn kmipkit_client_recover_by_id_with_options_v1(
     out_response: *mut *mut kmipkit_client_batch_response_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        if options.is_null() || !options.is_aligned() {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        }
-        // SAFETY: The validated pointer is read only for this synchronous call.
-        let options = unsafe { &*options };
+        let options = match unsafe { borrow_fluent_request_options(options) } {
+            Ok(options) => options,
+            Err(status) => return record_ffi_error(status),
+        };
         let identifier = match required_lifecycle_identifier(unique_identifier) {
             Ok(identifier) => identifier,
             Err(status) => return record_ffi_error(status),
@@ -965,11 +978,10 @@ pub unsafe extern "C" fn kmipkit_client_revoke_by_id_with_options_v1(
     out_response: *mut *mut kmipkit_client_batch_response_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        if options.is_null() || !options.is_aligned() {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        }
-        // SAFETY: The validated pointer is read only for this synchronous call.
-        let options = unsafe { &*options };
+        let options = match unsafe { borrow_fluent_request_options(options) } {
+            Ok(options) => options,
+            Err(status) => return record_ffi_error(status),
+        };
         let request = match revoke_request_by_id(
             unique_identifier,
             revocation_reason,

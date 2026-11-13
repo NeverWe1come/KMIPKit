@@ -2,9 +2,9 @@
 
 | Requirement | Implementation | Verification | Normative / project source |
 |---|---|---|---|
-| KMIPKIT-0114-FR-001 | C direct lifecycle helpers in `client_abi/fluent.rs` | Compiled C consumer and TLS fixture request decoding | KMIP 2.1 §§6.1.1, 6.1.4, 6.1.28, 6.1.42, 6.1.44; KMIPKIT-0018 |
-| KMIPKIT-0114-FR-002 | Typed identifier, attribute-set, and revocation-reason conversion | Valid, invalid, and mismatched-handle tests | KMIP 2.1 §§6.1.28, 6.1.44; KMIPKIT-0018 |
-| KMIPKIT-0114-FR-003 | Existing one-exchange `Client` methods and separate timeout variants | Fixture observes exactly one request; request-option separation test | KMIPKIT-0093-FR-004, FR-007, FR-011 |
-| KMIPKIT-0114-FR-004 | Existing FFI status, response-owner, redaction, and delivery-state helpers | C ABI ownership and error-state tests | KMIPKIT-0007-FR-005, FR-006; KMIPKIT-0093-FR-011 |
-| KMIPKIT-0114-FR-005 | Compiled C consumer and controlled TLS fixture | FFI integration suite and generated export audit | KMIPKIT-0093-FR-013 |
+| KMIPKIT-0114-FR-001 | Ten C entry points in `crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs`; declarations generated into `bindings/c/include/kmipkit.h` | `public_c_header_constructs_a_batch_and_reaches_the_encoding_override_entrypoint`; `public_c_fluent_client_executes_lifecycle_helpers_over_mutual_tls` | KMIP 2.1 §§6.1.1, 6.1.4, 6.1.28, 6.1.42, 6.1.44; KMIPKIT-0018 |
+| KMIPKIT-0114-FR-002 | `required_lifecycle_identifier`, `copy_fluent_attribute_set`, and `revoke_request_by_id` | TLS fixture decodes identifiers, empty Locate Attributes, Revoke reason/date; C consumer rejects missing identifiers and wrong handle kinds before the first connection | KMIP 2.1 §§6.1.28, 6.1.44; KMIPKIT-0018 |
+| KMIPKIT-0114-FR-003 | Existing `execute_simple_request` path and `borrow_fluent_request_options` | Fixture accepts one exchange per helper; Archive and Recover exercise exchange options while timeout-independent calls use direct helpers | KMIPKIT-0093-FR-004, FR-007, FR-011 |
+| KMIPKIT-0114-FR-004 | Existing FFI status, response-owner, redaction, and delivery-state helpers | Compiled C consumer checks status and null output for invalid inputs; TLS test reads each typed response before releasing its handle | KMIPKIT-0007-FR-005, FR-006; KMIPKIT-0093-FR-011 |
+| KMIPKIT-0114-FR-005 | Compiled C consumer and controlled mutual-TLS fixture in `crates/kmipkit-ffi/tests/c_api_coverage.rs` | Both focused C ABI tests pass; `python3 -B tools/api_manifest/generate.py --check` verifies generated declarations | KMIPKIT-0093-FR-013 |
 

@@ -9,11 +9,11 @@
   consumer because the ten lifecycle helpers are not declared in the public
   header yet. This is the intended Red result; no production implementation
   was present in the working tree.
-- [ ] T003 [GREEN COMMIT] Implement the ten C ABI entry points by constructing
+- [x] T003 [GREEN COMMIT] Implement the ten C ABI entry points by constructing
   the approved typed requests and using the existing client execution path.
-- [ ] T004 [REFACTOR COMMIT] Consolidate shared pointer, options, response,
+- [x] T004 [REFACTOR COMMIT] Consolidate shared pointer, options, response,
   and error handling; add manifest declarations and regenerate all outputs.
-- [ ] T005 Add controlled TLS fixture tests for decoded request semantics and
+- [x] T005 Add controlled TLS fixture tests for decoded request semantics and
   encoded typed responses for all five operations, including a no-send case.
 - [ ] T006 Run lifecycle C ABI, compiled consumer, sanitizer, traceability,
   manifest/export, coverage, format, Clippy, and relevant workspace checks;
