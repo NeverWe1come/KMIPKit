@@ -120,8 +120,8 @@ limitation is changed by this phase.
 Final checks after the refactor:
 
 - Full Java consumer suite: 52 tests passed, no failures, errors, or skips.
-- Shared route evidence validator: 16,890 executed cells, zero failed cells,
-  54,565 pending cells, and `selected_scope_complete=true`.
+- Shared route evidence validator: 17,514 executed cells, zero failed cells,
+  53,941 pending cells, and `selected_scope_complete=true`.
 - `python3 tools/compare_route_ledger.py`: generated coverage matches the
   checked-in reference.
 - `git diff --check`: passed.
@@ -425,3 +425,45 @@ failures and `selected_scope_complete=true`; the generated ledger records
 16,890 executed, 54,565 pending, and 71,455 planned cells. This completes
 Recommended Curve's local TTLV route scope; all other pending matrix work
 remains open.
+
+## Result Reason enumeration route completion
+
+Sources: OASIS KMIP 2.0 §11.45, KMIP 2.1 §11.46, and §10.1 (TTLV
+Enumeration representation). The aggregate local case covers all 78
+catalogued Result Reason values through `TtlvValue.Enumeration`,
+`TtlvItem.create`, `TtlvItem.view`, and `TtlvCodec.decode` for both protocol
+versions. This adds 624 value/route/version cells. Three values are assigned
+by KMIP 2.1 only; the test also constructs, encodes, decodes, and preserves
+them as unknown Enumeration values under KMIP 2.0, as required by the
+forward-compatible generic TTLV API.
+
+Red commit `7fff99316` requires every catalogued target and fails with zero
+local Result Reason fixtures. Green commit `3fa281f65` adds the aggregate case
+to the catalog-driven local fixture and retains the three KMIP 2.1 values in
+the KMIP 2.0 unknown-value round-trip. The selected local route assertions
+and shared validator pass for every target, route, and version. An initial
+green attempt exposed 12 missing cells: three KMIP 2.1-assigned values had
+been filtered from the KMIP 2.0 unknown-value case. The fixture now tests
+those three values in KMIP 2.0 as unknown enumerations and in KMIP 2.1 as
+assigned values. Refactor commit `b2924ec6c` extracts this version rule into
+a named helper so the forward-compatibility exception remains explicit.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 37d7eeae9e64644fd7cdde4bfd64b7da5ccbb0bf2be53a949826eb62dc3aaf86 \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+```
+
+The full Java consumer suite passes 52 tests with no failures, errors, or
+skips. The shared validator accepts 17,514 cells with zero failures and
+`selected_scope_complete=true`; the generated ledger records 17,514 executed,
+53,941 pending, and 71,455 planned. This completes Result Reason's local
+generic TTLV scope; the overall Java matrix remains incomplete.
