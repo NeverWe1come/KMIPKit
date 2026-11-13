@@ -780,6 +780,48 @@ static bool get_usage_allocation_response_matches_identifier(
         same_text_identifier(created_identifier, &allocation_identifier);
 }
 
+static bool get_usage_allocation_response_ttlv_matches_identifier(
+    kmipkit_client_batch_item_response_t *response_item,
+    const kmipkit_unique_identifier_v1_t *created_identifier,
+    int32_t *out_status) {
+    uint8_t present = 0;
+    kmipkit_ttlv_structure_t *structure = NULL;
+    kmipkit_ttlv_structure_view_t *structure_view = NULL;
+    int32_t status = kmipkit_client_batch_item_response_get_usage_allocation_ttlv(
+        response_item, &present, &structure);
+    if (status == 0 && (!present || !structure)) status = KMIPKIT_ERROR_INVALID_INPUT;
+    if (status == 0) status = kmipkit_ttlv_structure_view(structure, &structure_view);
+    uint64_t item_count = 0;
+    if (status == 0) status = kmipkit_ttlv_structure_view_item_count(
+        structure_view, &item_count);
+    bool payload_found = false;
+    for (uint64_t index = 0; status == 0 && index < item_count; ++index) {
+        kmipkit_ttlv_item_view_t *item_view = NULL;
+        kmipkit_ttlv_value_view_t *value_view = NULL;
+        kmipkit_ttlv_structure_view_t *payload_view = NULL;
+        status = kmipkit_ttlv_structure_view_item_at(structure_view, index, &item_view);
+        if (status == 0 && item_view_has_tag(item_view, UINT32_C(0x42007C),
+                                              KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE, &value_view)) {
+            if (payload_found) {
+                status = KMIPKIT_ERROR_INVALID_INPUT;
+            } else {
+                payload_found = true;
+                status = kmipkit_ttlv_value_view_structure(value_view, &payload_view);
+                if (status == 0) status = register_payload_identifier_status(
+                    payload_view, created_identifier);
+            }
+        }
+        if (payload_view) kmipkit_ttlv_structure_view_release(payload_view);
+        if (value_view) kmipkit_ttlv_value_view_release(value_view);
+        if (item_view) kmipkit_ttlv_item_view_release(item_view);
+    }
+    if (status == 0 && !payload_found) status = KMIPKIT_ERROR_INVALID_INPUT;
+    if (structure_view) kmipkit_ttlv_structure_view_release(structure_view);
+    if (structure) kmipkit_ttlv_structure_release(structure);
+    *out_status = status;
+    return status == 0;
+}
+
 static int32_t create_get_usage_allocation_variant_item(
     bool include_identifier,
     kmipkit_client_batch_item_t **out_item) {
@@ -3475,11 +3517,13 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         }
     } else if (get_usage_allocation_workflow) {
         if (!get_usage_allocation_response_matches_identifier(
+                response_item, &created_identifier, &status) ||
+            !get_usage_allocation_response_ttlv_matches_identifier(
                 response_item, &created_identifier, &status)) {
             outcome.success = false;
             outcome.library_failed = status != 0;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                     "KMIPKit Get Usage Allocation did not return the isolated object identifier");
+                     "KMIPKit Get Usage Allocation typed or TTLV response lost the isolated object identifier");
             goto cleanup;
         }
     } else if (destroy_workflow) {
