@@ -69,7 +69,8 @@ class FfiCoverageObjectTests(unittest.TestCase):
         manifest = root / "cargo.jsonl"
         manifest.write_text("\n".join(json.dumps(m) for m in messages), encoding="utf-8")
         result = subprocess.run(
-            [sys.executable, str(ROOT / "scripts/ffi_coverage_objects.py"), str(manifest)],
+            [sys.executable, str(ROOT / "scripts/ffi_coverage_objects.py")],
+            input=manifest.read_bytes(),
             capture_output=True,
             check=False,
         )
@@ -98,6 +99,16 @@ class FfiCoverageObjectTests(unittest.TestCase):
                 self.assertNotEqual(result.returncode, 0)
                 self.assertEqual(result.stdout, b"")
                 self.assertIn(b"missing", result.stderr.lower())
+
+    def test_rejects_filesystem_path_arguments(self):
+        result = subprocess.run(
+            [sys.executable, str(ROOT / "scripts/ffi_coverage_objects.py"), "../secrets"],
+            input=b"",
+            capture_output=True,
+            check=False,
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(b"usage", result.stderr.lower())
 
 
 if __name__ == "__main__":
