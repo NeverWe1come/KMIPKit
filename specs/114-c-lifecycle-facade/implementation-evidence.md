@@ -58,3 +58,15 @@ Green commit `286e97a7` updates the shared T102 snapshot and its rationale.
 Verification: all six tests in
 `python3.12 -B -m unittest tools.api_manifest.tests.test_t102_pkcs11_request_trait_exclusions -v`
 pass. Exact-head CI must pass on the new branch head before this PR is ready.
+
+The follow-up full T102 run also exposed stale non-target declaration and
+operation-row fingerprints in
+`test_non_target_declarations_and_operation_rows_match_snapshot`: adding the
+ten C lifecycle declarations changes those snapshots even though the test's
+focused target is the unrelated Certify request builder. The Red was reproduced
+locally. Green commit `9d467eb4` refreshes both fingerprints and documents the
+five affected operation rows. The focused test
+`python3.12 -B -m unittest tools.api_manifest.tests.test_t102_certify_request_builder_mapping.T102CertifyRequestBuilderMappingTests.test_non_target_declarations_and_operation_rows_match_snapshot -v`
+passes. The local all-T102 discovery run was interrupted before its summary, so
+it is not counted as passing; the hosted checks must validate the complete
+suite at the exact PR head.
