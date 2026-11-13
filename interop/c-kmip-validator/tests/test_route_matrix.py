@@ -438,6 +438,32 @@ class RouteMatrixTests(unittest.TestCase):
             'kmipkit_managed_object_from_item',
         }.issubset(result['invoked_symbols']))
 
+    def test_symmetric_key_object_type_cell_executes_its_typed_constructor(self):
+        from artifact_support import INSTALL, ROOT
+        from c_route_models import ModelCases
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        target = next(item for item in catalog['normative_targets']
+                      if item['target_id'] == 'KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY')
+        result = ModelCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog).execute(
+            target, '2.0', 'kmipkit_symmetric_key_from_fields')
+
+        self.assertIsNotNone(result)
+        self.assertIn('kmipkit_symmetric_key_from_fields', result['invoked_symbols'])
+
+    def test_revocation_reason_attribute_cell_executes_its_constructor(self):
+        from artifact_support import INSTALL, ROOT
+        from c_route_models import ModelCases
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        target = next(item for item in catalog['normative_targets']
+                      if item['target_id'] == 'KMIPKIT-ELEM-ATTRIBUTE-REVOCATION-REASON')
+        result = ModelCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog).execute(
+            target, '2.0', 'kmipkit_revocation_reason_create')
+
+        self.assertIsNotNone(result)
+        self.assertIn('kmipkit_revocation_reason_create', result['invoked_symbols'])
+
     def test_named_managed_object_recipes_cover_catalogued_object_structures(self):
         from artifact_support import INSTALL, ROOT
         from c_route_models import ModelCases
