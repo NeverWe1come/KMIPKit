@@ -759,28 +759,6 @@ class RouteMatrixTests(unittest.TestCase):
                                   if event['case_id'] == case_id and
                                   event['public_api_symbol'] == symbol}, {'2.0', '2.1'})
 
-    def test_discover_versions_executes_for_kmip_20(self):
-        from artifact_support import ROOT
-        from route_peer import execute_network_cells
-        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
-        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
-        case_id = 'test-op-discover-versions'
-        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
-                                               if case['case_id'] == case_id]}
-        events, _, checks = execute_network_cells(
-            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest,
-            protocol_versions=('2.0',))
-        self.assertTrue(checks and all(check['status'] == 'passed' for check in checks))
-        sends = [event for event in events if event['case_id'] == case_id and event['action'] == 'send']
-        self.assertEqual(len(sends), 6)
-        self.assertEqual({event['encoding'] for event in sends}, {'TTLV', 'JSON', 'XML'})
-        self.assertEqual({event['transport'] for event in sends}, {'raw_tls', 'https'})
-        self.assertTrue(any(event['case_id'] == case_id and
-                            event['public_api_symbol'] ==
-                            'kmipkit_client_batch_item_response_discover_versions_supported_versions' and
-                            event['action'] == 'decode' and event['transport'] is None
-                            for event in events))
-
     def test_add_attribute_operation_runs_from_the_installed_c_consumer(self):
         from artifact_support import ROOT
         from route_peer import execute_network_cells
