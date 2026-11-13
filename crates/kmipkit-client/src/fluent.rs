@@ -12,7 +12,7 @@ use kmipkit_protocol::{
     CryptographicParameters, CurrentAttribute, DecryptRequest, DeleteAttributeRequest,
     DestroyRequest, EncryptRequest, GetRequest, HashRequest, LocateRequest, MacRequest,
     MacVerifyRequest, ManagedObject, ModifyAttributeRequest, NewAttribute, ObjectGroupMember,
-    ObjectType, OpaqueObjectContext, OperationData, RecertifyRequest, RecoverRequest,
+    ObjectType, OpaqueObjectContext, OperationData, PingRequest, RecertifyRequest, RecoverRequest,
     RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest,
     SecretBytes, SetAttributeRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
     StorageStatusMask, UniqueIdentifier, ValidateKmipRequest,
@@ -338,6 +338,12 @@ impl<'a> RequestBuilder<'a> {
             options: None,
             asynchronous_indicator: None,
         }
+    }
+
+    /// Begins constructing the empty typed Ping request.
+    #[must_use]
+    pub fn ping(self) -> PingBuilder<'a> {
+        PingBuilder::new(self.client)
     }
 
     /// Begins constructing a typed Destroy request for an explicit identifier.
@@ -2888,6 +2894,93 @@ fn append_key_pair_attributes(
         )?;
     }
     Ok(())
+}
+
+/// A fluent builder for the empty typed Ping request.
+pub struct PingBuilder<'a> {
+    client: &'a mut Client,
+    options: Option<RequestOptions>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl<'a> PingBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            client,
+            options: None,
+            asynchronous_indicator: None,
+        }
+    }
+
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.options = Some(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.asynchronous_indicator = Some(value);
+        self
+    }
+
+    /// Validates the typed Ping request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error if protocol validation fails.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        validate_fluent_request(&PingRequest::new())
+    }
+
+    /// Builds the existing typed KMIP Ping request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error if protocol validation fails.
+    pub fn build_request(self) -> Result<PingRequest, FluentBuildError> {
+        let request = PingRequest::new();
+        validate_fluent_request(&request)?;
+        Ok(request)
+    }
+
+    /// Converts Ping to the existing typed client batch item.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error if protocol validation fails.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build_request()
+            .map(|request| ClientBatchItem::new(ClientRequest::Ping(request)))
+    }
+
+    /// Executes one typed exchange and returns the existing operation result.
+    ///
+    /// # Errors
+    ///
+    /// Returns a not-sent validation error before transport if validation
+    /// fails, or the existing client error for exchange and decoding failures.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let Self {
+            client,
+            options,
+            asynchronous_indicator,
+        } = self;
+        let request = PingRequest::new();
+        validate_fluent_request(&request).map_err(fluent_client_validation_error)?;
+        execute_fluent_request(
+            client,
+            ClientRequest::Ping(request),
+            asynchronous_indicator,
+            options,
+            limits,
+        )
+    }
 }
 
 /// A fluent builder for an existing typed Get request.
