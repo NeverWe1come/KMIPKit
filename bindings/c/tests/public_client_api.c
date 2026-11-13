@@ -30,7 +30,34 @@ int kmipkit_public_client_surface_probe(void) {
     kmipkit_client_batch_t *empty_batch = NULL;
     kmipkit_client_batch_response_t *response = NULL;
     status = kmipkit_client_execute_with_options(NULL, &empty_batch, NULL, -1, &response);
-    return status == 4 && response == NULL ? 0 : 4;
+    if (status != KMIPKIT_ERROR_INVALID_INPUT || response != NULL) {
+        return 4;
+    }
+
+    if (kmipkit_client_activate_by_id_v1(NULL, NULL, NULL, &response) !=
+            KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_client_activate_by_id_with_options_v1(
+            NULL, NULL, NULL, NULL, &response) != KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_client_archive_by_id_v1(NULL, NULL, NULL, &response) !=
+            KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_client_archive_by_id_with_options_v1(
+            NULL, NULL, NULL, NULL, &response) != KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_client_locate_v1(NULL, NULL, NULL, &response) !=
+            KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_client_locate_with_options_v1(
+            NULL, NULL, NULL, NULL, &response) != KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_client_recover_by_id_v1(NULL, NULL, NULL, &response) !=
+            KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_client_recover_by_id_with_options_v1(
+            NULL, NULL, NULL, NULL, &response) != KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_client_revoke_by_id_v1(NULL, NULL, NULL, 0, 0, NULL, &response) !=
+            KMIPKIT_ERROR_INVALID_INPUT ||
+        kmipkit_client_revoke_by_id_with_options_v1(
+            NULL, NULL, NULL, 0, 0, NULL, NULL, &response) != KMIPKIT_ERROR_INVALID_INPUT ||
+        response != NULL) {
+        return 5;
+    }
+    return 0;
 }
 
 int kmipkit_public_fluent_builder_probe(void) {
