@@ -85,3 +85,17 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
 - This is test policy and catalog evidence. It does not claim server support,
   and the language validators still need checks that policy-restricted runs
   make no network request.
+
+## Development evidence: Ephemeral message field encoding
+
+- Red commit `31d996ec6`: the shared inventory regression failed because the
+  source catalog and generated route catalog did not carry the Boolean type
+  declared for Ephemeral.
+- Green commit `315c2931a`: the normative inventory now records the source
+  encoding and regenerates the executable catalog. The pinned source-table
+  check ties the value to KMIP 2.0 §8.3/Table 358 and KMIP 2.1 §8.3/Table 396.
+- Verification: all 297 normative catalog validation tests passed; all 23
+  shared normative inventory tests passed; the complete catalog validator
+  passed with 4,143 records; and `generate_test_catalog.py --check` passed.
+- This closes the shared recipe-data gap only. Language-level generic TTLV and
+  typed-message routes remain open until each validator emits passing evidence.
