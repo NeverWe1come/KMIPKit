@@ -13,12 +13,14 @@ if [[ "$(uname -s)" != Linux ]]; then
     exit 2
 fi
 
-# Keep this package report isolated from the workspace report and its profraw files.
+# Isolate package-specific profiles from the workspace coverage run. Let
+# cargo-llvm-cov resolve Cargo's artifact layout instead of assuming that
+# binaries and libraries live under debug/deps.
 readonly raw_report="${report_dir}/coverage-raw.json"
 readonly cargo_output="${report_dir}/cargo-llvm-cov.log"
 cargo_status=0
 CARGO_TERM_COLOR=never CARGO_TARGET_DIR="${ffi_target}" cargo llvm-cov \
-    -p kmipkit-ffi --all-targets --all-features --locked \
+    --no-clean -p kmipkit-ffi --all-targets --all-features --locked \
     --json --output-path "${raw_report}" > "${cargo_output}" 2>&1 || cargo_status=$?
 cat "${cargo_output}"
 if [[ "${cargo_status}" -ne 0 ]]; then

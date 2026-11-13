@@ -12,6 +12,7 @@ SHARED = Path(__file__).resolve().parents[1]
 ROOT = SHARED.parents[1]
 sys.path.insert(0, str(SHARED / "tools"))
 from validate_route_evidence import (
+    _expected_batch_operations,
     _expected_tag_decode_rejection_code,
     _validate_batch_event,
     validate_collection,
@@ -145,6 +146,53 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         self.assertTrue(summary["all_invocations_passed"])
         self.assertEqual(5, summary["expected_cells"])
         self.assertEqual(5, summary["invoked_cells"])
+
+    def test_scoped_report_validates_exact_cells_without_claiming_full_matrix(self):
+        scope = self.report["events"][:2]
+        report = copy.deepcopy(self.report)
+        report["events"] = copy.deepcopy(scope)
+        summary = validate_report(
+            report,
+            self.catalog,
+            self.manifest,
+            catalog_sha256="c" * 64,
+            route_manifest_sha256="d" * 64,
+            expected_artifact_sha256="b" * 64,
+            scope_cells=scope,
+        )
+        self.assertTrue(summary["selected_scope_complete"])
+        self.assertFalse(summary["complete_matrix"])
+        self.assertEqual(2, summary["expected_cells"])
+        self.assertEqual(2, summary["invoked_cells"])
+
+    def test_scoped_report_rejects_missing_or_out_of_scope_events(self):
+        scope = self.report["events"][:2]
+        report = copy.deepcopy(self.report)
+        report["events"] = copy.deepcopy(scope)
+        report["events"].pop(0)
+        with self.assertRaisesRegex(ValueError, "missing route execution cells"):
+            validate_report(
+                report,
+                self.catalog,
+                self.manifest,
+                catalog_sha256="c" * 64,
+                route_manifest_sha256="d" * 64,
+                expected_artifact_sha256="b" * 64,
+                scope_cells=scope,
+            )
+        report = copy.deepcopy(self.report)
+        report["events"] = copy.deepcopy(scope)
+        report["events"].append(copy.deepcopy(self.report["events"][-1]))
+        with self.assertRaisesRegex(ValueError, "outside the declared route scope"):
+            validate_report(
+                report,
+                self.catalog,
+                self.manifest,
+                catalog_sha256="c" * 64,
+                route_manifest_sha256="d" * 64,
+                expected_artifact_sha256="b" * 64,
+                scope_cells=scope,
+            )
 
     def test_report_conforms_to_route_execution_evidence_schema(self):
         try:
@@ -426,6 +474,37 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
                 expected_artifact_sha256="b" * 64,
             )
 
+    def test_collection_accepts_scoped_reports_only_when_the_union_is_complete(self):
+        local = copy.deepcopy(self.report)
+        local["run_id"] = "local-shard"
+        local["events"] = local["events"][:2]
+        network = copy.deepcopy(self.report)
+        network["run_id"] = "network-shard"
+        network["events"] = network["events"][2:]
+        scopes = {
+            local["run_id"]: local["events"],
+            network["run_id"]: network["events"],
+        }
+
+        summary = validate_collection(
+            [local, network], self.catalog, self.manifest,
+            catalog_sha256="c" * 64, route_manifest_sha256="d" * 64,
+            expected_artifact_sha256="b" * 64,
+            scope_cells_by_run=scopes,
+        )
+        self.assertTrue(summary["complete_matrix"])
+        self.assertEqual(5, summary["observed_cells"])
+
+        del network["events"][-1]
+        del scopes[network["run_id"]][-1]
+        with self.assertRaisesRegex(ValueError, "misses full matrix cells"):
+            validate_collection(
+                [local, network], self.catalog, self.manifest,
+                catalog_sha256="c" * 64, route_manifest_sha256="d" * 64,
+                expected_artifact_sha256="b" * 64,
+                scope_cells_by_run=scopes,
+            )
+
     def test_collection_rejects_different_server_identities(self):
         second = copy.deepcopy(self.report)
         second["run_id"] = "run-two"
@@ -495,6 +574,19 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         event = {"batch_operation_sequence": ["Poll"], "batch_item_count": 1}
 
         _validate_batch_event(event, case, {}, ("async-poll",))
+
+    def test_async_lifecycle_is_not_misclassified_as_one_batch(self):
+        case = {
+            "case_id": "async-create-query-poll",
+            "category": "asynchronous_workflows",
+            "requires": {"protocol_scenario": {
+                "operations": ["Create", "Query Asynchronous Requests", "Poll"],
+                "parameters": {"operations_in_request_order": [
+                    "Create", "Query Asynchronous Requests", "Poll"
+                ]},
+            }},
+        }
+        self.assertIsNone(_expected_batch_operations(case))
 
     def _four_language_fixture(self):
         reports = []

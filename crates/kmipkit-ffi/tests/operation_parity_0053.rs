@@ -14,6 +14,8 @@ unsafe extern "C" {}
 
 #[test]
 fn compiled_c_consumer_invokes_all_56_client_operation_routes() {
+    kmipkit_ffi::__coverage_consumer_test_link_anchor();
+
     let mut batch = core::ptr::null_mut();
     // SAFETY: the null output is writable, and the created batch is released below.
     assert_eq!(unsafe { kmipkit_client_batch_create(&raw mut batch) }, 0);

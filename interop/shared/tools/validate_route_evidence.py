@@ -183,7 +183,8 @@ def _expected_cells(report: dict, catalog: dict, manifest: dict) -> dict[tuple, 
 
 def validate_report(report: dict, catalog: dict, manifest: dict, *,
                     catalog_sha256: str, route_manifest_sha256: str,
-                    expected_artifact_sha256: str) -> dict:
+                    expected_artifact_sha256: str,
+                    scope_cells: list[dict] | None = None) -> dict:
     """Validate one runner-emitted evidence report against installed provenance."""
     if report.get("schema_version") != "1.0":
         raise ValueError("route evidence schema_version must be 1.0")
@@ -241,6 +242,27 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
     expected = _expected_cells(report, catalog, manifest)
     if not expected:
         raise ValueError("route evidence selection has no applicable route cells")
+    complete_selection = expected
+    scoped_keys = None
+    if scope_cells is not None:
+        if not isinstance(scope_cells, list) or not scope_cells:
+            raise ValueError("declared route scope must be a non-empty array")
+        scoped_keys = []
+        scoped_key_set = set()
+        for cell in scope_cells:
+            if not isinstance(cell, dict):
+                raise ValueError("declared route scope cells must be objects")
+            try:
+                key = _key(cell)
+            except (KeyError, TypeError) as error:
+                raise ValueError("declared route scope cell is missing its route identity") from error
+            if key not in complete_selection:
+                raise ValueError(f"declared route scope contains unplanned route execution cells: {key}")
+            if key in scoped_key_set:
+                raise ValueError(f"declared route scope contains duplicate route execution cells: {key}")
+            scoped_keys.append(key)
+            scoped_key_set.add(key)
+        expected = {key: complete_selection[key] for key in scoped_keys}
     events = report.get("events")
     if not isinstance(events, list):
         raise ValueError("route evidence events must be an array")
@@ -259,6 +281,8 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
         except KeyError as error:
             raise ValueError(f"route evidence event is missing {error.args[0]}") from error
         if key not in expected:
+            if scoped_keys is not None:
+                raise ValueError(f"route evidence event outside the declared route scope: {key}")
             raise ValueError(f"unplanned route execution cell: {key}")
         if key in observed:
             raise ValueError(f"duplicate route execution cell: {key}")
@@ -376,7 +400,18 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
         for route in manifest["routes"] if route["mode"] == "network"
         for combination in route["combinations"]
     }
-    complete_matrix = (set(selected_versions) == all_versions and seen_combinations == all_network_combinations)
+    full_selection = {
+        "language": language,
+        "protocol_versions": sorted(all_versions),
+        "network_combinations": [
+            {"encoding": encoding, "transport": transport}
+            for encoding, transport in sorted(all_network_combinations)
+        ],
+    }
+    full_expected = _expected_cells(full_selection, catalog, manifest)
+    complete_matrix = (set(selected_versions) == all_versions
+                       and seen_combinations == all_network_combinations
+                       and set(expected) == set(full_expected))
     return {
         "run_id": report["run_id"],
         "language": language,
@@ -391,15 +426,27 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
 
 def validate_collection(reports: list[dict], catalog: dict, manifest: dict, *,
                         catalog_sha256: str, route_manifest_sha256: str,
-                        expected_artifact_sha256: str) -> dict:
+                        expected_artifact_sha256: str,
+                        scope_cells_by_run: dict[str, list[dict]] | None = None) -> dict:
     """Require selected run reports collectively to cover the complete matrix."""
     if not reports:
         raise ValueError("route evidence collection must include at least one report")
-    summaries = [validate_report(
-        report, catalog, manifest, catalog_sha256=catalog_sha256,
-        route_manifest_sha256=route_manifest_sha256,
-        expected_artifact_sha256=expected_artifact_sha256,
-    ) for report in reports]
+    report_run_ids = [report.get("run_id") for report in reports]
+    if scope_cells_by_run is not None:
+        if not isinstance(scope_cells_by_run, dict):
+            raise ValueError("route evidence scopes must be keyed by run_id")
+        if (len(report_run_ids) != len(set(report_run_ids))
+                or set(scope_cells_by_run) != set(report_run_ids)):
+            raise ValueError("route evidence scopes must name every report run_id exactly once")
+    summaries = []
+    for report in reports:
+        run_id = report.get("run_id")
+        summaries.append(validate_report(
+            report, catalog, manifest, catalog_sha256=catalog_sha256,
+            route_manifest_sha256=route_manifest_sha256,
+            expected_artifact_sha256=expected_artifact_sha256,
+            scope_cells=None if scope_cells_by_run is None else scope_cells_by_run[run_id],
+        ))
     languages = {summary["language"] for summary in summaries}
     run_ids = [summary["run_id"] for summary in summaries]
     if len(languages) != 1:
