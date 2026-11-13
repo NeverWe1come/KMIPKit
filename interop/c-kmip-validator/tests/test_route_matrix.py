@@ -1902,6 +1902,75 @@ class RouteMatrixTests(unittest.TestCase):
                 self.assertIn('kmipkit_client_batch_add_error_continuation_value', symbols)
 
 
+    def test_stop_batch_returns_only_the_failed_item_and_stops_processing(self):
+        from artifact_support import ROOT
+        from route_peer import RECIPES, execute_network_cells
+        case_id = 'test-batch-stop-on-first-failure'
+        self.assertEqual(RECIPES[case_id], ((10, 10), 'batch_stop_on_first_failure'))
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12, 'STOP must pass both versions over all six wire transports')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        for check in checks:
+            self.assertEqual(check['peer_response_operation_values'], [10])
+            self.assertEqual(check['peer_response_result_statuses'], [1])
+            self.assertEqual(check['peer_response_unique_batch_item_ids'], ['item-a'])
+            self.assertEqual(check['peer_observed_effects'], ['object_not_found'])
+            self.assertEqual(check['peer_observed_state_before_sha256'],
+                             check['peer_observed_state_after_sha256'])
+            self.assertTrue({'kmipkit_client_execute',
+                             'kmipkit_client_batch_add_error_continuation_value',
+                             'kmipkit_client_batch_item_response_get',
+                             'kmipkit_client_batch_item_response_metadata_v1',
+                             'kmipkit_client_batch_item_response_pending_correlation_value',
+                             'kmipkit_client_batch_item_response_header_ttlv',
+                             'kmipkit_client_batch_item_response_raw_ttlv',
+                             'kmipkit_client_batch_response_item_count',
+                             'kmipkit_client_batch_response_item_at'} <=
+                            set(check['public_api_trace_symbols']))
+            self.assertTrue({'kmipkit_client_batch_add_error_continuation_value',
+                             'kmipkit_client_batch_item_response_get',
+                             'kmipkit_client_batch_item_response_metadata_v1',
+                             'kmipkit_client_batch_item_response_pending_correlation_value',
+                             'kmipkit_client_batch_item_response_header_ttlv',
+                             'kmipkit_client_batch_item_response_raw_ttlv'} <=
+                            set(check['public_api_success_symbols']))
+        send_events = [event for event in events if event['action'] == 'send']
+        self.assertEqual(len(send_events), 24, 'each request item route is counted separately')
+        self.assertTrue(all(event['batch_operation_sequence'] == ['Get', 'Get']
+                            and event['batch_item_count'] == 2
+                            and event['peer_observed_response_count'] == 1
+                            and event['peer_observed_result_status_codes'] == [1]
+                            for event in send_events))
+        exercised_routes = {
+            (event['public_api_symbol'], event['action'], event['target_id'],
+             event.get('workflow_item_index'))
+            for event in events if event['case_id'] == case_id
+        }
+        expected_routes = {
+            ('kmipkit_client_batch_add_error_continuation_value', 'construct',
+             'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION', None),
+            ('kmipkit_client_batch_add_error_continuation_value', 'construct',
+             'KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-STOP-00000002', None),
+            ('kmipkit_client_batch_item_response_get', 'decode', 'KMIPKIT-ELEM-OP-C2S-GET', 0),
+            ('kmipkit_client_batch_item_response_metadata_v1', 'decode',
+             'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM', None),
+            ('kmipkit_client_batch_item_response_pending_correlation_value', 'decode',
+             'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM', None),
+            ('kmipkit_client_batch_item_response_header_ttlv', 'decode',
+             'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM', None),
+            ('kmipkit_client_batch_item_response_raw_ttlv', 'decode',
+             'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM', None),
+        }
+        self.assertEqual(exercised_routes, expected_routes,
+                         'only the failed first response item is available for decoding')
+
+
     def test_batch_placeholder_chain_has_an_exact_peer_recipe(self):
         from route_peer import RECIPES
         case_id = 'test-batch-placeholder-chain-resolves'
