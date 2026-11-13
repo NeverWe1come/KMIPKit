@@ -245,6 +245,8 @@ final class LocalCatalogRouteChecks {
         }
     }
 
+    private record ReferencedEnumTarget(int tagCode, String aggregateCaseId) { }
+
     private static boolean applies(JsonNode testCase, String version) {
         for (JsonNode candidate : testCase.path("execution").path("protocol_versions")) {
             if (version.equals(candidate.asText())) return true;
@@ -258,16 +260,15 @@ final class LocalCatalogRouteChecks {
             JsonNode requires = testCase.path("requires");
             if (!"referenced_enum_value".equals(requires.path("target_kind").asText())
                     || !applies(testCase, version)) continue;
-            int tagCode = switch (requires.path("parent_name").asText()) {
-                case "PKCS#11 Function" -> 0x42015a;
-                case "PKCS#11 Return Code" -> 0x42015d;
-                default -> throw new AssertionError("Referenced enumeration has no source-backed tag fixture.");
+            ReferencedEnumTarget referencedTarget = switch (requires.path("parent_name").asText()) {
+                case "PKCS#11 Function" -> new ReferencedEnumTarget(
+                        0x42015a, "test-enum-pkcs#11-function");
+                case "PKCS#11 Return Code" -> new ReferencedEnumTarget(
+                        0x42015d, "test-enum-pkcs#11-return-code");
+                default -> throw new AssertionError("Referenced enumeration has no source-backed route fixture.");
             };
-            String aggregateCaseId = switch (requires.path("parent_name").asText()) {
-                case "PKCS#11 Function" -> "test-enum-pkcs#11-function";
-                case "PKCS#11 Return Code" -> "test-enum-pkcs#11-return-code";
-                default -> throw new AssertionError("Referenced enumeration has no aggregate route case.");
-            };
+            int tagCode = referencedTarget.tagCode();
+            String aggregateCaseId = referencedTarget.aggregateCaseId();
             String caseId = testCase.path("case_id").asText();
             String targetId = requires.path("normative_target_id").asText();
             long expected = Long.parseUnsignedLong(

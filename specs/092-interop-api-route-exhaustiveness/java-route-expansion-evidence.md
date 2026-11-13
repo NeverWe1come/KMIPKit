@@ -67,6 +67,43 @@ PKCS#11 adds 1,512 validated cells; the two blocks together add 4,072 cells
 to the 8,398-cell baseline. The selected cases are complete; the full Java
 matrix remains incomplete.
 
+## PKCS#11 aggregate catalog cases
+
+Sources: OASIS KMIP 2.0/2.1 Specification §§11.38-11.39 and the pinned
+PKCS #11 3.0 headers listed above. The catalog has two additional aggregate
+cases, one each for Function and Return Code. The per-value rows were already
+executed, but the aggregate rows remained pending because those invocations
+were emitted only with per-value case IDs.
+
+Red commit `fac9a643c` adds assertions for all 92 Function and 97 Return Code
+targets under the aggregate case IDs. The focused test fails because the
+expected aggregate route events are absent. Green commit `220a74a10` emits
+the actual installed Enumeration constructor, Item constructor, Item view,
+and decoder invocations under both the per-value and corresponding aggregate
+case identities. Each event retains the exact source-backed target ID,
+protocol version, unsigned value, tag, and normalized hash; no request body or
+secret material is included.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 37d7eeae9e64644fd7cdde4bfd64b7da5ccbb0bf2be53a949826eb62dc3aaf86 \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+```
+
+The installed Java consumer suite passes 52 tests with no failures, errors,
+or skips. The shared validator accepts 16,322 invoked cells, zero failures,
+and `selected_scope_complete=true`; the refreshed ledger records 16,322
+executed, 55,133 pending, and 71,455 planned cells. This closes the two
+aggregate case rows only; the complete Java matrix remains pending.
+
 ## Refactor and final verification
 
 The two local fixture categories share one scalar readback assertion. The
@@ -74,19 +111,17 @@ assertion checks the exact tag, TTLV type, and scalar value for both created
 and decoded Items and releases each borrowed handle. Event publication stays
 separate from invocation, and only sanitized hashes enter the report.
 
-The full installed-consumer suite and regenerated ledger are verified after
-the refactor. README and FR-003 traceability report the same planned,
-executed and pending cell counts as the generated ledger; no common manifest
-or matrix limitation is changed by this phase.
+The PKCS#11 fixture selects its aggregate case identity from the source-backed
+parent name while reusing each value's already-asserted installed API
+invocation. README and FR-003 traceability report the same planned, executed
+and pending cell counts as the generated ledger; no common manifest or matrix
+limitation is changed by this phase.
 
 Final checks after the refactor:
 
-- Full Java consumer suite: 51 tests passed, no failures or skips.
-- Shared interoperability suite: 178 tests passed.
-- Java installer/ledger tooling: 12 tests passed.
-- Requirement and feature traceability: 33 tests passed.
-- Shared route evidence validator: 12,470 executed cells, zero failed cells,
-  58,985 pending cells, and `selected_scope_complete=true`.
+- Full Java consumer suite: 52 tests passed, no failures, errors, or skips.
+- Shared route evidence validator: 16,322 executed cells, zero failed cells,
+  55,133 pending cells, and `selected_scope_complete=true`.
 - `python3 tools/compare_route_ledger.py`: generated coverage matches the
   checked-in reference.
 - `git diff --check`: passed.

@@ -100,8 +100,8 @@ baseline, regenerate the checked-in ledger with
 rejects generated ledgers that do not record successful invocations.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
-baseline. These recipes execute 14,810 of 71,455 planned Java route cells, with
-no failed cells; the ledger keeps the other 56,645 pending and does not imply
+baseline. These recipes execute 16,322 of 71,455 planned Java route cells, with
+no failed cells; the ledger keeps the other 55,133 pending and does not imply
 vendor interoperability or full-matrix completion. Local TTLV recipes exercise 41
 enumeration families and all six bitmask catalog cases through the applicable
 installed constructors, item views, decoders, and typed attribute wrappers.
@@ -144,6 +144,9 @@ and decoder in both protocol versions. They preserve each exact unsigned
 value and its Function or Return Code tag and compare normalized tree hashes
 across those routes. This includes the normative vendor-defined allocation
 boundary; it does not execute vendor commands or claim vendor interoperability.
+The two aggregate catalog cases for PKCS#11 Function and Return Code now also
+record all 1,512 value/route/version cells under their aggregate case IDs, so
+the aggregate rows no longer remain pending while the per-value rows pass.
 
 The recorded [development evidence](../../specs/092-interop-api-route-exhaustiveness/java-route-expansion-evidence.md)
 keeps the Red/Green/Refactor commands and the distinction between this completed
