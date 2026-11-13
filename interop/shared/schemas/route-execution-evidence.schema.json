@@ -127,14 +127,8 @@
         {
           "if": {
             "properties": { "status": { "const": "passed" }, "action": { "enum": ["construct", "encode", "send"] } },
-            "not": {
-              "properties": {
-                "action": { "const": "send" },
-                "request_delivery_state": { "const": "not_sent" },
-                "local_rejection_code": { "const": "batch_placeholder_forward_reference" }
-              },
-              "required": ["action", "request_delivery_state", "local_rejection_code"]
-            }
+            "required": ["status", "action"],
+            "not": { "properties": { "request_delivery_state": { "const": "not_sent" } }, "required": ["request_delivery_state"] }
           },
           "then": { "required": ["request_tree_sha256"] }
         },

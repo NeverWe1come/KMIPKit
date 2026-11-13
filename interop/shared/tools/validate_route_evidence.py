@@ -64,6 +64,7 @@ def _request_identity(record: dict) -> tuple:
 
 
 def _expected_batch_operations(case: dict) -> list[str] | None:
+    # An asynchronous lifecycle is a sequence of exchanges, not one Batch Item collection.
     if case.get("category") != "batch_workflows":
         return None
     scenario = case.get("requires", {}).get("protocol_scenario", {})
@@ -338,12 +339,20 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
                         raise ValueError(f"passed decode event requires a valid response tree hash: {key}")
             else:
                 tree_hash = event.get("request_tree_sha256")
+                expected_status = str(case.get("requires", {}).get("expected_status", "")).casefold()
+                expected_not_sent = (
+                    expected_status.replace("_", "") == "notsent"
+                    and event.get("request_delivery_state") == "not_sent"
+                )
                 local_batch_rejection = (
                     event["action"] == "send"
                     and event.get("request_delivery_state") == "not_sent"
                     and event.get("batch_item_count") is not None
                 )
-                if local_batch_rejection:
+                if expected_not_sent:
+                    if event.get("transport_invocation_count") != 0:
+                        raise ValueError(f"not-sent route invocation must prove transport count zero: {key}")
+                elif local_batch_rejection:
                     _validate_local_batch_rejection(event, case, key)
                 elif not isinstance(tree_hash, str) or not re.fullmatch(r"[0-9a-f]{64}", tree_hash):
                     raise ValueError(f"passed {event['action']} event requires a valid request tree hash: {key}")
@@ -369,7 +378,9 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
     constructed = {
         _request_identity(event): event["request_tree_sha256"]
         for event in observed.values()
-        if event["action"] == "construct" and event.get("status") == "passed"
+        if event["action"] == "construct"
+        and event.get("status") == "passed"
+        and isinstance(event.get("request_tree_sha256"), str)
     }
     for event in observed.values():
         if (event["action"] != "send" or event.get("status") != "passed"
