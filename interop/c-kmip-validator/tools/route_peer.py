@@ -300,6 +300,7 @@ RECIPES = {
     'test-norm-payload-client-query-request-21-002': ((24,), 'query'),
     'test-op-discover-versions': ((30,), 'discover_versions'),
     'test-op-log': ((44,), 'log'), 'test-op-login': ((45,), 'login'),
+    'test-op-delegated-login': ((47,), 'delegated_login'),
     'test-op-ping': ((59,), 'ping'),
     'test-attr-cryptographic-algorithm': ((1, 11, 20), 'get_attributes'),
     'test-attr-cryptographic-length': ((1, 11, 20), 'get_attributes'),
@@ -338,6 +339,11 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         raise ValueError('fixture_protocol_version_mismatch')
     if numbers(node, 0x42000D) != [len(expected)]:
         raise ValueError('fixture_batch_count_mismatch')
+    if selected_recipe[1] == 'delegated_login':
+        payloads = list(descendants(node, REQUEST_PAYLOAD_TAG))
+        if (len(payloads) != 1 or payloads[0][1] != 1 or
+                payloads[0][2] != [(0x42014D, 1, [])]):
+            raise ValueError('fixture_delegated_login_rights_mismatch')
     if expected[0] == 1:
         object_type = 4 if case_id == 'test-obj-private-key' else 3 if case_id == 'test-obj-public-key' else 2
         if numbers(node, 0x420057) != [object_type]:

@@ -611,6 +611,61 @@ static bool structure_view_find_value(kmipkit_ttlv_structure_view_t *structure,
     return false;
 }
 
+static bool delegated_login_response_matches_fixture(
+    kmipkit_client_batch_item_response_t *response_item, int32_t *status) {
+    /* OASIS KMIP v2.0 §6.1.12 Table 185 and v2.1 §6.1.12 Table 200. */
+    static const uint8_t expected_ticket[] = "controlled-delegated-login-ticket";
+    uint8_t present = 0, ticket_present = 0, ttlv_present = 0;
+    uint32_t ticket_type = 0;
+    kmipkit_byte_span_v1_t ticket_value = {0};
+    kmipkit_ttlv_structure_t *ticket_ttlv = NULL;
+    kmipkit_ttlv_structure_view_t *ticket_view = NULL;
+    kmipkit_ttlv_item_view_t *field = NULL;
+    kmipkit_ttlv_value_view_t *value = NULL;
+    *status = kmipkit_client_batch_item_response_delegated_login(
+        response_item, &present, &ticket_present, &ticket_type, &ticket_value);
+    bool typed_matches = *status == 0 && present && ticket_present &&
+        ticket_type == KMIPKIT_ENUMERATION_TICKET_TYPE_LOGIN && ticket_value.data &&
+        ticket_value.length == sizeof(expected_ticket) - 1 &&
+        memcmp(ticket_value.data, expected_ticket, sizeof(expected_ticket) - 1) == 0;
+    if (*status == 0) *status = kmipkit_client_batch_item_response_delegated_login_ttlv(
+        response_item, &ttlv_present, &ticket_ttlv);
+    bool generic_matches = *status == 0 && ttlv_present && ticket_ttlv;
+    if (generic_matches) *status = kmipkit_ttlv_structure_view(ticket_ttlv, &ticket_view);
+    uint64_t field_count = 0;
+    if (*status == 0 && ticket_view)
+        *status = kmipkit_ttlv_structure_view_item_count(ticket_view, &field_count);
+    generic_matches = generic_matches && *status == 0 && field_count == 2;
+    for (uint64_t index = 0; generic_matches && index < field_count; ++index) {
+        *status = kmipkit_ttlv_structure_view_item_at(ticket_view, index, &field);
+        generic_matches = *status == 0 && item_view_has_tag(
+            field, index == 0 ? UINT32_C(0x42014A) : UINT32_C(0x42014B),
+            index == 0 ? KMIPKIT_TTLV_ITEM_TYPE_ENUMERATION :
+                         KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING, &value);
+        if (generic_matches && index == 0) {
+            uint32_t raw_type = 0;
+            *status = kmipkit_ttlv_value_view_enumeration(value, &raw_type);
+            generic_matches = *status == 0 && raw_type == KMIPKIT_ENUMERATION_TICKET_TYPE_LOGIN;
+        } else if (generic_matches) {
+            uint64_t length = 0;
+            *status = kmipkit_ttlv_value_view_byte_length(value, &length);
+            generic_matches = *status == 0 && length == sizeof(expected_ticket) - 1;
+            for (uint64_t offset = 0; generic_matches && offset < length; ++offset) {
+                uint8_t byte = 0;
+                *status = kmipkit_ttlv_value_view_byte_at(value, offset, &byte);
+                generic_matches = *status == 0 && byte == expected_ticket[offset];
+            }
+        }
+        if (value) kmipkit_ttlv_value_view_release(value);
+        value = NULL;
+        if (field) kmipkit_ttlv_item_view_release(field);
+        field = NULL;
+    }
+    if (ticket_view) kmipkit_ttlv_structure_view_release(ticket_view);
+    if (ticket_ttlv) kmipkit_ttlv_structure_release(ticket_ttlv);
+    return typed_matches && generic_matches;
+}
+
 static bool get_response_matches_created_key(
     kmipkit_client_batch_item_response_t *response_item,
     const kmipkit_unique_identifier_v1_t *created_identifier,
@@ -2416,6 +2471,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     }
     bool hash_workflow = strcmp(test_case->case_id, "test-op-hash") == 0 ||
         strcmp(test_case->case_id, "test-crypto-hash-sha_256-0") == 0;
+    bool delegated_login_workflow =
+        strcmp(test_case->case_id, "test-op-delegated-login") == 0;
     bool rng_retrieve_workflow = strcmp(test_case->case_id, "test-op-rng-retrieve") == 0 ||
         strcmp(test_case->case_id, "test-crypto-rng-retrieve-rng-32") == 0;
     bool rng_seed_workflow = strcmp(test_case->case_id, "test-op-rng-seed") == 0 ||
@@ -2519,6 +2576,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     if (strcmp(test_case->operation, "Add Attribute") == 0 && !add_attribute_workflow) {
         return outcome_not_run("Add Attribute variations are not yet mapped to isolated C fixtures");
     }
+    if (strcmp(test_case->operation, "Delegated Login") == 0 && !delegated_login_workflow) {
+        return outcome_not_run("Delegated Login variations are not yet mapped to isolated C fixtures");
+    }
 
     kmipkit_client_batch_item_t *item = NULL;
     kmipkit_client_batch_item_t *second_item = NULL;
@@ -2575,6 +2635,10 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         status = kmipkit_client_batch_item_log(message, sizeof(message) - 1, &item);
     } else if (strcmp(test_case->operation, "Login") == 0) {
         status = kmipkit_client_batch_item_login(0, 0, 0, 0, NULL, &item);
+    } else if (delegated_login_workflow) {
+        status = kmipkit_ttlv_structure_create(&request_attributes);
+        if (status == 0) status = kmipkit_client_batch_item_delegated_login(
+            request_attributes, 0, 0, 0, 0, NULL, &item);
     } else if (hash_workflow) {
         kmipkit_ttlv_value_t *algorithm = NULL;
         status = kmipkit_ttlv_structure_create(&request_attributes);
@@ -3439,6 +3503,13 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             outcome.success = false;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
                      "server did not advertise the configured KMIP protocol version");
+        }
+    } else if (delegated_login_workflow) {
+        if (!delegated_login_response_matches_fixture(response_item, &status)) {
+            outcome.success = false;
+            outcome.library_failed = status != 0;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit Delegated Login typed or TTLV response did not preserve the fixture Ticket");
         }
     } else if (strcmp(test_case->operation, "Login") == 0) {
         uint8_t present = 0;

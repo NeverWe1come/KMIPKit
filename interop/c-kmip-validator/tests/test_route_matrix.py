@@ -1111,6 +1111,58 @@ class RouteMatrixTests(unittest.TestCase):
                                   if event['case_id'] == case_id and
                                   event['public_api_symbol'] == symbol}, {'2.0', '2.1'})
 
+    @staticmethod
+    def _delegated_login_route_inputs():
+        from artifact_support import ROOT
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == 'test-op-delegated-login']}
+        return ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest
+
+    def test_delegated_login_response_accessors_read_the_ticket_for_both_versions(self):
+        """OASIS KMIP v2.0 §6.1.12 Table 185 and v2.1 §6.1.12 Table 200."""
+        from route_peer import execute_network_cells
+
+        binary, selected, manifest = self._delegated_login_route_inputs()
+        events, _, checks = execute_network_cells(
+            binary, selected, manifest,
+            network_combinations=(('TTLV', 'raw_tls'),))
+
+        self.assertEqual(len(checks), 2)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        symbols = {'kmipkit_client_batch_item_response_delegated_login',
+                   'kmipkit_client_batch_item_response_delegated_login_ttlv'}
+        self.assertEqual({(event['protocol_version'], event['public_api_symbol'])
+                          for event in events if event['public_api_symbol'] in symbols and
+                          event['transport'] is None and event['action'] == 'decode' and
+                          event['status'] == 'passed'},
+                         {(version, symbol) for version in ('2.0', '2.1') for symbol in symbols})
+        for check in checks:
+            self.assertTrue(symbols <= set(check['public_api_trace_symbols']))
+        self.assertNotIn('controlled-delegated-login-ticket', json.dumps([events, checks]))
+
+    def test_delegated_login_response_accessors_reject_changed_ticket_bytes(self):
+        """OASIS KMIP v2.0/v2.1 §6.1.12: observe the returned Ticket value."""
+        from unittest.mock import patch
+        import route_peer
+
+        binary, selected, manifest = self._delegated_login_route_inputs()
+        fixture_response = route_peer.response
+
+        def changed_ticket(*args, **kwargs):
+            value = b'controlled-delegated-login-ticket'
+            return fixture_response(*args, **kwargs).replace(value, b'x' * len(value))
+
+        with patch.object(route_peer, 'response', side_effect=changed_ticket):
+            events, _, checks = route_peer.execute_network_cells(
+                binary, selected, manifest,
+                network_combinations=(('TTLV', 'raw_tls'),))
+        self.assertEqual(len(checks), 2)
+        self.assertTrue(all(check['status'] == 'failed' for check in checks), checks)
+        self.assertFalse(any(event['status'] == 'passed' for event in events))
+
     def test_add_attribute_operation_runs_from_the_installed_c_consumer(self):
         from artifact_support import ROOT
         from route_peer import execute_network_cells
