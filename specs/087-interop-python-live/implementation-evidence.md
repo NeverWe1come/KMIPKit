@@ -43,39 +43,41 @@ Observed on 2026-11-13:
   ordered batches, response accessors, stateful workflows and asynchronous
   routes using the controlled peer.
 
-## Batch Stop response-count discrepancy
+## Historical Batch Stop response-count discrepancy
 
-The common-base catalog at commit `66e1e73ce9e8745844686ec51719940d3aa9f8a8`
-expects one response for the `test-batch-stop-on-first-failure` scenario
-(catalog SHA-256 `e4a542bab4831a04e51f5bf04c9019da3f38845bc85839ae9b632dcc610a7d7f`).
-The Python feature snapshot used for the prior matrix expected two responses
-(catalog SHA-256
-`93bf7d439fe871cc467d0dd262e6dfe68340de4c81fa0671e5f967bb90a34613`). OASIS
-KMIP 2.1 Specification, OS, §11.5, Table 434 states that STOP prevents
+An earlier PR merge tree at common commit
+`66e1e73ce9e8745844686ec51719940d3aa9f8a8` expected one response for the
+`test-batch-stop-on-first-failure` scenario (catalog SHA-256
+`e4a542bab4831a04e51f5bf04c9019da3f38845bc85839ae9b632dcc610a7d7f`). The
+current PR base is commit `4eb22e220c4e016f1cb218879a7e952588bbe6fc`, whose
+catalog expects two responses (SHA-256
+`93bf7d439fe871cc467d0dd262e6dfe68340de4c81fa0671e5f967bb90a34613`), matching
+the Python feature snapshot and the prior full matrix. OASIS KMIP 2.1
+Specification, OS, §11.5, Table 434 states that STOP prevents
 processing subsequent operations and that responses to other batch items are
 returned normally. KMIP 2.0 has the same rule in §11.5, Table 396. Thus the
-one-versus-two response-count difference is a catalog-versus-normative-text
-discrepancy; §9.5 defines Batch Count as the number of batch items in a
-message but does not resolve this difference by itself.
+temporary one-versus-two response-count difference came from the earlier
+common catalog conflicting with the cited table text; §9.5 defines Batch
+Count as the number of batch items in a message but does not resolve that
+table-text discrepancy by itself.
 
-The regression test builds the one-response peer reply selected by the
-common-base catalog from the installed Python package, then observes
+The regression test for the earlier base commit builds its one-response peer
+reply from the installed Python package, then observes
 `Client.execute` reject it with `ClientExecutionError (2; delivery=3)`. The
 route event is recorded as `failed` with `route_execution_failed`; it is not
 counted as a successful interoperability invocation. Given the normative
-text above, this result does not by itself establish a library defect. PR run
-[43435461948](https://github.com/NeverWe1come/KMIPKit/actions/runs/43435461948)
-also exposed the response-count mismatch. Its later independent validator
-reported `FileNotFoundError` because the earlier test failure prevented the
-matrix step from producing its report; that was a secondary workflow error.
+text above, that result did not establish a library defect. The push matrix
+passed every cell, including Batch Stop, using the current two-response catalog
+and the installed pinned package. This is controlled-fixture evidence, not a
+vendor-server interoperability result. The independent base-merge run against
+the earlier one-response catalog is recorded below.
 
 The workflow now runs the matrix after consumer-test failure when the pinned
 artifact manifest exists, validates only when the matrix report exists, and
 warns rather than fails artifact upload when no report was produced. This keeps
 the primary route result visible and avoids a misleading missing-file failure.
 The validator PR does not change KMIPKit production code or the shared
-generated catalog. The shared contract needs an approved normative review
-before a library fix or conformance conclusion can be made.
+generated catalog.
 
 ## Red-Green-Refactor evidence
 
@@ -94,39 +96,53 @@ before a library fix or conformance conclusion can be made.
   focused test failed with `KeyError: batch_operation_sequence`; after the
   route handler change, it passed and the shared validator's batch-event
   structural check accepted the failure event.
+- **Red/Green for generic batch failures** (`5b5427dfa`, `7a07d5592`): the
+  test first reproduced `KeyError: batch_operation_sequence` for an observed
+  batch route failure. The fix records only catalogued attempted operation
+  order and count; it does not claim that the peer received the request.
+  The focused test and shared batch-event structural check pass.
 - **Refactor/evidence** (`89d5c6228`): updated README and implementation
-  evidence to distinguish the OASIS text from the common-catalog response
-  count and to keep the route result classified as unresolved.
+  evidence to distinguish the OASIS text from the older common-catalog
+  response count; the failed event is retained as historical evidence.
 - Full Python consumer suite: 131 tests passed in 323.323 seconds.
 - After preserving failed-route evidence, the full Python consumer suite passed
   again: 131 tests in 304.723 seconds.
+- After adding generic failed-batch evidence, the full Python consumer suite
+  passed: 132 tests in 297.611 seconds.
 - Repository requirement traceability: 2 tests passed; feature traceability:
-  31 tests passed in 51.596 seconds. The exact pinned wheel was accepted by
+  33 tests passed in 66.351 seconds. The exact pinned wheel was accepted by
   `tools/verify_artifact.py`.
 
 ## Exact-head workflow run
 
-PR run [43441808517](https://github.com/NeverWe1come/KMIPKit/actions/runs/43441808517)
-at head `ae4d17d6efc8e99a66bc7ecd7c754ac8e97a19f2` passed wheel installation,
-consumer tests and offline plan validation. The matrix emitted 74,575 passed,
-73 failed and zero pending cells, then uploaded all three evidence artifacts.
-Of the failed events, 72 were Batch Stop; one was a Get Attribute List
-Continue-batch cell that passed when reproduced locally with the same pinned
-wheel and feature snapshot. The independent validator first stopped on missing
-`batch_operation_sequence` in failed route events. Commits `0f84eba34`,
-`cef007b9c`, and `876ca8903` preserve sanitized request/peer evidence on the
-observed client rejection; the focused regression and shared batch-event
-structural check pass locally. The rerun for the new head is pending.
+The push run [43445600626](https://github.com/NeverWe1come/KMIPKit/actions/runs/43445600626)
+at head `ca2e79c1bbb52fcbc3de6f00d4e0be9efc5644f1` passed all steps and produced
+74,648/74,648 passed cells, zero failures and zero pending cells against the
+feature catalog SHA `93bf7d439fe871cc467d0dd262e6dfe68340de4c81fa0671e5f967bb90a34613`.
+The earlier PR merge run
+[43445611360](https://github.com/NeverWe1come/KMIPKit/actions/runs/43445611360)
+used the then-current one-response catalog (`e4a542...`) and reported 74,573
+passed, 75 failed and zero pending cells. It uploaded all three artifacts. The
+failures were 72 Batch Stop cells and three isolated Continue/placeholder
+cells that passed when reproduced individually with the pinned wheel. The
+independent validator's first error was missing `batch_operation_sequence` on
+one failed event. Commits `5b5427dfa` and `7a07d5592` preserve attempted batch
+metadata for that case without claiming peer receipt. The current base has
+since moved to the two-response catalog; a new PR merge run is required to
+verify this exact head against that base.
 
 ## Pull-request CI evidence
 
-At PR #173 head `264ba33bc0c04aa4285a2908a46ab097fd7802d8`, 49 checks succeeded
-and none failed before the current common-base response-count change. The six
-skips were controlled by path or workflow-event conditions. On the current
-merge tree, the Python route matrix records the one-response STOP discrepancy
-against the installed client. The common catalog's expected response count
-requires an approved normative review before that event can be classified as a
-library defect or the route can be considered closed.
+The latest PR workflow at head
+`ca2e79c1bbb52fcbc3de6f00d4e0be9efc5644f1` used an earlier merge tree with the
+one-response STOP catalog and failed its route matrix (74,573 passed, 75
+failed, zero pending); the subsequent validator error was the missing batch
+order metadata on a failed route. The push workflow passed against the feature
+catalog with two responses. After the current base advanced to
+`4eb22e220c4e016f1cb218879a7e952588bbe6fc`, commits `5b5427dfa` and
+`7a07d5592` fixed the remaining failed-event metadata without claiming peer
+receipt. A new PR run is needed to verify those commits against the current
+base and catalog together.
 
 No Cosmian, CipherTrust or ESKM endpoint was available. These fixture results
 are not vendor interoperability evidence. Cross-language parity still
