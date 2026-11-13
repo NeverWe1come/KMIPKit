@@ -269,6 +269,7 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertIn('kmipkit_ttlv_item_create', result['invoked_symbols'])
 
     def test_datetime_constructor_executes_normative_message_timestamp_cells(self):
+        """OASIS KMIP 2.0 §9.20 Table 387 and KMIP 2.1 §9.20 Table 425 define Time Stamp as Date-Time."""
         from artifact_support import INSTALL, ROOT
         from route_ttlv import TreeAbi, encode
 

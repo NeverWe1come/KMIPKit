@@ -349,3 +349,20 @@ Verification on the current implementation head:
 This closes the two optional-identifier recipe rows only. The C route matrix
 and the remaining language validators still have outstanding routes; the PR
 remains WIP until the full matrix and exact-head CI gates are green.
+
+### Normative Date Time constructor route
+
+The installed TTLV route now runs `kmipkit_ttlv_value_date_time` through the
+same construction and decode-view path for the normative message Time Stamp
+field. This covers KMIP 2.0 §9.20 Table 387 and KMIP 2.1 §9.20 Table 425.
+
+- Red commit `0dd58eab`: the new route test failed because the Date Time
+  constructor was not registered as an executable local route.
+- Green commit `28d294f3`: registered the constructor for the existing
+  catalog-driven generic TTLV roundtrip. The focused test passed and verified
+  the actual installed ABI call and exact constructed/decoded bytes.
+- Refactor: added the normative references and development evidence here.
+- CTest passed 7/7, including the new route contract test.
+
+The full installed C matrix and exact-head CI still determine the updated
+pending-cell count; this route addition closes only the two timestamp cells.
