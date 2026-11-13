@@ -8,7 +8,6 @@ unsafe extern "C" {
 #[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
 unsafe extern "C" {}
 
-#[link(name = "kmipkit_ffi")]
 unsafe extern "C" {
     fn kmipkit_client_batch_create(out_batch: *mut *mut core::ffi::c_void) -> i32;
     fn kmipkit_client_batch_release(batch: *mut core::ffi::c_void);
@@ -16,6 +15,8 @@ unsafe extern "C" {
 
 #[test]
 fn compiled_c_consumer_invokes_all_56_client_operation_routes() {
+    kmipkit_ffi::__coverage_consumer_test_link_anchor();
+
     let mut batch = core::ptr::null_mut();
     // SAFETY: the null output is writable, and the created batch is released below.
     assert_eq!(unsafe { kmipkit_client_batch_create(&raw mut batch) }, 0);
