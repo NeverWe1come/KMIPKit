@@ -133,3 +133,28 @@ all fixed output paths before invoking Cargo or redirecting a report. The
 foreign fixture remains unchanged, and the full collector still succeeds.
 Sonar reported zero new issues and zero hotspots at `a6407e43e`; later heads
 still require their own quality-gate result.
+
+### Register request and response routes
+
+The Red commits `7cafc62a2`, `22fff7a51`, and `b42bdc902` added installed-
+consumer checks for the missing Register recipe and its generic response-TTLV
+accessor. The C consumer now registers an isolated certificate, checks the
+typed Register response, checks that the generic response TTLV contains the
+same Unique Identifier, and verifies independent Destroy cleanup. The
+controlled peer validates both KMIP 2.0 and 2.1 over TTLV, JSON, and XML with
+raw TLS and HTTPS; request and response bodies remain out of evidence.
+
+Verification on the implementation worktree:
+
+- CMake build and CTest: 7/7 passed.
+- `python3 -m unittest interop.c-kmip-validator.tests.test_route_matrix -v`:
+  75/75 passed.
+- The complete generated C route matrix: 66,728 expected cells, 36,786
+  invoked, 0 failed, and 29,942 still pending. All 80 `test-op-register`
+  evidence cells were invoked; none remain pending. The completeness command
+  correctly exits unsuccessfully while the other recipes remain incomplete.
+
+This Register path is one executable operation recipe, not completion of the C
+interoperability implementation. In the same matrix, the largest remaining
+gaps include the Register/Encrypt/Decrypt batch (304 cells), asynchronous
+Cancel outcomes, and multiple operation and object routes. The PR remains WIP.

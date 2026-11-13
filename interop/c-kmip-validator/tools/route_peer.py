@@ -260,6 +260,7 @@ RECIPES = {
     'test-crypto-rng-seed-rng-32': ((38,), 'rng_seed'),
     'test-v20-reject-get-constraints': ((56,), 'get_constraints'),
     'test-op-create': ((1, 20), 'create'),
+    'test-op-register': ((3, 20), 'register'),
     'test-batch-create-activate-destroy': ((1, 18, 12, 19, 20), 'create_activate_attribute_list_revoke_destroy'),
     'test-batch-placeholder-chain-resolves': (PLACEHOLDER_CHAIN_OPERATIONS, 'batch_placeholder_chain'),
     'test-batch-single-item-options-omitted': ((10,), 'batch_single_item_options_omitted'),
@@ -746,18 +747,22 @@ def case_for_controlled_exchange(case, attribute_fixture=None, certificate_objec
     if (case['case_id'] in CONTROLLED_PEER_LOCAL_MODEL_CASES
             and case.get('execution', {}).get('mode') == 'local_model'):
         case = {**case, 'execution': {**case['execution'], 'mode': 'server_exchange'}}
-    if attribute_fixture is not None:
+    if attribute_fixture is not None or certificate_object_path is not None:
+        requires = dict(case.get('requires', {}))
+        if attribute_fixture is not None:
+            requires.update({
+                'attribute_reference_kind': attribute_fixture['attribute_reference_kind'],
+                'attribute_reference_tag': attribute_fixture.get('attribute_reference_tag', ''),
+                'attribute_reference_name': attribute_fixture.get('attribute_reference_name', ''),
+                'attribute_vendor_identification': attribute_fixture.get(
+                    'attribute_vendor_identification', ''),
+                'attribute_response_tag': attribute_fixture.get('attribute_response_tag', ''),
+                'attribute_response_type': attribute_fixture.get('attribute_response_type', ''),
+                'attribute_response_fields': attribute_fixture.get('attribute_response_fields', ''),
+            })
+        requires['certificate_object_path'] = certificate_object_path or ''
         case = {**case, 'requires': {
-            **case.get('requires', {}),
-            'attribute_reference_kind': attribute_fixture['attribute_reference_kind'],
-            'attribute_reference_tag': attribute_fixture.get('attribute_reference_tag', ''),
-            'attribute_reference_name': attribute_fixture.get('attribute_reference_name', ''),
-            'attribute_vendor_identification': attribute_fixture.get(
-                'attribute_vendor_identification', ''),
-            'attribute_response_tag': attribute_fixture.get('attribute_response_tag', ''),
-            'attribute_response_type': attribute_fixture.get('attribute_response_type', ''),
-            'attribute_response_fields': attribute_fixture.get('attribute_response_fields', ''),
-            'certificate_object_path': certificate_object_path or '',
+            **requires,
         }}
     return case
 
@@ -928,8 +933,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                             connection_path.write_text(json.dumps(config))
                             peer_case = case_for_controlled_exchange(
                                 case, attribute_fixture,
-                                str(certificate_der) if attribute_fixture and
-                                attribute_fixture.get('register_certificate') else None)
+                                str(certificate_der) if case_id == 'test-op-register' or
+                                (attribute_fixture and attribute_fixture.get('register_certificate')) else None)
                             catalog_path.write_text(json.dumps({**catalog, 'test_cases': [peer_case]}))
                             run = subprocess.run([str(binary.resolve()), 'run', '--connection', str(connection_path),
                                 '--catalog', str(catalog_path), '--allow-mutations', '--output', str(result_path)],

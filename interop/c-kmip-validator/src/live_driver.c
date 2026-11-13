@@ -180,6 +180,104 @@ static bool item_view_has_tag(kmipkit_ttlv_item_view_t *item,
     return valid;
 }
 
+static bool register_payload_matches_identifier(
+    kmipkit_ttlv_structure_view_t *payload_view,
+    const kmipkit_unique_identifier_v1_t *expected_identifier,
+    int32_t *out_status) {
+    if (!payload_view || !expected_identifier || !out_status ||
+        expected_identifier->kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
+        !expected_identifier->text_data || expected_identifier->text_length == 0) {
+        if (out_status) *out_status = KMIPKIT_ERROR_INVALID_INPUT;
+        return false;
+    }
+    uint64_t item_count = 0;
+    int32_t status = kmipkit_ttlv_structure_view_item_count(payload_view, &item_count);
+    bool identifier_found = false;
+    bool identifier_matches = false;
+    for (uint64_t index = 0; status == 0 && index < item_count; ++index) {
+        kmipkit_ttlv_item_view_t *item_view = NULL;
+        kmipkit_ttlv_value_view_t *value_view = NULL;
+        status = kmipkit_ttlv_structure_view_item_at(payload_view, index, &item_view);
+        if (status == 0 && item_view_has_tag(item_view, UINT32_C(0x420094),
+                                              KMIPKIT_TTLV_ITEM_TYPE_TEXT_STRING, &value_view)) {
+            if (identifier_found) {
+                status = KMIPKIT_ERROR_INVALID_INPUT;
+            } else {
+                identifier_found = true;
+                uint64_t value_length = 0;
+                status = kmipkit_ttlv_value_view_byte_length(value_view, &value_length);
+                identifier_matches = status == 0 &&
+                    value_length == expected_identifier->text_length;
+                if (status == 0 && !identifier_matches) status = KMIPKIT_ERROR_INVALID_INPUT;
+                for (uint64_t byte_index = 0; status == 0 && byte_index < value_length; ++byte_index) {
+                    uint8_t byte = 0;
+                    status = kmipkit_ttlv_value_view_byte_at(value_view, byte_index, &byte);
+                    identifier_matches = status == 0 &&
+                        byte == expected_identifier->text_data[byte_index];
+                    if (status == 0 && !identifier_matches) status = KMIPKIT_ERROR_INVALID_INPUT;
+                }
+            }
+        }
+        if (value_view) kmipkit_ttlv_value_view_release(value_view);
+        if (item_view) kmipkit_ttlv_item_view_release(item_view);
+    }
+    if (status == 0 && (!identifier_found || !identifier_matches)) {
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    *out_status = status;
+    return status == 0;
+}
+
+static bool register_response_ttlv_matches_identifier(
+    kmipkit_client_batch_item_response_t *response_item,
+    const kmipkit_unique_identifier_v1_t *expected_identifier,
+    int32_t *out_status) {
+    if (!out_status) return false;
+    *out_status = KMIPKIT_ERROR_INVALID_INPUT;
+    if (!response_item || !expected_identifier || !out_status ||
+        expected_identifier->kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
+        !expected_identifier->text_data || expected_identifier->text_length == 0) {
+        return false;
+    }
+    uint8_t present = 0;
+    kmipkit_ttlv_structure_t *structure = NULL;
+    kmipkit_ttlv_structure_view_t *structure_view = NULL;
+    int32_t status = kmipkit_client_batch_item_response_register_ttlv(
+        response_item, &present, &structure);
+    if (status == 0 && (!present || !structure)) status = KMIPKIT_ERROR_INVALID_INPUT;
+    if (status == 0) status = kmipkit_ttlv_structure_view(structure, &structure_view);
+    uint64_t item_count = 0;
+    if (status == 0) status = kmipkit_ttlv_structure_view_item_count(structure_view, &item_count);
+    bool payload_found = false;
+    for (uint64_t index = 0; status == 0 && index < item_count; ++index) {
+        kmipkit_ttlv_item_view_t *item_view = NULL;
+        kmipkit_ttlv_value_view_t *value_view = NULL;
+        kmipkit_ttlv_structure_view_t *payload_view = NULL;
+        status = kmipkit_ttlv_structure_view_item_at(structure_view, index, &item_view);
+        if (status == 0 && item_view_has_tag(item_view, UINT32_C(0x42007C),
+                                              KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE, &value_view)) {
+            if (payload_found) {
+                status = KMIPKIT_ERROR_INVALID_INPUT;
+            } else {
+                payload_found = true;
+                status = kmipkit_ttlv_value_view_structure(value_view, &payload_view);
+                if (status == 0 && !register_payload_matches_identifier(
+                    payload_view, expected_identifier, &status)) {
+                    if (status == 0) status = KMIPKIT_ERROR_INVALID_INPUT;
+                }
+            }
+        }
+        if (payload_view) kmipkit_ttlv_structure_view_release(payload_view);
+        if (value_view) kmipkit_ttlv_value_view_release(value_view);
+        if (item_view) kmipkit_ttlv_item_view_release(item_view);
+    }
+    if (status == 0 && !payload_found) status = KMIPKIT_ERROR_INVALID_INPUT;
+    if (structure_view) kmipkit_ttlv_structure_view_release(structure_view);
+    if (structure) kmipkit_ttlv_structure_release(structure);
+    *out_status = status;
+    return status == 0;
+}
+
 static bool attributes_match_created_symmetric_key(kmipkit_ttlv_structure_t *attributes) {
     kmipkit_ttlv_structure_view_t *view = NULL;
     uint64_t count = 0;
@@ -1587,7 +1685,11 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         strcmp(test_case->case_id, "test-attr-cryptographic-length") == 0;
     bool certificate_attributes_workflow =
         strcmp(test_case->case_id, "test-attr-certificate-attributes") == 0;
-    bool register_certificate_workflow = certificate_attributes_workflow;
+    bool register_operation_workflow = strcmp(test_case->case_id, "test-op-register") == 0;
+    bool register_certificate_workflow = certificate_attributes_workflow || register_operation_workflow;
+    if (register_operation_workflow && test_case->certificate_object_path[0] == '\0') {
+        return outcome_not_run("Register requires the isolated certificate fixture prepared by the route matrix");
+    }
     bool batch_create_activate_get_attribute_list_revoke_destroy_workflow =
         strcmp(test_case->case_id, "test-batch-create-activate-destroy") == 0;
     bool batch_placeholder_chain_workflow =
@@ -1657,11 +1759,11 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         create_storage_masks_workflow;
     bool create_workflow = strcmp(test_case->case_id, "test-op-create") == 0 ||
         strcmp(test_case->case_id, "test-obj-symmetric-key") == 0 || rsa_key_workflow ||
-        create_payload_workflow;
+        create_payload_workflow || register_operation_workflow;
     uint32_t requested_object_type = private_key_workflow ?
         KMIPKIT_ENUMERATION_OBJECT_TYPE_PRIVATE_KEY : public_key_workflow ?
         KMIPKIT_ENUMERATION_OBJECT_TYPE_PUBLIC_KEY :
-        certificate_attributes_workflow ? KMIPKIT_ENUMERATION_OBJECT_TYPE_CERTIFICATE :
+        register_certificate_workflow ? KMIPKIT_ENUMERATION_OBJECT_TYPE_CERTIFICATE :
         KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY;
     bool revoke_workflow = strcmp(test_case->case_id, "test-op-revoke") == 0;
     bool activate_workflow = strcmp(test_case->case_id, "test-op-activate") == 0;
@@ -1839,9 +1941,11 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         }
         if (status == 0 && register_certificate_workflow) {
             status = build_certificate_register_item(
-                client, test_case->certificate_object_path, &setup_item);
+                client, test_case->certificate_object_path,
+                create_workflow ? &item : &setup_item);
             if (status == 0 && !request_item_is_valid(
-                    setup_item, request_validation_diagnostic, sizeof(request_validation_diagnostic))) {
+                    create_workflow ? item : setup_item,
+                    request_validation_diagnostic, sizeof(request_validation_diagnostic))) {
                 status = KMIPKIT_ERROR_INVALID_INPUT;
             }
         } else if (status == 0) {
@@ -1960,7 +2064,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         if (status == 0) {
             request_construction_step = "Unique Batch Item IDs";
             if (create_workflow) {
-                status = set_batch_item_id(&item, "interop-create");
+                status = set_batch_item_id(&item,
+                    register_operation_workflow ? "interop-register" : "interop-create");
             } else {
                 status = set_batch_item_id(&setup_item,
                     register_certificate_workflow ? "interop-register" :
@@ -2360,7 +2465,15 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             created_identifier.text_length == 0 || !created_identifier.text_data) {
             outcome.library_failed = status != 0;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                     "KMIPKit did not expose the typed Create response for the isolated fixture");
+                     "KMIPKit did not expose the typed Create/Register response for the isolated fixture");
+            goto cleanup;
+        }
+        if (register_certificate_workflow &&
+            !register_response_ttlv_matches_identifier(
+                setup_response_item, &created_identifier, &status)) {
+            outcome.library_failed = true;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit Register response TTLV disagreed with its typed Unique Identifier");
             goto cleanup;
         }
         if (batch_create_activate_get_attribute_list_revoke_destroy_workflow &&

@@ -892,6 +892,11 @@ class RouteMatrixTests(unittest.TestCase):
         }
         self.assertTrue(all(required_symbols <= set(check['public_api_trace_symbols'])
                             for check in checks))
+        generic_response_events = [event for event in events
+                                   if event['public_api_symbol'] ==
+                                   'kmipkit_client_batch_item_response_register_ttlv']
+        self.assertEqual({event['protocol_version'] for event in generic_response_events},
+                         {'2.0', '2.1'})
 
     def test_placeholder_chain_executes_typed_create_activate_get_batch(self):
         from artifact_support import ROOT
