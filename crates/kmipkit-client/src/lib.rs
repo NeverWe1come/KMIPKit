@@ -339,6 +339,10 @@ mod rekey_execution_tests;
 mod rekey_key_pair_execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/fluent_lifecycle_operation_tests.rs"]
+mod fluent_lifecycle_operation_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/reprovision_execution_tests.rs"]
 mod reprovision_execution_tests;
 
@@ -370,9 +374,10 @@ pub use execute::{
     ResponseEncodingError,
 };
 pub use fluent::{
-    CreateKeyPairBuilder, CreateSplitKeyBuilder, CreateSymmetricKeyBuilder, CryptographicUsageMask,
-    DestroyBuilder, FluentAttributePosition, FluentBuildError, GetBuilder, RegisterBuilder,
-    RequestBuilder,
+    ActivateBuilder, ArchiveBuilder, CreateKeyPairBuilder, CreateSplitKeyBuilder,
+    CreateSymmetricKeyBuilder, CryptographicUsageMask, DestroyBuilder, FluentAttributePosition,
+    FluentBuildError, GetBuilder, LocateBuilder, RecertifyBuilder, RecoverBuilder, RegisterBuilder,
+    RekeyBuilder, RekeyKeyPairBuilder, RequestBuilder, RevokeBuilder,
 };
 pub use kmipkit_protocol::{
     ProfileObjectState, ProfileTransport, ProfileValidationContext, ProfileValidationError,

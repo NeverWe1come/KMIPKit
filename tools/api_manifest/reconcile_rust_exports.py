@@ -32,6 +32,11 @@ UNRESOLVED_OWNER_REASON = (
     "The public Rust declaration has no resolved owner in the approved "
     "dependency inventory; assign an owner before advertising it."
 )
+STANDARD_TRAIT_PREFIXES = ("core::", "alloc::", "std::")
+STANDARD_TRAIT_EXCLUSION_REASON = (
+    "This exact Rust standard-trait implementation is language-level behavior, "
+    "not a separate KMIPKit capability requiring a binding mapping."
+)
 
 
 def _validate_subject_bindings(bindings: Any) -> None:
@@ -90,7 +95,9 @@ def _validate_condition(condition: Any) -> dict[str, Any]:
     return condition
 
 
-def blocked_record(observed: dict[str, Any], manifest: dict[str, Any]) -> dict[str, Any]:
+def blocked_record(observed: dict[str, Any], manifest: dict[str, Any], *,
+                   candidate_spec_id: str | None = None,
+                   requirement_id: str = "KMIPKIT-0043-FR-021") -> dict[str, Any]:
     """Build a blocked record for an observed Rust path without inventing mappings."""
     package_id = observed.get("packageId")
     export_name = observed.get("exportName")
@@ -102,7 +109,8 @@ def blocked_record(observed: dict[str, Any], manifest: dict[str, Any]) -> dict[s
 
     owner_path = _owner_path(export_name)
     owner = _find_owner(manifest, package_id, owner_path, export_name)
-    candidate_spec_id = _candidate_spec_for_owner(manifest, owner)
+    owner_candidate = _candidate_spec_for_owner(manifest, owner)
+    candidate = candidate_spec_id or owner_candidate
     reason = BLOCKED_REASON if owner is not None else UNRESOLVED_OWNER_REASON
     declaration_hash = hashlib.sha256(
         f"{package_id}\0{export_name}".encode("utf-8")
@@ -113,15 +121,41 @@ def blocked_record(observed: dict[str, Any], manifest: dict[str, Any]) -> dict[s
         "kind": kind,
         "exportName": export_name,
         "capabilityId": "public_binding_surface",
-        "requirementIds": ["KMIPKIT-0043-FR-021"],
+        "requirementIds": [requirement_id],
         "declarationState": "blocked",
         "parityScope": "four-language",
-        "candidateSpecId": candidate_spec_id,
+        "candidateSpecId": candidate,
         "blockedReason": reason,
     }
     if "condition" in observed:
         record["condition"] = _validate_condition(observed["condition"])
     return record
+
+
+def standard_trait_exclusion(observed: dict[str, Any]) -> dict[str, Any] | None:
+    """Describe a standard-library trait implementation as language-level behavior."""
+    export_name = observed.get("exportName")
+    if not isinstance(export_name, str) or not export_name.startswith("<") or " as " not in export_name:
+        return None
+    trait_path = export_name.split(" as ", 1)[1].split(">::", 1)[0]
+    if not trait_path.startswith(STANDARD_TRAIT_PREFIXES):
+        return None
+    return {
+        "packageId": observed["packageId"],
+        "exportName": export_name,
+        "reason": STANDARD_TRAIT_EXCLUSION_REASON,
+        "approvalSource": {
+            "kind": "feature-specification",
+            "path": "specs/093-fluent-complete-api/spec.md",
+            "status": "Approved",
+            "evidence": (
+                "Cross-language mappings cover KMIPKit capabilities; standard-library Rust "
+                "trait implementation methods are language-level behavior and their exact "
+                "paths MUST be recorded as approved exclusions."
+            ),
+        },
+        "evidence": "KMIPKIT-0093-FR-011",
+    }
 
 
 def _owner_path(export_name: str) -> str | None:
@@ -182,7 +216,9 @@ def _candidate_spec_for_owner(manifest: dict[str, Any],
     return "KMIPKIT-0043"
 
 
-def reconcile(manifest: dict[str, Any], report: dict[str, Any]) -> list[dict[str, Any]]:
+def reconcile(manifest: dict[str, Any], report: dict[str, Any], *,
+              candidate_spec_id: str | None = None,
+              requirement_id: str = "KMIPKIT-0043-FR-021") -> list[dict[str, Any]]:
     """Add exact blocked records for report paths not yet represented in the manifest."""
     if report.get("formatVersion") != 1 or report.get("rustdocFormat") != 57:
         raise ValueError("expected Rust export report format 1 and rustdoc JSON 57")
@@ -236,7 +272,17 @@ def reconcile(manifest: dict[str, Any], report: dict[str, Any]) -> list[dict[str
         observed_keys.add(key)
         if key in existing_keys or key in exclusion_keys:
             raise ValueError(f"stale Rust report path is already reconciled: {key[0]}:{key[1]}")
-        row = blocked_record(item, manifest)
+        exclusion = standard_trait_exclusion(item)
+        if exclusion is not None:
+            exclusions.append(exclusion)
+            exclusion_keys.add(key)
+            continue
+        row = blocked_record(
+            item,
+            manifest,
+            candidate_spec_id=candidate_spec_id,
+            requirement_id=requirement_id,
+        )
         if row["declarationId"] in existing_ids or row["declarationId"] in row_ids:
             raise ValueError(f"Rust declaration ID collision: {row['declarationId']}")
         row_ids.add(row["declarationId"])
@@ -244,6 +290,7 @@ def reconcile(manifest: dict[str, Any], report: dict[str, Any]) -> list[dict[str
 
     rows.sort(key=lambda row: (row["packageId"], row["exportName"], row["kind"]))
     declarations.extend(rows)
+    exclusions.sort(key=lambda row: (row["packageId"], row["exportName"]))
     return rows
 
 
@@ -258,6 +305,8 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
     parser.add_argument("--report", type=Path, required=True)
+    parser.add_argument("--candidate-spec-id", default=None)
+    parser.add_argument("--requirement-id", default="KMIPKIT-0043-FR-021")
     parser.add_argument(
         "--write", action="store_true",
         help="write exact blocked declarations to the canonical manifest input",
@@ -275,12 +324,19 @@ def main(argv: list[str] | None = None) -> int:
             and prior_declarations[_export_key(item)].get("condition") != item.get("condition")
         )
         original = json.dumps(manifest, sort_keys=True)
-        additions = reconcile(manifest, report)
+        prior_exclusions = len(manifest.get("approvedExclusions", []))
+        additions = reconcile(
+            manifest,
+            report,
+            candidate_spec_id=arguments.candidate_spec_id,
+            requirement_id=arguments.requirement_id,
+        )
         changed = json.dumps(manifest, sort_keys=True) != original
         if arguments.write and changed:
             _write_manifest(arguments.manifest, manifest)
         print(json.dumps({
             "blockedRecordsAdded": len(additions),
+            "approvedExclusionsAdded": len(manifest.get("approvedExclusions", [])) - prior_exclusions,
             "conditionalRecordsUpdated": conditional_updates,
             "write": arguments.write,
         }))

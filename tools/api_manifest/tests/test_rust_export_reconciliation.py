@@ -53,7 +53,7 @@ class RustExportReconciliationTests(unittest.TestCase):
         record = RECONCILER.blocked_record(
             observed(
                 "rust-kmipkit-protocol",
-                "<kmipkit_protocol::Owner as core::fmt::Debug>::fmt",
+                "<kmipkit_protocol::Owner as kmipkit_protocol::Trait>::method",
             ),
             manifest,
         )
@@ -65,9 +65,61 @@ class RustExportReconciliationTests(unittest.TestCase):
         self.assertNotIn("languageMappings", record)
         self.assertNotIn("approvalSource", record)
         expected_id = hashlib.sha256(
-            b"rust-kmipkit-protocol\0<kmipkit_protocol::Owner as core::fmt::Debug>::fmt"
+            b"rust-kmipkit-protocol\0<kmipkit_protocol::Owner as kmipkit_protocol::Trait>::method"
         ).hexdigest()[:20]
         self.assertEqual(record.get("declarationId"), f"rust-observed-{expected_id}")
+
+    def test_standard_trait_implementation_is_an_approved_language_facility_exclusion(self):
+        manifest = {"capabilities": [], "approvedExclusions": [], "publicDeclarations": []}
+        report = {
+            "formatVersion": 1,
+            "rustdocFormat": 57,
+            "missingFromManifest": [
+                observed(
+                    "rust-kmipkit-protocol",
+                    "<kmipkit_protocol::Owner as core::fmt::Debug>::fmt",
+                ),
+            ],
+        }
+
+        added = RECONCILER.reconcile(
+            manifest,
+            report,
+            candidate_spec_id="KMIPKIT-0093",
+            requirement_id="KMIPKIT-0093-FR-011",
+        )
+
+        self.assertEqual(added, [])
+        self.assertEqual(manifest["publicDeclarations"], [])
+        self.assertEqual(
+            manifest["approvedExclusions"][0]["exportName"],
+            "<kmipkit_protocol::Owner as core::fmt::Debug>::fmt",
+        )
+        self.assertEqual(
+            manifest["approvedExclusions"][0]["approvalSource"]["path"],
+            "specs/093-fluent-complete-api/spec.md",
+        )
+
+    def test_unmapped_public_path_belongs_to_the_complete_api_delivery(self):
+        manifest = {"capabilities": [], "approvedExclusions": [], "publicDeclarations": []}
+        report = {
+            "formatVersion": 1,
+            "rustdocFormat": 57,
+            "missingFromManifest": [
+                observed("rust-kmipkit-protocol", "kmipkit_protocol::NewOperation::execute"),
+            ],
+        }
+
+        added = RECONCILER.reconcile(
+            manifest,
+            report,
+            candidate_spec_id="KMIPKIT-0093",
+            requirement_id="KMIPKIT-0093-FR-011",
+        )
+
+        self.assertEqual(len(added), 1)
+        self.assertEqual(added[0]["candidateSpecId"], "KMIPKIT-0093")
+        self.assertEqual(added[0]["requirementIds"], ["KMIPKIT-0093-FR-011"])
 
     def test_alias_projected_member_uses_the_alias_record_as_its_owner(self):
         manifest = {

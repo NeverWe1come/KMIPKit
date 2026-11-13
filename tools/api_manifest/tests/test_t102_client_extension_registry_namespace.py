@@ -28,6 +28,7 @@ EXPECTED_CHILD_EXPORTS = {
     "kmipkit_client::extension_registry::ClientConfiguration::protocol_version",
     "kmipkit_client::extension_registry::ClientConfiguration::wire_encoding",
     "kmipkit_client::extension_registry::ClientConfiguration::with_protocol_version",
+    "kmipkit_client::extension_registry::ClientConfiguration::with_kmip_version",
     "kmipkit_client::extension_registry::ClientConfiguration::with_wire_encoding",
     "kmipkit_client::extension_registry::client_extension_registry",
     "kmipkit_client::extension_registry::definition_at",
@@ -84,18 +85,25 @@ class ClientExtensionRegistryNamespaceTests(unittest.TestCase):
             "kmipkit_client::extension_registry::ClientConfiguration::protocol_version",
             "kmipkit_client::extension_registry::ClientConfiguration::with_protocol_version",
         }
+        protocol_version_alias_exports = {
+            "kmipkit_client::extension_registry::ClientConfiguration::with_kmip_version",
+        }
         for export_name, declaration in children.items():
             with self.subTest(export=export_name):
-                expected_capability = (
-                    "wire_encoding_selection"
-                    if export_name in wire_encoding_exports
-                    else (
-                        "kmip_protocol_version_selection"
-                        if export_name in protocol_version_exports
-                        else "vendor_extension_registry"
-                    )
-                )
+                if export_name in protocol_version_alias_exports:
+                    expected_capability = "public_binding_surface"
+                elif export_name in wire_encoding_exports:
+                    expected_capability = "wire_encoding_selection"
+                elif export_name in protocol_version_exports:
+                    expected_capability = "kmip_protocol_version_selection"
+                else:
+                    expected_capability = "vendor_extension_registry"
                 self.assertEqual(expected_capability, declaration["capabilityId"])
+                if export_name in protocol_version_alias_exports:
+                    self.assertEqual("blocked", declaration["declarationState"])
+                    self.assertEqual("KMIPKIT-0093", declaration["candidateSpecId"])
+                    self.assertIn("four-language mapping", declaration["blockedReason"])
+                    continue
                 self.assertEqual("declared", declaration["declarationState"])
                 self.assertNotIn("candidateSpecId", declaration)
                 self.assertEqual(

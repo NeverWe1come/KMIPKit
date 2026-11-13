@@ -33,7 +33,7 @@ CHECKED_IN_MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
 REGISTRY_FIXTURE_PATH = ROOT / "tools" / "api_manifest" / "tests" / "fixtures" / "public-api-v1.json"
 CATALOG_PATH = ROOT / "specification" / "catalog" / "kmip-2.1.json"
 RUST_EXPORT_REPORT_DIR = ROOT / "specs" / "043-public-api-bindings" / "reports"
-RUST_EXPORT_REPORT_PATH = ROOT / "specs/051-pre-send-validation/reports/rust-export-report-2026-11-07.json"
+RUST_EXPORT_REPORT_PATH = ROOT / "specs/051-pre-send-validation/reports/rust-export-report-2026-11-11.json"
 
 EXPECTED_PACKAGES = {
     "rust-kmipkit-ttlv",
@@ -1768,9 +1768,26 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "kmipkit_protocol::DiscoverVersionsResponse",
             "kmipkit_protocol::DiscoverVersionsResponse::result",
             "kmipkit_protocol::DiscoverVersionsResponse::supported_versions",
+            "kmipkit_protocol::DiscoverVersionsResponse::try_from_response_item_for_offer",
+            "kmipkit_protocol::DiscoverVersionsError::InvalidOfferedVersions",
+            "kmipkit_protocol::DiscoverVersionsRequest::with_versions",
         }
 
         self.assertEqual(expected_direct_declarations, direct_declarations)
+        complete_api_declarations = {
+            "kmipkit_protocol::DiscoverVersionsResponse::try_from_response_item_for_offer",
+            "kmipkit_protocol::DiscoverVersionsError::InvalidOfferedVersions",
+            "kmipkit_protocol::DiscoverVersionsRequest::with_versions",
+        }
+        for export_name in complete_api_declarations:
+            declaration = next(
+                row for row in self.checked_in_manifest["publicDeclarations"]
+                if row["packageId"] == "rust-kmipkit-protocol"
+                and row["exportName"] == export_name
+            )
+            self.assertEqual(declaration["declarationState"], "blocked")
+            self.assertEqual(declaration["candidateSpecId"], "KMIPKIT-0093")
+            self.assertEqual(declaration["requirementIds"], ["KMIPKIT-0093-FR-011"])
         self.assertFalse(
             direct_declarations & exclusion_names,
             "concrete Discover Versions API declarations must remain individually inventoried",
@@ -6286,6 +6303,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             with self.subTest(not_observed=row["exportName"]):
                 self.assertEqual(row["declarationState"], "blocked")
                 self.assertNotIn("languageMappings", row)
+
         by_package_and_export = {
             (declaration["packageId"], declaration["exportName"]): declaration
             for declaration in declarations
@@ -6307,7 +6325,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             if "core::any::Any" in row["exportName"]
             and "<'" in row["exportName"]
         ]
-        self.assertEqual(len(any_lifetime_rows), 34)
+        self.assertEqual(len(any_lifetime_rows), 67)
         for row in any_lifetime_rows:
             exclusion_key = (row["packageId"], _canonical_export_name(row["exportName"]))
             if exclusion_key in approved_exclusion_keys:
@@ -6369,6 +6387,45 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         ]
         self.assertEqual(transport_exchange["declarationState"], "declared")
         self.assertEqual(transport_exchange["parityScope"], "rust-only-adr")
+
+    def test_private_fluent_attribute_helper_is_not_a_public_rust_export(self) -> None:
+        self.assertFalse(
+            any(
+                row["exportName"]
+                == "kmipkit_client::fluent::CreateSymmetricKeyBuilder::add_attribute_item"
+                for row in self.checked_in_manifest["publicDeclarations"]
+            ),
+            "private helper methods must not be declared as public API",
+        )
+
+    def test_four_language_attribute_item_mapping_targets_the_public_rust_method(self) -> None:
+        declarations = self.checked_in_manifest["publicDeclarations"]
+        rust_name = "kmipkit_client::fluent::CreateSymmetricKeyBuilder::attribute_item"
+        rust_declaration = next(
+            row for row in declarations
+            if row["packageId"] == "rust-kmipkit-client"
+            and row["exportName"] == rust_name
+        )
+        self.assertEqual(rust_declaration["declarationState"], "declared")
+        for package_id, export_name in (
+            ("java-kmipkit", "org.kmipkit.fluent.SymmetricKeyBuilder.attributeItem"),
+            ("python-kmipkit", "kmipkit.fluent.SymmetricKeyBuilder.add_attribute_item"),
+        ):
+            declaration = next(
+                row for row in declarations
+                if row["packageId"] == package_id and row["exportName"] == export_name
+            )
+            with self.subTest(package=package_id):
+                self.assertEqual(declaration["languageMappings"]["rust"]["name"], rust_name)
+        capability = next(
+            row for row in self.checked_in_manifest["capabilities"]
+            if row["capabilityId"] == "fluent_dx_api"
+        )
+        self.assertIn(rust_name, capability["mappings"]["rust"])
+        self.assertIn(
+            "kmipkit_symmetric_key_builder_add_attribute_item",
+            capability["mappings"]["c"],
+        )
 
     def test_ffi_runtime_metadata_is_owned_and_mapped_in_all_languages(self) -> None:
         capability = next(
@@ -6624,6 +6681,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 "specs/028-diagnostics-interop/spec.md",
                 "specs/027-rng-operations/spec.md",
                 "specs/018-managed-object-lifecycle/approval-record.md",
+                "specs/093-fluent-complete-api/spec.md",
             },
         )
 
@@ -6667,7 +6725,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             for item in self.checked_in_manifest["approvedExclusions"]
             if item["packageId"] == "rust-kmipkit-protocol"
         ]
-        self.assertEqual(len(rust_exclusions), 6918)
+        self.assertEqual(len(rust_exclusions), 8290)
 
     def test_ttlv_declarations_use_their_approved_shared_spec_owners(self) -> None:
         capabilities = {
@@ -7021,8 +7079,18 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
                 re.MULTILINE,
             )
         )
+        header_versioned_macros = set(
+            re.findall(
+                r"^#define (KMIPKIT_V(?:2_1|3_0)_(?:OPERATION|OBJECT_TYPE|OBJECT_CLASS)_\w+)",
+                header,
+                re.MULTILINE,
+            )
+        )
         self.assertEqual(
-            header_ttlv_macros | header_encoding_macros | header_named_value_macros,
+            header_ttlv_macros
+            | header_encoding_macros
+            | header_named_value_macros
+            | header_versioned_macros,
             ready_by_kind["macro"],
         )
         header_error_macros = set(
