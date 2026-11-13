@@ -76,8 +76,9 @@ class FfiCoverageObjectTests(unittest.TestCase):
             alias = root / 'debug/libkmipkit_ffi.so'
             os.link(objects[0], alias)
             actual = MODULE.collect_ffi_objects(root, log, (log.parent / 'cargo-artifacts.jsonl'))
-            self.assertTrue(actual[0].samefile(objects[0]))
-            self.assertEqual(actual[1:], objects[1:])
+            self.assertEqual(len(actual), len(objects))
+            self.assertTrue(all(reported.samefile(expected)
+                                for reported, expected in zip(actual, objects)))
 
     def test_reported_consumer_must_belong_to_the_instrumented_target(self):
         with tempfile.TemporaryDirectory() as directory:
