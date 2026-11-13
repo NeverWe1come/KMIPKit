@@ -198,6 +198,32 @@ def _required_structure_items(target: dict, catalog: dict, tags: dict[str, int],
 def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
                           protocol_version: str) -> list[tuple] | None:
     """Build item trees only where the pinned catalog identifies tag and type."""
+    if target.get('target_id') == 'KMIPKIT-ELEM-MESSAGE-FIELD-8-3-EPHEMERAL':
+        operation = catalog_enum_value(catalog, 'Operation', 'Get', protocol_version)
+        if operation is None:
+            return None
+        header = (tags['Request Header'], 1, [
+            (tags['Protocol Version'], 1, [
+                (tags['Protocol Version Major'], 2, (2).to_bytes(4, 'big')),
+                (tags['Protocol Version Minor'], 2,
+                 int(protocol_version.split('.')[1]).to_bytes(4, 'big')),
+            ]),
+            (tags['Batch Count'], 2, (1).to_bytes(4, 'big')),
+        ])
+        request_payload = (tags['Request Payload'], 1, [
+            (tags['Unique Identifier'], 7, b'kmipkit-ephemeral-fixture'),
+        ])
+        return [
+            (tags['Request Message'], 1, [
+                header,
+                (tags['Batch Item'], 1, [
+                    (tags['Operation'], 5, operation.to_bytes(4, 'big')),
+                    (tags['Ephemeral'], 6, value.to_bytes(8, 'big')),
+                    request_payload,
+                ]),
+            ])
+            for value in (0, 1)
+        ]
     if target['kind'] == 'tag' and target.get('allocation') in {'reserved', 'unused'}:
         return None
     if target['kind'] == 'tag_range' and target.get('allocation') == 'extension':
@@ -458,6 +484,7 @@ class InstalledAbi:
 
 LOCAL_SYMBOLS = {
     'kmipkit_ttlv_decode', 'kmipkit_ttlv_item_create', 'kmipkit_ttlv_raw_tag_create',
+    'kmipkit_request_message_from_ttlv',
     'kmipkit_ttlv_raw_tag_try_checked', 'kmipkit_ttlv_value_integer',
     'kmipkit_ttlv_value_long_integer', 'kmipkit_ttlv_value_enumeration',
     'kmipkit_ttlv_value_boolean', 'kmipkit_ttlv_value_date_time',

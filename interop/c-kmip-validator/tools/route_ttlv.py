@@ -59,6 +59,12 @@ def digest(value) -> str:
 class TreeAbi(InstalledAbi):
     def __init__(self, library: Path):
         super().__init__(library)
+        self.bind('kmipkit_ttlv_structure_create', [C.POINTER(C.c_void_p)])
+        self.bind('kmipkit_ttlv_structure_with_item',
+                  [C.c_void_p, C.c_void_p, C.c_void_p, C.POINTER(C.c_void_p)])
+        self.bind('kmipkit_request_message_from_ttlv',
+                  [C.c_void_p, C.POINTER(C.c_void_p), C.POINTER(C.c_void_p)])
+        self.bind('kmipkit_request_message_ttlv', [C.c_void_p, C.POINTER(C.c_void_p)])
         for kind, name in NAMES.items():
             self.bind(f'kmipkit_ttlv_value_{name}', [CTYPES[kind], C.POINTER(C.c_void_p)])
             self.bind(f'kmipkit_ttlv_value_view_{name}', [C.c_void_p, C.POINTER(CTYPES[kind])])
@@ -136,7 +142,8 @@ class TreeAbi(InstalledAbi):
             elif kind.value in NAMES:
                 number = CTYPES[kind.value]()
                 self.call(f'kmipkit_ttlv_value_view_{NAMES[kind.value]}', value, C.byref(number))
-                data = number.value.to_bytes(SIZES[kind.value], 'big', signed=kind.value in (2, 3, 9, 11))
+                data = number.value.to_bytes(
+                    SIZES[kind.value], 'big', signed=kind.value in (2, 3, 9, 11))
             else:
                 length = C.c_uint64()
                 self.call('kmipkit_ttlv_value_view_byte_length', value, C.byref(length))
@@ -177,6 +184,51 @@ class TreeAbi(InstalledAbi):
         finally:
             self.release('ttlv_structure_view', view)
 
+    def construct_structure(self, children, limits):
+        structure = C.c_void_p()
+        try:
+            self.call('kmipkit_ttlv_structure_create', C.byref(structure))
+            for child in children:
+                child_item = self.construct(child, limits)
+                original = structure
+                structure = C.c_void_p()
+                self.call('kmipkit_ttlv_structure_with_item', original, child_item,
+                          limits, C.byref(structure))
+            result = structure
+            structure = C.c_void_p()
+            return result
+        finally:
+            self.release('ttlv_structure', structure)
+
+    def roundtrip_request_message(self, tree, limits):
+        if tree[0] != 0x420078 or tree[1] != 1:
+            return
+        if not self._contains_ttlv(tree, 0x420094, 7, b'kmipkit-ephemeral-fixture'):
+            return
+        structure = self.construct_structure(tree[2], limits)
+        message, validation_error, returned_structure = (C.c_void_p() for _ in range(3))
+        try:
+            self.called.add('kmipkit_request_message_from_ttlv')
+            status = self.library.kmipkit_request_message_from_ttlv(
+                structure, C.byref(message), C.byref(validation_error))
+            structure = C.c_void_p()
+            if status != 0 or not message.value:
+                raise ValueError('typed_request_message_rejected')
+            self.call('kmipkit_request_message_ttlv', message, C.byref(returned_structure))
+            if self.read_structure(returned_structure) != tree[2]:
+                raise ValueError('typed_request_message_tree_mismatch')
+        finally:
+            self.release('ttlv_structure', structure)
+            self.release('ttlv_structure', returned_structure)
+            self.release('message_validation_error', validation_error)
+            self.release('request_message', message)
+
+    @staticmethod
+    def _contains_ttlv(tree, tag, kind, value):
+        return (tree[0] == tag and tree[1] == kind and tree[2] == value) or (
+            tree[1] == 1 and any(TreeAbi._contains_ttlv(child, tag, kind, value)
+                                 for child in tree[2]))
+
     def roundtrip(self, wire):
         self.called.clear()
         limits, constructed, decoded = C.c_void_p(), C.c_void_p(), C.c_void_p()
@@ -189,6 +241,7 @@ class TreeAbi(InstalledAbi):
             buffer = C.create_string_buffer(wire)
             self.call('kmipkit_ttlv_decode', buffer, len(wire), C.byref(error), C.byref(decoded))
             decoded_tree = self.read_item(decoded)
+            self.roundtrip_request_message(expected, limits)
             if constructed_tree != expected or decoded_tree != expected:
                 raise ValueError('installed_abi_tree_mismatch')
             return {'constructed_wire': encode(constructed_tree), 'decoded_wire': encode(decoded_tree),
