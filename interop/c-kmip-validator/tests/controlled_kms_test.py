@@ -269,6 +269,7 @@ def main() -> int:
     if protocol_version not in ("2.0", "2.1"):
         raise AssertionError(f"unsupported fixture protocol version {protocol_version!r}")
     protocol_minor = int(protocol_version.split(".")[1])
+    registered_key_batch = (3, 18, 31, 32, 19, 20)
     expected_operations = (
         (1, 20, 1, 11, 20, 1, 12, 20, 1, 10, 20, 1, 9, 19, 20, 1, 19, 20,
          1, 20, 19, 20,
@@ -308,6 +309,7 @@ def main() -> int:
         "test-crypto-rng-retrieve-rng-32",
         "test-crypto-rng-seed-rng-32",
     )
+    expected_cases += ("test-batch-register-encrypt-decrypt-destroy",)
     expected_cases += ("test-neg-destroy-active-without-revoke",)
     expected_cases += ("test-op-add-attribute",)
     expected_cases += ("test-op-set-attribute",)
@@ -611,7 +613,8 @@ def main() -> int:
         if (handled != len(expected_operations) or sorted(handled_operations) != sorted(expected_operations)
                 or (1, 11, 20) not in handled_batches
                 or (1, 12, 20) not in handled_batches
-                or (1, 10, 20) not in handled_batches):
+                or (1, 10, 20) not in handled_batches
+                or registered_key_batch not in handled_batches):
             raise AssertionError(
                 f"controlled peer observed batches {handled_batches!r}, "
                 f"expected {expected_operations!r}"
