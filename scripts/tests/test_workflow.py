@@ -1456,6 +1456,19 @@ class WorkflowContractTests(unittest.TestCase):
         python_config = (REPOSITORY_ROOT / "bindings/python/pyproject.toml").read_text(encoding="utf-8")
         self.assertRegex(python_config, r"(?m)^fail_under\s*=\s*85$")
 
+    def test_rust_interop_job_reserves_time_for_the_full_route_matrix(self) -> None:
+        interop_workflow = REPOSITORY_ROOT / ".github/workflows/interop-rust.yml"
+        contents = interop_workflow.read_text(encoding="utf-8")
+        job = self.require_job(contents, "validate-rust")
+        timeout = re.search(r"(?m)^    timeout-minutes: (\d+)$", job)
+        self.assertIsNotNone(timeout, "The Rust interoperability job must bound its runtime.")
+        assert timeout is not None
+        self.assertGreaterEqual(
+            int(timeout.group(1)),
+            60,
+            "The installed-artifact route matrix must have time to finish after validation and coverage.",
+        )
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
