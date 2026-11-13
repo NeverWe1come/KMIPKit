@@ -452,7 +452,7 @@ class RouteMatrixTests(unittest.TestCase):
         enumeration = lambda tag, value: tlv(tag, 5, value.to_bytes(4, 'big'))
         def request(operation, payload=b''):
             if operation == 45 and not payload:
-                payload = tlv(0x420079, 1, integer(0x42014F, 2))
+                payload = tlv(0x420079, 1, integer(0x42014C, 2))
             item = enumeration(0x42005C, operation) + payload
             return parse(tlv(0x420078, 1,
                 tlv(0x420077, 1,
