@@ -124,7 +124,8 @@ class ControlledTlsPeerTest {
             "java.generic-ttlv.ttlv_codec.decode");
     private static final String RESPONSE_BATCH_ITEM_CASE_ID =
             "test-norm-message-field-message-field-8-4-batch-item";
-    private static final String LOCAL_ENUMERATION_SCOPE_CASE_ID = "test-enum-block-cipher-mode";
+    private static final Set<String> LOCAL_ENUMERATION_SCOPE_CASE_IDS = Set.of(
+            "test-enum-block-cipher-mode", "test-enum-rotate-name-type");
     private static final String RESPONSE_BATCH_ITEM_TARGET_ID =
             "KMIPKIT-ELEM-MESSAGE-FIELD-8-4-BATCH-ITEM";
     private static final List<NormativeTarget> RESPONSE_MESSAGE_PARSE_TARGETS = List.of(
@@ -1630,7 +1631,7 @@ class ControlledTlsPeerTest {
         var fixtures = new ArrayList<EnumerationFixture>();
         for (JsonNode testCase : catalog.path("test_cases")) {
             String enumType = testCase.path("requires").path("enum_type").asText();
-            if (!LOCAL_ENUMERATION_SCOPE_CASE_ID.equals(testCase.path("case_id").asText())
+            if (!LOCAL_ENUMERATION_SCOPE_CASE_IDS.contains(testCase.path("case_id").asText())
                     || enumType.isEmpty()
                     || !"local_model".equals(testCase.path("execution").path("mode").asText())) {
                 continue;
