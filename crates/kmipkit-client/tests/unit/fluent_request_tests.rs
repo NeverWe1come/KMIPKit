@@ -12,7 +12,8 @@ use crate::asynchronous_execution_test_support::client_for;
 use crate::execute::{ClientBatchOutcome, ClientOperation, encode_message_for_test};
 use crate::execute_test_support::{test_item, test_structure};
 use crate::fluent::{
-    CreateSymmetricKeyBuilder, CryptographicUsageMask, FluentAttributePosition, FluentBuildError,
+    AttributeAdjustmentValue, CreateSymmetricKeyBuilder, CryptographicUsageMask,
+    FluentAttributePosition, FluentBuildError,
 };
 
 fn item(raw_tag: u32, value: Value) -> Item {
@@ -171,6 +172,26 @@ fn fluent_build_errors_have_stable_user_facing_messages() {
         (
             FluentBuildError::InvalidAttributeValue,
             "fluent Object Attribute value is invalid",
+        ),
+        (
+            FluentBuildError::MissingAddAttributeValue,
+            "Add Attribute requires a New Attribute",
+        ),
+        (
+            FluentBuildError::MissingModifyAttributeValue,
+            "Modify Attribute requires a New Attribute",
+        ),
+        (
+            FluentBuildError::MissingSetAttributeValue,
+            "Set Attribute requires a New Attribute",
+        ),
+        (
+            FluentBuildError::MissingAdjustAttributeReference,
+            "Adjust Attribute requires an Attribute Reference",
+        ),
+        (
+            FluentBuildError::MissingAdjustAttributeType,
+            "Adjust Attribute requires an Adjustment Type",
         ),
         (
             FluentBuildError::MessageExtensionTagNotObjectAttribute,
@@ -760,7 +781,7 @@ fn create_get_and_destroy_execute_with_exchange_options() {
 }
 
 #[test]
-fn attribute_mutation_builders_preserve_typed_selectors_and_existing_requests() {
+fn attribute_value_mutation_builders_preserve_typed_selectors_and_existing_requests() {
     let mut client = failed_request_client();
     let add = client
         .request()
@@ -855,7 +876,11 @@ fn attribute_mutation_builders_preserve_typed_selectors_and_existing_requests() 
             .operation(),
         49
     );
+}
 
+#[test]
+fn attribute_selector_mutation_builders_preserve_explicit_values_and_requests() {
+    let mut client = failed_request_client();
     let delete = client
         .request()
         .delete_attribute()
@@ -864,7 +889,8 @@ fn attribute_mutation_builders_preserve_typed_selectors_and_existing_requests() 
             Attribute::<typed::Comment>::new("old-comment".to_owned())
                 .expect("Comment is a catalogued Text String"),
         ))
-        .build_request();
+        .build_request()
+        .expect("Delete Attribute selectors form a valid typed request");
     assert_eq!(delete.unique_identifier(), Some("key-42"));
     assert_eq!(
         delete
@@ -893,7 +919,7 @@ fn attribute_mutation_builders_preserve_typed_selectors_and_existing_requests() 
         .unique_identifier("key-42")
         .attribute_reference(AttributeReference::tag(typed::UsageLimits::TAG))
         .adjustment_type(AdjustmentType::INCREMENT)
-        .adjustment_value(Value::integer(1))
+        .adjustment_value(AttributeAdjustmentValue::integer(1))
         .build_request()
         .expect("Adjust Attribute retains the selected type and caller value");
     assert_eq!(adjust.unique_identifier(), Some("key-42"));
@@ -909,7 +935,7 @@ fn attribute_mutation_builders_preserve_typed_selectors_and_existing_requests() 
             .adjust_attribute()
             .attribute_reference(AttributeReference::tag(typed::UsageLimits::TAG))
             .adjustment_type(AdjustmentType::INCREMENT)
-            .adjustment_value(Value::integer(1))
+            .adjustment_value(AttributeAdjustmentValue::integer(1))
             .to_batch_item()
             .expect("Adjust Attribute converts to the existing batch item")
             .operation(),
@@ -930,6 +956,32 @@ fn invalid_attribute_mutation_is_rejected_without_sending() {
         .execute(&CodecLimits::defaults())
         .expect_err("a catalogued attribute with the wrong TTLV type is rejected locally");
 
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert_eq!(fake.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn adjust_attribute_requires_explicit_reference_and_type_before_sending() {
+    let mut client = failed_request_client();
+    assert_eq!(
+        client
+            .request()
+            .adjust_attribute()
+            .build_request()
+            .expect_err("the reference is required"),
+        FluentBuildError::MissingAdjustAttributeReference
+    );
+
+    let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let error = client
+        .request()
+        .adjust_attribute()
+        .attribute_reference(AttributeReference::tag(typed::UsageLimits::TAG))
+        .execute(&CodecLimits::defaults())
+        .expect_err("an explicit adjustment type is required before transport");
     assert_eq!(
         error.delivery_state(),
         Some(kmipkit_transport::RequestDeliveryState::NotSent)
@@ -1032,7 +1084,7 @@ fn attribute_mutation_builders_execute_the_matching_typed_route_once() {
         .unique_identifier("key-42")
         .attribute_reference(AttributeReference::tag(typed::UsageLimits::TAG))
         .adjustment_type(AdjustmentType::INCREMENT)
-        .adjustment_value(Value::integer(1))
+        .adjustment_value(AttributeAdjustmentValue::integer(1))
         .execute(&CodecLimits::defaults())
         .expect("Adjust Attribute uses its existing typed client route");
     assert_eq!(
