@@ -11,7 +11,7 @@ import subprocess
 
 SHARED = Path(__file__).resolve().parents[1]
 ROOT = SHARED.parents[1]
-CANDIDATE_COMMIT = '8281fef2e9ca211fde1e1d8e21525a672287eead'
+PINNED_RELEASE_COMMIT = '9a16cc90a12205101d22a38501a5e74c665df4dc'
 
 
 class RouteCapabilitiesTests(unittest.TestCase):
@@ -25,10 +25,10 @@ class RouteCapabilitiesTests(unittest.TestCase):
     def setUp(self):
         self.data = json.loads((SHARED / 'coverage/route-capabilities.json').read_text())
 
-    def test_manifest_and_generator_use_the_same_exact_candidate_commit(self):
-        self.assertEqual(CANDIDATE_COMMIT, self.module.PINNED_SOURCE_COMMIT)
-        self.assertEqual(CANDIDATE_COMMIT, self.data['library_commit'])
-        self.assertEqual(CANDIDATE_COMMIT, self.module.build_manifest(ROOT)['library_commit'])
+    def test_manifest_and_generator_use_the_exact_release_commit(self):
+        self.assertEqual(PINNED_RELEASE_COMMIT, self.module.PINNED_SOURCE_COMMIT)
+        self.assertEqual(PINNED_RELEASE_COMMIT, self.data['library_commit'])
+        self.assertEqual(PINNED_RELEASE_COMMIT, self.module.build_manifest(ROOT)['library_commit'])
 
     def test_normative_inventory_requires_local_construct_and_decode_in_every_language(self):
         for language in ('rust', 'c', 'java', 'python'):
