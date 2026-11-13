@@ -314,3 +314,42 @@ zero failures, and `selected_scope_complete=true`; the refreshed ledger records
 13,898 executed, 57,557 pending, and 71,455 planned. These nine enum cases are
 complete for the four generic routes; the rest of the Java operation,
 attribute, and protocol matrix remains pending.
+
+## Cryptographic Algorithm enumeration route completion
+
+Source: OASIS KMIP 2.0 and 2.1 Specifications §§4.16 (Cryptographic
+Parameters), §10.1 (TTLV), and §11.12 (Cryptographic Algorithm Enumeration).
+The local aggregate case executes all 57 catalogued assigned and extension
+values for KMIP 2.0 and 2.1 through eight applicable routes: generic
+`TtlvValue.Enumeration`, `TtlvItem.create`, `TtlvItem.view`, and
+`TtlvCodec.decode`; typed `TypedAttribute.create`, `TypedAttribute.fromItem`,
+and `AttributeSet.tryNew`; and
+`CryptographicParameters.Builder.cryptographicAlgorithm`. This completes
+912 value/route/version cells against the artifact pinned to
+`9a16cc90a12205101d22a38501a5e74c665df4dc`.
+
+Red commit `fbf80808c` required all 57 distinct normative target IDs on each
+route and failed with zero `test-enum-cryptographic-algorithm` events. Green
+commit `55c4e195d` includes the aggregate case in the catalog-driven local
+fixture. The focused controlled-peer test passes for every target, route, and
+version.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 37d7eeae9e64644fd7cdde4bfd64b7da5ccbb0bf2be53a949826eb62dc3aaf86 \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+```
+
+The shared validator accepts 14,810 invoked cells with zero failures and
+`selected_scope_complete=true`; the current ledger records 14,810 executed,
+56,645 pending, and 71,455 planned cells. The Cryptographic Algorithm enum
+route family is complete for this local scope. Other KMIP operations, values,
+attributes, and protocol routes remain pending.
