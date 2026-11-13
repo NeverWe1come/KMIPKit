@@ -142,6 +142,10 @@ the stale one-response merge tree and do not establish a library defect. The
 current-base merge still needs a fresh PR run. The branch remains WIP pending
 that run, cross-language parity, and deployed-server interoperability.
 
+When evaluating a pull-request workflow, record the exact test-merge commit and
+its base parent alongside the catalog digest. A run created before the PR base
+changes does not verify the new merge tree; rerun after the base update.
+
 The historical matrix covered KMIP 2.0 and 2.1, TTLV/JSON/XML, raw TLS/HTTPS
 with TLS 1.3 mutual authentication. Reports retain normalized tree and
 deterministic wire hashes, never raw bodies or fixture values. A passed cell
