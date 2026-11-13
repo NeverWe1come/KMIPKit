@@ -4944,6 +4944,22 @@ fn source_inventory_fails_closed_for_uninspected_constructs() {
 }
 
 #[test]
+fn exact_fluent_option_setter_macro_is_audited_as_a_fixed_safe_expansion() {
+    let safe = include_str!("../../tests/fixtures/execute_boundary/fluent_option_setter_macro.rs");
+    let unsafe_macro =
+        include_str!("../../tests/fixtures/execute_boundary/unsafe_fluent_option_setter_macro.rs");
+
+    assert!(
+        audit_source(safe).is_ok(),
+        "the exact common option setter macro should be auditable"
+    );
+    assert!(
+        audit_source(unsafe_macro).is_err(),
+        "a modified macro that executes a request must remain rejected"
+    );
+}
+
+#[test]
 fn fixture_inventory_is_explicit_nonempty_and_confined_to_client_tests() {
     let actual_ids = FIXTURES
         .iter()
