@@ -30,11 +30,13 @@ from request_parity import RequestNormalizer, parity_signature, result_code
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "interop/shared/tools"))
+sys.path.insert(0, str(ROOT / "interop/rust-kmip-validator/tools"))
 from coverage_matrix import iter_cells
 from validate_route_evidence import validate_report
+from artifact_paths import test_server_binary, validator_binary
 
-VALIDATOR = Path(os.environ.get("KMIPKIT_VALIDATOR_BIN", ROOT / "interop/rust-kmip-validator/target/debug/rust-kmip-validator"))
-SERVER = Path(os.environ.get("KMIPKIT_TEST_SERVER", ROOT / "interop/.local/rust-test-server/harness/target/debug/kmipkit-interop-local-server"))
+VALIDATOR = Path(os.environ.get("KMIPKIT_VALIDATOR_BIN", validator_binary(ROOT)))
+SERVER = Path(os.environ.get("KMIPKIT_TEST_SERVER", test_server_binary(ROOT)))
 CATALOG = json.loads((ROOT / "interop/shared/catalog/kmipkit-1.0-test-catalog.json").read_text())
 SCHEMA = json.loads((ROOT / "interop/shared/schemas/validation-results.schema.json").read_text())
 OPERATION_NAMES_BY_CODE = {
@@ -778,7 +780,6 @@ class LiveContract(unittest.TestCase):
                         stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                         timeout=600, text=True,
                     )
-                self.assertEqual(0, process.returncode, process.stderr)
                 report = json.loads(output.read_text())
                 self.assertEqual(len(cells), len(report["events"]))
                 self.assertEqual(len(report["events"]), len({
@@ -800,6 +801,7 @@ class LiveContract(unittest.TestCase):
                     (ROOT / "interop/shared/schemas/route-execution-evidence.schema.json").read_text()
                 )).validate(report)
                 output.write_text(json.dumps(report, indent=2) + "\n")
+                self.assertEqual(0, process.returncode, process.stderr)
 
     def test_query_probes_profile_omissions_and_separates_rejections(self):
         for reason, status, compatibility in [(5, "server_unsupported", "unsupported"), (8, "server_unsupported", "unsupported"), (12, "policy_restricted", "policy_restricted"), (3, "failed", "unknown"), (0x100, "failed", "unknown")]:
