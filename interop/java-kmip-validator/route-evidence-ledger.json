@@ -445,6 +445,7 @@
     "test-norm-enumeration-value-enum-value-profile-name-pkcs-11-server-00000129",
     "test-norm-enumeration-value-enum-value-profile-name-quantum-safe-client-00000126",
     "test-norm-enumeration-value-enum-value-profile-name-quantum-safe-server-00000127",
+    "test-norm-enumeration-value-enum-value-profile-name-reserved-00000001-00000103",
     "test-norm-enumeration-value-enum-value-profile-name-reserved-00000118",
     "test-norm-enumeration-value-enum-value-profile-name-reserved-00000119",
     "test-norm-enumeration-value-enum-value-profile-name-reserved-0000011a",
@@ -1327,7 +1328,7 @@
     "test-norm-credential-credential-hashed-password",
     "test-norm-credential-credential-username-and-password"
   ],
-  "executed_cells": 21840,
+  "executed_cells": 21848,
   "language": "java",
   "library_commit": "489fafc79ef89db2524eafa7a6c6482f5cf75d97",
   "pending_case_ids": [
@@ -1513,7 +1514,6 @@
     "test-norm-enumeration-value-enum-value-item-type-long-integer-00000003",
     "test-norm-enumeration-value-enum-value-item-type-structure-00000001",
     "test-norm-enumeration-value-enum-value-item-type-text-string-00000007",
-    "test-norm-enumeration-value-enum-value-profile-name-reserved-00000001-00000103",
     "test-norm-message-field-message-field-8-1-batch-item",
     "test-norm-message-field-message-field-8-1-request-header",
     "test-norm-message-field-message-field-8-1-request-message",
@@ -3429,10 +3429,6 @@
     },
     {
       "case_id": "test-norm-enumeration-value-enum-value-item-type-text-string-00000007",
-      "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-enumeration-value-enum-value-profile-name-reserved-00000001-00000103",
       "pending_cells": 8
     },
     {
@@ -8184,7 +8180,7 @@
       "pending_cells": 15
     }
   ],
-  "pending_cells": 49615,
+  "pending_cells": 49607,
   "pending_reason": "No validated per-cell route execution evidence is recorded for this cell.",
   "pending_reason_code": "route_evidence_not_emitted",
   "planned_cells": 71455,
@@ -8192,8 +8188,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2196,
-      "pending_cells": 1888,
+      "executed_cells": 2197,
+      "pending_cells": 1887,
       "protocol_version": "2.0",
       "required_cells": 4084,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -8202,8 +8198,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2219,
-      "pending_cells": 1960,
+      "executed_cells": 2220,
+      "pending_cells": 1959,
       "protocol_version": "2.1",
       "required_cells": 4179,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -8392,8 +8388,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 1779,
-      "pending_cells": 89,
+      "executed_cells": 1780,
+      "pending_cells": 88,
       "protocol_version": "2.0",
       "required_cells": 1868,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
@@ -8402,8 +8398,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 1802,
-      "pending_cells": 93,
+      "executed_cells": 1803,
+      "pending_cells": 92,
       "protocol_version": "2.1",
       "required_cells": 1895,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
@@ -8512,8 +8508,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2220,
-      "pending_cells": 1911,
+      "executed_cells": 2221,
+      "pending_cells": 1910,
       "protocol_version": "2.0",
       "required_cells": 4131,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
@@ -8522,8 +8518,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2243,
-      "pending_cells": 1983,
+      "executed_cells": 2244,
+      "pending_cells": 1982,
       "protocol_version": "2.1",
       "required_cells": 4226,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
@@ -8532,8 +8528,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 2196,
-      "pending_cells": 1887,
+      "executed_cells": 2197,
+      "pending_cells": 1886,
       "protocol_version": "2.0",
       "required_cells": 4083,
       "route_id": "java.generic-ttlv.ttlv_item.create",
@@ -8542,8 +8538,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 2219,
-      "pending_cells": 1959,
+      "executed_cells": 2220,
+      "pending_cells": 1958,
       "protocol_version": "2.1",
       "required_cells": 4178,
       "route_id": "java.generic-ttlv.ttlv_item.create",
@@ -34713,8 +34709,8 @@
   "route_manifest_sha256": "b3867835e3f1f69308a3030f83be87e2728af852da3a82414a78a4ea91482ac5",
   "route_summary": [
     {
-      "executed_cells": 4415,
-      "pending_cells": 3848,
+      "executed_cells": 4417,
+      "pending_cells": 3846,
       "required_cells": 8263,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item"
     },
@@ -34773,8 +34769,8 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.datetimeextended"
     },
     {
-      "executed_cells": 3581,
-      "pending_cells": 182,
+      "executed_cells": 3583,
+      "pending_cells": 180,
       "required_cells": 3763,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration"
     },
@@ -34809,14 +34805,14 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring"
     },
     {
-      "executed_cells": 4463,
-      "pending_cells": 3894,
+      "executed_cells": 4465,
+      "pending_cells": 3892,
       "required_cells": 8357,
       "route_id": "java.generic-ttlv.ttlv_codec.decode"
     },
     {
-      "executed_cells": 4415,
-      "pending_cells": 3846,
+      "executed_cells": 4417,
+      "pending_cells": 3844,
       "required_cells": 8261,
       "route_id": "java.generic-ttlv.ttlv_item.create"
     },
@@ -36166,7 +36162,7 @@
     }
   ],
   "schema_version": "1.0",
-  "selected_scope_cells": 21840,
+  "selected_scope_cells": 21848,
   "selected_scope_complete": true,
   "vendor_interoperability_claim": false
 }

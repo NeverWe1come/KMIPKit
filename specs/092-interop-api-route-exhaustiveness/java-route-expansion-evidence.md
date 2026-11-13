@@ -884,3 +884,42 @@ shared validator accepts all 21,840 invoked cells with zero failed cells and
 cells out of 71,455 planned. Refactor/documentation updates the ledger,
 traceability and validator README. The remaining matrix and deployed-server
 interoperability are still incomplete.
+
+## Profile Name reserved-range per-target route completion
+
+Sources: OASIS KMIP 2.0 §11.40 and KMIP 2.1 §11.41 (Profile Name
+Enumeration). The catalog defines the reserved allocation as
+`0x00000001–0x00000103`; the local scalar representative is its lower boundary,
+`0x00000001`. The per-value case now runs the generic Enumeration constructor,
+Item constructor, Item view, and TTLV decoder under KMIP 2.0 and 2.1, completing
+eight Java cells.
+
+Red commit `ab1d2497` requires a per-target fixture and fails because the
+reserved-range case was excluded from the generic per-value fixtures. Green
+commit `be555145` routes reserved enumeration ranges through the existing
+catalogued lower-bound parser and updates the fixture inventory assertion to
+require that representative.
+
+Verification against installed release commit
+`489fafc79ef89db2524eafa7a6c6482f5cf75d97` (artifact SHA-256
+`830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e`):
+
+```sh
+bash ../../bindings/java/gradlew --no-daemon --max-workers=2 \
+  --init-script build/java-test-tmp.init.gradle \
+  -Dkmipkit.test.tmp="$PWD/build/java-tmp" \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+```
+
+The Java suite passes 53 tests with no failures, errors, or skips. The shared
+validator accepts 21,848 invoked cells with zero failed cells and
+`selected_scope_complete=true`; 49,607 of 71,455 planned cells remain pending.
+Refactor/documentation updates the checked-in ledger, traceability, README, and
+this evidence. Profile Information structure-member coverage and the full Java
+matrix remain pending.
