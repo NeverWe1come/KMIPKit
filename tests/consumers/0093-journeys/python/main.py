@@ -3,7 +3,7 @@
 import os
 from pathlib import Path
 
-from kmipkit import client, cryptographic_parameters, extensions, protocol_values, ttlv
+from kmipkit import client, cryptographic_parameters, errors, extensions, protocol_values, ttlv
 from kmipkit.typed_attributes import StandardAttribute, TypedAttribute
 
 
@@ -224,6 +224,59 @@ def execute_key_pair_signature_journey(
     print("python: fluent Create Key Pair/Sign/Signature Verify journey verified")
 
 
+def execute_expert_attribute_journey(
+    kmip_client: client.Client, limits: ttlv.CodecLimits
+) -> None:
+    with ttlv.ttlv_value_integer(1) as wrong_value:
+        with kmip_client.request().create_symmetric_key() as invalid_builder:
+            try:
+                invalid_builder.add_attribute(StandardAttribute.OBJECT_GROUP, wrong_value)
+            except errors.ClientExecutionError as failure:
+                assert failure.status == 13
+                assert failure.client_category is errors.ClientErrorCategory.VALIDATION
+                assert failure.cause is errors.ClientErrorCause.INVALID_INPUT
+                assert failure.delivery is errors.DeliveryState.NOT_SENT
+                assert failure.response_ttlv is None
+            else:
+                raise AssertionError("wrong-type Object Group was accepted by the fluent builder")
+
+    with ttlv.ttlv_value_text_string(b"fluent-expert-group", limits) as object_group:
+        with kmip_client.request().create_symmetric_key() as builder:
+            created = (
+                builder.aes_256()
+                .usage_mask(
+                    protocol_values.CryptographicUsageMask.ENCRYPT
+                    | protocol_values.CryptographicUsageMask.DECRYPT
+                )
+                .name("fluent-expert-attributes")
+                .add_attribute(StandardAttribute.OBJECT_GROUP, object_group)
+                .execute(limits)
+            )
+    try:
+        create_item = created.items[0]
+        assert create_item.operation == protocol_values.Operation.CREATE
+        assert create_item.outcome is client.BatchOutcome.COMPLETED
+        assert create_item.result_status == 0
+        identifier = create_item.unique_identifier
+        assert identifier == extensions.UniqueIdentifier.text_string(
+            "fluent-expert-attributes"
+        )
+    finally:
+        created.close()
+
+    destroyed = kmip_client.request().destroy(identifier).execute(limits)
+    try:
+        destroy_item = destroyed.items[0]
+        assert destroy_item.operation == protocol_values.Operation.DESTROY
+        assert destroy_item.outcome is client.BatchOutcome.COMPLETED
+        assert destroy_item.result_status == 0
+        assert destroy_item.destroy_response is not None
+        assert destroy_item.destroy_response.unique_identifier == identifier
+    finally:
+        destroyed.close()
+    print("python: fluent catalogued expert-attribute journey verified")
+
+
 def main() -> None:
     port = int(os.environ["KMIPKIT_CONSUMER_TEST_PORT"])
     fixtures = Path(os.environ["KMIPKIT_CONSUMER_TEST_FIXTURES"])
@@ -298,6 +351,7 @@ def main() -> None:
                     result.close()
             execute_aes_gcm_journey(kmip_client, limits)
             execute_key_pair_signature_journey(kmip_client, limits)
+            execute_expert_attribute_journey(kmip_client, limits)
 
 
 if __name__ == "__main__":

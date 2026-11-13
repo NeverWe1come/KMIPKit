@@ -12,8 +12,8 @@ fn symmetric_builder_validation_status(operation: impl FnOnce() -> i32) -> i32 {
     if status != SUCCESS {
         LAST_ERROR.with(|last_error| {
             let mut error = last_error.get();
-            // These two local builder calls cannot reach transport. Preserve
-            // the generic recorder for other operations and error categories.
+            // Local builder validation cannot reach transport. Preserve the
+            // generic recorder for other operations and error categories.
             if error.status == status && error.category == ERROR_CATEGORY_VALIDATION {
                 error.delivery = DELIVERY_STATE_NOT_SENT;
                 last_error.set(error);
@@ -711,24 +711,26 @@ pub extern "C" fn kmipkit_symmetric_key_builder_add_catalogued_attribute(
     value: *mut kmipkit_ttlv_value_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        let value_handle = try_ffi!(reference_handle(value, Kind::Value));
-        let HandleValue::Value(value) = &value_handle.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let value = try_ffi!(kmipkit_ttlv::try_clone_value(value).map_err(model_status));
-        let raw_tag = try_ffi!(
-            RawTag::new(tag)
-                .and_then(|raw| raw.try_checked())
-                .map_err(|_| ERROR_INVALID_INPUT)
-        );
-        let item = try_ffi!(Item::new(raw_tag, value).map_err(model_status));
-        let item = try_ffi!(super::super::typed_attributes::validate_typed_item(
-            tag, item
-        ));
-        try_ffi!(update_symmetric_builder(builder, |builder| {
-            builder.attribute_item(item)
-        }));
-        SUCCESS
+        symmetric_builder_validation_status(|| {
+            let value_handle = try_ffi!(reference_handle(value, Kind::Value));
+            let HandleValue::Value(value) = &value_handle.value else {
+                return record_ffi_error(ERROR_INVALID_INPUT);
+            };
+            let value = try_ffi!(kmipkit_ttlv::try_clone_value(value).map_err(model_status));
+            let raw_tag = try_ffi!(
+                RawTag::new(tag)
+                    .and_then(|raw| raw.try_checked())
+                    .map_err(|_| ERROR_INVALID_INPUT)
+            );
+            let item = try_ffi!(Item::new(raw_tag, value).map_err(model_status));
+            let item = try_ffi!(super::super::typed_attributes::validate_typed_item(
+                tag, item
+            ));
+            try_ffi!(update_symmetric_builder(builder, |builder| {
+                builder.attribute_item(item)
+            }));
+            SUCCESS
+        })
     })
 }
 
