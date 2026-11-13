@@ -18,6 +18,16 @@ def shared_route_source_pin():
     return manifest["library_commit"]
 
 
+def installed_artifact_pin():
+    support = (ROOT / "interop/c-kmip-validator/tools/artifact_support.py").read_text(
+        encoding="utf-8"
+    )
+    match = re.search(r'^PIN = "([0-9a-f]{40})"$', support, re.MULTILINE)
+    if match is None:
+        raise AssertionError("artifact support must define one full source commit pin")
+    return match.group(1)
+
+
 class ArtifactCheckoutContractTests(unittest.TestCase):
     def test_every_catalog_enum_and_bitmask_has_a_typed_probe(self):
         catalog = json.loads(
@@ -116,9 +126,7 @@ class ArtifactCheckoutContractTests(unittest.TestCase):
         verifier = (ROOT / "interop/c-kmip-validator/tools/verify_artifact.py").read_text(
             encoding="utf-8"
         )
-        match = re.search(r'^PIN = "([0-9a-f]{40})"$', support, re.MULTILINE)
-        self.assertIsNotNone(match)
-        pin = match.group(1)
+        pin = installed_artifact_pin()
         for script in (installer, verifier):
             self.assertIn("from artifact_support import", script)
             self.assertNotRegex(script, r"^PIN = ", msg="source pin must have one source of truth")
@@ -147,23 +155,16 @@ class ArtifactCheckoutContractTests(unittest.TestCase):
         )
 
     def test_pinned_c_artifact_matches_the_shared_route_manifest(self):
-        support = (ROOT / "interop/c-kmip-validator/tools/artifact_support.py").read_text(
-            encoding="utf-8"
-        )
-        pin = re.search(r'^PIN = "([0-9a-f]{40})"$', support, re.MULTILINE).group(1)
-        self.assertEqual(pin, shared_route_source_pin())
+        self.assertEqual(installed_artifact_pin(), shared_route_source_pin())
 
     def test_every_c_artifact_identity_uses_the_shared_source_pin(self):
         pin = shared_route_source_pin()
-        support = (ROOT / "interop/c-kmip-validator/tools/artifact_support.py").read_text(
-            encoding="utf-8"
-        )
         cmake = (ROOT / "interop/c-kmip-validator/CMakeLists.txt").read_text(
             encoding="utf-8"
         )
         workflow = WORKFLOW.read_text(encoding="utf-8")
 
-        self.assertIn(f'PIN = "{pin}"', support)
+        self.assertEqual(installed_artifact_pin(), pin)
         self.assertIn(f'set(KMIPKIT_LIBRARY_COMMIT "{pin}")', cmake)
         self.assertIn(f"/install/{pin}", workflow)
 
