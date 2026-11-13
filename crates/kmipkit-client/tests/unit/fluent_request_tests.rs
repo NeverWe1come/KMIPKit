@@ -1,8 +1,8 @@
 use kmipkit_protocol::attribute::typed;
 use kmipkit_protocol::{
     AdjustmentType, Attribute, AttributeDefinition, AttributeReference, CheckRequest,
-    CreateRequest, CurrentAttribute, DiscoverVersionsRequest, NewAttribute, PingRequest,
-    ProtocolVersion, QueryFunction, QueryRequest, UniqueIdentifier,
+    CreateRequest, CurrentAttribute, DiscoverVersionsRequest, GetConstraintsRequest, NewAttribute,
+    PingRequest, ProtocolVersion, QueryFunction, QueryRequest, UniqueIdentifier,
 };
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestOptions;
@@ -21,6 +21,7 @@ const PING_OPERATION: u32 = 0x0000_003b;
 const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001e;
 const QUERY_OPERATION: u32 = 0x0000_0018;
 const CHECK_OPERATION: u32 = 0x0000_0009;
+const GET_CONSTRAINTS_OPERATION: u32 = 0x0000_0038;
 
 fn item(raw_tag: u32, value: Value) -> Item {
     Item::new(
@@ -886,6 +887,48 @@ fn check_builder_builds_typed_policy_request_and_executes_once() {
     assert_eq!(
         result.outcome().operation(),
         crate::execute::ClientOperation::Check
+    );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn get_constraints_builder_builds_typed_request_and_executes_once() {
+    let request = failed_request_client()
+        .request()
+        .get_constraints()
+        .build_request()
+        .expect("Get Constraints is an empty typed request");
+    assert_eq!(request, GetConstraintsRequest::new());
+    let batch_item = failed_request_client()
+        .request()
+        .get_constraints()
+        .to_batch_item()
+        .expect("Get Constraints converts to the existing typed batch item");
+    assert_eq!(batch_item.operation(), GET_CONSTRAINTS_OPERATION);
+
+    let response = asynchronous_response_bytes(
+        GET_CONSTRAINTS_OPERATION,
+        0,
+        None,
+        None,
+        Some(test_structure([test_item(
+            0x0042_0168,
+            Value::structure(test_structure([])),
+        )])),
+    );
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: vec![2, 5],
+    });
+    let result = client
+        .request()
+        .get_constraints()
+        .execute(&CodecLimits::defaults())
+        .expect("the scripted Get Constraints response is valid");
+
+    assert_eq!(
+        result.outcome().operation(),
+        crate::execute::ClientOperation::GetConstraints
     );
     assert_eq!(transport.borrow().exchange_count(), 1);
 }
