@@ -168,7 +168,7 @@ TYPE_ONLY_PARITY_EVIDENCE = {
     "bindings/c/tests/client_abi_consumer.c",
     "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
     "bindings/python/tests/test_recertify_operation.py",
-    "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+    "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
     "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
 }
 REQUEST_BUILDER_WIRE_DECLARATIONS = {

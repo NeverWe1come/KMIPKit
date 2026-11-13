@@ -30,9 +30,10 @@ T102_BLOCKED_CANDIDATES = 0
 # KMIPKIT-0096 adds the Python expert attribute insertion declaration.
 # KMIPKIT-0108 adds 42 fluent attribute-read declarations and 36 Rust trait exclusions.
 # KMIPKIT-0066 adds 65 C server-listener declarations.
+# KMIPKIT-0093 adds five role-reversed C session declarations.
 # Update this full-manifest snapshot only when an approved feature intentionally
 # adds or removes declarations.
-T102_PUBLIC_DECLARATIONS = 16_465
+T102_PUBLIC_DECLARATIONS = 16_470
 T102_KMIP30_DRAFT_ROUTE_DECLARATIONS = 36
 T102_APPROVED_EXCLUSIONS = 22_650
 T102_RUST_AUDIT_MANIFEST = 3_287

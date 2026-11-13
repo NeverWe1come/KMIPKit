@@ -1232,11 +1232,38 @@ def add_additional_functions(
             )
         additions_by_id[identifier] = function
         additions_by_symbol[symbol] = function
-        if identifier in by_id and by_id[identifier] != function:
-            raise ReconciliationError(
-                f"additional function ID already has a different definition: {identifier}"
+        existing_by_id = by_id.get(identifier)
+        if existing_by_id is not None and existing_by_id != function:
+            existing_definition = {
+                key: value
+                for key, value in existing_by_id.items()
+                if key != "requirementIds"
+            }
+            proposed_definition = {
+                key: value
+                for key, value in function.items()
+                if key != "requirementIds"
+            }
+            existing_requirements = existing_by_id.get("requirementIds")
+            if (
+                existing_definition != proposed_definition
+                or not isinstance(existing_requirements, list)
+                or any(
+                    not isinstance(value, str) or not value
+                    for value in existing_requirements
+                )
+            ):
+                raise ReconciliationError(
+                    f"additional function ID already has a different definition: {identifier}"
+                )
+            existing_by_id["requirementIds"] = sorted(
+                set(existing_requirements) | function_requirements
             )
-        if symbol in by_symbol and by_symbol[symbol] != function:
+        existing_by_symbol = by_symbol.get(symbol)
+        if (
+            existing_by_symbol is not None
+            and existing_by_symbol is not existing_by_id
+        ):
             raise ReconciliationError(
                 f"additional C symbol already has a different definition: {symbol}"
             )
@@ -3009,11 +3036,27 @@ def resolve_public_declarations(
             raise ReconciliationError("declaration resolution IDs must be unique")
         seen.add(identifier)
         row = by_id.get(identifier)
+        resolution_requirements = resolution.get("requirementIds")
+        existing_requirements = row.get("requirementIds") if row is not None else None
+        requirement_trace_is_preserved = (
+            isinstance(resolution_requirements, list)
+            and all(
+                isinstance(value, str) and value
+                for value in resolution_requirements
+            )
+            and len(resolution_requirements) == len(set(resolution_requirements))
+            and isinstance(existing_requirements, list)
+            and all(
+                isinstance(value, str) and value for value in existing_requirements
+            )
+            and len(existing_requirements) == len(set(existing_requirements))
+            and set(resolution_requirements).issubset(existing_requirements)
+        )
         exact_verified_replay = (
             row is not None
             and row.get("declarationState") == "verified"
             and row.get("capabilityId") == resolution.get("capabilityId")
-            and row.get("requirementIds") == resolution.get("requirementIds")
+            and requirement_trace_is_preserved
             and row.get("parityScope") == "four-language"
             and row.get("languageMappings")
             == {language: resolution[language] for language in REQUIRED_LANGUAGES}

@@ -42,7 +42,7 @@ EXPECTED_MAPPINGS = {
 }
 JOIN_SPLIT_PARITY_EVIDENCE = {
     "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs",
-    "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+    "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
     "bindings/c/tests/client_abi_consumer.c",
     "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
     "bindings/python/tests/test_join_split_key_operation.py",
@@ -71,7 +71,7 @@ REKEY_KEY_PAIR_UID_MAPPINGS = {
 }
 REKEY_KEY_PAIR_UID_EVIDENCE = {
     "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs",
-    "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+    "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
     "bindings/c/tests/client_abi_consumer.c",
     "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
     "bindings/python/tests/test_rekey_key_pair_native_integration.py",

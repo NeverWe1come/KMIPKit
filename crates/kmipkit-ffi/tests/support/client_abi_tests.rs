@@ -73,6 +73,16 @@ unsafe extern "C" {
         start_client: unsafe extern "C" fn(u16, *mut c_void),
         context: *mut c_void,
     ) -> i32;
+    fn kmipkit_s2c_consumer_receives_after_role_reversal(
+        leaf: *const u8,
+        leaf_length: u64,
+        root: *const u8,
+        root_length: u64,
+        key: *const u8,
+        key_length: u64,
+        start_client: unsafe extern "C" fn(u16, *mut c_void),
+        context: *mut c_void,
+    ) -> i32;
 }
 
 #[test]
@@ -134,6 +144,7 @@ fn s2c_c_consumer_binds_an_https_listener() {
 struct S2cClientStartContext {
     config: Arc<rustls::ClientConfig>,
     request: Vec<u8>,
+    request_after_response: Option<Vec<u8>>,
     worker: Option<thread::JoinHandle<Result<Vec<u8>, String>>>,
     spawn_error: Option<String>,
 }
@@ -143,6 +154,7 @@ unsafe extern "C" fn s2c_start_tls_client(port: u16, opaque_context: *mut c_void
     let context = unsafe { &mut *opaque_context.cast::<S2cClientStartContext>() };
     let config = Arc::clone(&context.config);
     let request = context.request.clone();
+    let request_after_response = context.request_after_response.clone();
     match thread::Builder::new()
         .name("kmipkit-s2c-c-test-client".to_owned())
         .spawn(move || {
@@ -168,6 +180,23 @@ unsafe extern "C" fn s2c_start_tls_client(port: u16, opaque_context: *mut c_void
                 .map_err(|error| error.to_string())?;
             let mut response = header.to_vec();
             response.extend_from_slice(&body);
+            if let Some(next_request) = request_after_response {
+                tls.write_all(&next_request)
+                    .map_err(|error| error.to_string())?;
+                tls.flush().map_err(|error| error.to_string())?;
+                tls.read_exact(&mut header)
+                    .map_err(|error| error.to_string())?;
+                let next_length =
+                    u32::from_be_bytes([header[4], header[5], header[6], header[7]]) as usize;
+                let next_padded = next_length
+                    .checked_add((8 - next_length % 8) % 8)
+                    .ok_or_else(|| "response size overflow".to_owned())?;
+                let mut next_body = vec![0u8; next_padded];
+                tls.read_exact(&mut next_body)
+                    .map_err(|error| error.to_string())?;
+                response.extend_from_slice(&header);
+                response.extend_from_slice(&next_body);
+            }
             Ok(response)
         }) {
         Ok(worker) => context.worker = Some(worker),
@@ -321,6 +350,44 @@ fn s2c_test_put_batch() -> Vec<u8> {
     encode_test_structure(0x0042_0078, &root)
 }
 
+fn s2c_test_notify_batch() -> Vec<u8> {
+    const INTEGER: u8 = 2;
+    let mut protocol_version = encode_test_ttlv(0x0042_006A, INTEGER, &2i32.to_be_bytes());
+    protocol_version.extend(encode_test_ttlv(0x0042_006B, INTEGER, &1i32.to_be_bytes()));
+    let mut header = encode_test_structure(0x0042_0069, &protocol_version);
+    header.extend(encode_test_ttlv(
+        0x0042_004F,
+        INTEGER,
+        &65536i32.to_be_bytes(),
+    ));
+    header.extend(encode_test_ttlv(0x0042_000D, INTEGER, &1i32.to_be_bytes()));
+    let item = s2c_test_notify_item(b"role-reversal-notify", 0x73, true);
+    let mut root = encode_test_structure(0x0042_0077, &header);
+    root.extend(item);
+    encode_test_structure(0x0042_0078, &root)
+}
+
+fn s2c_test_set_endpoint_role_batch() -> Vec<u8> {
+    const INTEGER: u8 = 2;
+    const ENUMERATION: u8 = 5;
+    let mut protocol_version = encode_test_ttlv(0x0042_006A, INTEGER, &2i32.to_be_bytes());
+    protocol_version.extend(encode_test_ttlv(0x0042_006B, INTEGER, &1i32.to_be_bytes()));
+    let mut header = encode_test_structure(0x0042_0069, &protocol_version);
+    header.extend(encode_test_ttlv(
+        0x0042_004F,
+        INTEGER,
+        &65536i32.to_be_bytes(),
+    ));
+    header.extend(encode_test_ttlv(0x0042_000D, INTEGER, &1i32.to_be_bytes()));
+    let payload = encode_test_ttlv(0x0042_0151, ENUMERATION, &1u32.to_be_bytes());
+    let mut item = encode_test_ttlv(0x0042_005C, ENUMERATION, &0x32u32.to_be_bytes());
+    item.extend(encode_test_ttlv(0x0042_0093, 8, &[0x72]));
+    item.extend(encode_test_structure(0x0042_0079, &payload));
+    let mut root = encode_test_structure(0x0042_0077, &header);
+    root.extend(encode_test_structure(0x0042_000F, &item));
+    encode_test_structure(0x0042_0078, &root)
+}
+
 #[test]
 #[cfg(feature = "coverage-c-consumer")]
 fn s2c_c_consumer_receives_put_material_as_a_secret_and_sends_typed_response() {
@@ -352,6 +419,7 @@ fn s2c_c_consumer_receives_put_material_as_a_secret_and_sends_typed_response() {
     let mut context = S2cClientStartContext {
         config: Arc::new(config),
         request: s2c_test_put_batch(),
+        request_after_response: None,
         worker: None,
         spawn_error: None,
     };
@@ -379,6 +447,74 @@ fn s2c_c_consumer_receives_put_material_as_a_secret_and_sends_typed_response() {
         .expect("client thread does not panic")
         .expect("TLS client receives a response");
     assert_eq!(&response[..4], &[0x42, 0x00, 0x7B, 0x01]);
+}
+
+#[test]
+#[cfg(feature = "coverage-c-consumer")]
+fn s2c_c_consumer_receives_and_responds_after_role_reversal() {
+    let pki = EphemeralPki::generate().expect("ephemeral test PKI generation succeeds");
+    let identity = pki.server_identity();
+    let [leaf, root] = identity.certificate_chain_der();
+    let key = identity.private_key_der();
+    let client_identity = pki.client_identity();
+    let mut roots = RootCertStore::empty();
+    roots
+        .add(CertificateDer::from(root.to_vec()))
+        .expect("test authority cert is valid");
+    let config = rustls::ClientConfig::builder_with_provider(Arc::new(
+        rustls::crypto::aws_lc_rs::default_provider(),
+    ))
+    .with_protocol_versions(&[&rustls::version::TLS13])
+    .expect("test client is TLS 1.3 only")
+    .with_root_certificates(roots)
+    .with_client_auth_cert(
+        vec![CertificateDer::from(
+            client_identity.certificate_der().to_vec(),
+        )],
+        PrivateKeyDer::Pkcs8(PrivatePkcs8KeyDer::from(
+            client_identity.private_key_der().to_vec(),
+        )),
+    )
+    .expect("test client identity is valid");
+    let request = s2c_test_set_endpoint_role_batch();
+    let mut context = S2cClientStartContext {
+        config: Arc::new(config),
+        request: request.clone(),
+        request_after_response: Some(s2c_test_notify_batch()),
+        worker: None,
+        spawn_error: None,
+    };
+    // SAFETY: certificate/key vectors and callback context remain live until the synchronous C
+    // consumer finishes; the callback starts one owned client thread and returns before accept.
+    let status = unsafe {
+        kmipkit_s2c_consumer_receives_after_role_reversal(
+            leaf.as_ptr(),
+            leaf.len() as u64,
+            root.as_ptr(),
+            root.len() as u64,
+            key.as_ptr(),
+            key.len() as u64,
+            s2c_start_tls_client,
+            (&raw mut context).cast(),
+        )
+    };
+    assert_eq!(status, SUCCESS);
+    assert!(context.spawn_error.is_none());
+    let response = context
+        .worker
+        .take()
+        .expect("C callback started client thread")
+        .join()
+        .expect("client thread does not panic")
+        .expect("TLS client receives both responses");
+    assert_eq!(&response[..4], &[0x42, 0x00, 0x7B, 0x01]);
+    let first_length =
+        u32::from_be_bytes([response[4], response[5], response[6], response[7]]) as usize;
+    let first_frame_length = 8 + first_length.div_ceil(8) * 8;
+    assert_eq!(
+        &response[first_frame_length..first_frame_length + 4],
+        &[0x42, 0x00, 0x7B, 0x01]
+    );
 }
 
 #[test]

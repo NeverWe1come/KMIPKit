@@ -38,6 +38,9 @@ mod api_parity_0053_tests;
 #[cfg(all(test, feature = "coverage-c-consumer"))]
 #[path = "../tests/support/managed_object_0053_tests.rs"]
 mod managed_object_0053_tests;
+#[cfg(all(test, feature = "coverage-c-consumer"))]
+#[path = "../tests/support/operation_parity_0053_tests.rs"]
+mod operation_parity_0053_tests;
 #[cfg(test)]
 #[path = "../tests/support/parameters_auth_0053_tests.rs"]
 mod parameters_auth_0053_tests;
@@ -83,7 +86,8 @@ use crate::{
     kmipkit_server_connection_t, kmipkit_server_incoming_batch_t, kmipkit_server_listener_config_t,
     kmipkit_server_listener_config_v1_t, kmipkit_server_listener_t, kmipkit_server_put_object_t,
     kmipkit_server_request_item_t, kmipkit_server_response_builder_t,
-    kmipkit_server_response_item_t, kmipkit_server_response_t, kmipkit_set_attribute_request_t,
+    kmipkit_server_response_item_t, kmipkit_server_response_t,
+    kmipkit_server_role_reversed_session_t, kmipkit_set_attribute_request_t,
     kmipkit_split_key_reference_t, kmipkit_symmetric_key_builder_t,
     kmipkit_symmetric_key_request_v1_t, kmipkit_tag_t, kmipkit_timeout_limit_v1_t,
     kmipkit_transport_config_t, kmipkit_transport_config_v1_t, kmipkit_transport_input_v1_t,
@@ -548,6 +552,7 @@ enum Kind {
     ServerListenerConfig,
     ServerListener,
     ServerConnection,
+    ServerRoleReversedSession,
     ServerIncomingBatch,
     ServerRequestItem,
     ServerPutObject,
@@ -734,6 +739,7 @@ enum HandleValue {
     ServerListenerConfig(Box<kmipkit_transport::ListenerTransportConfig>),
     ServerListener(Box<Mutex<kmipkit_client::ClientListener>>),
     ServerConnection(Box<Mutex<ServerConnectionState>>),
+    ServerRoleReversedSession(Box<Mutex<ServerRoleReversedSessionState>>),
     ServerIncomingBatch(Arc<kmipkit_client::IncomingServerBatch>),
     ServerRequestItem(ServerRequestItemOwner),
     ServerPutObject(ServerPutObjectOwner),
@@ -813,7 +819,12 @@ enum MessageExtensionOwner {
 }
 
 struct ServerConnectionState {
-    connection: kmipkit_client::ClientListenerConnection,
+    connection: Option<kmipkit_client::ClientListenerConnection>,
+    active_batch: Option<Arc<kmipkit_client::IncomingServerBatch>>,
+}
+
+struct ServerRoleReversedSessionState {
+    session: kmipkit_client::RoleReversedSession,
     active_batch: Option<Arc<kmipkit_client::IncomingServerBatch>>,
 }
 

@@ -3569,7 +3569,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
             "bindings/python/tests/test_async_operation_mapping.py",
             "crates/kmipkit-client/tests/unit/cancel_execution_tests.rs",
-            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
         }
 
         self.assertIn(c_export, async_capability["mappings"]["c"])

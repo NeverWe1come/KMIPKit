@@ -51,7 +51,7 @@ CASE_TESTS = {
             "ordered_mixed_batch_outcomes_preserve_ids_and_use_one_exchange",
         ),
         "c": (
-            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
             "generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls",
         ),
         "java": (
@@ -69,7 +69,7 @@ CASE_TESTS = {
             "execute_lifecycle_tests::ordered_mixed_batch_outcomes_preserve_ids_and_use_one_exchange",
         ),
         "c": (
-            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
             "generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls",
         ),
         "java": (
@@ -87,7 +87,7 @@ CASE_TESTS = {
             "client_configurations_own_isolated_immutable_registries",
         ),
         "c": (
-            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
             "c_abi_consumer_matches_shared_registry_cleanup_fixture",
         ),
         "java": (
@@ -105,7 +105,7 @@ CASE_TESTS = {
             "schema_error_debug_display_and_source_chain_redact_payload_secrets",
         ),
         "c": (
-            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
             "c_abi_consumer_redacts_shared_fixture_diagnostic_marker",
         ),
         "java": (
@@ -123,7 +123,7 @@ CASE_TESTS = {
             "api_levels_match_the_shared_fixture_without_network_calls",
         ),
         "c": (
-            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
             "generated_public_client_abi_consumer_compiles_and_runs",
         ),
         "java": (
@@ -141,7 +141,7 @@ CASE_TESTS = {
             "generic_ttlv_shared_fixture_preserves_open_values_and_child_order",
         ),
         "c": (
-            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
             "c_abi_consumer_preserves_shared_ttlv_fixture_values_and_order",
         ),
         "java": (
@@ -159,7 +159,7 @@ CASE_TESTS = {
             "every_shared_inbound_fixture_matches_internal_outcome_ids_and_preserved_ttlv_in_both_orders",
         ),
         "c": (
-            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
             "existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process",
         ),
         "java": (
@@ -177,7 +177,7 @@ CASE_TESTS = {
             "create_convenience_method_maps_shared_fixture_over_one_exchange",
         ),
         "c": (
-            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
             "generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls",
         ),
         "java": (
@@ -195,7 +195,7 @@ CASE_TESTS = {
             "create_key_pair_maps_shared_fixture_over_one_exchange",
         ),
         "c": (
-            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
             "generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls",
         ),
         "java": (
@@ -213,7 +213,7 @@ CASE_TESTS = {
             "create_split_key_maps_shared_fixture_success_and_pending_outcomes",
         ),
         "c": (
-            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
             "generated_public_client_abi_consumer_maps_split_key_fixture_success_and_pending_over_mtls",
         ),
         "java": (
@@ -231,7 +231,7 @@ CASE_TESTS = {
             "create_failure_preserves_result_and_does_not_retry",
         ),
         "c": (
-            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
             "generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls",
         ),
         "java": (
@@ -249,7 +249,7 @@ CASE_TESTS = {
             "codec_limits_shared_fixture_covers_defaults_ranges_and_rejection",
         ),
         "c": (
-            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
             "c_abi_consumer_matches_the_shared_codec_limits_fixture",
         ),
         "java": (

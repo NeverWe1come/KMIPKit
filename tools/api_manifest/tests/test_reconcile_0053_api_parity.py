@@ -716,6 +716,56 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             set(additions[0]["requirementIds"]).issubset(first["requirementIds"])
         )
 
+    def test_additional_function_replay_preserves_newer_requirement_trace(self) -> None:
+        route_path = Path("specs/053-api-parity-facade/additional-api-routes.json")
+        additions = json.loads(route_path.read_text(encoding="utf-8"))["functions"]
+        manifest = self.manifest_for_repository()
+
+        result = reconcile_0053_api_parity.add_additional_functions(
+            manifest, additions
+        )
+
+        existing = next(
+            row
+            for row in manifest["functions"]
+            if row["id"] == "client_batch_item_response_query_field_count"
+        )
+        updated = next(
+            row
+            for row in result["functions"]
+            if row["id"] == "client_batch_item_response_query_field_count"
+        )
+        self.assertIn("KMIPKIT-0093-FR-008", existing["requirementIds"])
+        self.assertEqual(existing["requirementIds"], updated["requirementIds"])
+
+    def test_verified_declaration_replay_preserves_newer_requirement_trace(self) -> None:
+        route_path = Path("specs/053-api-parity-facade/additional-api-routes.json")
+        route_data = json.loads(route_path.read_text(encoding="utf-8"))
+        resolution = next(
+            row
+            for row in route_data["declarationResolutions"]
+            if row["declarationId"] == "rust-observed-72bec67bc2e4e18566c4"
+        )
+        manifest = self.manifest_for_repository()
+        existing = next(
+            row
+            for row in manifest["publicDeclarations"]
+            if row["declarationId"] == resolution["declarationId"]
+        )
+
+        result = reconcile_0053_api_parity.resolve_public_declarations(
+            manifest, [resolution]
+        )
+
+        updated = next(
+            row
+            for row in result["publicDeclarations"]
+            if row["declarationId"] == resolution["declarationId"]
+        )
+        self.assertIn("KMIPKIT-0093-FR-008", existing["requirementIds"])
+        self.assertEqual(existing["requirementIds"], updated["requirementIds"])
+        self.assertEqual("verified", updated["declarationState"])
+
     def test_resolves_only_exact_blocked_0043_declarations_with_four_language_evidence(self) -> None:
         manifest = {
             "requirementIds": [],
@@ -873,7 +923,7 @@ class Reconcile0053ApiParityTests(unittest.TestCase):
             "java": {"packageId": "java-kmipkit", "name": "org.kmipkit.extensions.ClientBatchItem.operation"},
             "python": {"packageId": "python-kmipkit", "name": "kmipkit.extensions.ClientBatchItem.operation"},
             "parityEvidenceIds": [
-                "crates/kmipkit-ffi/tests/operation_parity_0053.rs",
+                "crates/kmipkit-ffi/tests/support/operation_parity_0053_tests.rs",
                 "bindings/c/tests/operation_parity_consumer.c",
                 "bindings/java/src/test/java/org/kmipkit/extensions/OperationFacadeParityMatrixTest.java",
                 "bindings/python/tests/test_operation_binding_parity_0053.py",

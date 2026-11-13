@@ -19,7 +19,7 @@ BASE_BLOCKED = 658
 EXPECTED_BLOCKED_AFTER_BATCH = 648
 PKCS11_MAPPED_CANDIDATES = 6
 COMMON_EVIDENCE = {
-    "c": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+    "c": "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
     "c_consumer": "bindings/c/tests/client_abi_consumer.c",
     "java": "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
     "python": "bindings/python/tests/test_wrapping_request_wire.py",

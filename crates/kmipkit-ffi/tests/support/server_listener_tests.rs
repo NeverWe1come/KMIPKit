@@ -19,6 +19,155 @@ fn test_input(source_kind: u32, encoding: u32, bytes: &[u8]) -> kmipkit_transpor
         },
     }
 }
+fn encode_test_ttlv(tag: u32, item_type: u8, value: &[u8]) -> Vec<u8> {
+    let tag_bytes = tag.to_be_bytes();
+    let mut encoded = vec![tag_bytes[1], tag_bytes[2], tag_bytes[3], item_type];
+    encoded.extend_from_slice(
+        &u32::try_from(value.len())
+            .expect("test TTLV value length fits the protocol field")
+            .to_be_bytes(),
+    );
+    encoded.extend_from_slice(value);
+    if item_type != 0x01 {
+        encoded.resize(8 + value.len().div_ceil(8) * 8, 0);
+    }
+    encoded
+}
+
+fn test_integer(tag: u32, value: i32) -> Vec<u8> {
+    encode_test_ttlv(tag, 0x02, &value.to_be_bytes())
+}
+
+fn test_enumeration(tag: u32, value: u32) -> Vec<u8> {
+    encode_test_ttlv(tag, 0x05, &value.to_be_bytes())
+}
+
+fn test_structure(tag: u32, children: &[u8]) -> Vec<u8> {
+    encode_test_ttlv(tag, 0x01, children)
+}
+
+fn discover_versions_request() -> Vec<u8> {
+    let version = test_structure(
+        0x0042_0069,
+        &[test_integer(0x0042_006A, 2), test_integer(0x0042_006B, 1)].concat(),
+    );
+    let header = test_structure(
+        0x0042_0077,
+        &[
+            version.clone(),
+            test_integer(0x0042_004F, 65_536),
+            test_integer(0x0042_000D, 1),
+        ]
+        .concat(),
+    );
+    let payload = test_structure(0x0042_0079, &version);
+    let batch_item = test_structure(
+        0x0042_000F,
+        &[
+            test_enumeration(0x0042_005C, 0x1E),
+            encode_test_ttlv(0x0042_0093, 0x08, &[1]),
+            payload,
+        ]
+        .concat(),
+    );
+    test_structure(0x0042_0078, &[header, batch_item].concat())
+}
+
+fn test_failure_response(
+    batch: *mut crate::kmipkit_server_incoming_batch_t,
+) -> (
+    *mut crate::kmipkit_server_request_item_t,
+    *mut crate::kmipkit_server_response_builder_t,
+    *mut crate::kmipkit_server_response_t,
+) {
+    let mut request_item = ptr::null_mut();
+    assert_eq!(
+        kmipkit_server_incoming_batch_item_at(batch, 0, &raw mut request_item),
+        SUCCESS
+    );
+    let mut builder = ptr::null_mut();
+    assert_eq!(
+        kmipkit_server_response_builder_create(batch, &raw mut builder),
+        SUCCESS
+    );
+    assert_eq!(
+        kmipkit_server_response_builder_add_failure(
+            builder,
+            request_item,
+            1,
+            1,
+            0,
+            kmipkit_byte_span_v1_t {
+                data: ptr::null(),
+                length: 0,
+            },
+        ),
+        SUCCESS
+    );
+    let mut response = ptr::null_mut();
+    assert_eq!(
+        kmipkit_server_response_builder_build(builder, &raw mut response),
+        SUCCESS
+    );
+    (request_item, builder, response)
+}
+
+fn test_listener_client_tls_config(pki: &EphemeralPki) -> Arc<rustls::ClientConfig> {
+    use rustls::RootCertStore;
+    use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer};
+
+    let identity = pki.client_identity();
+    let mut roots = RootCertStore::empty();
+    roots
+        .add(CertificateDer::from(
+            pki.authority_certificate_der().to_vec(),
+        ))
+        .expect("test authority is a valid trust root");
+    Arc::new(
+        rustls::ClientConfig::builder_with_provider(Arc::new(
+            rustls::crypto::aws_lc_rs::default_provider(),
+        ))
+        .with_protocol_versions(&[&rustls::version::TLS13])
+        .expect("test client enables TLS 1.3 only")
+        .with_root_certificates(roots)
+        .with_client_auth_cert(
+            vec![CertificateDer::from(identity.certificate_der().to_vec())],
+            PrivateKeyDer::Pkcs8(PrivatePkcs8KeyDer::from(
+                identity.private_key_der().to_vec(),
+            )),
+        )
+        .expect("test client identity is valid"),
+    )
+}
+
+fn connect_test_listener_client(
+    port: u16,
+    config: Arc<rustls::ClientConfig>,
+) -> rustls::StreamOwned<rustls::ClientConnection, std::net::TcpStream> {
+    let socket = std::net::TcpStream::connect(("127.0.0.1", port)).expect("client connects");
+    let server_name = rustls::pki_types::ServerName::try_from("server.kmipkit.test")
+        .expect("test server name is valid");
+    let connection =
+        rustls::ClientConnection::new(config, server_name).expect("TLS client is configured");
+    rustls::StreamOwned::new(connection, socket)
+}
+
+fn read_test_ttlv_response(stream: &mut impl std::io::Read) -> Vec<u8> {
+    let mut header = [0_u8; 8];
+    stream
+        .read_exact(&mut header)
+        .expect("client receives the server response");
+    assert_eq!(&header[..4], &[0x42, 0x00, 0x7B, 0x01]);
+    let body_length = u32::from_be_bytes([header[4], header[5], header[6], header[7]]) as usize;
+    let padded_length = body_length.div_ceil(8) * 8;
+    let mut body = vec![0_u8; padded_length];
+    stream
+        .read_exact(&mut body)
+        .expect("client receives the complete response body");
+    let mut response = header.to_vec();
+    response.extend_from_slice(&body);
+    response
+}
 
 #[test]
 fn listener_helpers_validate_timeouts_text_and_object_tags() {
@@ -503,4 +652,268 @@ fn response_builder_ffi_rejects_missing_handles() {
     kmipkit_server_response_builder_release(ptr::null_mut());
     kmipkit_server_response_item_release(ptr::null_mut());
     kmipkit_server_response_release(ptr::null_mut());
+}
+
+fn role_reversal_test_listener(pki: &EphemeralPki) -> (*mut crate::kmipkit_server_listener_t, u16) {
+    use kmipkit_transport::listener::ListenerTransportConfig;
+    use kmipkit_transport::{CertificateInput, ClientIdentity, PrivateKeyInput, TrustSource};
+
+    let server_identity = pki.server_identity();
+    let config = ListenerTransportConfig::builder("127.0.0.1", 0)
+        .listener_identity(ClientIdentity::new(
+            CertificateInput::from_der(
+                server_identity
+                    .certificate_chain_der()
+                    .iter()
+                    .map(|certificate| certificate.to_vec())
+                    .collect(),
+            ),
+            PrivateKeyInput::from_der(server_identity.private_key_der().to_vec()),
+        ))
+        .trust_source(TrustSource::certificate_authorities(vec![
+            CertificateInput::from_der(vec![pki.authority_certificate_der().to_vec()]),
+        ]))
+        .build()
+        .expect("raw-TLS listener configuration builds");
+    let listener =
+        kmipkit_client::ClientListener::bind_raw_tls(config).expect("raw-TLS listener binds");
+    let port = listener.port().expect("listener has a local port");
+    let listener = try_make_handle(
+        Kind::ServerListener,
+        HandleValue::ServerListener(Box::new(Mutex::new(listener))),
+    )
+    .expect("listener handle is created");
+    (listener, port)
+}
+
+fn role_reversal_test_peer(
+    port: u16,
+    pki: &EphemeralPki,
+) -> (std::thread::JoinHandle<()>, std::sync::mpsc::Receiver<()>) {
+    use std::io::Write;
+    use std::sync::mpsc;
+    use std::thread;
+
+    let client_config = test_listener_client_tls_config(pki);
+    let request = discover_versions_request();
+    let (response_received, response_received_rx) = mpsc::channel();
+    let peer = thread::spawn(move || {
+        let mut tls_one = connect_test_listener_client(port, Arc::clone(&client_config));
+        let mut tls_two = connect_test_listener_client(port, client_config);
+        tls_one
+            .write_all(&request)
+            .expect("first client writes the request");
+        tls_one.flush().expect("first client flushes the request");
+        tls_two
+            .write_all(&request)
+            .expect("second client writes the request");
+        tls_two.flush().expect("second client flushes the request");
+
+        for tls in [&mut tls_one, &mut tls_two] {
+            let _response = read_test_ttlv_response(tls);
+            response_received
+                .send(())
+                .expect("server test is still waiting for both responses");
+        }
+    });
+    (peer, response_received_rx)
+}
+
+fn accept_role_reversal_test_batches(
+    listener: *mut crate::kmipkit_server_listener_t,
+) -> (
+    *mut crate::kmipkit_server_connection_t,
+    *mut crate::kmipkit_server_connection_t,
+    *mut crate::kmipkit_codec_limits_t,
+    *mut crate::kmipkit_server_incoming_batch_t,
+    *mut crate::kmipkit_server_incoming_batch_t,
+) {
+    let mut connection = ptr::null_mut();
+    assert_eq!(
+        kmipkit_server_listener_accept(listener, 5, 0, &raw mut connection),
+        SUCCESS
+    );
+    let mut other_connection = ptr::null_mut();
+    assert_eq!(
+        kmipkit_server_listener_accept(listener, 5, 0, &raw mut other_connection),
+        SUCCESS
+    );
+    let limits = try_make_handle(
+        Kind::CodecLimits,
+        HandleValue::CodecLimits(Arc::new(CodecLimits::defaults())),
+    )
+    .expect("codec limits handle is created");
+    let mut batch = ptr::null_mut();
+    assert_eq!(
+        kmipkit_server_connection_recv_batch(connection, limits, 5, 0, &raw mut batch),
+        SUCCESS
+    );
+    let mut other_batch = ptr::null_mut();
+    assert_eq!(
+        kmipkit_server_connection_recv_batch(other_connection, limits, 5, 0, &raw mut other_batch),
+        SUCCESS
+    );
+    (connection, other_connection, limits, batch, other_batch)
+}
+
+fn assert_role_reversal_consumes_only_matching_responses(
+    connection: *mut crate::kmipkit_server_connection_t,
+    other_connection: *mut crate::kmipkit_server_connection_t,
+    response: *mut crate::kmipkit_server_response_t,
+    other_response: *mut crate::kmipkit_server_response_t,
+) -> *mut crate::kmipkit_server_role_reversed_session_t {
+    let mut session = ptr::null_mut();
+    assert_eq!(
+        kmipkit_server_connection_send_response(connection, other_response, 5, 0),
+        ERROR_INVALID_INPUT,
+        "a response for one TLS connection cannot consume another connection's request batch"
+    );
+    assert_eq!(
+        kmipkit_server_connection_send_response(connection, response, 5, 0),
+        SUCCESS
+    );
+    assert_eq!(
+        kmipkit_server_connection_send_response(connection, response, 5, 0),
+        ERROR_INVALID_INPUT,
+        "a response cannot consume a batch more than once"
+    );
+    assert_eq!(
+        kmipkit_server_connection_into_role_reversed_session(connection, &raw mut session),
+        SUCCESS
+    );
+    assert_eq!(
+        kmipkit_server_connection_send_response(other_connection, other_response, 5, 0),
+        SUCCESS
+    );
+    assert!(!session.is_null());
+
+    let mut duplicate_session = ptr::null_mut();
+    assert_eq!(
+        kmipkit_server_connection_into_role_reversed_session(
+            connection,
+            &raw mut duplicate_session,
+        ),
+        ERROR_INVALID_INPUT,
+        "the connection is consumed by successful role reversal"
+    );
+    assert!(duplicate_session.is_null());
+    session
+}
+
+fn assert_role_reversed_session_idle_timeout_and_poisoning(
+    session: *mut crate::kmipkit_server_role_reversed_session_t,
+    limits: *mut crate::kmipkit_codec_limits_t,
+) {
+    let mut next_batch = ptr::null_mut();
+    assert_eq!(
+        kmipkit_server_role_reversed_session_recv_batch(
+            session,
+            limits,
+            0,
+            10_000_000,
+            &raw mut next_batch,
+        ),
+        ERROR_TRANSPORT,
+        "an idle role-reversed session reports its bounded receive timeout"
+    );
+    assert!(next_batch.is_null());
+
+    let session_handle = reference_handle(session, Kind::ServerRoleReversedSession)
+        .expect("role-reversed session handle remains registered");
+    let HandleValue::ServerRoleReversedSession(session_state) = &session_handle.value else {
+        panic!("session handle stores the role-reversed session state");
+    };
+    let panic = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        let _guard = session_state
+            .lock()
+            .expect("session state is healthy before poisoning");
+        panic!("poison session state for the FFI error-path test");
+    }));
+    assert!(panic.is_err());
+    assert_eq!(
+        kmipkit_server_role_reversed_session_recv_batch(
+            session,
+            limits,
+            0,
+            1_000_000,
+            &raw mut next_batch,
+        ),
+        ERROR_INTERNAL
+    );
+    assert!(next_batch.is_null());
+}
+
+#[test]
+fn ffi_role_reversal_rejects_active_batch_and_handles_idle_timeout() {
+    let pki = EphemeralPki::generate().expect("ephemeral test PKI generation succeeds");
+    let (listener, port) = role_reversal_test_listener(&pki);
+    let (peer, response_received_rx) = role_reversal_test_peer(port, &pki);
+    let (connection, other_connection, limits, batch, other_batch) =
+        accept_role_reversal_test_batches(listener);
+
+    let mut session = ptr::null_mut();
+    assert_eq!(
+        kmipkit_server_connection_into_role_reversed_session(connection, &raw mut session),
+        ERROR_INVALID_INPUT,
+        "role reversal cannot consume a connection while its request batch is active"
+    );
+    assert!(session.is_null());
+
+    let (request_item, response_builder, response) = test_failure_response(batch);
+    let (other_request_item, other_response_builder, other_response) =
+        test_failure_response(other_batch);
+    session = assert_role_reversal_consumes_only_matching_responses(
+        connection,
+        other_connection,
+        response,
+        other_response,
+    );
+
+    for _ in 0..2 {
+        response_received_rx
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .expect("the TLS peer received both responses");
+    }
+    assert_role_reversed_session_idle_timeout_and_poisoning(session, limits);
+
+    kmipkit_server_role_reversed_session_release(session);
+    kmipkit_server_response_release(response);
+    kmipkit_server_response_release(other_response);
+    kmipkit_server_response_builder_release(response_builder);
+    kmipkit_server_response_builder_release(other_response_builder);
+    kmipkit_server_request_item_release(request_item);
+    kmipkit_server_request_item_release(other_request_item);
+    kmipkit_server_incoming_batch_release(batch);
+    kmipkit_server_incoming_batch_release(other_batch);
+    kmipkit_server_connection_release(connection);
+    kmipkit_server_connection_release(other_connection);
+    kmipkit_codec_limits_release(limits);
+    kmipkit_server_listener_release(listener);
+    peer.join().expect("TLS peer finishes");
+}
+
+#[test]
+fn ffi_role_reversal_reports_a_poisoned_connection_handle() {
+    let state = Mutex::new(ServerConnectionState {
+        connection: None,
+        active_batch: None,
+    });
+    let panic = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        let _guard = state.lock().expect("test mutex is initially usable");
+        panic!("poison connection state for the FFI error-path test");
+    }));
+    assert!(panic.is_err());
+
+    let connection = try_make_handle(
+        Kind::ServerConnection,
+        HandleValue::ServerConnection(Box::new(state)),
+    )
+    .expect("poisoned connection handle is registered");
+    let mut session = ptr::null_mut();
+    assert_eq!(
+        kmipkit_server_connection_into_role_reversed_session(connection, &raw mut session),
+        ERROR_INTERNAL
+    );
+    assert!(session.is_null());
+    kmipkit_server_connection_release(connection);
 }

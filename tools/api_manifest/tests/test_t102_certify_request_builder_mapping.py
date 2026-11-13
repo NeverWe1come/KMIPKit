@@ -37,14 +37,14 @@ LIFECYCLE_SERIALIZER_IDS = {
 }
 EVIDENCE = {
     "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs",
-    "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+    "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
     "bindings/c/tests/client_abi_consumer.c",
     "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
     "bindings/python/tests/test_certify_operation.py",
     "tools/api_manifest/tests/test_t102_certify_request_builder_mapping.py",
 }
 OPERATION_ADDED_EVIDENCE = {
-    "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+    "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
     "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
     "tools/api_manifest/tests/test_t102_certify_request_builder_mapping.py",
     "tools/api_manifest/tests/test_t102_certify_request_identifier_member_mapping.py",
@@ -168,9 +168,11 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
 # Register declarations, KMIPKIT-0101 lifecycle declarations, and KMIPKIT-0102
 # fluent cryptographic operation builders.
 # Includes the approved KMIPKIT-0093 inventory reconciliation and narrowed
-# T101 mappings, plus the KMIPKIT-0108 attribute-read declarations.
-DECLARATIONS_SHA256 = "c55de9be3f1aa28b4beedd8208ee92914643bf35559ebb467b8fb4d31a99ac9f"
-OPERATIONS_SHA256 = "2a6eb9fb6823b3456b3fb10b6d4af8477be9f1a1f68c06c252bb4873b272f3bc"
+# T101 mappings, KMIPKIT-0108 attribute-read declarations, and the five
+# KMIPKIT-0093 C role-reversed session declarations.
+DECLARATIONS_SHA256 = "25c895eef0e52ccd0e38e1fb891004c602c6d63197b4fff86703533e8e0cdc41"
+# The C role-reversal harness moved to support/c_api_coverage_tests.rs.
+OPERATIONS_SHA256 = "c8aae7faf64c0ddba9b3c73a9819b94e18b95d5b2eca18e9e49c3801974be4e0"
 
 
 def canonical_sha256(value: object) -> str:
@@ -282,7 +284,7 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
         python_consumer = (ROOT / "bindings/python/tests/test_certify_operation.py").read_text(encoding="utf-8")
         self.assertIn("0x420140", python_consumer)
         self.assertIn("0x420140", java_consumer)
-        self.assertIn("0x0042_0140", (ROOT / "crates/kmipkit-ffi/tests/c_api_coverage.rs").read_text(encoding="utf-8"))
+        self.assertIn("0x0042_0140", (ROOT / "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs").read_text(encoding="utf-8"))
         self.assertIn("&certify_request_value", c_consumer)
 
     def test_oasis_table_179_fields_and_child_mask_tag_are_pinned(self) -> None:
@@ -342,7 +344,7 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
         ):
             self.assertIn(raw_metadata_source, raw_operation_block)
         for builder_only_path in (
-            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
             "crates/kmipkit-protocol/tests/unit/certify_operation_tests.rs",
             "tools/api_manifest/tests/test_t102_certify_request_builder_mapping.py",
         ):
@@ -364,7 +366,7 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
         self.assertTrue("enumeration(0x420019, 1)" in java_source)
         python_source = sources["python"].read_text(encoding="utf-8")
         self.assertTrue("ttlv_enumeration(0x420019, 1)" in python_source)
-        ffi_wire = (ROOT / "crates/kmipkit-ffi/tests/c_api_coverage.rs").read_text(encoding="utf-8")
+        ffi_wire = (ROOT / "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs").read_text(encoding="utf-8")
         start = ffi_wire.index("const CERTIFY_TYPE_ONLY: &[RequestBuilderWireField]")
         end = ffi_wire.index("];", start)
         expected_fields = ffi_wire[start:end]
