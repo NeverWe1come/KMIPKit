@@ -402,6 +402,20 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(operations, (47, 1, 45))
         self.assertEqual(cases, ('test-op-delegated-login', 'test-op-login'))
 
+    def test_query_operation_response_cases_have_controlled_peer_recipes(self):
+        """OASIS KMIP 2.0 §6.1.37 Table 260 and KMIP 2.1 §6.1.40 Table 283 define Query responses."""
+        import route_peer
+        from artifact_support import ROOT
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        cases = {case['case_id']: case for case in catalog['test_cases']}
+        for case_id in (
+            'test-norm-payload-client-query-response-20-001',
+            'test-norm-payload-client-query-response-21-001',
+        ):
+            with self.subTest(case_id=case_id):
+                self.assertEqual(route_peer.recipe_for_case(cases[case_id], None), ((24,), 'query'))
+
     def test_reserved_tag_is_not_constructed_as_an_assigned_ttlv_item(self):
         from artifact_support import ROOT
         catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
