@@ -80,10 +80,15 @@ final class ServerListenerTlsExchangeTest {
     void servesAllFiveTypedOperationsOverTls13MutualAuthentication() throws Exception {
         List<Class<?>> seen = new ArrayList<>();
         byte[] request = requestBatch(
-                batchItem(30, "batch-01", structure(0x420079)),
+                batchItem(30, "batch-01", structure(0x420079,
+                        structure(0x420069, integer(0x42006a, 2), integer(0x42006b, 1)))),
                 batchItem(27, "batch-02", structure(0x420079,
                         item(0x420094, 7, "object-01".getBytes(StandardCharsets.US_ASCII)),
-                        structure(0x420125, integer(0x42002a, 256)))),
+                        structure(0x420125, integer(0x42002a, 256)),
+                        structure(0x420126, enumeration(0x42000a, 0x420028)),
+                        structure(0x420126,
+                                item(0x42009d, 7, "KMIPKit".getBytes(StandardCharsets.US_ASCII)),
+                                item(0x42000a, 7, "Comment".getBytes(StandardCharsets.US_ASCII))))),
                 batchItem(28, "batch-03", structure(0x420079,
                         enumeration(0x420070, 1),
                         item(0x420094, 7, "object-02".getBytes(StandardCharsets.US_ASCII)),
@@ -94,11 +99,15 @@ final class ServerListenerTlsExchangeTest {
         byte[] response = exchange(request, requestItem -> {
             seen.add(requestItem.getClass());
             if (requestItem instanceof DiscoverVersionsRequest discover) {
-                assertEquals(List.of(), discover.requestedVersions());
+                assertEquals(List.of(new ProtocolVersion(2, 1)), discover.requestedVersions());
                 return ServerReply.success(DiscoverVersionsResponse.forRequest(
                         discover, List.of(new ProtocolVersion(2, 1))));
             }
             if (requestItem instanceof NotifyRequest notify) {
+                assertEquals(List.of(
+                        org.kmipkit.extensions.AttributeReference.tag(0x420028),
+                        org.kmipkit.extensions.AttributeReference.name("KMIPKit", "Comment")),
+                        notify.deletedAttributeReferences());
                 return ServerReply.success(NotifyResponse.forRequest(notify));
             }
             if (requestItem instanceof PutRequest put) {

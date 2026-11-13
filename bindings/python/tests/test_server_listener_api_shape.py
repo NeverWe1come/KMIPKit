@@ -9,6 +9,7 @@ import traceback
 from pathlib import Path
 
 import pytest
+import kmipkit.server as server_api
 from kmipkit.errors import InvalidInputError, KmipKitError
 from kmipkit import ttlv
 from kmipkit.attribute_operations import AttributeSet
@@ -91,7 +92,7 @@ def _discover_versions_request() -> bytes:
         0x42000F,
         _enumeration(0x42005C, 30),
         _ttlv(0x420093, 8, b"batch-01"),
-        _structure(0x420079),
+        _structure(0x420079, version),
     )
     return _structure(0x420078, header, batch_item)
 
@@ -103,6 +104,12 @@ def _notify_request() -> bytes:
         0x420079,
         _ttlv(0x420094, 7, b"object-01"),
         _structure(0x420125, _integer(0x42002A, 256)),
+        _structure(0x420126, _enumeration(0x42000A, 0x420057)),
+        _structure(
+            0x420126,
+            _ttlv(0x42009D, 7, b"KMIPKit"),
+            _ttlv(0x42000A, 7, b"Comment"),
+        ),
     )
     batch_item = _structure(
         0x42000F,
@@ -274,12 +281,22 @@ def test_listener_serves_typed_discover_versions_over_tls13_mtls() -> None:
 
 
 def test_listener_dispatches_all_five_typed_operations_over_tls13_mtls() -> None:
-    discover = _request_batch_item(30, b"batch-01")
+    discover = _request_batch_item(
+        30,
+        b"batch-01",
+        _structure(0x420069, _integer(0x42006A, 2), _integer(0x42006B, 1)),
+    )
     notify = _request_batch_item(
         27,
         b"batch-02",
         _ttlv(0x420094, 7, b"object-01"),
         _structure(0x420125, _integer(0x42002A, 256)),
+        _structure(0x420126, _enumeration(0x42000A, 0x420028)),
+        _structure(
+            0x420126,
+            _ttlv(0x42009D, 7, b"KMIPKit"),
+            _ttlv(0x42000A, 7, b"Comment"),
+        ),
     )
     put = _request_batch_item(
         28,
@@ -298,11 +315,16 @@ def test_listener_dispatches_all_five_typed_operations_over_tls13_mtls() -> None
     request_bytes = _request_batch(discover, notify, put, query, endpoint_role)
     def handler(request: object) -> ServerReply:
         if isinstance(request, DiscoverVersionsRequest):
-            assert request.requested_versions == ()
+            assert request.requested_versions == (ProtocolVersion(2, 1),)
             return ServerReply.success(
                 DiscoverVersionsResponse.for_request(request, (ProtocolVersion(2, 1),))
             )
         if isinstance(request, NotifyRequest):
+            assert request.unique_identifier == b"object-01"
+            assert request.deleted_attribute_references == (
+                    server_api.extensions.AttributeReference.tag(0x420028),
+                server_api.extensions.AttributeReference.name("KMIPKit", "Comment"),
+            )
             return ServerReply.success(NotifyResponse.for_request(request))
         if isinstance(request, PutRequest):
             assert request.put_function == 1
@@ -346,6 +368,16 @@ def test_listener_returns_typed_handler_failure_over_tls13_mtls() -> None:
 def test_listener_preserves_notify_changed_attributes_over_tls13_mtls() -> None:
     def handler(request: object) -> ServerReply:
         assert isinstance(request, NotifyRequest)
+        deleted_count = server_api.ffi.new("uint64_t *")
+        count_status = server_api.lib.kmipkit_server_request_item_notify_deleted_attribute_reference_count(
+            request._pointer(), deleted_count
+        )
+        assert count_status == 0, f"deleted attribute count status={count_status}"
+        assert deleted_count[0] == 2
+        assert request.deleted_attribute_references == (
+            server_api.extensions.AttributeReference.tag(0x420057),
+            server_api.extensions.AttributeReference.name("KMIPKit", "Comment"),
+        )
         attributes = request.attributes
         assert isinstance(attributes, AttributeSet)
         with attributes, attributes.as_items() as items:
@@ -383,3 +415,108 @@ def test_listener_rejects_malformed_ttlv_over_tls13_mtls() -> None:
     assert not worker.is_alive()
     assert len(failures) == 1
     assert isinstance(failures[0], KmipKitError)
+
+
+def test_server_listener_input_helpers_validate_limits_and_copy_secrets() -> None:
+    assert server_api._text("", optional=True) == b""
+    assert server_api._text("kmipkit") == b"kmipkit"
+    for value in (None, "", "bad\x00text", 42):
+        with pytest.raises(KmipKitError):
+            server_api._text(value)
+    with pytest.raises(KmipKitError):
+        server_api._text("x" * (server_api._MAX_TEXT_BYTES + 1))
+
+    assert server_api._timeout(None) == (0, 0)
+    assert server_api._timeout(1.25) == (1, 250_000_000)
+    for value in (True, "1", -1, float("nan"), float("inf")):
+        with pytest.raises(KmipKitError):
+            server_api._timeout(value)
+    with pytest.raises(KmipKitError):
+        server_api._timeout(float(1 << 64))
+
+    span, empty_buffer = server_api._span(b"")
+    assert span.data == server_api.ffi.NULL
+    assert span.length == 0
+    span, buffer = server_api._span(b"abc")
+    assert bytes(server_api.ffi.buffer(span.data, span.length)) == b"abc"
+    assert buffer is not server_api.ffi.NULL
+
+    inputs, buffers = server_api._input_array([b"certificate", memoryview(b"root")], 1)
+    assert len(inputs) == 2
+    assert len(buffers) == 2
+    _, secret_buffers = server_api._input_array([b"secret"], 1, secret=True)
+    assert isinstance(secret_buffers[0][0], bytearray)
+    for values in (None, (), [], [b""], [object()], [b"x"] * (server_api._MAX_INPUTS + 1)):
+        with pytest.raises(KmipKitError):
+            server_api._input_array(values, 1)
+    with pytest.raises(KmipKitError):
+        server_api._input_array([b"x" * (server_api._MAX_INPUT_BYTES + 1)], 1)
+
+
+def test_server_listener_native_handle_errors_and_der_https_configuration(monkeypatch) -> None:
+    with pytest.raises(KmipKitError):
+        server_api._native_handle("void", lambda _output: 0)
+    with pytest.raises(KmipKitError):
+        server_api._native_handle("void", lambda _output: 1)
+
+    class NativeCallReached(Exception):
+        pass
+
+    def stop_before_native_copy(*_arguments):
+        raise NativeCallReached
+
+    monkeypatch.setattr(server_api, "_native_handle", stop_before_native_copy)
+    with pytest.raises(NativeCallReached):
+        ServerListenerConfiguration(
+            bind_host="127.0.0.1",
+            bind_port=0,
+            listener_certificate_chain=((_FIXTURES / "server-cert.pem").read_bytes(),),
+            listener_private_key=(_FIXTURES / "server-key.pem").read_bytes(),
+            trust_certificates=((_FIXTURES / "ca.pem").read_bytes(),),
+            encoding="der",
+            transport=server_api.ListenerTransport.HTTPS,
+            wire_encoding=server_api.WireEncoding.JSON,
+            target_path="/kmip",
+            revocation_lists=((_FIXTURES / "ca.pem").read_bytes(),),
+        )
+    monkeypatch.undo()
+
+    https_configuration = ServerListenerConfiguration(
+        bind_host="127.0.0.1",
+        bind_port=0,
+        listener_certificate_chain=((_FIXTURES / "server-cert.pem").read_bytes(),),
+        listener_private_key=(_FIXTURES / "server-key.pem").read_bytes(),
+        trust_certificates=((_FIXTURES / "ca.pem").read_bytes(),),
+        transport=server_api.ListenerTransport.HTTPS,
+        target_path="/kmip",
+    )
+    with https_configuration, ServerListener.bind(https_configuration) as listener:
+        assert listener.port > 0
+        assert "ServerListenerConfiguration" in repr(https_configuration)
+    assert "closed=True" in repr(https_configuration)
+
+
+def test_server_request_response_metadata_and_invalid_facade_inputs() -> None:
+    for args in (
+        {"bind_host": ""},
+        {"bind_host": "bad\x00host"},
+        {"transport": 1},
+        {"wire_encoding": 1},
+        {"encoding": "unknown"},
+        {"target_path": "/kmip"},
+        {"listener_private_key": b""},
+        {"listener_private_key": "not bytes"},
+    ):
+        values = {
+            "bind_host": "127.0.0.1",
+            "bind_port": 0,
+            "listener_certificate_chain": (b"certificate",),
+            "listener_private_key": b"private key",
+            "trust_certificates": (b"authority",),
+        }
+        values.update(args)
+        with pytest.raises(KmipKitError):
+            ServerListenerConfiguration(**values)
+
+    with pytest.raises(KmipKitError):
+        ServerListener.bind(object())
