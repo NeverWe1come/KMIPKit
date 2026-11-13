@@ -37,3 +37,13 @@
 
 The draft PR must remain marked `[WIP]` until all required hosted checks pass on
 its exact head SHA. Resolve any red checks before requesting review.
+
+## Hosted CI repair
+
+The first hosted run failed `Verify fluent operation inventory` because the
+generated inventory did not include the new compiled C consumer and ABI test
+references. Regenerated `specification/catalog/fluent-operation-inventory.json`
+with `tools/normative_catalog/generate_fluent_operation_inventory.py`, then
+verified the generated output with `--check` and ran
+`python3 -B -m unittest tools.normative_catalog.tests.test_fluent_operation_inventory`
+(16 tests passed). The full hosted CI rerun is required on the updated head.

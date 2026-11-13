@@ -727,7 +727,9 @@
           "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
           "tools/api_manifest/tests/test_get_locate_parity_manifest.py",
           "tools/api_manifest/tests/test_t102_import_locate_request_member_mapping.py",
-          "tools/api_manifest/tests/test_t102_locate_request_builder_mapping.py"
+          "tools/api_manifest/tests/test_t102_locate_request_builder_mapping.py",
+          "bindings/c/tests/public_client_api.c",
+          "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs"
         ]
       },
       "serverCapabilityClaim": false,
@@ -1636,7 +1638,9 @@
           "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
           "crates/kmipkit-ffi/tests/support/lifecycle_operation_abi_tests.rs",
           "crates/kmipkit-protocol/tests/unit/activate_operation_tests.rs",
-          "tools/api_manifest/tests/test_lifecycle_parity_manifest.py"
+          "tools/api_manifest/tests/test_lifecycle_parity_manifest.py",
+          "bindings/c/tests/public_client_api.c",
+          "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs"
         ]
       },
       "serverCapabilityClaim": false,
@@ -1727,7 +1731,9 @@
           "crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs",
           "tools/api_manifest/tests/test_revoke_parity_manifest.py",
           "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py",
-          "tools/api_manifest/tests/test_t102_revoke_request_member_mapping.py"
+          "tools/api_manifest/tests/test_t102_revoke_request_member_mapping.py",
+          "bindings/c/tests/public_client_api.c",
+          "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs"
         ]
       },
       "serverCapabilityClaim": false,
@@ -1897,7 +1903,9 @@
           "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
           "crates/kmipkit-ffi/tests/support/lifecycle_operation_abi_tests.rs",
           "crates/kmipkit-protocol/tests/unit/archive_operation_tests.rs",
-          "tools/api_manifest/tests/test_lifecycle_parity_manifest.py"
+          "tools/api_manifest/tests/test_lifecycle_parity_manifest.py",
+          "bindings/c/tests/public_client_api.c",
+          "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs"
         ]
       },
       "serverCapabilityClaim": false,
@@ -1982,7 +1990,9 @@
           "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
           "crates/kmipkit-ffi/tests/support/lifecycle_operation_abi_tests.rs",
           "crates/kmipkit-protocol/tests/unit/recover_operation_tests.rs",
-          "tools/api_manifest/tests/test_lifecycle_parity_manifest.py"
+          "tools/api_manifest/tests/test_lifecycle_parity_manifest.py",
+          "bindings/c/tests/public_client_api.c",
+          "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs"
         ]
       },
       "serverCapabilityClaim": false,
