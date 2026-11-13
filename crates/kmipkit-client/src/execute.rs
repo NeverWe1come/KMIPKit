@@ -232,6 +232,7 @@ const ASYNCHRONOUS_MANDATORY: u32 = 1;
 const ASYNCHRONOUS_OPTIONAL: u32 = 2;
 const ASYNCHRONOUS_PROHIBITED: u32 = 3;
 const BATCH_ERROR_CONTINUATION_STOP: u32 = 2;
+const BATCH_ERROR_CONTINUATION_UNDO: u32 = 3;
 const ENUMERATION_EXTENSION_MIN: u32 = 0x8000_0000;
 const ENUMERATION_EXTENSION_MAX: u32 = 0x8fff_ffff;
 // KMIP v2.1 §11.58, Table 489 assigns Enumeration 1 to ID Placeholder.
@@ -8739,7 +8740,10 @@ fn validate_response_inner(
         .map(BatchIdentity::from_response)
         .collect::<Vec<_>>();
     let partial_response_permitted = response_items.len() < request_identities.len()
-        && matches!(options.batch_error_continuation.effective, 2 | 3)
+        && matches!(
+            options.batch_error_continuation.effective,
+            BATCH_ERROR_CONTINUATION_STOP | BATCH_ERROR_CONTINUATION_UNDO
+        )
         && response_items.iter().any(|item| {
             item.result_status() == Some(ResultStatus::from_raw(RESULT_STATUS_OPERATION_FAILED))
         });
