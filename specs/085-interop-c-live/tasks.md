@@ -78,3 +78,30 @@
   38.729/66.728 celdas ejecutadas, cero fallidas y 27.999 pendientes. No se
   afirma compatibilidad con servidores externos; la cobertura C completa y
   los checks de CI exactos siguen pendientes.
+
+## Evidencia de desarrollo: rutas de solicitud Add/Modify Attribute
+
+- Red: `815520cf3` exige ejecutar New Attribute de Add Attribute con las dos
+  formas públicas; `af28e51be` exige Current Attribute presente/omitido y New
+  Attribute a través de los constructores directo y de solicitud tipada, en
+  ambas versiones y las seis combinaciones de codificación/transporte. La
+  prueba de Modify falló inicialmente sin celdas completadas.
+- Green: `5e9eca027` implementa Add Attribute y `86c36646a` ejecuta Modify
+  Attribute después de sembrar el objeto con un Comment existente. Las
+  comprobaciones verifican el efecto de estado del peer, los campos de
+  solicitud, los IDs de respuesta y la igualdad de los árboles normalizados
+  entre las dos rutas para cada codificación y transporte.
+- Referencias: OASIS KMIP 2.0 §6.1.2/Table 152 y §6.1.33/Tables 247–248;
+  KMIP 2.1 §6.1.2/Table 167 y §6.1.34/Tables 265–266. Los wrappers Current
+  Attribute y New Attribute siguen §5.6–§5.7 (Tables 147–148 en 2.0 y
+  162–163 en 2.1): cada uno contiene un elemento de atributo directo; el
+  fixture usa el tag Comment, no el contenedor Attribute.
+- Refactor: `f876dcc07` comparte la construcción TTLV del atributo Comment
+  directo entre Add, Set y Modify.
+- Verificación: 24 comprobaciones controladas de Add y 48 de Modify pasaron;
+  CTest pasó 7/7 tras la refactorización. La matriz anterior a la refactorización
+  registró 39.193 celdas invocadas, cero fallidas y 27.543 pendientes
+  (66.736 esperadas). La cobertura total sigue abierta: quedan, entre otras,
+  las variantes de Unique Identifier de Modify, el rechazo por Current
+  Attribute no coincidente, las respuestas negativas y varias rutas TTLV
+  genéricas. No se afirma interoperabilidad con KMS externos.
