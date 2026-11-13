@@ -136,3 +136,53 @@ bash ../../bindings/java/gradlew --no-daemon \
 The focused suite passes. The complete KMIP 2.0/2.1 route matrix is still
 incomplete; this scoped deferral does not satisfy the pending Discover
 Versions route cell or alter the full-matrix gate.
+
+## Block Cipher Mode enumeration route completion
+
+Source: OASIS KMIP 2.0 and 2.1 Specifications §11.6 (Block Cipher Mode
+Enumeration) and §4.16 (Cryptographic Parameters). This selected local scope
+executes all 19 catalogued assigned and extension values in both protocol
+versions through five public routes: `TtlvValue.Enumeration`,
+`TtlvItem.create`, `TtlvItem.view`, `TtlvCodec.decode`, and
+`CryptographicParameters.Builder.blockCipherMode`. Each case/value/version
+cell is checked against the installed package pinned to
+`9a16cc90a12205101d22a38501a5e74c665df4dc`; normalized tree hashes are used
+for the generic TTLV paths.
+
+Red commit `3ad9b2f21` added an assertion for the catalogued AEAD value under
+KMIP 2.0 and 2.1. The focused controlled-peer route test failed because the
+`test-enum-block-cipher-mode` generic Enumeration constructor event was absent
+for that value and version. Green commit `c9d54c4f2` derives fixtures from the
+catalog, invokes every assigned value and the representative extension value,
+checks Item construction, view and decode against the exact Block Cipher Mode
+tag, and invokes the typed Cryptographic Parameters builder for every value.
+The typed call must retain the builder handle. The report records only
+sanitized tree hashes and API invocation metadata.
+
+Verification after the implementation:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 37d7eeae9e64644fd7cdde4bfd64b7da5ccbb0bf2be53a949826eb62dc3aaf86 \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+```
+
+The full Java consumer suite passes. The shared validator reports a complete
+selected scope of 13,604 invoked cells with zero failures, including all 190
+Block Cipher Mode route cells. The refreshed Java ledger records 13,604
+executed, 57,851 pending, and 71,455 planned cells. This completes only the
+Block Cipher Mode local route family; other enum families and the overall
+KMIP 2.0/2.1 matrix remain pending.
+
+The installed artifact was rebuilt from the exact release pin. Its SHA-256 is
+`37d7eeae9e64644fd7cdde4bfd64b7da5ccbb0bf2be53a949826eb62dc3aaf86`; the
+public route probe verified 243 API symbols, 677 named values, and 189 numeric
+values against the installed JAR. The offline report also conforms to the
+shared result schema. The artifact and controlled-peer checks do not establish
+compatibility with an external KMS.
