@@ -1526,6 +1526,72 @@ class RouteMatrixTests(unittest.TestCase):
             self.assertTrue(any(event['public_api_symbol'] == symbol and event['action'] == 'send'
                                 for event in events), symbol)
 
+    @staticmethod
+    def _batch_register_crypto_route_inputs():
+        from artifact_support import ROOT
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] ==
+                                               'test-batch-register-encrypt-decrypt-destroy']}
+        return ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest
+
+    def test_batch_register_crypto_checks_every_typed_route_and_cleans_the_object(self):
+        """OASIS KMIP 2.0/2.1 §§6.1.1, 6.1.11, 6.1.15, 6.1.17, 8.2–8.4, 8.6."""
+        from coverage_matrix import iter_cells
+        from route_peer import execute_network_cells
+        from validate_route_evidence import _key
+
+        binary, selected, manifest = self._batch_register_crypto_route_inputs()
+        events, keys, checks = execute_network_cells(binary, selected, manifest)
+        expected = {_key(cell) for cell in iter_cells(selected, manifest, languages=('c',))
+                    if cell['route_id'].startswith('c.typed-protocol.')}
+
+        self.assertEqual(len(checks), 12, 'one six-item batch must run on every version/wire combination')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertEqual(len(expected), 304)
+        self.assertEqual(keys, expected)
+        self.assertEqual(len(events), len(expected))
+        for check in checks:
+            self.assertTrue(check['peer_final_state_matches_setup'])
+        for event in events:
+            if event['action'] != 'send':
+                continue
+            self.assertEqual(event['batch_operation_sequence'],
+                             ['Register', 'Activate', 'Encrypt', 'Decrypt', 'Revoke', 'Destroy'])
+            self.assertEqual(event['peer_observed_result_status_codes'], [0] * 6)
+            self.assertEqual(event['peer_observed_effects'],
+                             ['created', 'activated', 'encrypted', 'decrypted', 'revoked', 'destroyed'])
+            self.assertEqual(event['peer_observed_state_before_sha256'],
+                             event['peer_observed_state_after_sha256'])
+        result_text = json.dumps([events, checks])
+        for fixture in ('000102030405060708090a0b0c0d0e0f',
+                        '00112233445566778899aabbccddeeff',
+                        '69c4e0d86a7b0430d8cdb78070b4c55a'):
+            self.assertNotIn(fixture, result_text)
+
+    def test_batch_register_crypto_rejects_changed_ciphertext_after_cleanup(self):
+        """OASIS KMIP 2.0/2.1 §6.1.17: compare returned Data, not only its presence."""
+        from unittest.mock import patch
+        import route_peer
+
+        binary, selected, manifest = self._batch_register_crypto_route_inputs()
+        fixture_response = route_peer.response
+
+        def changed_ciphertext(*args, **kwargs):
+            ciphertext = bytes.fromhex('69c4e0d86a7b0430d8cdb78070b4c55a')
+            return fixture_response(*args, **kwargs).replace(ciphertext, bytes(len(ciphertext)))
+
+        with patch.object(route_peer, 'response', side_effect=changed_ciphertext):
+            events, _, checks = route_peer.execute_network_cells(
+                binary, selected, manifest, protocol_versions=('2.1',),
+                network_combinations=(('TTLV', 'raw_tls'),))
+        self.assertEqual(len(checks), 1)
+        self.assertEqual(checks[0]['status'], 'failed')
+        self.assertTrue(checks[0]['peer_final_state_matches_setup'])
+        self.assertFalse(events)
+
     def test_batch_create_activate_get_attribute_list_destroy_uses_one_checked_request(self):
         from artifact_support import ROOT
         from route_peer import execute_network_cells
