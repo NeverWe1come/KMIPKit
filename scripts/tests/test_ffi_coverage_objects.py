@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -14,7 +15,11 @@ ROOT = Path(__file__).resolve().parents[2]
 
 class FfiCoverageObjectTests(unittest.TestCase):
     def run_resolver(
-        self, layout: str, missing: str | None = None, ambiguous: bool = False
+        self,
+        layout: str,
+        missing: str | None = None,
+        ambiguous: bool = False,
+        target_root: Path | None = None,
     ) -> tuple[subprocess.CompletedProcess[bytes], list[Path]]:
         temporary_root = ROOT / "target"
         temporary_root.mkdir(exist_ok=True)
@@ -73,6 +78,7 @@ class FfiCoverageObjectTests(unittest.TestCase):
             input=manifest.read_bytes(),
             capture_output=True,
             check=False,
+            env={**os.environ, "CARGO_TARGET_DIR": str(target_root or root)},
         )
         return result, paths
 
@@ -109,6 +115,14 @@ class FfiCoverageObjectTests(unittest.TestCase):
         )
         self.assertNotEqual(result.returncode, 0)
         self.assertIn(b"usage", result.stderr.lower())
+
+    def test_rejects_artifacts_outside_the_cargo_target_directory(self):
+        target_root = ROOT / "target" / "unexpected-cargo-target"
+        target_root.mkdir(exist_ok=True)
+        result, _ = self.run_resolver("debug/deps", target_root=target_root)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(result.stdout, b"")
+        self.assertIn(b"outside", result.stderr.lower())
 
 
 if __name__ == "__main__":
