@@ -1976,10 +1976,10 @@ static kmip_execution_outcome_t execute_attribute_mutation_case(
             kmipkit_client_batch_item_response_add_attribute(
                 mutation_item_response, &mutation_present, &mutation_identifier);
     }
-    bool add_response_valid = status == 0 && mutation_present &&
+    bool mutation_response_valid = status == 0 && mutation_present &&
         mutation_metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS &&
         same_text_identifier(&created_identifier, &mutation_identifier);
-    if (!add_response_valid) {
+    if (!mutation_response_valid) {
         outcome.library_failed = status != 0;
         outcome.library_validated = status == 0;
         outcome.has_result_status_code = status == 0;
