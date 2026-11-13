@@ -202,12 +202,11 @@ def _case_exclusions(root, commit, language, symbol):
             'target_ids': [
                 'KMIPKIT-ELEM-MESSAGE-FIELD-8-5-TIME-STAMP',
                 'KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-TIMESTAMP',
-                'KMIPKIT-ELEM-TAG-420092',
             ],
             'reason': ('OASIS KMIP 2.0/2.1 §§8.2, 8.5, 9.11, and 9.20 distinguish the Request Header Time Stamp '
                        'Date-Time field from the response-header field and the Date Time Extended hashed-password '
                        'Timestamp. This request-header setter cannot construct the response header or the distinct '
-                       'extended value; generic TTLV routes cover the tag allocation.'),
+                       'extended value; its assigned Time Stamp tag remains covered by the builder route.'),
             'source_paths': source_paths,
         })
     return exclusions
