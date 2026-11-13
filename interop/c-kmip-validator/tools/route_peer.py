@@ -537,6 +537,22 @@ def verify_placeholder_chain_response(node, operations):
             raise ValueError('fixture_placeholder_chain_get_object_missing')
 
 
+def peer_cleanup_evidence(observations, include_state_hash=False):
+    cleanup = observations[-1]
+    state_after = cleanup[2]['peer_observed_state_after_sha256']
+    evidence = {
+        'peer_cleanup_operations': [
+            numbers(item, 0x42005C)[0]
+            for item in cleanup[0][2]
+            if item[0] == 0x42000F],
+        'peer_final_state_matches_setup':
+            observations[0][2]['peer_observed_state_before_sha256'] == state_after,
+    }
+    if include_state_hash:
+        evidence['peer_cleanup_state_after_sha256'] = state_after
+    return evidence
+
+
 def assert_placeholder_usage(node, case_id):
     """Accept omitted or explicit ID Placeholder identifiers after Create."""
     if case_id not in ('test-batch-create-activate-destroy',
@@ -1171,16 +1187,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                    'test-batch-unique-item-id-response-correlation',
                                                    'test-batch-order-false-correlates-response-items',
                                                    'test-batch-continue-after-failure'} else {}),
-                                           **({'peer_cleanup_operations': [
-                                               numbers(item, 0x42005C)[0]
-                                               for item in observation[-1][0][2]
-                                               if item[0] == 0x42000F],
-                                               'peer_cleanup_state_after_sha256':
-                                                   observation[-1][2]['peer_observed_state_after_sha256'],
-                                               'peer_final_state_matches_setup':
-                                                   observation[0][2]['peer_observed_state_before_sha256'] ==
-                                                   observation[-1][2]['peer_observed_state_after_sha256']}
-                                               if placeholder_chain_recipe and len(observation) == 2 else {}),
+                                           **(peer_cleanup_evidence(observation, include_state_hash=True)
+                                              if placeholder_chain_recipe and len(observation) == 2 else {}),
                                            **({'peer_request_operations': [
                                                    numbers(item, 0x42005C)[0]
                                                    for item in observation[mutation_index][0][2]
@@ -1200,18 +1208,13 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                     numbers(item, 0x42005C)[0]
                                                     for item in observation[0][0][2]
                                                     if item[0] == 0x42000F],
-                                                'peer_cleanup_operations': [
-                                                    numbers(item, 0x42005C)[0]
-                                                    for item in observation[-1][0][2]
-                                                    if item[0] == 0x42000F],
+                                                **peer_cleanup_evidence(observation),
                                                 'peer_attribute_state_changed':
                                                     observation[mutation_index][2][
                                                         'peer_observed_state_before_sha256'] !=
                                                     observation[mutation_index][2][
                                                         'peer_observed_state_after_sha256'],
-                                                'peer_final_state_matches_setup':
-                                                    observation[0][2]['peer_observed_state_before_sha256'] ==
-                                                    observation[-1][2]['peer_observed_state_after_sha256']}
+                                                }
                                                if attribute_mutation_recipe and len(observation) ==
                                                (4 if delete_attribute_recipe else 3) else {}),
                                            **attribute_check,
