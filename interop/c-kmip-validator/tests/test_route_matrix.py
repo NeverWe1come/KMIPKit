@@ -22,6 +22,18 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(self.runner.pending_reason({'public_api_symbol': 'kmipkit_client_batch_item_sign'}),
                          'validator_recipe_pending')
 
+    def test_get_usage_allocation_has_an_executable_controlled_peer_recipe(self):
+        import route_peer
+        from artifact_support import ROOT
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-op-get-usage-allocation')
+        recipe = route_peer.recipe_for_case(case, None)
+
+        self.assertIsNotNone(recipe)
+        self.assertEqual(recipe[1], 'get_usage_allocation')
+
     def test_route_evidence_output_cannot_escape_its_build_directory(self):
         with tempfile.TemporaryDirectory() as directory:
             with self.assertRaisesRegex(ValueError, 'path_outside_allowed_root'):
