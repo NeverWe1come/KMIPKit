@@ -275,11 +275,12 @@ def add_execution_contract(test_case: dict, elements: list[dict], indexes: dict[
         mode = "server_exchange"
         steps = ["execute_operation", "verify_response"]
         assertions = ["response_matches_operation_contract"]
-        # Logging and authentication/session operations change server-side
-        # state, so execution requires explicit opt-in.
+        # Logging, authentication/session, and Interop test-control operations
+        # change server-side state, so execution requires explicit opt-in.
         mutation = (
             "mutating"
-            if test_case.get("operation") in {"Log", "Login", "Logout", "Delegated Login"}
+            if test_case.get("operation")
+            in {"Log", "Login", "Logout", "Delegated Login", "Interop"}
             else "read_only"
         )
 
