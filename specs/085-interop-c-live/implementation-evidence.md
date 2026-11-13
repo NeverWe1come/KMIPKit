@@ -11,7 +11,7 @@ network recipes. Library sources are unchanged.
 | KMIPKIT-0092-FR-002, FR-007, FR-009 | Per-cell evidence and explicit pending sidecar; duplicate protection; common schema and validator in CI. Incomplete recipes keep the gate failing. |
 | KMIPKIT-0092-FR-003 | Exact assigned scalar values, reserved-tag rejection, typed attributes, and cryptographic-parameter field/TTLV round trips are checked locally. Broader semantic branch/model recipes remain pending. No absent encoder/send/high-level API is fabricated. |
 | KMIPKIT-0092-FR-004 | Ordered, redacted tree digests are retained per cell. Cross-language digest normalization/parity is pending. |
-| KMIPKIT-0092-FR-005 | Controlled peers parse all six encoding/transport pairs, check recipe fields, numeric ordered results, lifecycle transitions and deletion. Cryptographic, asynchronous, and remaining positive operation recipes are pending. |
+| KMIPKIT-0092-FR-005 | Controlled peers parse all six encoding/transport pairs, check recipe fields, numeric ordered results, lifecycle transitions and deletion. Check, Get Attribute List, Log, and Revoke response TTLV accessors are read and structurally checked. Cryptographic, asynchronous, and remaining positive operation recipes are pending. |
 | KMIPKIT-0092-FR-008 | Reports contain public identities, axes, digests, sanitized failure codes and numeric outcomes. Request bodies and fixture keys/tickets never enter evidence. |
 
 The exact OASIS document and section remain on each case in the generated shared
@@ -289,12 +289,19 @@ independently for cases that have a separate server-exchange scenario.
 
 Verification on the current C worktree:
 
-- Python validator tests: 90/90 passed.
-- Full route matrix: 66,728 expected cells, 37,215 invoked, zero failed, and
-  29,513 still pending. The completeness gate correctly remains unsuccessful.
+- Python validator tests: 91/91 passed.
+- Full route matrix: 66,728 expected cells, 37,227 invoked, zero failed, and
+  29,501 still pending. The completeness gate correctly remains unsuccessful.
 - CTest: 7/7 passed after the latest route changes.
-- After extracting the TTLV decode/re-encode ownership helper, its three
-  focused cryptographic-parameters tests passed and CTest passed 7/7 again.
+- Cryptographic Parameters `from_ttlv` Red/Green/Refactor commits are
+  `72f2593c3`, `ddb2540d2`, and `796239c33`; the focused field and extension
+  tests pass.
+- Check, Get Attribute List, Log, and Revoke response TTLV accessors now run
+  from observed responses for both protocol versions. The focused Red test
+  failed for all four missing routes; Red, Green, and Refactor commits are
+  `a30493064`, `6802292ba`, and `50ac4fc89`. The full matrix records twelve response-TTLV
+  route events across those operations and the Create/Activate/Get Attribute
+  List/Revoke/Destroy workflow.
 
 This is incremental evidence only. Thousands of C route cells and the Rust,
 Java, and Python validators still require implementation and exact-head CI.
