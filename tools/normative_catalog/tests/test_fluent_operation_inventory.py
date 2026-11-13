@@ -126,35 +126,35 @@ class FluentOperationInventoryTests(unittest.TestCase):
                     and "KMIPKIT-ELEM-ENUMERATION-OPERATION" in element.get("parent_element_ids", []):
                 element["wire_value"] = "00000043"
         with self.assertRaisesRegex(ValueError, "assignment"):
-            build_inventory(base, json.loads(VERSIONED_VALUES.read_text()),
-                            json.loads((ROOT / "specification/api/public-api.json").read_text()))
+            build_inventory(base, json.loads(VERSIONED_VALUES.read_text(encoding="utf-8")),
+                            json.loads((ROOT / "specification/api/public-api.json").read_text(encoding="utf-8")))
 
     def test_invalid_direction_is_rejected(self) -> None:
         base = json.loads(BASE_CATALOG.read_text(encoding="utf-8"))
         next(element for element in base["elements"]
              if element.get("kind") == "operation")["direction"] = "both"
         with self.assertRaisesRegex(ValueError, "direction"):
-            build_inventory(base, json.loads(VERSIONED_VALUES.read_text()),
-                            json.loads((ROOT / "specification/api/public-api.json").read_text()))
+            build_inventory(base, json.loads(VERSIONED_VALUES.read_text(encoding="utf-8")),
+                            json.loads((ROOT / "specification/api/public-api.json").read_text(encoding="utf-8")))
 
     def test_generated_inventory_is_deterministic_and_current(self) -> None:
         self.assertEqual(render(ROOT), OUTPUT.read_bytes())
         self.assertEqual(render(ROOT), render(ROOT))
 
     def _build_with_evidence(self, evidence: dict) -> dict:
-        return build_inventory(json.loads(BASE_CATALOG.read_text()),
-                               json.loads(VERSIONED_VALUES.read_text()),
-                               json.loads((ROOT / "specification/api/public-api.json").read_text()),
+        return build_inventory(json.loads(BASE_CATALOG.read_text(encoding="utf-8")),
+                               json.loads(VERSIONED_VALUES.read_text(encoding="utf-8")),
+                               json.loads((ROOT / "specification/api/public-api.json").read_text(encoding="utf-8")),
                                evidence)
 
     def test_missing_owner_cannot_claim_implemented_route(self) -> None:
-        evidence = json.loads((ROOT / "specification/catalog/operation-matrix-evidence.json").read_text())
+        evidence = json.loads((ROOT / "specification/catalog/operation-matrix-evidence.json").read_text(encoding="utf-8"))
         evidence["operations"][0]["typedOwners"]["request"] = None
         with self.assertRaisesRegex(ValueError, "missing typed owners"):
             self._build_with_evidence(evidence)
 
     def test_unverified_route_is_explicit_and_not_executable(self) -> None:
-        evidence = json.loads((ROOT / "specification/catalog/operation-matrix-evidence.json").read_text())
+        evidence = json.loads((ROOT / "specification/catalog/operation-matrix-evidence.json").read_text(encoding="utf-8"))
         detail = evidence["operations"][0]
         detail["route"]["state"] = "unverified"
         detail["route"]["symbol"] = None
@@ -165,7 +165,7 @@ class FluentOperationInventoryTests(unittest.TestCase):
         self.assertEqual(row["route"]["state"], "unverified")
 
     def test_duplicate_or_missing_directional_evidence_is_rejected(self) -> None:
-        evidence = json.loads((ROOT / "specification/catalog/operation-matrix-evidence.json").read_text())
+        evidence = json.loads((ROOT / "specification/catalog/operation-matrix-evidence.json").read_text(encoding="utf-8"))
         for mutation in (lambda rows: rows.append(copy.deepcopy(rows[0])),
                          lambda rows: rows.pop()):
             invalid = copy.deepcopy(evidence)
@@ -174,7 +174,7 @@ class FluentOperationInventoryTests(unittest.TestCase):
                 self._build_with_evidence(invalid)
 
     def test_fabricated_owner_route_test_and_directional_source_are_rejected(self) -> None:
-        inventory = json.loads(OUTPUT.read_text())
+        inventory = json.loads(OUTPUT.read_text(encoding="utf-8"))
         for field in ("owner", "route", "test", "source", "earliest"):
             with self.subTest(field=field):
                 invalid = copy.deepcopy(inventory)
@@ -193,17 +193,17 @@ class FluentOperationInventoryTests(unittest.TestCase):
                     _validate_evidence_files(ROOT, invalid)
 
     def test_unassigned_kmip30_operation_is_rejected(self) -> None:
-        versioned = json.loads(VERSIONED_VALUES.read_text())
+        versioned = json.loads(VERSIONED_VALUES.read_text(encoding="utf-8"))
         next(group for group in versioned["versions"]["v3_0"]
              if group["name"] == "Operation")["values"][0]["wire_value"] = "0x00000043"
         with self.assertRaisesRegex(ValueError, "assignment"):
-            build_inventory(json.loads(BASE_CATALOG.read_text()), versioned,
-                            json.loads((ROOT / "specification/api/public-api.json").read_text()))
+            build_inventory(json.loads(BASE_CATALOG.read_text(encoding="utf-8")), versioned,
+                            json.loads((ROOT / "specification/api/public-api.json").read_text(encoding="utf-8")))
 
     def test_incomplete_catalogs_and_duplicate_routes_are_rejected(self) -> None:
-        base = json.loads(BASE_CATALOG.read_text())
-        versioned = json.loads(VERSIONED_VALUES.read_text())
-        manifest = json.loads((ROOT / "specification/api/public-api.json").read_text())
+        base = json.loads(BASE_CATALOG.read_text(encoding="utf-8"))
+        versioned = json.loads(VERSIONED_VALUES.read_text(encoding="utf-8"))
+        manifest = json.loads((ROOT / "specification/api/public-api.json").read_text(encoding="utf-8"))
         for field in ("name", "source_refs", "unknown", "duplicate", "manifest",
                       "versions", "groups", "values", "section", "duplicate_assignment"):
             with self.subTest(field=field):
@@ -234,7 +234,7 @@ class FluentOperationInventoryTests(unittest.TestCase):
                     build_inventory(b, v, m)
 
     def test_incomplete_or_overclaimed_review_evidence_is_rejected(self) -> None:
-        original = json.loads((ROOT / "specification/catalog/operation-matrix-evidence.json").read_text())
+        original = json.loads((ROOT / "specification/catalog/operation-matrix-evidence.json").read_text(encoding="utf-8"))
         for field in ("format", "operations", "version_sources", "version_order",
                       "owner_state", "route_kind", "route_state", "version_claim", "tests"):
             with self.subTest(field=field):
@@ -262,7 +262,7 @@ class FluentOperationInventoryTests(unittest.TestCase):
                     self._build_with_evidence(evidence)
 
     def test_missing_typed_route_variant_is_rejected(self) -> None:
-        inventory = json.loads(OUTPUT.read_text())
+        inventory = json.loads(OUTPUT.read_text(encoding="utf-8"))
         inventory["operations"][0]["route"]["requestVariant"] = "ClientRequest::Invented"
         with self.assertRaisesRegex(ValueError, "typed route variant"):
             _validate_evidence_files(ROOT, inventory)
