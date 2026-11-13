@@ -2203,6 +2203,50 @@ class BatchItemResult(_BatchItemResultNativeState):
                 lib.kmipkit_ttlv_structure_release(output[0])
                 raise
 
+    def ttlv_hex(self, limits: ttlv.CodecLimits) -> credentials.SecretBytes:
+        """Render the complete retained response as canonical uppercase TTLV hex in an owned UTF-8 buffer.
+
+        Close the returned native zeroizing owner. ``with_bytes`` clears its
+        temporary callback view; copies retained by Python or the caller cannot
+        be cleared by KMIPKit. Rendering never sends a request.
+        """
+        return self._render_response_view("ttlv_hex", limits)
+
+    def json(self, limits: ttlv.CodecLimits) -> credentials.SecretBytes:
+        """Render the complete retained response as KMIP JSON in an owned UTF-8 buffer.
+
+        Close the returned native zeroizing owner. ``with_bytes`` clears its
+        temporary callback view; copies retained by Python or the caller cannot
+        be cleared by KMIPKit. Rendering never sends a request.
+        """
+        return self._render_response_view("json", limits)
+
+    def xml(self, limits: ttlv.CodecLimits) -> credentials.SecretBytes:
+        """Render the complete retained response as KMIP XML in an owned UTF-8 buffer.
+
+        Close the returned native zeroizing owner. ``with_bytes`` clears its
+        temporary callback view; copies retained by Python or the caller cannot
+        be cleared by KMIPKit. Rendering never sends a request.
+        """
+        return self._render_response_view("xml", limits)
+
+    def _render_response_view(self, encoding: str, limits: ttlv.CodecLimits) -> credentials.SecretBytes:
+        if not isinstance(limits, ttlv.CodecLimits) or self._native_response_item is None:
+            errors.raise_for_status(4)
+        with _NATIVE_CALL_LOCK:
+            output = ffi.new("kmipkit_secret_bytes_t **")
+            _raise_abi_status(getattr(lib, "kmipkit_client_batch_item_response_" + encoding)(
+                self._native_response_item._pointer(),
+                ffi.cast("kmipkit_codec_limits_t *", int(_base_ffi.cast("uintptr_t", limits._pointer()))),
+                output,
+            ))
+            try:
+                return _wrap_owned_handle(credentials.SecretBytes,
+                    _base_ffi.cast("kmipkit_secret_bytes_t *", int(ffi.cast("uintptr_t", output[0]))))
+            except BaseException:
+                lib.kmipkit_secret_bytes_release(output[0])
+                raise
+
     def raw(self) -> ttlv.Structure | None:
         """Return an owned copy of the decoded Response Payload, when present.
 

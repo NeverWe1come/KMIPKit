@@ -738,6 +738,8 @@ final class ClientFacadeTlsIntegrationTest {
         byte[] logoutId = "logout-fixture".getBytes(StandardCharsets.US_ASCII);
         byte[] request;
         TtlvStructure retainedQueryRaw;
+        org.kmipkit.credentials.SecretBytes retainedResponseView;
+        ClientBatchItemResult retainedResult;
         try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
                         List.of(), ExtensionRegistryLimits.defaults());
                 ClientConfiguration extensions = ClientConfiguration.create(registry);
@@ -759,6 +761,48 @@ final class ClientFacadeTlsIntegrationTest {
                     ClientBatchItemResult pingResult = response.itemAt(0);
                     ClientBatchItemResult queryResult = response.itemAt(1);
                     ClientBatchItemResult logoutResult = response.itemAt(2)) {
+                // KMIPKIT-0095-FR-001..005; KMIP 2.1 §§8.4–8.6 retains the full ordered batch.
+                try (var hex = queryResult.ttlvHex(CodecLimits.defaults());
+                        var json = queryResult.json(CodecLimits.defaults());
+                        var xml = queryResult.xml(CodecLimits.defaults())) {
+                    boolean identical = Arrays.equals(HexFormat.of().withUpperCase()
+                            .formatHex(pingQueryLogoutResponseMessage()).getBytes(StandardCharsets.US_ASCII),
+                            hex.withBytes(byte[]::clone));
+                    assertTrue(identical, "canonical rendering preserves the complete response");
+                    int binaryLength = pingQueryLogoutResponseMessage().length;
+                    CodecLimits binaryOnly = CodecLimits.create(binaryLength, 64, 100_000);
+                    assertThrows(ResourceLimitException.class, () -> {
+                        try (var unexpectedlyRendered = queryResult.ttlvHex(binaryOnly)) {
+                            // Closing a wrongly accepted owner keeps the Red path deterministic.
+                        }
+                    });
+                    int hexLength = Math.multiplyExact(binaryLength, 2);
+                    try (var exact = queryResult.ttlvHex(CodecLimits.create(hexLength, 64, 100_000))) {
+                        int actualLength = exact.withBytes(bytes -> bytes.length);
+                        assertEquals(hexLength, actualLength);
+                    }
+                    for (var owner : List.of(json, xml)) {
+                        owner.withBytes(bytes -> {
+                            String text = new String(bytes, StandardCharsets.UTF_8);
+                            assertTrue(text.indexOf("ResponseHeader") < text.indexOf("BatchItem"));
+                            String hexadecimalText = text.toUpperCase(java.util.Locale.ROOT);
+                            int pingPosition = hexadecimalText.indexOf(HexFormat.of().withUpperCase().formatHex(pingId));
+                            int queryPosition = hexadecimalText.indexOf(HexFormat.of().withUpperCase().formatHex(queryId));
+                            assertTrue(pingPosition >= 0 && pingPosition < queryPosition);
+                            return null;
+                        });
+                        assertFalse(owner.toString().contains("FixtureVendor"));
+                        byte[][] temporary = new byte[1][];
+                        owner.withBytes(bytes -> { temporary[0] = bytes; return null; });
+                        assertArrayEquals(new byte[temporary[0].length], temporary[0]);
+                    }
+                    for (CodecLimits restricted : List.of(CodecLimits.create(32, 64, 100_000),
+                            CodecLimits.create(16_777_216, 1, 100_000), CodecLimits.create(16_777_216, 64, 1))) {
+                        assertThrows(ResourceLimitException.class, () -> queryResult.ttlvHex(restricted));
+                        assertThrows(ResourceLimitException.class, () -> queryResult.json(restricted));
+                        assertThrows(ResourceLimitException.class, () -> queryResult.xml(restricted));
+                    }
+                }
                 NativeBridgeCoverageTest.assertResponseMappers(pingResult, "pingResponse");
                 NativeBridgeCoverageTest.assertResponseMappers(queryResult, "queryResponse");
                 NativeBridgeCoverageTest.assertResponseMappers(logoutResult, "logoutResponse");
@@ -775,6 +819,8 @@ final class ClientFacadeTlsIntegrationTest {
                 assertEquals(0x2e, logoutResult.operation());
                 assertEquals(Boolean.TRUE, logoutResult.logoutResponse().orElseThrow());
                 retainedQueryRaw = queryResult.raw().orElseThrow();
+                retainedResponseView = queryResult.json(CodecLimits.defaults());
+                retainedResult = response.itemAt(1);
                 try (TtlvStructure responseHeader = queryResult.responseHeaderTtlv();
                         TtlvStructureView headerView = responseHeader.view()) {
                     assertTrue(headerView.itemCount() > 0);
@@ -830,6 +876,21 @@ final class ClientFacadeTlsIntegrationTest {
             listener.close();
         }
 
+        try (retainedResult; var afterClose = retainedResult.xml(CodecLimits.defaults())) {
+            assertEquals(Boolean.TRUE, afterClose.withBytes(bytes -> bytes.length > 0),
+                    "response rendering works after the client and transport have closed");
+        }
+        try (retainedResponseView) {
+            byte[][] exceptionalCopy = new byte[1][];
+            assertThrows(IllegalStateException.class, () -> retainedResponseView.withBytes(bytes -> {
+                exceptionalCopy[0] = bytes;
+                throw new IllegalStateException("callback failed");
+            }));
+            assertArrayEquals(new byte[exceptionalCopy[0].length], exceptionalCopy[0]);
+            assertEquals(Boolean.TRUE, retainedResponseView.withBytes(bytes -> bytes.length > 0),
+                    "rendered owner survives closing the client and source response");
+        }
+        assertThrows(InvalidInputException.class, () -> retainedResponseView.withBytes(bytes -> null));
         assertContains(request, enumeration(0x42005c, 0x3b));
         assertContains(request, enumeration(0x42005c, 0x18));
         assertContains(request, item(0x420093, 8, pingId));

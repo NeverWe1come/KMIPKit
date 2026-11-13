@@ -398,6 +398,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python -B -m unittest tools.api_manifest.tests.test_binding_exports -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & $python -B -m unittest tools.api_manifest.tests.test_0095_response_view_bindings -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python -B -m unittest tools.api_manifest.tests.test_operation_readiness -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $python -B -m unittest tools.api_manifest.tests.test_0053_operation_binding_matrix tools.api_manifest.tests.test_0053_validation_routes tools.api_manifest.tests.test_0053_kmip30_draft_api_catalog tools.api_manifest.tests.test_t102_macro_lot_partition -v

@@ -1,7 +1,9 @@
 # KMIPKIT-0095: Fluent response representations
 
-**Status**: Approved for implementation by the maintainer's direct
-2026-11-11 instruction to implement the complete fluent API plan autonomously.
+**Status**: Approved for implementation.
+
+**Approval provenance**: The maintainer's direct 2026-11-11 instruction approved
+implementation of the complete fluent API plan autonomously, including T009.
 
 ## Purpose
 
@@ -46,3 +48,13 @@ their established ownership rules. This slice does not add request encoding,
 generic message submission, polling, or automatic retries.
 
 Standard Rust trait implementations for the new error value are Rust language behavior, not separate cross-language KMIPKit product capabilities.
+
+## Normative references
+
+- OASIS KMIP Specification v2.1 §8.4, Table 397: Response Message root and ordered members.
+- OASIS KMIP Specification v2.1 §8.5, Table 398: retained Response Header.
+- OASIS KMIP Specification v2.1 §8.6, Table 399: ordered Response Batch Items.
+- OASIS KMIP Specification v2.1 §9.13, Table 418: Message Extension preservation.
+- OASIS KMIP Profiles v2.1 §5.4.1: XML Encoding; §5.5.1: JSON Encoding.
+- Codec-specific normative sources and accepted encoding policies remain owned
+  by KMIPKIT-0054 through KMIPKIT-0057; this delivery calls those existing codecs.

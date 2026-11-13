@@ -8,5 +8,5 @@
 - [x] The renderer has no transport handle or request execution permit.
 - [x] Every new response-view Rust export is declared or has an explicit
   language-level exclusion; generated manifest check passes.
-- [ ] C, Java and Python wrappers preserve their native ownership rules.
+- [x] C, Java and Python wrappers preserve their native ownership rules.
 - [ ] Required pull request CI is green.

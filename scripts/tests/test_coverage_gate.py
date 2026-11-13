@@ -1031,6 +1031,25 @@ trait Example { fn declaration(&self); }
 
         self.assertTrue(is_executable)
 
+    def test_changed_summary_subtracts_only_the_audited_jni_baseline(self) -> None:
+        self.require_gate()
+        jni_source = "bindings/java/native/kmipkit_jni.cpp"
+        python_source = "bindings/python/src/kmipkit/fluent.py"
+
+        unchanged_baseline = GATE._changed_summary_uncovered_excess(
+            {jni_source: 12}, {jni_source}
+        )
+        increased_baseline = GATE._changed_summary_uncovered_excess(
+            {jni_source: 15}, {jni_source}
+        )
+        unrelated_source = GATE._changed_summary_uncovered_excess(
+            {jni_source: 12, python_source: 4}, {jni_source, python_source}
+        )
+
+        self.assertEqual(0, unchanged_baseline)
+        self.assertEqual(3, increased_baseline)
+        self.assertEqual(4, unrelated_source)
+
     def test_changed_coverage_requires_a_reason_for_each_exact_exclusion(self) -> None:
         self.require_gate()
         with tempfile.TemporaryDirectory() as directory:

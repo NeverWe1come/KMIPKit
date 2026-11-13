@@ -1,0 +1,81 @@
+"""KMIPKIT-0095: explicit response renderers return owned zeroizing bytes."""
+from types import SimpleNamespace
+
+import pytest
+from kmipkit import client, credentials, errors, ttlv
+from kmipkit._client_ffi import ffi
+
+
+@pytest.mark.parametrize("name", ["ttlv_hex", "json", "xml"])
+def test_render_is_inspection_only_and_transfers_native_owner(monkeypatch, name):
+    calls = []
+    result = client.BatchItemResult(client.BatchOutcome.COMPLETED, 0, None, None, None)
+    class Item:
+        def _pointer(self):
+            return ffi.cast("kmipkit_client_batch_item_response_t *", 41)
+    object.__setattr__(result, "_native_response_item", Item())
+    def render(item, limits, output):
+        calls.append((item, limits))
+        output[0] = ffi.cast("kmipkit_secret_bytes_t *", 42)
+        return 0
+    monkeypatch.setattr(client, "lib", SimpleNamespace(**{
+        "kmipkit_client_batch_item_response_" + name: render,
+        "kmipkit_secret_bytes_release": lambda pointer: None,
+    }))
+    owner = object()
+    monkeypatch.setattr(client, "_wrap_owned_handle", lambda cls, pointer: owner if cls is credentials.SecretBytes else None)
+    with ttlv.codec_limits_defaults() as limits:
+        assert getattr(result, name)(limits) is owner
+    assert len(calls) == 1
+    assert "41" not in repr(result)
+
+
+@pytest.mark.parametrize("name", ["ttlv_hex", "json", "xml"])
+def test_render_requires_live_response_and_explicit_limits(name):
+    result = client.BatchItemResult(client.BatchOutcome.COMPLETED, 0, None, None, None)
+    with ttlv.codec_limits_defaults() as limits:
+        with pytest.raises(errors.InvalidInputError):
+            getattr(result, name)(limits)
+    with pytest.raises(errors.InvalidInputError):
+        getattr(result, name)(None)
+
+
+@pytest.mark.parametrize("status,kind", [(4, errors.InvalidInputError), (6, errors.ResourceLimitError), (7, errors.KmipKitError)])
+@pytest.mark.parametrize("name", ["ttlv_hex", "json", "xml"])
+def test_render_failures_preserve_binding_categories_and_redact_payload(monkeypatch, name, status, kind):
+    result = client.BatchItemResult(client.BatchOutcome.COMPLETED, 0, None, None, None)
+    class Item:
+        def _pointer(self):
+            return ffi.cast("kmipkit_client_batch_item_response_t *", 41)
+    object.__setattr__(result, "_native_response_item", Item())
+    monkeypatch.setattr(client, "lib", SimpleNamespace(**{
+        "kmipkit_client_batch_item_response_" + name: lambda *args: status,
+    }))
+    with ttlv.codec_limits_defaults() as limits:
+        with pytest.raises(kind) as rejected:
+            getattr(result, name)(limits)
+    assert "fixture-v1" not in str(rejected.value)
+    assert rejected.value.__cause__ is None
+
+
+def test_failed_python_owner_adoption_releases_native_result(monkeypatch):
+    result = client.BatchItemResult(client.BatchOutcome.COMPLETED, 0, None, None, None)
+    class Item:
+        def _pointer(self):
+            return ffi.cast("kmipkit_client_batch_item_response_t *", 41)
+    object.__setattr__(result, "_native_response_item", Item())
+    released = []
+    def render(item, limits, output):
+        output[0] = ffi.cast("kmipkit_secret_bytes_t *", 42)
+        return 0
+    def fail_adoption(*args):
+        raise MemoryError("owner allocation failed")
+    monkeypatch.setattr(client, "lib", SimpleNamespace(
+        kmipkit_client_batch_item_response_json=render,
+        kmipkit_secret_bytes_release=lambda value: released.append(int(ffi.cast("uintptr_t", value))),
+    ))
+    monkeypatch.setattr(client, "_wrap_owned_handle", fail_adoption)
+    with ttlv.codec_limits_defaults() as limits:
+        with pytest.raises(MemoryError, match="owner allocation failed"):
+            result.json(limits)
+    assert released == [42]

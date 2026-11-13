@@ -514,8 +514,16 @@ pub(super) fn render_for_inspection(
                 #[cfg(test)]
                 None,
             )?;
+            // Each binary byte becomes two ASCII hex bytes in the final UTF-8 output.
+            // Reject the final size before its String allocation, even when binary TTLV fits.
+            let rendered_length = owner
+                .as_bytes()
+                .len()
+                .checked_mul(2)
+                .filter(|length| *length <= limits.max_message_bytes())
+                .ok_or(EncodeError::LimitExceeded)?;
             rendered
-                .try_reserve_exact(owner.as_bytes().len().saturating_mul(2))
+                .try_reserve_exact(rendered_length)
                 .map_err(EncodeError::AllocationFailed)?;
             for byte in owner.as_bytes() {
                 rendered.push(char::from(HEX_DIGITS[usize::from(byte >> 4)]));
