@@ -363,6 +363,10 @@ class ControlledTlsPeerTest {
         List<String> linkTypeTargets = enumerationTargetIds(localEnumerationFixtures, "LINK-TYPE");
         assertEquals(15, linkTypeTargets.size(),
                 "The Link Type aggregate must cover every catalogued value.");
+        List<String> paddingMethodTargets = enumerationTargetIds(
+                localEnumerationFixtures, "PADDING-METHOD");
+        assertEquals(11, paddingMethodTargets.size(),
+                "The Padding Method aggregate must cover every catalogued value.");
         List<BitmaskFixture> bitmaskFixtures = genericBitmaskFixtures();
         List<DataTypeFixture> dataTypeFixtures = genericDataTypeFixtures();
         Map<String, JsonNode> dataTypeVectors = dataTypeBoundaryVectors();
