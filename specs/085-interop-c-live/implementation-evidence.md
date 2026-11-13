@@ -526,3 +526,37 @@ CI checkout, and documented commands with the regenerated common pin.
 The current pin and local fixture results do not establish interoperability
 with any deployed KMS; exact-head CI and the remaining route recipes are still
 required.
+
+### Batch Stop partial Get response
+
+The C validator now sends two typed Get items with Batch Error Continuation
+Option `Stop`: the first identifier is missing and the second exists. The
+controlled peer returns only the first response item with
+`OperationFailed/ObjectNotFound`, verifies that the second item was not
+executed, and confirms that peer state did not change. The consumer checks the
+response count, item identifier, operation and status, then exercises metadata
+v1/v2, the typed Get view, raw payload absence, header TTLV, and absent pending
+correlation. This follows OASIS KMIP v2.0 §§9.6, 11.5, and 6.1.19 and KMIP
+v2.1 §§9.6, 11.5, and 6.1.19.
+
+- Red commits `509a1e99a` and `46faba903` made the controlled TLS peer and
+  route model require the partial Stop response; the peer timed out and the
+  route tests failed before implementation. Red commit `0dc631407` also
+  required successful use of each applicable C response accessor and explicit
+  evidence for the Stop option.
+- Green commit `319fa7c0f` implements the C request, validates the partial
+  response and calls the failure-safe typed and generic response accessors.
+  The fixture peer stops its state machine at the first failed item.
+- The 114 C route-matrix contract tests passed, and CTest passed 7/7. The Stop
+  case passed 120 of 132 generated route cells with zero failures over KMIP
+  2.0/2.1, TTLV/JSON/XML, and raw TLS/HTTPS. The remaining 12 cells are
+  inapplicable to this response shape: ten associate response accessors with
+  the request Batch Item (§8.3), and two address a second response item that
+  the server correctly omits. The current matrix still counts these as pending
+  because the shared applicability model does not yet encode these exclusions.
+- The full installed C matrix reports 38,410/66,728 invoked, zero failed, and
+  28,318 pending validator-recipe cells. The completeness gate remains red.
+
+This fixture validates the KMIPKit client against a controlled KMIP peer; it
+does not establish behavior of an external KMS. The shared route-applicability
+gap and all other pending C routes remain open.
