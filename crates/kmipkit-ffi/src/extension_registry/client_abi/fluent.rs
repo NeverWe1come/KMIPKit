@@ -546,25 +546,17 @@ pub unsafe extern "C" fn kmipkit_client_get_by_id_with_options_v1(
     options: *const kmipkit_request_options_v1_t,
     out_response: *mut *mut kmipkit_client_batch_response_t,
 ) -> i32 {
-    ffi_entrypoint(|| {
-        if options.is_null() || !options.is_aligned() {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        }
-        // SAFETY: a non-null options pointer must reference one readable v1 record.
-        let options = unsafe { &*options };
-        let identifier = match super::super::copy_unique_identifier(unique_identifier) {
-            Ok(Some(identifier)) => identifier,
-            Ok(None) => return record_ffi_error(ERROR_INVALID_INPUT),
-            Err(status) => return record_ffi_error(status),
-        };
-        execute_simple_request(
+    // SAFETY: This exported function's pointer contract is the helper's precondition.
+    unsafe {
+        execute_lifecycle_request_with_options(
             client,
-            ClientRequest::Get(GetRequest::new().with_unique_identifier(identifier)),
+            unique_identifier,
             limits,
-            Some(options),
+            options,
             out_response,
+            |identifier| ClientRequest::Get(GetRequest::new().with_unique_identifier(identifier)),
         )
-    })
+    }
 }
 
 /// Executes Destroy with an explicit versioned Unique Identifier.
@@ -608,25 +600,17 @@ pub unsafe extern "C" fn kmipkit_client_destroy_by_id_with_options_v1(
     options: *const kmipkit_request_options_v1_t,
     out_response: *mut *mut kmipkit_client_batch_response_t,
 ) -> i32 {
-    ffi_entrypoint(|| {
-        if options.is_null() || !options.is_aligned() {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        }
-        // SAFETY: a non-null options pointer must reference one readable v1 record.
-        let options = unsafe { &*options };
-        let identifier = match super::super::copy_unique_identifier(unique_identifier) {
-            Ok(Some(identifier)) => identifier,
-            Ok(None) => return record_ffi_error(ERROR_INVALID_INPUT),
-            Err(status) => return record_ffi_error(status),
-        };
-        execute_simple_request(
+    // SAFETY: This exported function's pointer contract is the helper's precondition.
+    unsafe {
+        execute_lifecycle_request_with_options(
             client,
-            ClientRequest::Destroy(DestroyRequest::new(Some(identifier))),
+            unique_identifier,
             limits,
-            Some(options),
+            options,
             out_response,
+            |identifier| ClientRequest::Destroy(DestroyRequest::new(Some(identifier))),
         )
-    })
+    }
 }
 
 fn required_lifecycle_identifier(
@@ -653,6 +637,40 @@ unsafe fn borrow_fluent_request_options<'a>(
     }
     // SAFETY: The caller guarantees the initialized record remains readable for `'a`.
     Ok(unsafe { &*options })
+}
+
+/// Executes an identifier-based lifecycle operation with validated options.
+///
+/// # Safety
+///
+/// Non-null pointer arguments must satisfy the documented readable and writable
+/// memory requirements of the exported operation wrappers.
+unsafe fn execute_lifecycle_request_with_options(
+    client: *mut kmipkit_client_t,
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    limits: *mut kmipkit_codec_limits_t,
+    options: *const kmipkit_request_options_v1_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+    build_request: impl FnOnce(UniqueIdentifier) -> ClientRequest,
+) -> i32 {
+    ffi_entrypoint(|| {
+        // SAFETY: The caller upholds the exported C pointer validity contract.
+        let options = match unsafe { borrow_fluent_request_options(options) } {
+            Ok(options) => options,
+            Err(status) => return record_ffi_error(status),
+        };
+        let identifier = match required_lifecycle_identifier(unique_identifier) {
+            Ok(identifier) => identifier,
+            Err(status) => return record_ffi_error(status),
+        };
+        execute_simple_request(
+            client,
+            build_request(identifier),
+            limits,
+            Some(options),
+            out_response,
+        )
+    })
 }
 
 fn copy_fluent_attribute_set(attributes: *mut kmipkit_attribute_set_t) -> FfiResult<AttributeSet> {
@@ -738,23 +756,17 @@ pub unsafe extern "C" fn kmipkit_client_activate_by_id_with_options_v1(
     options: *const kmipkit_request_options_v1_t,
     out_response: *mut *mut kmipkit_client_batch_response_t,
 ) -> i32 {
-    ffi_entrypoint(|| {
-        let options = match unsafe { borrow_fluent_request_options(options) } {
-            Ok(options) => options,
-            Err(status) => return record_ffi_error(status),
-        };
-        let identifier = match required_lifecycle_identifier(unique_identifier) {
-            Ok(identifier) => identifier,
-            Err(status) => return record_ffi_error(status),
-        };
-        execute_simple_request(
+    // SAFETY: This exported function's pointer contract is the helper's precondition.
+    unsafe {
+        execute_lifecycle_request_with_options(
             client,
-            ClientRequest::Activate(ActivateRequest::new(Some(identifier))),
+            unique_identifier,
             limits,
-            Some(options),
+            options,
             out_response,
+            |identifier| ClientRequest::Activate(ActivateRequest::new(Some(identifier))),
         )
-    })
+    }
 }
 
 /// Executes Archive for one explicit Unique Identifier.
@@ -795,23 +807,17 @@ pub unsafe extern "C" fn kmipkit_client_archive_by_id_with_options_v1(
     options: *const kmipkit_request_options_v1_t,
     out_response: *mut *mut kmipkit_client_batch_response_t,
 ) -> i32 {
-    ffi_entrypoint(|| {
-        let options = match unsafe { borrow_fluent_request_options(options) } {
-            Ok(options) => options,
-            Err(status) => return record_ffi_error(status),
-        };
-        let identifier = match required_lifecycle_identifier(unique_identifier) {
-            Ok(identifier) => identifier,
-            Err(status) => return record_ffi_error(status),
-        };
-        execute_simple_request(
+    // SAFETY: This exported function's pointer contract is the helper's precondition.
+    unsafe {
+        execute_lifecycle_request_with_options(
             client,
-            ClientRequest::Archive(ArchiveRequest::new(Some(identifier))),
+            unique_identifier,
             limits,
-            Some(options),
+            options,
             out_response,
+            |identifier| ClientRequest::Archive(ArchiveRequest::new(Some(identifier))),
         )
-    })
+    }
 }
 
 /// Executes Locate using an owned copy of a typed attribute set.
@@ -909,23 +915,17 @@ pub unsafe extern "C" fn kmipkit_client_recover_by_id_with_options_v1(
     options: *const kmipkit_request_options_v1_t,
     out_response: *mut *mut kmipkit_client_batch_response_t,
 ) -> i32 {
-    ffi_entrypoint(|| {
-        let options = match unsafe { borrow_fluent_request_options(options) } {
-            Ok(options) => options,
-            Err(status) => return record_ffi_error(status),
-        };
-        let identifier = match required_lifecycle_identifier(unique_identifier) {
-            Ok(identifier) => identifier,
-            Err(status) => return record_ffi_error(status),
-        };
-        execute_simple_request(
+    // SAFETY: This exported function's pointer contract is the helper's precondition.
+    unsafe {
+        execute_lifecycle_request_with_options(
             client,
-            ClientRequest::Recover(RecoverRequest::new(Some(identifier))),
+            unique_identifier,
             limits,
-            Some(options),
+            options,
             out_response,
+            |identifier| ClientRequest::Recover(RecoverRequest::new(Some(identifier))),
         )
-    })
+    }
 }
 
 /// Executes Revoke with a typed revocation reason and optional occurrence date.
@@ -1222,19 +1222,9 @@ pub extern "C" fn kmipkit_symmetric_key_builder_execute_v1(
     out_response: *mut *mut kmipkit_client_batch_response_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        let handle = read_handle!(builder, SymmetricKeyBuilder);
-        let HandleValue::SymmetricKeyBuilder(builder) = &handle.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Ok(builder) = builder.lock() else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
-        let Some(builder) = builder.as_ref() else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let request = match builder.build_request() {
-            Ok(request) => ClientRequest::Create(request),
-            Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+        let request = match build_symmetric_key_client_request(builder) {
+            Ok(request) => request,
+            Err(status) => return record_ffi_error(status),
         };
         execute_simple_request(client, request, limits, None, out_response)
     })
@@ -1257,27 +1247,32 @@ pub unsafe extern "C" fn kmipkit_symmetric_key_builder_execute_with_options_v1(
     out_response: *mut *mut kmipkit_client_batch_response_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        if options.is_null() || !options.is_aligned() {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        }
-        // SAFETY: a non-null options pointer must reference one readable v1 record.
-        let options = unsafe { &*options };
-        let handle = read_handle!(builder, SymmetricKeyBuilder);
-        let HandleValue::SymmetricKeyBuilder(builder) = &handle.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
+        // SAFETY: A non-null options pointer must reference one readable v1 record.
+        let options = match unsafe { borrow_fluent_request_options(options) } {
+            Ok(options) => options,
+            Err(status) => return record_ffi_error(status),
         };
-        let Ok(builder) = builder.lock() else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
-        let Some(builder) = builder.as_ref() else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let request = match builder.build_request() {
-            Ok(request) => ClientRequest::Create(request),
-            Err(_) => return record_ffi_error(ERROR_INVALID_INPUT),
+        let request = match build_symmetric_key_client_request(builder) {
+            Ok(request) => request,
+            Err(status) => return record_ffi_error(status),
         };
         execute_simple_request(client, request, limits, Some(options), out_response)
     })
+}
+
+fn build_symmetric_key_client_request(
+    builder: *mut kmipkit_symmetric_key_builder_t,
+) -> FfiResult<ClientRequest> {
+    let handle = reference_handle(builder, Kind::SymmetricKeyBuilder)?;
+    let HandleValue::SymmetricKeyBuilder(builder) = &handle.value else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    let builder = builder.lock().map_err(|_| ERROR_INTERNAL)?;
+    let builder = builder.as_ref().ok_or(ERROR_INVALID_INPUT)?;
+    builder
+        .build_request()
+        .map(ClientRequest::Create)
+        .map_err(|_| ERROR_INVALID_INPUT)
 }
 
 /// Releases the opaque builder.
