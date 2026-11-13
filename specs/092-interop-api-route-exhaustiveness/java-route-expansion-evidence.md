@@ -1,8 +1,9 @@
 # Java local route expansion evidence
 
 This implements local obligations of KMIPKIT-0092-FR-002, FR-003, FR-006,
-and FR-008 against the installed artifact pinned at
-`9a16cc90a12205101d22a38501a5e74c665df4dc`. The complete matrix remains
+and FR-008. The current installed artifact pin is
+`489fafc79ef89db2524eafa7a6c6482f5cf75d97`; earlier route sections retain the
+pin and digest used for their historical runs. The complete matrix remains
 mandatory; unimplemented cases remain pending, never API-unavailable.
 
 ## Tag identity and allocation
@@ -581,3 +582,49 @@ skips. The shared validator accepts 18,652 cells with zero failures and
 52,803 pending, and 71,455 planned. This completes Key Format Type's local
 generic, typed, and response accessor scope; the full Java matrix remains
 incomplete.
+
+## Release pin and shared contract refresh
+
+The Java branch merges shared contract commit `4f157e50e`, which includes the
+release update to `489fafc79ef89db2524eafa7a6c6482f5cf75d97`. Its private
+artifact pin, installer manifest, and checked-in route ledger now identify
+that exact library commit. The installed Linux JNI JAR SHA-256 is
+`830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e`.
+The shared comparison intentionally ignores the artifact digest when comparing
+coverage baselines; the generated build ledger and provenance manifest retain
+the current build's digest.
+
+Red commit `b40856e5c` updates the pin and reproduces three Java failures caused
+by test fixtures still requiring the previous SHA. Green commit `0575bdb50`
+aligns those checks with the new pin. Refactor commit `e1cfd6914` reads the pin
+from `library-pin.json` in one test helper so future pin updates do not require
+duplicated literals.
+
+Verification against this exact artifact:
+
+```sh
+TMPDIR=/home/ramp1953/.cache/kmipkit-interop-tmp \
+  python3 tools/install_artifact.py --repository ../.. \
+  --pin-file library-pin.json --maven-repository build/maven-repository \
+  --manifest build/artifact-manifest.json
+python3 ../../interop/shared/tools/probe_route_artifact.py --language java \
+  --artifact build/maven-repository/org/kmipkit/kmipkit-java/1.0.0/kmipkit-java-1.0.0-linux-glibc-x86_64.jar \
+  --provenance build/artifact-manifest.json
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+```
+
+Installation and the public-route artifact probe pass for commit
+`489fafc79ef89db2524eafa7a6c6482f5cf75d97`. The full Java consumer suite
+passes 52 tests with zero failures, errors, or skips. The shared validator
+accepts 18,652 invoked cells with zero failures and
+`selected_scope_complete=true`; 52,803 of the 71,455 planned cells remain
+pending. This refresh does not establish interoperability with a deployed KMS
+or complete the Java matrix.

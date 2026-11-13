@@ -4,7 +4,8 @@ This project is an external Java 17 consumer of the installed KMIPKit JNI JAR.
 It does not compile the library sources from this checkout. The artifact pin is
 in `library-pin.json`; the installer extracts that exact `release/1.0.0`
 commit, builds the platform JAR in an isolated source tree, installs it into a
-local Maven repository, and writes a SHA-256 provenance manifest.
+local Maven repository, and writes a SHA-256 provenance manifest. The current
+pin is `489fafc79ef89db2524eafa7a6c6482f5cf75d97`.
 
 Run commands from this directory. `plan` is offline, `preflight` checks local
 files and provenance without DNS or sockets, and `run` executes enabled test
