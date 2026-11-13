@@ -55,12 +55,11 @@ def pending_reason(cell: dict) -> str:
 
 
 def should_execute_attribute_case(cell: dict, case: dict, target: dict) -> bool:
-    """Use local typed attribute routes when no protocol exchange is required."""
+    """Exercise local typed attribute routes independently of peer scenarios."""
     return (
         cell['transport'] is None
         and target['kind'] in ATTRIBUTE_ROUTE_TARGET_KINDS
         and case['category'] in ATTRIBUTE_ROUTE_CASE_CATEGORIES
-        and not case.get('requires', {}).get('protocol_scenario')
     )
 
 
