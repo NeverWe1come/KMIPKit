@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ArtifactProvenanceTest {
-    private static final String COMMIT = "9692057c9ade474fb0c4e0b7130539da368eb794";
+    private static final String COMMIT = "9a16cc90a12205101d22a38501a5e74c665df4dc";
 
     @Test
     void libraryPinMatchesTheExactSharedReleaseArtifactCommit() throws Exception {

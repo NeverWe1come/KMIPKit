@@ -62,8 +62,8 @@ Asynchronous request types that only build payloads and operations with no
 public client request route carry separate API limitation reasons. The
 validator also constructs and decodes generic TTLV values locally. It does not
 send arbitrary generic TTLV requests, and the Java package has no distinct
-high-level API route. The KMIP 2.0 live route remains disabled while
-protocol-version preservation is outside the pinned release artifact.
+high-level API route. The exact pinned release artifact preserves the configured
+protocol version; implemented typed routes can run with KMIP 2.0 and 2.1.
 
 CI builds the pinned JNI JAR and runs the validator against a local TLS 1.3
 mTLS peer with a controlled KMIP response. This verifies the external package

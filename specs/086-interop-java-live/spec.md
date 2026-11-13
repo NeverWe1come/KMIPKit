@@ -3,7 +3,7 @@
 **Branch**: `feature/KMIPKIT-0086-interop-java-live`  
 **Status**: Approved for implementation by explicit authorization of the interoperability plan  
 **Identifier**: KMIPKIT-0086  
-**Base**: release commit `e437b95e48c43493dfca3adccfb1ceb67addda7b`
+**Base**: `release/1.0.0` at `9a16cc90a12205101d22a38501a5e74c665df4dc`
 
 ## Scope
 
@@ -45,8 +45,7 @@ errors are reduced to numeric codes and sanitized reasons. If the public API
 does not expose a route, the report states the limitation and keeps the
 coverage pending.
 
-The artifact at the base commit does not currently preserve the configured
-protocol version when creating a Java client. Live KMIP 2.0 is therefore
-blocked until the corresponding FFI fix is included in `release/1.0.0`. After
-that human-approved integration, update the exact artifact pin and run both
-protocol versions.
+The pinned artifact is built from the exact `release/1.0.0` commit also
+recorded by the shared route manifest. That release commit preserves the
+configured KMIP protocol version for Java clients, so the validator exercises
+both KMIP 2.0 and KMIP 2.1 without a version-specific client workaround.
