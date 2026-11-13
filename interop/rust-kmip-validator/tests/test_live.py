@@ -150,13 +150,13 @@ def operation_failed_batch(tree):
         statuses[failure_index] = 1
     elif continuation == 2:
         statuses = [0] * len(request_items)
-        statuses[failure_index:] = [3] * (len(request_items) - failure_index)
         statuses[failure_index] = 1
     elif continuation == 3:
         statuses = [3] * len(request_items)
         statuses[failure_index] = 1
     results = []
-    for index, request_item in enumerate(request_items):
+    response_items = request_items[:failure_index + 1] if continuation == 2 else request_items
+    for index, request_item in enumerate(response_items):
         operation = find(request_item, 0x42005c)
         fields = [ttlv(0x42005c, 5, operation)]
         batch_id = find(request_item, 0x420093)
@@ -679,7 +679,7 @@ class LiveContract(unittest.TestCase):
         catalog_bytes = (ROOT / "interop/shared/catalog/kmipkit-1.0-test-catalog.json").read_bytes()
         manifest_bytes = (ROOT / "interop/shared/coverage/route-capabilities.json").read_bytes()
         for case_id, expected_codes in (
-            ("test-batch-stop-on-first-failure", [1, 3]),
+            ("test-batch-stop-on-first-failure", [1]),
             ("test-batch-continue-after-failure", [1, 0]),
         ):
             with self.subTest(case_id=case_id):
