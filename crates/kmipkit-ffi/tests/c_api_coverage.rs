@@ -1031,6 +1031,8 @@ unsafe extern "C" {
 
 #[test]
 fn existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process() {
+    kmipkit_ffi::__coverage_consumer_test_link_anchor();
+
     let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../tests/fixtures/extensions/cases.json")
         .canonicalize()

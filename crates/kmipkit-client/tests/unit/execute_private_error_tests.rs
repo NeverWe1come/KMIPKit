@@ -14,8 +14,9 @@ use kmipkit_ttlv::{Item, RawTag, Value};
 
 use super::{
     BatchIdentity, BatchValidationError, OutcomeValidationError, ResponseAssociationError,
-    ResponseLimitExceeded, ResponseValidationFailure, associate_batch_items, copy_value,
-    decode_response_message, encode_message_for_test, private_wire_writer,
+    ResponseLimitExceeded, ResponseValidationFailure, associate_batch_items,
+    associate_batch_items_allow_missing, copy_value, decode_response_message,
+    encode_message_for_test, private_wire_writer,
 };
 
 #[test]
@@ -124,6 +125,83 @@ fn response_association_rejects_an_unmatched_batch_item_identifier() {
     assert_eq!(
         associate_batch_items(&requests, &responses),
         Err(ResponseAssociationError::UnknownId)
+    );
+}
+
+#[test]
+fn partial_stop_or_undo_responses_keep_request_id_associations() {
+    let requests = [
+        BatchIdentity {
+            operation: 0x0000_001E,
+            unique_batch_item_id: Some(b"request-0".to_vec()),
+            response_context: None,
+        },
+        BatchIdentity {
+            operation: 0x0000_001E,
+            unique_batch_item_id: Some(b"request-1".to_vec()),
+            response_context: None,
+        },
+    ];
+    let responses = [BatchIdentity {
+        operation: 0x0000_001E,
+        unique_batch_item_id: Some(b"request-0".to_vec()),
+        response_context: None,
+    }];
+
+    assert_eq!(
+        associate_batch_items_allow_missing(&requests, &responses, true),
+        Ok(vec![Some(0), None])
+    );
+    assert_eq!(
+        associate_batch_items_allow_missing(&requests, &responses, false),
+        Err(ResponseAssociationError::ItemCountMismatch)
+    );
+
+    let later_response = [BatchIdentity {
+        operation: 0x0000_001E,
+        unique_batch_item_id: Some(b"request-1".to_vec()),
+        response_context: None,
+    }];
+    assert_eq!(
+        associate_batch_items_allow_missing(&requests, &later_response, true),
+        Ok(vec![None, Some(0)])
+    );
+
+    let unknown_response = [BatchIdentity {
+        operation: 0x0000_001E,
+        unique_batch_item_id: Some(b"unknown-id".to_vec()),
+        response_context: None,
+    }];
+    assert_eq!(
+        associate_batch_items_allow_missing(&requests, &unknown_response, true),
+        Err(ResponseAssociationError::UnknownId)
+    );
+
+    let wrong_operation = [BatchIdentity {
+        operation: 0x0000_0020,
+        unique_batch_item_id: Some(b"request-0".to_vec()),
+        response_context: None,
+    }];
+    assert_eq!(
+        associate_batch_items_allow_missing(&requests, &wrong_operation, true),
+        Err(ResponseAssociationError::ItemOperationMismatch)
+    );
+
+    let duplicate_response = [
+        BatchIdentity {
+            operation: 0x0000_001E,
+            unique_batch_item_id: Some(b"request-0".to_vec()),
+            response_context: None,
+        },
+        BatchIdentity {
+            operation: 0x0000_001E,
+            unique_batch_item_id: Some(b"request-0".to_vec()),
+            response_context: None,
+        },
+    ];
+    assert_eq!(
+        associate_batch_items_allow_missing(&requests, &duplicate_response, true),
+        Err(ResponseAssociationError::DuplicateId)
     );
 }
 
