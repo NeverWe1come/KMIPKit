@@ -1,9 +1,9 @@
 use kmipkit_protocol::attribute::typed;
 use kmipkit_protocol::{
-    AdjustmentType, Attribute, AttributeDefinition, AttributeReference, CheckRequest,
+    AdjustmentType, Attribute, AttributeDefinition, AttributeReference, AttributeSet, CheckRequest,
     CreateRequest, CurrentAttribute, DiscoverVersionsRequest, GetConstraintsRequest,
-    GetUsageAllocationRequest, NewAttribute, ObtainLeaseRequest, PingRequest, ProtocolVersion,
-    QueryFunction, QueryRequest, UniqueIdentifier,
+    GetUsageAllocationRequest, NewAttribute, ObjectType, ObtainLeaseRequest, PingRequest,
+    ProtocolVersion, QueryFunction, QueryRequest, UniqueIdentifier,
 };
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestOptions;
@@ -1546,4 +1546,203 @@ fn attribute_mutation_builders_execute_the_matching_typed_route_once() {
         crate::execute::ClientOperation::AdjustAttribute
     );
     assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+// KMIPKIT-0093-FR-004 through FR-007, FR-011; OASIS KMIP v2.1
+// §6.1.8, Tables 186–187: retain actual Create fields and reuse typed execution.
+#[test]
+fn generic_create_builder_preserves_explicit_fields() {
+    let mut client = failed_request_client();
+    let attributes = AttributeSet::try_new([item(
+        typed::ObjectGroup::TAG,
+        Value::text_string("explicit-group".to_owned()),
+    )])
+    .unwrap();
+    let masks = test_structure([item(0x0042_0159, Value::integer(3))]);
+    let builder = client
+        .request()
+        .create()
+        .object_type(ObjectType::from_raw(2))
+        .attributes(attributes)
+        .protection_storage_masks(masks);
+    assert_eq!(builder.validate(), Ok(()));
+    let request = builder.build_request().unwrap();
+    assert_eq!(request.object_type(), ObjectType::from_raw(2));
+    assert_eq!(request.attributes().len(), 1);
+    let attribute = &request.attributes().as_items()[0];
+    assert_eq!(attribute.tag().raw(), typed::ObjectGroup::TAG);
+    assert!(attribute.with_value(|value| matches!(value,
+        ValueView::TextString(value) if value == "explicit-group")));
+    let masks = request.protection_storage_masks().unwrap().view();
+    assert_eq!(masks.children().len(), 1);
+    assert_eq!(masks.children()[0].tag().raw(), 0x0042_0159);
+    assert_eq!(read_integer(&masks.children()[0]), Some(3));
+}
+
+#[test]
+fn generic_create_builder_requires_object_type_before_transport() {
+    let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let builder = client.request().create();
+    assert_eq!(
+        builder.validate(),
+        Err(FluentBuildError::MissingCreateObjectType)
+    );
+    assert_eq!(
+        builder.build_request().err(),
+        Some(FluentBuildError::MissingCreateObjectType)
+    );
+    let error = builder.execute(&CodecLimits::defaults()).unwrap_err();
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert_eq!(transport.borrow().exchange_count(), 0);
+    assert_eq!(
+        FluentBuildError::MissingCreateObjectType.to_string(),
+        "Create requires Object Type"
+    );
+}
+
+#[test]
+fn generic_create_builder_defaults_only_to_empty_attributes() {
+    let mut client = failed_request_client();
+    let builder = client
+        .request()
+        .create()
+        .object_type(ObjectType::from_raw(0xf000_0002));
+    let request = builder.build_request().unwrap();
+    assert_eq!(request.object_type().raw(), 0xf000_0002);
+    assert!(request.attributes().is_empty());
+    assert!(request.protection_storage_masks().is_none());
+    assert_eq!(builder.validate(), Ok(()));
+    assert_eq!(builder.to_batch_item().unwrap().operation(), 1);
+}
+
+#[test]
+fn generic_create_builder_preserves_unknown_attribute_order_and_values() {
+    let mut client = failed_request_client();
+    let attributes = AttributeSet::try_new([
+        item(0x0054_0001, Value::enumeration(0xf000_0001)),
+        item(
+            typed::ObjectGroup::TAG,
+            Value::text_string("group".to_owned()),
+        ),
+        item(0x0054_0002, Value::integer(17)),
+    ])
+    .unwrap();
+    let request = client
+        .request()
+        .create()
+        .object_type(ObjectType::from_raw(2))
+        .attributes(attributes)
+        .build_request()
+        .unwrap();
+    let attributes = request.attributes().as_items();
+    assert_eq!(
+        attributes
+            .iter()
+            .map(|attribute| attribute.tag().raw())
+            .collect::<Vec<_>>(),
+        [0x0054_0001, typed::ObjectGroup::TAG, 0x0054_0002]
+    );
+    assert_eq!(read_enumeration(&attributes[0]), Some(0xf000_0001));
+    assert_eq!(read_integer(&attributes[2]), Some(17));
+}
+
+#[test]
+fn generic_create_builder_rejects_invalid_cardinality_with_redacted_not_sent_error() {
+    let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let attributes = AttributeSet::try_new([
+        item(
+            typed::ContactInformation::TAG,
+            Value::text_string("PRIVATE_SENTINEL".to_owned()),
+        ),
+        item(
+            typed::ContactInformation::TAG,
+            Value::text_string("PRIVATE_SENTINEL".to_owned()),
+        ),
+    ])
+    .unwrap();
+    let builder = client
+        .request()
+        .create()
+        .object_type(ObjectType::from_raw(2))
+        .attributes(attributes);
+    assert_eq!(builder.validate(), Err(FluentBuildError::InvalidRequest));
+    assert_eq!(
+        builder.build_request().err(),
+        Some(FluentBuildError::InvalidRequest)
+    );
+    let error = builder.execute(&CodecLimits::defaults()).unwrap_err();
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert!(!format!("{error:?} {error}").contains("PRIVATE_SENTINEL"));
+    assert_eq!(transport.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn generic_create_builder_executes_one_typed_exchange_with_explicit_options() {
+    use crate::asynchronous_execution_test_support::client_for_with_options_observer;
+    use std::cell::RefCell;
+    use std::rc::Rc;
+    let options = RequestOptions::default();
+    let observed = Rc::new(RefCell::new(Vec::new()));
+    let (mut client, transport, captured) = client_for_with_options_observer(
+        ExchangeScript::Success {
+            response: response_bytes(1, 0, None),
+            request_write_chunks: Vec::new(),
+        },
+        Rc::clone(&observed),
+    );
+    let response = client
+        .request()
+        .create()
+        .object_type(ObjectType::from_raw(2))
+        .with_options(options)
+        .with_asynchronous_indicator(1)
+        .execute(&CodecLimits::defaults())
+        .unwrap();
+    assert_eq!(response.outcome().operation(), ClientOperation::Create);
+    assert_eq!(response.outcome().result().status().raw(), 0);
+    assert_eq!(transport.borrow().exchange_count(), 1);
+    assert_eq!(&*observed.borrow(), &[options]);
+    let captured = captured.borrow();
+    let root = kmipkit_ttlv::codec::decode_with_limits(
+        captured.as_ref().unwrap(),
+        &CodecLimits::defaults(),
+    )
+    .unwrap();
+    let message = kmipkit_protocol::RequestMessage::try_from_ttlv(
+        root.as_structure().unwrap().try_clone().unwrap(),
+    )
+    .unwrap();
+    assert_eq!(message.header().protocol_version(), ProtocolVersion::V2_1);
+    assert_eq!(message.header().asynchronous_indicator(), Some(1));
+    assert_eq!(message.batch_items().len(), 1);
+}
+
+#[test]
+fn generic_create_builder_preserves_pending_without_follow_up() {
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response: response_bytes(1, 2, Some(b"create-correlation")),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .request()
+        .create()
+        .object_type(ObjectType::from_raw(2))
+        .with_asynchronous_indicator(1)
+        .execute(&CodecLimits::defaults())
+        .unwrap();
+    let ClientBatchOutcome::Pending(pending) = response.outcome() else {
+        panic!("expected Pending")
+    };
+    assert_eq!(pending.operation(), ClientOperation::Create);
+    assert_eq!(
+        pending.asynchronous_correlation_value(),
+        b"create-correlation"
+    );
+    assert_eq!(transport.borrow().exchange_count(), 1);
 }
