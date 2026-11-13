@@ -145,6 +145,10 @@ that run, cross-language parity, and deployed-server interoperability.
 When evaluating a pull-request workflow, record the exact test-merge commit and
 its base parent alongside the catalog digest. A run created before the PR base
 changes does not verify the new merge tree; rerun after the base update.
+The PR workflow for head `db0c35b12` was created at 16:02Z; the PR merge
+reference subsequently reported commit `4312a6cf` with parent `66e1e73`, while
+the PR base was `4eb22e220c4e016f1cb218879a7e952588bbe6fc`. That run also needs
+to be checked for a fresh checkout before treating it as current-base evidence.
 
 The historical matrix covered KMIP 2.0 and 2.1, TTLV/JSON/XML, raw TLS/HTTPS
 with TLS 1.3 mutual authentication. Reports retain normalized tree and
