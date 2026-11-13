@@ -557,10 +557,22 @@ class LiveContract(unittest.TestCase):
             (ROOT / "interop/shared/schemas/route-execution-evidence.schema.json").read_text()
         )
         jsonschema.Draft202012Validator(evidence_schema).validate(report)
-        self.assertEqual(3, len(report["events"]))
+        self.assertEqual(6, len(report["events"]))
         self.assertEqual({"construct", "send", "decode"}, {event["action"] for event in report["events"]})
+        self.assertEqual(
+            {
+                "rust.typed-protocol.client_batch_item.new",
+                "rust.typed-protocol.query_request.new",
+            },
+            {event["route_id"] for event in report["events"]},
+        )
+        for route_id in {event["route_id"] for event in report["events"]}:
+            self.assertEqual(
+                {"construct", "send", "decode"},
+                {event["action"] for event in report["events"] if event["route_id"] == route_id},
+            )
         self.assertTrue(all(event["status"] == "passed" for event in report["events"]))
-        self.assertEqual([0x18, 0x18, 0x18], peer.operations)
+        self.assertEqual([0x18] * 6, peer.operations)
 
     def test_network_request_route_matrix_calls_the_named_constructor_and_executor(self):
         """KMIP 2.1 §6.1.37 Query constructor and typed-batch execution route."""
