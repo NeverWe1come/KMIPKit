@@ -89,6 +89,40 @@ fn response_bytes(operation: u32, status: u32, correlation: Option<&[u8]>) -> Ve
         .expect("fixture response is valid TTLV")
 }
 
+fn attribute_success_response_bytes(operation: u32) -> Vec<u8> {
+    let mut payload = Structure::new();
+    payload
+        .try_push(test_item(
+            0x0042_0094,
+            Value::text_string("key-42".to_owned()),
+        ))
+        .expect("attribute operation response identifier fits");
+    let mut message = vec![test_item(
+        0x0042_007A,
+        Value::structure(test_structure([
+            test_item(
+                0x0042_0069,
+                Value::structure(test_structure([
+                    test_item(0x0042_006A, Value::integer(2)),
+                    test_item(0x0042_006B, Value::integer(1)),
+                ])),
+            ),
+            test_item(0x0042_0092, Value::date_time(1)),
+            test_item(0x0042_000D, Value::integer(1)),
+        ])),
+    )];
+    message.push(test_item(
+        0x0042_000F,
+        Value::structure(test_structure([
+            test_item(0x0042_005C, Value::enumeration(operation)),
+            test_item(0x0042_007F, Value::enumeration(0)),
+            test_item(0x0042_007C, Value::structure(payload)),
+        ])),
+    ));
+    encode_message_for_test(test_structure(message), &CodecLimits::defaults())
+        .expect("attribute operation fixture response is valid TTLV")
+}
+
 #[test]
 fn symmetric_key_builder_requires_algorithm_length_and_usage_mask() {
     let mut client = failed_request_client();
@@ -840,4 +874,65 @@ fn invalid_attribute_mutation_is_rejected_without_sending() {
         Some(kmipkit_transport::RequestDeliveryState::NotSent)
     );
     assert_eq!(fake.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn attribute_mutation_builders_execute_the_matching_typed_route_once() {
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: attribute_success_response_bytes(13),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .request()
+        .add_attribute()
+        .unique_identifier("key-42")
+        .new_attribute(NewAttribute::from_typed(
+            Attribute::<typed::Comment>::new("added".to_owned())
+                .expect("Comment is a catalogued Text String"),
+        ))
+        .execute(&CodecLimits::defaults())
+        .expect("Add Attribute uses its existing typed client route");
+    assert_eq!(
+        response.outcome().operation(),
+        crate::execute::ClientOperation::AddAttribute
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: attribute_success_response_bytes(14),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .request()
+        .modify_attribute()
+        .new_attribute(NewAttribute::from_typed(
+            Attribute::<typed::Comment>::new("modified".to_owned())
+                .expect("Comment is a catalogued Text String"),
+        ))
+        .execute(&CodecLimits::defaults())
+        .expect("Modify Attribute uses its existing typed client route");
+    assert_eq!(
+        response.outcome().operation(),
+        crate::execute::ClientOperation::ModifyAttribute
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: attribute_success_response_bytes(49),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .request()
+        .set_attribute()
+        .new_attribute(NewAttribute::from_typed(
+            Attribute::<typed::Comment>::new("set".to_owned())
+                .expect("Comment is a catalogued Text String"),
+        ))
+        .execute(&CodecLimits::defaults())
+        .expect("Set Attribute uses its existing typed client route");
+    assert_eq!(
+        response.outcome().operation(),
+        crate::execute::ClientOperation::SetAttribute
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
 }
