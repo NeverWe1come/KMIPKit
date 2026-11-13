@@ -64,3 +64,35 @@ contributing to this focused report. The enhanced resolver regression fails
 before that addition: 4 tests, 3 assertion failures (two layout cases omit the
 parity object; the missing-parity negative case incorrectly succeeds). Output:
 `target/ci-110-parity-objects-red.log`.
+
+### Green: coverage object completeness
+
+The resolver now requires the parity executable as a fifth object. The four
+pre-existing export inputs remain mandatory. The full Python workflow/resolver
+command passes 99 tests (output: `target/ci-110-python-green-parity.log`).
+
+Real collector command (exit 0):
+
+```sh
+CARGO_BUILD_JOBS=2 TMPDIR="$PWD/target/tmp-kmipkit-0110" CARGO_TARGET_DIR="$PWD/target/ci-110-cov" RUSTUP_TOOLCHAIN=1.100.0 bash scripts/collect_ffi_coverage.sh target/ci-110-ffi-report
+```
+
+`coverage-objects.bin` contains all five paths. Normalized report:
+`target/ci-110-ffi-report/coverage.json`, 16,830/18,181 lines (92.57%). Output:
+`target/ci-110-collector-green-parity.log`. The LLVM multi-object export warns
+that 277 functions have mismatched data; this warning remains visible and is
+not suppressed. The earlier four-object export warned about 203 functions.
+This repair does not claim to resolve that LLVM warning.
+
+Independent command (exit 0):
+
+```sh
+TMPDIR="$PWD/target/tmp-kmipkit-0110" CARGO_TARGET_DIR=target/ci-110-cov RUSTUP_TOOLCHAIN=1.100.0 cargo llvm-cov -p kmipkit-ffi --all-features --locked --json --output-path target/ci-110-coverage.json
+```
+
+480 FFI unit tests, 56 C-API tests, and 1 parity test pass. Its standard LLVM
+report covers 16,904/18,181 lines (92.98%); this is distinct from the focused
+multi-object collector above. Output: `target/ci-110-coverage-green.log`.
+
+`CARGO_TARGET_DIR=target/ci-110-layout TMPDIR="$PWD/target/tmp-kmipkit-0110" cargo +1.100.0 clippy --workspace --all-targets --all-features --locked -- -D warnings`
+passes (exit 0), output: `target/ci-110-clippy-green.log`.

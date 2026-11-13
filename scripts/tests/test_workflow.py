@@ -1119,6 +1119,7 @@ class WorkflowContractTests(unittest.TestCase):
         )
         self.assertIn('"kmipkit_ffi": "unit"', resolver)
         self.assertIn('"c_api_coverage": "consumer"', resolver)
+        self.assertIn('"operation_parity_0053": "parity"', resolver)
         self.assertIn('"libkmipkit_ffi.so": "dso"', resolver)
         self.assertIn('"libkmipkit_ffi.a": "staticlib"', resolver)
         self.assertIn('scripts/ffi_coverage_objects.py', collector)
