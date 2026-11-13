@@ -2452,7 +2452,11 @@ static bool batch_crypto_response_matches(kmipkit_client_batch_item_response_t *
 }
 
 static kmip_execution_outcome_t execute_registered_crypto_batch(kmip_live_client_t *client) {
-    static const uint32_t operations[] = {3, 18, 31, 32, 19, 20};
+    static const uint32_t operations[] = {
+        KMIPKIT_ENUMERATION_OPERATION_REGISTER, KMIPKIT_ENUMERATION_OPERATION_ACTIVATE,
+        KMIPKIT_ENUMERATION_OPERATION_ENCRYPT, KMIPKIT_ENUMERATION_OPERATION_DECRYPT,
+        KMIPKIT_ENUMERATION_OPERATION_REVOKE, KMIPKIT_ENUMERATION_OPERATION_DESTROY
+    };
     static const char *item_ids[] = {
         "crypto-register", "crypto-activate", "crypto-encrypt", "crypto-decrypt",
         "crypto-revoke", "crypto-destroy"

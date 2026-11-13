@@ -1538,7 +1538,10 @@ class RouteMatrixTests(unittest.TestCase):
         return ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest
 
     def test_batch_register_crypto_checks_every_typed_route_and_cleans_the_object(self):
-        """OASIS KMIP 2.0/2.1 §§6.1.1, 6.1.11, 6.1.15, 6.1.17, 8.2–8.4, 8.6."""
+        """OASIS KMIP 2.0 §§6.1.39–6.1.40; KMIP 2.1 §§6.1.43–6.1.44.
+
+        Both versions §§6.1.1, 6.1.11, 6.1.15, 6.1.17, 8.2–8.4, and 8.6.
+        """
         from coverage_matrix import iter_cells
         from route_peer import execute_network_cells
         from validate_route_evidence import _key
