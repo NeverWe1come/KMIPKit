@@ -780,6 +780,21 @@ static bool get_usage_allocation_response_matches_identifier(
         same_text_identifier(created_identifier, &allocation_identifier);
 }
 
+static int32_t create_get_usage_allocation_variant_item(
+    bool include_identifier,
+    kmipkit_client_batch_item_t **out_item) {
+    static const uint8_t fixture_identifier[] = "fixture-key-1";
+    const kmipkit_unique_identifier_v1_t identifier = {
+        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+        .abi_version = 1,
+        .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
+        .text_data = fixture_identifier,
+        .text_length = sizeof(fixture_identifier) - 1
+    };
+    return kmipkit_client_batch_item_get_usage_allocation(
+        include_identifier ? &identifier : NULL, 1, out_item);
+}
+
 static bool query_response_ttlv_matches_field_count(
     kmipkit_client_batch_item_response_t *response_item,
     uint64_t expected_field_count,
@@ -2670,18 +2685,10 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                 status = kmipkit_client_batch_item_get_constraints(&item);
             } else if (get_usage_allocation_workflow) {
                 if (get_usage_allocation_uid_variant) {
-                    static const uint8_t fixture_identifier[] = "fixture-key-1";
-                    const kmipkit_unique_identifier_v1_t identifier = {
-                        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
-                        .abi_version = 1,
-                        .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
-                        .text_data = fixture_identifier,
-                        .text_length = sizeof(fixture_identifier) - 1
-                    };
                     request_construction_step =
                         "Get Usage Allocation optional Unique Identifier variant";
-                    status = kmipkit_client_batch_item_get_usage_allocation(
-                        usage_allocation_identifier_explicit ? &identifier : NULL, 1, &item);
+                    status = create_get_usage_allocation_variant_item(
+                        usage_allocation_identifier_explicit, &item);
                 } else {
                     status = kmipkit_client_batch_item_get_usage_allocation(
                         &placeholder, 1, &item);
