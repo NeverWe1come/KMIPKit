@@ -104,6 +104,9 @@ int kmipkit_c_kmip30_builders_probe(void) {
             ASSERT(kmipkit_kmip30_operation_builder_set_cryptographic_parameters(builder, parameters) == KMIPKIT_ERROR_INVALID_INPUT);
         }
         ASSERT(kmipkit_kmip30_operation_builder_set_asynchronous_indicator(builder, 0) == KMIPKIT_ERROR_INVALID_INPUT);
+        CHECK(kmipkit_kmip30_operation_builder_set_asynchronous_indicator(builder, UINT32_C(0x80000000)));
+        CHECK(kmipkit_kmip30_operation_builder_set_asynchronous_indicator(builder, UINT32_C(0x8fffffff)));
+        ASSERT(kmipkit_kmip30_operation_builder_set_asynchronous_indicator(builder, UINT32_C(0x90000000)) == KMIPKIT_ERROR_INVALID_INPUT);
         CHECK(kmipkit_kmip30_operation_builder_set_asynchronous_indicator(builder, 2));
         CHECK(kmipkit_kmip30_operation_builder_validate(builder));
         CHECK(kmipkit_kmip30_operation_builder_build_batch_item(builder, &item));
