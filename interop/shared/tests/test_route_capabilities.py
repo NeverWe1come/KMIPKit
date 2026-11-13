@@ -26,6 +26,7 @@ class RouteCapabilitiesTests(unittest.TestCase):
         self.data = json.loads((SHARED / 'coverage/route-capabilities.json').read_text())
 
     def test_manifest_and_generator_use_the_same_exact_candidate_commit(self):
+        self.assertEqual(CANDIDATE_COMMIT, self.module.PINNED_SOURCE_COMMIT)
         self.assertEqual(CANDIDATE_COMMIT, self.data['library_commit'])
         self.assertEqual(CANDIDATE_COMMIT, self.module.build_manifest(ROOT)['library_commit'])
 
