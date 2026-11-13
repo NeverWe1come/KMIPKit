@@ -1,7 +1,7 @@
 # Rust interoperability consumer
 
 The independent Rust 1.94 workspace consumes installed `.crate` packages built
-from source commit `8281fef2e9ca211fde1e1d8e21525a672287eead`, targeting KMIP
+from release commit `9a16cc90a12205101d22a38501a5e74c665df4dc`, targeting KMIP
 2.0 and 2.1. No deployed vendor KMS or vendor compatibility claim is included.
 
 From the repository root:
@@ -9,6 +9,7 @@ From the repository root:
 ```sh
 python3 interop/rust-kmip-validator/tools/install_artifact.py
 python3 interop/rust-kmip-validator/tools/verify_artifact.py
+eval "$(python3 interop/rust-kmip-validator/tools/configure_artifact_env.py)"
 cargo +1.94 build --locked --manifest-path interop/rust-kmip-validator/Cargo.toml
 ```
 
@@ -21,9 +22,9 @@ inventory and every installed byte. Reports embed the consumed artifact hash.
 Python 3.12 or newer is needed for packaging and build-time verification.
 
 ```sh
-interop/rust-kmip-validator/target/debug/rust-kmip-validator plan --capabilities /path/profile.json
-interop/rust-kmip-validator/target/debug/rust-kmip-validator preflight --connection /path/connection.json
-interop/rust-kmip-validator/target/debug/rust-kmip-validator run --connection /path/connection.json --capabilities /path/profile.json --output /path/results.json --markdown /path/results.md
+"$KMIPKIT_VALIDATOR_BIN" plan --capabilities /path/profile.json
+"$KMIPKIT_VALIDATOR_BIN" preflight --connection /path/connection.json
+"$KMIPKIT_VALIDATOR_BIN" run --connection /path/connection.json --capabilities /path/profile.json --output /path/results.json --markdown /path/results.md
 ```
 
 Planning and preflight are offline. Relative TLS file paths resolve from the
@@ -171,16 +172,16 @@ It writes `rust-local-route-evidence.json` and `matrix-summary.json` under
 `interop/rust-kmip-validator/results/routes/`. The gate validates local-model
 evidence and controlled response-accessor evidence as separate scopes because
 they use different fixture identities. Its required counts always come from the
-canonical full matrix, even when a test passes a smaller matrix input. The
-current full run invokes 48,792 local cells and 287 response-accessor cells
-with no failures; 26,376 network route cells remain pending, so the CI
-completeness gate exits nonzero while the PR is WIP. The Request Message and
-Response Message parser routes execute every inventoried field target for KMIP
-2.0 and 2.1 using complete structurally valid messages. A passing subset is
-never a full-matrix claim. The separate live catalog fixture suite covers both
-API levels, both protocol versions and all six encoding/transport combinations,
-comparing normalized request and response trees; these are controlled fixtures
-and do not establish deployed vendor interoperability.
+canonical full matrix, even when a test passes a smaller matrix input. Build
+directories are keyed by the verified package commit, so consumer, coverage,
+and local test-server builds cannot silently reuse Cargo artifacts from a
+different source revision. Use the environment command above to select the
+matching consumer and peer binaries. The Request Message and Response Message
+parser routes execute every inventoried field target for KMIP 2.0 and 2.1 using
+complete structurally valid messages. The separate live catalog fixture suite
+compares normalized request and response trees across both API levels, both
+protocol versions, and all six encoding/transport combinations; these
+controlled fixtures do not establish deployed vendor interoperability.
 
 Generated `route_calls_generated.rs` is rebuilt by
 `tools/generate_route_calls.py` from installed typed attribute metadata and the
