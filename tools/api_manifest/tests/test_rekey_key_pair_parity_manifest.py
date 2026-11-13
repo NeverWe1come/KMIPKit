@@ -111,7 +111,7 @@ class RekeyKeyPairManifestTests(unittest.TestCase):
         self.assertIn("bindings/java/src/test/java/org/kmipkit/extensions/RekeyKeyPairMappingTest.java", evidence)
         self.assertIn("bindings/python/tests/test_rekey_key_pair_native_integration.py", evidence)
         self.assertIn("bindings/python/tests/test_rekey_key_pair_operation.py", evidence)
-        self.assertIn("crates/kmipkit-ffi/tests/c_api_coverage.rs", evidence)
+        self.assertIn("crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs", evidence)
         self.assertIn(
             "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
             evidence,

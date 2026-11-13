@@ -804,7 +804,7 @@ The Python adapter's Extension Information test expectation was also corrected t
 ## 2026-10-07 — Rust 1.94 FFI coverage-harness Clippy regression (Red)
 
 - Current-head CI run `37654461313`, job `112905929106`, failed the Rust 1.94
-  Clippy gate in `crates/kmipkit-ffi/tests/c_api_coverage.rs`: `borrow_as_ptr`
+  Clippy gate in `crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs`: `borrow_as_ptr`
   at the raw FFI output pointer and possible truncation/wrap from `usize as i32`.
 - Reproduced before changing code with WSL Ubuntu and Rust 1.94.1:
   `cargo +1.94 clippy -p kmipkit-ffi --test c_api_coverage --all-features -- -D warnings`.
@@ -815,7 +815,7 @@ The Python adapter's Extension Information test expectation was also corrected t
 - No source implementation changes are included in this Red evidence.
 ## 2026-10-07 — Rust 1.94 FFI coverage-harness Clippy fix (Green)
 
-- `crates/kmipkit-ffi/tests/c_api_coverage.rs` now passes an explicit `&raw mut`
+- `crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs` now passes an explicit `&raw mut`
   output pointer and converts the C `argc` with checked `i32::try_from`.
 - WSL Ubuntu / Rust 1.94.1:
   `cargo +1.94 clippy -p kmipkit-ffi --test c_api_coverage --all-features -- -D warnings` — passed.

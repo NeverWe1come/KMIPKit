@@ -34,7 +34,7 @@ FORBIDDEN_REQUEST_REQUIREMENTS = {
 T102_BLOCKED_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 EVIDENCE = {
     "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs",
-    "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+    "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
     "bindings/c/tests/client_abi_consumer.c",
     "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
     "bindings/python/tests/test_rekey_key_pair_native_integration.py",
@@ -157,7 +157,7 @@ class T102RekeyKeyPairStructureMappingTests(unittest.TestCase):
             "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs": (
                 "request_emits_table_310_fields_once_in_order_and_preserves_groups",
             ),
-            "crates/kmipkit-ffi/tests/c_api_coverage.rs": (
+            "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs": (
                 "C_REKEY_FIELD_TAGS", "C_REKEY_MARKERS", "optional fields are not in KMIP Table 310 order",
             ),
             "bindings/c/tests/client_abi_consumer.c": (

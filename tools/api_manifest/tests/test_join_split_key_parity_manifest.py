@@ -24,7 +24,7 @@ REQUIREMENTS = {
 }
 PARITY_EVIDENCE = {
     "crates/kmipkit-client/tests/unit/join_split_key_execution_tests.rs",
-    "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+    "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
     "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
     "bindings/c/tests/client_abi_consumer.c",
     "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",

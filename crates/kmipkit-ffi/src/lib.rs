@@ -15,6 +15,7 @@ pub use extension_registry::coverage_consumer_test_link_anchor as __coverage_con
 mod profile_readiness_identifier_parity_tests;
 
 #[cfg(all(test, feature = "coverage-c-consumer"))]
+/// cbindgen:ignore
 #[path = "../tests/support/c_api_coverage_tests.rs"]
 mod c_api_coverage_tests;
 
