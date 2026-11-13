@@ -745,8 +745,8 @@ class NormativeInventoryTests(unittest.TestCase):
                     if item["case_id"] == "test-batch-stop-on-first-failure")
         scenario = case["requires"]["protocol_scenario"]
         self.assertEqual("Stop", scenario["parameters"]["batch_error_continuation_option"])
-        self.assertEqual("OperationFailed", scenario["expected"]["second"])
-        self.assertEqual(2, scenario["expected"]["response_count"])
+        self.assertNotIn("second", scenario["expected"])
+        self.assertEqual(1, scenario["expected"]["response_count"])
         self.assertIn("second_item_not_executed", scenario["expected"]["effects"])
 
     def test_continue_batch_records_that_the_later_operation_executes(self) -> None:
