@@ -53,6 +53,23 @@ class ExecutableContractTests(unittest.TestCase):
                 self.assertTrue(case["execution"]["protocol_versions"])
                 self.assertEqual("mutating", case["execution"]["mutation"])
 
+    def test_interop_operation_requires_explicit_opt_in_for_both_versions(self) -> None:
+        catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
+        case = next(
+            item for item in catalog["test_cases"]
+            if item["category"] == "protocol_and_session" and item["operation"] == "Interop"
+        )
+
+        self.assertEqual(["2.0", "2.1"], case["execution"]["protocol_versions"])
+        self.assertEqual("mutating", case["execution"]["mutation"])
+        self.assertEqual(
+            [
+                {"document": "OASIS KMIP 2.0 Specification", "section": "6.1.25"},
+                {"document": "OASIS KMIP 2.1 Specification", "section": "6.1.26"},
+            ],
+            case["normative_refs"],
+        )
+
     def test_negative_modify_attribute_case_exercises_current_value_mismatch(self) -> None:
         catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
         case = next(
