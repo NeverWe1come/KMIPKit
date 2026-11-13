@@ -1074,6 +1074,23 @@ fn obtain_lease_builder_validates_placeholder_request_without_sending() {
 }
 
 #[test]
+fn obtain_lease_execute_requires_an_identifier_before_sending() {
+    let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+
+    let error = client
+        .request()
+        .obtain_lease()
+        .execute(&CodecLimits::defaults())
+        .expect_err("single-request execution has no preceding ID Placeholder");
+
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert_eq!(transport.borrow().exchange_count(), 0);
+}
+
+#[test]
 fn execute_exposes_pending_correlation_without_polling() {
     let response = response_bytes(1, 2, Some(b"pending-correlation"));
     let (mut client, fake, _) = client_for(ExchangeScript::Success {
