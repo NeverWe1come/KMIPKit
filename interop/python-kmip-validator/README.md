@@ -102,45 +102,53 @@ observing the named executor. Every row retains the target, workflow indices,
 KMIP version, route, encoding, transport and exact artifact provenance.
 
 The runner compares public TTLV constructors and readers with public decoding
-of independently encoded fixture bytes. All eleven TTLV value types and
-numeric enumeration/mask representatives have executable generic recipes.
-The installed package has no public generic encoder: the small fixture encoder
-belongs to the validator and is never labeled as a public library encoder.
-Full positive network evidence currently covers Ping in KMIP 2.1, using
-TLS 1.3/mTLS for TTLV, JSON and XML over raw TLS and HTTPS. The complete parsed
-request and response shapes and numeric Result Status are checked. The
-normalized response excludes only Time Stamp; ordered children, operations,
-versions and result codes remain intact. Reports retain tree and deterministic
-wire hashes, never raw bodies or fixture values.
+of independently encoded fixture bytes. All eleven TTLV value types, assigned
+and unknown enumeration values, masks, attributes, object structures,
+operation payloads, message fields and boundary vectors have executable
+recipes. The installed package has no public generic encoder: the small
+fixture encoder belongs to the validator and is never labeled as a public
+library encoder.
 
-This is a partial implementation of the exhaustive validator. Typed model,
-attribute/object, stateful positive operation, batch and asynchronous matrix
-recipes remain pending. Earlier controlled Operation Not Supported tests prove
-transport and status handling; they do not satisfy these positive matrix
-obligations. Missing recipes appear in `pending-coverage.json`, with full axes
-and a fixed sanitized failure code. They are never converted into API
-unavailability or a positive row. Failures after an observed public API call
-remain failed execution events, separate from unreached or missing recipes.
-`closure.json` records the exact verified, failed and pending counts. The command and the independent shared gate exit nonzero for
-any missing or duplicate cell, incorrect public symbol, failed invocation or
-incomplete scope. CI uploads these three sanitized artifacts even when the
-completeness gate fails; the PR must remain `[WIP]`.
+The latest installed-package matrix run completed all **74,648/74,648** cells:
+45,470 local construction/encoding/decoding cells and 29,178 controlled-peer network
+cells across 823 catalog cases. It covers KMIP 2.0 and 2.1, TTLV/JSON/XML and
+raw TLS/HTTPS with TLS 1.3 mutual authentication. All 74,648 invocations
+passed; there were no duplicate or pending cells. The controlled peer checks
+the received request and response shapes, ordered batch items, protocol
+version, result status, state changes, asynchronous flows and cleanup where
+the case requires them. A passed matrix cell means the installed library route
+was exercised and its controlled fixture assertions held; it does not claim
+that every KMIP server supports the operation or that every server response
+will be successful. Reports retain normalized tree and deterministic wire
+hashes, never raw bodies or fixture values.
 
-The six KMIP 2.0 version-boundary recipes prove native `NotSent` delivery
-against a listening endpoint with zero queued connections in every network
+The generated `closure.json` and `pending-coverage.json` contain the exact
+counts for each run. The independent shared validator also passed against the
+same pinned library commit, artifact digest, catalog and route manifest, with
+zero duplicate events. It exits nonzero for a missing or duplicate cell,
+incorrect public symbol, failed invocation or incomplete scope. The installed
+package has no public generic outbound TTLV request API; that API boundary
+remains documented in the shared route manifest and is not presented as an
+executed route. The matrix uses typed and high-level public requests wherever
+the package exposes them.
+
+The KMIP 2.0 version-boundary recipes prove native `NotSent` delivery against
+a listening endpoint with zero queued connections in every network
 combination. They retain a hash of the explicit public request inputs and emit
 no response tree or wire-byte claim. The common contract distinguishes these
-construct/send obligations from response decoding. Reserved/unused Tag
-allocation cases still need expected-rejection semantics for checked
-constructors; that applicability rule belongs to the common contract.
+construct/send obligations from response decoding. Reserved and unused Tag
+allocations use their expected-rejection semantics for checked constructors.
 
 | Requirement | Python evidence and remaining scope |
 |---|---|
-| KMIPKIT-0092-FR-001/002/007 | Shared matrix expansion; strict closure and independent shared validation; missing recipes remain pending. |
-| KMIPKIT-0092-FR-003/004 | Generic numeric/type roundtrips and ordered normalized Ping trees; other named routes remain pending. |
-| KMIPKIT-0092-FR-005 | Positive Ping controlled peers in all six network combinations; stateful positive fixtures remain pending. |
+| KMIPKIT-0092-FR-001/002/007 | 74,648 required route cells executed; strict closure and independent shared validation passed with no pending cells. |
+| KMIPKIT-0092-FR-003/004 | Generic TTLV, typed model and request/response route trees are constructed, decoded and checked through the installed package. |
+| KMIPKIT-0092-FR-005 | Controlled TLS peers cover all six version/encoding/transport combinations and catalogued operation, batch, stateful and asynchronous cases. |
 | KMIPKIT-0092-FR-006 | Exact release wheel digest plus installed-file verification. |
-| KMIPKIT-0092-FR-008/009 | Fixed sanitized diagnostics; separate pending coverage; source-backed encoder/send limitations stay in the shared manifest. |
+| KMIPKIT-0092-FR-008/009 | Sanitized JSON evidence and fixed diagnostic codes; no raw request/response bodies or fixture secret values. |
+
+Cross-language parity still requires the joint run to consume matching reports
+from all four language branches. This Python report alone makes no parity claim.
 
 These controlled fixtures establish no vendor interoperability or certification.
 Python-owned temporary copies cannot be zeroized reliably; use only the
