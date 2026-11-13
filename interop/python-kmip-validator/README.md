@@ -109,46 +109,33 @@ recipes. The installed package has no public generic encoder: the small
 fixture encoder belongs to the validator and is never labeled as a public
 library encoder.
 
-An installed-package matrix run at feature head `264ba33bc` completed all
+The installed-package matrix at feature head `75ad6b7a0` completed all
 **74,648/74,648** cells: 45,470 local construction/encoding/decoding cells
 and 29,178 controlled-peer network cells across 823 catalog cases. It used
-catalog SHA-256
-`93bf7d439fe871cc467d0dd262e6dfe68340de4c81fa0671e5f967bb90a34613` and
-route-manifest SHA-256
-`5fdddfb8f004cd858b18f27b432fe6b802d2ac7d969d49abeb5db0b265738116`.
-The push workflow at feature head `a322c94a3` also passed all **74,648/74,648**
-cells with zero failures and zero pending against catalog SHA-256
-`93bf7d439fe871cc467d0dd262e6dfe68340de4c81fa0671e5f967bb90a34613`; the
-independent validator passed with the same artifact and route-manifest
-identities.
+the package built from release commit `489fafc79ef89db2524eafa7a6c6482f5cf75d97`,
+wheel SHA-256
+`399a9de433a460bd95237e9142c6b19ca082bdc2a94c2d31fe93765cf508a369`, catalog
+SHA-256 `e4a542bab4831a04e51f5bf04c9019da3f38845bc85839ae9b632dcc610a7d7f`,
+and route-manifest SHA-256
+`b3867835e3f1f69308a3030f83be87e2728af852da3a82414a78a4ea91482ac5`.
+There were zero failed cells, zero pending cells, and zero duplicate events.
+The independent validator reported `all_invocations_passed: true`, all
+74,648 required cells observed, and the same artifact, catalog and manifest
+hashes (run ID `python-matrix-7f813d39-2e6e-41fb-a92a-2c043a91f221`).
 
-The PR workflow run
-[43453215609](https://github.com/NeverWe1come/KMIPKit/actions/runs/43453215609)
-was created before the PR base changed and checked out merge commit
-`7f1c64dd1e405738f34311db34f9595b703856d8`, whose parent was the older
-one-response catalog commit `66e1e73ce9e8745844686ec51719940d3aa9f8a8`. That
-merge-tree run reported 74,576 passed and 72 failed; all 72 failures were
-Batch Stop cells, and the controlled peer returned the single response
-selected by that old catalog. The independent validator accepted the complete
-74,648-cell evidence report and identified catalog SHA-256
-`e4a542bab4831a04e51f5bf04c9019da3f38845bc85839ae9b632dcc610a7d7f`.
+The Batch Stop scenario references OASIS KMIP 2.0 §11.5, Table 396, and KMIP
+2.1 §11.5, Table 434. Its controlled peer returns one `Operation Failed`
+response and records that the later operation was not executed. KMIPKit's
+release artifact at `489fafc` accepts that returned partial response as
+specified by KMIPKIT-0120. This fixture result does not claim that any vendor
+server implements this behavior. The previous red test against package commit
+`9a16cc90a12205101d22a38501a5e74c665df4dc` captured the earlier rejection;
+TDD evidence and current verification are in
+[`implementation-evidence.md`](../../specs/092-interop-api-route-exhaustiveness/implementation-evidence.md).
 
-The current PR base is `4eb22e220c4e016f1cb218879a7e952588bbe6fc`; its
-catalog SHA-256 is `93bf7d439fe871cc467d0dd262e6dfe68340de4c81fa0671e5f967bb90a34613`
-and it expects two responses. OASIS KMIP 2.1 §11.5, Table 434 (and KMIP 2.0
-§11.5, Table 396) says STOP prevents subsequent operations and that responses
-to other batch items are returned normally. Thus the 72 failures belong to
-the stale one-response merge tree and do not establish a library defect. The
-current-base merge still needs a fresh PR run. The branch remains WIP pending
-that run, cross-language parity, and deployed-server interoperability.
-
-When evaluating a pull-request workflow, record the exact test-merge commit and
-its base parent alongside the catalog digest. A run created before the PR base
-changes does not verify the new merge tree; rerun after the base update.
-The PR workflow for head `db0c35b12` was created at 16:02Z; the PR merge
-reference subsequently reported commit `4312a6cf` with parent `66e1e73`, while
-the PR base was `4eb22e220c4e016f1cb218879a7e952588bbe6fc`. That run also needs
-to be checked for a fresh checkout before treating it as current-base evidence.
+The branch remains WIP until exact-head CI and the joint cross-language checks
+pass. Vendor interoperability remains pending until a KMIP 2.0/2.1 endpoint is
+deployed and tested.
 
 The historical matrix covered KMIP 2.0 and 2.1, TTLV/JSON/XML, raw TLS/HTTPS
 with TLS 1.3 mutual authentication. Reports retain normalized tree and
