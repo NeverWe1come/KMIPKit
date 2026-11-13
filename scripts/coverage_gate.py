@@ -75,10 +75,10 @@ class SourceScanResult:
 
 
 # JaCoCo has no executable line records for generated API metadata,
-# compile-time constant holders, or JNI-only method declarations. Keep one exact
-# path inventory for source eligibility and JaCoCo parsing so the gate excludes
-# metadata without weakening executable-source coverage.
-_JAVA_METADATA_ONLY_SOURCE_EXCLUSIONS = frozenset(
+# compile-time constant holders, native-only method declarations, or abstract
+# callback declarations. Keep one exact path inventory for source eligibility
+# and JaCoCo parsing so only non-executable declarations are excluded.
+_JAVA_NON_EXECUTABLE_SOURCE_EXCLUSIONS = frozenset(
     {
         # Generated API manifests contain metadata, not handwritten behavior.
         "bindings/java/src/main/java/org/kmipkit/generated/ExtensionRegistryApi.java",
@@ -146,7 +146,7 @@ _CATALOG_GENERATED_ATTRIBUTE_EXCLUSIONS = frozenset(
     }
 )
 _COVERAGE_SOURCE_EXCLUSIONS = (
-    _JAVA_METADATA_ONLY_SOURCE_EXCLUSIONS
+    _JAVA_NON_EXECUTABLE_SOURCE_EXCLUSIONS
     | _JAVA_PACKAGE_INFO_SOURCE_EXCLUSIONS
     | _PYTHON_GENERATED_SOURCE_EXCLUSIONS
     | _RUST_METADATA_ONLY_SOURCE_EXCLUSIONS
