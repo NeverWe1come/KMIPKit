@@ -6,93 +6,24 @@ repository_root="$(cd -- "${script_dir}/.." && pwd)"
 report_dir="${1:-${repository_root}/coverage-ffi}"
 report_dir="$(mkdir -p -- "${report_dir}" && cd -- "${report_dir}" && pwd)"
 target_root="${CARGO_TARGET_DIR:-${repository_root}/target}"
-llvm_cov_target="${target_root}/llvm-cov-target"
-# Keep the coverage report aligned with the full FFI source tree as modules are split out.
-mapfile -d '' -t source_files < <(
-    find "${repository_root}/crates/kmipkit-ffi/src" -type f -name "*.rs" -print0 | sort -z
-)
+ffi_target="${target_root}/ffi-coverage"
 
 if [[ "$(uname -s)" != Linux ]]; then
     printf 'The C consumer FFI coverage collector currently supports Linux only.\n' >&2
     exit 2
 fi
 
-for source_file in "${source_files[@]}"; do
-    if [[ ! -f "${source_file}" ]]; then
-        printf 'Expected Rust C ABI implementation source is missing: %s\n' "${source_file}" >&2
-        exit 1
-    fi
-done
-
-# Keep cargo-llvm-cov's target and merged profile from the workspace collection.
+# Keep this package report isolated from the workspace report and its profraw files.
+readonly raw_report="${report_dir}/coverage-raw.json"
 readonly cargo_output="${report_dir}/cargo-llvm-cov.log"
 cargo_status=0
-CARGO_TERM_COLOR=never cargo llvm-cov --no-clean -p kmipkit-ffi --all-targets --all-features --locked \
-    > "${cargo_output}" 2>&1 || cargo_status=$?
+CARGO_TERM_COLOR=never CARGO_TARGET_DIR="${ffi_target}" cargo llvm-cov \
+    -p kmipkit-ffi --all-targets --all-features --locked \
+    --json --output-path "${raw_report}" > "${cargo_output}" 2>&1 || cargo_status=$?
 cat "${cargo_output}"
 if [[ "${cargo_status}" -ne 0 ]]; then
     exit "${cargo_status}"
 fi
-
-# Export profiles with the LLVM tools bundled for the active rustc toolchain.
-rust_host="$(rustc -vV | sed -n 's/^host: //p')"
-if [[ -z "${rust_host}" ]]; then
-    printf 'Could not determine the active rustc host triple.\n' >&2
-    exit 2
-fi
-rust_sysroot="$(rustc --print sysroot)"
-llvm_cov="${rust_sysroot}/lib/rustlib/${rust_host}/bin/llvm-cov"
-if [[ ! -x "${llvm_cov}" ]]; then
-    printf 'LLVM coverage tool for active rustc is missing: %s\n' "${llvm_cov}" >&2
-    exit 2
-fi
-
-find_newest_artifact() {
-    local artifact_root="$1"
-    local artifact_name="$2"
-    find "${artifact_root}" -type f -name "${artifact_name}" -printf '%T@ %p\n' \
-        | sort -nr \
-        | sed -n '1s/^[^ ]* //p'
-}
-
-readonly profile_data="$(find_newest_artifact "${llvm_cov_target}" '*.profdata')"
-readonly ffi_dso="$(find_newest_artifact "${llvm_cov_target}/debug" 'libkmipkit_ffi.so')"
-readonly ffi_staticlib="$(find_newest_artifact "${llvm_cov_target}/debug" 'libkmipkit_ffi.a')"
-if [[ ! -f "${profile_data}" || ! -f "${ffi_dso}" || ! -f "${ffi_staticlib}" ]]; then
-    printf 'The instrumented Rust C ABI objects or merged LLVM profile are missing under %s.\n' "${llvm_cov_target}" >&2
-    exit 1
-fi
-
-mapfile -t test_binaries < <(
-    sed -nE \
-        -e '/Running unittests src\/lib\.rs /s@.* \(([^)]*)\)$@\1@p' \
-        -e '/Running tests\/c_api_coverage\.rs /s@.* \(([^)]*)\)$@\1@p' \
-        "${cargo_output}"
-)
-if [[ "${#test_binaries[@]}" -ne 2 ]]; then
-    printf 'Cargo did not report both the FFI unit and C consumer test executables in %s.\n' \
-        "${cargo_output}" >&2
-    exit 1
-fi
-for test_binary in "${test_binaries[@]}"; do
-    if [[ ! -f "${test_binary}" || ! -x "${test_binary}" ]]; then
-        printf 'The FFI coverage test executable reported by Cargo is missing: %s\n' \
-            "${test_binary}" >&2
-        exit 1
-    fi
-done
-coverage_objects=()
-for test_binary in "${test_binaries[@]}"; do
-    coverage_objects+=(-object "${test_binary}")
-done
-
-readonly raw_report="${report_dir}/coverage-raw.json"
-"${llvm_cov}" export -format=text \
-    -instr-profile "${profile_data}" \
-    -object "${ffi_dso}" \
-    -object "${ffi_staticlib}" \
-    "${coverage_objects[@]}" \
-    --sources "${source_files[@]}" > "${raw_report}"
 
 python3 "${repository_root}/scripts/coverage_gate.py" normalize \
     --workspace "${repository_root}" \
