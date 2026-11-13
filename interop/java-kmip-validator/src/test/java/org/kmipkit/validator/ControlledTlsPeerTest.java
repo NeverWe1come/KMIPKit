@@ -326,6 +326,9 @@ class ControlledTlsPeerTest {
         ArrayNode events = mapper.createArrayNode();
         List<EnumerationFixture> enumerationFixtures = genericEnumerationFixtures();
         List<EnumerationFixture> localEnumerationFixtures = genericLocalEnumerationFixtures();
+        List<String> keyFormatTargets = enumerationTargetIds(localEnumerationFixtures, "KEY-FORMAT-TYPE");
+        assertEquals(24, keyFormatTargets.size(),
+                "The Key Format Type aggregate must cover every catalogued value.");
         List<String> digitalSignatureTargets = enumerationTargetIds(
                 localEnumerationFixtures, "DIGITAL-SIGNATURE-ALGORITHM");
         assertEquals(20, digitalSignatureTargets.size(),
@@ -610,6 +613,11 @@ class ControlledTlsPeerTest {
         assertEquals(97, pkcs11ReturnCodeTargets.size(),
                 "The PKCS#11 Return Code aggregate must cover every value.");
         List<LocalEnumerationScope> additionalEnumerationScopes = List.of(
+                new LocalEnumerationScope("test-enum-key-format-type", keyFormatTargets,
+                        List.of("2.0", "2.1"), List.of(
+                                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+                                "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew")),
                 new LocalEnumerationScope("test-enum-digital-signature-algorithm", digitalSignatureTargets,
                         List.of("2.0", "2.1"), List.of(
                                 "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
@@ -712,6 +720,14 @@ class ControlledTlsPeerTest {
                     }
                 }
             }
+        }
+        assertEquals(2, routeEventCount(report.path("events"), "test-enum-key-format-type",
+                        CLIENT_BATCH_ITEM_RAW_TTLV_ROUTE),
+                "The aggregate Key Format Type case must capture the controlled Raw value responses.");
+        for (String version : List.of("2.0", "2.1")) {
+            JsonNode event = findRouteEvent(report.path("events"), "test-enum-key-format-type",
+                    CLIENT_BATCH_ITEM_RAW_TTLV_ROUTE, version, KEY_FORMAT_RAW_TARGET_ID);
+            assertEquals("passed", event.path("status").asText());
         }
         assertEquals(2, routeEventCount(report.path("events"), RESPONSE_BATCH_ITEM_CASE_ID,
                         "java.typed-protocol.function.client_batch_item_response_pending_correlation_value"),
