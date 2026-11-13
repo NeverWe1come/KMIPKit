@@ -133,11 +133,17 @@ class ArtifactCheckoutContractTests(unittest.TestCase):
         self.assertIn(f'set(KMIPKIT_LIBRARY_COMMIT "{pin}")', cmake)
         self.assertIn(f"/install/{pin}", workflow)
         self.assertIn(pin, readme)
-        self.assertIn("**Base**: source commit pinned in", spec)
+        self.assertIn("**Base**: `release/1.0.0` at", spec)
         self.assertEqual(pin, shared_route_source_pin())
+        self.assertEqual(pin, "9a16cc90a12205101d22a38501a5e74c665df4dc")
 
         subprocess.run(
             ["git", "cat-file", "-e", f"{pin}^{{tree}}"], cwd=ROOT, check=True
+        )
+        subprocess.run(
+            ["git", "merge-base", "--is-ancestor", pin, "origin/release/1.0.0"],
+            cwd=ROOT,
+            check=True,
         )
 
     def test_pinned_c_artifact_matches_the_shared_route_manifest(self):
