@@ -65,8 +65,11 @@ class FfiCoverageObjectTests(unittest.TestCase):
             stale = root / 'debug/build/kmipkit-ffi/stale/out/libkmipkit_ffi.so'
             stale.parent.mkdir(parents=True)
             stale.write_bytes(b'stale object')
-            self.assertEqual(MODULE.collect_ffi_objects(
-                root, log, (log.parent / 'cargo-artifacts.jsonl')), objects)
+            actual = MODULE.collect_ffi_objects(
+                root, log, (log.parent / 'cargo-artifacts.jsonl'))
+            self.assertEqual(len(actual), len(objects))
+            self.assertTrue(all(reported.samefile(expected)
+                                for reported, expected in zip(actual, objects)))
             with (log.parent / 'cargo-artifacts.jsonl').open('a') as receipt:
                 receipt.write(json.dumps({'reason': 'compiler-artifact',
                     'target': {'name': 'kmipkit_ffi'}, 'profile': {'test': False},
