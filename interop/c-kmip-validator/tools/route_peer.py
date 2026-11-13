@@ -261,6 +261,7 @@ RECIPES = {
     'test-v20-reject-get-constraints': ((56,), 'get_constraints'),
     'test-op-create': ((1, 20), 'create'),
     'test-op-register': ((3, 20), 'register'),
+    'test-op-add-attribute': ((1, 13, 19, 20), 'add_attribute'),
     'test-obj-certificate': ((3, 20), 'register'),
     'test-obj-certificate-request': ((3, 20), 'register_certificate_request'),
     'test-batch-create-activate-destroy': ((1, 18, 12, 19, 20), 'create_activate_attribute_list_revoke_destroy'),
@@ -387,6 +388,21 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None):
         raise ValueError('fixture_attribute_reference_mismatch')
     if case_id == 'test-attr-cryptographic-length' and numbers(node, 0x42013B) != [0x42002A]:
         raise ValueError('fixture_attribute_reference_mismatch')
+    if selected_recipe[1] == 'add_attribute':
+        items = [item for item in node[2]
+                 if item[0] == BATCH_ITEM_TAG and numbers(item, 0x42005C) == [13]]
+        if len(items) != 1:
+            raise ValueError('fixture_add_attribute_item_missing')
+        payloads = [item for item in items[0][2]
+                    if item[0] == REQUEST_PAYLOAD_TAG and item[1] == 1]
+        comments = [item for item in descendants(payloads[0], 0x4200FD) if item[1] == 7] \
+            if len(payloads) == 1 else []
+        if len(comments) != 1 or comments[0][2] != b'KMIPKit interoperability comment':
+            observed = [(f'{item[0]:06X}', item[1])
+                        for item in descendants(payloads[0], 0x4200FD)] if len(payloads) == 1 else []
+            summary = [(len(item[2]), hashlib.sha256(item[2]).hexdigest()[:12])
+                       for item in comments]
+            raise ValueError(f'fixture_add_attribute_comment_mismatch:{observed}:{summary}')
     if attribute_fixture is not None:
         target_item = next(item for item in node[2]
                            if item[0] == 0x42000F and numbers(item, 0x42005C) == [11])
@@ -458,6 +474,29 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None):
         raise ValueError('fixture_rng_length_mismatch')
     if selected_recipe[1] == 'rng_seed' and [item[2] for item in descendants(node, 0x4200C2)] != [bytes(range(expected_rng_length))]:
         raise ValueError('fixture_rng_seed_mismatch')
+
+
+def assert_add_attribute_setup_request(node, version):
+    header = next(descendants(node, 0x420077), node)
+    items = [item for item in node[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    if (numbers(header, 0x42006A) != [2] or numbers(header, 0x42006B) != [int(version[-1])] or
+            numbers(node, 0x42000D) != [1] or
+            [numbers(item, 0x42005C) for item in items] != [[1]] or
+            numbers(node, 0x420057) != [2] or numbers(node, 0x420028) != [3] or
+            numbers(node, 0x42002A) != [128]):
+        raise ValueError('fixture_add_attribute_setup_request_mismatch')
+
+
+def assert_add_attribute_cleanup_request(node, version):
+    header = next(descendants(node, 0x420077), node)
+    items = [item for item in node[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    if (numbers(header, 0x42006A) != [2] or numbers(header, 0x42006B) != [int(version[-1])] or
+            numbers(node, 0x42000D) != [2] or
+            [numbers(item, 0x42005C) for item in items] != [[19], [20]] or
+            [text_values(item, UNIQUE_IDENTIFIER_TAG) for item in items] !=
+            [['fixture-key-1'], ['fixture-key-1']] or numbers(node, 0x42000E) != [1] or
+            numbers(node, 0x420010) != [1]):
+        raise ValueError('fixture_add_attribute_cleanup_request_mismatch')
 
 
 def assert_placeholder_cleanup_request(node, version):
@@ -595,9 +634,15 @@ class PeerState:
 
     def __init__(self, *, existing_object=False):
         self.objects = {'fixture-key-1': 'pre_active'} if existing_object else {}
+        self.attributes = {'fixture-key-1': set()} if existing_object else {}
 
     def digest(self):
-        state = json.dumps({'objects': self.objects}, sort_keys=True, separators=(',', ':'))
+        state_value = {'objects': self.objects}
+        if any(self.attributes.values()):
+            state_value['attributes'] = {
+                key: sorted(value) for key, value in self.attributes.items() if value
+            }
+        state = json.dumps(state_value, sort_keys=True, separators=(',', ':'))
         return hashlib.sha256(state.encode()).hexdigest()
 
     def execute(self, request_tree, *, continued_batch=False):
@@ -605,7 +650,8 @@ class PeerState:
         effects, statuses, reasons = [], [], []
         placeholder = None
         labels = {9: 'checked', 10: 'object_retrieved', 11: 'attributes_retrieved',
-                  12: 'attribute_list_retrieved', 56: 'constraints_retrieved'}
+                  12: 'attribute_list_retrieved', 13: 'attribute_added',
+                  56: 'constraints_retrieved'}
         items = [item for item in request_tree[2] if item[0] == BATCH_ITEM_TAG]
         for index, item in enumerate(items):
             operation = numbers(item, 0x42005C)[0]
@@ -617,9 +663,10 @@ class PeerState:
                 if identifier in self.objects:
                     raise ValueError('fixture_duplicate_create')
                 self.objects[identifier] = 'pre_active'
+                self.attributes[identifier] = set()
                 placeholder = identifier
                 effect = 'created'
-            elif operation in (9, 10, 11, 12, 18, 19, 20, 56):
+            elif operation in (9, 10, 11, 12, 13, 18, 19, 20, 56):
                 state = self.objects.get(identifier)
                 if state is None:
                     status, reason, effect = 1, 55, 'object_not_found'
@@ -636,7 +683,18 @@ class PeerState:
                         status, reason, effect = 1, 67, 'illegal_destroy_rejected'
                     else:
                         del self.objects[identifier]
+                        self.attributes.pop(identifier, None)
                         effect = 'destroyed'
+                elif operation == 13:
+                    new_attribute = next((child for child in item[2]
+                                          if child[0] == REQUEST_PAYLOAD_TAG), None)
+                    attribute_tag = next((child[0] for child in new_attribute[2]
+                                          if child[0] != UNIQUE_IDENTIFIER_TAG), None) \
+                        if new_attribute is not None and new_attribute[1] == 1 else None
+                    if attribute_tag is None:
+                        raise ValueError('fixture_add_attribute_tag_missing')
+                    self.attributes.setdefault(identifier, set()).add(attribute_tag)
+                    effect = 'attribute_added'
                 else:
                     effect = labels[operation]
             else:
@@ -659,7 +717,8 @@ def verify_lifecycle(operations, response_tree):
     state = None
     effects, expected_statuses, expected_reasons = [], [], []
     labels = {9: 'checked', 10: 'object_retrieved', 11: 'attributes_retrieved',
-              12: 'attribute_list_retrieved', 56: 'constraints_retrieved'}
+              12: 'attribute_list_retrieved', 13: 'attribute_added',
+              56: 'constraints_retrieved'}
     for operation in operations:
         status, reason = 0, 0
         if operation in (1, 3):
@@ -798,7 +857,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
             for version in case.get('execution', {}).get('protocol_versions', []))
     }
     case_variants = [(case, variant) for case in catalog['test_cases'] for variant in
-        (('direct', 'standalone') if case['case_id'] in {'test-op-get-attributes', 'test-op-get-attribute-list'}
+        (('direct', 'standalone') if case['case_id'] in {'test-op-get-attributes', 'test-op-get-attribute-list',
+                                                         'test-op-add-attribute'}
          or case['case_id'] in attribute_case_ids else ('direct',))]
     cells_by_case = {}
     for cell in all_cells:
@@ -833,6 +893,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                         if recipe is None:
                             continue
                         placeholder_chain_recipe = recipe[1] == 'batch_placeholder_chain'
+                        add_attribute_recipe = recipe[1] == 'add_attribute'
                         if version == '2.0' and case_id in ('test-op-discover-versions', 'test-op-login', 'test-op-get-constraints', 'test-op-ping'):
                             continue
                         observation, errors = [], []
@@ -844,8 +905,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                             server.settimeout(5)
                             port = server.getsockname()[1]
                             def serve():
+                                stream = None
                                 try:
-                                    exchange_count = 2 if placeholder_chain_recipe else 1
+                                    exchange_count = 3 if add_attribute_recipe else (
+                                        2 if placeholder_chain_recipe else 1)
                                     accepted, _ = server.accept()
                                     stream = context.wrap_socket(accepted, server_side=True)
                                     for exchange_index in range(exchange_count):
@@ -872,6 +935,18 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         if cleanup_exchange:
                                             assert_placeholder_cleanup_request(request_tree, version)
                                             response_operations = PLACEHOLDER_CLEANUP_OPERATIONS
+                                        elif add_attribute_recipe and exchange_index == 0:
+                                            assert_add_attribute_setup_request(request_tree, version)
+                                            response_operations = (1,)
+                                        elif add_attribute_recipe and exchange_index == 1:
+                                            assert_recipe(request_tree, case_id, version,
+                                                          ((13,), 'add_attribute'))
+                                            if text_values(request_tree, UNIQUE_IDENTIFIER_TAG) != ['fixture-key-1']:
+                                                raise ValueError('fixture_add_attribute_identifier_mismatch')
+                                            response_operations = (13,)
+                                        elif add_attribute_recipe and exchange_index == 2:
+                                            assert_add_attribute_cleanup_request(request_tree, version)
+                                            response_operations = PLACEHOLDER_CLEANUP_OPERATIONS
                                         else:
                                             assert_recipe(request_tree, case_id, version, recipe, attribute_fixture)
                                             response_operations = recipe[0]
@@ -887,6 +962,13 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 (b'placeholder-revoke-cleanup', b'placeholder-destroy-cleanup')
                                                 if cleanup_exchange else
                                                 (b'placeholder-create', b'placeholder-activate', b'placeholder-get'))
+                                        elif add_attribute_recipe:
+                                            response_item_ids = (
+                                                (b'interop-create',)
+                                                if exchange_index == 0 else
+                                                (b'interop-attributes',)
+                                                if exchange_index == 1 else
+                                                (b'interop-revoke', b'interop-destroy'))
                                         if recipe[1] in ('batch_count_two_read_items',
                                                          'batch_order_false_two_read_items',
                                                          'batch_continue_after_failure'):
@@ -913,6 +995,14 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         response_tree = parse(response_wire)
                                         if placeholder_chain_recipe:
                                             verify_placeholder_chain_response(response_tree, response_operations)
+                                        elif add_attribute_recipe:
+                                            response_items = [item for item in response_tree[2]
+                                                              if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+                                            if ([numbers(item, 0x42005C) for item in response_items] !=
+                                                    [[operation] for operation in response_operations] or
+                                                    [numbers(item, 0x42007F) for item in response_items] !=
+                                                    [[0] for _ in response_operations]):
+                                                raise ValueError('fixture_add_attribute_response_mismatch')
                                         else:
                                             verify_lifecycle(recipe[0], response_tree)
                                         encoded_response = codec.encode(response_wire, encoding)
@@ -928,10 +1018,15 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     errors.append('fixture_tls_handshake_failed')
                                 except ConnectionError:
                                     errors.append('fixture_connection_failed')
+                                except ValueError as error:
+                                    errors.append(f'fixture_request_rejected:{error}')
                                 except Exception as error:
                                     code = str(error)
                                     errors.append(code if re.fullmatch('fixture_[a-z_]+', code)
                                                   else 'controlled_peer_contract_failed')
+                                finally:
+                                    if stream is not None:
+                                        stream.close()
                             thread = None
                             if not boundary:
                                 thread = threading.Thread(target=serve, daemon=True)
@@ -958,11 +1053,12 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                             catalog_path.write_text(json.dumps({**catalog, 'test_cases': [peer_case]}))
                             run = subprocess.run([str(binary.resolve()), 'run', '--connection', str(connection_path),
                                 '--catalog', str(catalog_path), '--allow-mutations', '--output', str(result_path)],
-                                cwd=ROOT, capture_output=True, timeout=10,
+                                cwd=ROOT, capture_output=True,
+                                timeout=30 if add_attribute_recipe else 10,
                                 env={**os.environ, 'KMIPKIT_C_ROUTE_OBSERVATIONS': str(trace_path),
                                      'KMIPKIT_C_ATTRIBUTE_REQUEST_ROUTE': variant})
                             if thread is not None:
-                                thread.join(6)
+                                thread.join(20 if add_attribute_recipe else 6)
                             result = json.loads(result_path.read_text()) if result_path.exists() else {}
                             verify_consumer_provenance(result, artifact_sha256, catalog_sha256)
                             case_passed = bool(result.get('cases') and result['cases'][0]['status'] == 'passed')
@@ -1011,6 +1107,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                            'transport': transport, 'status': 'passed' if observation and not code and run.returncode == 0 else 'failed',
                                            'consumer_case_status': (result.get('cases') or [{}])[0].get('status', 'missing'),
                                            'consumer_server_compatibility': (result.get('cases') or [{}])[0].get('server_compatibility', 'missing'),
+                                           'consumer_diagnostic': (result.get('cases') or [{}])[0].get('diagnostic', ''),
                                            'public_api_trace_symbols': sorted(invoked_symbols),
                                            **({'peer_response_operation_values': [
                                                numbers(item, 0x42005C)[0]
@@ -1041,12 +1138,34 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                for item in observation[1][0][2]
                                                if item[0] == 0x42000F]}
                                                if observation and len(observation) > 1 and
-                                               placeholder_chain_recipe else {}),
+                                               placeholder_chain_recipe else
+                                               {'peer_request_operations': [
+                                                   numbers(item, 0x42005C)[0]
+                                                   for item in observation[1][0][2]
+                                                   if item[0] == 0x42000F],
+                                                'peer_observed_effects': observation[1][2]['effects']}
+                                               if add_attribute_recipe and len(observation) == 3 else {}),
+                                           **({'peer_setup_operations': [
+                                                   numbers(item, 0x42005C)[0]
+                                                   for item in observation[0][0][2]
+                                                   if item[0] == 0x42000F],
+                                                'peer_cleanup_operations': [
+                                                   numbers(item, 0x42005C)[0]
+                                                   for item in observation[2][0][2]
+                                                   if item[0] == 0x42000F],
+                                                'peer_attribute_state_changed':
+                                                   observation[1][2]['peer_observed_state_before_sha256'] !=
+                                                   observation[1][2]['peer_observed_state_after_sha256'],
+                                                'peer_final_state_matches_setup':
+                                                   observation[0][2]['peer_observed_state_before_sha256'] ==
+                                                   observation[2][2]['peer_observed_state_after_sha256']}
+                                               if add_attribute_recipe and len(observation) == 3 else {}),
                                            **attribute_check,
                                            **({'failure_code': code or 'peer_observation_missing'} if code or not observation else {})})
                             if not observation or code or run.returncode != 0:
                                 continue
-                            request_tree, response_tree, state_evidence = observation[0]
+                            request_tree, response_tree, state_evidence = observation[
+                                1 if add_attribute_recipe else 0]
                             operation_name = case['operation']
                             for cell in cells_by_case[case_id]:
                                 if _key(cell) in keys:
@@ -1067,6 +1186,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     if (cell['action'] == 'decode' and not cell['public_api_symbol'].startswith('kmipkit_client_batch_')):
                                         continue
                                     if cell['action'] == 'encode' and cell['public_api_symbol'] not in {
+                                            'kmipkit_add_attribute_request_to_ttlv_payload',
                                             'kmipkit_get_attributes_request_to_ttlv_payload',
                                             'kmipkit_get_attribute_list_request_to_ttlv_payload'}:
                                         continue
@@ -1121,7 +1241,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     event.update(request_delivery_state='not_sent', transport_invocation_count=0)
                                 elif cell['action'] == 'send':
                                     event.update(request_delivery_state='response_received', transport_invocation_count=1)
-                                if cell['action'] == 'send' and len(recipe[0]) > 1:
+                                if (cell['action'] == 'send' and len(recipe[0]) > 1 and
+                                        not add_attribute_recipe):
                                     operations = [next(t['name'] for t in catalog['normative_targets'] if t['kind'] == 'enumeration_value' and t.get('wire_value') == f'{op:08X}' and any(p.endswith('ENUMERATION-OPERATION') for p in t.get('parent_element_ids', []))) for op in recipe[0]]
                                     event.update(batch_operation_sequence=operations, batch_item_count=len(operations),
                                         peer_observed_operation_sequence=operations,

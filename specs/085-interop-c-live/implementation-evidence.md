@@ -187,3 +187,31 @@ bounded binary-file helper. The helper rejects empty and oversized files,
 checks read completion, and clears owned fixture bytes before freeing them.
 After this refactor, CMake build passed, CTest passed 7/7, the C route matrix
 unit suite passed 77/77, and the FFI coverage object suite passed 12/12.
+
+### Add Attribute direct and standalone routes
+
+The installed consumer now exercises Add Attribute through both the direct
+batch-item constructor and the standalone `AddAttributeRequest` constructor.
+Each test creates an isolated symmetric key, obtains its text Unique
+Identifier, sends the attribute mutation as a separate request, verifies the
+typed response identifier, then revokes and destroys the object. The controlled
+peer validates the KMIP 2.0/2.1 request fields, observes the attribute state
+change, and confirms cleanup returns the fixture to its initial state. The
+direct and standalone requests have identical normalized request-tree digests
+for each encoding and transport.
+
+Verification on the implementation worktree:
+
+- Focused Add Attribute integration: 24/24 exchanges passed (two protocol
+  versions, six encoding/transport pairs, and both constructor routes).
+- CTest: 7/7 passed; this includes 78 C route-matrix contract tests and the
+  controlled KMIP 2.0 and 2.1 TLS peers.
+- FFI coverage object tests: 12/12 passed.
+- Complete generated C route matrix: 66,728 expected cells, 37,018 invoked,
+  0 failed, and 29,710 pending. All 80 Add Attribute cells passed. The
+  completeness gate remains intentionally unsuccessful while other recipes
+  remain pending.
+
+This route does not complete C interoperability coverage. Batch attribute
+mutators, the remaining operations and objects, asynchronous flows, and other
+catalogued variants still need executable C recipes. The PR remains WIP.
