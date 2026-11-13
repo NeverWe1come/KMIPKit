@@ -598,7 +598,51 @@ class ControlledTlsPeerTest {
                         "KMIPKIT-ELEM-ENUM-VALUE-MASK-GENERATOR-EXTENSIONS-8XXXXXXX",
                         "KMIPKIT-ELEM-ENUM-VALUE-MASK-GENERATOR-MFG1-00000001"),
                         List.of("2.0", "2.1"), List.of(
-                                "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.maskgenerator")));
+                                "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.maskgenerator")),
+                new LocalEnumerationScope("test-enum-encoding-option", List.of(
+                        "KMIPKIT-ELEM-ENUM-VALUE-ENCODING-OPTION-EXTENSIONS-8XXXXXXX",
+                        "KMIPKIT-ELEM-ENUM-VALUE-ENCODING-OPTION-NO-ENCODING-00000001",
+                        "KMIPKIT-ELEM-ENUM-VALUE-ENCODING-OPTION-TTLV-ENCODING-00000002"),
+                        List.of("2.0", "2.1"), List.of()),
+                new LocalEnumerationScope("test-enum-endpoint-role", List.of(
+                        ENDPOINT_ROLE_CLIENT_TARGET_ID,
+                        "KMIPKIT-ELEM-ENUM-VALUE-ENDPOINT-ROLE-EXTENSIONS-8XXXXXXX",
+                        ENDPOINT_ROLE_SERVER_TARGET_ID), List.of("2.0", "2.1"), List.of()),
+                new LocalEnumerationScope("test-enum-key-value-location-type", List.of(
+                        "KMIPKIT-ELEM-ENUM-VALUE-KEY-VALUE-LOCATION-TYPE-EXTENSIONS-8XXXXXXX",
+                        "KMIPKIT-ELEM-ENUM-VALUE-KEY-VALUE-LOCATION-TYPE-UNINTERPRETED-TEXT-STRING-00000001",
+                        "KMIPKIT-ELEM-ENUM-VALUE-KEY-VALUE-LOCATION-TYPE-URI-00000002"),
+                        List.of("2.0", "2.1"), List.of()),
+                new LocalEnumerationScope("test-enum-key-wrap-type", List.of(
+                        "KMIPKIT-ELEM-ENUM-VALUE-KEY-WRAP-TYPE-AS-REGISTERED-00000002",
+                        "KMIPKIT-ELEM-ENUM-VALUE-KEY-WRAP-TYPE-EXTENSIONS-8XXXXXXX",
+                        "KMIPKIT-ELEM-ENUM-VALUE-KEY-WRAP-TYPE-NOT-WRAPPED-00000001"),
+                        List.of("2.0", "2.1"), List.of()),
+                new LocalEnumerationScope("test-enum-name-type", List.of(
+                        "KMIPKIT-ELEM-ENUM-VALUE-NAME-TYPE-EXTENSIONS-8XXXXXXX",
+                        "KMIPKIT-ELEM-ENUM-VALUE-NAME-TYPE-UNINTERPRETED-TEXT-STRING-00000001",
+                        "KMIPKIT-ELEM-ENUM-VALUE-NAME-TYPE-URI-00000002"),
+                        List.of("2.0", "2.1"), List.of()),
+                new LocalEnumerationScope("test-enum-object-group-member", List.of(
+                        "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-GROUP-MEMBER-EXTENSIONS-8XXXXXXX",
+                        "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-GROUP-MEMBER-GROUP-MEMBER-DEFAULT-00000002",
+                        "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-GROUP-MEMBER-GROUP-MEMBER-FRESH-00000001"),
+                        List.of("2.0", "2.1"), List.of()),
+                new LocalEnumerationScope("test-enum-put-function", List.of(
+                        "KMIPKIT-ELEM-ENUM-VALUE-PUT-FUNCTION-EXTENSIONS-8XXXXXXX",
+                        "KMIPKIT-ELEM-ENUM-VALUE-PUT-FUNCTION-NEW-00000001",
+                        "KMIPKIT-ELEM-ENUM-VALUE-PUT-FUNCTION-REPLACE-00000002"),
+                        List.of("2.0", "2.1"), List.of()),
+                new LocalEnumerationScope("test-enum-secret-data-type", List.of(
+                        "KMIPKIT-ELEM-ENUM-VALUE-SECRET-DATA-TYPE-EXTENSIONS-8XXXXXXX",
+                        "KMIPKIT-ELEM-ENUM-VALUE-SECRET-DATA-TYPE-PASSWORD-00000001",
+                        "KMIPKIT-ELEM-ENUM-VALUE-SECRET-DATA-TYPE-SEED-00000002"),
+                        List.of("2.0", "2.1"), List.of()),
+                new LocalEnumerationScope("test-enum-usage-limits-unit", List.of(
+                        "KMIPKIT-ELEM-ENUM-VALUE-USAGE-LIMITS-UNIT-BYTE-00000001",
+                        "KMIPKIT-ELEM-ENUM-VALUE-USAGE-LIMITS-UNIT-EXTENSIONS-8XXXXXXX",
+                        "KMIPKIT-ELEM-ENUM-VALUE-USAGE-LIMITS-UNIT-OBJECT-00000002"),
+                        List.of("2.0", "2.1"), List.of()));
         for (LocalEnumerationScope scope : additionalEnumerationScopes) {
             List<String> routes = new ArrayList<>(genericEnumerationRoutes);
             routes.addAll(scope.additionalRoutes());
