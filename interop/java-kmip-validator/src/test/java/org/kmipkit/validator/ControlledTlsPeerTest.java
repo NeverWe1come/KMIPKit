@@ -354,6 +354,10 @@ class ControlledTlsPeerTest {
         List<String> keyRoleTypeTargets = enumerationTargetIds(localEnumerationFixtures, "KEY-ROLE-TYPE");
         assertEquals(25, keyRoleTypeTargets.size(),
                 "The Key Role Type aggregate must cover every catalogued value.");
+        List<String> hashingAlgorithmTargets = enumerationTargetIds(
+                localEnumerationFixtures, "HASHING-ALGORITHM");
+        assertEquals(18, hashingAlgorithmTargets.size(),
+                "The Hashing Algorithm aggregate must cover every catalogued value.");
         List<BitmaskFixture> bitmaskFixtures = genericBitmaskFixtures();
         List<DataTypeFixture> dataTypeFixtures = genericDataTypeFixtures();
         Map<String, JsonNode> dataTypeVectors = dataTypeBoundaryVectors();
