@@ -2,7 +2,7 @@ use kmipkit_protocol::attribute::typed;
 use kmipkit_protocol::{
     AdjustmentType, Attribute, AttributeDefinition, AttributeReference, CreateRequest,
     CurrentAttribute, DiscoverVersionsRequest, NewAttribute, PingRequest, ProtocolVersion,
-    UniqueIdentifier,
+    QueryFunction, QueryRequest, UniqueIdentifier,
 };
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestOptions;
@@ -742,6 +742,77 @@ fn discover_versions_builder_rejects_invalid_offers_before_transport() {
         .protocol_versions(Vec::new())
         .execute(&CodecLimits::defaults())
         .expect_err("invalid offers fail before transport");
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert_eq!(transport.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn query_builder_preserves_functions_and_groups_and_executes_once() {
+    let request = failed_request_client()
+        .request()
+        .query()
+        .functions(vec![QueryFunction::OPERATIONS, QueryFunction::OBJECTS])
+        .object_groups(vec!["group-b".to_owned(), "group-a".to_owned()])
+        .build_request()
+        .expect("explicit Query functions form a typed request");
+    assert_eq!(
+        request.functions(),
+        &[QueryFunction::OPERATIONS, QueryFunction::OBJECTS]
+    );
+    assert_eq!(
+        request.object_groups(),
+        Some(["group-b".to_owned(), "group-a".to_owned()].as_slice())
+    );
+    let _: QueryRequest = request;
+
+    let response = asynchronous_response_bytes(
+        0x0000_0018,
+        0,
+        None,
+        None,
+        Some(test_structure([test_item(
+            0x0042_015f,
+            Value::structure(test_structure([])),
+        )])),
+    );
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: vec![2, 5],
+    });
+    let result = client
+        .request()
+        .query()
+        .functions(vec![QueryFunction::OPERATIONS])
+        .execute(&CodecLimits::defaults())
+        .expect("the scripted Query response is valid");
+
+    assert_eq!(
+        result.outcome().operation(),
+        crate::execute::ClientOperation::Query
+    );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn query_builder_rejects_empty_functions_before_transport() {
+    assert_eq!(
+        failed_request_client()
+            .request()
+            .query()
+            .build_request()
+            .expect_err("Query requires at least one function"),
+        FluentBuildError::InvalidRequest
+    );
+
+    let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let error = client
+        .request()
+        .query()
+        .execute(&CodecLimits::defaults())
+        .expect_err("an empty Query is rejected before transport");
     assert_eq!(
         error.delivery_state(),
         Some(kmipkit_transport::RequestDeliveryState::NotSent)
