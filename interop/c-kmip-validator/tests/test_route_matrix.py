@@ -353,13 +353,20 @@ class RouteMatrixTests(unittest.TestCase):
         for version in ('2.0', '2.1'):
             with self.subTest(protocol_version=version):
                 trees = self.runner.generic_tree_fixtures(target, catalog, tags, version)
-                self.assertEqual(trees[0][0], tags['Request Message'])
-                self.assertEqual(trees, [(tags['Ephemeral'], 6, bytes(8))])
-                result = abi.roundtrip(encode(trees[0]))
-                self.assertIn('kmipkit_ttlv_value_boolean', result['invoked_symbols'])
-                self.assertIn('kmipkit_ttlv_item_create', result['invoked_symbols'])
-                self.assertIn('kmipkit_ttlv_decode', result['invoked_symbols'])
-                self.assertEqual(result['constructed_wire'], result['decoded_wire'])
+                self.assertEqual([tree[0] for tree in trees], [tags['Request Message']] * 2)
+                booleans = [next(child for child in tree[2][1][2] if child[0] == tags['Ephemeral'])
+                            for tree in trees]
+                self.assertEqual(booleans, [
+                    (tags['Ephemeral'], 6, bytes(8)),
+                    (tags['Ephemeral'], 6, bytes.fromhex('0100000000000000')),
+                ])
+                for tree in trees:
+                    result = abi.roundtrip(encode(tree))
+                    self.assertIn('kmipkit_ttlv_value_boolean', result['invoked_symbols'])
+                    self.assertIn('kmipkit_ttlv_item_create', result['invoked_symbols'])
+                    self.assertIn('kmipkit_ttlv_decode', result['invoked_symbols'])
+                    self.assertIn('kmipkit_request_message_from_ttlv', result['invoked_symbols'])
+                    self.assertEqual(result['constructed_wire'], result['decoded_wire'])
 
     def test_datetime_constructor_executes_normative_message_timestamp_cells(self):
         """OASIS KMIP 2.0 §9.20 Table 387 and KMIP 2.1 §9.20 Table 425 define Time Stamp as Date-Time."""
