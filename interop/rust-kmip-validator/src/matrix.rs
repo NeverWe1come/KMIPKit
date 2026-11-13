@@ -5491,7 +5491,8 @@ fn run_operation_network(rows: &[Json], connection: &Connection, output: &Path) 
                     ("passed", None, Some("not_sent"), 0, None)
                 }
                 Some(Err(error)) => {
-                    let failure_code = crate::driver::route_failure_code(error.category());
+                    let failure_code =
+                        crate::driver::route_failure_code(error.category(), error.cause_category());
                     match error.delivery_state() {
                         Some(kmipkit::RequestDeliveryState::NotSent) | None => {
                             ("failed", None, Some("not_sent"), 0, Some(failure_code))

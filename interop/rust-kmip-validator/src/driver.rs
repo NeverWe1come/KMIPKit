@@ -580,12 +580,27 @@ pub(crate) fn execute_route(
     execute(client, connection, request)
 }
 
-pub(crate) const fn route_failure_code(category: kmipkit::ClientErrorCategory) -> &'static str {
-    match category {
-        kmipkit::ClientErrorCategory::Validation => "route_validation_failed",
-        kmipkit::ClientErrorCategory::Protocol => "route_protocol_failed",
-        kmipkit::ClientErrorCategory::Transport => "route_transport_failed",
-        kmipkit::ClientErrorCategory::ServerResult => "route_server_result_failed",
+pub(crate) fn route_failure_code(
+    category: kmipkit::ClientErrorCategory,
+    cause: Option<kmipkit::ClientCauseCategory>,
+) -> &'static str {
+    match (category, cause) {
+        (kmipkit::ClientErrorCategory::Validation, _) => "route_validation_failed",
+        (
+            kmipkit::ClientErrorCategory::Protocol,
+            Some(kmipkit::ClientCauseCategory::Protocol(
+                kmipkit::protocol::ProtocolCauseCategory::InvalidEncoding,
+            )),
+        ) => "route_protocol_invalid_encoding_failed",
+        (
+            kmipkit::ClientErrorCategory::Protocol,
+            Some(kmipkit::ClientCauseCategory::Protocol(
+                kmipkit::protocol::ProtocolCauseCategory::InvalidValue,
+            )),
+        ) => "route_protocol_invalid_value_failed",
+        (kmipkit::ClientErrorCategory::Protocol, _) => "route_protocol_failed",
+        (kmipkit::ClientErrorCategory::Transport, _) => "route_transport_failed",
+        (kmipkit::ClientErrorCategory::ServerResult, _) => "route_server_result_failed",
         _ => "route_exchange_failed",
     }
 }
@@ -703,14 +718,18 @@ mod tests {
         assert_eq!(
             super::route_failure_code(
                 ClientErrorCategory::Protocol,
-                Some("protocol: invalid encoding"),
+                Some(kmipkit::ClientCauseCategory::Protocol(
+                    kmipkit::protocol::ProtocolCauseCategory::InvalidEncoding,
+                )),
             ),
             "route_protocol_invalid_encoding_failed"
         );
         assert_eq!(
             super::route_failure_code(
                 ClientErrorCategory::Protocol,
-                Some("protocol: invalid value"),
+                Some(kmipkit::ClientCauseCategory::Protocol(
+                    kmipkit::protocol::ProtocolCauseCategory::InvalidValue,
+                )),
             ),
             "route_protocol_invalid_value_failed"
         );
@@ -721,19 +740,19 @@ mod tests {
         use kmipkit::ClientErrorCategory;
 
         assert_eq!(
-            super::route_failure_code(ClientErrorCategory::Validation),
+            super::route_failure_code(ClientErrorCategory::Validation, None),
             "route_validation_failed"
         );
         assert_eq!(
-            super::route_failure_code(ClientErrorCategory::Protocol),
+            super::route_failure_code(ClientErrorCategory::Protocol, None),
             "route_protocol_failed"
         );
         assert_eq!(
-            super::route_failure_code(ClientErrorCategory::Transport),
+            super::route_failure_code(ClientErrorCategory::Transport, None),
             "route_transport_failed"
         );
         assert_eq!(
-            super::route_failure_code(ClientErrorCategory::ServerResult),
+            super::route_failure_code(ClientErrorCategory::ServerResult, None),
             "route_server_result_failed"
         );
     }
