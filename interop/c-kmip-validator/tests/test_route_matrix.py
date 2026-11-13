@@ -1794,6 +1794,31 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertFalse(self.runner.should_execute_attribute_case(
             {'transport': None}, {'category': 'object_lifecycle', 'requires': {}}, {'kind': 'attribute'}))
 
+    def test_modify_attribute_typed_payload_route_is_inspected_from_installed_c_abi(self):
+        """Exercise OASIS KMIP 2.0 §6.1.33 Table 247 and KMIP 2.1 §6.1.34 Table 265."""
+        from artifact_support import INSTALL, ROOT
+        from c_route_models import ModelCases
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        target = next(item for item in catalog['normative_targets']
+                      if item['target_id'] == 'KMIPKIT-PAYLOAD-CLIENT-MODIFY-ATTRIBUTE-REQUEST-21-003')
+        result = ModelCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog).execute(
+            target, '2.1', 'kmipkit_modify_attribute_request_to_ttlv_payload')
+
+        self.assertIsNotNone(result, 'installed Modify Attribute request payload route is missing')
+        self.assertEqual(result['sample_count'], 2)
+        self.assertTrue({'kmipkit_modify_attribute_request_create',
+                         'kmipkit_modify_attribute_request_to_ttlv_payload'} <= result['invoked_symbols'])
+        self.assertEqual(result['normalized_trees'], [
+            [[0x420094, 7, b'fixture-object-1'.hex()],
+             [0x42013C, 1, [[0x420008, 1, [
+                 [0x42000A, 7, b'Comment'.hex()], [0x42000B, 7, b'old'.hex()]]]]],
+             [0x42013D, 1, [[0x420008, 1, [
+                 [0x42000A, 7, b'Comment'.hex()], [0x42000B, 7, b'new'.hex()]]]]]],
+            [[0x42013D, 1, [[0x420008, 1, [
+                [0x42000A, 7, b'Comment'.hex()], [0x42000B, 7, b'new'.hex()]]]]]],
+        ])
+
     def test_structured_name_attribute_has_both_required_fields(self):
         executor = self.attribute_executor()
         target = next(target for target in executor.catalog['normative_targets']
