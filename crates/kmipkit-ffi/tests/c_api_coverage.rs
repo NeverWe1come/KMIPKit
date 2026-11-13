@@ -252,11 +252,16 @@ fn public_c_fluent_client_executes_lifecycle_helpers_over_mutual_tls() {
             (0_usize, 1_u32),
             (1, 10),
             (2, 18),
-            (3, 21),
-            (4, 8),
-            (5, 22),
-            (6, 19),
-            (7, 20),
+            (3, 18),
+            (4, 21),
+            (5, 21),
+            (6, 8),
+            (7, 8),
+            (8, 22),
+            (9, 22),
+            (10, 19),
+            (11, 19),
+            (12, 20),
         ];
         for (stage, expected_operation) in expected {
             let (stream, _) = loop {
@@ -266,7 +271,7 @@ fn public_c_fluent_client_executes_lifecycle_helpers_over_mutual_tls() {
                         if Instant::now() >= deadline {
                             return Err(io::Error::new(
                                 io::ErrorKind::TimedOut,
-                                "the C fluent client did not send all eight fixture requests",
+                                "the C fluent client did not send all thirteen fixture requests",
                             ));
                         }
                         thread::sleep(Duration::from_millis(5));
@@ -281,7 +286,7 @@ fn public_c_fluent_client_executes_lifecycle_helpers_over_mutual_tls() {
                 .expect("the mutual-TLS server configuration is valid");
             let mut tls = StreamOwned::new(connection, stream);
             let request = read_ttlv_frame(&mut tls)?;
-            assert_fluent_lifecycle_request(&request, expected_operation, LIFECYCLE_ID, stage == 4);
+            assert_fluent_lifecycle_request(&request, expected_operation, LIFECYCLE_ID, stage);
             tls.write_all(&fluent_lifecycle_response(stage))?;
             tls.flush()?;
             let _ = tls.get_ref().shutdown(Shutdown::Both);
@@ -317,8 +322,9 @@ fn assert_fluent_lifecycle_request(
     encoded: &[u8],
     operation: u32,
     identifier: &[u8],
-    is_locate: bool,
+    stage: usize,
 ) {
+    let is_locate = matches!(stage, 6 | 7);
     let request = decode_test_request(encoded).expect("the request is valid TTLV");
     request.with_value(|value| {
         let ValueView::Structure(message) = value else {
@@ -360,7 +366,12 @@ fn assert_fluent_lifecycle_request(
                             let ValueView::Structure(attributes) = value else {
                                 panic!("Locate Attributes is a structure");
                             };
-                            assert!(attributes.children().is_empty());
+                            assert_eq!(attributes.children().len(), 1);
+                            let object_type = &attributes.children()[0];
+                            assert_eq!(object_type.tag().raw(), 0x0042_0057);
+                            assert!(object_type.with_value(|value| {
+                                matches!(value, ValueView::Enumeration(actual) if *actual == 2)
+                            }));
                         });
                         assert!(!payload
                             .children()
@@ -387,6 +398,19 @@ fn assert_fluent_lifecycle_request(
                                             matches!(value, ValueView::Enumeration(code) if *code == 2)
                                         })
                                 }));
+                                let message = reason
+                                    .children()
+                                    .iter()
+                                    .find(|item| item.tag().raw() == 0x0042_0080);
+                                if stage == 11 {
+                                    assert!(message.is_some_and(|item| {
+                                        item.with_value(|value| {
+                                            matches!(value, ValueView::TextString(actual) if actual == "audit")
+                                        })
+                                    }));
+                                } else {
+                                    assert!(message.is_none());
+                                }
                             });
                             assert!(payload.children().iter().any(|item| {
                                 item.tag().raw() == 0x0042_0021
@@ -400,6 +424,26 @@ fn assert_fluent_lifecycle_request(
             }
         });
     });
+}
+
+fn fluent_lifecycle_get_response_payload() -> Vec<u8> {
+    let key_block = structure(
+        0x0042_0040,
+        [
+            enumeration(0x0042_0042, 1),
+            structure(0x0042_0045, [ttlv_item(0x0042_0043, 0x08, &[0xA5; 32])]),
+            enumeration(0x0042_0028, 3),
+            integer(0x0042_002A, 256),
+        ],
+    );
+    structure(
+        0x0042_007C,
+        [
+            enumeration(0x0042_0057, 2),
+            ttlv_item(0x0042_0094, 0x07, b"fluent-key-42"),
+            structure(0x0042_008F, [key_block]),
+        ],
+    )
 }
 
 fn fluent_lifecycle_response(stage: usize) -> Vec<u8> {
@@ -426,43 +470,22 @@ fn fluent_lifecycle_response(stage: usize) -> Vec<u8> {
                 ],
             ),
         ),
-        1 => {
-            let key_block = structure(
-                0x0042_0040,
-                [
-                    enumeration(0x0042_0042, 1),
-                    structure(0x0042_0045, [ttlv_item(0x0042_0043, 0x08, &[0xA5; 32])]),
-                    enumeration(0x0042_0028, 3),
-                    integer(0x0042_002A, 256),
-                ],
-            );
-            (
-                10,
-                structure(
-                    0x0042_007C,
-                    [
-                        enumeration(0x0042_0057, 2),
-                        ttlv_item(0x0042_0094, 0x07, b"fluent-key-42"),
-                        structure(0x0042_008F, [key_block]),
-                    ],
-                ),
-            )
-        }
-        2 => (
+        1 => (10, fluent_lifecycle_get_response_payload()),
+        2 | 3 => (
             18,
             structure(
                 0x0042_007C,
                 [ttlv_item(0x0042_0094, 0x07, b"fluent-key-42")],
             ),
         ),
-        3 => (
+        4 | 5 => (
             21,
             structure(
                 0x0042_007C,
                 [ttlv_item(0x0042_0094, 0x07, b"fluent-key-42")],
             ),
         ),
-        4 => (
+        6 | 7 => (
             8,
             structure(
                 0x0042_007C,
@@ -472,21 +495,21 @@ fn fluent_lifecycle_response(stage: usize) -> Vec<u8> {
                 ],
             ),
         ),
-        5 => (
+        8 | 9 => (
             22,
             structure(
                 0x0042_007C,
                 [ttlv_item(0x0042_0094, 0x07, b"fluent-key-42")],
             ),
         ),
-        6 => (
+        10 | 11 => (
             19,
             structure(
                 0x0042_007C,
                 [ttlv_item(0x0042_0094, 0x07, b"fluent-key-42")],
             ),
         ),
-        7 => (
+        12 => (
             20,
             structure(
                 0x0042_007C,

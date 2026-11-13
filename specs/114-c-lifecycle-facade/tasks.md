@@ -14,8 +14,9 @@
 - [x] T004 [REFACTOR COMMIT] Consolidate shared pointer, options, response,
   and error handling; add manifest declarations and regenerate all outputs.
 - [x] T005 Add controlled TLS fixture tests for decoded request semantics and
-  encoded typed responses for all five operations, including a no-send case.
-- [ ] T006 Run lifecycle C ABI, compiled consumer, sanitizer, traceability,
-  manifest/export, coverage, format, Clippy, and relevant workspace checks;
-  resolve every exact-head CI failure.
+  encoded typed responses for all ten direct and timeout-options helpers,
+  including Locate filters, the optional Revoke message, and a no-send case.
+- [x] T006 Run lifecycle C ABI, compiled consumer, sanitizer, traceability,
+  manifest/export, coverage, format, Clippy, and relevant workspace checks.
+  Exact-head hosted CI remains the final review gate on the draft PR.
 
