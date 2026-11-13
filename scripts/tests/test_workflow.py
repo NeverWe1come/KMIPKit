@@ -1079,24 +1079,17 @@ class WorkflowContractTests(unittest.TestCase):
         )
         self.assertIn("cargo llvm-cov --no-clean -p kmipkit-ffi --all-targets --all-features --locked", collector)
         self.assertIn('cargo_output="${report_dir}/cargo-llvm-cov.log"', collector)
-        self.assertIn(r"Running unittests src\/lib\.rs", collector)
-        self.assertIn(r"Running tests\/c_api_coverage\.rs", collector)
-        self.assertIn(
-            'mapfile -t test_binary_names < <(',
-            collector,
-        )
-        self.assertIn("test_binaries=()", collector)
-        self.assertIn('test_binaries+=("${test_binary}")', collector)
-        self.assertIn("c_api_coverage-[[:xdigit:]]+", collector)
-        self.assertIn('for test_binary in "${test_binaries[@]}"', collector)
-        self.assertIn('coverage_objects+=(-object "${test_binary}")', collector)
+        self.assertIn("cargo llvm-cov show-env --sh", collector)
+        self.assertIn("--message-format=json", collector)
+        self.assertIn('scripts/ffi_coverage_objects.py', collector)
+        self.assertIn("mapfile -d '' -t object_paths", collector)
+        self.assertIn('coverage_objects+=(-object "${object_path}")', collector)
         self.assertIn('rustc --print sysroot', collector)
         self.assertIn('rustc -vV', collector)
         self.assertIn('"${llvm_cov}" export -format=text', collector)
         self.assertNotIn('llvm-cov-20', collector)
         self.assertIn('rustup component add llvm-tools-preview --toolchain stable', job)
         self.assertIn("KMIPKit.profdata", collector)
-        self.assertIn("libkmipkit_ffi.so", collector)
         self.assertIn("--sources", collector)
         self.assertIn("mapfile -d '' -t source_files < <(", collector)
         self.assertIn(
@@ -1121,10 +1114,15 @@ class WorkflowContractTests(unittest.TestCase):
             "cargo llvm-cov --no-clean -p kmipkit-ffi --all-targets --all-features --locked",
             collector,
         )
-        self.assertIn(r"Running unittests src\/lib\.rs", collector)
-        self.assertIn(r"Running tests\/c_api_coverage\.rs", collector)
-        self.assertIn('test_binaries+=("${test_binary}")', collector)
-        self.assertIn('for test_binary in "${test_binaries[@]}"', collector)
+        resolver = (REPOSITORY_ROOT / "scripts" / "ffi_coverage_objects.py").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn('"kmipkit_ffi": "unit"', resolver)
+        self.assertIn('"c_api_coverage": "consumer"', resolver)
+        self.assertIn('"operation_parity_0053": "parity"', resolver)
+        self.assertIn('"libkmipkit_ffi.so": "dso"', resolver)
+        self.assertIn('"libkmipkit_ffi.a": "staticlib"', resolver)
+        self.assertIn('scripts/ffi_coverage_objects.py', collector)
 
     def test_coverage_gate_waits_for_platform_and_adapter_reports(self) -> None:
         contents = self.require_workflow()
