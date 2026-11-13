@@ -109,18 +109,33 @@ recipes. The installed package has no public generic encoder: the small
 fixture encoder belongs to the validator and is never labeled as a public
 library encoder.
 
-The latest installed-package matrix run completed all **74,648/74,648** cells:
-45,470 local construction/encoding/decoding cells and 29,178 controlled-peer network
-cells across 823 catalog cases. It covers KMIP 2.0 and 2.1, TTLV/JSON/XML and
-raw TLS/HTTPS with TLS 1.3 mutual authentication. All 74,648 invocations
-passed; there were no duplicate or pending cells. The controlled peer checks
-the received request and response shapes, ordered batch items, protocol
-version, result status, state changes, asynchronous flows and cleanup where
-the case requires them. A passed matrix cell means the installed library route
-was exercised and its controlled fixture assertions held; it does not claim
-that every KMIP server supports the operation or that every server response
-will be successful. Reports retain normalized tree and deterministic wire
-hashes, never raw bodies or fixture values.
+An installed-package matrix run at feature head `264ba33bc` completed all
+**74,648/74,648** cells: 45,470 local construction/encoding/decoding cells
+and 29,178 controlled-peer network cells across 823 catalog cases. It used
+catalog SHA-256
+`93bf7d439fe871cc467d0dd262e6dfe68340de4c81fa0671e5f967bb90a34613` and
+route-manifest SHA-256
+`5fdddfb8f004cd858b18f27b432fe6b802d2ac7d969d49abeb5db0b265738116`.
+That evidence predates the current common-base update to the Batch Stop
+scenario and does not establish closure for the current PR merge tree.
+
+The current common-base catalog expects one response when the first item of a
+two-item Stop batch fails, while the feature snapshot used by the previous
+complete matrix expected two. OASIS KMIP 2.1 §11.5, Table 434 (and KMIP 2.0
+§11.5, Table 396) says Stop prevents processing subsequent operations and
+that responses to other batch items are returned normally. This leaves a
+catalog-versus-normative-text discrepancy to resolve. The Python client's
+`Client.execute` rejects the one-response fixture selected by the current
+common-base catalog; the route is recorded as failed, not successful. This
+evidence alone does not establish a library defect. The PR remains WIP until
+the common contract and its normative interpretation are resolved.
+
+The historical matrix covered KMIP 2.0 and 2.1, TTLV/JSON/XML, raw TLS/HTTPS
+with TLS 1.3 mutual authentication. Reports retain normalized tree and
+deterministic wire hashes, never raw bodies or fixture values. A passed cell
+only means the installed library route was exercised and its controlled
+fixture assertions held; it does not claim that every KMIP server supports
+the operation or that every server response will be successful.
 
 The generated `closure.json` and `pending-coverage.json` contain the exact
 counts for each run. The independent shared validator also passed against the

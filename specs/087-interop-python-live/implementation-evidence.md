@@ -27,12 +27,14 @@ PYTHONPATH=src python ../shared/tools/validate_route_evidence.py \
 Observed on 2026-11-13:
 
 - `verify_artifact.py` accepted the installed wheel, exact release commit and digest.
-- The Python 3.12 unit suite passed all 129 tests in 348.501 seconds.
+- The pre-regression Python 3.12 unit suite passed all 129 tests in 348.501 seconds.
 - Repository requirement-traceability contracts passed 2 tests; feature
   traceability contracts passed 31 tests.
-- The installed-package matrix completed all 74,648/74,648 route cells, with
-  zero failed or pending cells. The shared route-evidence validator accepted
-  all 74,648 invocations with zero duplicate events.
+- The installed-package matrix at feature head `264ba33bc` completed all
+  74,648/74,648 cells with zero failed or pending cells. That run used catalog
+  SHA-256 `93bf7d439fe871cc467d0dd262e6dfe68340de4c81fa0671e5f967bb90a34613`.
+  The current PR merge base changes the Batch Stop expected response count, so
+  this earlier completion is not evidence for the current merge tree.
 - Matrix run ID: `python-matrix-4691e61d-1739-4ee7-8991-9a4dce2e4fc1`.
   Evidence and closure are in `build/matrix-current/`; the report contains
   normalized tree and deterministic wire hashes, not KMIP bodies.
@@ -41,22 +43,49 @@ Observed on 2026-11-13:
   ordered batches, response accessors, stateful workflows and asynchronous
   routes using the controlled peer.
 
-The complete matrix means every route cell in the current shared route
-manifest was exercised through the installed wheel. It does not claim that a
-KMIP server supports every operation. Public APIs that the pinned library does
-not expose, including generic outbound TTLV requests and server-initiated
-request handling, remain documented API boundaries and are not reported as
-successful invocations.
+## Batch Stop response-count discrepancy
+
+The common-base catalog at commit `66e1e73ce9e8745844686ec51719940d3aa9f8a8`
+expects one response for the `test-batch-stop-on-first-failure` scenario
+(catalog SHA-256 `e4a542bab4831a04e51f5bf04c9019da3f38845bc85839ae9b632dcc610a7d7f`).
+The Python feature snapshot used for the prior matrix expected two responses
+(catalog SHA-256
+`93bf7d439fe871cc467d0dd262e6dfe68340de4c81fa0671e5f967bb90a34613`). OASIS
+KMIP 2.1 Specification, OS, §11.5, Table 434 states that STOP prevents
+processing subsequent operations and that responses to other batch items are
+returned normally. KMIP 2.0 has the same rule in §11.5, Table 396. Thus the
+one-versus-two response-count difference is a catalog-versus-normative-text
+discrepancy; §9.5 defines Batch Count as the number of batch items in a
+message but does not resolve this difference by itself.
+
+The regression test builds the one-response peer reply selected by the
+common-base catalog from the installed Python package, then observes
+`Client.execute` reject it with `ClientExecutionError (2; delivery=3)`. The
+route event is recorded as `failed` with `route_execution_failed`; it is not
+counted as a successful interoperability invocation. Given the normative
+text above, this result does not by itself establish a library defect. PR run
+[43435461948](https://github.com/NeverWe1come/KMIPKit/actions/runs/43435461948)
+also exposed the response-count mismatch. Its later independent validator
+reported `FileNotFoundError` because the earlier test failure prevented the
+matrix step from producing its report; that was a secondary workflow error.
+
+The workflow now runs the matrix after consumer-test failure when the pinned
+artifact manifest exists, validates only when the matrix report exists, and
+warns rather than fails artifact upload when no report was produced. This keeps
+the primary route result visible and avoids a misleading missing-file failure.
+The validator PR does not change KMIPKit production code or the shared
+generated catalog. The shared contract needs an approved normative review
+before a library fix or conformance conclusion can be made.
 
 ## Pull-request CI evidence
 
 At PR #173 head `264ba33bc0c04aa4285a2908a46ab097fd7802d8`, 49 checks succeeded
-and none failed. Six checks were skipped by workflow conditions: the C, Java
-and Rust interop consumer jobs were outside this PR's path scope; nightly and
-active-release checks require a scheduled event; and the protected-release
-evidence job requires a protected `release/1.0.0` push. The successful Python
-consumer job built and installed the exact pinned release wheel and ran the
-consumer contract against controlled TLS fixtures.
+and none failed before the current common-base response-count change. The six
+skips were controlled by path or workflow-event conditions. On the current
+merge tree, the Python route matrix records the one-response STOP discrepancy
+against the installed client. The common catalog's expected response count
+requires an approved normative review before that event can be classified as a
+library defect or the route can be considered closed.
 
 No Cosmian, CipherTrust or ESKM endpoint was available. These fixture results
 are not vendor interoperability evidence. Cross-language parity still
