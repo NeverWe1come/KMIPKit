@@ -571,6 +571,49 @@ class ControlledTlsPeerTest {
                 assertEquals("passed", event.path("status").asText());
             }
         }
+        List<String> genericEnumerationRoutes = List.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode");
+        List<LocalEnumerationScope> additionalEnumerationScopes = List.of(
+                new LocalEnumerationScope("test-enum-opaque-data-type", List.of(
+                        "KMIPKIT-ELEM-ENUM-VALUE-OPAQUE-DATA-TYPE-EXTENSIONS-8XXXXXXX"),
+                        List.of("2.0", "2.1"), List.of(
+                                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+                                "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew")),
+                new LocalEnumerationScope("test-enum-processing-stage", List.of(
+                        "KMIPKIT-ELEM-ENUM-VALUE-PROCESSING-STAGE-COMPLETED-00000003",
+                        "KMIPKIT-ELEM-ENUM-VALUE-PROCESSING-STAGE-EXTENSIONS-8XXXXXXX",
+                        "KMIPKIT-ELEM-ENUM-VALUE-PROCESSING-STAGE-IN-PROCESS-00000002",
+                        "KMIPKIT-ELEM-ENUM-VALUE-PROCESSING-STAGE-SUBMITTED-00000001"),
+                        List.of("2.1"), List.of()),
+                new LocalEnumerationScope("test-enum-ticket-type", List.of(
+                        "KMIPKIT-ELEM-ENUM-VALUE-TICKET-TYPE-EXTENSIONS-8XXXXXXX",
+                        "KMIPKIT-ELEM-ENUM-VALUE-TICKET-TYPE-LOGIN-00000001"),
+                        List.of("2.0", "2.1"), List.of()),
+                new LocalEnumerationScope("test-enum-mask-generator", List.of(
+                        "KMIPKIT-ELEM-ENUM-VALUE-MASK-GENERATOR-EXTENSIONS-8XXXXXXX",
+                        "KMIPKIT-ELEM-ENUM-VALUE-MASK-GENERATOR-MFG1-00000001"),
+                        List.of("2.0", "2.1"), List.of(
+                                "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.maskgenerator")));
+        for (LocalEnumerationScope scope : additionalEnumerationScopes) {
+            List<String> routes = new ArrayList<>(genericEnumerationRoutes);
+            routes.addAll(scope.additionalRoutes());
+            for (String route : routes) {
+                assertEquals(scope.targetIds().size() * scope.protocolVersions().size(),
+                        routeEventCount(report.path("events"), scope.caseId(), route),
+                        "Every catalogued value must complete each applicable route for " + scope.caseId());
+                for (String version : scope.protocolVersions()) {
+                    for (String targetId : scope.targetIds()) {
+                        JsonNode event = findRouteEvent(report.path("events"), scope.caseId(), route,
+                                version, targetId);
+                        assertEquals("passed", event.path("status").asText());
+                    }
+                }
+            }
+        }
         assertEquals(2, routeEventCount(report.path("events"), RESPONSE_BATCH_ITEM_CASE_ID,
                         "java.typed-protocol.function.client_batch_item_response_pending_correlation_value"),
                 "A controlled Pending response must expose its server-issued correlation value.");
@@ -4055,6 +4098,9 @@ class ControlledTlsPeerTest {
 
     private record EnumerationFixture(String caseId, String targetId, String parentName, int rawTag, long value,
             StandardAttribute attribute, List<String> protocolVersions) {}
+
+    private record LocalEnumerationScope(String caseId, List<String> targetIds, List<String> protocolVersions,
+            List<String> additionalRoutes) {}
 
     private record BitmaskFixture(String caseId, String targetId, int rawTag, long value,
             StandardAttribute attribute, List<String> protocolVersions) {}
