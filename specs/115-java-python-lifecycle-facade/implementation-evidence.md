@@ -43,7 +43,24 @@ Local verification so far:
 | `python3.12 -B tools/api_manifest/generate.py --check` | Passed: all 12 generated outputs are current. |
 | `git diff --check` | Passed. |
 
-The complete T102 discovery has not yet produced a terminal result, and the
-failed hosted run's other platform jobs were cancelled before completion. A
-new exact-head run must validate the full T102 suite on all applicable
-platforms before PR #211 can be marked ready.
+The rebased branch also changed declarations captured by the shared
+T102 optional-request and response-view snapshots. The snapshots now account
+for the inherited KMIPKIT-0093-FR-008 result links and Locate aliases, the ten
+KMIPKIT-0114 C lifecycle declarations, and the 62 KMIPKIT-0115 Java/Python
+lifecycle declarations. Their focused tests pass.
+
+## Rebased T102 and export verification
+
+- The complete T102 discovery ran in fresh subprocess groups of four modules
+  to bound peak memory. All 108 modules passed: 405 tests, zero failed groups.
+- `python3.12 -B tools/api_manifest/generate.py --check` passed; all 12
+  generated outputs are current.
+- `python3.12 -B tools/api_manifest/audit_binding_exports.py --repo-root . --check`
+  passed for all three audited bindings. Exact manifest matches: C 2,022/2,022,
+  Java 2,432/2,432, Python 2,643/2,643; zero missing, stale, unobserved, or
+  kind-mismatched declarations.
+- `git diff --check` passed.
+
+PR #211 remains a draft while a new exact-head CI run validates these snapshot
+and documentation updates. The prior hosted jobs were for the old remote SHA
+and are not used as evidence for the rebased head.
