@@ -18,7 +18,7 @@ class RouteExecutionEvidenceTest {
     @Test
     void installedDecoderRejectsTheUnallocatedTagForBothProtocolVersions() throws Exception {
         var provenance = ArtifactProvenance.load(Path.of(System.getProperty("kmipkit.artifactManifest")),
-                "9a16cc90a12205101d22a38501a5e74c665df4dc");
+                "489fafc79ef89db2524eafa7a6c6482f5cf75d97");
         Path loadedJar = Path.of(TtlvCodec.class.getProtectionDomain().getCodeSource().getLocation().toURI())
                 .toAbsolutePath().normalize();
         assertEquals(provenance.artifactPath(), loadedJar,

@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ArtifactProvenanceTest {
-    private static final String COMMIT = "9a16cc90a12205101d22a38501a5e74c665df4dc";
+    private static final String COMMIT = "489fafc79ef89db2524eafa7a6c6482f5cf75d97";
 
     @Test
     void pinnedLibraryCommitMatchesSharedRouteManifest() throws Exception {
