@@ -342,6 +342,9 @@ class ControlledTlsPeerTest {
         List<String> recommendedCurveTargets = enumerationTargetIds(localEnumerationFixtures, "RECOMMENDED-CURVE");
         assertEquals(71, recommendedCurveTargets.size(),
                 "The Recommended Curve aggregate must cover every catalogued value.");
+        List<String> nistKeyTypeTargets = enumerationTargetIds(localEnumerationFixtures, "NIST-KEY-TYPE");
+        assertEquals(20, nistKeyTypeTargets.size(),
+                "The NIST Key Type aggregate must cover every catalogued value.");
         List<BitmaskFixture> bitmaskFixtures = genericBitmaskFixtures();
         List<DataTypeFixture> dataTypeFixtures = genericDataTypeFixtures();
         Map<String, JsonNode> dataTypeVectors = dataTypeBoundaryVectors();
