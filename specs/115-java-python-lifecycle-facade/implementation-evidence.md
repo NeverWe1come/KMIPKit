@@ -21,3 +21,29 @@
 - Red commit: `3d5aee2c`; Green commit: `8309c9df`; Refactor commit: `aaafa4a7`.
 - Centralize one-item batch execution for Get/Destroy/Activate/Archive/Recover, Locate, and Revoke in Java and Python; request construction, timeout options, asynchronous indicator handling, and transfer/release boundaries remain unchanged.
 - Post-refactor full suites passed: Java 712 tests, 1 skipped; Python 1,362 tests.
+
+## Hosted T102 snapshot correction
+
+The first hosted Script contracts run (`43499699503`) failed on Ubuntu because
+the approved public API manifest contains 16,495 declarations while the shared
+T102 checkpoint still expected 16,423. The 72-row increase is accounted for
+by the ten C lifecycle declarations from KMIPKIT-0114 and the 62 Java/Python
+lifecycle facade declarations from KMIPKIT-0115. After correcting the total,
+the focused Certify snapshot test exposed stale declaration and operation
+fingerprints. The shared T102 snapshot now records declaration hash
+`23cf276c657dc3cf0ca453b97601aa5cd319f182a8eeabe87cb5d70880f3587d` and
+operation hash
+`574b163b50c24b128219f644956cc21c990879c1a5174486cd5b8b9d609597ff`.
+
+Local verification so far:
+
+| Command | Result |
+|---|---|
+| `python3.12 -B -m unittest tools.api_manifest.tests.test_t102_certify_request_builder_mapping tools.api_manifest.tests.test_t102_pkcs11_request_trait_exclusions -v` | Passed: 14 tests. |
+| `python3.12 -B tools/api_manifest/generate.py --check` | Passed: all 12 generated outputs are current. |
+| `git diff --check` | Passed. |
+
+The complete T102 discovery has not yet produced a terminal result, and the
+failed hosted run's other platform jobs were cancelled before completion. A
+new exact-head run must validate the full T102 suite on all applicable
+platforms before PR #211 can be marked ready.
