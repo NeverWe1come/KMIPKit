@@ -1516,15 +1516,50 @@ static int32_t build_get_attributes_item(
     return status;
 }
 
+static int32_t read_register_fixture_bytes(
+    const char *path,
+    uint8_t **out_data,
+    uint64_t *out_length) {
+    if (!path || path[0] == '\0' || !out_data || !out_length) return -1;
+    *out_data = NULL;
+    *out_length = 0;
+    FILE *source = fopen(path, "rb");
+    if (!source) return -1;
+    int32_t status = 0;
+    if (fseek(source, 0, SEEK_END) != 0) status = -1;
+    long file_length = status == 0 ? ftell(source) : -1;
+    if (file_length <= 0 || (unsigned long)file_length > KMIP_MAX_REQUEST_BYTES ||
+        file_length > INT32_MAX || fseek(source, 0, SEEK_SET) != 0) status = -1;
+    uint8_t *data = NULL;
+    if (status == 0) {
+        data = malloc((size_t)file_length);
+        if (!data) status = KMIPKIT_ERROR_RESOURCE_LIMIT;
+    }
+    if (status == 0 && fread(data, 1, (size_t)file_length, source) != (size_t)file_length) {
+        status = -1;
+    }
+    (void)fclose(source);
+    if (status != 0) {
+        if (data) {
+            memset(data, 0, (size_t)(file_length > 0 ? file_length : 0));
+            free(data);
+        }
+        return status;
+    }
+    *out_data = data;
+    *out_length = (uint64_t)file_length;
+    return 0;
+}
+
 static int32_t build_certificate_register_item(
     kmip_live_client_t *client,
     const char *certificate_path,
     kmipkit_client_batch_item_t **out_item) {
     if (!client || !certificate_path || certificate_path[0] == '\0' || !out_item) return -1;
-    FILE *source = fopen(certificate_path, "rb");
-    if (!source) return -1;
-    int32_t status = 0;
     uint8_t *certificate_data = NULL;
+    uint64_t certificate_length = 0;
+    int32_t status = read_register_fixture_bytes(
+        certificate_path, &certificate_data, &certificate_length);
     kmipkit_ttlv_structure_t *certificate_attributes = NULL;
     kmipkit_ttlv_structure_t *certificate_fields = NULL;
     kmipkit_ttlv_value_t *type_value = NULL;
@@ -1534,19 +1569,6 @@ static int32_t build_certificate_register_item(
     kmipkit_tag_t *tag = NULL;
     kmipkit_ttlv_item_t *object_item = NULL;
     kmipkit_register_request_t *request = NULL;
-    if (fseek(source, 0, SEEK_END) != 0) status = -1;
-    long file_length = status == 0 ? ftell(source) : -1;
-    if (file_length <= 0 || (unsigned long)file_length > KMIP_MAX_REQUEST_BYTES ||
-        fseek(source, 0, SEEK_SET) != 0) status = -1;
-    if (status == 0) {
-        certificate_data = malloc((size_t)file_length);
-        if (!certificate_data) status = KMIPKIT_ERROR_RESOURCE_LIMIT;
-    }
-    if (status == 0 && fread(certificate_data, 1, (size_t)file_length, source) != (size_t)file_length) {
-        status = -1;
-    }
-    (void)fclose(source);
-    if (status == 0 && file_length > INT32_MAX) status = -1;
     if (status == 0 && !create_cryptographic_key_attributes(
             client, KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_RSA, 2048,
             &certificate_attributes)) status = -1;
@@ -1561,7 +1583,7 @@ static int32_t build_certificate_register_item(
     }
     if (status == 0 && !append_ttlv_value(
             client, &certificate_attributes, UINT32_C(0x42001D), &type_value)) status = -1;
-    if (status == 0 && kmipkit_ttlv_value_integer((int32_t)file_length, &type_value) != 0) status = -1;
+    if (status == 0 && kmipkit_ttlv_value_integer((int32_t)certificate_length, &type_value) != 0) status = -1;
     if (status == 0 && !append_ttlv_value(
             client, &certificate_attributes, UINT32_C(0x4200AD), &type_value)) status = -1;
     if (status == 0) status = kmipkit_ttlv_structure_create(&certificate_fields);
@@ -1571,7 +1593,7 @@ static int32_t build_certificate_register_item(
             client, &certificate_fields, UINT32_C(0x42001D), &type_value)) status = -1;
     if (type_value) kmipkit_ttlv_value_release(type_value);
     if (status == 0) status = kmipkit_ttlv_value_byte_string(
-        client->limits, certificate_data, (uint64_t)file_length, &certificate_value);
+        client->limits, certificate_data, certificate_length, &certificate_value);
     if (status == 0 && !append_ttlv_value(
             client, &certificate_fields, UINT32_C(0x42001E), &certificate_value)) status = -1;
     if (certificate_value) kmipkit_ttlv_value_release(certificate_value);
@@ -1599,7 +1621,7 @@ static int32_t build_certificate_register_item(
     if (type_value) kmipkit_ttlv_value_release(type_value);
     if (certificate_value) kmipkit_ttlv_value_release(certificate_value);
     if (certificate_data) {
-        memset(certificate_data, 0, (size_t)(file_length > 0 ? file_length : 0));
+        memset(certificate_data, 0, (size_t)certificate_length);
         free(certificate_data);
     }
     return status;
@@ -1610,10 +1632,9 @@ static int32_t build_certificate_request_register_item(
     const char *request_path,
     kmipkit_client_batch_item_t **out_item) {
     if (!client || !request_path || request_path[0] == '\0' || !out_item) return -1;
-    FILE *source = fopen(request_path, "rb");
-    if (!source) return -1;
-    int32_t status = 0;
     uint8_t *request_data = NULL;
+    uint64_t request_length = 0;
+    int32_t status = read_register_fixture_bytes(request_path, &request_data, &request_length);
     kmipkit_ttlv_structure_t *attributes = NULL;
     kmipkit_ttlv_structure_t *name_structure = NULL;
     kmipkit_ttlv_value_t *request_type_value = NULL;
@@ -1629,23 +1650,10 @@ static int32_t build_certificate_request_register_item(
     kmipkit_ttlv_item_t *request_bytes_item = NULL;
     kmipkit_ttlv_item_t *object_item = NULL;
     kmipkit_register_request_t *request = NULL;
-    if (fseek(source, 0, SEEK_END) != 0) status = -1;
-    long file_length = status == 0 ? ftell(source) : -1;
-    if (file_length <= 0 || (unsigned long)file_length > KMIP_MAX_REQUEST_BYTES ||
-        fseek(source, 0, SEEK_SET) != 0) status = -1;
-    if (status == 0) {
-        request_data = malloc((size_t)file_length);
-        if (!request_data) status = KMIPKIT_ERROR_RESOURCE_LIMIT;
-    }
-    if (status == 0 && fread(request_data, 1, (size_t)file_length, source) != (size_t)file_length) {
-        status = -1;
-    }
-    (void)fclose(source);
-    if (status == 0 && file_length > INT32_MAX) status = -1;
     if (status == 0) status = kmipkit_ttlv_value_enumeration(
         KMIPKIT_ENUMERATION_CERTIFICATE_REQUEST_TYPE_PKCS_10, &request_type_value);
     if (status == 0) status = kmipkit_ttlv_value_byte_string(
-        client->limits, request_data, (uint64_t)file_length, &request_bytes_value);
+        client->limits, request_data, request_length, &request_bytes_value);
     if (status == 0 && !create_cryptographic_key_attributes(
         client, KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_RSA, 2048, &attributes)) status = -1;
     if (status == 0) status = kmipkit_ttlv_structure_create(&name_structure);
@@ -1701,7 +1709,7 @@ static int32_t build_certificate_request_register_item(
     if (name_type_value) kmipkit_ttlv_value_release(name_type_value);
     if (name_value) kmipkit_ttlv_value_release(name_value);
     if (request_data) {
-        memset(request_data, 0, (size_t)(file_length > 0 ? file_length : 0));
+        memset(request_data, 0, (size_t)request_length);
         free(request_data);
     }
     return status;

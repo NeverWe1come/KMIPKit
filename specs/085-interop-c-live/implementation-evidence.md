@@ -181,3 +181,9 @@ Cancel outcomes, and multiple operation and object routes. The PR remains WIP.
 The response-TTLV comparison now returns the typed status directly instead of
 combining a boolean with an output status. After that refactor, the CMake build
 and CTest passed 7/7, and the focused installed Register exchange passed 1/1.
+
+The fixture readers for Certificate and Certificate Request now share one
+bounded binary-file helper. The helper rejects empty and oversized files,
+checks read completion, and clears owned fixture bytes before freeing them.
+After this refactor, CMake build passed, CTest passed 7/7, the C route matrix
+unit suite passed 77/77, and the FFI coverage object suite passed 12/12.
