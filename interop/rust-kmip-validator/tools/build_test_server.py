@@ -17,7 +17,7 @@ from artifact_paths import test_server_binary, test_server_target_dir
 LOCAL = ROOT / "interop/.local/rust-test-server"
 SOURCE = LOCAL / "release-source"
 HARNESS = LOCAL / "harness"
-PIN = "9a16cc90a12205101d22a38501a5e74c665df4dc"
+PIN = "489fafc79ef89db2524eafa7a6c6482f5cf75d97"
 LOCAL.mkdir(parents=True, exist_ok=True)
 pin_marker = SOURCE / "library-commit"
 if not pin_marker.is_file() or pin_marker.read_text().strip() != PIN:
