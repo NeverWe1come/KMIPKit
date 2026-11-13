@@ -1,0 +1,2766 @@
+{
+  "formatVersion": 1,
+  "scope": "Reviewed static owner and route evidence; test references are not execution results. Earliest version means availability in supported source editions, not verified route-version conformance.",
+  "operations": [
+    {
+      "name": "Activate",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.1"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.1"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::ActivateRequest",
+          "path": "crates/kmipkit-protocol/src/activate.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::ActivateResponse",
+          "path": "crates/kmipkit-protocol/src/activate.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::Activate",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/activate_execution_tests.rs::activate_success_returns_server_result_without_simulating_object_state",
+        "crates/kmipkit-client/tests/unit/activate_execution_tests.rs::activate_failure_preserves_common_result_and_does_not_retry"
+      ]
+    },
+    {
+      "name": "Add Attribute",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.2"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.2"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::AddAttributeRequest",
+          "path": "crates/kmipkit-protocol/src/add_attribute.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::AddAttributeResponse",
+          "path": "crates/kmipkit-protocol/src/add_attribute.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::AddAttribute",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs::add_and_set_send_the_new_attribute_as_one_unchanged_direct_item"
+      ]
+    },
+    {
+      "name": "Adjust Attribute",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.3"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.3"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::AdjustAttributeRequest",
+          "path": "crates/kmipkit-protocol/src/adjust_attribute.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::AdjustAttributeResponse",
+          "path": "crates/kmipkit-protocol/src/adjust_attribute.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::AdjustAttribute",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs::adjust_sends_both_tag_and_name_attribute_reference_forms_once"
+      ]
+    },
+    {
+      "name": "Archive",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.4"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.4"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::ArchiveRequest",
+          "path": "crates/kmipkit-protocol/src/archive.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::ArchiveResponse",
+          "path": "crates/kmipkit-protocol/src/archive.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::Archive",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/archive_execution_tests.rs::archive_success_returns_server_result_without_claiming_archival_completion",
+        "crates/kmipkit-client/tests/unit/archive_execution_tests.rs::archive_failure_preserves_common_result_and_does_not_retry"
+      ]
+    },
+    {
+      "name": "Cancel",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.5"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.5"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::CancelRequest",
+          "path": "crates/kmipkit-protocol/src/cancel.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::CancelResponse",
+          "path": "crates/kmipkit-protocol/src/cancel.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute_cancel",
+        "requestVariant": null,
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/cancel_execution_tests.rs::cancel_exposes_matching_echo_and_assigned_cancellation_result",
+        "crates/kmipkit-client/tests/unit/cancel_execution_tests.rs::cancel_encoded_request_copy_is_zeroized_after_success"
+      ]
+    },
+    {
+      "name": "Certify",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.6"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.6"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::CertifyRequest",
+          "path": "crates/kmipkit-protocol/src/certify.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::CertifyResponse",
+          "path": "crates/kmipkit-protocol/src/certify.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::Certify",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs::certify_sends_table_179_request_once_and_exposes_identifier_and_generic_response",
+        "crates/kmipkit-client/tests/unit/certify_execution_tests.rs::certify_failure_preserves_table_181_result_without_retry"
+      ]
+    },
+    {
+      "name": "Check",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.7"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.7"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::CheckRequest",
+          "path": "crates/kmipkit-protocol/src/check.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::CheckResponse",
+          "path": "crates/kmipkit-protocol/src/check.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::Check",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/check_execution_tests.rs::check_sends_table_183_fields_and_exposes_table_184_response_once",
+        "crates/kmipkit-client/tests/unit/check_execution_tests.rs::locate_and_check_requests_preserve_distinct_cryptographic_usage_masks"
+      ]
+    },
+    {
+      "name": "Create",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.8"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.8"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::CreateRequest",
+          "path": "crates/kmipkit-protocol/src/create.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::CreateResponse",
+          "path": "crates/kmipkit-protocol/src/create.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::Create",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/creation_parity_tests.rs::create_request_and_result_match_shared_creation_fixture"
+      ]
+    },
+    {
+      "name": "Create Key Pair",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.9"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.9"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::CreateKeyPairRequest",
+          "path": "crates/kmipkit-protocol/src/create_key_pair.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::CreateKeyPairResponse",
+          "path": "crates/kmipkit-protocol/src/create_key_pair.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::CreateKeyPair",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/creation_parity_tests.rs::create_key_pair_request_and_result_match_shared_creation_fixture"
+      ]
+    },
+    {
+      "name": "Create Split Key",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.10"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.10"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::CreateSplitKeyRequest",
+          "path": "crates/kmipkit-protocol/src/create_split_key.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::CreateSplitKeyResponse",
+          "path": "crates/kmipkit-protocol/src/create_split_key.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::CreateSplitKey",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/creation_parity_tests.rs::create_split_key_request_and_result_match_shared_creation_fixture"
+      ]
+    },
+    {
+      "name": "Decrypt",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.11"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.11"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::DecryptRequest",
+          "path": "crates/kmipkit-protocol/src/decrypt.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::DecryptResponse",
+          "path": "crates/kmipkit-protocol/src/decrypt.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::Decrypt",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs::fixture_derived_encrypt_decrypt_pairs_execute_once_with_exact_wire_and_paired_response",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs::encrypt_transport_failure_preserves_delivery_state_without_retry"
+      ]
+    },
+    {
+      "name": "Delegated Login",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.12"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.12"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::DelegatedLoginRequest",
+          "path": "crates/kmipkit-protocol/src/delegated_login.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::DelegatedLoginResponse",
+          "path": "crates/kmipkit-protocol/src/delegated_login.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::DelegatedLogin",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs::delegated_login_sends_one_typed_request_and_exposes_secret_safe_ticket",
+        "crates/kmipkit-client/tests/unit/delegated_login_execution_tests.rs::delegated_login_kmip_20_rights_tags_pass_version_gate"
+      ]
+    },
+    {
+      "name": "Delete Attribute",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.13"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.13"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::DeleteAttributeRequest",
+          "path": "crates/kmipkit-protocol/src/delete_attribute.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::DeleteAttributeResponse",
+          "path": "crates/kmipkit-protocol/src/delete_attribute.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::DeleteAttribute",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs::delete_sends_both_reference_forms_and_the_supplied_current_attribute"
+      ]
+    },
+    {
+      "name": "Derive Key",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.14"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.14"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::DeriveKeyRequest",
+          "path": "crates/kmipkit-protocol/src/derive_key.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::DeriveKeyResponse",
+          "path": "crates/kmipkit-protocol/src/derive_key.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::DeriveKey",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/derive_key_execution_tests.rs::both_derivation_inputs_reach_the_server_and_its_error_is_returned_once"
+      ]
+    },
+    {
+      "name": "Destroy",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.15"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.15"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::DestroyRequest",
+          "path": "crates/kmipkit-protocol/src/destroy.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::DestroyResponse",
+          "path": "crates/kmipkit-protocol/src/destroy.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::Destroy",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/destroy_execution_tests.rs::destroy_success_returns_server_result_without_simulating_object_state",
+        "crates/kmipkit-client/tests/unit/destroy_execution_tests.rs::destroy_failure_preserves_common_result_and_does_not_retry"
+      ]
+    },
+    {
+      "name": "Discover Versions",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.16"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.16"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::DiscoverVersionsRequest",
+          "path": "crates/kmipkit-protocol/src/discover_versions.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::DiscoverVersionsResponse",
+          "path": "crates/kmipkit-protocol/src/discover_versions.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::DiscoverVersions",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs::successful_empty_discover_versions_list_is_preserved",
+        "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs::unoffered_typed_discover_versions_result_is_rejected_with_delivery_evidence"
+      ]
+    },
+    {
+      "name": "Encrypt",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.17"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.17"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::EncryptRequest",
+          "path": "crates/kmipkit-protocol/src/encrypt.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::EncryptResponse",
+          "path": "crates/kmipkit-protocol/src/encrypt.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::Encrypt",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs::fixture_derived_encrypt_decrypt_pairs_execute_once_with_exact_wire_and_paired_response",
+        "crates/kmipkit-client/tests/unit/encrypt_decrypt_fixture_execution_tests.rs::encrypt_transport_failure_preserves_delivery_state_without_retry"
+      ]
+    },
+    {
+      "name": "Export",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.18"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.18"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::ExportRequest",
+          "path": "crates/kmipkit-protocol/src/export.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::ExportResponse",
+          "path": "crates/kmipkit-protocol/src/export.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::Export",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/export_execution_tests.rs::explicit_export_options_reach_the_server_once_and_preserve_its_failure"
+      ]
+    },
+    {
+      "name": "Get",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.19"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.19"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::GetRequest",
+          "path": "crates/kmipkit-protocol/src/get.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::GetResponse",
+          "path": "crates/kmipkit-protocol/src/get.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::Get",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::get_success_preserves_completed_object_data_in_one_exchange",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::get_raw_response_navigates_vendor_ttlv_nested_inside_key_block"
+      ]
+    },
+    {
+      "name": "Get Attribute List",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.21"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.21"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::GetAttributeListRequest",
+          "path": "crates/kmipkit-protocol/src/get_attribute_list.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::GetAttributeListResponse",
+          "path": "crates/kmipkit-protocol/src/get_attribute_list.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::GetAttributeList",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs::get_attribute_list_sends_only_uid_and_preserves_typed_response_once",
+        "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs::get_attribute_list_preserves_every_table_228_failure_result_without_retry"
+      ]
+    },
+    {
+      "name": "Get Attributes",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.20"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.20"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::GetAttributesRequest",
+          "path": "crates/kmipkit-protocol/src/get_attributes.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::GetAttributesResponse",
+          "path": "crates/kmipkit-protocol/src/get_attributes.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::GetAttributes",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs::get_attributes_encodes_selected_references_and_exchanges_once",
+        "crates/kmipkit-client/tests/unit/attribute_read_execution_tests.rs::get_attribute_list_sends_only_uid_and_preserves_typed_response_once"
+      ]
+    },
+    {
+      "name": "Get Constraints",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.22"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::GetConstraintsRequest",
+          "path": "crates/kmipkit-protocol/src/get_constraints.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::GetConstraintsResponse",
+          "path": "crates/kmipkit-protocol/src/get_constraints.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::GetConstraints",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/get_constraints_execution_tests.rs::table_229_empty_request_and_table_230_constraints_use_one_exchange",
+        "crates/kmipkit-client/tests/unit/get_constraints_execution_tests.rs::get_constraints_outcome_exposes_typed_views_and_safe_diagnostics"
+      ]
+    },
+    {
+      "name": "Get Usage Allocation",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.22"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.23"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::GetUsageAllocationRequest",
+          "path": "crates/kmipkit-protocol/src/get_usage_allocation.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::GetUsageAllocationResponse",
+          "path": "crates/kmipkit-protocol/src/get_usage_allocation.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::GetUsageAllocation",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs::table_232_one_exchange_encodes_identifier_and_long_integer_count",
+        "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs::table_234_failures_and_unknown_reasons_remain_typed_results_without_retry"
+      ]
+    },
+    {
+      "name": "Hash",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.23"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.24"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::HashRequest",
+          "path": "crates/kmipkit-protocol/src/hash.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::HashResponse",
+          "path": "crates/kmipkit-protocol/src/hash.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::Hash",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/hash_execution_tests.rs::hash_request_convenience_constructor_selects_variant_and_preserves_payload",
+        "crates/kmipkit-client/tests/unit/hash_execution_tests.rs::explicit_hash_executes_once_and_exposes_the_server_data"
+      ]
+    },
+    {
+      "name": "Import",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.24"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.25"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::ImportRequest",
+          "path": "crates/kmipkit-protocol/src/import.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::ImportResponse",
+          "path": "crates/kmipkit-protocol/src/import.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::Import",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs::import_with_missing_pgp_key_version_is_not_sent",
+        "crates/kmipkit-client/tests/unit/import_execution_tests.rs::import_with_missing_secret_data_type_is_not_sent"
+      ]
+    },
+    {
+      "name": "Interop",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.25"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.26"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::InteropRequest",
+          "path": "crates/kmipkit-protocol/src/interop.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::InteropResponse",
+          "path": "crates/kmipkit-protocol/src/interop.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::Interop",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/interop_execution_tests.rs::interop_sends_required_fields_and_returns_empty_success",
+        "crates/kmipkit-client/tests/unit/interop_execution_tests.rs::interop_failure_preserves_transport_delivery_and_does_not_retry"
+      ]
+    },
+    {
+      "name": "Join Split Key",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.26"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.27"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::JoinSplitKeyRequest",
+          "path": "crates/kmipkit-protocol/src/join_split_key.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::JoinSplitKeyResponse",
+          "path": "crates/kmipkit-protocol/src/join_split_key.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::JoinSplitKey",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/join_split_key_execution_tests.rs::explicit_join_split_key_dispatches_once_and_returns_typed_success",
+        "crates/kmipkit-client/tests/unit/join_split_key_execution_tests.rs::absent_or_insufficient_threshold_context_fails_before_transport"
+      ]
+    },
+    {
+      "name": "Locate",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.27"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.28"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::LocateRequest",
+          "path": "crates/kmipkit-protocol/src/locate.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::LocateResponse",
+          "path": "crates/kmipkit-protocol/src/locate.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::Locate",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::locate_batch_preserves_criteria_results_and_server_placeholder_boundary",
+        "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs::locate_forwards_assigned_and_unknown_storage_status_bits_unchanged"
+      ]
+    },
+    {
+      "name": "Log",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.28"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.29"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::LogRequest",
+          "path": "crates/kmipkit-protocol/src/log.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::LogResponse",
+          "path": "crates/kmipkit-protocol/src/log.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::Log",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/log_execution_tests.rs::log_sends_required_fields_and_returns_empty_success",
+        "crates/kmipkit-client/tests/unit/log_execution_tests.rs::log_failure_preserves_transport_delivery_and_does_not_retry"
+      ]
+    },
+    {
+      "name": "Login",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.29"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.30"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::LoginRequest",
+          "path": "crates/kmipkit-protocol/src/login.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::LoginResponse",
+          "path": "crates/kmipkit-protocol/src/login.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::Login",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs::login_matches_pinned_fixture_request_and_returns_one_secret_safe_ticket",
+        "crates/kmipkit-client/tests/unit/login_execution_tests.rs::login_kmip_20_session_tags_pass_version_gate"
+      ]
+    },
+    {
+      "name": "Logout",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.30"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.31"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::LogoutRequest",
+          "path": "crates/kmipkit-protocol/src/logout.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::LogoutResponse",
+          "path": "crates/kmipkit-protocol/src/logout.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::Logout",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/logout_execution_tests.rs::logout_sends_one_ticket_and_exposes_empty_success_without_leaking_it",
+        "crates/kmipkit-client/tests/unit/logout_execution_tests.rs::logout_kmip_20_ticket_tags_pass_version_gate"
+      ]
+    },
+    {
+      "name": "MAC",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.31"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.32"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::MacRequest",
+          "path": "crates/kmipkit-protocol/src/mac.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::MacResponse",
+          "path": "crates/kmipkit-protocol/src/mac.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::Mac",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/mac_execution_tests.rs::explicit_mac_executes_once_and_exposes_server_output",
+        "crates/kmipkit-client/tests/unit/mac_execution_tests.rs::mac_response_shape_error_retains_the_generic_ttlv_item"
+      ]
+    },
+    {
+      "name": "MAC Verify",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.32"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.33"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::MacVerifyRequest",
+          "path": "crates/kmipkit-protocol/src/mac_verify.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::MacVerifyResponse",
+          "path": "crates/kmipkit-protocol/src/mac_verify.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::MacVerify",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/mac_verify_execution_tests.rs::invalid_and_unknown_indicators_remain_operation_results_with_one_exchange",
+        "crates/kmipkit-client/tests/unit/mac_verify_execution_tests.rs::mac_verify_response_shape_error_retains_the_generic_ttlv_item"
+      ]
+    },
+    {
+      "name": "Modify Attribute",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.33"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.34"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::ModifyAttributeRequest",
+          "path": "crates/kmipkit-protocol/src/modify_attribute.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::ModifyAttributeResponse",
+          "path": "crates/kmipkit-protocol/src/modify_attribute.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::ModifyAttribute",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs::modify_sends_both_current_and_new_values_as_distinct_direct_items"
+      ]
+    },
+    {
+      "name": "Obtain Lease",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.34"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.35"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::ObtainLeaseRequest",
+          "path": "crates/kmipkit-protocol/src/obtain_lease.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::ObtainLeaseResponse",
+          "path": "crates/kmipkit-protocol/src/obtain_lease.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::ObtainLease",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs::obtain_lease_sends_table_268_and_exposes_required_table_269_values_once",
+        "crates/kmipkit-client/tests/unit/obtain_lease_execution_tests.rs::obtain_lease_failure_preserves_table_270_reason_without_retry"
+      ]
+    },
+    {
+      "name": "Ping",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.36"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::PingRequest",
+          "path": "crates/kmipkit-protocol/src/ping.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::PingResponse",
+          "path": "crates/kmipkit-protocol/src/ping.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::Ping",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/ping_execution_tests.rs::ping_sends_one_empty_payload_and_returns_success",
+        "crates/kmipkit-client/tests/unit/ping_execution_tests.rs::ping_failure_preserves_transport_delivery_and_does_not_retry",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_sends_one_request_with_repeated_functions_and_ordered_object_groups",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_raw_response_navigates_vendor_ttlv_nested_inside_server_information"
+      ]
+    },
+    {
+      "name": "PKCS#11",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.35"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.37"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::Pkcs11Request",
+          "path": "crates/kmipkit-protocol/src/pkcs11.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::Pkcs11Response",
+          "path": "crates/kmipkit-protocol/src/pkcs11.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::Pkcs11",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs::pkcs11_sends_table_273_once_and_exposes_table_274_losslessly",
+        "crates/kmipkit-client/tests/unit/pkcs11_execution_tests.rs::pkcs11_failure_preserves_all_table_275_reasons_without_retry"
+      ]
+    },
+    {
+      "name": "Poll",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.36"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.38"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::PollRequest",
+          "path": "crates/kmipkit-protocol/src/poll.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::PollResponse",
+          "path": "crates/kmipkit-protocol/src/poll.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute_poll",
+        "requestVariant": null,
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/poll_execution_tests.rs::pending_poll_returns_without_repeating_and_zeroizes_request_and_response_copies",
+        "crates/kmipkit-client/tests/unit/poll_execution_tests.rs::completed_poll_keeps_original_payload_generic_and_failure_has_no_payload"
+      ]
+    },
+    {
+      "name": "Process",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.39"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::ProcessRequest",
+          "path": "crates/kmipkit-protocol/src/process.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::ProcessResponse",
+          "path": "crates/kmipkit-protocol/src/process.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute_process",
+        "requestVariant": null,
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/process_execution_tests.rs::process_pending_is_caller_selected_and_performs_one_exchange",
+        "crates/kmipkit-client/tests/unit/process_execution_tests.rs::process_success_requires_the_empty_table_279_payload"
+      ]
+    },
+    {
+      "name": "Query",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.37"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.40"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::QueryRequest",
+          "path": "crates/kmipkit-protocol/src/query.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::QueryResponse",
+          "path": "crates/kmipkit-protocol/src/query.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::Query",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_sends_one_request_with_repeated_functions_and_ordered_object_groups",
+        "crates/kmipkit-client/tests/unit/query_execution_tests.rs::query_raw_response_navigates_vendor_ttlv_nested_inside_server_information"
+      ]
+    },
+    {
+      "name": "Query Asynchronous Requests",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.41"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::QueryAsyncRequestsRequest",
+          "path": "crates/kmipkit-protocol/src/query_async_requests.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::QueryAsyncRequestsResponse",
+          "path": "crates/kmipkit-protocol/src/query_async_requests.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute_query_async_requests",
+        "requestVariant": null,
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/query_async_execution_tests.rs::query_executes_once_and_exposes_generic_response_structure",
+        "crates/kmipkit-client/tests/unit/query_async_execution_tests.rs::query_filter_encoded_request_copy_is_zeroized_after_success"
+      ]
+    },
+    {
+      "name": "Re-certify",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.41"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.45"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::RecertifyRequest",
+          "path": "crates/kmipkit-protocol/src/recertify.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::RecertifyResponse",
+          "path": "crates/kmipkit-protocol/src/recertify.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::Recertify",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs::recertify_sends_one_table_300_request_and_exposes_table_301_identifier",
+        "crates/kmipkit-client/tests/unit/recertify_execution_tests.rs::recertify_sends_explicit_unique_identifier_without_certificate_request_fields"
+      ]
+    },
+    {
+      "name": "Re-key",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.42"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.46"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::RekeyRequest",
+          "path": "crates/kmipkit-protocol/src/rekey.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::RekeyResponse",
+          "path": "crates/kmipkit-protocol/src/rekey.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::Rekey",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs::rekey_sends_one_table_305_request_and_exposes_replacement_identifier",
+        "crates/kmipkit-client/tests/unit/rekey_execution_tests.rs::rekey_failure_preserves_table_307_result_without_retry"
+      ]
+    },
+    {
+      "name": "Re-key Key Pair",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.43"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.47"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::RekeyKeyPairRequest",
+          "path": "crates/kmipkit-protocol/src/rekey_key_pair.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::RekeyKeyPairResponse",
+          "path": "crates/kmipkit-protocol/src/rekey_key_pair.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::RekeyKeyPair",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/rekey_key_pair_execution_tests.rs::rekey_key_pair_sends_table_310_and_returns_both_identifiers_once",
+        "crates/kmipkit-client/tests/unit/rekey_key_pair_execution_tests.rs::rekey_key_pair_failure_preserves_table_312_result_without_retry"
+      ]
+    },
+    {
+      "name": "Re-Provision",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.44"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.48"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::ReProvisionRequest",
+          "path": "crates/kmipkit-protocol/src/reprovision.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::ReProvisionResponse",
+          "path": "crates/kmipkit-protocol/src/reprovision.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::ReProvision",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs::reprovision_sends_certificate_request_form_and_typed_identifier_once",
+        "crates/kmipkit-client/tests/unit/reprovision_execution_tests.rs::reprovision_sends_parameterless_server_credential_form"
+      ]
+    },
+    {
+      "name": "Recover",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.38"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.42"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::RecoverRequest",
+          "path": "crates/kmipkit-protocol/src/recover.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::RecoverResponse",
+          "path": "crates/kmipkit-protocol/src/recover.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::Recover",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/recover_execution_tests.rs::recover_wire_code_matches_kmip_table_470",
+        "crates/kmipkit-client/tests/unit/recover_execution_tests.rs::recover_success_returns_completed_result_and_leaves_get_explicit"
+      ]
+    },
+    {
+      "name": "Register",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.39"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.43"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::RegisterRequest",
+          "path": "crates/kmipkit-protocol/src/register.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::RegisterResponse",
+          "path": "crates/kmipkit-protocol/src/register.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::Register",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_rejects_one_sided_outer_algorithm_length_before_transport",
+        "crates/kmipkit-client/tests/unit/register_execution_tests.rs::register_certificate_rejects_one_sided_outer_algorithm_length_before_transport"
+      ]
+    },
+    {
+      "name": "Revoke",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.40"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.44"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::RevokeRequest",
+          "path": "crates/kmipkit-protocol/src/revoke.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::RevokeResponse",
+          "path": "crates/kmipkit-protocol/src/revoke.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::Revoke",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/revoke_execution_tests.rs::revoke_sends_table_295_and_exposes_table_296_identifier_once",
+        "crates/kmipkit-client/tests/unit/revoke_execution_tests.rs::revoke_failure_preserves_table_297_reason_without_retry"
+      ]
+    },
+    {
+      "name": "RNG Retrieve",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.45"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.49"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::RngRetrieveRequest",
+          "path": "crates/kmipkit-protocol/src/rng_retrieve.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::RngRetrieveResponse",
+          "path": "crates/kmipkit-protocol/src/rng_retrieve.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::RngRetrieve",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs::rng_retrieve_sends_required_length_once_and_returns_redacted_secret_output",
+        "crates/kmipkit-client/tests/unit/rng_retrieve_execution_tests.rs::rng_retrieve_pending_is_explicit_and_does_not_poll_or_retry"
+      ]
+    },
+    {
+      "name": "RNG Seed",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.46"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.50"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::RngSeedRequest",
+          "path": "crates/kmipkit-protocol/src/rng_seed.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::RngSeedResponse",
+          "path": "crates/kmipkit-protocol/src/rng_seed.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::RngSeed",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs::rng_seed_sends_secret_once_and_accepts_zero_bytes_used",
+        "crates/kmipkit-client/tests/unit/rng_seed_execution_tests.rs::rng_seed_pending_is_explicit_and_does_not_poll_or_retry"
+      ]
+    },
+    {
+      "name": "Set Attribute",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.47"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.51"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::SetAttributeRequest",
+          "path": "crates/kmipkit-protocol/src/set_attribute.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::SetAttributeResponse",
+          "path": "crates/kmipkit-protocol/src/set_attribute.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::SetAttribute",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/attribute_mutation_execution_tests.rs::add_and_set_send_the_new_attribute_as_one_unchanged_direct_item"
+      ]
+    },
+    {
+      "name": "Set Constraints",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.52"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::SetConstraintsRequest",
+          "path": "crates/kmipkit-protocol/src/set_constraints.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::SetConstraintsResponse",
+          "path": "crates/kmipkit-protocol/src/set_constraints.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::SetConstraints",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/set_constraints_execution_tests.rs::table_325_request_is_required_ordered_and_sent_once",
+        "crates/kmipkit-client/tests/unit/set_constraints_execution_tests.rs::typed_set_constraints_convenience_call_returns_the_operation_result"
+      ]
+    },
+    {
+      "name": "Set Defaults",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.53"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::SetDefaultsRequest",
+          "path": "crates/kmipkit-protocol/src/set_defaults.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::SetDefaultsResponse",
+          "path": "crates/kmipkit-protocol/src/set_defaults.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::SetDefaults",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs::table_328_omission_and_explicit_empty_structure_are_distinct_on_the_wire",
+        "crates/kmipkit-client/tests/unit/set_defaults_execution_tests.rs::table_328_populated_defaults_information_keeps_order_and_nested_values"
+      ]
+    },
+    {
+      "name": "Set Endpoint Role",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.48"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.54"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::SetEndpointRoleRequest",
+          "path": "crates/kmipkit-protocol/src/set_endpoint_role.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::SetEndpointRoleResponse",
+          "path": "crates/kmipkit-protocol/src/set_endpoint_role.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::SetEndpointRole",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/set_endpoint_role_execution_tests.rs::set_endpoint_role_success_execution_and_accessors",
+        "crates/kmipkit-client/tests/unit/set_endpoint_role_execution_tests.rs::set_endpoint_role_pending_and_failures"
+      ]
+    },
+    {
+      "name": "Sign",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.49"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.55"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::SignRequest",
+          "path": "crates/kmipkit-protocol/src/sign.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::SignResponse",
+          "path": "crates/kmipkit-protocol/src/sign.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::Sign",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs::client_requests_map_to_the_five_kmip_operation_codes",
+        "crates/kmipkit-client/tests/unit/hash_mac_signature_execution_tests.rs::each_explicit_operation_call_performs_one_exchange_without_retry"
+      ]
+    },
+    {
+      "name": "Signature Verify",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.50"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.56"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::SignatureVerifyRequest",
+          "path": "crates/kmipkit-protocol/src/signature_verify.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::SignatureVerifyResponse",
+          "path": "crates/kmipkit-protocol/src/signature_verify.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::SignatureVerify",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs::request_table_337_single_part_fields_reach_the_fake_transport_unchanged",
+        "crates/kmipkit-client/tests/unit/signature_verify_execution_tests.rs::request_table_337_multipart_fields_reach_the_fake_transport_unchanged"
+      ]
+    },
+    {
+      "name": "Validate",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.1.51"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.1.57"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::ValidateRequest",
+          "path": "crates/kmipkit-protocol/src/validate.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::ValidateResponse",
+          "path": "crates/kmipkit-protocol/src/validate.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::Validate",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/validate_execution_tests.rs::validate_sends_chain_and_date_and_returns_open_indicator",
+        "crates/kmipkit-client/tests/unit/validate_execution_tests.rs::validate_failure_preserves_transport_delivery_and_does_not_retry"
+      ]
+    },
+    {
+      "name": "Discover Versions",
+      "direction": "server_to_client",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.2.1"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.2.1"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::server_to_client::ServerDiscoverVersionsRequest",
+          "path": "crates/kmipkit-protocol/src/server_to_client/discover_versions.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::server_to_client::ServerDiscoverVersionsResponse",
+          "path": "crates/kmipkit-protocol/src/server_to_client/discover_versions.rs"
+        }
+      },
+      "route": {
+        "kind": "listener",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/server_to_client.rs",
+        "symbol": "kmipkit_client::ServerRequestHandler::handle_discover_versions",
+        "requestVariant": "ServerRequestItemPayload::DiscoverVersions",
+        "dispatcher": "ServerRequestDispatcher::dispatch",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/server_to_client_tests.rs::incoming_server_batch_decoding_and_dispatch",
+        "crates/kmipkit-client/tests/unit/server_to_client_tests.rs::client_listener_raw_tls_full_exchange_and_role_reversal",
+        "crates/kmipkit-client/tests/unit/server_to_client_tests.rs::client_listener_https_full_exchange_and_rejections"
+      ]
+    },
+    {
+      "name": "Notify",
+      "direction": "server_to_client",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.2.2"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.2.2"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::server_to_client::ServerNotifyRequest",
+          "path": "crates/kmipkit-protocol/src/server_to_client/notify.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::server_to_client::ServerNotifyResponse",
+          "path": "crates/kmipkit-protocol/src/server_to_client/notify.rs"
+        }
+      },
+      "route": {
+        "kind": "listener",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/server_to_client.rs",
+        "symbol": "kmipkit_client::ServerRequestHandler::handle_notify",
+        "requestVariant": "ServerRequestItemPayload::Notify",
+        "dispatcher": "ServerRequestDispatcher::dispatch",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/server_to_client_tests.rs::incoming_server_batch_decoding_and_dispatch",
+        "crates/kmipkit-client/tests/unit/server_to_client_tests.rs::client_listener_raw_tls_full_exchange_and_role_reversal",
+        "crates/kmipkit-client/tests/unit/server_to_client_tests.rs::client_listener_https_full_exchange_and_rejections"
+      ]
+    },
+    {
+      "name": "Put",
+      "direction": "server_to_client",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.2.3"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.2.3"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::server_to_client::ServerPutRequest",
+          "path": "crates/kmipkit-protocol/src/server_to_client/put.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::server_to_client::ServerPutResponse",
+          "path": "crates/kmipkit-protocol/src/server_to_client/put.rs"
+        }
+      },
+      "route": {
+        "kind": "listener",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/server_to_client.rs",
+        "symbol": "kmipkit_client::ServerRequestHandler::handle_put",
+        "requestVariant": "ServerRequestItemPayload::Put",
+        "dispatcher": "ServerRequestDispatcher::dispatch",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/server_to_client_tests.rs::incoming_server_batch_decoding_and_dispatch",
+        "crates/kmipkit-client/tests/unit/server_to_client_tests.rs::client_listener_raw_tls_full_exchange_and_role_reversal",
+        "crates/kmipkit-client/tests/unit/server_to_client_tests.rs::client_listener_https_full_exchange_and_rejections"
+      ]
+    },
+    {
+      "name": "Query",
+      "direction": "server_to_client",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.2.4"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.2.4"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::server_to_client::ServerQueryRequest",
+          "path": "crates/kmipkit-protocol/src/server_to_client/query.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::server_to_client::ServerQueryResponse",
+          "path": "crates/kmipkit-protocol/src/server_to_client/query.rs"
+        }
+      },
+      "route": {
+        "kind": "listener",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/server_to_client.rs",
+        "symbol": "kmipkit_client::ServerRequestHandler::handle_query",
+        "requestVariant": "ServerRequestItemPayload::Query",
+        "dispatcher": "ServerRequestDispatcher::dispatch",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/server_to_client_tests.rs::incoming_server_batch_decoding_and_dispatch",
+        "crates/kmipkit-client/tests/unit/server_to_client_tests.rs::client_listener_raw_tls_full_exchange_and_role_reversal",
+        "crates/kmipkit-client/tests/unit/server_to_client_tests.rs::client_listener_https_full_exchange_and_rejections"
+      ]
+    },
+    {
+      "name": "Set Endpoint Role",
+      "direction": "server_to_client",
+      "versionSourceRefs": [
+        {
+          "version": "2.0",
+          "sourceId": "kmip-2.0",
+          "path": "specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html",
+          "section": "6.2.5"
+        },
+        {
+          "version": "2.1",
+          "sourceId": "kmip-2.1",
+          "path": "specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html",
+          "section": "6.2.5"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::SetEndpointRoleRequest",
+          "path": "crates/kmipkit-protocol/src/set_endpoint_role.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::SetEndpointRoleResponse",
+          "path": "crates/kmipkit-protocol/src/set_endpoint_role.rs"
+        }
+      },
+      "route": {
+        "kind": "listener",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/server_to_client.rs",
+        "symbol": "kmipkit_client::ServerRequestHandler::handle_set_endpoint_role",
+        "requestVariant": "ServerRequestItemPayload::SetEndpointRole",
+        "dispatcher": "ServerRequestDispatcher::dispatch",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/server_to_client_tests.rs::incoming_server_batch_decoding_and_dispatch",
+        "crates/kmipkit-client/tests/unit/server_to_client_tests.rs::client_listener_raw_tls_full_exchange_and_role_reversal",
+        "crates/kmipkit-client/tests/unit/server_to_client_tests.rs::client_listener_https_full_exchange_and_rejections"
+      ]
+    },
+    {
+      "name": "Create Credential",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "3.0",
+          "sourceId": "kmip-3.0",
+          "path": "specification/oasis/kmip-3.0/upstream/kmip-spec-v3.0.html",
+          "section": "6.1.9"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::CreateCredentialRequest",
+          "path": "crates/kmipkit-protocol/src/kmip30_operations.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::CreateCredentialResponse",
+          "path": "crates/kmipkit-protocol/src/kmip30_operations.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::CreateCredential",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::all_seven_kmip30_direct_client_methods_follow_the_configured_version",
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::all_kmip30_operations_are_rejected_before_any_exchange_under_kmip21",
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::kmip30_typed_requests_have_explicit_validation_dispatch"
+      ]
+    },
+    {
+      "name": "Create Group",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "3.0",
+          "sourceId": "kmip-3.0",
+          "path": "specification/oasis/kmip-3.0/upstream/kmip-spec-v3.0.html",
+          "section": "6.1.10"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::CreateGroupRequest",
+          "path": "crates/kmipkit-protocol/src/kmip30_operations.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::CreateGroupResponse",
+          "path": "crates/kmipkit-protocol/src/kmip30_operations.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::CreateGroup",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::all_seven_kmip30_direct_client_methods_follow_the_configured_version",
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::all_kmip30_operations_are_rejected_before_any_exchange_under_kmip21",
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::kmip30_typed_requests_have_explicit_validation_dispatch"
+      ]
+    },
+    {
+      "name": "Create User",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "3.0",
+          "sourceId": "kmip-3.0",
+          "path": "specification/oasis/kmip-3.0/upstream/kmip-spec-v3.0.html",
+          "section": "6.1.13"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::CreateUserRequest",
+          "path": "crates/kmipkit-protocol/src/kmip30_operations.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::CreateUserResponse",
+          "path": "crates/kmipkit-protocol/src/kmip30_operations.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::CreateUser",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::all_seven_kmip30_direct_client_methods_follow_the_configured_version",
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::all_kmip30_operations_are_rejected_before_any_exchange_under_kmip21",
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::kmip30_typed_requests_have_explicit_validation_dispatch"
+      ]
+    },
+    {
+      "name": "Deactivate",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "3.0",
+          "sourceId": "kmip-3.0",
+          "path": "specification/oasis/kmip-3.0/upstream/kmip-spec-v3.0.html",
+          "section": "6.1.14"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::DeactivateRequest",
+          "path": "crates/kmipkit-protocol/src/kem.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::DeactivateResponse",
+          "path": "crates/kmipkit-protocol/src/kem.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::Deactivate",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::all_seven_kmip30_direct_client_methods_follow_the_configured_version",
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::all_kmip30_operations_are_rejected_before_any_exchange_under_kmip21",
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::kmip30_typed_requests_have_explicit_validation_dispatch"
+      ]
+    },
+    {
+      "name": "Decapsulate",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "3.0",
+          "sourceId": "kmip-3.0",
+          "path": "specification/oasis/kmip-3.0/upstream/kmip-spec-v3.0.html",
+          "section": "6.1.15"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::DecapsulateRequest",
+          "path": "crates/kmipkit-protocol/src/kem.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::DecapsulateResponse",
+          "path": "crates/kmipkit-protocol/src/kem.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::Decapsulate",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::all_seven_kmip30_direct_client_methods_follow_the_configured_version",
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::all_kmip30_operations_are_rejected_before_any_exchange_under_kmip21",
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::kmip30_typed_requests_have_explicit_validation_dispatch"
+      ]
+    },
+    {
+      "name": "Encapsulate",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "3.0",
+          "sourceId": "kmip-3.0",
+          "path": "specification/oasis/kmip-3.0/upstream/kmip-spec-v3.0.html",
+          "section": "6.1.22"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::EncapsulateRequest",
+          "path": "crates/kmipkit-protocol/src/kem.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::EncapsulateResponse",
+          "path": "crates/kmipkit-protocol/src/kem.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::Encapsulate",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::all_seven_kmip30_direct_client_methods_follow_the_configured_version",
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::all_kmip30_operations_are_rejected_before_any_exchange_under_kmip21",
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::kmip30_typed_requests_have_explicit_validation_dispatch"
+      ]
+    },
+    {
+      "name": "Obliterate",
+      "direction": "client_to_server",
+      "versionSourceRefs": [
+        {
+          "version": "3.0",
+          "sourceId": "kmip-3.0",
+          "path": "specification/oasis/kmip-3.0/upstream/kmip-spec-v3.0.html",
+          "section": "6.1.41"
+        }
+      ],
+      "typedOwners": {
+        "state": "available",
+        "request": {
+          "symbol": "kmipkit_protocol::ObliterateRequest",
+          "path": "crates/kmipkit-protocol/src/kmip30_operations.rs"
+        },
+        "response": {
+          "symbol": "kmipkit_protocol::ObliterateResponse",
+          "path": "crates/kmipkit-protocol/src/kmip30_operations.rs"
+        }
+      },
+      "route": {
+        "kind": "client",
+        "state": "implemented",
+        "path": "crates/kmipkit-client/src/execute.rs",
+        "symbol": "kmipkit_client::Client::execute",
+        "requestVariant": "ClientRequest::Obliterate",
+        "versionVerification": "not_established"
+      },
+      "testRefs": [
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::all_seven_kmip30_direct_client_methods_follow_the_configured_version",
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::all_kmip30_operations_are_rejected_before_any_exchange_under_kmip21",
+        "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::kmip30_typed_requests_have_explicit_validation_dispatch"
+      ]
+    }
+  ]
+}

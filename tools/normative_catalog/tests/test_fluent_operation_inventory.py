@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import json
 import unittest
 from pathlib import Path
@@ -9,7 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 BASE_CATALOG = ROOT / "specification/catalog/kmip-2.1.json"
 VERSIONED_VALUES = ROOT / "specification/catalog/kmip-versioned-values.json"
-from tools.normative_catalog.generate_fluent_operation_inventory import build_inventory, render
+from tools.normative_catalog.generate_fluent_operation_inventory import build_inventory, render, _validate_evidence_files
 
 OUTPUT = ROOT / "specification/catalog/fluent-operation-inventory.json"
 
@@ -131,6 +132,65 @@ class FluentOperationInventoryTests(unittest.TestCase):
     def test_generated_inventory_is_deterministic_and_current(self) -> None:
         self.assertEqual(render(ROOT), OUTPUT.read_bytes())
         self.assertEqual(render(ROOT), render(ROOT))
+
+    def _build_with_evidence(self, evidence: dict) -> dict:
+        return build_inventory(json.loads(BASE_CATALOG.read_text()),
+                               json.loads(VERSIONED_VALUES.read_text()),
+                               json.loads((ROOT / "specification/api/public-api.json").read_text()),
+                               evidence)
+
+    def test_missing_owner_cannot_claim_implemented_route(self) -> None:
+        evidence = json.loads((ROOT / "specification/catalog/operation-matrix-evidence.json").read_text())
+        evidence["operations"][0]["typedOwners"]["request"] = None
+        with self.assertRaisesRegex(ValueError, "missing typed owners"):
+            self._build_with_evidence(evidence)
+
+    def test_unverified_route_is_explicit_and_not_executable(self) -> None:
+        evidence = json.loads((ROOT / "specification/catalog/operation-matrix-evidence.json").read_text())
+        detail = evidence["operations"][0]
+        detail["route"]["state"] = "unverified"
+        detail["route"]["symbol"] = None
+        row = next(row for row in self._build_with_evidence(evidence)["operations"]
+                   if row["name"] == detail["name"] and row["direction"] == detail["direction"])
+        self.assertFalse(row["clientSend"])
+        self.assertFalse(row["listenerRoute"])
+        self.assertEqual(row["route"]["state"], "unverified")
+
+    def test_duplicate_or_missing_directional_evidence_is_rejected(self) -> None:
+        evidence = json.loads((ROOT / "specification/catalog/operation-matrix-evidence.json").read_text())
+        for mutation in (lambda rows: rows.append(copy.deepcopy(rows[0])),
+                         lambda rows: rows.pop()):
+            invalid = copy.deepcopy(evidence)
+            mutation(invalid["operations"])
+            with self.assertRaisesRegex(ValueError, "evidence"):
+                self._build_with_evidence(invalid)
+
+    def test_fabricated_owner_route_test_and_directional_source_are_rejected(self) -> None:
+        inventory = json.loads(OUTPUT.read_text())
+        for field in ("owner", "route", "test", "source", "earliest"):
+            with self.subTest(field=field):
+                invalid = copy.deepcopy(inventory)
+                row = invalid["operations"][0]
+                if field == "owner":
+                    row["typedOwners"]["request"]["symbol"] = "kmipkit_protocol::InventedRequest"
+                elif field == "route":
+                    row["route"]["symbol"] = "kmipkit_client::Client::invented_send"
+                elif field == "test":
+                    row["testEvidence"]["focused"][0] += "_invented"
+                elif field == "source":
+                    row["versionSourceRefs"][0]["section"] = "6.2.1"
+                else:
+                    row["earliestSupportedVersion"] = "2.1"
+                with self.assertRaises(ValueError):
+                    _validate_evidence_files(ROOT, invalid)
+
+    def test_unassigned_kmip30_operation_is_rejected(self) -> None:
+        versioned = json.loads(VERSIONED_VALUES.read_text())
+        next(group for group in versioned["versions"]["v3_0"]
+             if group["name"] == "Operation")["values"][0]["wire_value"] = "0x00000043"
+        with self.assertRaisesRegex(ValueError, "assignment"):
+            build_inventory(json.loads(BASE_CATALOG.read_text()), versioned,
+                            json.loads((ROOT / "specification/api/public-api.json").read_text()))
 
 
 if __name__ == "__main__":
