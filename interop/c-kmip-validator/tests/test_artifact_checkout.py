@@ -97,7 +97,7 @@ class ArtifactCheckoutContractTests(unittest.TestCase):
         self.assertIn("no generic TTLV encoder", readme)
         self.assertIn("no generic TTLV request dispatch", readme)
 
-    def test_pinned_c_artifact_is_consistent_and_in_release_history(self):
+    def test_pinned_c_artifact_is_consistent_and_available(self):
         support = (ROOT / "interop/c-kmip-validator/tools/artifact_support.py").read_text(
             encoding="utf-8"
         )
@@ -112,7 +112,7 @@ class ArtifactCheckoutContractTests(unittest.TestCase):
         pin = match.group(1)
         for script in (installer, verifier):
             self.assertIn("from artifact_support import", script)
-            self.assertNotRegex(script, r"^PIN = ", msg="release pin must have one source of truth")
+            self.assertNotRegex(script, r"^PIN = ", msg="source pin must have one source of truth")
             self.assertNotRegex(script, r"^def sha256\(", msg="artifact hashing must be shared")
         self.assertEqual(support.count("def sha256("), 1)
         self.assertEqual(support.count("def verify_installed_artifact("), 1)
@@ -124,15 +124,16 @@ class ArtifactCheckoutContractTests(unittest.TestCase):
         self.assertIn(f'set(KMIPKIT_LIBRARY_COMMIT "{pin}")', cmake)
         self.assertIn(f"/install/{pin}", workflow)
         self.assertIn(pin, readme)
-        self.assertIn(f'**Base**: release `{pin}`', spec)
+        self.assertIn("**Base**: source commit pinned in", spec)
+        manifest = json.loads(
+            (ROOT / "interop/shared/coverage/route-capabilities.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(pin, manifest["library_commit"])
 
         subprocess.run(
             ["git", "cat-file", "-e", f"{pin}^{{tree}}"], cwd=ROOT, check=True
-        )
-        subprocess.run(
-            ["git", "merge-base", "--is-ancestor", pin, "origin/release/1.0.0"],
-            cwd=ROOT,
-            check=True,
         )
 
     def test_pinned_c_artifact_matches_the_shared_route_manifest(self):

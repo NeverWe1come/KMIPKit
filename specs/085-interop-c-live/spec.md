@@ -3,13 +3,13 @@
 **Rama**: `feature/KMIPKIT-0085-interop-c-live`  
 **Estado**: aprobado para implementación por autorización explícita del plan KMIPKIT de interoperabilidad  
 **Identificador**: KMIPKIT-0085  
-**Base**: release `9a16cc90a12205101d22a38501a5e74c665df4dc`
+**Base**: source commit pinned in `interop/shared/coverage/route-capabilities.json`
 
 ## Alcance
 
 El proyecto C independiente consumirá la biblioteca C pública instalada desde
-un artefacto creado en un archivo limpio de un commit exacto de
-`release/1.0.0`. Se prueban KMIP 2.0 y 2.1, sin extensiones de fabricante,
+un artefacto creado en un archivo limpio del commit de origen exacto fijado por
+el manifiesto compartido de rutas. Se prueban KMIP 2.0 y 2.1, sin extensiones de fabricante,
 KMIP 1.x ni KMIP 3.0. El catálogo y el esquema comunes son la fuente de casos
 y resultados.
 

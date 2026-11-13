@@ -4,7 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 
-PIN = "9a16cc90a12205101d22a38501a5e74c665df4dc"
+PIN = "8281fef2e9ca211fde1e1d8e21525a672287eead"
 ROOT = Path(__file__).resolve().parents[3]
 LOCAL = ROOT / "interop/.local/c-live"
 BUNDLE = LOCAL / f"kmipkit-c-1.0.0-{PIN[:12]}.tar.gz"
@@ -26,7 +26,7 @@ def verify_installed_artifact() -> dict[str, object]:
     if data.get("library_commit") != PIN:
         raise SystemExit("C artifact commit provenance mismatch")
     if (INSTALL / "library-commit").read_text(encoding="utf-8").strip() != PIN:
-        raise SystemExit("C artifact release identity mismatch")
+        raise SystemExit("C artifact source identity mismatch")
     files = data["files"]
     if not isinstance(files, dict):
         raise ValueError("C artifact file digests are invalid")

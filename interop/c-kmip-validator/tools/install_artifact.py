@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build and install the public C ABI from the exact interop release commit."""
+"""Build and install the public C ABI from the shared route source commit."""
 import io
 import json
 import os

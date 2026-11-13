@@ -7,7 +7,7 @@ network recipes. Library sources are unchanged.
 
 | Requirement | C evidence and remaining work |
 |---|---|
-| KMIPKIT-0092-FR-001, FR-006 | Shared matrix generator, installed header/symbol/constant probe, verified exact release commit and library digest, compiled-consumer provenance comparison. |
+| KMIPKIT-0092-FR-001, FR-006 | Shared matrix generator, installed header/symbol/constant probe, verified exact route-manifest source commit and library digest, compiled-consumer provenance comparison. |
 | KMIPKIT-0092-FR-002, FR-007, FR-009 | Per-cell evidence and explicit pending sidecar; duplicate protection; common schema and validator in CI. Incomplete recipes keep the gate failing. |
 | KMIPKIT-0092-FR-003 | Exact assigned scalar values and reserved-tag rejection are checked locally. Broader semantic branch/model recipes remain pending. No absent encoder/send/high-level API is fabricated. |
 | KMIPKIT-0092-FR-004 | Ordered, redacted tree digests are retained per cell. Cross-language digest normalization/parity is pending. |
