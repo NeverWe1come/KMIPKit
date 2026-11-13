@@ -2,7 +2,6 @@ package org.kmipkit.fluent;
 
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.client.KmipClient;
-import org.kmipkit.extensions.ClientBatch;
 import org.kmipkit.extensions.ClientBatchItem;
 import org.kmipkit.extensions.ClientBatchResponse;
 import org.kmipkit.extensions.RequestOptions;
@@ -66,12 +65,7 @@ public final class RevokeBuilder {
     public ClientBatchResponse execute(CodecLimits limits)
             throws org.kmipkit.ClientOperationException {
         if (limits == null) throw new InvalidInputException("codec limits are invalid");
-        try (ClientBatch batch = ClientBatch.create()) {
-            batch.add(build());
-            if (asynchronousIndicator != null) batch.asynchronousIndicator(asynchronousIndicator);
-            return options == null ? client.execute(batch, limits)
-                    : client.executeWithOptions(batch, limits, options);
-        }
+        return BatchExecution.execute(client, build(), limits, options, asynchronousIndicator);
     }
 
 }

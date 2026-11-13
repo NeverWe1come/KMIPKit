@@ -26,5 +26,5 @@
 ## Phase 5: Polish and Cross-Cutting Checks
 
 - [x] T008 Register all new declarations under KMIPKIT-0115 in `specification/api/public-api.json`, regenerate outputs with `tools/api_manifest/generate.py`, and update `specs/115-java-python-lifecycle-facade/traceability.md`.
-- [ ] T009 Refactor shared builder execution only after green behavior and commit the cleanup separately.
+- [x] T009 Refactor shared builder execution only after green behavior and commit the cleanup separately.
 - [ ] T010 Run focused and full Java/Python checks, manifest/export audits, traceability, and exact-head CI; record results in `specs/115-java-python-lifecycle-facade/implementation-evidence.md`.
