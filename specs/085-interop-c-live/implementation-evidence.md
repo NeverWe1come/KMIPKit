@@ -388,3 +388,28 @@ the Ping builder and typed batch execution call.
 
 This closes the 12 Ping boundary cells in the installed C matrix only. Other
 C routes, cross-language parity, and exact-head CI remain outstanding.
+
+### Generic C TTLV value constructors
+
+The C local TTLV route matrix now executes every value constructor supported
+by its recursive installed-ABI roundtrip harness, including Boolean, Long
+Integer, Interval, Date-Time Extended, Big Integer, Text String, Byte String,
+and Structure. Representative payloads roundtrip through public views for
+KMIP 2.1 §7.2, §7.40, §8.1, and §9.10 targets. No network behavior is inferred
+from these local constructor checks.
+
+- Red commit `40202cfe`: the coverage assertion failed because the matrix
+  admitted only Integer, Enumeration, and Date-Time value constructors.
+- Green commit `5955ff9c`: catalogued the remaining constructors already
+  implemented by `TreeAbi`; representative byte-string, text-string,
+  big-integer, and structure payloads roundtripped through the installed C ABI.
+- Refactor: record the normative target sections and exact matrix evidence.
+- Focused generic TTLV tests: 3/3 passed.
+- The full installed C matrix reported 37,841 invoked cells, 0 failed cells,
+  and 28,887 pending cells. A cell-identity comparison with CI head
+  `83e405f6` confirms the increase consists of 424 generic value-constructor
+  routes, 18 Modify Attribute routes integrated from the remote branch, and
+  12 KMIP 2.0 Ping boundary routes.
+
+This adds local generic-TTLV coverage only; it does not discharge the remaining
+typed operation and transport cells or the cross-language matrix requirements.

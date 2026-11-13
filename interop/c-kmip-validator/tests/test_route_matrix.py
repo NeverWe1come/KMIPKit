@@ -334,7 +334,7 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertLessEqual(expected, self.runner.LOCAL_SYMBOLS)
 
     def test_generic_ttlv_constructors_roundtrip_binary_string_and_structure_members(self):
-        """OASIS KMIP 2.1 §7.2, §7.40, and §9.10 require their declared TTLV value types."""
+        """OASIS KMIP 2.1 §7.2, §7.40, §8.1, and §9.10 require their declared TTLV value types."""
         from artifact_support import INSTALL, ROOT
         from route_ttlv import TreeAbi, encode
 
