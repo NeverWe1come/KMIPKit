@@ -227,6 +227,16 @@ pub struct kmipkit_client_batch_item_t {
 pub struct kmipkit_symmetric_key_builder_t {
     _private: [u8; 0],
 }
+/// Opaque reusable semantic builder for one of the seven approved KMIP 3.0 operations.
+#[repr(C)]
+pub struct kmipkit_kmip30_operation_builder_t {
+    _private: [u8; 0],
+}
+/// Opaque closed Create Credential object; all input bytes are copied and owned by `KMIPKit`.
+#[repr(C)]
+pub struct kmipkit_create_credential_object_t {
+    _private: [u8; 0],
+}
 #[repr(C)]
 pub struct kmipkit_crypto_operation_builder_t {
     _private: [u8; 0],

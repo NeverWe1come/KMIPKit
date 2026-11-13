@@ -3,6 +3,7 @@
 #include "kmip30_fluent_test_api.h"
 #include <stddef.h>
 #include <string.h>
+#include <stdio.h>
 
 #define CHECK(call) do { int32_t rc_ = (call); if (rc_ != 0) return __LINE__; } while (0)
 #define ASSERT(condition) do { if (!(condition)) return __LINE__; } while (0)
@@ -33,9 +34,20 @@ int kmipkit_c_kmip30_builders_probe(void) {
     kmipkit_codec_limits_t *limits = NULL;
     uint32_t operation = 0;
     const uint32_t operations[] = {0x3f, 0x3c, 0x3e, 0x40, 0x42, 0x41, 0x3d};
-    CHECK(kmipkit_attribute_set_create(NULL, &attributes));
-    CHECK(kmipkit_codec_limits_defaults(&limits));
     CHECK(kmipkit_ttlv_structure_create(&reason));
+    CHECK(kmipkit_attribute_set_create(reason, &attributes));
+    CHECK(kmipkit_codec_limits_defaults(&limits));
+    ASSERT(kmipkit_create_group_builder_create(NULL, &builder) == KMIPKIT_ERROR_INVALID_INPUT && builder == NULL);
+    ASSERT(kmipkit_create_user_builder_create(NULL, &builder) == KMIPKIT_ERROR_INVALID_INPUT && builder == NULL);
+    ASSERT(kmipkit_create_credential_builder_create(1, attributes, NULL, &builder) == KMIPKIT_ERROR_INVALID_INPUT && builder == NULL);
+    ASSERT(kmipkit_deactivate_builder_create(NULL, &builder) == KMIPKIT_ERROR_INVALID_INPUT && builder == NULL);
+    ASSERT(kmipkit_decapsulate_builder_create(&id, NULL, &builder) == KMIPKIT_ERROR_INVALID_INPUT && builder == NULL);
+    ASSERT(kmipkit_encapsulate_builder_create(NULL, &builder) == KMIPKIT_ERROR_INVALID_INPUT && builder == NULL);
+    ASSERT(kmipkit_obliterate_builder_create(NULL, &builder) == KMIPKIT_ERROR_INVALID_INPUT && builder == NULL);
+    ASSERT(kmipkit_create_group_builder_create((kmipkit_attribute_set_t *)reason, &builder) == KMIPKIT_ERROR_INVALID_INPUT && builder == NULL);
+    _Alignas(void *) uint8_t misaligned_slot[sizeof(void *) + 1] = {0};
+    ASSERT(kmipkit_encapsulate_builder_create(&id, (kmipkit_kmip30_operation_builder_t **)(misaligned_slot + 1)) == KMIPKIT_ERROR_INVALID_INPUT);
+    ASSERT(kmipkit_deactivate_builder_create((const kmipkit_unique_identifier_v1_t *)((const uint8_t *)&id + 1), &builder) == KMIPKIT_ERROR_INVALID_INPUT);
     fields.struct_size = (uint32_t)sizeof(fields);
     fields.abi_version = 1;
     CHECK(kmipkit_cryptographic_parameters_from_fields_v1(&fields, &parameters));
@@ -55,6 +67,18 @@ int kmipkit_c_kmip30_builders_probe(void) {
     kmipkit_create_credential_object_release(object);
     object = NULL;
     ASSERT(kmipkit_create_credential_object_certificate(NULL, &object) == KMIPKIT_ERROR_INVALID_INPUT);
+    static const uint8_t certificate_ttlv[] = {
+        0x42,0x00,0x13,0x01,0,0,0,32,
+        0x42,0x00,0x1d,0x05,0,0,0,4,0,0,0,1,0,0,0,0,
+        0x42,0x00,0x1e,0x08,0,0,0,4,1,2,3,4,0,0,0,0
+    };
+    kmipkit_ttlv_decode_error_v1_t decode_error = {0};
+    decode_error.struct_size = (uint32_t)sizeof(decode_error);
+    decode_error.abi_version = 1;
+    CHECK(kmipkit_ttlv_decode(certificate_ttlv, sizeof(certificate_ttlv), &decode_error, &certificate));
+    CHECK(kmipkit_create_credential_object_certificate(certificate, &object));
+    kmipkit_create_credential_object_release(object);
+    object = NULL;
     CHECK(kmipkit_create_credential_object_password(&bytes, NULL, 0, 0, NULL, 0, 0, &object));
     for (uint32_t index = 0; index < 7; ++index) {
         switch (index) {
@@ -69,6 +93,7 @@ int kmipkit_c_kmip30_builders_probe(void) {
         if (index == 3) {
             CHECK(kmipkit_kmip30_operation_builder_set_deactivation_reason(builder, reason));
             CHECK(kmipkit_kmip30_operation_builder_set_deactivation_date(builder, INT64_C(42)));
+            ASSERT(kmipkit_kmip30_operation_builder_set_attributes(builder, attributes) == KMIPKIT_ERROR_INVALID_INPUT);
         } else {
             ASSERT(kmipkit_kmip30_operation_builder_set_deactivation_date(builder, 42) == KMIPKIT_ERROR_INVALID_INPUT);
         }
@@ -127,7 +152,10 @@ int kmipkit_c_kmip30_exchange_probe(kmipkit_client_t *client, kmipkit_codec_limi
     int32_t status = 0;
     options.struct_size = (uint32_t)sizeof(options);
     options.abi_version = 1;
-    CHECK(kmipkit_attribute_set_create(NULL, &attributes));
+    kmipkit_ttlv_structure_t *empty_attributes = NULL;
+    CHECK(kmipkit_ttlv_structure_create(&empty_attributes));
+    CHECK(kmipkit_attribute_set_create(empty_attributes, &attributes));
+    kmipkit_ttlv_structure_release(empty_attributes);
     CHECK(kmipkit_create_credential_object_password(&bytes, NULL, 0, 0, NULL, 0, 0, &object));
     if (builder_path) {
         switch (operation_index) {
@@ -138,6 +166,21 @@ int kmipkit_c_kmip30_exchange_probe(kmipkit_client_t *client, kmipkit_codec_limi
         case 4: CHECK(kmipkit_decapsulate_builder_create(&id, &bytes, &builder)); break;
         case 5: CHECK(kmipkit_encapsulate_builder_create(&id, &builder)); break;
         default: CHECK(kmipkit_obliterate_builder_create(&id, &builder)); break;
+        }
+        if (operation_index == 3) {
+            CHECK(kmipkit_kmip30_operation_builder_set_deactivation_date(builder, INT64_C(42)));
+        }
+        if (operation_index == 4 || operation_index == 5) {
+            kmipkit_cryptographic_parameters_t *parameters = NULL;
+            kmipkit_cryptographic_parameters_fields_v1_t fields = {0};
+            fields.struct_size = (uint32_t)sizeof(fields);
+            fields.abi_version = 1;
+            fields.hashing_algorithm_present = 1;
+            fields.hashing_algorithm = 6;
+            CHECK(kmipkit_cryptographic_parameters_from_fields_v1(&fields, &parameters));
+            CHECK(kmipkit_kmip30_operation_builder_set_cryptographic_parameters(builder, parameters));
+            CHECK(kmipkit_kmip30_operation_builder_set_attributes(builder, attributes));
+            kmipkit_cryptographic_parameters_release(parameters);
         }
         /* Copies survive source release and caller mutation before exchange. */
         kmipkit_create_credential_object_release(object); object = NULL;
@@ -167,6 +210,9 @@ int kmipkit_c_kmip30_exchange_probe(kmipkit_client_t *client, kmipkit_codec_limi
         ASSERT(status == KMIPKIT_ERROR_INVALID_INPUT && response == NULL);
         return 0;
     }
+    if (status != 0 || response == NULL) {
+        fprintf(stderr, "KMIP 3.0 C exchange failed: operation index %u, builder %u, status %d\n", operation_index, builder_path, status);
+    }
     ASSERT(status == 0 && response != NULL);
     CHECK(kmipkit_client_batch_response_item_count(response, &count));
     ASSERT(count == 1);
@@ -175,6 +221,13 @@ int kmipkit_c_kmip30_exchange_probe(kmipkit_client_t *client, kmipkit_codec_limi
     metadata.abi_version = 2;
     CHECK(kmipkit_client_batch_item_response_metadata_v2(item, &metadata));
     ASSERT(metadata.result_status == expected_status);
+    kmipkit_byte_span_v1_t correlation = {0};
+    CHECK(kmipkit_client_batch_item_response_pending_correlation_value(item, &present, &correlation));
+    ASSERT(present == (expected_status == 2));
+    if (present) {
+        ASSERT(correlation.length == sizeof("pending-correlation") - 1);
+        ASSERT(memcmp(correlation.data, "pending-correlation", sizeof("pending-correlation") - 1) == 0);
+    }
     CHECK(kmipkit_client_batch_item_response_kmip30_identifier(item, &present, &result_id));
     ASSERT(present == (expected_status == 0 && operation_index != 6));
     if (present) {
@@ -271,7 +324,11 @@ int kmipkit_c_kmip30_tls_probe(
         REQUIRE_KMIP30_C_API(kmipkit_c_kmip30_exchange_probe(
             client, limits, op, 0, 0, UINT32_MAX), 20);
         REQUIRE_KMIP30_C_API(kmipkit_c_kmip30_exchange_probe(
+            client, limits, op, 0, 1, UINT32_MAX), 20);
+        REQUIRE_KMIP30_C_API(kmipkit_c_kmip30_exchange_probe(
             client, limits, op, 1, 1, UINT32_MAX), 21);
+        REQUIRE_KMIP30_C_API(kmipkit_c_kmip30_exchange_probe(
+            client, limits, op, 1, 0, UINT32_MAX), 21);
     }
     *out_version_rejection_verified = 1;
     kmipkit_client_release(client); client = NULL;
@@ -281,7 +338,7 @@ int kmipkit_c_kmip30_tls_probe(
         unsupported_configuration, &tls, &client), 23);
     for (uint32_t path = 0; path < 2; ++path) {
         for (uint32_t op = 0; op < 7; ++op) {
-            uint32_t status = op == 1 ? 2 : (op == 2 ? 1 : 0);
+            uint32_t status = op == 1 && path == 1 ? 2 : (op == 2 ? 1 : 0);
             result = kmipkit_c_kmip30_exchange_probe(client, limits, op,
                 (uint8_t)path, (uint8_t)(op % 2), status);
             if (result != 0) goto kmip30_cleanup;
