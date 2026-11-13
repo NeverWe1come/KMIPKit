@@ -125,7 +125,8 @@ class ControlledTlsPeerTest {
     private static final String RESPONSE_BATCH_ITEM_CASE_ID =
             "test-norm-message-field-message-field-8-4-batch-item";
     private static final Set<String> LOCAL_ENUMERATION_SCOPE_CASE_IDS = Set.of(
-            "test-enum-block-cipher-mode", "test-enum-rotate-name-type", "test-enum-result-reason",
+            "test-enum-block-cipher-mode", "test-enum-rotate-name-type", "test-enum-operation",
+            "test-enum-result-reason",
             "test-enum-recommended-curve",
             "test-enum-opaque-data-type",
             "test-enum-processing-stage", "test-enum-ticket-type", "test-enum-mask-generator",
@@ -1810,11 +1811,11 @@ class ControlledTlsPeerTest {
 
     private static List<String> localEnumerationVersions(JsonNode target, String enumType,
             List<String> caseVersions) {
-        // Three Result Reason codes are new in KMIP 2.1 and are unknown values to KMIP 2.0.
-        // KMIPKIT's generic Enumeration path must preserve them in both versions.
-        boolean preserveUnknownResultReasons = "Result Reason".equals(enumType);
+        // KMIP 2.1-only Result Reason and Operation values must remain unknown-value round-trips in KMIP 2.0.
+        boolean preserveUnknownValuesAcrossVersions = "Result Reason".equals(enumType)
+                || "Operation".equals(enumType);
         return caseVersions.stream()
-                .filter(version -> preserveUnknownResultReasons || target.path("protocol_versions").isEmpty()
+                .filter(version -> preserveUnknownValuesAcrossVersions || target.path("protocol_versions").isEmpty()
                         || containsText(target.path("protocol_versions"), version))
                 .toList();
     }
