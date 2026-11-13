@@ -675,7 +675,8 @@ class LiveContract(unittest.TestCase):
             (ROOT / "interop/shared/schemas/route-execution-evidence.schema.json").read_text()
         )).validate(report)
 
-    def test_batch_continue_and_stop_options_match_ordered_peer_outcomes(self):
+    def test_batch_continue_and_stop_match_client_and_peer_outcomes(self):
+        """OASIS KMIP 2.0 §11.5 Table 396 and KMIP 2.1 §11.5 Table 434."""
         route_manifest = json.loads((ROOT / "interop/shared/coverage/route-capabilities.json").read_text())
         schema = json.loads((ROOT / "interop/shared/schemas/route-execution-evidence.schema.json").read_text())
         catalog_bytes = (ROOT / "interop/shared/catalog/kmipkit-1.0-test-catalog.json").read_bytes()
@@ -721,15 +722,9 @@ class LiveContract(unittest.TestCase):
                 ):
                     event["request_tree_sha256"] = request_hash
                     attach_peer_batch_observation(event, batch)
-                self.assertEqual(expected_codes, report["events"][0]["peer_observed_result_status_codes"])
-                self.assertEqual(
-                    len(expected_codes),
-                    report["events"][0]["client_observed_batch_response_count"],
-                )
-                self.assertEqual(
-                    expected_codes,
-                    report["events"][0]["client_observed_result_status_codes"],
-                )
+                    self.assertEqual(expected_codes, event["peer_observed_result_status_codes"])
+                    self.assertEqual(len(expected_codes), event["client_observed_batch_response_count"])
+                    self.assertEqual(expected_codes, event["client_observed_result_status_codes"])
                 jsonschema.Draft202012Validator(schema).validate(report)
                 validate_report(
                     report,
@@ -740,47 +735,6 @@ class LiveContract(unittest.TestCase):
                     expected_artifact_sha256=report["artifact_sha256"],
                     scope_cells=rows,
                 )
-
-    def test_batch_continue_reports_the_client_observed_item_outcomes(self):
-        """OASIS KMIP 2.0/2.1 §11.5, Tables 396/434: retain batch item results."""
-        route_manifest = json.loads((ROOT / "interop/shared/coverage/route-capabilities.json").read_text())
-        schema = json.loads((ROOT / "interop/shared/schemas/route-execution-evidence.schema.json").read_text())
-        rows = [cell for cell in iter_cells(CATALOG, route_manifest, languages=("rust",))
-                if cell["mode"] == "network"
-                and cell["public_api_symbol"] == "kmipkit_client::ClientBatchItem::new"
-                and cell["case_id"] == "test-batch-continue-after-failure"
-                and cell["protocol_version"] == "2.0"
-                and cell["encoding"] == "TTLV"
-                and cell["transport"] == "raw_tls"
-                and cell["action"] == "send"]
-        matrix = self.directory / "continue-client-outcomes.jsonl"
-        output = self.directory / "continue-client-outcomes-evidence.json"
-        configuration = self.directory / "continue-client-outcomes-connection.json"
-        matrix.write_text("".join(
-            json.dumps(cell, sort_keys=True, separators=(",", ":")) + "\n"
-            for cell in rows
-        ))
-        with ControlledPeer(self.pki, operation_failed_batch) as peer:
-            configuration.write_text(json.dumps(
-                self.connection(peer.port, version="2.0", mutations=True), sort_keys=True
-            ))
-            process = subprocess.run(
-                [str(VALIDATOR), "matrix-network", "--matrix", str(matrix),
-                 "--connection", str(configuration), "--output", str(output)],
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30, text=True,
-            )
-
-        self.assertEqual(0, process.returncode, process.stderr)
-        report = json.loads(output.read_text())
-        self.assertEqual(len(rows), len(report["events"]))
-        for event, request_hash, peer_batch in zip(
-            report["events"], peer.route_request_tree_hashes, peer.route_batches, strict=True
-        ):
-            self.assertEqual(2, event["client_observed_batch_response_count"])
-            self.assertEqual([1, 0], event["client_observed_result_status_codes"])
-            event["request_tree_sha256"] = request_hash
-            attach_peer_batch_observation(event, peer_batch)
-        jsonschema.Draft202012Validator(schema).validate(report)
 
     def test_complete_network_route_matrix_runs_against_controlled_mtls_peers(self):
         """KMIP 2.0/2.1 §§6-9: every declared request route and transport axis."""
