@@ -698,6 +698,7 @@ class PeerState:
                   12: 'attribute_list_retrieved', 13: 'attribute_added',
                   15: 'attribute_deleted',
                   49: 'attribute_set',
+                  17: 'usage_allocation_returned',
                   56: 'constraints_retrieved'}
         items = [item for item in request_tree[2] if item[0] == BATCH_ITEM_TAG]
         for index, item in enumerate(items):
@@ -715,7 +716,7 @@ class PeerState:
                 self.attributes[identifier] = set()
                 placeholder = identifier
                 effect = 'created'
-            elif operation in (9, 10, 11, 12, 13, 15, 18, 19, 20, 49, 56):
+            elif operation in (9, 10, 11, 12, 13, 15, 17, 18, 19, 20, 49, 56):
                 state = self.objects.get(identifier)
                 if state is None:
                     status, reason, effect = 1, 55, 'object_not_found'
@@ -780,6 +781,7 @@ def verify_lifecycle(operations, response_tree):
     effects, expected_statuses, expected_reasons = [], [], []
     labels = {9: 'checked', 10: 'object_retrieved', 11: 'attributes_retrieved',
               12: 'attribute_list_retrieved', 13: 'attribute_added',
+              17: 'usage_allocation_returned',
               56: 'constraints_retrieved'}
     for operation in operations:
         status, reason = 0, 0
