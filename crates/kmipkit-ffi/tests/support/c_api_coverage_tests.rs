@@ -1,5 +1,4 @@
 #![allow(unsafe_code)]
-#![cfg(feature = "coverage-c-consumer")]
 
 use std::ffi::{CString, c_char};
 use std::fs::{self, OpenOptions};
