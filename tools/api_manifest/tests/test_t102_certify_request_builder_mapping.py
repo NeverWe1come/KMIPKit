@@ -169,8 +169,9 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
 # fluent cryptographic operation builders.
 # Includes the approved KMIPKIT-0093 inventory reconciliation and narrowed
 # T101 mappings, KMIPKIT-0108 attribute-read declarations, and the five
-# KMIPKIT-0093 C role-reversed session declarations.
-DECLARATIONS_SHA256 = "25c895eef0e52ccd0e38e1fb891004c602c6d63197b4fff86703533e8e0cdc41"
+# KMIPKIT-0093 C role-reversed session declarations. KMIPKIT-0112 server-listener
+# facades are also part of the merged non-target declaration inventory.
+DECLARATIONS_SHA256 = "82082ec9fb5b3cc622ff89e01ede7472fa00d754931f5c8e3184ea655c238e69"
 # The C role-reversal harness moved to support/c_api_coverage_tests.rs.
 OPERATIONS_SHA256 = "c8aae7faf64c0ddba9b3c73a9819b94e18b95d5b2eca18e9e49c3801974be4e0"
 
