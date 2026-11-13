@@ -112,6 +112,63 @@ fn test_failure_response(
     (request_item, builder, response)
 }
 
+fn test_listener_client_tls_config(pki: &EphemeralPki) -> Arc<rustls::ClientConfig> {
+    use rustls::RootCertStore;
+    use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer};
+
+    let identity = pki.client_identity();
+    let mut roots = RootCertStore::empty();
+    roots
+        .add(CertificateDer::from(
+            pki.authority_certificate_der().to_vec(),
+        ))
+        .expect("test authority is a valid trust root");
+    Arc::new(
+        rustls::ClientConfig::builder_with_provider(Arc::new(
+            rustls::crypto::aws_lc_rs::default_provider(),
+        ))
+        .with_protocol_versions(&[&rustls::version::TLS13])
+        .expect("test client enables TLS 1.3 only")
+        .with_root_certificates(roots)
+        .with_client_auth_cert(
+            vec![CertificateDer::from(identity.certificate_der().to_vec())],
+            PrivateKeyDer::Pkcs8(PrivatePkcs8KeyDer::from(
+                identity.private_key_der().to_vec(),
+            )),
+        )
+        .expect("test client identity is valid"),
+    )
+}
+
+fn connect_test_listener_client(
+    port: u16,
+    config: Arc<rustls::ClientConfig>,
+) -> rustls::StreamOwned<rustls::ClientConnection, std::net::TcpStream> {
+    let socket = std::net::TcpStream::connect(("127.0.0.1", port)).expect("client connects");
+    let server_name = rustls::pki_types::ServerName::try_from("server.kmipkit.test")
+        .expect("test server name is valid");
+    let connection =
+        rustls::ClientConnection::new(config, server_name).expect("TLS client is configured");
+    rustls::StreamOwned::new(connection, socket)
+}
+
+fn read_test_ttlv_response(stream: &mut impl std::io::Read) -> Vec<u8> {
+    let mut header = [0_u8; 8];
+    stream
+        .read_exact(&mut header)
+        .expect("client receives the server response");
+    assert_eq!(&header[..4], &[0x42, 0x00, 0x7B, 0x01]);
+    let body_length = u32::from_be_bytes([header[4], header[5], header[6], header[7]]) as usize;
+    let padded_length = body_length.div_ceil(8) * 8;
+    let mut body = vec![0_u8; padded_length];
+    stream
+        .read_exact(&mut body)
+        .expect("client receives the complete response body");
+    let mut response = header.to_vec();
+    response.extend_from_slice(&body);
+    response
+}
+
 #[test]
 fn listener_helpers_validate_timeouts_text_and_object_tags() {
     assert_eq!(timeout(0, 0), Ok(None));
@@ -601,10 +658,7 @@ fn response_builder_ffi_rejects_missing_handles() {
 fn ffi_role_reversal_rejects_active_batch_and_handles_idle_timeout() {
     use kmipkit_transport::listener::ListenerTransportConfig;
     use kmipkit_transport::{CertificateInput, ClientIdentity, PrivateKeyInput, TrustSource};
-    use rustls::RootCertStore;
-    use rustls::pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer};
-    use std::io::{Read, Write};
-    use std::net::TcpStream;
+    use std::io::Write;
     use std::sync::mpsc;
     use std::thread;
 
@@ -635,44 +689,12 @@ fn ffi_role_reversal_rejects_active_batch_and_handles_idle_timeout() {
     )
     .expect("listener handle is created");
 
-    let client_identity = pki.client_identity();
-    let mut roots = RootCertStore::empty();
-    roots
-        .add(CertificateDer::from(
-            pki.authority_certificate_der().to_vec(),
-        ))
-        .expect("test authority is a valid trust root");
-    let client_config = Arc::new(
-        rustls::ClientConfig::builder_with_provider(Arc::new(
-            rustls::crypto::aws_lc_rs::default_provider(),
-        ))
-        .with_protocol_versions(&[&rustls::version::TLS13])
-        .expect("test client enables TLS 1.3 only")
-        .with_root_certificates(roots)
-        .with_client_auth_cert(
-            vec![CertificateDer::from(
-                client_identity.certificate_der().to_vec(),
-            )],
-            PrivateKeyDer::Pkcs8(PrivatePkcs8KeyDer::from(
-                client_identity.private_key_der().to_vec(),
-            )),
-        )
-        .expect("test client identity is valid"),
-    );
+    let client_config = test_listener_client_tls_config(&pki);
     let request = discover_versions_request();
     let (response_received, response_received_rx) = mpsc::channel();
     let peer = thread::spawn(move || {
-        let server_name = rustls::pki_types::ServerName::try_from("server.kmipkit.test")
-            .expect("test server name is valid");
-        let socket_one = TcpStream::connect(("127.0.0.1", port)).expect("first client connects");
-        let socket_two = TcpStream::connect(("127.0.0.1", port)).expect("second client connects");
-        let connection_one =
-            rustls::ClientConnection::new(Arc::clone(&client_config), server_name.clone())
-                .expect("first TLS client connection is configured");
-        let connection_two = rustls::ClientConnection::new(client_config, server_name)
-            .expect("second TLS client connection is configured");
-        let mut tls_one = rustls::StreamOwned::new(connection_one, socket_one);
-        let mut tls_two = rustls::StreamOwned::new(connection_two, socket_two);
+        let mut tls_one = connect_test_listener_client(port, Arc::clone(&client_config));
+        let mut tls_two = connect_test_listener_client(port, client_config);
         tls_one
             .write_all(&request)
             .expect("first client writes the request");
@@ -683,15 +705,7 @@ fn ffi_role_reversal_rejects_active_batch_and_handles_idle_timeout() {
         tls_two.flush().expect("second client flushes the request");
 
         for tls in [&mut tls_one, &mut tls_two] {
-            let mut header = [0_u8; 8];
-            tls.read_exact(&mut header)
-                .expect("client receives the server response");
-            let body_length =
-                u32::from_be_bytes([header[4], header[5], header[6], header[7]]) as usize;
-            let padded_length = body_length.div_ceil(8) * 8;
-            let mut body = vec![0_u8; padded_length];
-            tls.read_exact(&mut body)
-                .expect("client receives the complete response body");
+            let _response = read_test_ttlv_response(tls);
             response_received
                 .send(())
                 .expect("server test is still waiting for both responses");
