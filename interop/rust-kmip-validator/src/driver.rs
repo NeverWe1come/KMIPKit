@@ -683,3 +683,28 @@ pub(crate) fn asynchronous(
         response_tree_sha256: crate::matrix::operation_outcome_digest(&response).ok(),
     })
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn route_failure_codes_distinguish_safe_client_error_categories() {
+        use kmipkit::ClientErrorCategory;
+
+        assert_eq!(
+            super::route_failure_code(ClientErrorCategory::Validation),
+            "route_validation_failed"
+        );
+        assert_eq!(
+            super::route_failure_code(ClientErrorCategory::Protocol),
+            "route_protocol_failed"
+        );
+        assert_eq!(
+            super::route_failure_code(ClientErrorCategory::Transport),
+            "route_transport_failed"
+        );
+        assert_eq!(
+            super::route_failure_code(ClientErrorCategory::ServerResult),
+            "route_server_result_failed"
+        );
+    }
+}
