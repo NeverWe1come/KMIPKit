@@ -47,3 +47,14 @@ with `tools/normative_catalog/generate_fluent_operation_inventory.py`, then
 verified the generated output with `--check` and ran
 `python3 -B -m unittest tools.normative_catalog.tests.test_fluent_operation_inventory`
 (16 tests passed). The full hosted CI rerun is required on the updated head.
+
+The following hosted run exposed a stale T102 manifest-size snapshot:
+`test_t102_slice_and_manifest_snapshots_remain_consistent` expected 16,423
+declarations while the approved 0114 manifest contains 16,433. The ten added
+rows are exactly the new C lifecycle helpers with and without exchange options.
+The Red was observed in GitHub Actions and reproduced with
+`python3.12 -B -m unittest tools.api_manifest.tests.test_t102_pkcs11_request_trait_exclusions.T102Pkcs11RequestTraitExclusionTests.test_t102_slice_and_manifest_snapshots_remain_consistent -v`.
+Green commit `286e97a7` updates the shared T102 snapshot and its rationale.
+Verification: all six tests in
+`python3.12 -B -m unittest tools.api_manifest.tests.test_t102_pkcs11_request_trait_exclusions -v`
+pass. Exact-head CI must pass on the new branch head before this PR is ready.
