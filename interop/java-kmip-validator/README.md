@@ -101,9 +101,9 @@ baseline, regenerate the checked-in ledger with
 rejects generated ledgers that do not record successful invocations.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
-baseline. These recipes execute 19,482 of 71,455 planned Java route cells, with
-no failed cells; the ledger keeps the other 51,973 pending and does not imply
-vendor interoperability or full-matrix completion. Local TTLV recipes exercise 50
+baseline. These recipes execute 19,592 of 71,455 planned Java route cells, with
+no failed cells; the ledger keeps the other 51,863 pending and does not imply
+vendor interoperability or full-matrix completion. Local TTLV recipes exercise 51
 enumeration families and all six bitmask catalog cases through the applicable
 installed constructors, item views, decoders, and typed attribute wrappers.
 All 19 Block Cipher Mode values now complete their five applicable generic and
@@ -116,7 +116,8 @@ for all 20 values in KMIP 2.0/2.1 (§§4.34, 11.32 in both; tag allocation
 and its Cryptographic Parameters builder for all 25 values in KMIP 2.0/2.1
 (§§4.16, 11.26). Hashing Algorithm completes four generic routes and its
 Cryptographic Parameters builder for all 18 values in KMIP 2.0/2.1 (§§4.16,
-11.21). Link Type completes all four generic routes for its 15 catalogued
+11.21). Padding Method completes four generic routes and its Cryptographic
+Parameters builder for all 11 values (§§4.16, 11.37). Link Type completes all four generic routes for its 15 catalogued
 values in KMIP 2.0/2.1 (§11.28). Opaque Data Type completes
 its four generic and three typed
 attribute routes (§11.35); Processing Stage, Ticket Type, and Mask Generator

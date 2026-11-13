@@ -771,3 +771,39 @@ validator accepts 19,482 invoked cells with zero failures and
 `selected_scope_complete=true`; 51,973 of 71,455 planned cells remain pending.
 Link Type's local scope is complete; the Java matrix and vendor server
 interoperability are not.
+
+## Padding Method enumeration route completion
+
+Sources: OASIS KMIP 2.0 and 2.1 §11.37 (Padding Method Enumeration) and §4.16
+(Cryptographic Parameters). The aggregate local case covers all 11 catalogued
+values through four generic TTLV routes and the
+`CryptographicParameters.Builder.paddingMethod` route in both versions,
+adding 110 cells. Each value is checked through generic Enumeration
+construction, Item creation/view, TTLV decoding, and the builder setter.
+
+Red commit `e268db773` requires all 11 aggregate targets and fails because the
+case has no local fixtures. Green commit `d8d05e1b0` adds every catalogued
+value to the local enum fixtures and invokes the builder route under both
+protocol versions. Refactor commit `65521e330` names the shared KMIP 2.0/2.1
+test-version set used by the local route matrix.
+
+Verification against installed release commit
+`489fafc79ef89db2524eafa7a6c6482f5cf75d97`:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+```
+
+The Java suite passes 52 tests with no failures, errors, or skips. The shared
+validator accepts 19,592 invoked cells with zero failures and
+`selected_scope_complete=true`; 51,863 of 71,455 planned cells remain pending.
+Padding Method's local scope is complete; the Java matrix and vendor server
+interoperability are not.
