@@ -105,3 +105,19 @@
   las variantes de Unique Identifier de Modify, el rechazo por Current
   Attribute no coincidente, las respuestas negativas y varias rutas TTLV
   genéricas. No se afirma interoperabilidad con KMS externos.
+
+## Evidencia de desarrollo: respuesta Modify Attribute
+
+- Red: `5fe2bbbbb` añade la regresión para que los campos Unique Identifier de
+  respuesta de KMIP 2.0 y 2.1 atraviesen el peer TLS y el decodificador C. La
+  prueba inicial encontró cero celdas ejecutables.
+- Green: `ca3faf38d` conecta los dos casos de respuesta al flujo Modify
+  Attribute; el peer controlado devuelve el Unique Identifier obligatorio y
+  el consumidor comprueba que coincide con el objeto creado.
+- Referencias: OASIS KMIP 2.0 §6.1.33/Table 248 y KMIP 2.1 §6.1.34/Table 266.
+- Verificación: las 24 combinaciones controladas (dos versiones, dos
+  constructores, tres codificaciones y dos transportes) pasaron y CTest pasó
+  7/7. La matriz completa registró 39.269 celdas invocadas, cero fallidas y
+  27.467 pendientes. De ellas, 200 siguen asociadas a Modify Attribute:
+  Unique Identifier opcional en la solicitud, Current Attribute no
+  coincidente y dos rutas TTLV genéricas por versión.
