@@ -3030,7 +3030,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                "test-norm-payload-client-get-usage-allocation-request-20-001") == 0 ||
         strcmp(test_case->case_id,
                "test-norm-payload-client-get-usage-allocation-request-21-001") == 0;
-    bool get_workflow = strcmp(test_case->case_id, "test-op-get") == 0;
+    bool get_workflow = strcmp(test_case->case_id, "test-op-get") == 0 ||
+        strcmp(test_case->case_id, "test-norm-payload-client-get-request-20-001") == 0 ||
+        strcmp(test_case->case_id, "test-norm-payload-client-get-request-21-001") == 0;
     bool stop_on_first_failure_workflow =
         strcmp(test_case->case_id, "test-batch-stop-on-first-failure") == 0;
     bool batch_two_read_items_workflow =

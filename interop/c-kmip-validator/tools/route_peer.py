@@ -303,6 +303,8 @@ RECIPES = {
     'test-norm-payload-client-create-request-21-002': ((1, 20), 'create'),
     'test-norm-payload-client-create-request-21-003': ((1, 20), 'create'),
     'test-op-get': ((1, 10, 20), 'get'),
+    'test-norm-payload-client-get-request-20-001': ((1, 10, 20), 'get'),
+    'test-norm-payload-client-get-request-21-001': ((1, 10, 20), 'get'),
     'test-op-get-attributes': ((1, 11, 20), 'get_attributes'),
     'test-op-get-attribute-list': ((1, 12, 20), 'get_attribute_list'),
     'test-op-check': ((1, 9, 19, 20), 'check'),
@@ -337,6 +339,8 @@ RECIPES = {
 
 CONTROLLED_PEER_LOCAL_MODEL_CASES = frozenset({
     'test-batch-single-item-options-omitted',
+    'test-norm-payload-client-get-request-20-001',
+    'test-norm-payload-client-get-request-21-001',
     'test-norm-payload-client-get-usage-allocation-request-20-001',
     'test-norm-payload-client-get-usage-allocation-request-21-001',
     'test-norm-payload-client-query-request-20-001',
