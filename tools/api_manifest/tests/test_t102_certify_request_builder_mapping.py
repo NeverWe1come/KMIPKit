@@ -169,8 +169,9 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
 # fluent cryptographic operation builders.
 # Includes the approved KMIPKIT-0093 inventory reconciliation and narrowed
 # T101 mappings, KMIPKIT-0108 attribute-read declarations, and the five
-# KMIPKIT-0093 C role-reversed session declarations.
-DECLARATIONS_SHA256 = "25c895eef0e52ccd0e38e1fb891004c602c6d63197b4fff86703533e8e0cdc41"
+# KMIPKIT-0093 C role-reversed session declarations. KMIPKIT-0112 server-listener
+# facades are also part of the merged non-target declaration inventory.
+DECLARATIONS_SHA256 = "82082ec9fb5b3cc622ff89e01ede7472fa00d754931f5c8e3184ea655c238e69"
 # The C role-reversal harness moved to support/c_api_coverage_tests.rs.
 OPERATIONS_SHA256 = "c8aae7faf64c0ddba9b3c73a9819b94e18b95d5b2eca18e9e49c3801974be4e0"
 
@@ -465,6 +466,14 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
                 ]
                 self.assertEqual(count, len(typed_rows))
         other_declarations = without_0047_versioned_values(other_declarations)
+        other_declaration_ids = {row["declarationId"] for row in other_declarations}
+        self.assertTrue(
+            {
+                "KMIPKIT-0112:org.kmipkit.server.ServerConnection",
+                "KMIPKIT-0112:org.kmipkit.server.ServerListener",
+            }.issubset(other_declaration_ids),
+            "the server listener facade declarations remain included in the non-target snapshot",
+        )
         self.assertEqual(DECLARATIONS_SHA256, canonical_sha256(other_declarations))
         other_operations = copy.deepcopy(self.manifest["operations"])
         for operation in other_operations:

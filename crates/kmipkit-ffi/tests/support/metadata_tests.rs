@@ -103,6 +103,7 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
             "request_validation",
             "response_ttlv_navigation",
             "server_generated_creation",
+            "server_to_client_listener_bindings",
             "ttlv_wire_codec",
             "typed_async_response_readers",
             "typed_cryptographic_parameters",

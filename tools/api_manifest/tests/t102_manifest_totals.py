@@ -31,11 +31,13 @@ T102_BLOCKED_CANDIDATES = 0
 # KMIPKIT-0108 adds 42 fluent attribute-read declarations and 36 Rust trait exclusions.
 # KMIPKIT-0066 adds 65 C server-listener declarations.
 # KMIPKIT-0093 adds five role-reversed C session declarations.
+# KMIPKIT-0112 adds 212 Java/Python listener facade declarations and 100
+# reviewed adapter exclusions across the 1.0 listener surface.
 # Update this full-manifest snapshot only when an approved feature intentionally
 # adds or removes declarations.
-T102_PUBLIC_DECLARATIONS = 16_470
+T102_PUBLIC_DECLARATIONS = 16_682
 T102_KMIP30_DRAFT_ROUTE_DECLARATIONS = 36
-T102_APPROVED_EXCLUSIONS = 22_650
+T102_APPROVED_EXCLUSIONS = 22_750
 T102_RUST_AUDIT_MANIFEST = 3_287
 T102_RUST_AUDIT_EXCLUDED = 7_176
 T102_RUST_AUDIT_OBSERVED = 10_463

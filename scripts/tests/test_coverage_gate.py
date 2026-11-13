@@ -655,10 +655,12 @@ trait Example { fn declaration(&self); }
                 self.assertTrue(GATE.is_coverage_source_path(path))
         self.assertTrue(GATE.is_coverage_source_path("crates/kmipkit/src/test/helpers.rs"))
 
-    def test_non_executable_java_metadata_is_excluded_from_adapter_coverage(self) -> None:
+    def test_non_executable_java_sources_are_excluded_from_adapter_coverage(self) -> None:
         self.require_gate()
         metadata_sources = {
+            "bindings/java/src/main/java/org/kmipkit/server/package-info.java",
             "bindings/java/src/main/java/org/kmipkit/message/package-info.java",
+            "bindings/java/src/main/java/org/kmipkit/server/ServerRequestHandler.java",
             "bindings/java/src/main/java/org/kmipkit/credentials/CredentialValidationErrorKind.java",
             "bindings/java/src/main/java/org/kmipkit/extensions/NativeAttributeRequests.java",
             "bindings/java/src/main/java/org/kmipkit/ttlv/NativeTtlvCodec.java",

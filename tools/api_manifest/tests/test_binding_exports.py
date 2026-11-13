@@ -1273,6 +1273,18 @@ class BindingExportAuditTests(unittest.TestCase):
             }
         )
         native_members.add("registerRequestWithProtectionStorageMasks")
+        server_listener_release_members = {
+            "SERVER_LISTENER_CONFIGURATION",
+            "SERVER_LISTENER",
+            "SERVER_CONNECTION",
+            "SERVER_REQUEST_BATCH",
+            "SERVER_REQUEST",
+            "SERVER_PUT_OBJECT",
+            "SERVER_RESPONSE_BUILDER",
+            "SERVER_RESPONSE_ITEM",
+            "SERVER_RESPONSE_MESSAGE",
+        }
+        native_members.update(server_listener_release_members)
         response_view_bridge_members = {
             "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseTtlvHex",
             "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseJson",
@@ -1339,6 +1351,21 @@ class BindingExportAuditTests(unittest.TestCase):
                 self.assertIn("NativeBridgeCoverageTest.java", evidence)
                 self.assertIn("specs/053-api-parity-facade/spec.md", evidence)
                 self.assertIn("Internal JNI bridge method/constant", evidence)
+                continue
+            if key[1].removeprefix("org.kmipkit.NativeExtensionRegistry.") in (
+                server_listener_release_members
+            ):
+                self.assertEqual(
+                    exclusion["approvalSource"]["path"],
+                    "specs/066-server-to-client-operations/spec.md",
+                )
+                self.assertIn(
+                    "Exact internal JNI release-kind discriminator",
+                    exclusion["reason"],
+                )
+                self.assertIn("typed listener facade", exclusion["reason"])
+                self.assertIn("NativeHandle.owned", evidence)
+                self.assertIn("kmipkit_server_", evidence)
                 continue
             multi_encoding_bridge = key[1] in wire_encoding_bridge_members
             combined_approved_references = any(
