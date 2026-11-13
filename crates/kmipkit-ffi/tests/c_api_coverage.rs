@@ -1446,6 +1446,7 @@ fn c_abi_consumer_matches_shared_registry_cleanup_fixture() {
     );
 }
 
+// Cargo links these exported C symbols through the existing kmipkit_ffi dependency.
 unsafe extern "C" {
     fn kmipkit_codec_limits_defaults(out_limits: *mut *mut kmipkit_codec_limits_t) -> i32;
     fn kmipkit_codec_limits_create(

@@ -144,6 +144,7 @@ fn main() {
     let workspace_root = manifest_dir.join("../..");
     let public_header = workspace_root.join("bindings/c/include");
     let internal_header = workspace_root.join("tests/fixtures/api/generated");
+
     println!("cargo:rerun-if-changed={}", public_header.display());
     println!("cargo:rerun-if-changed={}", internal_header.display());
 

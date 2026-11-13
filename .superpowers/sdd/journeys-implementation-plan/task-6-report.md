@@ -96,3 +96,33 @@ multi-object collector above. Output: `target/ci-110-coverage-green.log`.
 
 `CARGO_TARGET_DIR=target/ci-110-layout TMPDIR="$PWD/target/tmp-kmipkit-0110" cargo +1.100.0 clippy --workspace --all-targets --all-features --locked -- -D warnings`
 passes (exit 0), output: `target/ci-110-clippy-green.log`.
+
+## Refactor and final verification
+
+The final cleanup documents the Cargo dependency invariant at the ABI extern
+block and separates header setup from build-script directives. No runtime
+behavior changes in this cleanup.
+
+- `CARGO_BUILD_JOBS=2 CARGO_TARGET_DIR=target/ci-110-layout TMPDIR="$PWD/target/tmp-kmipkit-0110" cargo +1.100.0 test --workspace --all-features --locked`:
+  exit 0; 115 successful suites, 4,239 passed, 0 failed, 3 ignored. The ignored
+  tests are the existing externally configured Cosmian session tests; this
+  change adds no skips. Output: `target/ci-110-workspace-green.log`.
+- `cargo +1.100.0 fmt --all --check`: exit 0; output:
+  `target/ci-110-fmt-refactor.log`.
+- `python3 -B -m unittest scripts.tests.test_ffi_coverage_objects scripts.tests.test_workflow -v`:
+  99 passed; output: `target/ci-110-python-green-parity.log`.
+- `bash -n scripts/collect_ffi_coverage.sh` and `git diff --check`: exit 0.
+
+Self-review confirmed that no C consumers, declarations, operation assertions,
+ABI checks, sanitizer jobs, coverage thresholds, or required jobs were removed.
+The DSO and static-library exports remain required, and every executed FFI test
+binary now contributes an export object. No generated artifacts or public
+symbols change. The pre-existing `progress.md` edits belong to the parent task
+and are intentionally left unstaged.
+
+Status: linker repair prepared for independent review, with separate DCO Red
+and Green commits and this Refactor commit. No push, PR edits, or merge.
+Hosted macOS/Windows validation and the complete Task 6 cross-language,
+workspace-coverage, security, and compatibility closeout remain the parent
+workflow's responsibility; this report does not claim those gates passed.
+The LLVM multi-object mismatch warning remains an explicit limitation above.
