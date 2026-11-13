@@ -83,3 +83,8 @@ batch. This adds no operations or assignments beyond that approved matrix.
 - Builders use the already approved typed models and transport. No generic
   message-send path, arbitrary transport, or new encoding is introduced.
 - Protocol 2.1 remains the default; the application explicitly selects 3.0.
+- The manifest keeps the 56-entry `client_1_0` KMIP 2.1 operation inventory
+  unchanged. These seven opt-in routes are recorded under the separate
+  `kmip30_fluent_operations` capability and linked into the versioned fluent
+  operation inventory, preserving the distinction between 1.0 default
+  operations and the explicitly selected 3.0 Working Draft routes.
