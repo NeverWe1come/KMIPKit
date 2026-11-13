@@ -2348,9 +2348,19 @@ def _execute_matrix_cell(cell: dict, case: dict, target: dict) -> tuple[str, dic
     except Exception:
         # No exception names, sources, native text or raw fixture values leave here.
         if trace is not None and set(symbols) <= trace.observed:
-            return 'event', {**identity, 'invocation_id': str(uuid.uuid4()),
-                             'invocation_count': 1, 'status': 'failed',
-                             'failure_code': 'route_execution_failed'}
+            failed_event = {**identity, 'invocation_id': str(uuid.uuid4()),
+                            'invocation_count': 1, 'status': 'failed',
+                            'failure_code': 'route_execution_failed'}
+            # Retain only the intended batch recipe for failed executions.
+            # Peer-observed fields are added only after the peer actually parses the request.
+            try:
+                batch_operations = _batch_operations_for_case(cell, case)
+            except (KeyError, TypeError, ValueError, RecipePending):
+                batch_operations = None
+            if batch_operations is not None:
+                failed_event['batch_operation_sequence'] = batch_operations
+                failed_event['batch_item_count'] = len(batch_operations)
+            return 'event', failed_event
         return 'gap', {**identity, 'failure_code': 'recipe_execution_failed'}
 
 
