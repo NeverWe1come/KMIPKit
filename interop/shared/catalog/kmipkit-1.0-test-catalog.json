@@ -18459,6 +18459,7 @@
           "section": "8.3"
         }
       ],
+      "source_encoding": "Boolean",
       "source_requiredness": "No",
       "parent_element_ids": [
         "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-BATCH-ITEM"
@@ -111489,6 +111490,7 @@
           "2.0",
           "2.1"
         ],
+        "source_encoding": "Boolean",
         "source_requiredness": "No"
       },
       "isolation_recipe": {
