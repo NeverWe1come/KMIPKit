@@ -105,6 +105,7 @@ class ControlledTlsPeerTest {
             "java.typed-protocol.model.org.kmipkit.credentials.credentialtype.fromraw";
     private static final String KEY_FORMAT_RAW_CASE_ID =
             "test-norm-enumeration-value-enum-value-key-format-type-raw-00000001";
+    private static final String KEY_FORMAT_RAW_AGGREGATE_CASE_ID = "test-enum-key-format-type";
     private static final String KEY_FORMAT_RAW_TARGET_ID =
             "KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-RAW-00000001";
     private static final String CLIENT_BATCH_ITEM_RAW_TTLV_ROUTE =
@@ -127,7 +128,7 @@ class ControlledTlsPeerTest {
     // Exercise KMIP 2.1-assigned values as unknown Enumeration values in KMIP 2.0.
     private static final Set<String> ENUMS_WITH_KMIP_2_1_ONLY_VALUES = Set.of("Operation", "Result Reason");
     private static final Set<String> LOCAL_ENUMERATION_SCOPE_CASE_IDS = Set.of(
-            "test-enum-block-cipher-mode", "test-enum-rotate-name-type",
+            "test-enum-block-cipher-mode", "test-enum-rotate-name-type", "test-enum-key-format-type",
             "test-enum-digital-signature-algorithm", "test-enum-operation",
             "test-enum-result-reason",
             "test-enum-recommended-curve",
@@ -789,6 +790,7 @@ class ControlledTlsPeerTest {
         int batchItemExtensionCountEventCount = List.of("2.0", "2.1").size() * 3;
         int batchItemGenericRouteEventCount = List.of("2.0", "2.1").size() * 4;
         int batchItemAdditionalResponseRouteEventCount = List.of("2.0", "2.1").size() * 11;
+        batchItemAdditionalResponseRouteEventCount += List.of("2.0", "2.1").size();
         int normativeMessageFieldGenericRouteEventCount = List.of("2.0", "2.1").size() * 27;
         int normativeMessageFieldParserRouteEventCount = List.of("2.0", "2.1").size() * 9;
         int normativeBatchItemAccessorRouteEventCount = List.of("2.0", "2.1").size() * 10;
@@ -2833,13 +2835,19 @@ class ControlledTlsPeerTest {
                         TtlvStructureView view = raw.view()) {
                     assertEquals(0x0aL, itemResult.operation());
                     assertEquals(3L, view.itemCount());
+                    String responseHash = normalizedTreeSha256(getResponsePayload());
                     appendRouteEvent(events,
                             KEY_FORMAT_RAW_CASE_ID,
                             CLIENT_BATCH_ITEM_RAW_TTLV_ROUTE,
                             KEY_FORMAT_RAW_TARGET_ID,
                             "org.kmipkit.extensions.ClientBatchItemResult.raw", null, null,
-                            "decode", protocolVersion, null, null,
-                            normalizedTreeSha256(getResponsePayload()));
+                            "decode", protocolVersion, null, null, responseHash);
+                    appendRouteEvent(events,
+                            KEY_FORMAT_RAW_AGGREGATE_CASE_ID,
+                            CLIENT_BATCH_ITEM_RAW_TTLV_ROUTE,
+                            KEY_FORMAT_RAW_TARGET_ID,
+                            "org.kmipkit.extensions.ClientBatchItemResult.raw", null, null,
+                            "decode", protocolVersion, null, null, responseHash);
                 }
             }
         } finally {
