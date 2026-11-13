@@ -140,6 +140,7 @@ class ControlledTlsPeerTest {
             "test-enum-key-role-type",
             "test-enum-hashing-algorithm",
             "test-enum-link-type",
+            "test-enum-padding-method",
             "test-enum-opaque-data-type",
             "test-enum-processing-stage", "test-enum-ticket-type", "test-enum-mask-generator",
             "test-enum-encoding-option", "test-enum-endpoint-role", "test-enum-key-value-location-type",
@@ -656,6 +657,8 @@ class ControlledTlsPeerTest {
                 cryptographicParameterBuilderScope("test-enum-hashing-algorithm", hashingAlgorithmTargets,
                         "HASHING-ALGORITHM"),
                 genericEnumerationScope("test-enum-link-type", linkTypeTargets, List.of("2.0", "2.1")),
+                cryptographicParameterBuilderScope("test-enum-padding-method", paddingMethodTargets,
+                        "PADDING-METHOD"),
                 new LocalEnumerationScope("test-enum-opaque-data-type", List.of(
                         "KMIPKIT-ELEM-ENUM-VALUE-OPAQUE-DATA-TYPE-EXTENSIONS-8XXXXXXX"),
                         List.of("2.0", "2.1"), List.of(
