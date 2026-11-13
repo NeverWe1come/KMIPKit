@@ -1224,6 +1224,9 @@ class RouteMatrixTests(unittest.TestCase):
                             ['Create', 'Activate', 'Get']
                             for event in events if event['action'] == 'send'))
         self.assertTrue(all(check['peer_cleanup_operations'] == [19, 20] for check in checks))
+        empty_state = hashlib.sha256(b'{"objects":{}}').hexdigest()
+        self.assertTrue(all(check['peer_cleanup_state_after_sha256'] == empty_state
+                            for check in checks))
         for symbol in ('kmipkit_client_batch_item_create', 'kmipkit_client_batch_item_activate',
                        'kmipkit_client_batch_item_get'):
             self.assertTrue(any(event['public_api_symbol'] == symbol and event['action'] == 'send'
