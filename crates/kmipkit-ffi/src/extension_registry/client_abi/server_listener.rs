@@ -35,6 +35,20 @@ const SERVER_READ_SECRET_TEXT: u32 = 7;
 const SERVER_NOTIFY_VENDOR_IDENTIFICATION: u32 = 0x0042_009D;
 const SERVER_NOTIFY_ATTRIBUTE_NAME: u32 = 0x0042_000A;
 
+fn consume_matching_server_response_batch(
+    active_batch: &mut Option<Arc<kmipkit_client::IncomingServerBatch>>,
+    response_batch: &Arc<kmipkit_client::IncomingServerBatch>,
+) -> FfiResult<()> {
+    let Some(active) = active_batch.as_ref() else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    if !Arc::ptr_eq(active, response_batch) {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    *active_batch = None;
+    Ok(())
+}
+
 fn listener_config_from_v1(
     input: *const kmipkit_server_listener_config_v1_t,
 ) -> FfiResult<kmipkit_transport::ListenerTransportConfig> {
@@ -1440,13 +1454,11 @@ pub extern "C" fn kmipkit_server_connection_send_response(
         let Ok(mut connection) = connection.lock() else {
             return record_ffi_error(ERROR_INTERNAL);
         };
-        let Some(active_batch) = connection.active_batch.as_ref() else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        if !Arc::ptr_eq(active_batch, &response.batch) {
-            return record_ffi_error(ERROR_INVALID_INPUT);
+        if let Err(status) =
+            consume_matching_server_response_batch(&mut connection.active_batch, &response.batch)
+        {
+            return record_ffi_error(status);
         }
-        connection.active_batch = None;
         let Some(connection_handle) = connection.connection.as_mut() else {
             return record_ffi_error(ERROR_INVALID_INPUT);
         };
@@ -1478,13 +1490,11 @@ pub extern "C" fn kmipkit_server_role_reversed_session_send_response(
         let Ok(mut session) = session.lock() else {
             return record_ffi_error(ERROR_INTERNAL);
         };
-        let Some(active_batch) = session.active_batch.as_ref() else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        if !Arc::ptr_eq(active_batch, &response.batch) {
-            return record_ffi_error(ERROR_INVALID_INPUT);
+        if let Err(status) =
+            consume_matching_server_response_batch(&mut session.active_batch, &response.batch)
+        {
+            return record_ffi_error(status);
         }
-        session.active_batch = None;
         match session
             .session
             .send_response(&response.message, send_timeout)
