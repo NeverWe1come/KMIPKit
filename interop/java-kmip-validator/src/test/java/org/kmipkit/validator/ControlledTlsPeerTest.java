@@ -148,7 +148,7 @@ class ControlledTlsPeerTest {
             "test-enum-encoding-option", "test-enum-endpoint-role", "test-enum-key-value-location-type",
             "test-enum-key-wrap-type", "test-enum-name-type", "test-enum-object-group-member",
             "test-enum-put-function", "test-enum-secret-data-type", "test-enum-usage-limits-unit",
-            "test-enum-cryptographic-algorithm");
+            "test-enum-cryptographic-algorithm", "test-enum-profile-name");
     private static final String RESPONSE_BATCH_ITEM_TARGET_ID =
             "KMIPKIT-ELEM-MESSAGE-FIELD-8-4-BATCH-ITEM";
     private static final List<NormativeTarget> RESPONSE_MESSAGE_PARSE_TARGETS = List.of(
