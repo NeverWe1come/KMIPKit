@@ -177,6 +177,10 @@ fn fluent_build_errors_have_stable_user_facing_messages() {
             "fluent Object Attribute value is invalid",
         ),
         (
+            FluentBuildError::InvalidProtocolVersions,
+            "fluent Discover Versions offers are empty or unsupported",
+        ),
+        (
             FluentBuildError::MissingAddAttributeValue,
             "Add Attribute requires a New Attribute",
         ),
@@ -702,6 +706,41 @@ fn discover_versions_builder_preserves_offers_and_executes_once() {
         crate::execute::ClientOperation::DiscoverVersions
     );
     assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn discover_versions_builder_rejects_invalid_offers_before_transport() {
+    assert_eq!(
+        failed_request_client()
+            .request()
+            .discover_versions()
+            .protocol_versions(Vec::new())
+            .build_request()
+            .expect_err("an explicit empty offer is invalid"),
+        FluentBuildError::InvalidProtocolVersions
+    );
+    assert_eq!(
+        failed_request_client()
+            .request()
+            .discover_versions()
+            .protocol_versions(vec![ProtocolVersion::from_raw(1, 4)])
+            .validate()
+            .expect_err("an uncatalogued version cannot be offered"),
+        FluentBuildError::InvalidProtocolVersions
+    );
+
+    let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let error = client
+        .request()
+        .discover_versions()
+        .protocol_versions(Vec::new())
+        .execute(&CodecLimits::defaults())
+        .expect_err("invalid offers fail before transport");
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert_eq!(transport.borrow().exchange_count(), 0);
 }
 
 #[test]
