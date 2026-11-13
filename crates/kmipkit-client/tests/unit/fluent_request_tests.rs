@@ -20,6 +20,7 @@ use crate::fluent::{
 const PING_OPERATION: u32 = 0x0000_003b;
 const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001e;
 const QUERY_OPERATION: u32 = 0x0000_0018;
+const CHECK_OPERATION: u32 = 0x0000_0009;
 
 fn item(raw_tag: u32, value: Value) -> Item {
     Item::new(
@@ -653,6 +654,12 @@ fn ping_fluent_builder_builds_the_existing_typed_request_and_executes_once() {
         .build_request()
         .expect("Ping's empty payload is a valid typed request");
     assert_eq!(request, PingRequest::new());
+    let batch_item = failed_request_client()
+        .request()
+        .ping()
+        .to_batch_item()
+        .expect("Ping converts to the existing typed batch item");
+    assert_eq!(batch_item.operation(), PING_OPERATION);
 
     let response =
         asynchronous_response_bytes(PING_OPERATION, 0, None, None, Some(test_structure([])));
@@ -690,6 +697,12 @@ fn discover_versions_builder_preserves_offers_and_executes_once() {
         DiscoverVersionsRequest::new().protocol_versions(),
         &[ProtocolVersion::V2_1]
     );
+    let batch_item = failed_request_client()
+        .request()
+        .discover_versions()
+        .to_batch_item()
+        .expect("Discover Versions converts to the existing typed batch item");
+    assert_eq!(batch_item.operation(), DISCOVER_VERSIONS_OPERATION);
 
     let response = asynchronous_response_bytes(
         DISCOVER_VERSIONS_OPERATION,
@@ -768,6 +781,13 @@ fn query_builder_preserves_functions_and_groups_and_executes_once() {
         Some(["group-b".to_owned(), "group-a".to_owned()].as_slice())
     );
     let _: QueryRequest = request;
+    let batch_item = failed_request_client()
+        .request()
+        .query()
+        .functions(vec![QueryFunction::OPERATIONS])
+        .to_batch_item()
+        .expect("Query converts to the existing typed batch item");
+    assert_eq!(batch_item.operation(), QUERY_OPERATION);
 
     let response = asynchronous_response_bytes(
         QUERY_OPERATION,
@@ -835,9 +855,15 @@ fn check_builder_builds_typed_policy_request_and_executes_once() {
         .expect("explicit Check policy fields build a typed request");
     assert_eq!(request.unique_identifier(), Some(&identifier));
     let _: CheckRequest = request;
+    let batch_item = failed_request_client()
+        .request()
+        .check()
+        .to_batch_item()
+        .expect("Check converts to the existing typed batch item");
+    assert_eq!(batch_item.operation(), CHECK_OPERATION);
 
     let response = asynchronous_response_bytes(
-        0x0000_0009,
+        CHECK_OPERATION,
         0,
         None,
         None,
