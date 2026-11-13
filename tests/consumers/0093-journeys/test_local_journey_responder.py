@@ -75,11 +75,27 @@ class BatchIdPlaceholderJourneyContractTests(unittest.TestCase):
     """KMIP 2.1 §6.1; batch order and ID Placeholder semantics."""
 
     @staticmethod
-    def _batch_item(operation: int, payload: bytes = b"") -> bytes:
-        fields = [_item(0x42005C, 5, struct.pack(">I", operation))]
+    def _batch_item(
+        operation: int, payload: bytes = b"", unique_id: bytes | None = None
+    ) -> bytes:
+        fields = []
+        if unique_id is not None:
+            fields.append(_item(0x420093, 8, unique_id))
+        fields.append(_item(0x42005C, 5, struct.pack(">I", operation)))
         if payload:
             fields.append(_structure(0x420079, payload))
         return _structure(0x42000F, *fields)
+
+    @staticmethod
+    def _create_payload() -> bytes:
+        return b"".join(
+            (
+                _item(0x420057, 5, struct.pack(">I", 2)),
+                _item(0x420098, 7, b"fluent-batch-placeholder"),
+                _item(0x420028, 5, struct.pack(">I", 3)),
+                _item(0x42002A, 2, struct.pack(">i", 256)),
+            )
+        )
 
     @classmethod
     def _request_frame(
@@ -107,12 +123,12 @@ class BatchIdPlaceholderJourneyContractTests(unittest.TestCase):
 
     @classmethod
     def _valid_request(cls) -> bytes:
-        create_payload = _item(0x420057, 5, struct.pack(">I", 2))
+        create_payload = cls._create_payload()
         get_payload = _item(0x420094, 5, struct.pack(">I", 1))
         return cls._request_frame(
             (
-                cls._batch_item(1, create_payload),
-                cls._batch_item(10, get_payload),
+                cls._batch_item(1, create_payload, b"create-placeholder-source"),
+                cls._batch_item(10, get_payload, b"get-placeholder-target"),
             )
         )
 
@@ -121,6 +137,13 @@ class BatchIdPlaceholderJourneyContractTests(unittest.TestCase):
         self.assertTrue(callable(parser), "fixture must parse every ordered batch item")
         items, header = parser(self._valid_request())
         self.assertEqual([operation for operation, _fields in items], [1, 10])
+        self.assertEqual(
+            [
+                next(value for tag, kind, value in fields if tag == 0x420093 and kind == 8)
+                for _operation, fields in items
+            ],
+            [b"create-placeholder-source", b"get-placeholder-target"],
+        )
         self.assertIn((0x42000D, 2, struct.pack(">i", 2)), header)
         self.assertIn((0x42000E, 6, b"\x01"), header)
 
@@ -146,7 +169,7 @@ class BatchIdPlaceholderJourneyContractTests(unittest.TestCase):
         unordered, unordered_header = responder._request_batch(
             self._request_frame(
                 (
-                    self._batch_item(1, _item(0x420057, 5, struct.pack(">I", 2))),
+                    self._batch_item(1, self._create_payload()),
                     self._batch_item(10, _item(0x420094, 5, struct.pack(">I", 1))),
                 ),
                 ordered=False,
@@ -155,10 +178,21 @@ class BatchIdPlaceholderJourneyContractTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "Batch Order Option"):
             validator(unordered, unordered_header)
 
+        missing_ids, missing_ids_header = responder._request_batch(
+            self._request_frame(
+                (
+                    self._batch_item(1, self._create_payload()),
+                    self._batch_item(10, _item(0x420094, 5, struct.pack(">I", 1))),
+                )
+            )
+        )
+        with self.assertRaisesRegex(RuntimeError, "Unique Batch Item ID"):
+            validator(missing_ids, missing_ids_header)
+
         wrong_identifier, wrong_header = responder._request_batch(
             self._request_frame(
                 (
-                    self._batch_item(1, _item(0x420057, 5, struct.pack(">I", 2))),
+                    self._batch_item(1, self._create_payload()),
                     self._batch_item(10, _item(0x420094, 7, b"guessed-key-id")),
                 )
             )
@@ -170,7 +204,7 @@ class BatchIdPlaceholderJourneyContractTests(unittest.TestCase):
             self._request_frame(
                 (
                     self._batch_item(10, _item(0x420094, 5, struct.pack(">I", 1))),
-                    self._batch_item(1, _item(0x420057, 5, struct.pack(">I", 2))),
+                    self._batch_item(1, self._create_payload()),
                 )
             )
         )
@@ -181,7 +215,13 @@ class BatchIdPlaceholderJourneyContractTests(unittest.TestCase):
         response_builder = getattr(responder, "_response_batch", None)
         self.assertTrue(callable(response_builder), "fixture must encode a full batch response")
         actual_identifier = b"server-created-batch-key"
-        frame = response_builder((1, 10), actual_identifier)
+        frame = response_builder(
+            (
+                (1, b"create-placeholder-source"),
+                (10, b"get-placeholder-target"),
+            ),
+            actual_identifier,
+        )
         top_level = responder._children(frame[8:])
         response_header = next(
             value for tag, kind, value in top_level if tag == 0x42007A and kind == 1
@@ -203,6 +243,13 @@ class BatchIdPlaceholderJourneyContractTests(unittest.TestCase):
                 for fields in decoded
             ],
             [struct.pack(">I", 1), struct.pack(">I", 10)],
+        )
+        self.assertEqual(
+            [
+                next(value for tag, kind, value in fields if tag == 0x420093 and kind == 8)
+                for fields in decoded
+            ],
+            [b"create-placeholder-source", b"get-placeholder-target"],
         )
         for fields in decoded:
             payload = next(value for tag, kind, value in fields if tag == 0x42007C and kind == 1)
