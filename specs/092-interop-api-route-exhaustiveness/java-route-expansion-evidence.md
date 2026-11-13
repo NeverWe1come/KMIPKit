@@ -632,7 +632,8 @@ or complete the Java matrix.
 ## NIST Key Type enumeration route completion
 
 Sources: OASIS KMIP 2.0 and 2.1 §11.32 (NIST Key Type Enumeration) and
-§4.34 (NIST Key Type Attribute). The aggregate local case covers all 20
+§4.34 (NIST Key Type Attribute); Tag 0x42013A is allocated in KMIP 2.0
+§11.54 and KMIP 2.1 §11.56. The aggregate local case covers all 20
 catalogued values through four generic TTLV routes and three typed attribute
 routes in both versions, adding 280 cells. These local constructors verify
 that every value remains readable through generic Enumeration, Item view,
@@ -663,4 +664,40 @@ The Java suite passes 52 tests with no failures, errors, or skips. The shared
 validator accepts 18,932 invoked cells with zero failures and
 `selected_scope_complete=true`; 52,523 of 71,455 planned cells remain pending.
 NIST Key Type's local scope is complete; the Java matrix and vendor server
+interoperability are not.
+
+## Key Role Type enumeration route completion
+
+Sources: OASIS KMIP 2.0 and 2.1 §11.26 (Key Role Type Enumeration) and §4.16
+(Cryptographic Parameters). The aggregate local case covers all 25 catalogued
+values through four generic TTLV routes and the
+`CryptographicParameters.Builder.keyRoleType` route in both versions, adding
+250 cells. Every assertion compares the preserved unsigned value across
+Enumeration construction, Item creation/view, decode, and the builder setter.
+
+Red commit `ba98894e1` requires all 25 aggregate targets and fails because the
+case had no local fixtures. Green commit `6d874dc3f` adds all targets to the
+catalog-driven fixtures and invokes the builder route for each value in both
+versions. Refactor commit `e09fc63f0` centralizes the single-builder route
+expectation shared by Key Role Type and Mask Generator.
+
+Verification against installed release commit
+`489fafc79ef89db2524eafa7a6c6482f5cf75d97`:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+```
+
+The Java suite passes 52 tests with no failures, errors, or skips. The shared
+validator accepts 19,182 invoked cells with zero failures and
+`selected_scope_complete=true`; 52,273 of 71,455 planned cells remain pending.
+Key Role Type's local scope is complete; the Java matrix and vendor server
 interoperability are not.

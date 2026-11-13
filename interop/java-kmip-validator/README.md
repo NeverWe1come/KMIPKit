@@ -101,9 +101,9 @@ baseline, regenerate the checked-in ledger with
 rejects generated ledgers that do not record successful invocations.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
-baseline. These recipes execute 18,932 of 71,455 planned Java route cells, with
-no failed cells; the ledger keeps the other 52,523 pending and does not imply
-vendor interoperability or full-matrix completion. Local TTLV recipes exercise 47
+baseline. These recipes execute 19,182 of 71,455 planned Java route cells, with
+no failed cells; the ledger keeps the other 52,273 pending and does not imply
+vendor interoperability or full-matrix completion. Local TTLV recipes exercise 48
 enumeration families and all six bitmask catalog cases through the applicable
 installed constructors, item views, decoders, and typed attribute wrappers.
 All 19 Block Cipher Mode values now complete their five applicable generic and
@@ -111,7 +111,10 @@ Cryptographic Parameters builder routes in both KMIP 2.0 and 2.1 (§§4.16,
 11.6); other enum families remain pending where the ledger says so. The three
 Rotate Name Type values complete their four applicable generic TTLV routes in
 KMIP 2.1 (§11.51). NIST Key Type completes four generic and three typed routes
-for all 20 values in KMIP 2.0/2.1 (§§4.34, 11.32). Opaque Data Type completes
+for all 20 values in KMIP 2.0/2.1 (§§4.34, 11.32 in both; tag allocation
+§11.54 in 2.0 and §11.56 in 2.1). Key Role Type completes four generic routes
+and its Cryptographic Parameters builder for all 25 values in KMIP 2.0/2.1
+(§§4.16, 11.26). Opaque Data Type completes
 its four generic and three typed
 attribute routes (§11.35); Processing Stage, Ticket Type, and Mask Generator
 complete all four generic routes, with the Mask Generator Cryptographic
