@@ -7,7 +7,7 @@
   release-line placement, acceptance criteria, and explicit version behavior.
 - [x] R001 Add failing consumer/API-shape tests for all seven operation
   builders in Rust, C, Java, and Python; record exact Red evidence.
-- [ ] G001 Implement Rust builders, typed conversion, and selected-version
+- [x] G001 Implement Rust builders, typed conversion, and selected-version
   execution using existing request models.
 - [ ] G002 Implement the opaque C ABI, direct common-task calls, builder
   lifecycle, results, and ownership tests.
