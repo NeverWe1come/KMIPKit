@@ -526,6 +526,37 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
                 expected_artifact_sha256="b" * 64,
             )
 
+    def test_collection_accepts_scoped_reports_only_when_the_union_is_complete(self):
+        local = copy.deepcopy(self.report)
+        local["run_id"] = "local-shard"
+        local["events"] = local["events"][:2]
+        network = copy.deepcopy(self.report)
+        network["run_id"] = "network-shard"
+        network["events"] = network["events"][2:]
+        scopes = {
+            local["run_id"]: local["events"],
+            network["run_id"]: network["events"],
+        }
+
+        summary = validate_collection(
+            [local, network], self.catalog, self.manifest,
+            catalog_sha256="c" * 64, route_manifest_sha256="d" * 64,
+            expected_artifact_sha256="b" * 64,
+            scope_cells_by_run=scopes,
+        )
+        self.assertTrue(summary["complete_matrix"])
+        self.assertEqual(5, summary["observed_cells"])
+
+        del network["events"][-1]
+        del scopes[network["run_id"]][-1]
+        with self.assertRaisesRegex(ValueError, "misses full matrix cells"):
+            validate_collection(
+                [local, network], self.catalog, self.manifest,
+                catalog_sha256="c" * 64, route_manifest_sha256="d" * 64,
+                expected_artifact_sha256="b" * 64,
+                scope_cells_by_run=scopes,
+            )
+
     def test_collection_rejects_different_server_identities(self):
         second = copy.deepcopy(self.report)
         second["run_id"] = "run-two"
