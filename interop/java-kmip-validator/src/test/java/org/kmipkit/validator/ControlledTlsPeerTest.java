@@ -551,6 +551,25 @@ class ControlledTlsPeerTest {
                             protocolVersion, "KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM")
                             .path("target_id").asText());
         }
+        List<String> rotateNameTypeTargets = List.of(
+                "KMIPKIT-ELEM-ENUM-VALUE-ROTATE-NAME-TYPE-UNINTERPRETED-TEXT-STRING-00000001",
+                "KMIPKIT-ELEM-ENUM-VALUE-ROTATE-NAME-TYPE-URI-00000002",
+                "KMIPKIT-ELEM-ENUM-VALUE-ROTATE-NAME-TYPE-EXTENSIONS-8XXXXXXX");
+        List<String> rotateNameTypeRoutes = List.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode");
+        for (String route : rotateNameTypeRoutes) {
+            assertEquals(rotateNameTypeTargets.size(),
+                    routeEventCount(report.path("events"), "test-enum-rotate-name-type", route),
+                    "Every Rotate Name Type value must complete each applicable generic TTLV route.");
+            for (String targetId : rotateNameTypeTargets) {
+                JsonNode event = findRouteEvent(report.path("events"), "test-enum-rotate-name-type",
+                        route, "2.1", targetId);
+                assertEquals("passed", event.path("status").asText());
+            }
+        }
         assertEquals(2, routeEventCount(report.path("events"), RESPONSE_BATCH_ITEM_CASE_ID,
                         "java.typed-protocol.function.client_batch_item_response_pending_correlation_value"),
                 "A controlled Pending response must expose its server-issued correlation value.");
