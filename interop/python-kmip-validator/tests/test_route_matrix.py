@@ -143,6 +143,46 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual({'route_execution_failed'}, {event['failure_code'] for event in report['events']})
         self.assertNotIn('secret-value-sentinel', json.dumps([report, gaps]))
 
+    def test_failed_batch_route_retains_intended_order_without_peer_claim(self):
+        from unittest.mock import patch
+
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-batch-continue-after-failure')
+        target = next(target for target in self.catalog['normative_targets']
+                      if target['target_id'] == 'KMIPKIT-ELEM-OP-C2S-GET')
+        cell = next(cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
+                    if cell['case_id'] == case['case_id']
+                    and cell['target_id'] == target['target_id']
+                    and cell.get('execution_route_id') == 'python.execute.typed-batch'
+                    and cell['workflow_item_index'] == 0
+                    and cell['protocol_version'] == '2.1'
+                    and cell['encoding'] == 'TTLV'
+                    and cell['transport'] == 'raw_tls'
+                    and cell['action'] == 'send')
+
+        class ObservedTrace:
+            def __init__(self, symbols):
+                self.observed = set(symbols)
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_):
+                return False
+
+        with patch.object(self.runner, 'CallTrace', ObservedTrace), \
+                patch.object(self.runner, 'execute_cell', side_effect=RuntimeError('private-error')):
+            outcome, event = self.runner._execute_matrix_cell(cell, case, target)
+
+        self.assertEqual('event', outcome)
+        self.assertEqual('failed', event['status'])
+        self.assertEqual(['Get', 'Get Attribute List'], event['batch_operation_sequence'])
+        self.assertEqual(2, event['batch_item_count'])
+        self.assertNotIn('peer_observed_operation_sequence', event)
+        self.assertNotIn('peer_observed_response_count', event)
+        self.assertNotIn('private-error', json.dumps(event))
+        _validate_batch_event(event, case, self.catalog, ('failed-batch',))
+
     def test_installed_distribution_records_the_exact_verified_wheel_digest(self):
         from kmipkit_validator.contract import validate_artifact
         artifact = validate_artifact()
