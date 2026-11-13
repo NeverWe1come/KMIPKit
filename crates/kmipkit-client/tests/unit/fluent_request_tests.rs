@@ -1,7 +1,7 @@
 use kmipkit_protocol::attribute::typed;
 use kmipkit_protocol::{
     AdjustmentType, Attribute, AttributeDefinition, AttributeReference, CreateRequest,
-    CurrentAttribute, NewAttribute, UniqueIdentifier,
+    CurrentAttribute, NewAttribute, PingRequest, UniqueIdentifier,
 };
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestOptions;
@@ -10,7 +10,7 @@ use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Value, ValueView};
 
 use crate::asynchronous_execution_test_support::client_for;
 use crate::execute::{ClientBatchOutcome, ClientOperation, encode_message_for_test};
-use crate::execute_test_support::{test_item, test_structure};
+use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
 use crate::fluent::{
     AttributeAdjustmentValue, CreateSymmetricKeyBuilder, CryptographicUsageMask,
     FluentAttributePosition, FluentBuildError,
@@ -634,6 +634,35 @@ fn execute_uses_typed_create_and_returns_the_existing_create_outcome() {
             b"payments-key"
         )
     );
+}
+
+#[test]
+fn ping_fluent_builder_builds_the_existing_typed_request_and_executes_once() {
+    let request = failed_request_client()
+        .request()
+        .ping()
+        .build_request()
+        .expect("Ping's empty payload is a valid typed request");
+    assert_eq!(request, PingRequest::new());
+
+    let response =
+        asynchronous_response_bytes(0x0000_003b, 0, None, None, Some(test_structure([])));
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: vec![2, 5],
+    });
+    let result = client
+        .request()
+        .ping()
+        .execute(&CodecLimits::defaults())
+        .expect("the scripted Ping response is valid");
+
+    assert_eq!(
+        result.outcome().operation(),
+        crate::execute::ClientOperation::Ping
+    );
+    assert_eq!(result.outcome().result().status().raw(), 0);
+    assert_eq!(transport.borrow().exchange_count(), 1);
 }
 
 #[test]
