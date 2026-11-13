@@ -325,6 +325,10 @@ class ControlledTlsPeerTest {
         ArrayNode events = mapper.createArrayNode();
         List<EnumerationFixture> enumerationFixtures = genericEnumerationFixtures();
         List<EnumerationFixture> localEnumerationFixtures = genericLocalEnumerationFixtures();
+        List<String> digitalSignatureTargets = enumerationTargetIds(
+                localEnumerationFixtures, "DIGITAL-SIGNATURE-ALGORITHM");
+        assertEquals(20, digitalSignatureTargets.size(),
+                "The Digital Signature Algorithm aggregate must cover every catalogued value.");
         List<String> operationTargets = enumerationTargetIds(localEnumerationFixtures, "OPERATION");
         assertEquals(60, operationTargets.size(), "The Operation aggregate must cover every catalogued value.");
         List<String> resultReasonTargets = enumerationTargetIds(localEnumerationFixtures, "RESULT-REASON");
@@ -605,6 +609,12 @@ class ControlledTlsPeerTest {
         assertEquals(97, pkcs11ReturnCodeTargets.size(),
                 "The PKCS#11 Return Code aggregate must cover every value.");
         List<LocalEnumerationScope> additionalEnumerationScopes = List.of(
+                new LocalEnumerationScope("test-enum-digital-signature-algorithm", digitalSignatureTargets,
+                        List.of("2.0", "2.1"), List.of(
+                                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+                                "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
+                                "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.digitalsignaturealgorithm")),
                 new LocalEnumerationScope("test-enum-operation", operationTargets,
                         List.of("2.0", "2.1"), List.of()),
                 new LocalEnumerationScope("test-enum-result-reason", resultReasonTargets,
