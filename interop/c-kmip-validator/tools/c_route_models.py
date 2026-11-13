@@ -756,6 +756,15 @@ class ModelCases:
         if public_api_symbol in {'kmipkit_key_block_from_fields', 'kmipkit_key_block_from_item'}:
             self.abi.called.clear()
             return self._execute_key_block_target(target, protocol_version)
+        if (target.get('target_id') == 'KMIPKIT-ELEM-OBJECT-TYPE-CERTIFICATE-REQUEST'
+                and public_api_symbol == 'kmipkit_certificate_request_from_fields'):
+            root = next((item for item in self.catalog['normative_targets']
+                         if item['kind'] == 'object_structure'
+                         and item['name'] == 'Certificate Request'), None)
+            if root is None:
+                return None
+            self.abi.called.clear()
+            return self._execute_named_object(root, protocol_version)
         if (public_api_symbol in {None, 'kmipkit_cryptographic_parameters_from_fields_v1',
                                   'kmipkit_cryptographic_parameters_read_fields_v1',
                                   'kmipkit_cryptographic_parameters_into_ttlv'}
@@ -787,6 +796,13 @@ class ModelCases:
             self.abi.called.clear()
             result = self._execute_named_object(root, protocol_version)
             return result if self._supports_target(target, result) else None
+        if (target.get('target_id') == 'KMIPKIT-ELEM-OBJECT-TYPE-CERTIFICATE'
+                and public_api_symbol == 'kmipkit_certificate_from_fields'):
+            target = next((item for item in self.catalog['normative_targets']
+                           if item['kind'] == 'object_structure'
+                           and item['target_id'] == CERTIFICATE_STRUCTURE), None)
+            if target is None:
+                return None
         if target.get('target_id') != CERTIFICATE_STRUCTURE and CERTIFICATE_STRUCTURE not in parents:
             return None
         certificate_type = next((item for item in self.catalog['normative_targets']

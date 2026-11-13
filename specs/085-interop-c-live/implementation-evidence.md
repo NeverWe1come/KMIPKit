@@ -138,28 +138,38 @@ The subsequent exact-head CI run `43419410034` exposed one remaining Windows
 short-path assertion in `test_preserves_both_libraries_and_consumers_in_both_cargo_layouts`
 (job `131866846011`, classic layout: `RUNNER~1` versus `runneradmin`). The
 expectation now compares file identity for every collected artifact, as the
-hardlink case already does. Linux execution and exact-head CI are required to
-verify this follow-up.
+hardlink case already does. All 12 local tests in
+`scripts.tests.test_ffi_coverage_objects` pass; exact-head CI is required to
+verify this follow-up on Windows.
 
 ### Register request and response routes
 
 The Red commits `7cafc62a2`, `22fff7a51`, and `b42bdc902` added installed-
 consumer checks for the missing Register recipe and its generic response-TTLV
-accessor. The C consumer now registers an isolated certificate, checks the
-typed Register response, checks that the generic response TTLV contains the
-same Unique Identifier, and verifies independent Destroy cleanup. The
-controlled peer validates both KMIP 2.0 and 2.1 over TTLV, JSON, and XML with
-raw TLS and HTTPS; request and response bodies remain out of evidence.
+accessor. Red commit `e6526470f` requires Certificate and Certificate Request
+Register exchanges, and `77dde2ba5` requires their direct typed object
+constructors for both protocol versions. The C consumer registers an isolated
+certificate or generated PKCS#10 Certificate Request, checks the typed
+Register response, checks that the generic response TTLV contains the same
+Unique Identifier, and verifies independent Destroy cleanup. The Certificate
+Request fixture uses an RSA-2048 key and required Algorithm, Length, and Name
+attributes. The controlled peer validates both KMIP 2.0 and 2.1 over TTLV,
+JSON, and XML with raw TLS and HTTPS; request and response bodies remain out
+of evidence.
 
 Verification on the implementation worktree:
 
 - CMake build and CTest: 7/7 passed.
 - `python3 -m unittest interop.c-kmip-validator.tests.test_route_matrix -v`:
-  75/75 passed.
-- The complete generated C route matrix: 66,728 expected cells, 36,786
-  invoked, 0 failed, and 29,942 still pending. All 80 `test-op-register`
-  evidence cells were invoked; none remain pending. The completeness command
-  correctly exits unsuccessfully while the other recipes remain incomplete.
+  77/77 passed.
+- `python3 -m unittest scripts.tests.test_ffi_coverage_objects -v`: 12/12
+  passed.
+- The complete generated C route matrix: 66,728 expected cells, 36,942
+  invoked, 0 failed, and 29,786 still pending. All cells for
+  `test-op-register`, `test-obj-certificate`, and
+  `test-obj-certificate-request` were invoked; none remain pending for those
+  cases. The completeness command correctly exits unsuccessfully while the
+  other recipes remain incomplete.
 
 This Register path is one executable operation recipe, not completion of the C
 interoperability implementation. In the same matrix, the largest remaining

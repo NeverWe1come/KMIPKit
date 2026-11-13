@@ -261,6 +261,8 @@ RECIPES = {
     'test-v20-reject-get-constraints': ((56,), 'get_constraints'),
     'test-op-create': ((1, 20), 'create'),
     'test-op-register': ((3, 20), 'register'),
+    'test-obj-certificate': ((3, 20), 'register'),
+    'test-obj-certificate-request': ((3, 20), 'register_certificate_request'),
     'test-batch-create-activate-destroy': ((1, 18, 12, 19, 20), 'create_activate_attribute_list_revoke_destroy'),
     'test-batch-placeholder-chain-resolves': (PLACEHOLDER_CHAIN_OPERATIONS, 'batch_placeholder_chain'),
     'test-batch-single-item-options-omitted': ((10,), 'batch_single_item_options_omitted'),
@@ -354,24 +356,33 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None):
                                 if item[0] == 0x420079 and item[1] == 1), None)
         attributes = next((item for item in request_payload[2]
                            if item[0] == 0x420125 and item[1] == 1), None) if request_payload else None
-        certificate = next(descendants(register_item, 0x420013), None)
-        certificate_value = next(descendants(register_item, 0x42001E), None)
-        if certificate is None or certificate[1] != 1 or numbers(certificate, 0x42001D) != [1]:
-            raise ValueError('fixture_register_certificate_shape_mismatch')
-        if certificate_value is None or certificate_value[1] != 8:
-            raise ValueError('fixture_register_certificate_value_mismatch')
-        if attributes is None or attributes[1] != 1:
-            raise ValueError('fixture_register_certificate_attributes_missing')
-        certificate_attribute_tags = {item[0] for item in attributes[2]}
-        required_certificate_attributes = {0x42001D, 0x420028, 0x42002A, 0x42002C, 0x4200AD}
-        certificate_length = numbers(attributes, 0x4200AD)
-        if not required_certificate_attributes <= certificate_attribute_tags:
-            raise ValueError('fixture_register_certificate_attribute_tags_mismatch')
-        if (numbers(attributes, 0x42001D) != [1] or numbers(attributes, 0x420028) != [4] or
-                numbers(attributes, 0x42002A) != [2048] or numbers(attributes, 0x42002C) != [3]):
-            raise ValueError('fixture_register_certificate_attribute_values_mismatch')
-        if len(certificate_length) != 1 or certificate_length[0] != len(certificate_value[2]):
-            raise ValueError('fixture_register_certificate_length_mismatch')
+        if selected_recipe[1] == 'register_certificate_request':
+            certificate_request = next(descendants(register_item, 0x420018), None)
+            request_value = next(descendants(register_item, 0x420140), None)
+            if (numbers(node, 0x420057) != [10] or certificate_request is None or
+                    certificate_request[1] != 1 or numbers(certificate_request, 0x420019) != [2]):
+                raise ValueError('fixture_register_certificate_request_shape_mismatch')
+            if request_value is None or request_value[1] != 8 or not request_value[2]:
+                raise ValueError('fixture_register_certificate_request_value_mismatch')
+        else:
+            certificate = next(descendants(register_item, 0x420013), None)
+            certificate_value = next(descendants(register_item, 0x42001E), None)
+            if certificate is None or certificate[1] != 1 or numbers(certificate, 0x42001D) != [1]:
+                raise ValueError('fixture_register_certificate_shape_mismatch')
+            if certificate_value is None or certificate_value[1] != 8:
+                raise ValueError('fixture_register_certificate_value_mismatch')
+            if attributes is None or attributes[1] != 1:
+                raise ValueError('fixture_register_certificate_attributes_missing')
+            certificate_attribute_tags = {item[0] for item in attributes[2]}
+            required_certificate_attributes = {0x42001D, 0x420028, 0x42002A, 0x42002C, 0x4200AD}
+            certificate_length = numbers(attributes, 0x4200AD)
+            if not required_certificate_attributes <= certificate_attribute_tags:
+                raise ValueError('fixture_register_certificate_attribute_tags_mismatch')
+            if (numbers(attributes, 0x42001D) != [1] or numbers(attributes, 0x420028) != [4] or
+                    numbers(attributes, 0x42002A) != [2048] or numbers(attributes, 0x42002C) != [3]):
+                raise ValueError('fixture_register_certificate_attribute_values_mismatch')
+            if len(certificate_length) != 1 or certificate_length[0] != len(certificate_value[2]):
+                raise ValueError('fixture_register_certificate_length_mismatch')
     if case_id == 'test-attr-cryptographic-algorithm' and numbers(node, 0x42013B) != [0x420028]:
         raise ValueError('fixture_attribute_reference_mismatch')
     if case_id == 'test-attr-cryptographic-length' and numbers(node, 0x42013B) != [0x42002A]:
@@ -742,12 +753,12 @@ def verify_consumer_provenance(report, artifact_sha256, catalog_sha256):
         raise ValueError('consumer_artifact_provenance_mismatch')
 
 
-def case_for_controlled_exchange(case, attribute_fixture=None, certificate_object_path=None):
+def case_for_controlled_exchange(case, attribute_fixture=None, register_object_path=None):
     """Run opaque request constructors through the controlled peer."""
     if (case['case_id'] in CONTROLLED_PEER_LOCAL_MODEL_CASES
             and case.get('execution', {}).get('mode') == 'local_model'):
         case = {**case, 'execution': {**case['execution'], 'mode': 'server_exchange'}}
-    if attribute_fixture is not None or certificate_object_path is not None:
+    if attribute_fixture is not None or register_object_path is not None:
         requires = dict(case.get('requires', {}))
         if attribute_fixture is not None:
             requires.update({
@@ -760,7 +771,9 @@ def case_for_controlled_exchange(case, attribute_fixture=None, certificate_objec
                 'attribute_response_type': attribute_fixture.get('attribute_response_type', ''),
                 'attribute_response_fields': attribute_fixture.get('attribute_response_fields', ''),
             })
-        requires['certificate_object_path'] = certificate_object_path or ''
+        requires['register_object_path'] = register_object_path or ''
+        if attribute_fixture and attribute_fixture.get('register_certificate'):
+            requires['certificate_object_path'] = register_object_path or ''
         case = {**case, 'requires': {
             **requires,
         }}
@@ -797,6 +810,11 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
         certificate_der = directory / 'server-certificate.der'
         subprocess.run([openssl, 'x509', '-in', str(cert), '-outform', 'DER',
                         '-out', str(certificate_der)], check=True,
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        certificate_request_der = directory / 'certificate-request.der'
+        subprocess.run([openssl, 'req', '-new', '-key', str(key), '-subj',
+                        '/CN=KMIPKit C interop fixture', '-outform', 'DER',
+                        '-out', str(certificate_request_der)], check=True,
                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         context.minimum_version = ssl.TLSVersion.TLSv1_3
@@ -931,10 +949,12 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                             connection_path, catalog_path, result_path, trace_path = (directory / name for name in ('connection.json', 'catalog.json', 'result.json', 'calls.tsv'))
                             trace_path.unlink(missing_ok=True)
                             connection_path.write_text(json.dumps(config))
-                            peer_case = case_for_controlled_exchange(
-                                case, attribute_fixture,
-                                str(certificate_der) if case_id == 'test-op-register' or
+                            register_object_path = (
+                                str(certificate_request_der) if case_id == 'test-obj-certificate-request' else
+                                str(certificate_der) if case_id in ('test-op-register', 'test-obj-certificate') or
                                 (attribute_fixture and attribute_fixture.get('register_certificate')) else None)
+                            peer_case = case_for_controlled_exchange(
+                                case, attribute_fixture, register_object_path)
                             catalog_path.write_text(json.dumps({**catalog, 'test_cases': [peer_case]}))
                             run = subprocess.run([str(binary.resolve()), 'run', '--connection', str(connection_path),
                                 '--catalog', str(catalog_path), '--allow-mutations', '--output', str(result_path)],

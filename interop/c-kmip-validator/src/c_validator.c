@@ -236,6 +236,9 @@ bool kmip_load_catalog(const char *json_path, kmip_test_case_t *out_cases, size_
             load_optional_requires(&document, requires, "certificate_object_path",
                                    test_case->certificate_object_path,
                                    sizeof(test_case->certificate_object_path)) &&
+            load_optional_requires(&document, requires, "register_object_path",
+                                   test_case->register_object_path,
+                                   sizeof(test_case->register_object_path)) &&
             load_optional_requires(&document, requires, "workflow_type", test_case->workflow_type,
                                    sizeof(test_case->workflow_type)) &&
             load_optional_requires(&document, requires, "enum_type", test_case->enum_type,
