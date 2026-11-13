@@ -615,7 +615,7 @@ class ControlledTlsPeerTest {
                                 "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
                                 "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
                                 "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
-                                "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.digitalsignaturealgorithm")),
+                                CRYPTOGRAPHIC_PARAMETER_BUILDER_ROUTES.get("DIGITAL-SIGNATURE-ALGORITHM"))),
                 new LocalEnumerationScope("test-enum-operation", operationTargets,
                         List.of("2.0", "2.1"), List.of()),
                 new LocalEnumerationScope("test-enum-result-reason", resultReasonTargets,
