@@ -480,3 +480,25 @@ the catalogued field before recording the route. This follows KMIP 2.0
 
 This evidence covers the typed Query response views in the C validator only;
 other C routes, language parity, and exact-head CI remain outstanding.
+
+### Combined matrix after registered-key batch integration
+
+The controlled peer now also validates the registered-key
+Register/Activate/Encrypt/Decrypt/Revoke/Destroy batch. This is a read/write
+fixture workflow with fixed public identifiers and checked batch ordering; no
+request body or key material is retained in evidence.
+
+- The peer regression Red commit `d3a276ed`: the focused KMIP 2.0/2.1 tests
+  failed because the six-operation recipe was not recognized. Green commit
+  `150964b0`: require each item identifier exactly once and return matching
+  response identifiers. The earlier installed batch recipe commits are
+  recorded in `specs/092-interop-api-route-exhaustiveness/tasks.md`.
+- After merging the concurrent batch change and rebuilding the C consumer,
+  the full route matrix reports 66,728 expected cells, 38,318 invoked,
+  0 failed, and 28,410 pending. The batch case has no pending cells; the
+  increase from 38,014 is 304 executed batch routes.
+- The merged branch passed the C route-matrix suite (111/111) and CTest
+  (7/7), including both KMIP 2.0 and 2.1 controlled TLS peers.
+
+The C route matrix remains incomplete and exact-head CI is still required;
+this measurement does not establish full API parity or external KMS support.
