@@ -77,6 +77,24 @@ The validator PR does not change KMIPKit production code or the shared
 generated catalog. The shared contract needs an approved normative review
 before a library fix or conformance conclusion can be made.
 
+## Red-Green-Refactor evidence
+
+- **Red** (`beac2767c`): added the regression tests, restored the prior
+  workflow condition, then ran
+  `PYTHONPATH=src .venv/bin/python -m unittest discover -s tests -p 'test_route_matrix.py' -k test_ci_runs_matrix_after_test_failure_and_guards_missing_evidence -v`.
+  It failed because the matrix step did not include `always()`.
+- **Green** (`9429bef92`): made the matrix run when the installed artifact
+  manifest exists, guarded independent validation on report existence, and
+  guarded evidence upload. The same test passed, as did both tests selected by
+  `-k batch_stop`.
+- **Refactor/evidence** (`89d5c6228`): updated README and implementation
+  evidence to distinguish the OASIS text from the common-catalog response
+  count and to keep the route result classified as unresolved.
+- Full Python consumer suite: 131 tests passed in 323.323 seconds.
+- Repository requirement traceability: 2 tests passed; feature traceability:
+  31 tests passed in 51.596 seconds. The exact pinned wheel was accepted by
+  `tools/verify_artifact.py`.
+
 ## Pull-request CI evidence
 
 At PR #173 head `264ba33bc0c04aa4285a2908a46ab097fd7802d8`, 49 checks succeeded
