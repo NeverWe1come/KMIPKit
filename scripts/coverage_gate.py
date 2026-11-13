@@ -95,6 +95,7 @@ _JAVA_METADATA_ONLY_SOURCE_EXCLUSIONS = frozenset(
         "bindings/java/src/main/java/org/kmipkit/generated/package-info.java",
         "bindings/java/src/main/java/org/kmipkit/extensions/package-info.java",
         "bindings/java/src/main/java/org/kmipkit/message/package-info.java",
+        "bindings/java/src/main/java/org/kmipkit/server/package-info.java",
     }
 )
 
