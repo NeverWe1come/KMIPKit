@@ -36,6 +36,7 @@ TYPES = ('', 'Structure', 'Integer', 'LongInteger', 'BigInteger', 'Enumeration',
 
 BATCH_ITEM_TAG = 0x42000F
 REQUEST_PAYLOAD_TAG = 0x420079
+RESPONSE_PAYLOAD_TAG = 0x42007C
 UNIQUE_IDENTIFIER_TAG = 0x420094
 ENUMERATION_TTLV_TYPE = 5
 ID_PLACEHOLDER_ENUMERATION = 1
@@ -232,6 +233,29 @@ def request_payload_field_present(target, batch_item, targets, codec):
         return False
     payloads = [child for child in batch_item[2]
                 if child[0] == codec.tag('Request Payload') and child[1] == 1]
+    return len(payloads) == 1 and any(child[0] == field_tag for child in payloads[0][2])
+
+
+def response_payload_field_present(target, batch_item, targets, codec):
+    """Check a response payload field under its exact operation's batch item."""
+    if (target.get('kind') != 'operation_payload_field'
+            or target.get('role') != 'response'
+            or not isinstance(target.get('operation_id'), str)
+            or batch_item[0] != BATCH_ITEM_TAG or batch_item[1] != 1):
+        return False
+    operation = targets.get(target['operation_id'])
+    if operation is None or operation.get('kind') != 'operation':
+        return False
+    operation_value = codec.values.get((codec.tag('Operation'), normalize(operation['name'])))
+    field_tag = codec.tags.get(normalize(target.get('name', '')))
+    if operation_value is None or field_tag is None:
+        return False
+    operation_fields = [child for child in batch_item[2]
+                        if child[0] == codec.tag('Operation') and child[1] == ENUMERATION_TTLV_TYPE]
+    if len(operation_fields) != 1 or int.from_bytes(operation_fields[0][2], 'big') != operation_value:
+        return False
+    payloads = [child for child in batch_item[2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1]
     return len(payloads) == 1 and any(child[0] == field_tag for child in payloads[0][2])
 
 
@@ -1498,13 +1522,16 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             request_tree, 0x42005C):
                                         continue
                                 elif target['kind'] == 'operation_payload_field':
-                                    # Request fields are proved from the actual
-                                    # request tree during construction and send.
-                                    # A response decode cannot prove a request field.
-                                    if (not is_network or cell['action'] == 'decode'
+                                    if cell['action'] == 'decode':
+                                        if (target.get('role') != 'response'
+                                                or not any(response_payload_field_present(target, item,
+                                                    targets_by_id, codec)
+                                                           for item in descendants(response_tree, BATCH_ITEM_TAG))):
+                                            continue
+                                    elif (not is_network or target.get('role') != 'request'
                                             or not any(request_payload_field_present(target, item,
                                                 targets_by_id, codec)
-                                                       for item in descendants(request_tree, 0x42000F))):
+                                                       for item in descendants(request_tree, BATCH_ITEM_TAG))):
                                         continue
                                 else:
                                     continue
