@@ -10,7 +10,7 @@ import subprocess
 import tarfile
 import tempfile
 
-PIN = "8281fef2e9ca211fde1e1d8e21525a672287eead"
+PIN = "9a16cc90a12205101d22a38501a5e74c665df4dc"
 ROOT = Path(__file__).resolve().parents[3]
 LOCAL = ROOT / "interop/.local/rust-live"
 CRATES = ["kmipkit-ttlv", "kmipkit-protocol", "kmipkit-transport", "kmipkit-client", "kmipkit"]
@@ -20,11 +20,21 @@ def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def artifact_matches_pin(bundle, provenance):
+    """Return whether a cached package bundle matches this release identity."""
+    try:
+        data = json.loads(provenance.read_text())
+        return (data.get("library_commit") == PIN
+                and data.get("artifact_sha256") == digest(bundle))
+    except (OSError, ValueError):
+        return False
+
+
 def install():
     LOCAL.mkdir(parents=True, exist_ok=True)
     bundle = LOCAL / "kmipkit-rust-1.0.0.tar.gz"
     provenance = LOCAL / "provenance.json"
-    if not bundle.exists():
+    if not artifact_matches_pin(bundle, provenance):
         with tempfile.TemporaryDirectory(prefix="kmipkit-rust-package-") as directory:
             tree = Path(directory)
             archive = subprocess.check_output(["git", "-C", str(ROOT), "archive", PIN])

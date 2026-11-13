@@ -8,10 +8,11 @@ import subprocess
 import sys
 
 from coverage_exclusions import GENERATED_SOURCE_REGEX, generated_source_files
+from artifact_paths import coverage_target_dir
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "interop/rust-kmip-validator/Cargo.toml"
-TARGET = ROOT / "interop/rust-kmip-validator/target/coverage-build"
+TARGET = coverage_target_dir(ROOT)
 OUTPUT = ROOT / "interop/rust-kmip-validator/target/coverage.json"
 
 env = os.environ.copy()

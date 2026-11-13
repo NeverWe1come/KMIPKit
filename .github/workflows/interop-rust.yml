@@ -75,6 +75,9 @@ jobs:
       - name: Verify installed bytes and package provenance
         run: python3 interop/rust-kmip-validator/tools/verify_artifact.py
 
+      - name: Select build caches for the installed release commit
+        run: python3 interop/rust-kmip-validator/tools/configure_artifact_env.py --github-env
+
       - name: Check code formatting
         run: cargo +1.94 fmt --manifest-path interop/rust-kmip-validator/Cargo.toml --check
 

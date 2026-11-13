@@ -7,6 +7,7 @@ missing. Emitted events are actual runner calls, never copied planned rows.
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -15,8 +16,10 @@ import jsonschema
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / 'interop/shared/tools'))
+sys.path.insert(0, str(ROOT / 'interop/rust-kmip-validator/tools'))
 from coverage_matrix import iter_cells
 from validate_route_evidence import validate_report
+from artifact_paths import validator_binary
 
 RESPONSE_EVIDENCE_FILES = (
     'rust-response-routes-2.0.json',
@@ -142,7 +145,7 @@ def main():
     selected_network_cells = [cell for cell in selected_cells if cell.get('mode') == 'network']
     evidence_path = args.output_dir / 'rust-local-route-evidence.json'
     evidence_path.unlink(missing_ok=True)
-    validator = ROOT / 'interop/rust-kmip-validator/target/debug/rust-kmip-validator'
+    validator = Path(os.environ.get('KMIPKIT_VALIDATOR_BIN', validator_binary(ROOT)))
     runner_matrix = args.output_dir / 'rust-executable-local-matrix.jsonl'
     runner_matrix.write_text(''.join(
         json.dumps(cell, sort_keys=True, separators=(',', ':')) + '\n'

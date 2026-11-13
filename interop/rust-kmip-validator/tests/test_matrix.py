@@ -20,8 +20,9 @@ from run_route_matrix import executable_local_cells
 from validate_route_evidence import validate_report
 from coverage_exclusions import generated_source_files
 from install_artifact import artifact_matches_pin
+from artifact_paths import validator_binary
 
-VALIDATOR = Path(os.environ.get('KMIPKIT_VALIDATOR_BIN', ROOT / 'interop/rust-kmip-validator/target/debug/rust-kmip-validator'))
+VALIDATOR = Path(os.environ.get('KMIPKIT_VALIDATOR_BIN', validator_binary(ROOT)))
 CATALOG_PATH = ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json'
 ROUTES_PATH = ROOT / 'interop/shared/coverage/route-capabilities.json'
 CATALOG = json.loads(CATALOG_PATH.read_bytes())
@@ -480,7 +481,8 @@ class MatrixContract(unittest.TestCase):
             matrix = Path(directory) / 'one-cell.jsonl'
             matrix.write_text(json.dumps(self.cell('kmipkit_ttlv::Item::new')) + '\n')
             process = subprocess.run([sys.executable, str(ROOT / 'interop/rust-kmip-validator/tools/run_route_matrix.py'),
-                '--matrix', str(matrix), '--output-dir', directory],
+                '--matrix', str(matrix), '--output-dir', directory,
+                '--response-evidence-dir', directory],
                 capture_output=True, text=True, timeout=30)
             self.assertNotEqual(process.returncode, 0)
             summary_path = Path(directory) / 'matrix-summary.json'
