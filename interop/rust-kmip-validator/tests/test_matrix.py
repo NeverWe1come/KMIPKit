@@ -18,6 +18,7 @@ from coverage_matrix import iter_cells
 from run_route_matrix import executable_local_cells
 from validate_route_evidence import validate_report
 from coverage_exclusions import generated_source_files
+from install_artifact import artifact_matches_pin
 
 VALIDATOR = Path(os.environ.get('KMIPKIT_VALIDATOR_BIN', ROOT / 'interop/rust-kmip-validator/target/debug/rust-kmip-validator'))
 CATALOG_PATH = ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json'
@@ -58,6 +59,29 @@ class PinnedSourceContract(unittest.TestCase):
         )
         self.assertIsNotNone(readme_match)
         self.assertEqual(expected, readme_match.group(1))
+
+    def test_cached_release_bundle_is_rebuilt_when_its_pin_or_digest_is_stale(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            bundle = root / 'artifact.tar.gz'
+            provenance = root / 'provenance.json'
+            bundle.write_bytes(b'cached release bundle')
+            digest = hashlib.sha256(bundle.read_bytes()).hexdigest()
+            provenance.write_text(json.dumps({
+                'library_commit': EXPECTED_SOURCE_COMMIT,
+                'artifact_sha256': digest,
+            }))
+            self.assertTrue(artifact_matches_pin(bundle, provenance))
+            provenance.write_text(json.dumps({
+                'library_commit': '8281fef2e9ca211fde1e1d8e21525a672287eead',
+                'artifact_sha256': digest,
+            }))
+            self.assertFalse(artifact_matches_pin(bundle, provenance))
+            provenance.write_text(json.dumps({
+                'library_commit': EXPECTED_SOURCE_COMMIT,
+                'artifact_sha256': '0' * 64,
+            }))
+            self.assertFalse(artifact_matches_pin(bundle, provenance))
 
 
 class MatrixContract(unittest.TestCase):
