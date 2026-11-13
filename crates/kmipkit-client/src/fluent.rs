@@ -2847,7 +2847,7 @@ impl<'a> CreateKeyPairBuilder<'a> {
                     .map_err(|_| FluentBuildError::InvalidAttributeValue)?,
             )
             .map_err(|_| FluentBuildError::InvalidAttributeValue)?;
-        append_key_pair_attributes(&mut common, &self.common_attributes)?;
+        append_cloned_attributes(&mut common, &self.common_attributes)?;
         let private = key_pair_attributes(
             self.private_usage_mask,
             self.private_name.as_deref(),
@@ -2936,11 +2936,11 @@ fn key_pair_attributes(
             )
             .map_err(|_| FluentBuildError::InvalidAttributeValue)?;
     }
-    append_key_pair_attributes(&mut attributes, additional)?;
+    append_cloned_attributes(&mut attributes, additional)?;
     Ok(attributes)
 }
 
-fn append_key_pair_attributes(
+fn append_cloned_attributes(
     attributes: &mut AttributeSet,
     additional: &AttributeSet,
 ) -> Result<(), FluentBuildError> {
@@ -4017,13 +4017,7 @@ impl<'a> CreateBuilder<'a> {
             .object_type
             .ok_or(FluentBuildError::MissingCreateObjectType)?;
         let mut attributes = AttributeSet::new();
-        for attribute in self.attributes.as_items() {
-            attributes.try_push(
-                attribute
-                    .try_clone()
-                    .map_err(|_| FluentBuildError::InvalidTtlvValue)?,
-            )?;
-        }
+        append_cloned_attributes(&mut attributes, &self.attributes)?;
         let mut request = CreateRequest::new(object_type, attributes);
         if let Some(masks) = &self.protection_storage_masks {
             request = request.with_protection_storage_masks(
