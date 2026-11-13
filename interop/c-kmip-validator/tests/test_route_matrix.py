@@ -697,6 +697,41 @@ class RouteMatrixTests(unittest.TestCase):
                 self.assertTrue(any(event['case_id'] == case_id and
                                     event['public_api_symbol'] == symbol for event in events))
 
+    def test_normative_add_attribute_request_payload_routes_execute_in_both_versions(self):
+        """OASIS KMIP 2.0 §6.1.2/Table 152 and KMIP 2.1 §6.1.2/Table 167 require New Attribute."""
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_ids = {
+            'test-norm-payload-client-add-attribute-request-20-002',
+            'test-norm-payload-client-add-attribute-request-21-002',
+        }
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] in case_ids]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 24)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks))
+        for case_id in case_ids:
+            case_checks = [check for check in checks if check['case_id'] == case_id]
+            self.assertEqual(len(case_checks), 12)
+            for variant, symbol in (
+                    ('direct', 'kmipkit_client_batch_item_add_attribute'),
+                    ('standalone', 'kmipkit_client_batch_item_add_attribute_from_request')):
+                variant_checks = [check for check in case_checks
+                                  if check['constructor_variant'] == variant]
+                self.assertEqual(len(variant_checks), 6)
+                self.assertTrue(all(symbol in check['public_api_trace_symbols']
+                                    for check in variant_checks))
+                self.assertTrue(all(check.get('peer_new_attribute_present') is True
+                                    for check in variant_checks))
+                self.assertTrue(any(event['case_id'] == case_id and
+                                    event['public_api_symbol'] == symbol for event in events))
+
     def test_reserved_tag_is_not_constructed_as_an_assigned_ttlv_item(self):
         from artifact_support import ROOT
         catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
