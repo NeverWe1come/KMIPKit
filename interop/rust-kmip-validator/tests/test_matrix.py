@@ -26,24 +26,23 @@ CATALOG = json.loads(CATALOG_PATH.read_bytes())
 ROUTES = json.loads(ROUTES_PATH.read_bytes())
 SCHEMA = json.loads((ROOT / 'interop/shared/schemas/route-execution-evidence.schema.json').read_bytes())
 ELEMENTS = json.loads((ROOT / 'specification/catalog/kmip-2.1.json').read_bytes())['elements']
+EXPECTED_SOURCE_COMMIT = '8281fef2e9ca211fde1e1d8e21525a672287eead'
+PIN_SOURCE_PATTERNS = (
+    ('interop/rust-kmip-validator/tools/install_artifact.py', r'^PIN = "([0-9a-f]{40})"$'),
+    ('interop/rust-kmip-validator/tools/verify_artifact.py', r'^PIN = "([0-9a-f]{40})"$'),
+    ('interop/rust-kmip-validator/tools/build_test_server.py', r'^PIN = "([0-9a-f]{40})"$'),
+    ('interop/rust-kmip-validator/src/models.rs',
+     r'pub\(crate\) const PIN: &str = "([0-9a-f]{40})";'),
+)
 
 
 class PinnedSourceContract(unittest.TestCase):
     def test_installed_package_and_test_server_use_shared_manifest_commit(self):
         expected = ROUTES['library_commit']
-        self.assertEqual('8281fef2e9ca211fde1e1d8e21525a672287eead', expected)
-        pin_sources = {
-            ROOT / 'interop/rust-kmip-validator/tools/install_artifact.py':
-                r'^PIN = "([0-9a-f]{40})"$',
-            ROOT / 'interop/rust-kmip-validator/tools/verify_artifact.py':
-                r'^PIN = "([0-9a-f]{40})"$',
-            ROOT / 'interop/rust-kmip-validator/tools/build_test_server.py':
-                r'^PIN = "([0-9a-f]{40})"$',
-            ROOT / 'interop/rust-kmip-validator/src/models.rs':
-                r'pub\(crate\) const PIN: &str = "([0-9a-f]{40})";',
-        }
-        for path, pattern in pin_sources.items():
-            with self.subTest(path=path):
+        self.assertEqual(EXPECTED_SOURCE_COMMIT, expected)
+        for relative_path, pattern in PIN_SOURCE_PATTERNS:
+            path = ROOT / relative_path
+            with self.subTest(path=relative_path):
                 match = re.search(pattern, path.read_text(), re.MULTILINE)
                 self.assertIsNotNone(match)
                 self.assertEqual(expected, match.group(1))
