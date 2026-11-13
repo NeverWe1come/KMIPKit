@@ -168,9 +168,11 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
 # Register declarations, KMIPKIT-0101 lifecycle declarations, and KMIPKIT-0102
 # fluent cryptographic operation builders.
 # Includes the approved KMIPKIT-0093 inventory reconciliation and narrowed
-# T101 mappings, plus the KMIPKIT-0108 attribute-read declarations.
-DECLARATIONS_SHA256 = "c55de9be3f1aa28b4beedd8208ee92914643bf35559ebb467b8fb4d31a99ac9f"
-OPERATIONS_SHA256 = "2a6eb9fb6823b3456b3fb10b6d4af8477be9f1a1f68c06c252bb4873b272f3bc"
+# T101 mappings, KMIPKIT-0108 attribute-read declarations, and the five
+# KMIPKIT-0093 C role-reversed session declarations.
+DECLARATIONS_SHA256 = "25c895eef0e52ccd0e38e1fb891004c602c6d63197b4fff86703533e8e0cdc41"
+# The C role-reversal harness moved to support/c_api_coverage_tests.rs.
+OPERATIONS_SHA256 = "c8aae7faf64c0ddba9b3c73a9819b94e18b95d5b2eca18e9e49c3801974be4e0"
 
 
 def canonical_sha256(value: object) -> str:
