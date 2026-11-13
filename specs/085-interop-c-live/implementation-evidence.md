@@ -635,6 +635,27 @@ local route.
   reports 38,539 of 66,728 cells invoked, zero failed, and 28,189 pending.
   Exhaustive coverage and exact-head CI remain incomplete, so the PR stays WIP.
 
+### Get request payload through the typed C client
+
+The C route manifest now maps the normative Get Request payload examples for
+KMIP 2.0 and 2.1 to the installed typed `kmipkit_client_batch_item_get`
+operation. The controlled peer receives these requests across TTLV, JSON, and
+XML over raw TLS and HTTPS. This executes the catalogued payload recipes for
+both protocol versions without retaining request bodies in the report. The
+cases follow OASIS KMIP 2.0 §6.1.19/Table 205 and KMIP 2.1 §6.1.19/Table 220.
+
+- Red commit `d1ccec5e2` added a regression requiring all twelve version and
+  encoding/transport cells across the two cases to execute; it failed with no
+  invoked cells before the route was implemented.
+- Green commit `10d86288c` maps both case IDs to the existing typed Get recipe,
+  includes their local-model peer conversions, and enables the Get workflow in
+  the C driver.
+- Verification: the focused route-matrix regression passed. The full matrix
+  reports 38,601 of 66,728 expected cells invoked, zero failed, and 28,127
+  pending. The two cases have no pending cells (62 cells newly invoked).
+  CTest passed 7/7 after this addition; the focused regression was also rerun. Matrix completeness and exact-head CI remain outstanding, so the PR
+  stays WIP.
+
 ### Interop Begin, End, and Reset
 
 The installed C validator executes the KMIP Interop operation as one ordered

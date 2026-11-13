@@ -47,3 +47,16 @@
   CTest pasó 7/7. La matriz completa quedó en 38.539/66.728 celdas ejecutadas,
   cero fallidas y 28.189 pendientes. La tarea de cobertura exhaustiva sigue
   abierta y esta PR permanece WIP.
+
+## Evidencia de desarrollo: payload de Get Request
+
+- Red: `d1ccec5e2` exige ejecutar los casos normativos Get Request de KMIP 2.0
+  y 2.1 en las seis combinaciones de codificación/transporte y falló cuando
+  ninguna celda tenía una ruta ejecutable.
+- Green: `10d86288c` asocia los dos casos con la receta tipada Get y el peer
+  controlado, y habilita el flujo Get en el driver C.
+- Referencias: OASIS KMIP 2.0 §6.1.19/Table 205 y KMIP 2.1 §6.1.19/Table 220.
+- Verificación: la prueba focal pasó y la matriz completa registró 38.601 de
+  66.728 celdas ejecutadas, cero fallidas y 28.127 pendientes. Las 552 celdas
+  correspondientes a estos dos casos ya no están pendientes (62 se ejecutaron en esta corrida). La tarea de
+  recetas exhaustivas sigue abierta y esta PR permanece WIP.
