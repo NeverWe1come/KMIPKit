@@ -69,6 +69,36 @@ class MainContractTest {
         assertTrue(!plan.contains("KMIP 2.0 live routes are blocked by the pinned artifact"));
     }
 
+    // OASIS KMIP 2.0 §6.1.16: the pinned Java response decoder currently offers only KMIP 2.1.
+    @Test
+    void kmip20DiscoverVersionsIsPendingInsteadOfClaimingAClientFailure() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode catalog = (ObjectNode) mapper.readTree(
+                Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json").toFile());
+        JsonNode discoverVersions = catalog.path("test_cases").findParents("case_id").stream()
+                .filter(testCase -> "test-op-discover-versions".equals(testCase.path("case_id").asText()))
+                .findFirst().orElseThrow();
+        catalog.set("test_cases", mapper.createArrayNode().add(discoverVersions.deepCopy()));
+        ((ObjectNode) catalog.path("statistics")).put("total_cases", 1);
+        Path catalogFile = temporaryDirectory.resolve("kmip20-discover-versions-case.json");
+        mapper.writeValue(catalogFile.toFile(), catalog);
+
+        Path connectionFile = connection("2.0", "typed-protocol");
+        ObjectNode connection = (ObjectNode) mapper.readTree(connectionFile.toFile());
+        ((ObjectNode) connection.path("endpoints").path("raw_tls")).put("host", "127.0.0.1").put("port", 1);
+        mapper.writeValue(connectionFile.toFile(), connection);
+        Path output = temporaryDirectory.resolve("kmip20-discover-versions-report");
+
+        assertCommand(0, "run", "--connection", connectionFile.toString(), "--catalog", catalogFile.toString(),
+                "--artifact-manifest", Path.of(System.getProperty("kmipkit.artifactManifest")).toString(),
+                "--output-dir", output.toString());
+
+        JsonNode result = mapper.readTree(output.resolve("results.json").toFile()).path("cases").get(0);
+        assertEquals("not_run", result.path("status").asText());
+        assertEquals("unknown", result.path("server_compatibility").asText());
+        assertTrue(result.path("diagnostic").asText().contains("default KMIP 2.1 offer"));
+    }
+
     @Test
     void logRouteRequiresMutationOptInBeforeTheClientIsOpened() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
