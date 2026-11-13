@@ -270,6 +270,10 @@ def main() -> int:
         raise AssertionError(f"unsupported fixture protocol version {protocol_version!r}")
     protocol_minor = int(protocol_version.split(".")[1])
     registered_key_batch = (3, 18, 31, 32, 19, 20)
+    registered_key_batch_item_ids = (
+        b"crypto-register", b"crypto-activate", b"crypto-encrypt",
+        b"crypto-decrypt", b"crypto-revoke", b"crypto-destroy",
+    )
     expected_operations = (
         (1, 20, 1, 11, 20, 1, 12, 20, 1, 10, 20, 1, 9, 19, 20, 1, 19, 20,
          1, 20, 19, 20,
@@ -303,6 +307,7 @@ def main() -> int:
     expected_operations += (1, 18, 12, 19, 20)
     expected_operations += (1, 18, 10, 19, 20)
     expected_operations += (10, 12, 10, 12, 10, 12, 10, 12)
+    expected_operations += registered_key_batch
     expected_cases += ("test-op-hash", "test-op-rng-retrieve", "test-op-rng-seed")
     expected_cases += (
         "test-crypto-hash-sha_256-0",
@@ -396,6 +401,13 @@ def main() -> int:
                                 tlv(0x420093, 8, b"placeholder-revoke-cleanup") in request
                             response_operations = operations
                             response_item_ids = None
+                            if operations == registered_key_batch:
+                                if any(request.count(tlv(0x420093, 8, item_id)) != 1
+                                       for item_id in registered_key_batch_item_ids):
+                                    raise AssertionError(
+                                        "registered-key batch omitted or duplicated a unique item ID"
+                                    )
+                                response_item_ids = registered_key_batch_item_ids
                             if two_read_batch:
                                 continue_after_failure = tlv(0x420094, 7, b"missing-key") in request
                                 expected_fixture_identifiers = 1 if continue_after_failure else 2
