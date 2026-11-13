@@ -126,3 +126,47 @@ Hosted macOS/Windows validation and the complete Task 6 cross-language,
 workspace-coverage, security, and compatibility closeout remain the parent
 workflow's responsibility; this report does not claim those gates passed.
 The LLVM multi-object mismatch warning remains an explicit limitation above.
+
+## Sonar path-traversal remediation
+
+The first hosted SonarCloud result for head `41b5b2d32` failed its C security
+rating because `ffi_coverage_objects.py` opened a manifest path supplied as a
+command-line argument. The collector itself generated that path, but the helper
+did not constrain its public file input.
+
+### Red
+
+- `c5bbda786` changes the resolver tests to provide Cargo JSONL on stdin and
+  rejects path arguments. The focused suite failed before the implementation:
+  the old CLI indexed a missing positional argument, and still opened an
+  explicitly supplied `../secrets` path.
+- `c2388d7fe` adds negative cases for unit, consumer and parity executables
+  outside `CARGO_TARGET_DIR`. All three failed against the initial stdin fix
+  because the executable paths were not yet constrained.
+
+### Green
+
+- `b889a839f` makes the helper consume Cargo's JSONL on stdin and reject all
+  positional arguments. The shell collector redirects its generated manifest
+  into stdin.
+- Every required library and executable path is canonicalized and checked to
+  remain under the configured Cargo target directory before it can be opened
+  or exported. Missing and ambiguous required objects continue to fail closed.
+- `python3 -B -m unittest scripts.tests.test_ffi_coverage_objects scripts.tests.test_workflow -q`:
+  102 passed.
+- `bash -n scripts/collect_ffi_coverage.sh` and `git diff --check`: exit 0.
+- With Rust/Cargo 1.100.0, the full `collect_ffi_coverage.sh` command completed
+  successfully and produced `target/ci-110-ffi-report-stdin-final/coverage.json`.
+  The existing LLVM warning about 277 mismatched functions remains visible;
+  this fix does not suppress or claim to resolve it.
+
+### Refactor
+
+The final cleanup extracts one canonical path-validation helper used for both
+Cargo library artifacts and test executables. It does not change the accepted
+artifact set or the fail-closed behavior. The same 102 focused tests and the
+Rust 1.100 coverage collector were rerun after this refactor.
+
+This repair is local until the updated draft PR head completes hosted CI,
+including a new SonarCloud quality gate. It does not claim to resolve the
+Sonar finding until that exact-head check passes.
