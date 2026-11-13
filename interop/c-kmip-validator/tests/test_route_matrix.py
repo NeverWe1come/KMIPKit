@@ -730,6 +730,72 @@ class RouteMatrixTests(unittest.TestCase):
                        'kmipkit_client_batch_item_get_attribute_list_from_request'):
             self.assertTrue(any(event['public_api_symbol'] == symbol and event['action'] == 'send' for event in events), symbol)
 
+    def test_add_attribute_operation_runs_from_the_installed_c_consumer(self):
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-op-add-attribute'
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 24,
+                         'direct and standalone Add Attribute must run for both versions and six wire paths')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks))
+        self.assertEqual({check['constructor_variant'] for check in checks}, {'direct', 'standalone'})
+        self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_add_attribute'
+                            and event['action'] == 'send' for event in events))
+        self.assertTrue(any(event['public_api_symbol'] ==
+                            'kmipkit_client_batch_item_response_add_attribute'
+                            and event['action'] == 'decode' for event in events))
+        self.assertTrue(any(event['public_api_symbol'] ==
+                            'kmipkit_add_attribute_request_to_ttlv_payload'
+                            and event['action'] == 'encode' for event in events))
+        for check in checks:
+            self.assertEqual(check['peer_setup_operations'], [1])
+            self.assertEqual(check['peer_request_operations'], [13])
+            self.assertEqual(check['peer_observed_effects'], ['attribute_added'])
+            self.assertEqual(check['peer_cleanup_operations'], [19, 20])
+            self.assertTrue(check['peer_attribute_state_changed'])
+            self.assertTrue(check['peer_final_state_matches_setup'])
+            self.assertIn('kmipkit_client_batch_item_destroy', check['public_api_trace_symbols'])
+        standalone_checks = [check for check in checks if check['constructor_variant'] == 'standalone']
+        for check in standalone_checks:
+            self.assertIn('kmipkit_client_batch_item_add_attribute_from_request',
+                          check['public_api_trace_symbols'])
+        send_events = [event for event in events
+                       if event['case_id'] == case_id and event['action'] == 'send']
+        for version in ('2.0', '2.1'):
+            for encoding in ('TTLV', 'JSON', 'XML'):
+                for transport in ('raw_tls', 'https'):
+                    cell_events = [event for event in send_events
+                                   if event['protocol_version'] == version
+                                   and event['encoding'] == encoding
+                                   and event['transport'] == transport]
+                    direct = [event for event in cell_events
+                              if event['public_api_symbol'] ==
+                              'kmipkit_client_batch_item_add_attribute']
+                    standalone = [event for event in cell_events
+                                  if event['public_api_symbol'] ==
+                                  'kmipkit_client_batch_item_add_attribute_from_request']
+                    self.assertEqual(len(direct), 1)
+                    self.assertEqual(len(standalone), 1)
+                    self.assertEqual(direct[0]['request_tree_sha256'],
+                                     standalone[0]['request_tree_sha256'])
+        decoded_responses = [event for event in events
+                             if event['case_id'] == case_id and event['action'] == 'decode'
+                             and event['public_api_symbol'] ==
+                             'kmipkit_client_batch_item_response_add_attribute']
+        for version in ('2.0', '2.1'):
+            version_responses = [event['response_tree_sha256'] for event in decoded_responses
+                                 if event['protocol_version'] == version]
+            self.assertGreaterEqual(len(version_responses), 1)
+            self.assertEqual(len(set(version_responses)), 1)
+
 
     def test_read_back_attribute_recipe_calls_get_attributes_with_exact_tag(self):
         from artifact_support import ROOT
