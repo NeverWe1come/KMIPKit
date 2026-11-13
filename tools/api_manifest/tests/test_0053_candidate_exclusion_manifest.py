@@ -30,7 +30,9 @@ class CandidateExclusionManifestTests(unittest.TestCase):
             row
             for row in manifest["approvedExclusions"]
             if row.get("candidateSpecId") == "KMIPKIT-0053"
+            and row.get("artifactKind")
         )
+        self.assertIsNotNone(exclusion.get("artifactKind"))
         exclusion["counterpartDeclarationIds"] = ["missing-exact-counterpart"]
 
         with self.assertRaises(generate.ManifestError):

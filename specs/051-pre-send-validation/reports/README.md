@@ -21,36 +21,38 @@ the Rust and binding export snapshots remain applicable to this branch.
   audit cannot regenerate a passing current inventory while the 4,199
   whole-tree routes remain missing; do not use that older report as current
   evidence.
-- `rust-export-report-2026-11-11.json` is the current compiler audit after the
-  KMIPKIT-0093 complete API contract was approved. It records 29,862 observed
-  Rust paths, 9,145 matched declarations, 20,717 approved exclusions, and no
-  missing paths, stale declarations, kind mismatches, or unresolved conditions.
-  The manifest classifies 1,615 product API paths as blocked under KMIPKIT-0093
-  for later four-language implementation and records 3,467 standard-library
-  trait paths as language-level exclusions.
-- `shared-rust-inventory-2026-11-11.json` is generated from the current Rust
-  audit. It records 4,759 mapped shared declarations, 20,717 approved
-  exclusions, 45 Rust-only declarations, and no unresolved routes.
+- `rust-export-report-2026-11-11.json` preserves the compiler audit after the
+  KMIPKIT-0093 complete API contract was approved. It is retained as historical
+  evidence and is superseded by the November 12 snapshot.
+- `rust-export-report-2026-11-12.json` is the current compiler audit after the
+  fluent API additions. It records 30,294 observed Rust paths, 9,415 matched
+  declarations, 20,879 approved exclusions, and no missing paths, stale
+  declarations, kind mismatches, or unresolved conditions.
+- `shared-rust-inventory-2026-11-11.json` preserves the earlier shared Rust
+  inventory. The current `shared-rust-inventory-2026-11-12.json` records 5,041
+  mapped shared declarations, 20,879 approved exclusions, 45 Rust-only
+  declarations, and no unresolved routes.
 - `binding-export-report-2026-11-07.json` preserves the historical C, Java,
   and Python inventory from November 7. The current audit is
-  `binding-export-report-2026-11-11.json`: all three packages match their
-  manifest exactly, with no missing, stale, kind-mismatched, or unresolved
-  entries. Its exact matches are C 1,967, Java 2,265, and Python 2,445.
+  `specs/043-public-api-bindings/reports/binding-export-report-2026-11-12-fluent-attribute-reads.json`:
+  all three packages match their manifest exactly, with no missing, stale,
+  kind-mismatched, or unresolved entries. Its exact matches are C 2,002, Java
+  2,406, and Python 2,617.
 
 Reproduction from the repository root:
 
 ```text
-python -B tools/api_manifest/audit_rust_exports.py --report specs/051-pre-send-validation/reports/rust-export-report-2026-11-11.json --check
-python -B tools/api_manifest/reconcile_rust_exports.py --report specs/051-pre-send-validation/reports/rust-export-report-2026-11-11.json --candidate-spec-id KMIPKIT-0093 --requirement-id KMIPKIT-0093-FR-011
-python -B tools/api_manifest/reconcile_0050_parameters_auth_client.py --report specs/051-pre-send-validation/reports/rust-export-report-2026-11-11.json
+python -B tools/api_manifest/audit_rust_exports.py --report specs/051-pre-send-validation/reports/rust-export-report-2026-11-12.json --check
+python -B tools/api_manifest/reconcile_rust_exports.py --report specs/051-pre-send-validation/reports/rust-export-report-2026-11-12.json --candidate-spec-id KMIPKIT-0093 --requirement-id KMIPKIT-0093-FR-011
+python -B tools/api_manifest/reconcile_0050_parameters_auth_client.py --report specs/051-pre-send-validation/reports/rust-export-report-2026-11-12.json
 python -B tools/api_manifest/generate.py --check
 python -B tools/api_manifest/audit_shared_rust_inventory.py --check
-python -B tools/api_manifest/audit_binding_exports.py --report specs/051-pre-send-validation/reports/binding-export-report-2026-11-11.json --check
+python -B tools/api_manifest/audit_binding_exports.py --report specs/043-public-api-bindings/reports/binding-export-report-2026-11-12-fluent-attribute-reads.json --check
 ```
 
 The November 7 snapshot retains the earlier 4,199-route gap as historical
-evidence. The November 11 report classifies the newly reviewed complete API
-surface under KMIPKIT-0093 and passes the exact Rust export inventory checks.
-The 0051 validation declarations remain blocked for cross-language
-implementation. These reports do not establish hosted CI, coverage,
-interoperability, certification, or release readiness.
+evidence. The November 12 report reconciles the current fluent API exports and
+passes the exact Rust inventory checks. The 0051 validation declarations
+remain blocked for cross-language implementation. These reports do not
+establish hosted CI, coverage, interoperability, certification, or release
+readiness.

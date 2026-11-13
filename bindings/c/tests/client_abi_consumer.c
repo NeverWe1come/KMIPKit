@@ -8624,6 +8624,137 @@ int kmipkit_client_abi_c_consumer_build_get_attribute_list_request(void) {
     return 1;
 }
 
+int kmipkit_client_abi_c_consumer_checks_fluent_attribute_read_entrypoints(void) {
+    static const uint8_t identifier_bytes[] = "attribute-read-key";
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    kmipkit_attribute_reference_v1_t reference = {0};
+    kmipkit_request_options_v1_t options = {0};
+    kmipkit_client_batch_response_t *response = 0;
+    if (kmipkit_client_get_attributes_v1(0, 0, 0, 0, 0, &response) == 0 || response != 0) {
+        return 0;
+    }
+    if (kmipkit_client_get_attribute_list_v1(0, 0, 0, &response) == 0 || response != 0) {
+        return 0;
+    }
+    kmipkit_attribute_reference_v1_t duplicate_references[2] = {{0}};
+    for (uint32_t index = 0; index < UINT32_C(2); ++index) {
+        duplicate_references[index].struct_size =
+            (uint32_t)sizeof(kmipkit_attribute_reference_v1_t);
+        duplicate_references[index].abi_version = UINT32_C(1);
+        duplicate_references[index].kind = KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG;
+        duplicate_references[index].tag_value = UINT32_C(0x0042002a);
+    }
+    if (kmipkit_client_get_attributes_v1(
+            0, 0, duplicate_references, UINT64_C(2), 0, &response) == 0 || response != 0) {
+        return 0;
+    }
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = UINT32_C(1);
+    identifier.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+    identifier.text_data = identifier_bytes;
+    identifier.text_length = (uint64_t)(sizeof(identifier_bytes) - 1U);
+    reference.struct_size = (uint32_t)sizeof(reference);
+    reference.abi_version = UINT32_C(1);
+    reference.kind = KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG;
+    reference.tag_value = UINT32_C(0x0042002a);
+    if (kmipkit_client_get_attributes_v1(
+            0, &identifier, &reference, UINT64_C(1), 0, &response) == 0 || response != 0) {
+        return 0;
+    }
+    if (kmipkit_client_get_attributes_with_options_v1(
+            0, 0, 0, 0, 0, 0, &response) == 0 || response != 0 ||
+        kmipkit_client_get_attribute_list_with_options_v1(
+            0, 0, 0, 0, &response) == 0 || response != 0) {
+        return 0;
+    }
+    options.struct_size = (uint32_t)sizeof(options);
+    options.abi_version = UINT32_C(1);
+    if (kmipkit_client_get_attributes_with_options_v1(
+            0, 0, 0, 0, 0, &options, &response) == 0 || response != 0 ||
+        kmipkit_client_get_attribute_list_with_options_v1(
+            0, 0, 0, &options, &response) == 0 || response != 0) {
+        return 0;
+    }
+    return 1;
+}
+
+int kmipkit_client_abi_c_consumer_executes_fluent_attribute_reads(
+    kmipkit_client_t *client, kmipkit_codec_limits_t *limits) {
+    static const uint8_t identifier_bytes[] = "attribute-read-key";
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    kmipkit_attribute_reference_v1_t references[2] = {{0}};
+    kmipkit_request_options_v1_t options = {0};
+    kmipkit_client_batch_response_t *response = 0;
+    uint64_t response_count = 0;
+    int result = 0;
+
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = UINT32_C(1);
+    identifier.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+    identifier.text_data = identifier_bytes;
+    identifier.text_length = (uint64_t)(sizeof(identifier_bytes) - 1U);
+    if (kmipkit_client_get_attributes_v1(
+            client, 0, 0, 0, limits, &response) == 0 || response != 0 ||
+        kmipkit_client_get_attribute_list_v1(
+            client, 0, limits, &response) == 0 || response != 0) {
+        goto cleanup;
+    }
+    references[0].struct_size = (uint32_t)sizeof(references[0]);
+    references[0].abi_version = UINT32_C(1);
+    references[0].kind = KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG;
+    references[0].tag_value = UINT32_C(0x0042002a);
+    references[1].struct_size = (uint32_t)sizeof(references[1]);
+    references[1].abi_version = UINT32_C(1);
+    references[1].kind = KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME;
+    references[1].vendor_identification_data = (const uint8_t *)"KMIPKit";
+    references[1].vendor_identification_length = UINT64_C(7);
+    references[1].attribute_name_data = (const uint8_t *)"Comment";
+    references[1].attribute_name_length = UINT64_C(7);
+
+    if (kmipkit_client_get_attributes_v1(
+            client, &identifier, references, UINT64_C(2), limits, &response) != 0 ||
+        response == 0 ||
+        kmipkit_client_batch_response_item_count(response, &response_count) != 0 ||
+        response_count != UINT64_C(1)) {
+        goto cleanup;
+    }
+    kmipkit_client_batch_response_release(response);
+    response = 0;
+    response_count = 0;
+    options.struct_size = (uint32_t)sizeof(options);
+    options.abi_version = UINT32_C(1);
+    if (kmipkit_client_get_attributes_with_options_v1(
+            client, &identifier, references, UINT64_C(2), limits, &options,
+            &response) != 0 || response == 0 ||
+        kmipkit_client_batch_response_item_count(response, &response_count) != 0 ||
+        response_count != UINT64_C(1)) {
+        goto cleanup;
+    }
+    kmipkit_client_batch_response_release(response);
+    response = 0;
+    response_count = 0;
+    if (kmipkit_client_get_attribute_list_v1(
+            client, &identifier, limits, &response) != 0 || response == 0 ||
+        kmipkit_client_batch_response_item_count(response, &response_count) != 0 ||
+        response_count != UINT64_C(1)) {
+        goto cleanup;
+    }
+    kmipkit_client_batch_response_release(response);
+    response = 0;
+    response_count = 0;
+    if (kmipkit_client_get_attribute_list_with_options_v1(
+            client, &identifier, limits, &options, &response) != 0 || response == 0 ||
+        kmipkit_client_batch_response_item_count(response, &response_count) != 0 ||
+        response_count != UINT64_C(1)) {
+        goto cleanup;
+    }
+    result = 1;
+
+cleanup:
+    kmipkit_client_batch_response_release(response);
+    return result;
+}
+
 int kmipkit_client_abi_c_consumer_validate_get_attribute_list_response(
     kmipkit_client_batch_item_response_t *item,
     uint8_t expected_present) {
