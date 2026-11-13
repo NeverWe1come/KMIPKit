@@ -32,6 +32,7 @@ class RouteMatrixTests(unittest.TestCase):
         recipe = route_peer.recipe_for_case(case, None)
 
         self.assertIsNotNone(recipe)
+        self.assertEqual(recipe[0], (1, 17, 19, 20))
         self.assertEqual(recipe[1], 'get_usage_allocation')
 
     def test_route_evidence_output_cannot_escape_its_build_directory(self):

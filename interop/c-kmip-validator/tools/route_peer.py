@@ -288,6 +288,7 @@ RECIPES = {
     'test-op-revoke': ((1, 19, 20), 'revoke'),
     'test-op-destroy': ((1, 20, 19, 20), 'destroy'),
     'test-op-get-constraints': ((1, 56, 19, 20), 'get_constraints'),
+    'test-op-get-usage-allocation': ((1, 17, 19, 20), 'get_usage_allocation'),
     'test-op-locate': ((8,), 'locate'), 'test-op-query': ((24,), 'query'),
     'test-norm-payload-client-query-request-20-001': ((24,), 'query'),
     'test-norm-payload-client-query-request-21-001': ((24,), 'query'),

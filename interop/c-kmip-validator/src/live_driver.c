@@ -2340,6 +2340,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         read_back_attribute_workflow;
     bool get_attribute_list_workflow = strcmp(test_case->case_id, "test-op-get-attribute-list") == 0;
     bool get_constraints_workflow = strcmp(test_case->case_id, "test-op-get-constraints") == 0;
+    bool get_usage_allocation_workflow =
+        strcmp(test_case->case_id, "test-op-get-usage-allocation") == 0;
     bool get_workflow = strcmp(test_case->case_id, "test-op-get") == 0;
     bool batch_two_read_items_workflow =
         strcmp(test_case->case_id, "test-batch-count-matches-items") == 0 ||
@@ -2377,7 +2379,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     bool active_destroy_negative_workflow =
         strcmp(test_case->case_id, "test-neg-destroy-active-without-revoke") == 0;
     bool revoke_cleanup_workflow = check_workflow || activate_workflow || destroy_workflow ||
-        get_constraints_workflow || active_destroy_negative_workflow ||
+        get_constraints_workflow || get_usage_allocation_workflow || active_destroy_negative_workflow ||
         add_attribute_workflow ||
         batch_create_activate_get_attribute_list_revoke_destroy_workflow;
     bool object_lifecycle_workflow = create_workflow ||
@@ -2385,7 +2387,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         batch_placeholder_chain_workflow || revoke_workflow ||
         revoke_cleanup_workflow || get_workflow ||
         get_attributes_workflow || get_attribute_list_workflow || get_constraints_workflow ||
-        add_attribute_workflow;
+        get_usage_allocation_workflow || add_attribute_workflow;
     if (strcmp(test_case->operation, "Create") == 0 && !create_workflow &&
         !batch_create_activate_get_attribute_list_revoke_destroy_workflow &&
         !batch_placeholder_chain_workflow) {
@@ -2631,6 +2633,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                 status = kmipkit_client_batch_item_destroy(&placeholder, &item);
             } else if (get_constraints_workflow) {
                 status = kmipkit_client_batch_item_get_constraints(&item);
+            } else if (get_usage_allocation_workflow) {
+                status = kmipkit_client_batch_item_get_usage_allocation(&placeholder, 1, &item);
             } else if (get_workflow) {
                 status = kmipkit_client_batch_item_get(&placeholder, 0, 0, 0, 0, 0, 0, NULL, &item);
             } else if (get_attributes_workflow) {
@@ -2712,6 +2716,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                            revoke_workflow ? "interop-revoke" :
                            destroy_workflow ? "interop-destroy-target" :
                            get_constraints_workflow ? "interop-get-constraints" :
+                           get_usage_allocation_workflow ? "interop-get-usage-allocation" :
                            get_workflow ? "interop-get" : "interop-attributes");
                 if (status == 0 && revoke_cleanup_workflow) {
                     status = set_batch_item_id(&revoke_item,
@@ -3405,6 +3410,22 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             outcome.library_failed = status != 0;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
                      "KMIPKit Get Constraints did not return a typed Constraints structure");
+            goto cleanup;
+        }
+    } else if (get_usage_allocation_workflow) {
+        uint8_t present = 0;
+        kmipkit_unique_identifier_v1_t allocation_identifier = {
+            .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+            .abi_version = 1
+        };
+        status = kmipkit_client_batch_item_response_get_usage_allocation(
+            response_item, &present, &allocation_identifier);
+        if (status != 0 || !present ||
+            !same_text_identifier(&created_identifier, &allocation_identifier)) {
+            outcome.success = false;
+            outcome.library_failed = status != 0;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit Get Usage Allocation did not return the isolated object identifier");
             goto cleanup;
         }
     } else if (destroy_workflow) {

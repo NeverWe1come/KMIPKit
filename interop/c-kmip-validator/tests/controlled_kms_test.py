@@ -125,6 +125,8 @@ def response(operations: tuple[int, ...], protocol_minor: int,
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 20:
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
+        elif operation == 17:
+            payload_value = tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 19 and result_status == 0:
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 56:
@@ -146,6 +148,7 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                                     18: b"interop-activate",
                                     19: b"interop-revoke",
                                     56: b"interop-get-constraints",
+                                    17: b"interop-get-usage-allocation",
                                 }.get(operation))
         if operations == (1, 20, 19, 20):
             unique_batch_item_id = (
@@ -268,6 +271,7 @@ def main() -> int:
     expected_operations += (39, 37, 38)
     expected_operations += (1, 13, 19, 20)
     expected_operations += (1, 49, 19, 20)
+    expected_operations += (1, 17, 19, 20)
     if protocol_version == "2.1":
         expected_operations += (55, 54)
     expected_operations += (1, 13, 15, 19, 20)
@@ -283,6 +287,7 @@ def main() -> int:
     expected_cases += ("test-neg-destroy-active-without-revoke",)
     expected_cases += ("test-op-add-attribute",)
     expected_cases += ("test-op-set-attribute",)
+    expected_cases += ("test-op-get-usage-allocation",)
     if protocol_version == "2.1":
         expected_cases += ("test-op-set-constraints", "test-op-set-defaults")
     expected_cases += ("test-op-delete-attribute",)
@@ -419,6 +424,7 @@ def main() -> int:
                             destroy_lifecycle = operations == (1, 20, 19, 20)
                             illegal_destroy_lifecycle = operations == (1, 18, 20, 19, 20)
                             get_constraints_lifecycle = operations == (1, 56, 19, 20)
+                            get_usage_allocation_lifecycle = operations == (1, 17, 19, 20)
                             lifecycle_target = {operations[1]: {
                                 9: b"interop-check", 10: b"interop-get",
                                 11: b"interop-attributes", 12: b"interop-attributes"
@@ -435,10 +441,14 @@ def main() -> int:
                                 lifecycle_target = {20: b"interop-destroy-active-target"}
                             if get_constraints_lifecycle:
                                 lifecycle_target = {56: b"interop-get-constraints"}
+                            if get_usage_allocation_lifecycle:
+                                lifecycle_target = {17: b"interop-get-usage-allocation"}
                             if create_lifecycle:
                                 lifecycle_target = {1: b"interop-create"}
                             lifecycle_ids = (b"interop-create", *lifecycle_target.values(),
-                                             *((b"interop-revoke",) if (check_lifecycle or activate_lifecycle) else ()),
+                                             *((b"interop-revoke",) if (check_lifecycle or activate_lifecycle or
+                                                 get_constraints_lifecycle or
+                                                 get_usage_allocation_lifecycle) else ()),
                                              *((b"interop-revoke-cleanup", b"interop-destroy-cleanup")
                                                if destroy_lifecycle else ()),
                                              *((b"interop-destroy",) if not destroy_lifecycle else ()))
