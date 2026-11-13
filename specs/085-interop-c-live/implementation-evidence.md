@@ -684,3 +684,29 @@ reports only the public transition labels. This follows OASIS KMIP 2.0
   demonstrate the installed C consumer against a controlled peer only; no
   external KMS compatibility is asserted. Interop's test-state mutation must
   be classified and gated by the shared catalog update in PR #180.
+
+### Get Attribute List optional Unique Identifier
+
+The validator exercises the KMIP 2.0 and 2.1 Get Attribute List Request
+payload through both C construction routes: the direct batch-item builder and
+the typed request builder followed by `get_attribute_list_from_request`. The
+controlled peer checks the present Unique Identifier against the created
+fixture object and verifies it is present only on the Get Attribute List item.
+The installed-package C test roundtrips both field branches—identifier present
+and omitted—through the typed payload encoder and invokes both batch-item
+constructors for each branch. Live runs without a configured fixture
+identifier omit the field so KMIP's batch ID Placeholder resolves from the
+preceding Create operation. This follows OASIS KMIP 2.0 §6.1.21/Table 211 and
+KMIP 2.1 §6.1.21/Table 226.
+
+- Red commits `b6b8845dc` and `a38831798` exposed the missing route recipe and
+  the absent request-field-presence assertion.
+- Green commit `5ff230c63` maps both cases to the controlled peer, supports a
+  fixture UID in the request, verifies the payload-field route, and reports
+  only per-item field-presence booleans. It adds installed C API checks for
+  both optional branches without recording identifiers or KMIP bodies.
+- Verification: all 24 controlled version/encoding/transport/constructor
+  checks passed; CTest passed 7/7. The full matrix reports 38,729 of 66,728
+  cells invoked, zero failed, and 27,999 pending. Both cases have no pending
+  matrix cells. External KMS compatibility and remaining matrix recipes remain
+  outstanding; PR #170 stays WIP.

@@ -58,5 +58,23 @@
 - Referencias: OASIS KMIP 2.0 §6.1.19/Table 205 y KMIP 2.1 §6.1.19/Table 220.
 - Verificación: la prueba focal pasó y la matriz completa registró 38.601 de
   66.728 celdas ejecutadas, cero fallidas y 28.127 pendientes. Las 552 celdas
-  correspondientes a estos dos casos ya no están pendientes (62 se ejecutaron en esta corrida). La tarea de
-  recetas exhaustivas sigue abierta y esta PR permanece WIP.
+  asociadas a los dos casos ya no están pendientes; 62 se ejecutaron en esa
+  corrida. La tarea de recetas exhaustivas sigue abierta y esta PR permanece WIP.
+
+## Evidencia de desarrollo: payload de Get Attribute List
+
+- Red: `b6b8845dc` añadió la regresión de las rutas para los casos Get
+  Attribute List de ambas versiones; falló sin celdas ejecutadas. `a38831798`
+  añadió la comprobación de presencia del identificador y observó que ambas
+  rutas todavía lo omitían.
+- Green: `5ff230c63` cubre los dos casos con los constructores C directo y
+  request tipado independiente. El peer verifica el Unique Identifier textual
+  presente; las rutas externas conservan la omisión normativa para resolver el
+  ID Placeholder dentro del lote. El test del paquete instalado comprueba las
+  formas opcionales presente y omitida en ambos constructores.
+- Referencias: OASIS KMIP 2.0 §6.1.21/Table 211 y KMIP 2.1 §6.1.21/Table 226.
+- Verificación: las 24 comprobaciones controladas pasaron; CTest pasó 7/7;
+  ambos casos quedaron sin celdas pendientes. La matriz global registra
+  38.729/66.728 celdas ejecutadas, cero fallidas y 27.999 pendientes. No se
+  afirma compatibilidad con servidores externos; la cobertura C completa y
+  los checks de CI exactos siguen pendientes.
