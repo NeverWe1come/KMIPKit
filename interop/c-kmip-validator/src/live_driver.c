@@ -2037,10 +2037,7 @@ static int32_t build_comment_attribute_mutation_item(
     const kmipkit_unique_identifier_v1_t *identifier,
     attribute_mutation_kind_t mutation,
     kmipkit_client_batch_item_t **out_item) {
-    static const uint8_t comment[] = "KMIPKit interoperability comment";
-    kmipkit_ttlv_value_t *value = NULL;
-    kmipkit_raw_tag_t *raw_tag = NULL;
-    kmipkit_tag_t *tag = NULL;
+    static const char comment[] = "KMIPKit interoperability comment";
     kmipkit_ttlv_item_t *attribute = NULL;
     kmipkit_ttlv_item_t *current_attribute = NULL;
     kmipkit_add_attribute_request_t *add_request = NULL;
@@ -2069,14 +2066,7 @@ static int32_t build_comment_attribute_mutation_item(
                 identifier, current_attribute, attribute, out_item);
         }
     } else {
-        status = kmipkit_ttlv_value_text_string(
-            client->limits, comment, sizeof(comment) - 1, &value);
-        if (status == 0) status = kmipkit_ttlv_raw_tag_create(
-            UINT32_C(0x4200FD), &raw_tag);
-        if (status == 0) status = kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag);
-        if (status == 0) status = kmipkit_ttlv_item_create(
-            tag, value, client->limits, &attribute);
-        if (status == 0) value = NULL;
+        status = create_named_comment_attribute(client, comment, &attribute);
     }
     if (status == 0 && mutation != ATTRIBUTE_MUTATION_MODIFY &&
         standalone_attribute_route_selected()) {
@@ -2111,9 +2101,6 @@ static int32_t build_comment_attribute_mutation_item(
     if (set_request) kmipkit_set_attribute_request_release(set_request);
     if (attribute) kmipkit_ttlv_item_release(attribute);
     if (current_attribute) kmipkit_ttlv_item_release(current_attribute);
-    if (tag) kmipkit_tag_release(tag);
-    if (raw_tag) kmipkit_raw_tag_release(raw_tag);
-    if (value) kmipkit_ttlv_value_release(value);
     return status;
 }
 
