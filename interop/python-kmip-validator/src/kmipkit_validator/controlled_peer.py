@@ -92,10 +92,11 @@ def ping_response(request: bytes, status: int, reason: int | None, protocol_mino
         raise AssertionError("request had no Batch Item")
     result_statuses = [status] * len(request_batch) if result_statuses is None else result_statuses
     result_reasons = [reason] * len(request_batch) if result_reasons is None else result_reasons
-    if len(result_statuses) != len(request_batch) or len(result_reasons) != len(request_batch):
+    if (not result_statuses or len(result_statuses) > len(request_batch)
+            or len(result_statuses) != len(result_reasons)):
         raise ValueError("controlled peer result sequence count did not match batch items")
     response_batch = []
-    for index, fields in enumerate(request_batch):
+    for index, fields in enumerate(request_batch[:len(result_statuses)]):
         item_status = result_statuses[index]
         item_reason = result_reasons[index]
         operation_bytes = find_value(fields, 0x42005C)
@@ -296,8 +297,10 @@ def text_response(
         raise ValueError("controlled peer batch identifier count did not match operations")
     result_statuses = [status] * len(operations) if result_statuses is None else result_statuses
     result_reasons = [reason] * len(operations) if result_reasons is None else result_reasons
-    if len(result_statuses) != len(operations) or len(result_reasons) != len(operations):
+    if (not result_statuses or len(result_statuses) > len(operations)
+            or len(result_statuses) != len(result_reasons)):
         raise ValueError("controlled peer result sequence count did not match operations")
+    response_count = len(result_statuses)
 
     def response_item(index: int, item_operation: str, identifier: str | None) -> list[dict]:
         item_status = result_statuses[index]
@@ -346,11 +349,11 @@ def text_response(
                             ],
                         },
                         {"tag": "TimeStamp", "type": "DateTime", "value": "1970-01-01T00:00:01Z"},
-                        {"tag": "BatchCount", "type": "Integer", "value": len(operations)},
+                        {"tag": "BatchCount", "type": "Integer", "value": response_count},
                     ],
                 },
                 *[{"tag": "BatchItem", "value": response_item(index, item_operation, batch_ids[index])}
-                  for index, item_operation in enumerate(operations)],
+                  for index, item_operation in enumerate(operations[:response_count])],
             ],
         }
         return json.dumps(response, separators=(",", ":")).encode("utf-8")
@@ -396,10 +399,10 @@ def text_response(
         f'<ProtocolVersionMinor type="Integer" value="{protocol_minor}"/>'
         "</ProtocolVersion>"
         '<TimeStamp type="DateTime" value="1970-01-01T00:00:01Z"/>'
-        f'<BatchCount type="Integer" value="{len(operations)}"/>'
+        f'<BatchCount type="Integer" value="{response_count}"/>'
         "</ResponseHeader>"
         + "".join(xml_response_item(index, item_operation, batch_ids[index])
-                  for index, item_operation in enumerate(operations))
+                  for index, item_operation in enumerate(operations[:response_count]))
         + "</ResponseMessage>"
     )
     return document.encode("utf-8")

@@ -2087,6 +2087,16 @@ def _batch_operations_for_case(cell: dict, case: dict) -> list[str] | None:
     return list(operations)
 
 
+def _batch_response_count(case: dict, operations: list[str]) -> int:
+    """Return the catalogued response item count for a controlled Batch."""
+    scenario = case.get('requires', {}).get('protocol_scenario', {})
+    expected = scenario.get('expected', {}) if isinstance(scenario, dict) else {}
+    count = expected.get('response_count', len(operations))
+    if isinstance(count, bool) or not isinstance(count, int) or not 1 <= count <= len(operations):
+        raise ValueError('catalog batch response count is outside the request item range')
+    return count
+
+
 def _execute_typed_batch(driver: PythonKmipDriver, case: dict, cell: dict,
                          operations: list[str], identifier, name: str,
                          expected_status: int, expected_reason: int | None,
@@ -2104,7 +2114,8 @@ def _execute_typed_batch(driver: PythonKmipDriver, case: dict, cell: dict,
                        if result_statuses is None else result_statuses)
     result_reasons = ([expected_reason] * len(operations)
                       if result_reasons is None else result_reasons)
-    if len(result_statuses) != len(operations) or len(result_reasons) != len(operations):
+    if (not result_statuses or len(result_statuses) > len(operations)
+            or len(result_statuses) != len(result_reasons)):
         raise ValueError('controlled peer result sequence count did not match batch items')
     try:
         if len(operations) > 1:
@@ -2144,10 +2155,10 @@ def _execute_typed_batch(driver: PythonKmipDriver, case: dict, cell: dict,
             authentication = None
         response = driver._client.execute(batch, limits)
         response_count = response.item_count()
-        if response_count != len(operations):
+        if response_count != len(result_statuses):
             raise ValueError(
                 f'typed Batch response item count {response_count} did not match '
-                f'the request count {len(operations)}'
+                f'the expected result count {len(result_statuses)}'
             )
         for index in range(response_count):
             result = response.item_at(index)
@@ -2572,8 +2583,11 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
     batch_result_reasons = None
     if (case['case_id'] == 'test-batch-stop-on-first-failure'
             and batch_operations is not None):
-        batch_result_statuses = [peer_status, peer_status]
-        batch_result_reasons = [peer_reason, protocol_values.ResultReason.GENERAL_FAILURE]
+        response_count = _batch_response_count(case, batch_operations)
+        batch_result_statuses = [peer_status] * response_count
+        batch_result_reasons = [peer_reason] + [
+            protocol_values.ResultReason.GENERAL_FAILURE
+        ] * (response_count - 1)
     elif (case['case_id'] == 'test-batch-continue-after-failure'
           and batch_operations is not None):
         batch_result_statuses = [peer_status, protocol_values.ResultStatus.SUCCESS]
@@ -2681,7 +2695,9 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
                            and isinstance(batch_index, int)
                            and 0 <= batch_index < len(request_codes)
                            and request_codes[batch_index] == expected_operation)
-        response_matches = response_codes == expected_batch_codes
+        response_matches = response_codes == expected_batch_codes[
+            :_batch_response_count(case, batch_operations)
+        ]
     continue_batch = case['case_id'] == 'test-batch-continue-after-failure'
     response_payload_matches = (
         _find_tree_value(response, 0x420094) == b'KMIPKit-python-route'.hex()
@@ -2700,13 +2716,13 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
             'wire_bytes_sha256': hashlib.sha256(
                 peer.responses[0] if cell.get('action') == 'decode' else peer.requests[0]).hexdigest(),
             'request_delivery_state': 'response_received', 'transport_invocation_count': 1,
-            'peer_observed_response_count': len(batch_operations) if batch_operations is not None else 1,
+            'peer_observed_response_count': len(response_codes) if batch_operations is not None else 1,
             'peer_observed_result_status_codes': (
-                (batch_result_statuses or [peer_status] * len(batch_operations))
+                (batch_result_statuses or [peer_status] * len(response_codes))
                 if batch_operations is not None else [peer_status]
             ),
             **({'peer_observed_result_reason_codes': (
-                (batch_result_reasons or [peer_reason] * len(batch_operations))
+                (batch_result_reasons or [peer_reason] * len(response_codes))
                 if batch_operations is not None else [peer_reason]
             )} if (peer_reason is not None
                   and (batch_result_reasons is None
@@ -2716,7 +2732,7 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
             protocol_values.Operation.name(value) for value in request_codes
         ]
         observed['peer_observed_operation_sequence'] = [
-            protocol_values.Operation.name(value) for value in response_codes
+            protocol_values.Operation.name(value) for value in request_codes
         ]
         observed['batch_item_count'] = len(batch_operations)
     if peer.peer_observed_effects:
