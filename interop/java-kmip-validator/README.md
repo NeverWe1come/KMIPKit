@@ -100,8 +100,8 @@ baseline, regenerate the checked-in ledger with
 rejects generated ledgers that do not record successful invocations.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
-baseline. These recipes execute 13,616 of 71,455 planned Java route cells, with
-no failed cells; the ledger keeps the other 57,839 pending and does not imply
+baseline. These recipes execute 13,898 of 71,455 planned Java route cells, with
+no failed cells; the ledger keeps the other 57,557 pending and does not imply
 vendor interoperability or full-matrix completion. Local TTLV recipes exercise 41
 enumeration families and all six bitmask catalog cases through the applicable
 installed constructors, item views, decoders, and typed attribute wrappers.
@@ -109,7 +109,15 @@ All 19 Block Cipher Mode values now complete their five applicable generic and
 Cryptographic Parameters builder routes in both KMIP 2.0 and 2.1 (§§4.16,
 11.6); other enum families remain pending where the ledger says so. The three
 Rotate Name Type values complete their four applicable generic TTLV routes in
-KMIP 2.1 (§11.51).
+KMIP 2.1 (§11.51). Opaque Data Type completes its four generic and three typed
+attribute routes (§11.35); Processing Stage, Ticket Type, and Mask Generator
+complete all four generic routes, with the Mask Generator Cryptographic
+Parameters builder route also covered (§§11.40, 11.55/11.57, 11.30).
+Encoding Option, Endpoint Role, Key Value Location Type, Key Wrap Type, Name
+Type, Object Group Member, Put Function, Secret Data Type, and Usage Limits
+Unit each complete all four generic TTLV routes for their catalogued values
+in KMIP 2.0 and 2.1 (§§11.18, 11.19, 11.27, 11.29, 11.31, 11.33, 11.42/11.43,
+11.50/11.52, 11.58/11.60).
 The finite Profile Name reserved range
 `test-norm-enumeration-value-profile-name-reserved-00000001-00000103` remains
 pending until the shared catalog expands it to each named Profile Name value.

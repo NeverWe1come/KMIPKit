@@ -220,3 +220,97 @@ The selected scope contains 13,616 invocations with zero failures, and the
 updated ledger records 13,616 executed, 57,839 pending, and 71,455 planned
 cells. Rotate Name Type is complete for this local route scope; the remaining
 enum values and the full KMIP 2.0/2.1 matrix are still pending.
+
+## Additional local enumeration route groups
+
+These catalog-driven local scopes close the remaining routes for four small
+enumeration families using the same installed artifact pin. Each family runs
+only in versions declared by its catalog case:
+
+- Opaque Data Type: one extension-range representative across TTLV
+  Enumeration construction, Item creation/view, decoding, TypedAttribute
+  creation/readback, and `AttributeSet.tryNew` for KMIP 2.0/2.1. Sources:
+  KMIP 2.0/2.1 §§10.1, 11.35.
+- Processing Stage: three assigned values and one extension-range
+  representative across the four generic TTLV routes for KMIP 2.1. Sources:
+  KMIP 2.1 §§10.1, 11.40.
+- Ticket Type: the Login value and one extension-range representative across
+  the four generic TTLV routes for KMIP 2.0/2.1. Sources: KMIP 2.0 §11.55;
+  KMIP 2.1 §§10.1, 11.57.
+- Mask Generator: MFG1 and one extension-range representative across four
+  generic TTLV routes and `CryptographicParameters.Builder.maskGenerator` for
+  KMIP 2.0/2.1. Sources: KMIP 2.0/2.1 §§4.16, 10.1, 11.30.
+
+Red commit `5017877f6` asserted each target and route cell and failed because
+the Opaque Data Type scope had no route events. Green commit `f48ed064a`
+adds all four cases to the catalog-driven fixture; the focused controlled-peer
+test passes and the shared validator accepts all 66 new cells without a
+failed invocation.
+
+Verification for these scopes:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 37d7eeae9e64644fd7cdde4bfd64b7da5ccbb0bf2be53a949826eb62dc3aaf86 \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+```
+
+The generated selected scope records 13,682 invocations, zero failures, and
+`selected_scope_complete=true`; the ledger records 13,682 executed, 57,773
+pending, and 71,455 planned cells. All four cases are complete in their local
+route scopes. Other enum families and the overall KMIP 2.0/2.1 matrix remain
+pending.
+
+## Common enum TTLV route group
+
+Nine catalogued enum cases now complete the same four public generic routes:
+`TtlvValue.Enumeration`, `TtlvItem.create`, `TtlvItem.view`, and
+`TtlvCodec.decode`. Each case contains two assigned values and one extension
+range representative and runs for KMIP 2.0 and 2.1, yielding 216 cells total:
+
+| Enumeration | KMIP 2.0 section | KMIP 2.1 section |
+|---|---:|---:|
+| Encoding Option | §11.18 | §11.18 |
+| Endpoint Role | §11.19 | §11.19 |
+| Key Value Location Type | §11.27 | §11.27 |
+| Key Wrap Type | §11.29 | §11.29 |
+| Name Type | §11.31 | §11.31 |
+| Object Group Member | §11.33 | §11.33 |
+| Put Function | §11.42 | §11.43 |
+| Secret Data Type | §11.50 | §11.52 |
+| Usage Limits Unit | §11.58 | §11.60 |
+
+Each generic TTLV fixture uses §10.1's Enumeration item encoding. Red commit
+`3615b77e5` asserted every catalogued target/version/route and failed because
+the Encoding Option events were absent. Green commit `21b3dae2c` adds all nine
+cases to the catalog-driven local fixture; the focused test passes for every
+target and route.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 37d7eeae9e64644fd7cdde4bfd64b7da5ccbb0bf2be53a949826eb62dc3aaf86 \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+```
+
+The Java 17 consumer suite passes 52 tests with zero failures or skips. The
+installer/ledger suite passes 15 tests, feature traceability passes 31 tests,
+and `tools/compare_route_ledger.py` confirms the generated ledger matches the
+checked-in reference. The shared validator confirms 13,898 invoked cells,
+zero failures, and `selected_scope_complete=true`; the refreshed ledger records
+13,898 executed, 57,557 pending, and 71,455 planned. These nine enum cases are
+complete for the four generic routes; the rest of the Java operation,
+attribute, and protocol matrix remains pending.
