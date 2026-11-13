@@ -318853,7 +318853,16 @@
       "requirementIds": [
         "KMIPKIT-0091-FR-009",
         "KMIPKIT-0091-FR-015",
-        "KMIPKIT-0091-FR-016"
+        "KMIPKIT-0091-FR-016",
+        "KMIPKIT-0115-FR-001",
+        "KMIPKIT-0115-FR-002",
+        "KMIPKIT-0115-FR-003",
+        "KMIPKIT-0115-FR-004",
+        "KMIPKIT-0115-FR-005",
+        "KMIPKIT-0115-FR-006",
+        "KMIPKIT-0115-FR-007",
+        "KMIPKIT-0115-FR-008",
+        "KMIPKIT-0115-FR-009"
       ]
     },
     {
@@ -319107,6 +319116,117 @@
         "KMIPKIT-0114-FR-003",
         "KMIPKIT-0114-FR-004",
         "KMIPKIT-0114-FR-005"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "capabilityState": "declared",
+      "mappings": {
+        "c": [
+          "kmipkit_client_activate_by_id_v1",
+          "kmipkit_client_archive_by_id_v1",
+          "kmipkit_client_batch_item_get",
+          "kmipkit_client_batch_item_locate",
+          "kmipkit_client_batch_item_revoke",
+          "kmipkit_client_batch_item_t",
+          "kmipkit_client_locate_v1",
+          "kmipkit_client_recover_by_id_v1",
+          "kmipkit_client_revoke_by_id_v1"
+        ],
+        "java": [
+          "org.kmipkit.client.KmipClient.activateById",
+          "org.kmipkit.client.KmipClient.archiveById",
+          "org.kmipkit.client.KmipClient.locate",
+          "org.kmipkit.client.KmipClient.recoverById",
+          "org.kmipkit.client.KmipClient.revokeById",
+          "org.kmipkit.fluent.FluentRequest.locate",
+          "org.kmipkit.fluent.FluentRequest.revoke",
+          "org.kmipkit.fluent.LocateBuilder",
+          "org.kmipkit.fluent.LocateBuilder.asynchronousIndicator",
+          "org.kmipkit.fluent.LocateBuilder.build",
+          "org.kmipkit.fluent.LocateBuilder.execute",
+          "org.kmipkit.fluent.LocateBuilder.maximumItems",
+          "org.kmipkit.fluent.LocateBuilder.objectGroupMember",
+          "org.kmipkit.fluent.LocateBuilder.offsetItems",
+          "org.kmipkit.fluent.LocateBuilder.storageStatusMask",
+          "org.kmipkit.fluent.LocateBuilder.toBatchItem",
+          "org.kmipkit.fluent.LocateBuilder.validate",
+          "org.kmipkit.fluent.LocateBuilder.withOptions",
+          "org.kmipkit.fluent.OperationBuilder.validate",
+          "org.kmipkit.fluent.RevokeBuilder",
+          "org.kmipkit.fluent.RevokeBuilder.asynchronousIndicator",
+          "org.kmipkit.fluent.RevokeBuilder.build",
+          "org.kmipkit.fluent.RevokeBuilder.compromiseOccurrenceDate",
+          "org.kmipkit.fluent.RevokeBuilder.execute",
+          "org.kmipkit.fluent.RevokeBuilder.toBatchItem",
+          "org.kmipkit.fluent.RevokeBuilder.validate",
+          "org.kmipkit.fluent.RevokeBuilder.withOptions"
+        ],
+        "python": [
+          "kmipkit.client.Client.activate_by_id",
+          "kmipkit.client.Client.archive_by_id",
+          "kmipkit.client.Client.locate",
+          "kmipkit.client.Client.recover_by_id",
+          "kmipkit.client.Client.revoke_by_id",
+          "kmipkit.fluent.LocateBuilder",
+          "kmipkit.fluent.LocateBuilder.__init__",
+          "kmipkit.fluent.LocateBuilder.asynchronous_indicator",
+          "kmipkit.fluent.LocateBuilder.build",
+          "kmipkit.fluent.LocateBuilder.execute",
+          "kmipkit.fluent.LocateBuilder.maximum_items",
+          "kmipkit.fluent.LocateBuilder.object_group_member",
+          "kmipkit.fluent.LocateBuilder.offset_items",
+          "kmipkit.fluent.LocateBuilder.storage_status_mask",
+          "kmipkit.fluent.LocateBuilder.to_batch_item",
+          "kmipkit.fluent.LocateBuilder.validate",
+          "kmipkit.fluent.LocateBuilder.with_options",
+          "kmipkit.fluent.Operation.validate",
+          "kmipkit.fluent.RevokeBuilder",
+          "kmipkit.fluent.RevokeBuilder.__init__",
+          "kmipkit.fluent.RevokeBuilder.asynchronous_indicator",
+          "kmipkit.fluent.RevokeBuilder.build",
+          "kmipkit.fluent.RevokeBuilder.compromise_occurrence_date",
+          "kmipkit.fluent.RevokeBuilder.execute",
+          "kmipkit.fluent.RevokeBuilder.to_batch_item",
+          "kmipkit.fluent.RevokeBuilder.validate",
+          "kmipkit.fluent.RevokeBuilder.with_options"
+        ],
+        "rust": [
+          "kmipkit_client::Client::activate",
+          "kmipkit_client::Client::archive",
+          "kmipkit_client::Client::locate",
+          "kmipkit_client::Client::locate_with_options",
+          "kmipkit_client::Client::recover",
+          "kmipkit_client::Client::revoke",
+          "kmipkit_client::Client::revoke_with_options",
+          "kmipkit_client::ClientBatch::with_asynchronous_indicator",
+          "kmipkit_client::ClientRequest::locate",
+          "kmipkit_client::ClientRequest::revoke",
+          "kmipkit_protocol::GetRequest::new",
+          "kmipkit_protocol::LocateRequest",
+          "kmipkit_protocol::LocateRequest::with_maximum_items",
+          "kmipkit_protocol::LocateRequest::with_object_group_member",
+          "kmipkit_protocol::LocateRequest::with_offset_items",
+          "kmipkit_protocol::LocateRequest::with_storage_status_mask",
+          "kmipkit_protocol::RevokeRequest",
+          "kmipkit_protocol::RevokeRequest::with_compromise_occurrence_date"
+        ]
+      },
+      "ownerSpecId": "KMIPKIT-0115",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-001",
+        "KMIPKIT-0115-FR-002",
+        "KMIPKIT-0115-FR-003",
+        "KMIPKIT-0115-FR-004",
+        "KMIPKIT-0115-FR-005",
+        "KMIPKIT-0115-FR-006"
       ]
     }
   ],
@@ -1059482,6 +1059602,2258 @@
         "KMIPKIT-0114-FR-003",
         "KMIPKIT-0114-FR-004",
         "KMIPKIT-0114-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:java:org.kmipkit.fluent.FluentRequest.activate",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.FluentRequest.activate",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_activate_by_id_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.client.KmipClient.activateById",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.activate_by_id",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::activate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:python:kmipkit.fluent.Request.activate",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.Request.activate",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_activate_by_id_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.client.KmipClient.activateById",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.activate_by_id",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::activate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:java:org.kmipkit.client.KmipClient.activateById",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.client.KmipClient.activateById",
+      "javaSignatures": [
+        "public org.kmipkit.extensions.ClientBatchResponse activateById(org.kmipkit.extensions.UniqueIdentifier, org.kmipkit.ttlv.CodecLimits) throws org.kmipkit.ClientOperationException",
+        "public org.kmipkit.extensions.ClientBatchResponse activateById(org.kmipkit.extensions.UniqueIdentifier, org.kmipkit.ttlv.CodecLimits, org.kmipkit.extensions.RequestOptions) throws org.kmipkit.ClientOperationException"
+      ],
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_activate_by_id_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.client.KmipClient.activateById",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.activate_by_id",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::activate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:python:kmipkit.client.Client.activate_by_id",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.Client.activate_by_id",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_activate_by_id_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.client.KmipClient.activateById",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.activate_by_id",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::activate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:java:org.kmipkit.fluent.FluentRequest.archive",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.FluentRequest.archive",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_archive_by_id_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.client.KmipClient.archiveById",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.archive_by_id",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::archive",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:python:kmipkit.fluent.Request.archive",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.Request.archive",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_archive_by_id_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.client.KmipClient.archiveById",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.archive_by_id",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::archive",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:java:org.kmipkit.client.KmipClient.archiveById",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.client.KmipClient.archiveById",
+      "javaSignatures": [
+        "public org.kmipkit.extensions.ClientBatchResponse archiveById(org.kmipkit.extensions.UniqueIdentifier, org.kmipkit.ttlv.CodecLimits) throws org.kmipkit.ClientOperationException",
+        "public org.kmipkit.extensions.ClientBatchResponse archiveById(org.kmipkit.extensions.UniqueIdentifier, org.kmipkit.ttlv.CodecLimits, org.kmipkit.extensions.RequestOptions) throws org.kmipkit.ClientOperationException"
+      ],
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_archive_by_id_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.client.KmipClient.archiveById",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.archive_by_id",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::archive",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:python:kmipkit.client.Client.archive_by_id",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.Client.archive_by_id",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_archive_by_id_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.client.KmipClient.archiveById",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.archive_by_id",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::archive",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:java:org.kmipkit.fluent.FluentRequest.locate",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.FluentRequest.locate",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_locate_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.client.KmipClient.locate",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.locate",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::locate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:python:kmipkit.fluent.Request.locate",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.Request.locate",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_locate_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.client.KmipClient.locate",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.locate",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::locate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:java:org.kmipkit.client.KmipClient.locate",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.client.KmipClient.locate",
+      "javaSignatures": [
+        "public org.kmipkit.extensions.ClientBatchResponse locate(org.kmipkit.extensions.AttributeSet, org.kmipkit.ttlv.CodecLimits) throws org.kmipkit.ClientOperationException",
+        "public org.kmipkit.extensions.ClientBatchResponse locate(org.kmipkit.extensions.AttributeSet, org.kmipkit.ttlv.CodecLimits, org.kmipkit.extensions.RequestOptions) throws org.kmipkit.ClientOperationException"
+      ],
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_locate_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.client.KmipClient.locate",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.locate",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::locate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:python:kmipkit.client.Client.locate",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.Client.locate",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_locate_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.client.KmipClient.locate",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.locate",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::locate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:java:org.kmipkit.fluent.FluentRequest.recover",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.FluentRequest.recover",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_recover_by_id_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.client.KmipClient.recoverById",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.recover_by_id",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::recover",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:python:kmipkit.fluent.Request.recover",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.Request.recover",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_recover_by_id_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.client.KmipClient.recoverById",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.recover_by_id",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::recover",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:java:org.kmipkit.client.KmipClient.recoverById",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.client.KmipClient.recoverById",
+      "javaSignatures": [
+        "public org.kmipkit.extensions.ClientBatchResponse recoverById(org.kmipkit.extensions.UniqueIdentifier, org.kmipkit.ttlv.CodecLimits) throws org.kmipkit.ClientOperationException",
+        "public org.kmipkit.extensions.ClientBatchResponse recoverById(org.kmipkit.extensions.UniqueIdentifier, org.kmipkit.ttlv.CodecLimits, org.kmipkit.extensions.RequestOptions) throws org.kmipkit.ClientOperationException"
+      ],
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_recover_by_id_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.client.KmipClient.recoverById",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.recover_by_id",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::recover",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:python:kmipkit.client.Client.recover_by_id",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.Client.recover_by_id",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_recover_by_id_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.client.KmipClient.recoverById",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.recover_by_id",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::recover",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:java:org.kmipkit.fluent.FluentRequest.revoke",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.FluentRequest.revoke",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_revoke_by_id_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.client.KmipClient.revokeById",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.revoke_by_id",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::revoke",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:python:kmipkit.fluent.Request.revoke",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.Request.revoke",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_revoke_by_id_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.client.KmipClient.revokeById",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.revoke_by_id",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::revoke",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:java:org.kmipkit.client.KmipClient.revokeById",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.client.KmipClient.revokeById",
+      "javaSignatures": [
+        "public org.kmipkit.extensions.ClientBatchResponse revokeById(org.kmipkit.extensions.UniqueIdentifier, org.kmipkit.extensions.RevocationReason, java.lang.Long, org.kmipkit.ttlv.CodecLimits) throws org.kmipkit.ClientOperationException",
+        "public org.kmipkit.extensions.ClientBatchResponse revokeById(org.kmipkit.extensions.UniqueIdentifier, org.kmipkit.extensions.RevocationReason, java.lang.Long, org.kmipkit.ttlv.CodecLimits, org.kmipkit.extensions.RequestOptions) throws org.kmipkit.ClientOperationException"
+      ],
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_revoke_by_id_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.client.KmipClient.revokeById",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.revoke_by_id",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::revoke",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:python:kmipkit.client.Client.revoke_by_id",
+      "declarationState": "declared",
+      "exportName": "kmipkit.client.Client.revoke_by_id",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_revoke_by_id_v1",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.client.KmipClient.revokeById",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.client.Client.revoke_by_id",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::revoke",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:java:org.kmipkit.fluent.LocateBuilder",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.LocateBuilder",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.LocateBuilder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.LocateBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::LocateRequest",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:python:kmipkit.fluent.LocateBuilder",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.LocateBuilder",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.LocateBuilder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.LocateBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::LocateRequest",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:java:org.kmipkit.fluent.RevokeBuilder",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.RevokeBuilder",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.RevokeBuilder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.RevokeBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::RevokeRequest",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:python:kmipkit.fluent.RevokeBuilder",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.RevokeBuilder",
+      "kind": "type",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.RevokeBuilder",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.RevokeBuilder",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::RevokeRequest",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:java:org.kmipkit.fluent.OperationBuilder.validate",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.OperationBuilder.validate",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_get",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.OperationBuilder.validate",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.Operation.validate",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::GetRequest::new",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:python:kmipkit.fluent.Operation.validate",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.Operation.validate",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_get",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.OperationBuilder.validate",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.Operation.validate",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::GetRequest::new",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-002"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:java:org.kmipkit.fluent.LocateBuilder.maximumItems",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.LocateBuilder.maximumItems",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_locate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.LocateBuilder.maximumItems",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.LocateBuilder.maximum_items",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::LocateRequest::with_maximum_items",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-003"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:python:kmipkit.fluent.LocateBuilder.maximum_items",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.LocateBuilder.maximum_items",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_locate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.LocateBuilder.maximumItems",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.LocateBuilder.maximum_items",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::LocateRequest::with_maximum_items",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-003"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:java:org.kmipkit.fluent.LocateBuilder.offsetItems",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.LocateBuilder.offsetItems",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_locate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.LocateBuilder.offsetItems",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.LocateBuilder.offset_items",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::LocateRequest::with_offset_items",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-003"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:python:kmipkit.fluent.LocateBuilder.offset_items",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.LocateBuilder.offset_items",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_locate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.LocateBuilder.offsetItems",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.LocateBuilder.offset_items",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::LocateRequest::with_offset_items",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-003"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:java:org.kmipkit.fluent.LocateBuilder.storageStatusMask",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.LocateBuilder.storageStatusMask",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_locate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.LocateBuilder.storageStatusMask",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.LocateBuilder.storage_status_mask",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::LocateRequest::with_storage_status_mask",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-003"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:python:kmipkit.fluent.LocateBuilder.storage_status_mask",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.LocateBuilder.storage_status_mask",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_locate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.LocateBuilder.storageStatusMask",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.LocateBuilder.storage_status_mask",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::LocateRequest::with_storage_status_mask",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-003"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:java:org.kmipkit.fluent.LocateBuilder.objectGroupMember",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.LocateBuilder.objectGroupMember",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_locate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.LocateBuilder.objectGroupMember",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.LocateBuilder.object_group_member",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::LocateRequest::with_object_group_member",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-003"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:python:kmipkit.fluent.LocateBuilder.object_group_member",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.LocateBuilder.object_group_member",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_locate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.LocateBuilder.objectGroupMember",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.LocateBuilder.object_group_member",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::LocateRequest::with_object_group_member",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-003"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:java:org.kmipkit.fluent.LocateBuilder.withOptions",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.LocateBuilder.withOptions",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_locate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.LocateBuilder.withOptions",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.LocateBuilder.with_options",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::locate_with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:python:kmipkit.fluent.LocateBuilder.with_options",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.LocateBuilder.with_options",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_locate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.LocateBuilder.withOptions",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.LocateBuilder.with_options",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::locate_with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:java:org.kmipkit.fluent.LocateBuilder.asynchronousIndicator",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.LocateBuilder.asynchronousIndicator",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_locate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.LocateBuilder.asynchronousIndicator",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.LocateBuilder.asynchronous_indicator",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatch::with_asynchronous_indicator",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:python:kmipkit.fluent.LocateBuilder.asynchronous_indicator",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.LocateBuilder.asynchronous_indicator",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_locate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.LocateBuilder.asynchronousIndicator",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.LocateBuilder.asynchronous_indicator",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatch::with_asynchronous_indicator",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:java:org.kmipkit.fluent.LocateBuilder.build",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.LocateBuilder.build",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_locate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.LocateBuilder.build",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.LocateBuilder.build",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::locate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-003"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:python:kmipkit.fluent.LocateBuilder.build",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.LocateBuilder.build",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_locate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.LocateBuilder.build",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.LocateBuilder.build",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::locate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-003"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:java:org.kmipkit.fluent.LocateBuilder.toBatchItem",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.LocateBuilder.toBatchItem",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_locate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.LocateBuilder.toBatchItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.LocateBuilder.to_batch_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::locate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-003"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:python:kmipkit.fluent.LocateBuilder.to_batch_item",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.LocateBuilder.to_batch_item",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_locate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.LocateBuilder.toBatchItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.LocateBuilder.to_batch_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::locate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-003"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:java:org.kmipkit.fluent.LocateBuilder.validate",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.LocateBuilder.validate",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_locate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.LocateBuilder.validate",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.LocateBuilder.validate",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::locate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-003"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:python:kmipkit.fluent.LocateBuilder.validate",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.LocateBuilder.validate",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_locate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.LocateBuilder.validate",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.LocateBuilder.validate",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::locate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-003"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:java:org.kmipkit.fluent.LocateBuilder.execute",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.LocateBuilder.execute",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_locate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.LocateBuilder.execute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.LocateBuilder.execute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::locate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-003"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:python:kmipkit.fluent.LocateBuilder.execute",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.LocateBuilder.execute",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_locate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.LocateBuilder.execute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.LocateBuilder.execute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::locate",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-003"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:python:kmipkit.fluent.LocateBuilder.__init__",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.LocateBuilder.__init__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_locate",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.FluentRequest.locate",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.LocateBuilder.__init__",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::LocateRequest",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-001"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:java:org.kmipkit.fluent.RevokeBuilder.compromiseOccurrenceDate",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.RevokeBuilder.compromiseOccurrenceDate",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_revoke",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.RevokeBuilder.compromiseOccurrenceDate",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.RevokeBuilder.compromise_occurrence_date",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::RevokeRequest::with_compromise_occurrence_date",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-004"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:python:kmipkit.fluent.RevokeBuilder.compromise_occurrence_date",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.RevokeBuilder.compromise_occurrence_date",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_revoke",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.RevokeBuilder.compromiseOccurrenceDate",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.RevokeBuilder.compromise_occurrence_date",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::RevokeRequest::with_compromise_occurrence_date",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-004"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:java:org.kmipkit.fluent.RevokeBuilder.withOptions",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.RevokeBuilder.withOptions",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_revoke",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.RevokeBuilder.withOptions",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.RevokeBuilder.with_options",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::revoke_with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:python:kmipkit.fluent.RevokeBuilder.with_options",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.RevokeBuilder.with_options",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_revoke",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.RevokeBuilder.withOptions",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.RevokeBuilder.with_options",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::revoke_with_options",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:java:org.kmipkit.fluent.RevokeBuilder.asynchronousIndicator",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.RevokeBuilder.asynchronousIndicator",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_revoke",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.RevokeBuilder.asynchronousIndicator",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.RevokeBuilder.asynchronous_indicator",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatch::with_asynchronous_indicator",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:python:kmipkit.fluent.RevokeBuilder.asynchronous_indicator",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.RevokeBuilder.asynchronous_indicator",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_revoke",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.RevokeBuilder.asynchronousIndicator",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.RevokeBuilder.asynchronous_indicator",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientBatch::with_asynchronous_indicator",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:java:org.kmipkit.fluent.RevokeBuilder.build",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.RevokeBuilder.build",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_revoke",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.RevokeBuilder.build",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.RevokeBuilder.build",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::revoke",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-004"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:python:kmipkit.fluent.RevokeBuilder.build",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.RevokeBuilder.build",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_revoke",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.RevokeBuilder.build",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.RevokeBuilder.build",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::revoke",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-004"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:java:org.kmipkit.fluent.RevokeBuilder.toBatchItem",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.RevokeBuilder.toBatchItem",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_revoke",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.RevokeBuilder.toBatchItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.RevokeBuilder.to_batch_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::revoke",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-004"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:python:kmipkit.fluent.RevokeBuilder.to_batch_item",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.RevokeBuilder.to_batch_item",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_revoke",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.RevokeBuilder.toBatchItem",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.RevokeBuilder.to_batch_item",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::revoke",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-004"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:java:org.kmipkit.fluent.RevokeBuilder.validate",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.RevokeBuilder.validate",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_revoke",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.RevokeBuilder.validate",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.RevokeBuilder.validate",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::revoke",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-004"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:python:kmipkit.fluent.RevokeBuilder.validate",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.RevokeBuilder.validate",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_revoke",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.RevokeBuilder.validate",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.RevokeBuilder.validate",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::ClientRequest::revoke",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-004"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:java:org.kmipkit.fluent.RevokeBuilder.execute",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.fluent.RevokeBuilder.execute",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_revoke",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.RevokeBuilder.execute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.RevokeBuilder.execute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::revoke",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-004"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:python:kmipkit.fluent.RevokeBuilder.execute",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.RevokeBuilder.execute",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_revoke",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.RevokeBuilder.execute",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.RevokeBuilder.execute",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_client::Client::revoke",
+          "packageId": "rust-kmipkit-client"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-004"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/115-java-python-lifecycle-facade/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "fluent_java_python_lifecycle_facade",
+      "declarationId": "KMIPKIT-0115:python:kmipkit.fluent.RevokeBuilder.__init__",
+      "declarationState": "declared",
+      "exportName": "kmipkit.fluent.RevokeBuilder.__init__",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_client_batch_item_revoke",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.fluent.FluentRequest.revoke",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.fluent.RevokeBuilder.__init__",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::RevokeRequest",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0115-FR-001"
       ]
     }
   ],

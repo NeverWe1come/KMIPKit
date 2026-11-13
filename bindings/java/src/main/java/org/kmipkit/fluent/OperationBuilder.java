@@ -13,13 +13,18 @@ import org.kmipkit.ttlv.CodecLimits;
 public final class OperationBuilder {
     private final KmipClient client;
     private final UniqueIdentifier id;
-    private final boolean destroy;
+    private final Kind kind;
     private RequestOptions options;
     private Long asynchronousIndicator;
     OperationBuilder(KmipClient client, UniqueIdentifier id, boolean destroy) {
-        if (client == null || id == null) throw new InvalidInputException("operation inputs are invalid");
-        this.client = client; this.id = id; this.destroy = destroy;
+        this(client, id, destroy ? Kind.DESTROY : Kind.GET);
     }
+    OperationBuilder(KmipClient client, UniqueIdentifier id, Kind kind) {
+        if (client == null || id == null) throw new InvalidInputException("operation inputs are invalid");
+        if (kind == null) throw new InvalidInputException("operation kind is invalid");
+        this.client = client; this.id = id; this.kind = kind;
+    }
+    enum Kind { GET, DESTROY, ACTIVATE, ARCHIVE, RECOVER }
     public OperationBuilder withOptions(RequestOptions value) {
         if (value == null) throw new InvalidInputException("request options are invalid");
         options = value; return this;
@@ -33,9 +38,17 @@ public final class OperationBuilder {
         return this;
     }
     public ClientBatchItem build() {
-        return destroy ? ClientBatchItem.destroy(id) : ClientBatchItem.get(id, null, null, null, null);
+        return switch (kind) {
+            case GET -> ClientBatchItem.get(id, null, null, null, null);
+            case DESTROY -> ClientBatchItem.destroy(id);
+            case ACTIVATE -> ClientBatchItem.activate(id);
+            case ARCHIVE -> ClientBatchItem.archive(id);
+            case RECOVER -> ClientBatchItem.recover(id);
+        };
     }
     public ClientBatchItem toBatchItem() { return build(); }
+    /** Validates this operation locally without sending it. */
+    public void validate() { try (ClientBatchItem ignored = build()) { } }
     public ClientBatchResponse execute(CodecLimits limits) throws org.kmipkit.ClientOperationException {
         if (limits == null) throw new InvalidInputException("codec limits are invalid");
         try (ClientBatch batch = ClientBatch.create()) {

@@ -132,6 +132,29 @@ class Request:
     def destroy(self, unique_identifier: extensions.UniqueIdentifier) -> Operation:
         return Operation(self._client, "destroy", unique_identifier)
 
+    def activate(self, unique_identifier: extensions.UniqueIdentifier) -> Operation:
+        return Operation(self._client, "activate", unique_identifier)
+
+    def archive(self, unique_identifier: extensions.UniqueIdentifier) -> Operation:
+        return Operation(self._client, "archive", unique_identifier)
+
+    def recover(self, unique_identifier: extensions.UniqueIdentifier) -> Operation:
+        return Operation(self._client, "recover", unique_identifier)
+
+    def locate(self, attributes: Any) -> LocateBuilder:
+        from .attribute_operations import AttributeSet
+
+        if not isinstance(attributes, AttributeSet):
+            errors.raise_for_status(4)
+        return LocateBuilder(self._client, attributes)
+
+    def revoke(
+        self,
+        unique_identifier: extensions.UniqueIdentifier,
+        reason: extensions.RevocationReason,
+    ) -> RevokeBuilder:
+        return RevokeBuilder(self._client, unique_identifier, reason)
+
     def encrypt(self) -> EncryptBuilder:
         return EncryptBuilder(client=self._client)
 
@@ -327,14 +350,27 @@ class Operation:
         return self
 
     def build(self) -> extensions.ClientBatchItem:
-        """Build the existing typed Get or Destroy batch item without sending it."""
-        if self._operation == "get":
-            return extensions.client_batch_item_get(self._identifier)
-        return extensions.client_batch_item_destroy(self._identifier)
+        """Build an existing typed lifecycle item without sending it."""
+        constructors = {
+            "get": extensions.client_batch_item_get,
+            "destroy": extensions.client_batch_item_destroy,
+            "activate": extensions.client_batch_item_activate,
+            "archive": extensions.client_batch_item_archive,
+            "recover": extensions.client_batch_item_recover,
+        }
+        try:
+            constructor = constructors[self._operation]
+        except KeyError:
+            errors.raise_for_status(4)
+        return constructor(self._identifier)
 
     def to_batch_item(self) -> extensions.ClientBatchItem:
         """Alias for :meth:`build` for consistency with the Rust builder."""
         return self.build()
+
+    def validate(self) -> None:
+        """Validate locally without sending a request."""
+        self.build().close()
 
     def execute(self, limits: ttlv.CodecLimits) -> BatchResult:
         with Batch.create() as batch:
@@ -344,6 +380,133 @@ class Operation:
             if self._options is not None:
                 return self._client.execute_with_options(batch, limits, self._options)
             return self._client.execute(batch, limits)
+
+
+class LocateBuilder:
+    """Build and execute a typed Locate request with explicit filters."""
+
+    def __init__(self, client: Client, attributes: Any) -> None:
+        self._client = client
+        self._attributes = attributes
+        self._maximum_items: int | None = None
+        self._offset_items: int | None = None
+        self._storage_status_mask: int | None = None
+        self._object_group_member: int | None = None
+        self._options: RequestOptions | None = None
+        self._asynchronous_indicator: int | None = None
+
+    def maximum_items(self, value: int) -> Self:
+        self._maximum_items = value
+        return self
+
+    def offset_items(self, value: int) -> Self:
+        self._offset_items = value
+        return self
+
+    def storage_status_mask(self, value: int) -> Self:
+        self._storage_status_mask = value
+        return self
+
+    def object_group_member(self, value: int) -> Self:
+        self._object_group_member = value
+        return self
+
+    def with_options(self, options: RequestOptions) -> Self:
+        if not isinstance(options, RequestOptions):
+            errors.raise_for_status(4)
+        self._options = options
+        return self
+
+    def asynchronous_indicator(self, value: int) -> Self:
+        self._asynchronous_indicator = _unsigned(value, 32)
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        with self._attributes.as_items() as attributes:
+            return extensions.client_batch_item_locate(
+                attributes,
+                maximum_items=self._maximum_items,
+                offset_items=self._offset_items,
+                storage_status_mask=self._storage_status_mask,
+                object_group_member=self._object_group_member,
+            )
+
+    to_batch_item = build
+
+    def validate(self) -> None:
+        self.build().close()
+
+    def execute(self, limits: ttlv.CodecLimits) -> BatchResult:
+        if not isinstance(self._client, Client) or not isinstance(limits, ttlv.CodecLimits):
+            errors.raise_for_status(4)
+        with Batch.create() as batch:
+            batch.add_item(self.build())
+            if self._asynchronous_indicator is not None:
+                batch.set_asynchronous_indicator(self._asynchronous_indicator)
+            if self._options is None:
+                return self._client.execute(batch, limits)
+            return self._client.execute_with_options(batch, limits, self._options)
+
+
+class RevokeBuilder:
+    """Build and execute a typed Revoke request with a redacted reason message."""
+
+    def __init__(
+        self,
+        client: Client,
+        unique_identifier: extensions.UniqueIdentifier,
+        reason: extensions.RevocationReason,
+    ) -> None:
+        if not isinstance(reason, extensions.RevocationReason):
+            errors.raise_for_status(4)
+        _identifier(unique_identifier)
+        self._client = client
+        self._identifier = unique_identifier
+        self._reason_code = reason.raw_code
+        self._reason_message = reason.message
+        self._compromise_occurrence_date: int | None = None
+        self._options: RequestOptions | None = None
+        self._asynchronous_indicator: int | None = None
+
+    def compromise_occurrence_date(self, value: int) -> Self:
+        self._compromise_occurrence_date = value
+        return self
+
+    def with_options(self, options: RequestOptions) -> Self:
+        if not isinstance(options, RequestOptions):
+            errors.raise_for_status(4)
+        self._options = options
+        return self
+
+    def asynchronous_indicator(self, value: int) -> Self:
+        self._asynchronous_indicator = _unsigned(value, 32)
+        return self
+
+    def build(self) -> extensions.ClientBatchItem:
+        with extensions.RevocationReason.create(
+            self._reason_code, self._reason_message
+        ) as reason:
+            request = extensions.RevokeRequest.create(
+                self._identifier, reason, self._compromise_occurrence_date
+            )
+            return extensions.client_batch_item_revoke(request)
+
+    to_batch_item = build
+
+    def validate(self) -> None:
+        self.build().close()
+
+    def execute(self, limits: ttlv.CodecLimits) -> BatchResult:
+        if not isinstance(self._client, Client) or not isinstance(limits, ttlv.CodecLimits):
+            errors.raise_for_status(4)
+        with Batch.create() as batch:
+            batch.add_item(self.build())
+            if self._asynchronous_indicator is not None:
+                batch.set_asynchronous_indicator(self._asynchronous_indicator)
+            if self._options is None:
+                return self._client.execute(batch, limits)
+            return self._client.execute_with_options(batch, limits, self._options)
+
 
 
 class SymmetricKeyBuilder:

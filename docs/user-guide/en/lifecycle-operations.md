@@ -162,6 +162,73 @@ fn main() {
 }
 ```
 
+## Java and Python task-level helpers
+
+Java and Python expose these operations through `client.request()` builders
+and named client helpers. Both paths create the existing typed KMIP request,
+perform exactly one exchange, and return the ordinary typed batch response.
+`RequestOptions` changes only exchange timeouts. The asynchronous Request
+Header indicator has a separate builder method.
+
+```java
+UniqueIdentifier id = UniqueIdentifier.textString("archive-record-42");
+try (ClientBatchResponse response = client.request().activate(id).execute(limits)) {
+    // Inspect the existing typed result, including Success, Pending, or Failure.
+}
+```
+
+```python
+identifier = extensions.UniqueIdentifier.text_string("archive-record-42")
+result = client.request().activate(identifier).execute(limits)
+try:
+    # Inspect result.items[0] and its operation-specific typed response.
+    pass
+finally:
+    result.close()
+```
+
+The same facade provides `archive`, `locate`, `recover`, and `revoke`. Locate
+requires an explicit typed `AttributeSet`; paging, storage-status, and
+object-group-member filters are optional and remain absent when not supplied.
+Revoke requires a typed identifier and explicit `RevocationReason`; its
+optional compromise-occurrence date is passed separately. Reason messages are
+redacted from the builder representation. Java and Python may retain caller
+string copies for their runtime-managed lifetimes; KMIPKit clears its owned
+temporary encoded staging buffers.
+
+```java
+try (ClientBatchResponse response = client.locate(attributes, limits,
+        RequestOptions.defaults())) {
+    // This Locate has no paging filters unless the caller sets them on its builder.
+}
+try (RevocationReason reason = RevocationReason.create(1, "rotation policy");
+        ClientBatchResponse response = client.request().revoke(id, reason)
+                .withOptions(RequestOptions.defaults()).execute(limits)) {
+    // The response is still the KMIP server result.
+}
+```
+
+```python
+result = client.locate(attributes, limits, maximum_items=25)
+try:
+    pass
+finally:
+    result.close()
+
+with extensions.RevocationReason.create(1, "rotation policy") as reason:
+    result = client.request().revoke(identifier, reason).execute(limits)
+    try:
+        pass
+    finally:
+        result.close()
+```
+
+All five operations are also available as `activateById`, `archiveById`,
+`locate`, `recoverById`, and `revokeById` in Java, and as
+`activate_by_id`, `archive_by_id`, `locate`, `recover_by_id`, and
+`revoke_by_id` in Python. The `*_by_id` methods require the explicit
+identifier. No method retries, polls, or infers remote object state.
+
 ## Re-certify
 
 Re-certify asks the server to renew one certificate. The caller may identify

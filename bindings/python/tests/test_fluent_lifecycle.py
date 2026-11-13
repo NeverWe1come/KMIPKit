@@ -4,8 +4,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 from _test_support import mtls_transport_config
-from kmipkit import attribute_operations, client, extensions, fluent, ttlv
+from kmipkit import attribute_operations, client, errors, extensions, fluent, ttlv
 
 from test_fluent import _start_lifecycle_peer
 
@@ -32,6 +33,10 @@ def test_fluent_lifecycle_builds_typed_batch_items() -> None:
                 request.recover(identifier).build(),
             ]
             with extensions.RevocationReason.create(1, "scheduled rotation") as reason:
+                builder = request.revoke(identifier, reason)
+                assert "scheduled rotation" not in repr(builder)
+                with pytest.raises(errors.KmipKitError):
+                    request.revoke(None, reason)  # type: ignore[arg-type]
                 revoke = request.revoke(identifier, reason).build()
                 items.append(revoke)
             try:
@@ -60,7 +65,8 @@ def test_fluent_and_direct_lifecycle_helpers_roundtrip_over_mtls() -> None:
                     builders = [
                         kmip_client.request().activate(identifier),
                         kmip_client.request().archive(identifier),
-                        kmip_client.request().locate(attributes),
+                        kmip_client.request().locate(attributes)
+                        .maximum_items(5).offset_items(2),
                         kmip_client.request().recover(identifier),
                     ]
                     with extensions.RevocationReason.create(1, "scheduled rotation") as reason:
@@ -71,12 +77,15 @@ def test_fluent_and_direct_lifecycle_helpers_roundtrip_over_mtls() -> None:
                         [
                             kmip_client.activate_by_id(identifier, limits),
                             kmip_client.archive_by_id(identifier, limits),
-                            kmip_client.locate(attributes, limits),
+                            kmip_client.locate(
+                                attributes, limits, maximum_items=4, offset_items=1,
+                                options=client.RequestOptions(),
+                            ),
                             kmip_client.recover_by_id(identifier, limits),
                         ]
                     )
                     with extensions.RevocationReason.create(
-                        1, "scheduled rotation"
+                        2, "scheduled rotation"
                     ) as reason:
                         results.append(
                             kmip_client.revoke_by_id(

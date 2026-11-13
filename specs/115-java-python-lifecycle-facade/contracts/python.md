@@ -9,6 +9,7 @@ the typed reason's code and message and accepts an optional named
 `kmipkit.client.Client` adds keyword-friendly direct methods
 `activate_by_id`, `archive_by_id`, `locate`, `recover_by_id`, and
 `revoke_by_id`. Exchange options are passed by the named `options` parameter.
-Locate takes required `attributes` and named optional filters. Revoke takes the
-typed `reason` and a named optional `compromise_occurrence_date`. Existing
-public names and behavior remain source compatible.
+Locate takes required `attributes` and named optional filters. Revoke takes an
+explicit typed identifier and `reason`, plus a named optional
+`compromise_occurrence_date`. Existing public names and behavior remain source
+compatible.

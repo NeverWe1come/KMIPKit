@@ -18,6 +18,7 @@ pub(crate) const C_AVAILABLE_CAPABILITIES: &[&str] = &[
     "ffi_runtime_metadata",
     "fluent_dx_api",
     "fluent_dx_journeys",
+    "fluent_java_python_lifecycle_facade",
     "generic_ttlv_model",
     "hashed_password_timestamp_sequence",
     "kmip30_draft_routes",

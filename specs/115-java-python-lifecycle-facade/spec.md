@@ -2,7 +2,9 @@
 
 **Feature Branch**: `feature/KMIPKIT-0115-java-python-lifecycle`
 **Created**: 2026-11-13
-**Status**: Approved under the user's standing authorization to implement the complete Fluent DX plan.
+**Status**: Approved
+
+The user authorized autonomous implementation of the complete Fluent DX plan.
 **Input**: User authorized autonomous completion of the approved KMIPKit Fluent DX plan across Rust, C, Java, and Python.
 
 ## User Scenarios & Testing
@@ -63,7 +65,8 @@ against the controlled mutual-TLS fixture with typed responses.
 ## Edge Cases
 
 - An absent identifier remains absent only where the existing typed request
-  model permits it; the `*_by_id` convenience methods require an identifier.
+  model permits it; every `*_by_id` helper and this Revoke facade require an
+  explicit identifier.
 - Locate requires an Attribute collection, including an intentionally empty
   collection; omitted optional filters remain omitted.
 - Invalid option records, invalid filter ranges, wrong handle kinds, and

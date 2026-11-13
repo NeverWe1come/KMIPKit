@@ -2,6 +2,7 @@ package org.kmipkit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -14,6 +15,8 @@ import javax.net.ssl.SSLServerSocket;
 import java.security.cert.X509Certificate;
 import org.junit.jupiter.api.Test;
 import org.kmipkit.client.KmipClient;
+import org.kmipkit.fluent.LocateBuilder;
+import org.kmipkit.fluent.RevokeBuilder;
 import org.kmipkit.extensions.AttributeSet;
 import org.kmipkit.extensions.ClientBatchItemResult;
 import org.kmipkit.extensions.ClientBatchResponse;
@@ -21,6 +24,7 @@ import org.kmipkit.extensions.ClientConfiguration;
 import org.kmipkit.extensions.ClientExtensionRegistry;
 import org.kmipkit.extensions.ExtensionRegistryLimits;
 import org.kmipkit.extensions.RevocationReason;
+import org.kmipkit.extensions.RequestOptions;
 import org.kmipkit.extensions.TransportConfiguration;
 import org.kmipkit.extensions.UniqueIdentifier;
 import org.kmipkit.ttlv.CodecLimits;
@@ -40,7 +44,8 @@ final class FluentLifecycleNativeIntegrationTest {
                 "deterministicMtlsListener",
                 new Class<?>[] {byte[].class, byte[].class, X509Certificate.class},
                 serverCertificate, serverKey, parsedClientCertificate);
-        int[] operations = {0x12, 0x15, 0x08, 0x16, 0x13};
+        int[] operations = {0x12, 0x15, 0x08, 0x16, 0x13,
+                0x12, 0x15, 0x08, 0x16, 0x13};
         byte[][] responses = new byte[operations.length][];
         for (int index = 0; index < operations.length; index++) {
             responses[index] = (byte[]) fixtureCall("fluentClientResponseMessage",
@@ -72,9 +77,10 @@ final class FluentLifecycleNativeIntegrationTest {
                 KmipClient client = KmipClient.create(configuration, transport);
                 TtlvStructure attributesTtlv = TtlvStructure.create();
                 AttributeSet attributes = AttributeSet.tryNew(attributesTtlv);
-                RevocationReason reason = RevocationReason.create(1, "scheduled rotation")) {
+                RevocationReason reason = RevocationReason.create(2, "scheduled rotation")) {
             CodecLimits limits = CodecLimits.defaults();
             UniqueIdentifier identifier = UniqueIdentifier.textString("lifecycle-target");
+            assertThrows(InvalidInputException.class, () -> client.request().revoke(null, reason));
             Class<?>[] byId = {UniqueIdentifier.class, CodecLimits.class};
             int index = 0;
             for (String method : List.of("activateById", "archiveById")) {
@@ -88,6 +94,20 @@ final class FluentLifecycleNativeIntegrationTest {
                     new Class<?>[] {UniqueIdentifier.class, RevocationReason.class,
                             Long.class, CodecLimits.class},
                     identifier, reason, 1_800_000_000L, limits), operations[index]);
+            index++;
+
+            assertResult(client.request().activate(identifier).execute(limits), operations[index++]);
+            assertResult(client.request().archive(identifier).execute(limits), operations[index++]);
+            LocateBuilder locate = client.request().locate(attributes)
+                    .maximumItems(4).offsetItems(1).withOptions(RequestOptions.defaults());
+            assertResult(locate.execute(limits), operations[index++]);
+            assertResult(client.request().recover(identifier).execute(limits), operations[index++]);
+            try (RevocationReason builderReason = RevocationReason.create(1, "builder audit secret")) {
+                RevokeBuilder revoke = client.request().revoke(identifier, builderReason);
+                assertTrue(!revoke.toString().contains("builder audit secret"));
+                builderReason.close();
+                assertResult(revoke.execute(limits), operations[index]);
+            }
         } finally {
             listener.close();
         }
@@ -147,10 +167,10 @@ final class FluentLifecycleNativeIntegrationTest {
         item[2] = (byte) tag;
         item[3] = 5;
         item[7] = 4;
-        item[12] = (byte) (value >>> 24);
-        item[13] = (byte) (value >>> 16);
-        item[14] = (byte) (value >>> 8);
-        item[15] = (byte) value;
+        item[8] = (byte) (value >>> 24);
+        item[9] = (byte) (value >>> 16);
+        item[10] = (byte) (value >>> 8);
+        item[11] = (byte) value;
         return item;
     }
 

@@ -6,6 +6,8 @@ import org.kmipkit.extensions.TransportConfiguration;
 import org.kmipkit.extensions.UniqueIdentifier;
 import org.kmipkit.extensions.RequestOptions;
 import org.kmipkit.extensions.ClientBatchResponse;
+import org.kmipkit.extensions.AttributeSet;
+import org.kmipkit.extensions.RevocationReason;
 import org.kmipkit.ttlv.CodecLimits;
 
 /** Idiomatic task-oriented facade over the existing typed KMIP client. */
@@ -55,6 +57,66 @@ public final class KmipClient implements AutoCloseable {
     public ClientBatchResponse destroyById(UniqueIdentifier id, CodecLimits limits, RequestOptions options)
             throws org.kmipkit.ClientOperationException {
         org.kmipkit.fluent.OperationBuilder builder = request().destroy(id);
+        if (options != null) builder.withOptions(options);
+        return builder.execute(limits);
+    }
+    /** Executes one Activate request for an explicit identifier. */
+    public ClientBatchResponse activateById(UniqueIdentifier id, CodecLimits limits)
+            throws org.kmipkit.ClientOperationException { return activateById(id, limits, null); }
+    /** Executes one Activate request with exchange-local timeout overrides. */
+    public ClientBatchResponse activateById(
+            UniqueIdentifier id, CodecLimits limits, RequestOptions options)
+            throws org.kmipkit.ClientOperationException {
+        org.kmipkit.fluent.OperationBuilder builder = request().activate(id);
+        if (options != null) builder.withOptions(options);
+        return builder.execute(limits);
+    }
+    /** Executes one Archive request for an explicit identifier. */
+    public ClientBatchResponse archiveById(UniqueIdentifier id, CodecLimits limits)
+            throws org.kmipkit.ClientOperationException { return archiveById(id, limits, null); }
+    /** Executes one Archive request with exchange-local timeout overrides. */
+    public ClientBatchResponse archiveById(
+            UniqueIdentifier id, CodecLimits limits, RequestOptions options)
+            throws org.kmipkit.ClientOperationException {
+        org.kmipkit.fluent.OperationBuilder builder = request().archive(id);
+        if (options != null) builder.withOptions(options);
+        return builder.execute(limits);
+    }
+    /** Executes one Recover request for an explicit identifier. */
+    public ClientBatchResponse recoverById(UniqueIdentifier id, CodecLimits limits)
+            throws org.kmipkit.ClientOperationException { return recoverById(id, limits, null); }
+    /** Executes one Recover request with exchange-local timeout overrides. */
+    public ClientBatchResponse recoverById(
+            UniqueIdentifier id, CodecLimits limits, RequestOptions options)
+            throws org.kmipkit.ClientOperationException {
+        org.kmipkit.fluent.OperationBuilder builder = request().recover(id);
+        if (options != null) builder.withOptions(options);
+        return builder.execute(limits);
+    }
+    /** Executes one Locate request with an explicit Attribute collection. */
+    public ClientBatchResponse locate(AttributeSet attributes, CodecLimits limits)
+            throws org.kmipkit.ClientOperationException { return locate(attributes, limits, null); }
+    /** Executes Locate with exchange-local timeout overrides. */
+    public ClientBatchResponse locate(
+            AttributeSet attributes, CodecLimits limits, RequestOptions options)
+            throws org.kmipkit.ClientOperationException {
+        org.kmipkit.fluent.LocateBuilder builder = request().locate(attributes);
+        if (options != null) builder.withOptions(options);
+        return builder.execute(limits);
+    }
+    /** Executes one Revoke request with an explicit reason and optional date. */
+    public ClientBatchResponse revokeById(
+            UniqueIdentifier id, RevocationReason reason, Long compromiseOccurrenceDate,
+            CodecLimits limits) throws org.kmipkit.ClientOperationException {
+        return revokeById(id, reason, compromiseOccurrenceDate, limits, null);
+    }
+    /** Executes Revoke with exchange-local timeout overrides. */
+    public ClientBatchResponse revokeById(
+            UniqueIdentifier id, RevocationReason reason, Long compromiseOccurrenceDate,
+            CodecLimits limits, RequestOptions options)
+            throws org.kmipkit.ClientOperationException {
+        org.kmipkit.fluent.RevokeBuilder builder = request().revoke(id, reason);
+        if (compromiseOccurrenceDate != null) builder.compromiseOccurrenceDate(compromiseOccurrenceDate);
         if (options != null) builder.withOptions(options);
         return builder.execute(limits);
     }
