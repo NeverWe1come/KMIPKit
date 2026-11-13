@@ -224,6 +224,8 @@ def _lifecycle_response(operation: int, identifier: bytes) -> bytes:
         ]
     elif operation == 20:
         payload_fields = [_item(0x420094, 7, identifier)]
+    elif operation in (0x08, 0x12, 0x13, 0x15, 0x16):
+        payload_fields = [_item(0x420094, 7, identifier)]
     else:
         raise AssertionError(f"unexpected fluent operation {operation}")
     response_item = _structure(

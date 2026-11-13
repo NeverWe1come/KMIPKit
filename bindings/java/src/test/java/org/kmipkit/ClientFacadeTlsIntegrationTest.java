@@ -6810,6 +6810,7 @@ final class ClientFacadeTlsIntegrationTest {
                     structure(0x42008f, structure(0x420040,
                             item(0x420045, 8, "fluent-key-material".getBytes(StandardCharsets.US_ASCII)))));
             case 20 -> structure(0x42007c, identifier);
+            case 0x08, 0x12, 0x13, 0x15, 0x16 -> structure(0x42007c, identifier);
             default -> throw new IllegalArgumentException("unsupported fluent operation: " + operation);
         };
         byte[] responseItem = structure(0x42000f, enumeration(0x42005c, operation),

@@ -2,12 +2,12 @@
 
 ## Phase 1: Setup
 
-- [ ] T001 Confirm KMIP 2.1 clauses, existing typed constructors, handle transfer rules, and language test commands in `specs/115-java-python-lifecycle-facade/research.md`.
+- [x] T001 Confirm KMIP 2.1 clauses, existing typed constructors, handle transfer rules, and language test commands in `specs/115-java-python-lifecycle-facade/research.md`.
 
 ## Phase 2: Foundational Contract Tests
 
-- [ ] T002 [P] Add failing Java shape and controlled mTLS tests for the five operations in `bindings/java/src/test/java/org/kmipkit/fluent/FluentLifecycleApiShapeTest.java` and `FluentLifecycleNativeIntegrationTest.java`.
-- [ ] T003 [P] Add failing Python builder, direct-method, and controlled mTLS tests for the five operations in `bindings/python/tests/test_fluent_lifecycle.py` (record both language failures in the Red commit).
+- [x] T002 [P] [RED COMMIT] Add failing Java shape and controlled mTLS tests for the five operations in `bindings/java/src/test/java/org/kmipkit/fluent/FluentLifecycleApiShapeTest.java` and `FluentLifecycleNativeIntegrationTest.java`.
+- [x] T003 [P] [RED COMMIT] Add failing Python builder, direct-method, and controlled mTLS tests for the five operations in `bindings/python/tests/test_fluent_lifecycle.py` (record both language failures in the Red commit).
 
 ## Phase 3: User Story 1 - Java lifecycle facade (Priority: P1)
 
