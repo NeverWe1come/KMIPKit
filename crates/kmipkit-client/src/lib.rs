@@ -115,6 +115,10 @@ pub use usage_allocation::{UsageAllocationContext, UsageAllocationContextError};
 mod execution_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/stop_batch_response_tests.rs"]
+mod stop_batch_response_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/option_tests.rs"]
 mod option_tests;
 
