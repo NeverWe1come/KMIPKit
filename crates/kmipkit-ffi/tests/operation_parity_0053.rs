@@ -1,5 +1,8 @@
 #![cfg(feature = "coverage-c-consumer")]
 
+// Link the exported C symbols through Cargo, independently of its artifact layout.
+use kmipkit_ffi as _;
+
 #[link(name = "kmipkit_operation_parity_0053_consumer", kind = "static")]
 unsafe extern "C" {
     fn kmipkit_operation_parity_0053_all_56() -> i32;
@@ -8,7 +11,6 @@ unsafe extern "C" {
 #[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
 unsafe extern "C" {}
 
-#[link(name = "kmipkit_ffi")]
 unsafe extern "C" {
     fn kmipkit_client_batch_create(out_batch: *mut *mut core::ffi::c_void) -> i32;
     fn kmipkit_client_batch_release(batch: *mut core::ffi::c_void);
