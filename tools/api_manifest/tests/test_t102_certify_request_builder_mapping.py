@@ -465,6 +465,14 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
                 ]
                 self.assertEqual(count, len(typed_rows))
         other_declarations = without_0047_versioned_values(other_declarations)
+        other_declaration_ids = {row["declarationId"] for row in other_declarations}
+        self.assertTrue(
+            {
+                "KMIPKIT-0112:org.kmipkit.server.ServerConnection",
+                "KMIPKIT-0112:org.kmipkit.server.ServerListener",
+            }.issubset(other_declaration_ids),
+            "the server listener facade declarations remain included in the non-target snapshot",
+        )
         self.assertEqual(DECLARATIONS_SHA256, canonical_sha256(other_declarations))
         other_operations = copy.deepcopy(self.manifest["operations"])
         for operation in other_operations:
