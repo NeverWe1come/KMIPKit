@@ -338,6 +338,11 @@ class ControlledTlsPeerTest {
         ArrayNode events = mapper.createArrayNode();
         List<EnumerationFixture> enumerationFixtures = genericEnumerationFixtures();
         List<EnumerationFixture> localEnumerationFixtures = genericLocalEnumerationFixtures();
+        Set<String> expectedLocalEnumerationCases = cataloguedLocalEnumerationCaseIds(readRouteEvidenceCatalog());
+        Set<String> actualLocalEnumerationCases = localEnumerationFixtures.stream()
+                .map(EnumerationFixture::caseId).collect(java.util.stream.Collectors.toSet());
+        assertEquals(expectedLocalEnumerationCases, actualLocalEnumerationCases,
+                "Every local enum aggregate with normative values and a same-named TTLV Tag needs fixtures.");
         List<String> keyFormatTargets = enumerationTargetIds(localEnumerationFixtures, "KEY-FORMAT-TYPE");
         assertEquals(24, keyFormatTargets.size(),
                 "The Key Format Type aggregate must cover every catalogued value.");
@@ -1866,6 +1871,37 @@ class ControlledTlsPeerTest {
             }
         }
         return List.copyOf(fixtures);
+    }
+
+    private static Set<String> cataloguedLocalEnumerationCaseIds(JsonNode catalog) {
+        Set<String> enumerationNames = new java.util.HashSet<>();
+        Set<String> tagNames = new java.util.HashSet<>();
+        for (JsonNode target : catalog.path("normative_targets")) {
+            String kind = target.path("kind").asText();
+            if ("tag".equals(kind)) tagNames.add(normalizeTargetName(target.path("name").asText()));
+            if (!"enumeration_value".equals(kind)) continue;
+            for (JsonNode parent : target.path("parent_element_ids")) {
+                String parentId = parent.asText();
+                String prefix = "KMIPKIT-ELEM-ENUMERATION-";
+                if (parentId.startsWith(prefix)) {
+                    enumerationNames.add(normalizeTargetName(parentId.substring(prefix.length())));
+                }
+            }
+        }
+
+        Set<String> caseIds = new java.util.LinkedHashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String caseId = testCase.path("case_id").asText();
+            String mode = testCase.path("execution").path("mode").asText();
+            String enumType = testCase.path("requires").path("enum_type").asText();
+            if (caseId.startsWith("test-enum-")
+                    && "local_model".equals(mode)
+                    && enumerationNames.contains(normalizeTargetName(enumType))
+                    && tagNames.contains(normalizeTargetName(enumType))) {
+                caseIds.add(caseId);
+            }
+        }
+        return Set.copyOf(caseIds);
     }
 
     private static List<String> localEnumerationVersions(JsonNode target, String enumType,
