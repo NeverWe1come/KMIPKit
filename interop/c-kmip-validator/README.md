@@ -56,8 +56,10 @@ version, catalog digest, exact library commit and installed library digest.
 The capability profile is informational; it never suppresses a probe.
 
 The pinned release artifact preserves the configured KMIP version. Controlled
-TLS fixtures exercise Discover Versions, Ping, Locate, Query, Log, Login and
-the ordered Create/Destroy, Create/Activate/Revoke/Destroy,
+TLS fixtures exercise Discover Versions, Ping, Locate, Query, Log, Login, and
+Logout. The Logout recipe obtains the Ticket from a successful KMIP 2.1 Login,
+returns it in the Logout request, and checks the empty Logout response payload.
+The ordered Create/Destroy, Create/Activate/Revoke/Destroy,
 Create/Check/Revoke/Destroy, Create/Revoke/Destroy, Create/Destroy/Revoke/Destroy,
 Create/Get/Destroy, Create/Get Attributes/Destroy, Create/Get Attribute
 List/Destroy and Create/Get Constraints/Revoke/Destroy lifecycles under KMIP
@@ -84,9 +86,12 @@ operation. Get also checks the returned key format, algorithm and nonempty key
 material without including the key bytes in reports. The public C
 Discover Versions builder has a fixed KMIP 2.1 offer; because it does not expose
 a way to offer KMIP 2.0, that specific KMIP 2.0 case is reported as a public
-API limitation. The public C Login builder only supports KMIP 2.1, so its
-KMIP 2.0 case is also reported as a public API limitation. The public C API exposes generic TTLV constructors, inspectors,
-and a decoder, but it has no generic TTLV encoder and no generic TTLV request dispatch.
+API limitation. The public C Login builder only supports KMIP 2.1, so the
+KMIP 2.0 Login case is reported as a public API limitation. The KMIP 2.0 Logout
+case is not run because the C validator cannot obtain the server-issued Login
+Ticket required by Logout. The public C API exposes generic TTLV constructors,
+inspectors, and a decoder.
+It has no generic TTLV encoder and no generic TTLV request dispatch.
 It also exposes no high-level client API. The consumer records those route
 limits as library/API gaps. Live runs require a dedicated test KMS, valid
 mutual-TLS credentials and explicit opt-in for mutations.

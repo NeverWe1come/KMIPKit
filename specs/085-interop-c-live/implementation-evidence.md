@@ -560,3 +560,33 @@ v2.1 §§9.6, 11.5, and 6.1.19.
 This fixture validates the KMIPKit client against a controlled KMIP peer; it
 does not establish behavior of an external KMS. The shared route-applicability
 gap and all other pending C routes remain open.
+
+### Ticket-backed Logout
+
+The Logout live recipe now obtains a server-issued Ticket from a successful
+Login with Request Count 2, then sends Logout with that exact Ticket and checks
+the typed response and empty Response Payload. It follows OASIS KMIP 2.0
+§§6.1.29–6.1.30 and KMIP 2.1 §§6.1.30–6.1.31. The Ticket is kept in memory
+only and is never recorded in diagnostics, fixture reports, or matrix evidence.
+
+- Red commit `140c066dd` required the Ticket-backed recipe. The focused matrix
+  test first failed because Logout had no executable recipe. A separate
+  regression then required the matrix to attribute route evidence to the
+  second exchange, rather than crediting the prerequisite Login.
+- Red commit `596338725` corrected the Login Request Count tag to the OASIS
+  `Request Count` tag `0x42014C`; the controlled peer now rejects any other
+  tag. Red commit `825d9e551` protects the Logout exchange index.
+- Green commit `6d471c07a` implements the in-memory Ticket handoff and verifies
+  both operation responses. The controlled peer passed all six KMIP 2.1
+  encoding/transport combinations: TTLV, JSON, and XML over raw TLS and HTTPS.
+- Verification: CMake build passed and CTest passed 7/7, including controlled
+  KMIP 2.0 and 2.1 TLS fixtures. The KMIP 2.0 fixture confirms that the Logout
+  path is explicitly not run without a valid Login Ticket.
+- The complete C matrix reports 38,429 of 66,728 cells invoked, zero failed,
+  and 28,299 pending. Logout accounts for 23 passed route cells and 19 pending
+  KMIP 2.0 cells. The installed C Login builder only accepts KMIP 2.1, so a
+  valid KMIP 2.0 server-issued Ticket cannot be acquired; this is an API
+  limitation and no invalid or synthetic Ticket is sent to a server.
+
+This recipe verifies KMIPKit against a controlled peer only. External KMS
+compatibility and the remaining C route recipes are still unverified.
