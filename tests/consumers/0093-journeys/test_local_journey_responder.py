@@ -4,6 +4,7 @@ import struct
 import unittest
 
 from local_journey_responder import _item, _structure, _validate_operation
+import local_journey_responder as responder
 
 
 class ExpertAttributeJourneyContractTests(unittest.TestCase):
@@ -68,3 +69,126 @@ class KeyPairCurveContractTests(unittest.TestCase):
         ):
             with self.subTest(domain=domain.hex()), self.assertRaisesRegex(RuntimeError, "P-256"):
                 self.validate(domain)
+
+
+class BatchIdPlaceholderJourneyContractTests(unittest.TestCase):
+    """KMIP 2.1 §6.1; batch order and ID Placeholder semantics."""
+
+    @staticmethod
+    def _batch_item(operation: int, payload: bytes = b"") -> bytes:
+        fields = [_item(0x42005C, 5, struct.pack(">I", operation))]
+        if payload:
+            fields.append(_structure(0x420079, payload))
+        return _structure(0x42000F, *fields)
+
+    @classmethod
+    def _request_frame(
+        cls,
+        items: tuple[bytes, ...],
+        *,
+        ordered: bool = True,
+        declared_count: int = 2,
+    ) -> bytes:
+        version = _structure(
+            0x420069,
+            _item(0x42006A, 2, struct.pack(">i", 2)),
+            _item(0x42006B, 2, struct.pack(">i", 1)),
+        )
+        header_fields = [
+            version,
+            _item(0x420092, 9, struct.pack(">q", 1)),
+            _item(0x42000D, 2, struct.pack(">i", declared_count)),
+        ]
+        if ordered:
+            header_fields.append(_item(0x42000E, 6, b"\x01"))
+        header = _structure(0x420077, *header_fields)
+        body = header + b"".join(items)
+        return _item(0x420078, 1, body)
+
+    @classmethod
+    def _valid_request(cls) -> bytes:
+        create_payload = _item(0x420057, 5, struct.pack(">I", 2))
+        get_payload = _item(0x420094, 5, struct.pack(">I", 1))
+        return cls._request_frame(
+            (
+                cls._batch_item(1, create_payload),
+                cls._batch_item(10, get_payload),
+            )
+        )
+
+    def test_batch_parser_preserves_create_then_placeholder_get(self) -> None:
+        parser = getattr(responder, "_request_batch", None)
+        self.assertTrue(callable(parser), "fixture must parse every ordered batch item")
+        items, header = parser(self._valid_request())
+        self.assertEqual([operation for operation, _fields in items], [1, 10])
+        self.assertIn((0x42000D, 2, struct.pack(">i", 2)), header)
+        self.assertIn((0x42000E, 6, b"\x01"), header)
+
+    def test_placeholder_batch_rejects_unordered_or_non_placeholder_get(self) -> None:
+        validator = getattr(responder, "_validate_placeholder_batch", None)
+        self.assertTrue(callable(validator), "fixture must validate placeholder resolution")
+        items, header = responder._request_batch(self._valid_request())
+        validator(items, header)
+
+        unordered, unordered_header = responder._request_batch(
+            self._request_frame(
+                (
+                    self._batch_item(1, _item(0x420057, 5, struct.pack(">I", 2))),
+                    self._batch_item(10, _item(0x420094, 5, struct.pack(">I", 1))),
+                ),
+                ordered=False,
+            )
+        )
+        with self.assertRaisesRegex(RuntimeError, "Batch Order Option"):
+            validator(unordered, unordered_header)
+
+        wrong_identifier, wrong_header = responder._request_batch(
+            self._request_frame(
+                (
+                    self._batch_item(1, _item(0x420057, 5, struct.pack(">I", 2))),
+                    self._batch_item(10, _item(0x420094, 7, b"guessed-key-id")),
+                )
+            )
+        )
+        with self.assertRaisesRegex(RuntimeError, "ID Placeholder"):
+            validator(wrong_identifier, wrong_header)
+
+        reversed_items, reversed_header = responder._request_batch(
+            self._request_frame(
+                (
+                    self._batch_item(10, _item(0x420094, 5, struct.pack(">I", 1))),
+                    self._batch_item(1, _item(0x420057, 5, struct.pack(">I", 2))),
+                )
+            )
+        )
+        with self.assertRaisesRegex(RuntimeError, "Create.*Get"):
+            validator(reversed_items, reversed_header)
+
+    def test_batch_response_returns_created_identifier_for_both_items(self) -> None:
+        response_builder = getattr(responder, "_response_batch", None)
+        self.assertTrue(callable(response_builder), "fixture must encode a full batch response")
+        actual_identifier = b"server-created-batch-key"
+        frame = response_builder((1, 10), actual_identifier)
+        top_level = responder._children(frame[8:])
+        response_items = [
+            value
+            for tag, kind, value in top_level
+            if tag == 0x42000F and kind == 1
+        ]
+        self.assertEqual(len(response_items), 2)
+        decoded = [responder._children(item) for item in response_items]
+        self.assertEqual(
+            [
+                next(value for tag, kind, value in fields if tag == 0x42005C and kind == 5)
+                for fields in decoded
+            ],
+            [struct.pack(">I", 1), struct.pack(">I", 10)],
+        )
+        for fields in decoded:
+            payload = next(value for tag, kind, value in fields if tag == 0x42007C and kind == 1)
+            identifiers = [
+                value
+                for tag, kind, value in responder._flatten(responder._children(payload))
+                if tag == 0x420094 and kind == 7
+            ]
+            self.assertEqual(identifiers, [actual_identifier])
