@@ -96,6 +96,15 @@ class _CryptographicParametersFieldsV1(C.Structure):
     ]
 
 
+class _UniqueIdentifierV1(C.Structure):
+    _fields_ = [
+        ('struct_size', C.c_uint32), ('abi_version', C.c_uint32),
+        ('kind', C.c_uint32), ('reserved', C.c_uint32),
+        ('text_data', C.POINTER(C.c_uint8)), ('text_length', C.c_uint64),
+        ('enumeration_value', C.c_uint32), ('integer_value', C.c_int32),
+    ]
+
+
 class ModelCases:
     """Execute catalog-backed typed object constructors and item conversions."""
 
@@ -108,6 +117,79 @@ class ModelCases:
         if actual != expected:
             raise ValueError(failure_code)
         return actual
+
+    def _execute_modify_attribute_payload(self, target: dict) -> dict | None:
+        """Inspect the standalone C request payload against OASIS Table 247/265."""
+        operation_id = 'KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE'
+        if target.get('target_id') != operation_id and not target.get('target_id', '').startswith(
+                'KMIPKIT-PAYLOAD-CLIENT-MODIFY-ATTRIBUTE-REQUEST-'):
+            return None
+
+        self.abi.bind('kmipkit_modify_attribute_request_create', [
+            C.POINTER(_UniqueIdentifierV1), C.c_void_p, C.c_void_p, C.POINTER(C.c_void_p)])
+        self.abi.bind('kmipkit_modify_attribute_request_to_ttlv_payload',
+                      [C.c_void_p, C.POINTER(C.c_void_p)])
+        self.abi.library.kmipkit_modify_attribute_request_release.argtypes = [C.c_void_p]
+        self.abi.library.kmipkit_modify_attribute_request_release.restype = None
+
+        attribute_tag = self._tag('Attribute')
+        attribute_name_tag = self._tag('Attribute Name')
+        attribute_value_tag = self._tag('Attribute Value')
+        unique_identifier_tag = self._tag('Unique Identifier')
+        current_attribute_tag = self._tag('Current Attribute')
+        new_attribute_tag = self._tag('New Attribute')
+        payload_trees = []
+        self.abi.called.clear()
+
+        for include_optional_fields in (True, False):
+            limits, request, payload = C.c_void_p(), C.c_void_p(), C.c_void_p()
+            current_item, new_item = C.c_void_p(), C.c_void_p()
+            identifier_bytes = b'fixture-object-1'
+            identifier_buffer = (C.c_uint8 * len(identifier_bytes)).from_buffer_copy(identifier_bytes)
+            identifier = _UniqueIdentifierV1(
+                C.sizeof(_UniqueIdentifierV1), 1, 1, 0,
+                C.cast(identifier_buffer, C.POINTER(C.c_uint8)), len(identifier_bytes), 0, 0)
+            unique_pointer = C.byref(identifier) if include_optional_fields else None
+            try:
+                self.abi.call('kmipkit_codec_limits_defaults', C.byref(limits))
+                if include_optional_fields:
+                    current_tree = (attribute_tag, 1, [
+                        (attribute_name_tag, 7, b'Comment'), (attribute_value_tag, 7, b'old')])
+                    current_item = self.abi.construct(current_tree, limits)
+                new_tree = (attribute_tag, 1, [
+                    (attribute_name_tag, 7, b'Comment'), (attribute_value_tag, 7, b'new')])
+                new_item = self.abi.construct(new_tree, limits)
+                self.abi.call('kmipkit_modify_attribute_request_create', unique_pointer, current_item,
+                              new_item, C.byref(request))
+                self.abi.call('kmipkit_modify_attribute_request_to_ttlv_payload', request,
+                              C.byref(payload))
+                actual = [normalized(tree) for tree in self.abi.read_structure(payload)]
+                expected = []
+                if include_optional_fields:
+                    expected.extend([
+                        [unique_identifier_tag, 7, identifier_bytes.hex()],
+                        [current_attribute_tag, 1, [[attribute_tag, 1, [
+                            [attribute_name_tag, 7, b'Comment'.hex()],
+                            [attribute_value_tag, 7, b'old'.hex()]]]]],
+                    ])
+                expected.append([new_attribute_tag, 1, [[attribute_tag, 1, [
+                    [attribute_name_tag, 7, b'Comment'.hex()],
+                    [attribute_value_tag, 7, b'new'.hex()]]]]])
+                if actual != expected:
+                    raise ValueError('modify_attribute_payload_mismatch')
+                payload_trees.append(actual)
+            finally:
+                self.abi.release('ttlv_structure', payload)
+                self.abi.release('modify_attribute_request', request)
+                self.abi.release('ttlv_item', new_item)
+                self.abi.release('ttlv_item', current_item)
+                self.abi.release('codec_limits', limits)
+
+        present_names = {'Unique Identifier', 'Current Attribute', 'New Attribute'}
+        if target.get('kind') == 'operation_payload_field' and target.get('name') not in present_names:
+            return None
+        return {'sample_count': len(payload_trees), 'normalized_trees': payload_trees,
+                'tree_sha256': digest(payload_trees), 'invoked_symbols': set(self.abi.called)}
 
     def _execute_secret_ttlv_value(self, target: dict, symbol: str) -> dict | None:
         route = _SECRET_TTLV_ROUTE_FIXTURES.get(symbol)
@@ -831,6 +913,8 @@ class ModelCases:
 
     def execute(self, target: dict, protocol_version: str,
                 public_api_symbol: str | None = None) -> dict | None:
+        if public_api_symbol == 'kmipkit_modify_attribute_request_to_ttlv_payload':
+            return self._execute_modify_attribute_payload(target)
         if (target.get('kind') == 'object_type'
                 and _NAMED_OBJECT_CONSTRUCTORS.get(target.get('name')) == public_api_symbol):
             root = next((item for item in self.catalog['normative_targets']
