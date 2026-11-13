@@ -831,10 +831,8 @@ class ModelCases:
 
     def execute(self, target: dict, protocol_version: str,
                 public_api_symbol: str | None = None) -> dict | None:
-        object_constructor = _NAMED_OBJECT_CONSTRUCTORS.get(target.get('name'))
-        if (target.get('kind') == 'object_type' and object_constructor is not None
-                and public_api_symbol in {object_constructor, 'kmipkit_managed_object_from_fields',
-                                          'kmipkit_managed_object_from_item'}):
+        if (target.get('kind') == 'object_type'
+                and _NAMED_OBJECT_CONSTRUCTORS.get(target.get('name')) == public_api_symbol):
             root = next((item for item in self.catalog['normative_targets']
                          if item['kind'] == 'object_structure'
                          and item['name'] == target['name']), None)
