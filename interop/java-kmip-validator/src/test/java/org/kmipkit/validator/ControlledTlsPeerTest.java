@@ -322,6 +322,8 @@ class ControlledTlsPeerTest {
         ArrayNode events = mapper.createArrayNode();
         List<EnumerationFixture> enumerationFixtures = genericEnumerationFixtures();
         List<EnumerationFixture> localEnumerationFixtures = genericLocalEnumerationFixtures();
+        List<String> operationTargets = enumerationTargetIds(localEnumerationFixtures, "OPERATION");
+        assertEquals(60, operationTargets.size(), "The Operation aggregate must cover every catalogued value.");
         List<String> resultReasonTargets = enumerationTargetIds(localEnumerationFixtures, "RESULT-REASON");
         assertEquals(78, resultReasonTargets.size(),
                 "The Result Reason aggregate must cover every catalogued value.");
@@ -600,6 +602,8 @@ class ControlledTlsPeerTest {
         assertEquals(97, pkcs11ReturnCodeTargets.size(),
                 "The PKCS#11 Return Code aggregate must cover every value.");
         List<LocalEnumerationScope> additionalEnumerationScopes = List.of(
+                new LocalEnumerationScope("test-enum-operation", operationTargets,
+                        List.of("2.0", "2.1"), List.of()),
                 new LocalEnumerationScope("test-enum-result-reason", resultReasonTargets,
                         List.of("2.0", "2.1"), List.of()),
                 new LocalEnumerationScope("test-enum-recommended-curve", recommendedCurveTargets,
