@@ -1087,6 +1087,8 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(['Get', 'Get'], event['peer_observed_operation_sequence'])
         self.assertEqual(1, event['peer_observed_response_count'])
         self.assertEqual('response_received', event['request_delivery_state'])
+        from validate_route_evidence import _validate_batch_event
+        _validate_batch_event(event, case, self.catalog, ('batch-stop',))
         response = self.runner._network_tree(peers[0].responses[0], cell['encoding'])
         self.assertEqual(1, len(self.runner._tree_batch_operation_values(response)))
         self.assertEqual(['first_item_failed', 'second_item_not_executed'],
