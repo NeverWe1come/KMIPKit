@@ -25,7 +25,7 @@ ROOT = Path(__file__).resolve().parents[3]
 COVERAGE = ROOT / 'interop/shared/coverage'
 LANGUAGES = ('rust', 'c', 'java', 'python')
 ASYNC = {'cancel', 'poll', 'process', 'queryasyncrequests'}
-PINNED_SOURCE_COMMIT = '8281fef2e9ca211fde1e1d8e21525a672287eead'
+PINNED_SOURCE_COMMIT = '9a16cc90a12205101d22a38501a5e74c665df4dc'
 _RESPONSE_MESSAGE_EXTENSION_TARGETS = [
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION',
     'KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION',

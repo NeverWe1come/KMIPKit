@@ -33,13 +33,12 @@ construction and decoding is tested even when the package has no public
 generic-TTLV send operation.
 
 This contract covers independent consumers of installed packages built from
-one recorded exact immutable KMIPKit source commit shared by every language.
-The commit may be a release commit or a feature candidate when its route
-behavior must be validated before release integration. It does not modify
-library implementation code or add vendor extensions. Tests use generated
-requests/responses and controlled local KMIP peers until vendor KMS endpoints
-are available; those results must never be described as vendor
-interoperability evidence.
+the exact immutable `release/1.0.0` source commit recorded in the shared route
+manifest and used by every language. Feature candidates are not comparable
+release-matrix artifacts. It does not modify library implementation code or
+add vendor extensions. Tests use generated requests/responses and controlled
+local KMIP peers until vendor KMS endpoints are available; those results must
+never be described as vendor interoperability evidence.
 
 ## Normative and project references
 
@@ -68,7 +67,7 @@ interoperability evidence.
 | KMIPKIT-0092-FR-003 | Each operation, object, attribute, enumeration, bit mask, version boundary, negative case, batch/async workflow, and catalog edge case SHALL be exercised through every applicable construction route. Local generic TTLV cases SHALL construct, encode, decode, and compare values for each applicable public API route. |
 | KMIPKIT-0092-FR-004 | For equivalent deterministic inputs, validators SHALL compare normalized KMIP request and response trees across construction routes and languages. They SHALL preserve ordered batch items and numeric Result Status/Reason codes. Exact bytes SHALL be compared only when inputs and encoding are identical and deterministic. |
 | KMIPKIT-0092-FR-005 | Controlled peers SHALL parse requests and return checked, case-specific responses for every supported route/encoding/transport matrix cell. Tests SHALL verify response shape and observable state, including batch outcomes, persisted attributes, retrieval, cryptographic results, and teardown where applicable. |
-| KMIPKIT-0092-FR-006 | Every validator SHALL consume an installed package built from the same recorded exact immutable KMIPKit source commit for a comparable cross-language matrix; reports SHALL retain the artifact digest and all execution axes. The common commit MAY be a release commit or a feature candidate under validation. |
+| KMIPKIT-0092-FR-006 | Every validator SHALL consume an installed package built from the exact immutable `release/1.0.0` source commit recorded by the shared route manifest for a comparable cross-language matrix; reports SHALL retain the artifact digest and all execution axes. Feature candidates SHALL NOT be used as comparable release-matrix artifacts. |
 | KMIPKIT-0092-FR-007 | Shared schemas and aggregation SHALL retain construction route, encoding, transport, protocol version, case identity, and artifact provenance, and SHALL report missing coverage separately from library failures and observed server compatibility. |
 | KMIPKIT-0092-FR-008 | Results and diagnostics SHALL exclude credentials, private keys, secret key material, raw KMIP bodies, remote error text, and unredacted cryptographic values. Controlled fixture results SHALL NOT imply vendor support or certification. |
 | KMIPKIT-0092-FR-009 | Public API limitations SHALL be explicit and source-backed. A limitation is valid only when the exact installed public artifact lacks the required constructor, encoder, decoder, or send route; an unfinished validator recipe is pending coverage and SHALL fail the completeness gate. |
