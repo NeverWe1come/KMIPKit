@@ -9,6 +9,16 @@ from pathlib import Path
 import sys
 
 
+def _resolve_target_artifact(path_value: str, role: str, target_root: Path) -> Path:
+    """Resolve a Cargo artifact and ensure it stays inside its build directory."""
+    path = Path(path_value).resolve()
+    if not path.is_relative_to(target_root):
+        raise ValueError(
+            f"Required {role} coverage object is outside the Cargo target directory"
+        )
+    return path
+
+
 def coverage_objects(manifest: Iterable[str], target_root: Path) -> list[Path]:
     """Resolve exact Cargo artifacts constrained to the configured target tree."""
     target_root = target_root.resolve()
@@ -31,12 +41,9 @@ def coverage_objects(manifest: Iterable[str], target_root: Path) -> list[Path]:
                 "operation_parity_0053": "parity",
             }.get(name)
             if role and message.get("executable"):
-                path = Path(message["executable"]).resolve()
-                if not path.is_relative_to(target_root):
-                    raise ValueError(
-                        f"Required {role} coverage object is outside the Cargo target directory"
-                    )
-                objects[role].add(path)
+                objects[role].add(
+                    _resolve_target_artifact(message["executable"], role, target_root)
+                )
         elif name == "kmipkit_ffi":
             for filename in message["filenames"]:
                 path = Path(filename).resolve()
@@ -45,11 +52,7 @@ def coverage_objects(manifest: Iterable[str], target_root: Path) -> list[Path]:
                     "libkmipkit_ffi.a": "staticlib",
                 }.get(path.name)
                 if role:
-                    if not path.is_relative_to(target_root):
-                        raise ValueError(
-                            f"Required {role} coverage object is outside the Cargo target directory"
-                        )
-                    objects[role].add(path)
+                    objects[role].add(_resolve_target_artifact(filename, role, target_root))
     result = []
     for role, paths in objects.items():
         if len(paths) != 1:
