@@ -36,7 +36,8 @@ def response(operations: tuple[int, ...], protocol_minor: int,
              selected_attribute_wire: bytes | None = None,
              unique_batch_item_ids: tuple[bytes, ...] | None = None,
              result_statuses: tuple[int, ...] | None = None,
-             result_reasons: tuple[int | None, ...] | None = None) -> bytes:
+             result_reasons: tuple[int | None, ...] | None = None,
+             rng_length: int = 16) -> bytes:
     version = tlv(0x420069, 1,
                   integer(0x42006A, 2) + integer(0x42006B, protocol_minor))
     header = tlv(
@@ -92,9 +93,9 @@ def response(operations: tuple[int, ...], protocol_minor: int,
         elif operation == 39:
             payload_value = tlv(0x4200C2, 8, hashlib.sha256(b"abc").digest())
         elif operation == 37:
-            payload_value = tlv(0x4200C2, 8, bytes(range(16)))
+            payload_value = tlv(0x4200C2, 8, bytes(range(rng_length)))
         elif operation == 38:
-            payload_value = integer(0x4200C4, 16)
+            payload_value = integer(0x4200C4, rng_length)
         elif operation == 45:
             payload_value = tlv(
                 0x420149,
@@ -261,10 +262,16 @@ def main() -> int:
               "test-obj-symmetric-key", "test-obj-private-key", "test-obj-public-key")
     )
     expected_operations += (37, 38, 39)
+    expected_operations += (39, 37, 38)
     expected_operations += (1, 18, 12, 19, 20)
     expected_operations += (1, 18, 10, 19, 20)
     expected_operations += (10, 12, 10, 12, 10, 12, 10, 12)
     expected_cases += ("test-op-hash", "test-op-rng-retrieve", "test-op-rng-seed")
+    expected_cases += (
+        "test-crypto-hash-sha_256-0",
+        "test-crypto-rng-retrieve-rng-32",
+        "test-crypto-rng-seed-rng-32",
+    )
     expected_cases += ("test-neg-destroy-active-without-revoke",)
     expected_cases += ("test-batch-create-activate-destroy",)
     expected_cases += ("test-batch-placeholder-chain-resolves",)
@@ -482,7 +489,9 @@ def main() -> int:
                                 4 if private_key_create else 3 if public_key_create else 2,
                                 unique_batch_item_ids=response_item_ids,
                                 result_statuses=response_statuses,
-                                result_reasons=response_reasons))
+                                result_reasons=response_reasons,
+                                rng_length=32 if integer(0x4200C4, 32) in request or
+                                tlv(0x4200C2, 8, bytes(range(32))) in request else 16))
                             handled += len(operations)
                             handled_operations.extend(operations)
                             handled_batches.append(operations)

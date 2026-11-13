@@ -253,8 +253,11 @@ def tree_digest(node):
 
 RECIPES = {
     'test-op-hash': ((39,), 'hash'),
+    'test-crypto-hash-sha_256-0': ((39,), 'hash'),
     'test-op-rng-retrieve': ((37,), 'rng_retrieve'),
+    'test-crypto-rng-retrieve-rng-32': ((37,), 'rng_retrieve'),
     'test-op-rng-seed': ((38,), 'rng_seed'),
+    'test-crypto-rng-seed-rng-32': ((38,), 'rng_seed'),
     'test-v20-reject-get-constraints': ((56,), 'get_constraints'),
     'test-op-create': ((1, 20), 'create'),
     'test-batch-create-activate-destroy': ((1, 18, 12, 19, 20), 'create_activate_attribute_list_revoke_destroy'),
@@ -435,12 +438,13 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None):
         raise ValueError('fixture_locate_bound_missing')
     if case_id == 'test-op-log' and not list(descendants(node, 0x420141)):
         raise ValueError('fixture_log_message_missing')
-    if case_id == 'test-op-hash':
+    if selected_recipe[1] == 'hash':
         if numbers(node, 0x420038) != [6] or [item[2] for item in descendants(node, 0x4200C2)] != [b'abc']:
             raise ValueError('fixture_hash_input_mismatch')
-    if case_id == 'test-op-rng-retrieve' and numbers(node, 0x4200C4) != [16]:
+    expected_rng_length = 32 if case_id.endswith('-rng-32') else 16
+    if selected_recipe[1] == 'rng_retrieve' and numbers(node, 0x4200C4) != [expected_rng_length]:
         raise ValueError('fixture_rng_length_mismatch')
-    if case_id == 'test-op-rng-seed' and [item[2] for item in descendants(node, 0x4200C2)] != [bytes(range(16))]:
+    if selected_recipe[1] == 'rng_seed' and [item[2] for item in descendants(node, 0x4200C2)] != [bytes(range(expected_rng_length))]:
         raise ValueError('fixture_rng_seed_mismatch')
 
 
@@ -878,7 +882,11 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         response_wire = response(
                                             response_operations, int(version[-1]), selected_tag, object_type,
                                             attribute_fixture['attribute_response_wire'] if attribute_fixture else None,
-                                            response_item_ids, response_statuses, response_reasons)
+                                            response_item_ids, response_statuses, response_reasons,
+                                            rng_length=(numbers(request_tree, 0x4200C4) or [16])[0]
+                                            if recipe[1] == 'rng_retrieve' else
+                                            len(byte_string_values(request_tree, 0x4200C2)[0])
+                                            if recipe[1] == 'rng_seed' else 16)
                                         response_tree = parse(response_wire)
                                         if placeholder_chain_recipe:
                                             verify_placeholder_chain_response(response_tree, response_operations)

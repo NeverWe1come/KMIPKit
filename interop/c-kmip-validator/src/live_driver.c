@@ -1620,9 +1620,14 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
            !test_case->certificate_object_path[0])))) {
         return outcome_failed("read-back attribute fixture metadata is invalid");
     }
-    bool hash_workflow = strcmp(test_case->case_id, "test-op-hash") == 0;
-    bool rng_retrieve_workflow = strcmp(test_case->case_id, "test-op-rng-retrieve") == 0;
-    bool rng_seed_workflow = strcmp(test_case->case_id, "test-op-rng-seed") == 0;
+    bool hash_workflow = strcmp(test_case->case_id, "test-op-hash") == 0 ||
+        strcmp(test_case->case_id, "test-crypto-hash-sha_256-0") == 0;
+    bool rng_retrieve_workflow = strcmp(test_case->case_id, "test-op-rng-retrieve") == 0 ||
+        strcmp(test_case->case_id, "test-crypto-rng-retrieve-rng-32") == 0;
+    bool rng_seed_workflow = strcmp(test_case->case_id, "test-op-rng-seed") == 0 ||
+        strcmp(test_case->case_id, "test-crypto-rng-seed-rng-32") == 0;
+    uint32_t rng_length = strcmp(test_case->case_id, "test-crypto-rng-retrieve-rng-32") == 0 ||
+        strcmp(test_case->case_id, "test-crypto-rng-seed-rng-32") == 0 ? 32U : 16U;
     bool get_attributes_workflow = strcmp(test_case->case_id, "test-op-get-attributes") == 0 ||
         cryptographic_algorithm_attribute_workflow || cryptographic_length_attribute_workflow ||
         read_back_attribute_workflow;
@@ -1761,10 +1766,13 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         if (status == 0) status = kmipkit_ttlv_value_byte_string(client->limits, input, sizeof(input), &request_data);
         if (status == 0) status = kmipkit_client_batch_item_hash(request_attributes, request_data, NULL, 0, 0, &item);
     } else if (rng_retrieve_workflow) {
-        status = kmipkit_client_batch_item_rng_retrieve(16, &item);
+        status = kmipkit_client_batch_item_rng_retrieve(rng_length, &item);
     } else if (rng_seed_workflow) {
-        static const uint8_t seed[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
-        const kmipkit_byte_span_v1_t span = {.data = seed, .length = sizeof(seed)};
+        static const uint8_t seed[] = {
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31
+        };
+        const kmipkit_byte_span_v1_t span = {.data = seed, .length = rng_length};
         status = kmipkit_client_batch_item_rng_seed(&span, &item);
     } else if (single_item_batch_options_workflow) {
         static const uint8_t fixture_identifier[] = "fixture-key-1";
@@ -2610,7 +2618,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             if (valid) status = kmipkit_client_batch_item_response_hash_ttlv(response_item, &present, &response_attributes);
         } else if (rng_retrieve_workflow) {
             status = kmipkit_client_batch_item_response_rng_retrieve(response_item, &present, &data_present, &data);
-            valid = status == 0 && present && data_present && data.data && data.length == 16;
+            valid = status == 0 && present && data_present && data.data && data.length == rng_length;
             for (uint64_t index = 0; valid && index < data.length; ++index) {
                 valid = data.data[index] == (uint8_t)index;
             }
@@ -2618,7 +2626,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         } else {
             int32_t data_length = 0;
             status = kmipkit_client_batch_item_response_rng_seed(response_item, &present, &data_present, &data_length);
-            valid = status == 0 && present && data_present && data_length == 16;
+            valid = status == 0 && present && data_present && data_length == (int32_t)rng_length;
             if (valid) status = kmipkit_client_batch_item_response_rng_seed_ttlv(response_item, &present, &response_attributes);
         }
         if (!valid || status != 0 || !present || !response_attributes) {
