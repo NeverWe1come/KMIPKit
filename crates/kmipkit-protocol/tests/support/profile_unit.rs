@@ -15684,7 +15684,7 @@ fn readiness_records_classify_duplicates_and_unknown_ids() {
             .contains(&ProfileReadinessBlocker::UnknownRequirementRecord)
     );
     assert!(
-        readiness
+        !readiness
             .blockers()
             .contains(&ProfileReadinessBlocker::RuntimeValidationUnavailable)
     );
@@ -15694,7 +15694,7 @@ fn readiness_records_classify_duplicates_and_unknown_ids() {
             .contains(&ProfileReadinessBlocker::UnknownRequirementRecord)
     );
     assert!(readiness.target_selected());
-    assert!(!readiness.runtime_validation_available());
+    assert!(readiness.runtime_validation_available());
     assert!(
         readiness
             .blockers()
@@ -15739,7 +15739,7 @@ fn readiness_blocks_conditional_out_of_scope_and_dependent_profiles() {
 
     let dependent = ProfileReadiness::evaluate("KMIPKIT-PROFILE-AES-XTS-CLIENT", &[])
         .expect("generated AES-XTS Client resolves");
-    assert!(dependent.blockers().contains(
+    assert!(!dependent.blockers().contains(
         &ProfileReadinessBlocker::DependencyEvidenceIncomplete {
             profile_id: "KMIPKIT-PROFILE-BASELINE-CLIENT"
         }

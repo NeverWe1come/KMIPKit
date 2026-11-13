@@ -10,6 +10,7 @@ from kmipkit import (
     extensions,
     managed_objects,
     messages,
+    protocol_values,
     ttlv,
     typed_attributes,
     validation,
@@ -60,6 +61,20 @@ def _demo_authentication(limits: ttlv.CodecLimits) -> credentials.Authentication
     envelope = _append(envelope, 0x0042_0024, ttlv.ttlv_value_enumeration(1), limits)
     envelope = _append(envelope, 0x0042_0025, ttlv.ttlv_value_structure(value, limits), limits)
     return credentials.Authentication.create([credentials.Credential.from_ttlv(envelope)])
+
+
+def _aes_gcm_parameters() -> cryptographic_parameters.CryptographicParameters:
+    builder = cryptographic_parameters.CryptographicParameters.builder()
+    try:
+        return (
+            builder.cryptographic_algorithm(protocol_values.CryptographicAlgorithm.AES)
+            .block_cipher_mode(protocol_values.BlockCipherMode.GCM)
+            .iv_length(96)
+            .tag_length(16)
+            .build()
+        )
+    finally:
+        builder.close()
 
 
 def main() -> None:
@@ -152,6 +167,281 @@ def main() -> None:
                         raw.close()
                 finally:
                     result.close()
+
+            lifecycle_results: list[client.BatchResult] = []
+            try:
+                created = (
+                    kmip_client.request()
+                    .create_symmetric_key()
+                    .aes_256()
+                    .usage_mask(
+                        protocol_values.CryptographicUsageMask.ENCRYPT
+                        | protocol_values.CryptographicUsageMask.DECRYPT
+                    )
+                    .name("fluent-key")
+                    .execute(limits)
+                )
+                lifecycle_results.append(created)
+                create_item = created.items[0]
+                assert create_item.operation == protocol_values.Operation.CREATE
+                assert create_item.outcome is client.BatchOutcome.COMPLETED
+                assert create_item.result_status == 0
+                assert create_item.create_object_type == 2
+                identifier = create_item.unique_identifier
+                assert identifier == extensions.UniqueIdentifier.text_string("fluent-key")
+
+                retrieved = kmip_client.request().get(identifier).execute(limits)
+                lifecycle_results.append(retrieved)
+                get_item = retrieved.items[0]
+                assert get_item.operation == protocol_values.Operation.GET
+                assert get_item.outcome is client.BatchOutcome.COMPLETED
+                assert get_item.result_status == 0
+                get_response = get_item.get_response()
+                assert get_response is not None
+                assert get_response.unique_identifier == identifier
+                assert get_response.object is not None
+
+                plaintext = b"fluent plaintext"
+                nonce = b"nonce-12byte"
+                additional_data = b"fluent context"
+                with _aes_gcm_parameters() as parameters:
+                    encrypted = (
+                        kmip_client.request()
+                        .encrypt()
+                        .unique_identifier(identifier)
+                        .cryptographic_parameters(parameters)
+                        .data(plaintext)
+                        .iv_counter_nonce(nonce)
+                        .authenticated_encryption_additional_data(additional_data)
+                        .execute(limits)
+                    )
+                lifecycle_results.append(encrypted)
+                encrypt_item = encrypted.items[0]
+                assert encrypt_item.operation == protocol_values.Operation.ENCRYPT
+                assert encrypt_item.outcome is client.BatchOutcome.COMPLETED
+                assert encrypt_item.result_status == 0
+                encrypt_response = encrypt_item.encrypt_response
+                assert encrypt_response is not None
+                assert encrypt_response.unique_identifier == identifier
+                ciphertext = encrypt_response.data
+                response_nonce = encrypt_response.iv_counter_nonce
+                authentication_tag = encrypt_response.authenticated_encryption_tag
+                assert ciphertext == b"fixture ciphertext"
+                assert response_nonce == nonce
+                assert authentication_tag == b"fixture-auth-tag"
+
+                with _aes_gcm_parameters() as parameters:
+                    decrypted = (
+                        kmip_client.request()
+                        .decrypt()
+                        .unique_identifier(identifier)
+                        .cryptographic_parameters(parameters)
+                        .data(ciphertext)
+                        .iv_counter_nonce(response_nonce)
+                        .authenticated_encryption_additional_data(additional_data)
+                        .authenticated_encryption_tag(authentication_tag)
+                        .execute(limits)
+                    )
+                lifecycle_results.append(decrypted)
+                decrypt_item = decrypted.items[0]
+                assert decrypt_item.operation == protocol_values.Operation.DECRYPT
+                assert decrypt_item.outcome is client.BatchOutcome.COMPLETED
+                assert decrypt_item.result_status == 0
+                decrypt_response = decrypt_item.decrypt_response
+                assert decrypt_response is not None
+                assert decrypt_response.unique_identifier == identifier
+                assert decrypt_response.data == plaintext
+
+                destroyed = kmip_client.request().destroy(identifier).execute(limits)
+                lifecycle_results.append(destroyed)
+                destroy_item = destroyed.items[0]
+                assert destroy_item.operation == protocol_values.Operation.DESTROY
+                assert destroy_item.outcome is client.BatchOutcome.COMPLETED
+                assert destroy_item.result_status == 0
+                destroy_response = destroy_item.destroy_response
+                assert destroy_response is not None
+                assert destroy_response.unique_identifier == identifier
+                print("python: fluent AES-GCM Create/Get/Encrypt/Decrypt/Destroy verified over TLS 1.3/mTLS")
+
+                paired = (
+                    kmip_client.request()
+                    .create_key_pair()
+                    .algorithm(protocol_values.CryptographicAlgorithm.ECDSA)
+                    .length(256)
+                    .private_usage_mask(protocol_values.CryptographicUsageMask.SIGN)
+                    .public_usage_mask(protocol_values.CryptographicUsageMask.VERIFY)
+                    .private_name("fluent-private-key")
+                    .public_name("fluent-public-key")
+                    .execute(limits)
+                )
+                lifecycle_results.append(paired)
+                pair_item = paired.items[0]
+                assert pair_item.operation == protocol_values.Operation.CREATE_KEY_PAIR
+                assert pair_item.outcome is client.BatchOutcome.COMPLETED
+                assert pair_item.result_status == 0
+                private_identifier = pair_item.private_key_unique_identifier
+                public_identifier = pair_item.public_key_unique_identifier
+                assert private_identifier == extensions.UniqueIdentifier.text_string(
+                    "fluent-private-key"
+                )
+                assert public_identifier == extensions.UniqueIdentifier.text_string(
+                    "fluent-public-key"
+                )
+
+                with cryptographic_parameters.CryptographicParameters.builder() as builder:
+                    with builder.hashing_algorithm(
+                        protocol_values.HashingAlgorithm.SHA_256
+                    ).digital_signature_algorithm(
+                        protocol_values.DigitalSignatureAlgorithm.ECDSA_WITH_SHA256
+                    ).build() as parameters:
+                        signed = (
+                            kmip_client.request()
+                            .sign()
+                            .unique_identifier(private_identifier)
+                            .cryptographic_parameters(parameters)
+                            .data(b"fluent sign input")
+                            .execute(limits)
+                        )
+                lifecycle_results.append(signed)
+                sign_item = signed.items[0]
+                assert sign_item.operation == protocol_values.Operation.SIGN
+                assert sign_item.outcome is client.BatchOutcome.COMPLETED
+                assert sign_item.result_status == 0
+                sign_response = sign_item.sign_response
+                assert sign_response is not None
+                signature = bytearray()
+                try:
+                    signature = bytearray(sign_response.signature_data or b"")
+                    assert sign_response.unique_identifier == private_identifier
+                    assert signature == b"fixture signature"
+                finally:
+                    for offset in range(len(signature)):
+                        signature[offset] = 0
+                    sign_response.response_ttlv.close()
+
+                for key_identifier in (private_identifier, public_identifier):
+                    destroyed_key = (
+                        kmip_client.request().destroy(key_identifier).execute(limits)
+                    )
+                    lifecycle_results.append(destroyed_key)
+                    destroyed_item = destroyed_key.items[0]
+                    assert destroyed_item.operation == protocol_values.Operation.DESTROY
+                    assert destroyed_item.outcome is client.BatchOutcome.COMPLETED
+                    assert destroyed_item.result_status == 0
+                    destroy_response = destroyed_item.destroy_response
+                    assert destroy_response is not None
+                    assert destroy_response.unique_identifier == key_identifier
+                print(
+                    "python: fluent ECDSA key pair, Sign, and Destroy verified over TLS 1.3/mTLS"
+                )
+
+                with ttlv.ttlv_value_text_string(b"fluent expert journey", limits) as vendor_value:
+                    vendor_value_item = _item(0x0054_0001, vendor_value, limits)
+                    try:
+                        with kmip_client.request().create_symmetric_key() as builder:
+                            expert_created = (
+                                builder.aes_256()
+                                .usage_mask(
+                                    protocol_values.CryptographicUsageMask.ENCRYPT
+                                    | protocol_values.CryptographicUsageMask.DECRYPT
+                                )
+                                .name("fluent-expert-key")
+                                .add_vendor_attribute(
+                                    "KMIPKit.Example", "purpose", vendor_value_item
+                                )
+                                .execute(limits)
+                            )
+                        lifecycle_results.append(expert_created)
+                    finally:
+                        vendor_value_item.close()
+
+                expert_create_item = expert_created.items[0]
+                assert expert_create_item.operation == protocol_values.Operation.CREATE
+                assert expert_create_item.outcome is client.BatchOutcome.COMPLETED
+                assert expert_create_item.result_status == 0
+                assert expert_create_item.create_object_type == 2
+                expert_identifier = expert_create_item.unique_identifier
+                assert expert_identifier == extensions.UniqueIdentifier.text_string(
+                    "fluent-expert-key"
+                )
+
+                expert_retrieved = kmip_client.request().get(expert_identifier).execute(limits)
+                lifecycle_results.append(expert_retrieved)
+                expert_get_item = expert_retrieved.items[0]
+                assert expert_get_item.operation == protocol_values.Operation.GET
+                assert expert_get_item.outcome is client.BatchOutcome.COMPLETED
+                assert expert_get_item.result_status == 0
+                expert_get_response = expert_get_item.get_response()
+                assert expert_get_response is not None
+                try:
+                    assert expert_get_response.unique_identifier == expert_identifier
+                    assert expert_get_response.object is not None
+                finally:
+                    expert_get_response.close()
+
+                expert_destroyed = kmip_client.request().destroy(expert_identifier).execute(limits)
+                lifecycle_results.append(expert_destroyed)
+                expert_destroy_item = expert_destroyed.items[0]
+                assert expert_destroy_item.operation == protocol_values.Operation.DESTROY
+                assert expert_destroy_item.outcome is client.BatchOutcome.COMPLETED
+                assert expert_destroy_item.result_status == 0
+                expert_destroy_response = expert_destroy_item.destroy_response
+                assert expert_destroy_response is not None
+                assert expert_destroy_response.unique_identifier == expert_identifier
+                print(
+                    "python: fluent Vendor Attribute Create/Get/Destroy verified over TLS 1.3/mTLS"
+                )
+
+                with client.Batch.create() as batch:
+                    batch.set_ordered(True)
+                    with kmip_client.request().create_symmetric_key() as builder:
+                        batch.add_item(
+                            extensions.with_unique_batch_item_id(
+                                builder.aes_256()
+                                .usage_mask(
+                                    protocol_values.CryptographicUsageMask.ENCRYPT
+                                    | protocol_values.CryptographicUsageMask.DECRYPT
+                                )
+                                .name("fluent-batch-key")
+                                .build(),
+                                b"fluent-batch-create",
+                            )
+                        )
+                    batch.add_item(
+                        extensions.with_unique_batch_item_id(
+                            extensions.client_batch_item_get(), b"fluent-batch-get"
+                        )
+                    )
+                    batched = kmip_client.execute(batch, limits)
+                lifecycle_results.append(batched)
+
+                assert len(batched.items) == 2
+                batch_create_item, batch_get_item = batched.items
+                assert batch_create_item.operation == protocol_values.Operation.CREATE
+                assert batch_create_item.outcome is client.BatchOutcome.COMPLETED
+                assert batch_create_item.result_status == 0
+                assert batch_create_item.create_object_type == 2
+                batch_identifier = batch_create_item.unique_identifier
+                assert batch_identifier == extensions.UniqueIdentifier.text_string(
+                    "fluent-batch-key"
+                )
+
+                assert batch_get_item.operation == protocol_values.Operation.GET
+                assert batch_get_item.outcome is client.BatchOutcome.COMPLETED
+                assert batch_get_item.result_status == 0
+                batch_get_response = batch_get_item.get_response()
+                assert batch_get_response is not None
+                try:
+                    assert batch_get_response.unique_identifier == batch_identifier
+                    assert batch_get_response.object is not None
+                finally:
+                    batch_get_response.close()
+                print(
+                    "python: fluent ordered batch Create/Get with ID Placeholder verified over TLS 1.3/mTLS"
+                )
+            finally:
+                for lifecycle_result in lifecycle_results:
+                    lifecycle_result.close()
 
 if __name__ == "__main__":
     main()

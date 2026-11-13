@@ -99,6 +99,10 @@ mod key_transfer_operations_execution_tests;
 mod kmip30_operation_surface_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/wave3_batch_surface_unit_tests.rs"]
+mod wave3_batch_surface_unit_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/execute_id_placeholder_tests.rs"]
 mod id_placeholder_tests;
 
@@ -232,11 +236,13 @@ const ASYNCHRONOUS_MANDATORY: u32 = 1;
 const ASYNCHRONOUS_OPTIONAL: u32 = 2;
 const ASYNCHRONOUS_PROHIBITED: u32 = 3;
 const BATCH_ERROR_CONTINUATION_STOP: u32 = 2;
+const BATCH_ERROR_CONTINUATION_UNDO: u32 = 3;
 const ENUMERATION_EXTENSION_MIN: u32 = 0x8000_0000;
 const ENUMERATION_EXTENSION_MAX: u32 = 0x8fff_ffff;
 // KMIP v2.1 §11.58, Table 489 assigns Enumeration 1 to ID Placeholder.
 const ID_PLACEHOLDER_ENUMERATION_VALUE: u32 = 1;
 const RESULT_STATUS_PENDING: u32 = 2;
+const RESULT_STATUS_OPERATION_FAILED: u32 = 1;
 
 /// An opt-in KMIP 3.0 Working Draft operation exposed through generic TTLV.
 ///
@@ -393,6 +399,14 @@ pub enum ClientRequest {
     RngSeed(RngSeedRequest),
     /// An explicit client-to-server Set Endpoint Role request (§6.1.54).
     SetEndpointRole(SetEndpointRoleRequest),
+    /// An explicit client-to-server Cancel request (§6.1.5).
+    Cancel(CancelRequest),
+    /// An explicit client-to-server Poll request (§6.1.38).
+    Poll(PollRequest),
+    /// An explicit client-to-server Process request (§6.1.39).
+    Process(ProcessRequest),
+    /// An explicit client-to-server Query Asynchronous Requests request (§6.1.41).
+    QueryAsynchronousRequests(QueryAsyncRequestsRequest),
     /// An explicit KMIP 3.0 Create Group request.
     CreateGroup(CreateGroupRequest),
     /// An explicit KMIP 3.0 Obliterate request.
@@ -467,6 +481,30 @@ impl ClientRequest {
     #[must_use]
     pub fn set_endpoint_role(request: SetEndpointRoleRequest) -> Self {
         Self::SetEndpointRole(request)
+    }
+
+    /// Creates an explicit client-to-server Cancel request variant.
+    #[must_use]
+    pub fn cancel(request: CancelRequest) -> Self {
+        Self::Cancel(request)
+    }
+
+    /// Creates an explicit client-to-server Poll request variant.
+    #[must_use]
+    pub fn poll(request: PollRequest) -> Self {
+        Self::Poll(request)
+    }
+
+    /// Creates an explicit client-to-server Process request variant.
+    #[must_use]
+    pub fn process(request: ProcessRequest) -> Self {
+        Self::Process(request)
+    }
+
+    /// Creates an explicit client-to-server Query Asynchronous Requests request variant.
+    #[must_use]
+    pub fn query_async_requests(request: QueryAsyncRequestsRequest) -> Self {
+        Self::QueryAsynchronousRequests(request)
     }
 
     /// Creates the KMIP 2.1 Discover Versions request variant.
@@ -818,6 +856,10 @@ impl ClientRequest {
             Self::RngRetrieve(_) => RNG_RETRIEVE_OPERATION,
             Self::RngSeed(_) => RNG_SEED_OPERATION,
             Self::SetEndpointRole(_) => SET_ENDPOINT_ROLE_OPERATION,
+            Self::Cancel(_) => CANCEL_OPERATION,
+            Self::Poll(_) => POLL_OPERATION,
+            Self::Process(_) => PROCESS_OPERATION,
+            Self::QueryAsynchronousRequests(_) => QUERY_ASYNCHRONOUS_REQUESTS_OPERATION,
             Self::CreateGroup(_) => CREATE_GROUP_OPERATION,
             Self::Obliterate(_) => OBLITERATE_OPERATION,
             Self::CreateUser(_) => CREATE_USER_OPERATION,
@@ -917,7 +959,11 @@ impl ClientRequest {
             // Set Endpoint Role is deferred to 1.1. Its typed constructor
             // includes the required Endpoint Role, and the open Enumeration
             // must preserve future and vendor values.
-            Self::CreateGroup(_)
+            Self::Cancel(_)
+            | Self::Poll(_)
+            | Self::Process(_)
+            | Self::QueryAsynchronousRequests(_)
+            | Self::CreateGroup(_)
             | Self::Obliterate(_)
             | Self::CreateUser(_)
             | Self::CreateCredential(_)
@@ -1095,6 +1141,10 @@ impl ClientRequest {
             Self::RngRetrieve(request) => request.to_ttlv_payload(),
             Self::RngSeed(request) => request.to_ttlv_payload(),
             Self::SetEndpointRole(request) => request.to_ttlv_payload(),
+            Self::Cancel(request) => request.to_ttlv_payload(),
+            Self::Poll(request) => request.to_ttlv_payload(),
+            Self::Process(request) => request.to_ttlv_payload(),
+            Self::QueryAsynchronousRequests(request) => request.to_ttlv_payload(),
             Self::CreateGroup(request) => request
                 .into_ttlv_payload()
                 .map_err(|_| protocol_error(ProtocolErrorKind::InvalidValue)),
@@ -1214,6 +1264,12 @@ impl fmt::Debug for ClientRequest {
                 .debug_tuple("SetEndpointRole")
                 .field(request)
                 .finish(),
+            Self::Cancel(_) => formatter.write_str("Cancel([REDACTED])"),
+            Self::Poll(_) => formatter.write_str("Poll([REDACTED])"),
+            Self::Process(_) => formatter.write_str("Process([REDACTED])"),
+            Self::QueryAsynchronousRequests(_) => {
+                formatter.write_str("QueryAsynchronousRequests([REDACTED])")
+            }
             Self::CreateGroup(request) => debug_kmip30_request(formatter, "CreateGroup", request),
             Self::Obliterate(request) => debug_kmip30_request(formatter, "Obliterate", request),
             Self::CreateUser(request) => debug_kmip30_request(formatter, "CreateUser", request),
@@ -1371,6 +1427,72 @@ impl ClientBatchItem {
     #[must_use]
     pub fn set_endpoint_role(request: SetEndpointRoleRequest) -> Self {
         Self::new(ClientRequest::set_endpoint_role(request))
+    }
+
+    /// Creates a batch item for one typed Cancel request (§6.1.5).
+    #[must_use]
+    pub fn cancel(request: CancelRequest) -> Self {
+        Self::new(ClientRequest::cancel(request))
+    }
+
+    /// Creates a batch item for one typed Poll request (§6.1.38).
+    #[must_use]
+    pub fn poll(request: PollRequest) -> Self {
+        Self::new(ClientRequest::poll(request))
+    }
+
+    /// Creates a batch item for one typed Process request (§6.1.39).
+    #[must_use]
+    pub fn process(request: ProcessRequest) -> Self {
+        Self::new(ClientRequest::process(request))
+    }
+
+    /// Creates a batch item for one typed Query Asynchronous Requests request (§6.1.41).
+    #[must_use]
+    pub fn query_async_requests(request: QueryAsyncRequestsRequest) -> Self {
+        Self::new(ClientRequest::query_async_requests(request))
+    }
+
+    /// Creates a batch item for one typed KMIP 3.0 Create Group request.
+    #[must_use]
+    pub fn create_group(request: CreateGroupRequest) -> Self {
+        Self::new(ClientRequest::create_group(request))
+    }
+
+    /// Creates a batch item for one typed KMIP 3.0 Obliterate request.
+    #[must_use]
+    pub fn obliterate(request: ObliterateRequest) -> Self {
+        Self::new(ClientRequest::obliterate(request))
+    }
+
+    /// Creates a batch item for one typed KMIP 3.0 Create User request.
+    #[must_use]
+    pub fn create_user(request: CreateUserRequest) -> Self {
+        Self::new(ClientRequest::create_user(request))
+    }
+
+    /// Creates a batch item for one typed KMIP 3.0 Create Credential request.
+    #[must_use]
+    pub fn create_credential(request: CreateCredentialRequest) -> Self {
+        Self::new(ClientRequest::create_credential(request))
+    }
+
+    /// Creates a batch item for one typed KMIP 3.0 Deactivate request.
+    #[must_use]
+    pub fn deactivate(request: DeactivateRequest) -> Self {
+        Self::new(ClientRequest::deactivate(request))
+    }
+
+    /// Creates a batch item for one typed KMIP 3.0 Encapsulate request.
+    #[must_use]
+    pub fn encapsulate(request: EncapsulateRequest) -> Self {
+        Self::new(ClientRequest::encapsulate(request))
+    }
+
+    /// Creates a batch item for one typed KMIP 3.0 Decapsulate request.
+    #[must_use]
+    pub fn decapsulate(request: DecapsulateRequest) -> Self {
+        Self::new(ClientRequest::decapsulate(request))
     }
 
     /// Creates a Query batch item only when its payload fits the supplied codec limits.
@@ -1737,6 +1859,7 @@ enum PendingResponse {
     RngSeed(RngSeedResponse),
     Query(QueryResponse),
     SetEndpointRole(SetEndpointRoleResponse),
+    Async(KmipOperationResult),
     Kmip30(Kmip30OperationResponse),
 }
 
@@ -1796,6 +1919,7 @@ impl PendingResponse {
             Self::RngSeed(response) => ClientResponseRef::RngSeed(response),
             Self::Query(response) => ClientResponseRef::Query(response),
             Self::SetEndpointRole(response) => ClientResponseRef::SetEndpointRole(response),
+            Self::Async(result) => ClientResponseRef::AsyncResult(result),
             Self::Kmip30(response) => ClientResponseRef::Kmip30(response),
         };
         ClientResponseView { response }
@@ -2378,6 +2502,7 @@ enum ClientResponseRef<'a> {
     RngSeed(&'a RngSeedResponse),
     Query(&'a QueryResponse),
     SetEndpointRole(&'a SetEndpointRoleResponse),
+    AsyncResult(&'a KmipOperationResult),
     Kmip30(&'a Kmip30OperationResponse),
 }
 
@@ -2454,6 +2579,7 @@ impl<'a> ClientResponseView<'a> {
             ClientResponseRef::RngSeed(response) => response.result(),
             ClientResponseRef::Query(response) => response.result(),
             ClientResponseRef::SetEndpointRole(response) => response.result(),
+            ClientResponseRef::AsyncResult(result) => result,
             ClientResponseRef::Kmip30(response) => response.result(),
         }
     }
@@ -2956,6 +3082,69 @@ impl<'a> ClientResponseView<'a> {
             _ => None,
         }
     }
+
+    /// Returns the typed Create Group response when this view represents it.
+    #[must_use]
+    pub const fn create_group(&self) -> Option<&'a CreateGroupResponse> {
+        match self.kmip30() {
+            Some(Kmip30OperationResponse::CreateGroup(response)) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Obliterate response when this view represents it.
+    #[must_use]
+    pub const fn obliterate(&self) -> Option<&'a ObliterateResponse> {
+        match self.kmip30() {
+            Some(Kmip30OperationResponse::Obliterate(response)) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Create User response when this view represents it.
+    #[must_use]
+    pub const fn create_user(&self) -> Option<&'a CreateUserResponse> {
+        match self.kmip30() {
+            Some(Kmip30OperationResponse::CreateUser(response)) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Create Credential response when this view represents it.
+    #[must_use]
+    pub const fn create_credential(&self) -> Option<&'a CreateCredentialResponse> {
+        match self.kmip30() {
+            Some(Kmip30OperationResponse::CreateCredential(response)) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Deactivate response when this view represents it.
+    #[must_use]
+    pub const fn deactivate(&self) -> Option<&'a DeactivateResponse> {
+        match self.kmip30() {
+            Some(Kmip30OperationResponse::Deactivate(response)) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Encapsulate response when this view represents it.
+    #[must_use]
+    pub const fn encapsulate(&self) -> Option<&'a EncapsulateResponse> {
+        match self.kmip30() {
+            Some(Kmip30OperationResponse::Encapsulate(response)) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Decapsulate response when this view represents it.
+    #[must_use]
+    pub const fn decapsulate(&self) -> Option<&'a DecapsulateResponse> {
+        match self.kmip30() {
+            Some(Kmip30OperationResponse::Decapsulate(response)) => Some(response),
+            _ => None,
+        }
+    }
 }
 
 fn debug_response<T>(formatter: &mut fmt::Formatter<'_>, name: &str, _response: &T) -> fmt::Result {
@@ -3089,6 +3278,9 @@ impl fmt::Debug for ClientResponseView<'_> {
             ClientResponseRef::SetEndpointRole(response) => {
                 debug_response(formatter, "SetEndpointRole", response)
             }
+            ClientResponseRef::AsyncResult(result) => {
+                formatter.debug_tuple("AsyncResult").field(result).finish()
+            }
             ClientResponseRef::Kmip30(response) => {
                 formatter.debug_tuple("Kmip30").field(response).finish()
             }
@@ -3142,6 +3334,69 @@ impl Kmip30OperationResponse {
             Self::Deactivate(_) => ClientOperation::Deactivate,
             Self::Encapsulate(_) => ClientOperation::Encapsulate,
             Self::Decapsulate(_) => ClientOperation::Decapsulate,
+        }
+    }
+
+    /// Returns the typed Create Group response when this item contains one.
+    #[must_use]
+    pub const fn create_group(&self) -> Option<&CreateGroupResponse> {
+        match self {
+            Self::CreateGroup(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Obliterate response when this item contains one.
+    #[must_use]
+    pub const fn obliterate(&self) -> Option<&ObliterateResponse> {
+        match self {
+            Self::Obliterate(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Create User response when this item contains one.
+    #[must_use]
+    pub const fn create_user(&self) -> Option<&CreateUserResponse> {
+        match self {
+            Self::CreateUser(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Create Credential response when this item contains one.
+    #[must_use]
+    pub const fn create_credential(&self) -> Option<&CreateCredentialResponse> {
+        match self {
+            Self::CreateCredential(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Deactivate response when this item contains one.
+    #[must_use]
+    pub const fn deactivate(&self) -> Option<&DeactivateResponse> {
+        match self {
+            Self::Deactivate(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Encapsulate response when this item contains one.
+    #[must_use]
+    pub const fn encapsulate(&self) -> Option<&EncapsulateResponse> {
+        match self {
+            Self::Encapsulate(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Decapsulate response when this item contains one.
+    #[must_use]
+    pub const fn decapsulate(&self) -> Option<&DecapsulateResponse> {
+        match self {
+            Self::Decapsulate(response) => Some(response),
+            _ => None,
         }
     }
 }
@@ -3267,6 +3522,14 @@ pub enum ClientBatchOutcome {
     RngSeed(RngSeedResponse),
     /// The server returned a Set Endpoint Role result (§6.1.54).
     SetEndpointRole(SetEndpointRoleResponse),
+    /// The server returned a Cancel result (§6.1.5).
+    Cancel(KmipOperationResult),
+    /// The server returned a Poll result (§6.1.38).
+    Poll(KmipOperationResult),
+    /// The server returned a Process result (§6.1.39).
+    Process(KmipOperationResult),
+    /// The server returned a Query Asynchronous Requests result (§6.1.41).
+    QueryAsyncRequests(KmipOperationResult),
     /// The server returned a typed KMIP 3.0 operation result.
     Kmip30(Kmip30OperationResponse),
 }
@@ -3328,6 +3591,10 @@ impl ClientBatchOutcome {
             | Self::RngSeed(_)
             | Self::Query(_)
             | Self::SetEndpointRole(_)
+            | Self::Cancel(_)
+            | Self::Poll(_)
+            | Self::Process(_)
+            | Self::QueryAsyncRequests(_)
             | Self::Pkcs11(_)
             | Self::Kmip30(_) => None,
             Self::Pending(pending) => Some(pending.asynchronous_correlation_value()),
@@ -3391,6 +3658,10 @@ impl ClientBatchOutcome {
             Self::RngSeed(response) => response.result(),
             Self::Query(response) => response.result(),
             Self::SetEndpointRole(response) => response.result(),
+            Self::Cancel(result)
+            | Self::Poll(result)
+            | Self::Process(result)
+            | Self::QueryAsyncRequests(result) => result,
             Self::Kmip30(response) => response.result(),
             Self::Pending(pending) => pending.result(),
         }
@@ -3453,6 +3724,10 @@ impl ClientBatchOutcome {
             Self::RngSeed(_) => ClientOperation::RngSeed,
             Self::Query(_) => ClientOperation::Query,
             Self::SetEndpointRole(_) => ClientOperation::SetEndpointRole,
+            Self::Cancel(_) => ClientOperation::Cancel,
+            Self::Poll(_) => ClientOperation::Poll,
+            Self::Process(_) => ClientOperation::Process,
+            Self::QueryAsyncRequests(_) => ClientOperation::QueryAsyncRequests,
             Self::Kmip30(response) => response.operation(),
             Self::Pending(pending) => pending.operation(),
         }
@@ -3906,6 +4181,69 @@ impl ClientBatchOutcome {
         }
     }
 
+    /// Returns the typed Create Group response, including for a Pending result.
+    #[must_use]
+    pub const fn create_group_response(&self) -> Option<&CreateGroupResponse> {
+        match self.kmip30_response() {
+            Some(Kmip30OperationResponse::CreateGroup(response)) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Obliterate response, including for a Pending result.
+    #[must_use]
+    pub const fn obliterate_response(&self) -> Option<&ObliterateResponse> {
+        match self.kmip30_response() {
+            Some(Kmip30OperationResponse::Obliterate(response)) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Create User response, including for a Pending result.
+    #[must_use]
+    pub const fn create_user_response(&self) -> Option<&CreateUserResponse> {
+        match self.kmip30_response() {
+            Some(Kmip30OperationResponse::CreateUser(response)) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Create Credential response, including for a Pending result.
+    #[must_use]
+    pub const fn create_credential_response(&self) -> Option<&CreateCredentialResponse> {
+        match self.kmip30_response() {
+            Some(Kmip30OperationResponse::CreateCredential(response)) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Deactivate response, including for a Pending result.
+    #[must_use]
+    pub const fn deactivate_response(&self) -> Option<&DeactivateResponse> {
+        match self.kmip30_response() {
+            Some(Kmip30OperationResponse::Deactivate(response)) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Encapsulate response, including for a Pending result.
+    #[must_use]
+    pub const fn encapsulate_response(&self) -> Option<&EncapsulateResponse> {
+        match self.kmip30_response() {
+            Some(Kmip30OperationResponse::Encapsulate(response)) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Decapsulate response, including for a Pending result.
+    #[must_use]
+    pub const fn decapsulate_response(&self) -> Option<&DecapsulateResponse> {
+        match self.kmip30_response() {
+            Some(Kmip30OperationResponse::Decapsulate(response)) => Some(response),
+            _ => None,
+        }
+    }
+
     /// Returns a borrowed view of the typed operation response.
     ///
     /// Existing Discover Versions result access remains available through
@@ -4046,6 +4384,12 @@ impl ClientBatchOutcome {
             Self::Query(response) => ClientResponseView::new(ClientResponseRef::Query(response)),
             Self::SetEndpointRole(response) => {
                 ClientResponseView::new(ClientResponseRef::SetEndpointRole(response))
+            }
+            Self::Cancel(result)
+            | Self::Poll(result)
+            | Self::Process(result)
+            | Self::QueryAsyncRequests(result) => {
+                ClientResponseView::new(ClientResponseRef::AsyncResult(result))
             }
             Self::Kmip30(response) => ClientResponseView::new(ClientResponseRef::Kmip30(response)),
         }
@@ -4192,6 +4536,13 @@ impl fmt::Debug for ClientBatchOutcome {
                 .debug_tuple("SetEndpointRole")
                 .field(response)
                 .finish(),
+            Self::Cancel(result) => formatter.debug_tuple("Cancel").field(result).finish(),
+            Self::Poll(result) => formatter.debug_tuple("Poll").field(result).finish(),
+            Self::Process(result) => formatter.debug_tuple("Process").field(result).finish(),
+            Self::QueryAsyncRequests(result) => formatter
+                .debug_tuple("QueryAsyncRequests")
+                .field(result)
+                .finish(),
             Self::Kmip30(response) => formatter.debug_tuple("Kmip30").field(response).finish(),
         }
     }
@@ -4301,6 +4652,12 @@ impl fmt::Display for ClientBatchOutcome {
             Self::SetEndpointRole(response) => {
                 write!(formatter, "SetEndpointRole({})", response.result())
             }
+            Self::Cancel(result) => write!(formatter, "Cancel({result})"),
+            Self::Poll(result) => write!(formatter, "Poll({result})"),
+            Self::Process(result) => write!(formatter, "Process({result})"),
+            Self::QueryAsyncRequests(result) => {
+                write!(formatter, "QueryAsyncRequests({result})")
+            }
             Self::Kmip30(response) => {
                 write!(
                     formatter,
@@ -4323,6 +4680,59 @@ pub struct ClientBatchItemResponse {
     #[cfg(test)]
     pending_owner_observer: Option<ZeroizationObserver>,
 }
+
+/// A payload-free failure while rendering a retained response for inspection.
+#[non_exhaustive]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum ResponseEncodingError {
+    /// The retained response tree could not be cloned within model limits.
+    InvalidResponseTree,
+    /// The requested representation exceeds the supplied codec limits.
+    LimitExceeded,
+    /// Memory could not be reserved for the representation.
+    AllocationFailed,
+    /// A retained field could not be represented by the selected codec.
+    EncodingFailed,
+}
+
+impl fmt::Display for ResponseEncodingError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str(match self {
+            Self::InvalidResponseTree => "retained response tree is invalid",
+            Self::LimitExceeded => "response representation exceeds configured limits",
+            Self::AllocationFailed => "unable to allocate response representation",
+            Self::EncodingFailed => "retained response cannot be represented by this encoding",
+        })
+    }
+}
+
+impl Error for ResponseEncodingError {}
+
+fn map_response_encoding_error(error: &private_wire_writer::EncodeError) -> ResponseEncodingError {
+    match error {
+        private_wire_writer::EncodeError::LimitExceeded => ResponseEncodingError::LimitExceeded,
+        private_wire_writer::EncodeError::AllocationFailed(_) => {
+            ResponseEncodingError::AllocationFailed
+        }
+        private_wire_writer::EncodeError::WireCodec(error) => match error.kind() {
+            crate::wire_codec_common::WireCodecErrorKind::LimitExceeded => {
+                ResponseEncodingError::LimitExceeded
+            }
+            crate::wire_codec_common::WireCodecErrorKind::AllocationFailed => {
+                ResponseEncodingError::AllocationFailed
+            }
+            crate::wire_codec_common::WireCodecErrorKind::InvalidDocument
+            | crate::wire_codec_common::WireCodecErrorKind::InvalidValue => {
+                ResponseEncodingError::EncodingFailed
+            }
+        },
+        _ => ResponseEncodingError::EncodingFailed,
+    }
+}
+
+#[cfg(test)]
+#[path = "../tests/unit/response_encoding_error_tests.rs"]
+mod response_encoding_error_tests;
 
 struct PendingClientBatchItemResponse {
     unique_batch_item_id: Option<Vec<u8>>,
@@ -4370,6 +4780,67 @@ impl ClientBatchItemResponse {
         self.response.header().raw()
     }
 
+    fn render_response(
+        &self,
+        limits: &CodecLimits,
+        encoding: WireEncoding,
+    ) -> Result<Zeroizing<String>, ResponseEncodingError> {
+        let tree = self
+            .response
+            .with_ttlv(|view| view.try_clone())
+            .map_err(|_| ResponseEncodingError::InvalidResponseTree)?; // COVERAGE-EXCLUDE: ResponseMessage retains a Structure bounded to the same clone-depth limit.
+        let tag = RawTag::new(0x0042_007B)
+            .and_then(|raw| raw.try_checked())
+            .map_err(|_| ResponseEncodingError::InvalidResponseTree)?; // COVERAGE-EXCLUDE: 0x0042007B is the catalogued Message tag checked here as a constant.
+        let item = Item::new(tag, Value::structure(tree))
+            .map_err(|_| ResponseEncodingError::InvalidResponseTree)?; // COVERAGE-EXCLUDE: Item::new has no rejecting condition for a checked tag and owned Value.
+        private_wire_writer::render_for_inspection(&item, limits, encoding)
+            .map_err(|error| map_response_encoding_error(&error))
+    }
+
+    /// Returns canonical uppercase TTLV hex for the complete retained response.
+    ///
+    /// The returned zeroizing string contains all response fields, including
+    /// any secret values returned by the server. Use only for explicit
+    /// inspection; it is never included in diagnostics or Debug output.
+    ///
+    /// # Errors
+    ///
+    /// Returns a payload-free error if the retained tree is invalid, the
+    /// representation exceeds `limits`, or encoding cannot complete.
+    pub fn ttlv_hex(
+        &self,
+        limits: &CodecLimits,
+    ) -> Result<Zeroizing<String>, ResponseEncodingError> {
+        self.render_response(limits, WireEncoding::Ttlv)
+    }
+
+    /// Returns the complete retained response encoded as OASIS KMIP JSON.
+    ///
+    /// The returned zeroizing string may contain secrets returned by the
+    /// server and is not included in diagnostics or Debug output.
+    ///
+    /// # Errors
+    ///
+    /// Returns a payload-free error if the retained tree is invalid, the
+    /// representation exceeds `limits`, or encoding cannot complete.
+    pub fn json(&self, limits: &CodecLimits) -> Result<Zeroizing<String>, ResponseEncodingError> {
+        self.render_response(limits, WireEncoding::Json)
+    }
+
+    /// Returns the complete retained response encoded as OASIS KMIP XML.
+    ///
+    /// The returned zeroizing string may contain secrets returned by the
+    /// server and is not included in diagnostics or Debug output.
+    ///
+    /// # Errors
+    ///
+    /// Returns a payload-free error if the retained tree is invalid, the
+    /// representation exceeds `limits`, or encoding cannot complete.
+    pub fn xml(&self, limits: &CodecLimits) -> Result<Zeroizing<String>, ResponseEncodingError> {
+        self.render_response(limits, WireEncoding::Xml)
+    }
+
     /// Lends the successful Discover Versions response list, when this item
     /// contains one.
     ///
@@ -4413,6 +4884,95 @@ impl ClientBatchItemResponse {
     pub const fn kmip30_response(&self) -> Option<&Kmip30OperationResponse> {
         self.outcome.kmip30_response()
     }
+
+    /// Returns the typed Create Group response when this item contains one.
+    #[must_use]
+    pub const fn create_group_response(&self) -> Option<&CreateGroupResponse> {
+        self.outcome.create_group_response()
+    }
+
+    /// Returns the typed Obliterate response when this item contains one.
+    #[must_use]
+    pub const fn obliterate_response(&self) -> Option<&ObliterateResponse> {
+        self.outcome.obliterate_response()
+    }
+
+    /// Returns the typed Create User response when this item contains one.
+    #[must_use]
+    pub const fn create_user_response(&self) -> Option<&CreateUserResponse> {
+        self.outcome.create_user_response()
+    }
+
+    /// Returns the typed Create Credential response when this item contains one.
+    #[must_use]
+    pub const fn create_credential_response(&self) -> Option<&CreateCredentialResponse> {
+        self.outcome.create_credential_response()
+    }
+
+    /// Returns the typed Deactivate response when this item contains one.
+    #[must_use]
+    pub const fn deactivate_response(&self) -> Option<&DeactivateResponse> {
+        self.outcome.deactivate_response()
+    }
+
+    /// Returns the typed Encapsulate response when this item contains one.
+    #[must_use]
+    pub const fn encapsulate_response(&self) -> Option<&EncapsulateResponse> {
+        self.outcome.encapsulate_response()
+    }
+
+    /// Returns the typed Decapsulate response when this item contains one.
+    #[must_use]
+    pub const fn decapsulate_response(&self) -> Option<&DecapsulateResponse> {
+        self.outcome.decapsulate_response()
+    }
+
+    /// Returns the typed Cancel response when this item is Cancel.
+    #[must_use]
+    pub fn cancel_response(&self) -> Option<CancelResponse<'_>> {
+        if self.outcome.operation() != ClientOperation::Cancel {
+            return None;
+        }
+        CancelResponse::try_from_response_item(
+            self.response.batch_items().nth(self.response_index)?,
+        )
+        .ok()
+    }
+
+    /// Returns the typed Poll response when this item is Poll.
+    #[must_use]
+    pub fn poll_response(&self) -> Option<PollResponse<'_>> {
+        if self.outcome.operation() != ClientOperation::Poll {
+            return None;
+        }
+        PollResponse::try_from_response_item(self.response.batch_items().nth(self.response_index)?)
+            .ok()
+    }
+
+    /// Returns the typed Process response when this item is Process.
+    #[must_use]
+    pub fn process_response(&self) -> Option<ProcessResponse<'_>> {
+        if self.outcome.operation() != ClientOperation::Process {
+            return None;
+        }
+        ProcessResponse::try_from_response_item(
+            self.response.batch_items().nth(self.response_index)?,
+        )
+        .ok()
+    }
+
+    /// Returns the typed Query Asynchronous Requests response when this item is
+    /// Query Asynchronous Requests.
+    #[must_use]
+    pub fn query_async_requests_response(&self) -> Option<QueryAsyncRequestsResponse<'_>> {
+        if self.outcome.operation() != ClientOperation::QueryAsyncRequests {
+            return None;
+        }
+        QueryAsyncRequestsResponse::try_from_response_item(
+            self.response.batch_items().nth(self.response_index)?,
+        )
+        .ok()
+    }
 }
 
 impl fmt::Debug for ClientBatchItemResponse {
@@ -4435,7 +4995,11 @@ pub struct ClientBatchResponse {
 }
 
 impl ClientBatchResponse {
-    /// Returns the number of associated results.
+    /// Returns the number of batch results returned by the server.
+    ///
+    /// A server may omit results for batch items it did not process after a
+    /// failure with the Stop or Undo continuation option. In that case this
+    /// count is smaller than the request batch size.
     #[must_use]
     pub fn len(&self) -> usize {
         self.items.len()
@@ -4447,7 +5011,11 @@ impl ClientBatchResponse {
         self.items.is_empty()
     }
 
-    /// Returns a result by its request-order index.
+    /// Returns a result by its index among returned results.
+    ///
+    /// When a Stop or Undo batch omits unprocessed items, results for the
+    /// returned items remain in request order and can be correlated through
+    /// [`ClientBatchItemResponse::unique_batch_item_id`].
     #[must_use]
     pub fn get(&self, index: usize) -> Option<&ClientBatchItemResponse> {
         self.items.get(index)
@@ -6855,6 +7423,20 @@ impl Client {
         )
     }
 
+    pub(crate) fn execute_one_typed_request_with_async_indicator(
+        &mut self,
+        request: ClientRequest,
+        asynchronous_indicator: Option<u32>,
+        limits: &CodecLimits,
+        options: &RequestOptions,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let mut batch = ClientBatch::new(ClientBatchItem::new(request));
+        if let Some(indicator) = asynchronous_indicator {
+            batch = batch.with_asynchronous_indicator(indicator);
+        }
+        self.execute_one_typed_batch(batch, limits, options)
+    }
+
     fn execute_one_typed_batch(
         &mut self,
         batch: ClientBatch,
@@ -8008,6 +8590,10 @@ fn request_mutation_is_prohibited(request: &ClientRequest) -> bool {
         | ClientRequest::RngRetrieve(_)
         | ClientRequest::RngSeed(_)
         | ClientRequest::SetEndpointRole(_)
+        | ClientRequest::Cancel(_)
+        | ClientRequest::Poll(_)
+        | ClientRequest::Process(_)
+        | ClientRequest::QueryAsynchronousRequests(_)
         | ClientRequest::Pkcs11(_)
         | ClientRequest::CreateGroup(_)
         | ClientRequest::Obliterate(_)
@@ -8335,6 +8921,7 @@ fn push_batch_item_operation(
     push(batch_item, OPERATION, Value::enumeration(operation))
 }
 
+#[cfg(any(test, feature = "test-support"))]
 fn decode_batch_item_operation(bytes: &[u8]) -> Result<u32, ProtocolError> {
     const OPERATION_HEADER: [u8; 8] = [0x42, 0x00, 0x5c, 0x05, 0x00, 0x00, 0x00, 0x04];
     if bytes.get(8..8 + OPERATION_HEADER.len()) != Some(OPERATION_HEADER.as_slice()) {
@@ -8355,6 +8942,7 @@ fn decode_batch_item_operation(bytes: &[u8]) -> Result<u32, ProtocolError> {
     Ok(u32::from_be_bytes(raw))
 }
 
+#[cfg(any(test, feature = "test-support"))]
 fn decode_operation_enumeration(bytes: &[u8]) -> Result<[u8; 4], ProtocolError> {
     bytes.try_into().map_err(|_| {
         ProtocolError::new(
@@ -8537,7 +9125,21 @@ pub(super) fn associate_batch_items(
     requests: &[BatchIdentity],
     responses: &[BatchIdentity],
 ) -> Result<Vec<usize>, ResponseAssociationError> {
-    if requests.len() != responses.len() {
+    associate_batch_items_allow_missing(requests, responses, false)?
+        .into_iter()
+        .collect::<Option<Vec<_>>>()
+        .ok_or(ResponseAssociationError::ItemCountMismatch)
+}
+
+pub(super) fn associate_batch_items_allow_missing(
+    requests: &[BatchIdentity],
+    responses: &[BatchIdentity],
+    allow_missing: bool,
+) -> Result<Vec<Option<usize>>, ResponseAssociationError> {
+    if responses.len() > requests.len()
+        || (!allow_missing && requests.len() != responses.len())
+        || (allow_missing && responses.is_empty())
+    {
         return Err(ResponseAssociationError::ItemCountMismatch);
     }
     if requests.len() > 1
@@ -8556,28 +9158,36 @@ pub(super) fn associate_batch_items(
         }
     }
 
-    let mut associated = Vec::with_capacity(requests.len());
-    let mut consumed = vec![false; responses.len()];
+    let mut request_ids = HashSet::new();
     for request in requests {
-        let index = match &request.unique_batch_item_id {
-            Some(id) => responses
-                .iter()
-                .position(|response| response.unique_batch_item_id.as_deref() == Some(id)),
-            None => {
-                (responses.len() == 1 && responses[0].unique_batch_item_id.is_none()).then_some(0)
-            }
-        }
-        .ok_or(ResponseAssociationError::UnknownId)?;
-        if consumed[index] {
+        if let Some(id) = &request.unique_batch_item_id
+            && !request_ids.insert(id.as_slice())
+        {
             return Err(ResponseAssociationError::DuplicateId);
         }
-        if responses[index].operation != request.operation {
+    }
+
+    let mut associated = vec![None; requests.len()];
+    for (response_index, response) in responses.iter().enumerate() {
+        let request_index = match &response.unique_batch_item_id {
+            Some(id) => requests
+                .iter()
+                .position(|request| request.unique_batch_item_id.as_deref() == Some(id)),
+            None => (requests.len() == 1
+                && responses.len() == 1
+                && requests[0].unique_batch_item_id.is_none())
+            .then_some(0),
+        }
+        .ok_or(ResponseAssociationError::UnknownId)?;
+        if associated[request_index].is_some() {
+            return Err(ResponseAssociationError::DuplicateId);
+        }
+        if response.operation != requests[request_index].operation {
             return Err(ResponseAssociationError::ItemOperationMismatch);
         }
-        consumed[index] = true;
-        associated.push(index);
+        associated[request_index] = Some(response_index);
     }
-    if consumed.iter().any(|matched| !matched) {
+    if !allow_missing && associated.iter().any(Option::is_none) {
         return Err(ResponseAssociationError::UnknownId);
     }
     Ok(associated)
@@ -8707,8 +9317,20 @@ fn validate_response_inner(
         .iter()
         .map(BatchIdentity::from_response)
         .collect::<Vec<_>>();
-    let association = associate_batch_items(request_identities, &response_identities)
-        .map_err(ProtocolError::from)?;
+    let partial_response_permitted = response_items.len() < request_identities.len()
+        && matches!(
+            options.batch_error_continuation.effective,
+            BATCH_ERROR_CONTINUATION_STOP | BATCH_ERROR_CONTINUATION_UNDO
+        )
+        && response_items.iter().any(|item| {
+            item.result_status() == Some(ResultStatus::from_raw(RESULT_STATUS_OPERATION_FAILED))
+        });
+    let association = associate_batch_items_allow_missing(
+        request_identities,
+        &response_identities,
+        partial_response_permitted,
+    )
+    .map_err(ProtocolError::from)?;
 
     let outcome_states = response_items
         .iter()
@@ -8722,6 +9344,9 @@ fn validate_response_inner(
 
     let mut ordered = Vec::with_capacity(request_identities.len());
     for (request_index, response_index) in association.into_iter().enumerate() {
+        let Some(response_index) = response_index else {
+            continue;
+        };
         let item = response_items[response_index];
         let extensions = preserve_response_extensions(item, registry, limits)?;
         let outcome = response_outcome(
@@ -8808,6 +9433,59 @@ fn response_outcome(
             PendingResponse::Query,
             ClientBatchOutcome::Query,
         ),
+        CANCEL_OPERATION => {
+            let typed = CancelResponse::try_from_response_item(item)
+                .map_err(asynchronous_operation_error)?;
+            Ok(ClientBatchOutcome::Cancel(typed.result().clone()))
+        }
+        POLL_OPERATION => {
+            let typed =
+                PollResponse::try_from_response_item(item).map_err(asynchronous_operation_error)?;
+            let result = typed.result().clone();
+            if result.status().raw() == RESULT_STATUS_PENDING {
+                pending_outcome(
+                    ClientOperation::Poll,
+                    result.clone(),
+                    PendingResponse::Async(result),
+                    item,
+                )
+                .map(ClientBatchOutcome::Pending)
+            } else {
+                Ok(ClientBatchOutcome::Poll(result))
+            }
+        }
+        PROCESS_OPERATION => {
+            let typed = ProcessResponse::try_from_response_item(item)
+                .map_err(asynchronous_operation_error)?;
+            let result = typed.result().clone();
+            if result.status().raw() == RESULT_STATUS_PENDING {
+                pending_outcome(
+                    ClientOperation::Process,
+                    result.clone(),
+                    PendingResponse::Async(result),
+                    item,
+                )
+                .map(ClientBatchOutcome::Pending)
+            } else {
+                Ok(ClientBatchOutcome::Process(result))
+            }
+        }
+        QUERY_ASYNCHRONOUS_REQUESTS_OPERATION => {
+            let typed = QueryAsyncRequestsResponse::try_from_response_item(item)
+                .map_err(asynchronous_operation_error)?;
+            let result = typed.result().clone();
+            if result.status().raw() == RESULT_STATUS_PENDING {
+                pending_outcome(
+                    ClientOperation::QueryAsyncRequests,
+                    result.clone(),
+                    PendingResponse::Async(result),
+                    item,
+                )
+                .map(ClientBatchOutcome::Pending)
+            } else {
+                Ok(ClientBatchOutcome::QueryAsyncRequests(result))
+            }
+        }
         SET_ENDPOINT_ROLE_OPERATION => read_operation_outcome(
             ClientOperation::SetEndpointRole,
             item,

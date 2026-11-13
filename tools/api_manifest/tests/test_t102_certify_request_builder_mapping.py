@@ -153,13 +153,28 @@ REQUEST_CONSTRUCTION_REQUIREMENTS = {
 }
 BLOCKED_BEFORE = 224
 BLOCKED_AFTER = 221
+KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
+    "rust-observed-kmipkit-0096-attribute-at-root",
+    "rust-observed-kmipkit-0096-attribute-at-module",
+    "T096:java-fluent-crypto:attribute-item-at",
+    "T096:fluent-python:attribute-item-at",
+}
 # The non-target snapshot includes subsequent approved T102 manifest slices.
 # Includes the reviewed 0047 release stack and complete 0048/0049 inventories.
 # Snapshot includes final 0049 and exact 0050 constructor mappings.
 # The snapshot includes the approved KMIPKIT-0052 async typed-reader routes.
 # The snapshot includes the final KMIPKIT-0053 verified operation surfaces.
-DECLARATIONS_SHA256 = "6698c04883baa2c397b18b55a767614769a18434fd728e71229890fe8b99b3ec"
-OPERATIONS_SHA256 = "2a6eb9fb6823b3456b3fb10b6d4af8477be9f1a1f68c06c252bb4873b272f3bc"
+# The snapshot includes approved KMIPKIT-0099 Create Split Key and KMIPKIT-0100
+# Register declarations, KMIPKIT-0101 lifecycle declarations, and KMIPKIT-0102
+# Rust plus KMIPKIT-0103 C, KMIPKIT-0104 Java, and KMIPKIT-0105 Python fluent
+# cryptographic operation builders; KMIPKIT-0095 adds response rendering and
+# KMIPKIT-0108 attribute-read declarations and KMIPKIT-0109 attribute builders;
+# this inventory also includes the approved KMIPKIT-0093 reconciliation and
+# narrowed T101 mappings. KMIPKIT-0124 adds 28 KMIP 3.0 fluent and 16 async
+# batch declarations to this non-target snapshot; the async request constructors
+# The non-target snapshot includes Create Key Pair declarations and KMIPKIT-0126 additions.
+DECLARATIONS_SHA256 = "f36a5b8bce7788f71ec4f7d4451f0f9cbf30a118c5057657441ae2abe77b55af"
+OPERATIONS_SHA256 = "9ab6c670787f07c9faa301744d1654fdd071ceffc3b43936e6cb12add59094e2"
 
 
 def canonical_sha256(value: object) -> str:
@@ -370,7 +385,7 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
             PKCS11_REQUEST_EXTENSIONS_C_DECLARATION_ID,
         } | PKCS11_REQUEST_EXTENSION_IDS | {
             target["id"] for target in REQUEST_CONSTRUCTION_TARGETS
-        }
+        } | KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS
         other_declarations = copy.deepcopy([
             row for row in self.manifest["publicDeclarations"] if row["declarationId"] not in target_ids
         ])
@@ -442,7 +457,7 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
         # Final T102 route resolution and predecessor stack additions remain
         # inside this exact non-target fingerprint.
         for capability, count in (
-            ("typed_object_attributes", 544),
+            ("typed_object_attributes", 766),
             ("typed_managed_objects_and_key_material", 762),
         ):
             with self.subTest(stack_capability=capability):

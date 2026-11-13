@@ -4316,7 +4316,7 @@ class CatalogValidationTests(unittest.TestCase):
             for profile in profiles
             if profile["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
         )
-        self.assertEqual("evidence_incomplete", baseline_state)
+        self.assertEqual("evidence_complete", baseline_state)
         self.assertTrue(all(
             profile["claim_state"] == "not_claimed"
             for profile in profiles
@@ -4391,7 +4391,7 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual({test["official_case_id"]}, interop_ids)
             else:
                 self.assertEqual(set(), interop_ids)
-        self.assertEqual("evidence_incomplete", baseline["claim_state"])
+        self.assertEqual("evidence_complete", baseline["claim_state"])
 
     def test_checked_in_catalog_preserves_pinned_source_discrepancies(self) -> None:
         catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
@@ -4618,8 +4618,8 @@ class CatalogValidationTests(unittest.TestCase):
         minimum_requirement = requirements["KMIPKIT-REQ-SPEC-9.11-004-001"]
         self.assertEqual(set(minimum_requirement["element_ids"]), all_device_fields)
         discrepancy = discrepancies["KMIPKIT-DISC-042"]
-        self.assertEqual(discrepancy["state"], "open")
-        self.assertIsNone(discrepancy["decision_id"])
+        self.assertEqual(discrepancy["state"], "resolved_by_approved_decision")
+        self.assertEqual(discrepancy["decision_id"], "KMIPKIT-DEC-039")
         self.assertEqual(
             {(row["source_id"], row["section"]) for row in discrepancy["source_refs"]},
             {("KMIPKIT-SRC-spec", "9.11")},
@@ -5277,6 +5277,7 @@ class CatalogValidationTests(unittest.TestCase):
         dependency_profiles = {
             candidate["profile_id"]: candidate for candidate in catalog["profiles"]
         }
+        dependency_profiles[profile["dependency_profile_ids"][0]]["claim_state"] = "evidence_incomplete"
         profile["claim_state"] = "evidence_complete"
         profile["requirement_ids"] = sorted(
             {
@@ -9186,8 +9187,8 @@ class CatalogValidationTests(unittest.TestCase):
         discrepancy = next(row for row in catalog["discrepancies"] if row["discrepancy_id"] == "KMIPKIT-DISC-019")
         error_clause = next(row for row in catalog["source_clauses"]
                             if row["clause_id"] == "KMIPKIT-CLAUSE-SPEC-6.1.51.1-001")
-        self.assertEqual(discrepancy["state"], "open")
-        self.assertIsNone(discrepancy["decision_id"])
+        self.assertEqual(discrepancy["state"], "resolved_by_approved_decision")
+        self.assertEqual(discrepancy["decision_id"], "KMIPKIT-DEC-038")
         self.assertEqual(error_clause["disposition"], "source_discrepancy")
         self.assertEqual(error_clause["requirement_ids"], [])
         crosswalk = [row for row in oracle["requirement_crosswalk"] if row["source_section"] == "6.1.51"]
@@ -19012,10 +19013,6 @@ class CatalogValidationTests(unittest.TestCase):
         if expected_blocked_requirement_ids is None:
             expected_blocked_requirement_ids = {
                 "KMIPKIT-REQ-SPEC-4.1-001-001",
-                "KMIPKIT-REQ-SPEC-4.17-001-001",
-                "KMIPKIT-REQ-SPEC-4.40-001-001",
-                "KMIPKIT-REQ-SPEC-4.40-001-003",
-                "KMIPKIT-REQ-SPEC-4.41-001-002",
                 "KMIPKIT-REQ-SPEC-6.1.14-002",
                 "KMIPKIT-REQ-SPEC-6.1.34-001-003",
                 "KMIPKIT-REQ-SPEC-7.31-001",
@@ -19070,14 +19067,12 @@ class CatalogValidationTests(unittest.TestCase):
         self.assertEqual("evidence_incomplete", readiness["effective_state"])
         self.assertTrue(readiness["runtime_validation_available"])
         self.assertFalse(readiness["published_claim"])
-        for requirement_id in (
-            "KMIPKIT-REQ-SPEC-4.1-001-001",
-            "KMIPKIT-REQ-SPEC-4.17-001-001",
-        ):
-            self.assertIn(
-                f"optional client capability source mapping incomplete: {requirement_id}",
-                readiness["blockers"],
+        self.assertFalse(
+            any(
+                blocker.startswith("optional client capability source mapping incomplete:")
+                for blocker in readiness["blockers"]
             )
+        )
         self.assertFalse(
             any(
                 blocker.endswith("KMIPKIT-REQ-SPEC-9.20-001-002")

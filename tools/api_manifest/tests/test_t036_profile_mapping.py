@@ -344,7 +344,7 @@ class T036ProfileMappingTests(unittest.TestCase):
             if profile["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
         )
 
-        self.assertEqual("evidence_incomplete", baseline["claim_state"])
+        self.assertEqual("evidence_complete", baseline["claim_state"])
         self.assertFalse(baseline.get("support_claim", False))
 
     def test_all_observed_java_profile_exports_are_mapped_or_exactly_excluded(self) -> None:

@@ -42,6 +42,39 @@ EXPECTED_0053_PARITY_BRIDGE_MEMBERS = frozenset(
 )
 
 
+EXPECTED_0091_FLUENT_BRIDGE_MEMBERS = frozenset(
+    {
+        "SYMMETRIC_KEY_BUILDER",
+        "symmetricKeyBuilderAddAttributeItem",
+        "symmetricKeyBuilderAddCataloguedAttribute",
+        "symmetricKeyBuilderAddVendorAttribute",
+        "symmetricKeyBuilderBuildBatchItem",
+        "symmetricKeyBuilderCreate",
+        "symmetricKeyBuilderSetAlgorithm",
+        "symmetricKeyBuilderSetLength",
+        "symmetricKeyBuilderSetName",
+        "symmetricKeyBuilderSetUsageMask",
+    }
+)
+
+
+EXPECTED_0124_BATCH_BRIDGE_MEMBERS = frozenset(
+    {
+        "clientBatchItemCancelFromRequest",
+        "clientBatchItemCreateCredentialFromFields",
+        "clientBatchItemCreateGroupFromAttributes",
+        "clientBatchItemCreateUserFromAttributes",
+        "clientBatchItemDeactivateFromFields",
+        "clientBatchItemDecapsulateFromFields",
+        "clientBatchItemEncapsulateFromFields",
+        "clientBatchItemObliterateFromIdentifier",
+        "clientBatchItemPollFromRequest",
+        "clientBatchItemProcessFromRequest",
+        "clientBatchItemQueryAsyncRequestsFromRequest",
+    }
+)
+
+
 MODULE_PATH = Path(__file__).resolve().parents[1] / "audit_binding_exports.py"
 SPEC = importlib.util.spec_from_file_location("audit_binding_exports", MODULE_PATH)
 assert SPEC is not None and SPEC.loader is not None
@@ -50,6 +83,19 @@ SPEC.loader.exec_module(AUDIT)
 
 
 class BindingExportAuditTests(unittest.TestCase):
+    def test_javap_parent_clause_parser_handles_nested_generics_and_multiple_interfaces(self):
+        self.assertEqual(
+            AUDIT.javap_parent_clauses(
+                "extends org.example.Base<java.lang.String, java.util.List<java.lang.Integer>> "
+                "implements org.example.First<java.lang.String, java.lang.Integer>, "
+                "org.example.Second {"
+            ),
+            (
+                "org.example.Base<java.lang.String, java.util.List<java.lang.Integer>>",
+                "org.example.First<java.lang.String, java.lang.Integer>, org.example.Second",
+            ),
+        )
+
     def test_c_package_audit_expands_local_public_header_includes(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -507,6 +553,39 @@ class BindingExportAuditTests(unittest.TestCase):
         self.assertIn("org.kmipkit.extensions.AddAttributeRequest.newAttribute", names)
         self.assertNotIn("org.kmipkit.extensions.AttributeRequest", names)
         self.assertNotIn("org.kmipkit.extensions.AttributeRequest.uniqueIdentifier", names)
+
+    def test_javap_inventory_propagates_members_from_package_private_interfaces(self):
+        outputs = {
+            "org/kmipkit/fluent/FieldSet.class": """
+                interface org.kmipkit.fluent.FieldSet<B> extends org.kmipkit.fluent.FieldBase<B> {
+                  public default B data(byte[]);
+                }
+            """,
+            "org/kmipkit/fluent/FieldBase.class": """
+                interface org.kmipkit.fluent.FieldBase<B> {
+                  public default B uniqueIdentifier(java.lang.String);
+                }
+            """,
+            "org/kmipkit/fluent/BuilderBase.class": """
+                abstract class org.kmipkit.fluent.BuilderBase<B> {
+                  public final B execute();
+                }
+            """,
+            "org/kmipkit/fluent/EncryptBuilder.class": """
+                public final class org.kmipkit.fluent.EncryptBuilder extends org.kmipkit.fluent.BuilderBase<org.kmipkit.fluent.EncryptBuilder> implements org.kmipkit.fluent.FieldSet<org.kmipkit.fluent.EncryptBuilder> {
+                }
+            """,
+        }
+
+        result = AUDIT.inventory_javap_outputs(outputs)
+        names = {row["exportName"] for row in result["declarations"]}
+
+        self.assertTrue(result["complete"])
+        self.assertIn("org.kmipkit.fluent.EncryptBuilder.execute", names)
+        self.assertIn("org.kmipkit.fluent.EncryptBuilder.data", names)
+        self.assertIn("org.kmipkit.fluent.EncryptBuilder.uniqueIdentifier", names)
+        self.assertNotIn("org.kmipkit.fluent.FieldSet", names)
+        self.assertNotIn("org.kmipkit.fluent.FieldBase", names)
 
     def test_javap_inventory_keeps_public_base_members_at_the_declaring_type(self):
         outputs = {
@@ -1001,6 +1080,8 @@ class BindingExportAuditTests(unittest.TestCase):
             "clientBatchItemResponsePing", "clientBatchItemResponseQueryTtlv",
             "clientBatchItemResponseRawTtlv",
             "clientBatchItemResponseHeaderTtlv",
+            "clientBatchItemResponseTtlvHex", "clientBatchItemResponseJson",
+            "clientBatchItemResponseXml",
             "clientBatchItemResponsePkcs11", "clientBatchItemResponseRecertify",
             "clientBatchItemResponseEncrypt", "clientBatchItemResponseDecrypt",
             "clientBatchItemResponseLogin", "clientBatchItemResponseObtainLease",
@@ -1154,6 +1235,8 @@ class BindingExportAuditTests(unittest.TestCase):
         )
         native_members.update(EXPECTED_VENDOR_EXTENSION_BRIDGE_MEMBERS)
         native_members.update(EXPECTED_0053_PARITY_BRIDGE_MEMBERS)
+        native_members.update(EXPECTED_0091_FLUENT_BRIDGE_MEMBERS)
+        native_members.update(EXPECTED_0124_BATCH_BRIDGE_MEMBERS)
         native_members.update(
             export_name.removeprefix("org.kmipkit.NativeExtensionRegistry.")
             for export_name in EXPECTED_PROFILE_VALIDATION_BRIDGE_EXPORTS
@@ -1174,6 +1257,11 @@ class BindingExportAuditTests(unittest.TestCase):
             }
         )
         native_members.add("registerRequestWithProtectionStorageMasks")
+        response_view_bridge_members = {
+            "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseTtlvHex",
+            "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseJson",
+            "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseXml",
+        }
         response_ttlv_bridge_members = {
             "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseRawTtlv",
             "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseHeaderTtlv",
@@ -1216,6 +1304,17 @@ class BindingExportAuditTests(unittest.TestCase):
         for key in expected_native:
             exclusion = exclusions[key]
             evidence = exclusion["evidence"]
+            if exclusion.get("candidateSpecId") == "KMIPKIT-0091":
+                self.assertEqual(
+                    exclusion["approvalSource"]["path"],
+                    "specs/091-fluent-dx-foundation/spec.md",
+                )
+                self.assertIn(
+                    "specs/091-fluent-dx-foundation/spec.md",
+                    exclusion["evidencePaths"],
+                )
+                self.assertIn("JNI members only dispatch builder operations", evidence)
+                continue
             if exclusion.get("candidateSpecId") == "KMIPKIT-0053":
                 self.assertEqual(
                     exclusion["approvalSource"]["path"],
@@ -1233,6 +1332,7 @@ class BindingExportAuditTests(unittest.TestCase):
                     "KMIPKIT-0043-FR-004/005/010/021/022",
                     "KMIPKIT-0052-FR-006",
                     "KMIPKIT-0052-FR-007",
+                    "KMIPKIT-0093-FR-011",
                 )
             )
             self.assertTrue(
@@ -1263,7 +1363,11 @@ class BindingExportAuditTests(unittest.TestCase):
                 "org.kmipkit.NativeExtensionRegistry.withPollRequestCorrelationValue": "T093",
             }.get(key[1])
             if bridge_owner is None:
-                if multi_encoding_bridge:
+                if key[1] in response_view_bridge_members:
+                    self.assertIn("KMIPKIT-0095-FR-003", evidence)
+                    self.assertIn("AutoCloseable", evidence)
+                    self.assertIn("JNI plumbing", exclusion["reason"])
+                elif multi_encoding_bridge:
                     self.assertIn("KMIPKIT-0057-FR-001", evidence)
                     self.assertIn("KMIPKIT-0057-FR-005", evidence)
                     self.assertIn("raw-handle JNI bridge plumbing", exclusion["reason"])
@@ -1306,6 +1410,7 @@ class BindingExportAuditTests(unittest.TestCase):
                     "ffi-and-bindings.md" not in evidence
                     and not combined_approved_references
                     and key[1] not in response_ttlv_bridge_members
+                    and key[1] not in response_view_bridge_members
                 ):
                     self.assertTrue(
                         any(task_id in evidence for task_id in ("T035", "T037", "T039"))
