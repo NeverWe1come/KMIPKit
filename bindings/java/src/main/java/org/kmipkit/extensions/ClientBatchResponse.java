@@ -18,8 +18,8 @@ public final class ClientBatchResponse implements AutoCloseable {
 
     /**
      * Returns the number of response items actually returned by the server.
-     * For an accepted partial Stop response, this can be smaller than the
-     * request item count because omitted items have no result entry.
+     * For an accepted partial Stop or Undo response, this can be smaller than
+     * the request item count because omitted items have no result entry.
      */
     public long itemCount() {
         NativeExtensionRegistry.ensureLoaded();

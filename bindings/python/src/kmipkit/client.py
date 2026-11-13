@@ -3093,8 +3093,8 @@ class RngSeedResponse:
 class BatchResult(_ClientHandle):
     """Owns a native batch response and exposes returned outcomes in request order.
 
-    An accepted partial Stop response contains only the items returned by the
-    server; omitted items do not have fabricated results.
+    An accepted partial Stop or Undo response contains only the items returned
+    by the server; omitted items do not have fabricated results.
     """
 
     _release_name = "kmipkit_client_batch_response_release"
