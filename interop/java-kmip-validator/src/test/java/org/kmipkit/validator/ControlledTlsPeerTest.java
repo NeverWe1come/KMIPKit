@@ -789,8 +789,7 @@ class ControlledTlsPeerTest {
         int batchItemAccessorEventCount = List.of("2.0", "2.1").size() * 4;
         int batchItemExtensionCountEventCount = List.of("2.0", "2.1").size() * 3;
         int batchItemGenericRouteEventCount = List.of("2.0", "2.1").size() * 4;
-        int batchItemAdditionalResponseRouteEventCount = List.of("2.0", "2.1").size() * 11;
-        batchItemAdditionalResponseRouteEventCount += List.of("2.0", "2.1").size();
+        int batchItemAdditionalResponseRouteEventCount = List.of("2.0", "2.1").size() * 12;
         int normativeMessageFieldGenericRouteEventCount = List.of("2.0", "2.1").size() * 27;
         int normativeMessageFieldParserRouteEventCount = List.of("2.0", "2.1").size() * 9;
         int normativeBatchItemAccessorRouteEventCount = List.of("2.0", "2.1").size() * 10;
