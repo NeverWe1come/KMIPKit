@@ -5109,3 +5109,112 @@ fn fixture_inventory_is_explicit_nonempty_and_confined_to_client_tests() {
         }
     }
 }
+
+#[test]
+fn kmip30_fluent_macro_exception_accepts_only_the_pinned_body_and_seven_root_invocations() {
+    let safe = include_str!("../fixtures/execute_boundary/kmip30_builder_methods_macro.rs");
+    for builder in [
+        "CreateCredentialBuilder",
+        "CreateGroupBuilder",
+        "CreateUserBuilder",
+        "DeactivateBuilder",
+        "DecapsulateBuilder",
+        "EncapsulateBuilder",
+        "ObliterateBuilder",
+    ] {
+        let source = format!("{safe} impl_kmip30_builder_methods!({builder});");
+        let parsed = syn::parse_file(&source).unwrap();
+        let mut audit = BoundaryAudit::default();
+        audit.visit_source_file(&parsed, Path::new("fluent.rs"));
+        assert!(
+            !audit.is_rejected(),
+            "{builder}: {:?}",
+            audit.rejection_reasons
+        );
+    }
+    for source in [
+        safe.replace(
+            "execution.execute(request, limits)",
+            "execution.client.exchange(request)",
+        ),
+        safe.replace("pub fn build(self)", "pub fn raw(self)"),
+        format!("{safe} impl_kmip30_builder_methods!(UnreviewedBuilder);"),
+        format!("{safe} impl_kmip30_builder_methods!(CreateGroupBuilder, OtherBuilder);"),
+        format!("{safe} impl_kmip30_builder_methods!{{CreateGroupBuilder}}"),
+        format!("{safe} #[macro_export] impl_kmip30_builder_methods!(CreateGroupBuilder);"),
+        format!("mod nested {{ {safe} impl_kmip30_builder_methods!(CreateGroupBuilder); }}"),
+        "macro_rules! other { () => {} } other!();".to_owned(),
+        "impl_kmip30_builder_methods!(CreateGroupBuilder);".to_owned(),
+        "pub fn raw(self, body: Vec<u8>) -> ClientRequest { loop {} }".to_owned(),
+    ] {
+        let parsed = syn::parse_file(&source).unwrap();
+        let mut audit = BoundaryAudit::default();
+        audit.visit_source_file(&parsed, Path::new("fluent.rs"));
+        assert!(
+            audit.is_rejected(),
+            "unreviewed macro/raw input was accepted"
+        );
+    }
+    let parsed = syn::parse_file(safe).unwrap();
+    let mut audit = BoundaryAudit::default();
+    audit.visit_source_file(&parsed, Path::new("other.rs"));
+    assert!(
+        audit.is_rejected(),
+        "macro exception must be confined to fluent.rs root"
+    );
+}
+
+#[test]
+fn kmip30_fluent_semantic_input_exceptions_reject_raw_signatures_and_wrong_scopes() {
+    let decapsulate = "impl<'a> RequestBuilder<'a> { pub fn decapsulate(self, unique_identifier: UniqueIdentifier, ciphertext: Vec<u8>) -> DecapsulateBuilder<'a> { loop {} } }";
+    let reason = "impl<'a> DeactivateBuilder<'a> { pub fn deactivation_reason(mut self, reason: Structure) -> Self { loop {} } }";
+    let encapsulate = "impl<'a> RequestBuilder<'a> { pub fn encapsulate(self, unique_identifier: UniqueIdentifier) -> EncapsulateBuilder<'a> { loop {} } }";
+    for source in [decapsulate, reason, encapsulate] {
+        let parsed = syn::parse_file(source).unwrap();
+        let mut audit = BoundaryAudit::default();
+        audit.visit_source_file(&parsed, Path::new("fluent.rs"));
+        assert!(
+            !audit.is_rejected(),
+            "semantic input rejected: {:?}",
+            audit.rejection_reasons
+        );
+    }
+    for source in [
+        decapsulate.replace("DecapsulateBuilder<'a>", "Vec<u8>"),
+        decapsulate.replace("RequestBuilder<'a>", "OtherBuilder<'a>"),
+        decapsulate.replace(
+            "unique_identifier: UniqueIdentifier",
+            "unique_identifier: Structure",
+        ),
+        decapsulate.replace("ciphertext: Vec<u8>", "ciphertext: &[u8]"),
+        decapsulate.replace("fn decapsulate", "fn raw"),
+        decapsulate.replace("fn decapsulate", "fn decapsulate<T>"),
+        reason.replace("DeactivateBuilder<'a>", "OtherBuilder<'a>"),
+        reason.replace("reason: Structure", "reason: Item"),
+        reason.replace("reason: Structure", "reason: Vec<u8>"),
+        reason.replace("-> Self", "-> Structure"),
+        encapsulate.replace(
+            "unique_identifier: UniqueIdentifier",
+            "unique_identifier: Vec<u8>",
+        ),
+        format!("mod nested {{ {decapsulate} }}"),
+        format!("mod nested {{ {reason} }}"),
+    ] {
+        let parsed = syn::parse_file(&source).unwrap();
+        let mut audit = BoundaryAudit::default();
+        audit.visit_source_file(&parsed, Path::new("fluent.rs"));
+        assert!(
+            audit.is_rejected(),
+            "unreviewed public input accepted: {source}"
+        );
+    }
+    for source in [decapsulate, reason] {
+        let parsed = syn::parse_file(source).unwrap();
+        let mut audit = BoundaryAudit::default();
+        audit.visit_source_file(&parsed, Path::new("other.rs"));
+        assert!(
+            audit.is_rejected(),
+            "semantic input exception escaped fluent.rs"
+        );
+    }
+}
