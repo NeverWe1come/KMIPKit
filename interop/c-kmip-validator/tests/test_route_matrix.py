@@ -731,6 +731,31 @@ class RouteMatrixTests(unittest.TestCase):
                        'kmipkit_client_batch_item_get_attribute_list_from_request'):
             self.assertTrue(any(event['public_api_symbol'] == symbol and event['action'] == 'send' for event in events), symbol)
 
+    def test_operation_response_ttlv_accessors_are_executed(self):
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        expected = {
+            'test-op-check': 'kmipkit_client_batch_item_response_check_ttlv',
+            'test-op-get-attribute-list': 'kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv',
+            'test-op-log': 'kmipkit_client_batch_item_response_log_ttlv',
+            'test-op-revoke': 'kmipkit_client_batch_item_response_revoke_ttlv',
+        }
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] in expected]}
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest,
+            protocol_versions=('2.1',), network_combinations=(('TTLV', 'raw_tls'),))
+        self.assertTrue(checks and all(check['status'] == 'passed' for check in checks))
+        for case_id, symbol in expected.items():
+            with self.subTest(case_id=case_id):
+                self.assertTrue(any(event['case_id'] == case_id and
+                                    event['public_api_symbol'] == symbol and
+                                    event['action'] == 'decode' and
+                                    event['transport'] is None and
+                                    event['status'] == 'passed' for event in events), symbol)
+
     def test_add_attribute_operation_runs_from_the_installed_c_consumer(self):
         from artifact_support import ROOT
         from route_peer import execute_network_cells
