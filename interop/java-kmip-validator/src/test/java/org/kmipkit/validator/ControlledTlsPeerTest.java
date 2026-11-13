@@ -359,6 +359,9 @@ class ControlledTlsPeerTest {
                 localEnumerationFixtures, "HASHING-ALGORITHM");
         assertEquals(18, hashingAlgorithmTargets.size(),
                 "The Hashing Algorithm aggregate must cover every catalogued value.");
+        List<String> linkTypeTargets = enumerationTargetIds(localEnumerationFixtures, "LINK-TYPE");
+        assertEquals(15, linkTypeTargets.size(),
+                "The Link Type aggregate must cover every catalogued value.");
         List<BitmaskFixture> bitmaskFixtures = genericBitmaskFixtures();
         List<DataTypeFixture> dataTypeFixtures = genericDataTypeFixtures();
         Map<String, JsonNode> dataTypeVectors = dataTypeBoundaryVectors();
