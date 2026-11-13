@@ -59,6 +59,46 @@ class RouteMatrixTests(unittest.TestCase):
                     ((17, 17), 'get_usage_allocation_uid_variants'),
                 )
 
+    def test_get_usage_allocation_omitted_identifier_resolves_to_prior_response_identifier(self):
+        from route_peer import PeerState
+
+        def integer(tag, value, width=4):
+            return (tag, 2 if width == 4 else 3, value.to_bytes(width, 'big', signed=True))
+
+        def enumeration(tag, value):
+            return (tag, 5, value.to_bytes(4, 'big'))
+
+        def text(tag, value):
+            return (tag, 7, value.encode())
+
+        def batch_item(item_id, identifier):
+            payload = [integer(0x420096, 1, width=8)]
+            if identifier is not None:
+                payload.insert(0, text(0x420094, identifier))
+            return (0x42000F, 1, [
+                enumeration(0x42005C, 17),
+                (0x420093, 8, item_id),
+                (0x420079, 1, payload),
+            ])
+
+        request = (0x420078, 1, [
+            (0x420077, 1, [
+                (0x420069, 1, [integer(0x42006A, 2), integer(0x42006B, 1)]),
+                integer(0x42000D, 2),
+            ]),
+            batch_item(b'usage-explicit', 'fixture-key-1'),
+            batch_item(b'usage-placeholder', None),
+        ])
+
+        evidence = PeerState(existing_object=True).execute(request)
+
+        self.assertEqual(evidence['statuses'], [0, 0])
+        self.assertEqual(evidence['reasons'], [0, 0])
+        self.assertEqual(
+            evidence['effects'],
+            ['usage_allocation_returned', 'usage_allocation_returned'],
+        )
+
     def test_route_evidence_output_cannot_escape_its_build_directory(self):
         with tempfile.TemporaryDirectory() as directory:
             with self.assertRaisesRegex(ValueError, 'path_outside_allowed_root'):
