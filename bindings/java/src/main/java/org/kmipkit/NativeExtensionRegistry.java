@@ -93,6 +93,15 @@ public final class NativeExtensionRegistry {
     public static final int CRYPTOGRAPHIC_PARAMETERS = 69;
     public static final int VALIDATION_REPORT = 70;
     public static final int SYMMETRIC_KEY_BUILDER = 71;
+    public static final int SERVER_LISTENER_CONFIGURATION = 73;
+    public static final int SERVER_LISTENER = 74;
+    public static final int SERVER_CONNECTION = 75;
+    public static final int SERVER_REQUEST_BATCH = 76;
+    public static final int SERVER_REQUEST = 77;
+    public static final int SERVER_PUT_OBJECT = 78;
+    public static final int SERVER_RESPONSE_BUILDER = 79;
+    public static final int SERVER_RESPONSE_ITEM = 80;
+    public static final int SERVER_RESPONSE_MESSAGE = 81;
 
     public static final int ATTRIBUTE_OPERATION_ADD = 0;
     public static final int ATTRIBUTE_OPERATION_ADJUST = 1;

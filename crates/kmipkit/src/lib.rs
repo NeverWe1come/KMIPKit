@@ -163,6 +163,7 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
             | "discover_versions_request_item"
             | "opaque_register_context"
             | "server_generated_creation"
+            | "server_to_client_listener_bindings"
             | "typed_message_model"
             | "public_binding_surface"
             | "response_ttlv_navigation"

@@ -5934,6 +5934,24 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_release(
                 from_java_handle<kmipkit_symmetric_key_builder_t>(raw_handle)); break;
         case 72: kmipkit_crypto_operation_builder_release(
                 from_java_handle<kmipkit_crypto_operation_builder_t>(raw_handle)); break;
+        case 73: kmipkit_server_listener_config_release(
+                from_java_handle<kmipkit_server_listener_config_t>(raw_handle)); break;
+        case 74: kmipkit_server_listener_release(
+                from_java_handle<kmipkit_server_listener_t>(raw_handle)); break;
+        case 75: kmipkit_server_connection_release(
+                from_java_handle<kmipkit_server_connection_t>(raw_handle)); break;
+        case 76: kmipkit_server_incoming_batch_release(
+                from_java_handle<kmipkit_server_incoming_batch_t>(raw_handle)); break;
+        case 77: kmipkit_server_request_item_release(
+                from_java_handle<kmipkit_server_request_item_t>(raw_handle)); break;
+        case 78: kmipkit_server_put_object_release(
+                from_java_handle<kmipkit_server_put_object_t>(raw_handle)); break;
+        case 79: kmipkit_server_response_builder_release(
+                from_java_handle<kmipkit_server_response_builder_t>(raw_handle)); break;
+        case 80: kmipkit_server_response_item_release(
+                from_java_handle<kmipkit_server_response_item_t>(raw_handle)); break;
+        case 81: kmipkit_server_response_release(
+                from_java_handle<kmipkit_server_response_t>(raw_handle)); break;
         default: throw_invalid_input(env); break;
         }
         return 0;
@@ -13594,6 +13612,614 @@ JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_validati
             return static_cast<jobjectArray>(nullptr);
         }
         return result;
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_server_ServerNative_configurationCreate(
+        JNIEnv* env, jclass, jint transport, jint wire_encoding, jstring raw_host, jint port,
+        jint certificate_encoding, jobjectArray raw_certificates, jbyteArray raw_private_key,
+        jobjectArray raw_trust_certificates, jobjectArray raw_revocations, jstring raw_target_path,
+        jlong max_request_bytes) {
+    return guarded<jlong>(env, 0, [&] {
+        if ((transport != KMIPKIT_SERVER_LISTENER_RAW_TLS
+                    && transport != KMIPKIT_SERVER_LISTENER_HTTPS)
+                || wire_encoding < KMIPKIT_SERVER_ENCODING_TTLV
+                || wire_encoding > KMIPKIT_SERVER_ENCODING_XML
+                || (certificate_encoding != KMIPKIT_TRANSPORT_ENCODING_PEM
+                    && certificate_encoding != KMIPKIT_TRANSPORT_ENCODING_DER)
+                || port < 0 || port > UINT16_MAX || max_request_bytes < 0) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        std::vector<uint8_t> host, target_path;
+        if (!java_string_to_utf8(env, raw_host, host)
+                || !java_string_to_utf8(env, raw_target_path, target_path)) {
+            return static_cast<jlong>(0);
+        }
+        TransportBridgeByteBudget budget;
+        auto read_inputs = [&](jobjectArray raw, std::vector<std::vector<uint8_t>>& values,
+                               bool required) {
+            if (raw == nullptr) {
+                throw_invalid_input(env);
+                return false;
+            }
+            const jsize count = env->GetArrayLength(raw);
+            if (env->ExceptionCheck()) return false;
+            if (count < 0 || count > static_cast<jsize>(kMaximumTransportInputCount)
+                    || (required && count == 0)) {
+                throw_invalid_input(env);
+                return false;
+            }
+            values.reserve(static_cast<size_t>(count));
+            for (jsize index = 0; index < count; ++index) {
+                auto item = static_cast<jbyteArray>(env->GetObjectArrayElement(raw, index));
+                if (item == nullptr) {
+                    throw_invalid_input(env);
+                    return false;
+                }
+                std::vector<uint8_t> bytes;
+                const bool ok = read_transport_material_bytes(env, item, budget, bytes);
+                env->DeleteLocalRef(item);
+                if (!ok) return false;
+                values.push_back(std::move(bytes));
+            }
+            return true;
+        };
+        std::vector<std::vector<uint8_t>> certificates, trust_certificates, revocations;
+        ByteVectorListWiper certificate_wiper(certificates);
+        ByteVectorListWiper trust_wiper(trust_certificates);
+        ByteVectorListWiper revocation_wiper(revocations);
+        std::vector<uint8_t> private_key;
+        kmipkit::secure::VectorWiper private_key_wiper(private_key);
+        if (!read_inputs(raw_certificates, certificates, true)
+                || !read_inputs(raw_trust_certificates, trust_certificates, true)
+                || !read_inputs(raw_revocations, revocations, false)
+                || !read_transport_material_bytes(env, raw_private_key, budget, private_key)) {
+            return static_cast<jlong>(0);
+        }
+        std::vector<kmipkit_transport_input_v1_t> certificate_views, trust_views, revocation_views;
+        auto views_for = [&](const std::vector<std::vector<uint8_t>>& sources,
+                             std::vector<kmipkit_transport_input_v1_t>& destination) {
+            destination.reserve(sources.size());
+            for (const auto& bytes : sources) {
+                destination.push_back({KMIPKIT_TRANSPORT_SOURCE_MEMORY,
+                        static_cast<uint32_t>(certificate_encoding), byte_span(bytes)});
+            }
+        };
+        views_for(certificates, certificate_views);
+        views_for(trust_certificates, trust_views);
+        views_for(revocations, revocation_views);
+        kmipkit_transport_input_v1_t private_key_view {
+                KMIPKIT_TRANSPORT_SOURCE_MEMORY, static_cast<uint32_t>(certificate_encoding),
+                byte_span(private_key)};
+        kmipkit_server_listener_config_v1_t configuration{};
+        configuration.struct_size = static_cast<uint32_t>(sizeof(configuration));
+        configuration.abi_version = 1;
+        configuration.transport_kind = static_cast<uint32_t>(transport);
+        configuration.wire_encoding = static_cast<uint32_t>(wire_encoding);
+        configuration.bind_host = byte_span(host);
+        configuration.bind_port = static_cast<uint16_t>(port);
+        configuration.listener_certificates = certificate_views.data();
+        configuration.listener_certificate_count = certificate_views.size();
+        configuration.listener_private_key = private_key_view;
+        configuration.trust_certificates = trust_views.data();
+        configuration.trust_certificate_count = trust_views.size();
+        configuration.revocation_lists = revocation_views.empty() ? nullptr : revocation_views.data();
+        configuration.revocation_list_count = revocation_views.size();
+        configuration.target_path = byte_span(target_path);
+        configuration.max_request_bytes = static_cast<uint64_t>(max_request_bytes);
+        return return_handle<kmipkit_server_listener_config_t>(env, [&](auto output) {
+            return kmipkit_server_listener_config_create_v1(&configuration, output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_server_ServerNative_listenerBind(
+        JNIEnv* env, jclass, jlong raw_configuration, jboolean https) {
+    return guarded<jlong>(env, 0, [&] {
+        auto* configuration = from_java_handle<kmipkit_server_listener_config_t>(raw_configuration);
+        return return_handle<kmipkit_server_listener_t>(env, [&](auto output) {
+            return https == JNI_TRUE
+                    ? kmipkit_server_listener_bind_https(configuration, output)
+                    : kmipkit_server_listener_bind_raw_tls(configuration, output);
+        });
+    });
+}
+
+JNIEXPORT jint JNICALL Java_org_kmipkit_server_ServerNative_listenerPort(
+        JNIEnv* env, jclass, jlong raw_listener) {
+    return guarded<jint>(env, 0, [&] {
+        uint16_t port = 0;
+        if (!check_status(env, [&] {
+                return kmipkit_server_listener_port(
+                        from_java_handle<kmipkit_server_listener_t>(raw_listener), &port);
+            })) return static_cast<jint>(0);
+        return static_cast<jint>(port);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_server_ServerNative_listenerAccept(
+        JNIEnv* env, jclass, jlong raw_listener, jlong seconds, jint nanoseconds) {
+    return guarded<jlong>(env, 0, [&] {
+        if (seconds < 0 || nanoseconds < 0 || nanoseconds >= 1000000000) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        return return_handle<kmipkit_server_connection_t>(env, [&](auto output) {
+            return kmipkit_server_listener_accept(
+                    from_java_handle<kmipkit_server_listener_t>(raw_listener),
+                    static_cast<uint64_t>(seconds), static_cast<uint32_t>(nanoseconds), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_server_ServerNative_connectionReceive(
+        JNIEnv* env, jclass, jlong raw_connection, jlongArray raw_limits,
+        jlong seconds, jint nanoseconds) {
+    return guarded<jlong>(env, 0, [&] {
+        if (seconds < 0 || nanoseconds < 0 || nanoseconds >= 1000000000) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        CodecLimits limits;
+        if (!limits.initialize(env, raw_limits)) return static_cast<jlong>(0);
+        return return_handle<kmipkit_server_incoming_batch_t>(env, [&](auto output) {
+            return kmipkit_server_connection_recv_batch(
+                    from_java_handle<kmipkit_server_connection_t>(raw_connection), limits.get(),
+                    static_cast<uint64_t>(seconds), static_cast<uint32_t>(nanoseconds), output);
+        });
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_server_ServerNative_connectionSend(
+        JNIEnv* env, jclass, jlong raw_connection, jlong raw_response,
+        jlong seconds, jint nanoseconds) {
+    guarded<int>(env, 0, [&] {
+        if (seconds < 0 || nanoseconds < 0 || nanoseconds >= 1000000000) {
+            throw_invalid_input(env);
+            return 0;
+        }
+        check_status(env, [&] {
+            return kmipkit_server_connection_send_response(
+                    from_java_handle<kmipkit_server_connection_t>(raw_connection),
+                    from_java_handle<kmipkit_server_response_t>(raw_response),
+                    static_cast<uint64_t>(seconds), static_cast<uint32_t>(nanoseconds));
+        });
+        return 0;
+    });
+}
+
+JNIEXPORT jintArray JNICALL Java_org_kmipkit_server_ServerNative_batchProtocolVersion(
+        JNIEnv* env, jclass, jlong raw_batch) {
+    return guarded<jintArray>(env, nullptr, [&] {
+        kmipkit_protocol_version_v1_t version{};
+        if (!check_status(env, [&] {
+                return kmipkit_server_incoming_batch_protocol_version(
+                        from_java_handle<kmipkit_server_incoming_batch_t>(raw_batch), &version);
+            })) return static_cast<jintArray>(nullptr);
+        jint values[] = {static_cast<jint>(version.major), static_cast<jint>(version.minor)};
+        jintArray result = env->NewIntArray(2);
+        if (result != nullptr) env->SetIntArrayRegion(result, 0, 2, values);
+        return result;
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_server_ServerNative_batchCount(
+        JNIEnv* env, jclass, jlong raw_batch) {
+    return guarded<jlong>(env, 0, [&] {
+        uint64_t count = 0;
+        if (!check_status(env, [&] {
+                return kmipkit_server_incoming_batch_count(
+                        from_java_handle<kmipkit_server_incoming_batch_t>(raw_batch), &count);
+            })) return static_cast<jlong>(0);
+        if (count > static_cast<uint64_t>(std::numeric_limits<jlong>::max())) {
+            throw_java(env, "org/kmipkit/ResourceLimitException", "batch item count exceeds Java range");
+            return static_cast<jlong>(0);
+        }
+        return static_cast<jlong>(count);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_server_ServerNative_batchItemAt(
+        JNIEnv* env, jclass, jlong raw_batch, jlong index) {
+    return guarded<jlong>(env, 0, [&] {
+        if (index < 0) { throw_invalid_input(env); return static_cast<jlong>(0); }
+        return return_handle<kmipkit_server_request_item_t>(env, [&](auto output) {
+            return kmipkit_server_incoming_batch_item_at(
+                    from_java_handle<kmipkit_server_incoming_batch_t>(raw_batch),
+                    static_cast<uint64_t>(index), output);
+        });
+    });
+}
+
+JNIEXPORT jint JNICALL Java_org_kmipkit_server_ServerNative_requestOperation(
+        JNIEnv* env, jclass, jlong raw_request) {
+    return guarded<jint>(env, 0, [&] {
+        uint32_t operation = 0;
+        if (!check_status(env, [&] {
+                return kmipkit_server_request_item_operation(
+                        from_java_handle<kmipkit_server_request_item_t>(raw_request), &operation);
+            })) return static_cast<jint>(0);
+        return static_cast<jint>(operation);
+    });
+}
+
+JNIEXPORT jbyteArray JNICALL Java_org_kmipkit_server_ServerNative_requestUniqueIdentifier(
+        JNIEnv* env, jclass, jlong raw_request) {
+    return guarded<jbyteArray>(env, nullptr, [&] {
+        kmipkit_byte_span_v1_t identifier{};
+        if (!check_status(env, [&] {
+                return kmipkit_server_request_item_unique_identifier(
+                        from_java_handle<kmipkit_server_request_item_t>(raw_request), &identifier);
+            })) return static_cast<jbyteArray>(nullptr);
+        if (identifier.length > static_cast<uint64_t>(std::numeric_limits<jsize>::max())) {
+            throw_java(env, "org/kmipkit/ResourceLimitException", "identifier exceeds Java array limit");
+            return static_cast<jbyteArray>(nullptr);
+        }
+        if (identifier.length == 0) return static_cast<jbyteArray>(nullptr);
+        jbyteArray result = env->NewByteArray(static_cast<jsize>(identifier.length));
+        if (result != nullptr) env->SetByteArrayRegion(result, 0,
+                static_cast<jsize>(identifier.length), reinterpret_cast<const jbyte*>(identifier.data));
+        return result;
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_server_ServerNative_discoverVersionsCount(
+        JNIEnv* env, jclass, jlong raw_request) {
+    return guarded<jlong>(env, 0, [&] {
+        uint64_t count = 0;
+        if (!check_status(env, [&] {
+                return kmipkit_server_request_item_discover_versions_count(
+                        from_java_handle<kmipkit_server_request_item_t>(raw_request), &count);
+            })) return static_cast<jlong>(0);
+        if (count > static_cast<uint64_t>(std::numeric_limits<jlong>::max())) {
+            throw_java(env, "org/kmipkit/ResourceLimitException", "version count exceeds Java range");
+            return static_cast<jlong>(0);
+        }
+        return static_cast<jlong>(count);
+    });
+}
+
+JNIEXPORT jintArray JNICALL Java_org_kmipkit_server_ServerNative_discoverVersionAt(
+        JNIEnv* env, jclass, jlong raw_request, jlong index) {
+    return guarded<jintArray>(env, nullptr, [&] {
+        if (index < 0) { throw_invalid_input(env); return static_cast<jintArray>(nullptr); }
+        kmipkit_protocol_version_v1_t version{};
+        if (!check_status(env, [&] {
+                return kmipkit_server_request_item_discover_version_at(
+                        from_java_handle<kmipkit_server_request_item_t>(raw_request),
+                        static_cast<uint64_t>(index), &version);
+            })) return static_cast<jintArray>(nullptr);
+        jint values[] = {static_cast<jint>(version.major), static_cast<jint>(version.minor)};
+        jintArray result = env->NewIntArray(2);
+        if (result != nullptr) env->SetIntArrayRegion(result, 0, 2, values);
+        return result;
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_server_ServerNative_notifyDeletedAttributeReferenceCount(
+        JNIEnv* env, jclass, jlong raw_request) {
+    return guarded<jlong>(env, 0, [&] {
+        uint64_t count = 0;
+        if (!check_status(env, [&] {
+                return kmipkit_server_request_item_notify_deleted_attribute_reference_count(
+                        from_java_handle<kmipkit_server_request_item_t>(raw_request), &count);
+            })) return static_cast<jlong>(0);
+        if (count > static_cast<uint64_t>(std::numeric_limits<jlong>::max())) {
+            throw_java(env, "org/kmipkit/ResourceLimitException", "attribute reference count exceeds Java range");
+            return static_cast<jlong>(0);
+        }
+        return static_cast<jlong>(count);
+    });
+}
+
+JNIEXPORT jobject JNICALL Java_org_kmipkit_server_ServerNative_notifyDeletedAttributeReferenceAt(
+        JNIEnv* env, jclass, jlong raw_request, jlong index) {
+    return guarded<jobject>(env, nullptr, [&] {
+        if (index < 0) { throw_invalid_input(env); return static_cast<jobject>(nullptr); }
+        kmipkit_attribute_reference_v1_t reference{};
+        if (!check_status(env, [&] {
+                return kmipkit_server_request_item_notify_deleted_attribute_reference_at(
+                        from_java_handle<kmipkit_server_request_item_t>(raw_request),
+                        static_cast<uint64_t>(index), &reference);
+            })) return static_cast<jobject>(nullptr);
+        jclass type = env->FindClass("org/kmipkit/extensions/AttributeReference");
+        if (type == nullptr) return static_cast<jobject>(nullptr);
+        jobject result = nullptr;
+        if (reference.kind == 1) {
+            jmethodID factory = env->GetStaticMethodID(
+                    type, "tag", "(J)Lorg/kmipkit/extensions/AttributeReference;");
+            if (factory != nullptr) result = env->CallStaticObjectMethod(
+                    type, factory, static_cast<jlong>(reference.tag_value));
+        } else if (reference.kind == 2
+                && reference.vendor_identification_length <= static_cast<uint64_t>(std::numeric_limits<jsize>::max())
+                && reference.attribute_name_length <= static_cast<uint64_t>(std::numeric_limits<jsize>::max())) {
+            jstring vendor = nullptr;
+            jstring name = nullptr;
+            const bool converted = utf8_to_java_string(env,
+                    reference.vendor_identification_data, reference.vendor_identification_length, &vendor)
+                    && utf8_to_java_string(env, reference.attribute_name_data,
+                            reference.attribute_name_length, &name);
+            if (converted) {
+                jmethodID factory = env->GetStaticMethodID(type, "name",
+                        "(Ljava/lang/String;Ljava/lang/String;)Lorg/kmipkit/extensions/AttributeReference;");
+                if (factory != nullptr) result = env->CallStaticObjectMethod(type, factory, vendor, name);
+            }
+            if (vendor != nullptr) env->DeleteLocalRef(vendor);
+            if (name != nullptr) env->DeleteLocalRef(name);
+        } else {
+            throw_invalid_input(env);
+        }
+        env->DeleteLocalRef(type);
+        return result;
+    });
+}
+
+JNIEXPORT jlongArray JNICALL Java_org_kmipkit_server_ServerNative_notifyAttributes(
+        JNIEnv* env, jclass, jlong raw_request) {
+    return guarded<jlongArray>(env, nullptr, [&] {
+        uint8_t present = 0;
+        kmipkit_attribute_set_t* attributes = nullptr;
+        if (!check_status(env, [&] {
+                return kmipkit_server_request_item_notify_attributes(
+                        from_java_handle<kmipkit_server_request_item_t>(raw_request),
+                        &present, &attributes);
+            })) return static_cast<jlongArray>(nullptr);
+        if (present == 0) {
+            return env->NewLongArray(0);
+        }
+        if (attributes == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlongArray>(nullptr);
+        }
+        kmipkit_ttlv_structure_t* structure = nullptr;
+        const int32_t status = kmipkit_attribute_set_as_items(attributes, &structure);
+        kmipkit_attribute_set_release(attributes);
+        if (!check_status(env, [&] { return status; })) {
+            if (structure != nullptr) kmipkit_ttlv_structure_release(structure);
+            return static_cast<jlongArray>(nullptr);
+        }
+        if (structure == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlongArray>(nullptr);
+        }
+        jlongArray result = env->NewLongArray(1);
+        if (result == nullptr) {
+            kmipkit_ttlv_structure_release(structure);
+            return static_cast<jlongArray>(nullptr);
+        }
+        const jlong handle = to_java_handle(structure);
+        env->SetLongArrayRegion(result, 0, 1, &handle);
+        if (env->ExceptionCheck()) {
+            kmipkit_ttlv_structure_release(structure);
+            return static_cast<jlongArray>(nullptr);
+        }
+        return result;
+    });
+}
+
+JNIEXPORT jint JNICALL Java_org_kmipkit_server_ServerNative_putFunction(
+        JNIEnv* env, jclass, jlong raw_request) {
+    return guarded<jint>(env, 0, [&] {
+        uint32_t value = 0;
+        if (!check_status(env, [&] { return kmipkit_server_request_item_put_function(
+                from_java_handle<kmipkit_server_request_item_t>(raw_request), &value); })) return 0;
+        return static_cast<jint>(value);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_server_ServerNative_putObject(
+        JNIEnv* env, jclass, jlong raw_request) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_server_put_object_t>(env, [&](auto output) {
+            return kmipkit_server_request_item_put_object(
+                    from_java_handle<kmipkit_server_request_item_t>(raw_request), output);
+        });
+    });
+}
+
+JNIEXPORT jint JNICALL Java_org_kmipkit_server_ServerNative_putObjectType(
+        JNIEnv* env, jclass, jlong raw_object) {
+    return guarded<jint>(env, 0, [&] {
+        uint32_t value = 0;
+        if (!check_status(env, [&] { return kmipkit_server_put_object_type(
+                from_java_handle<kmipkit_server_put_object_t>(raw_object), &value); })) return 0;
+        return static_cast<jint>(value);
+    });
+}
+
+JNIEXPORT jint JNICALL Java_org_kmipkit_server_ServerNative_putObjectTag(
+        JNIEnv* env, jclass, jlong raw_object) {
+    return guarded<jint>(env, 0, [&] {
+        uint32_t value = 0;
+        if (!check_status(env, [&] { return kmipkit_server_put_object_tag(
+                from_java_handle<kmipkit_server_put_object_t>(raw_object), &value); })) return 0;
+        return static_cast<jint>(value);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_server_ServerNative_queryFunctionCount(
+        JNIEnv* env, jclass, jlong raw_request) {
+    return guarded<jlong>(env, 0, [&] {
+        uint64_t count = 0;
+        if (!check_status(env, [&] { return kmipkit_server_request_item_query_functions_count(
+                from_java_handle<kmipkit_server_request_item_t>(raw_request), &count); })) {
+            return static_cast<jlong>(0);
+        }
+        if (count > static_cast<uint64_t>(std::numeric_limits<jlong>::max())) {
+            throw_java(env, "org/kmipkit/ResourceLimitException", "query count exceeds Java range");
+            return static_cast<jlong>(0);
+        }
+        return static_cast<jlong>(count);
+    });
+}
+
+JNIEXPORT jint JNICALL Java_org_kmipkit_server_ServerNative_queryFunctionAt(
+        JNIEnv* env, jclass, jlong raw_request, jlong index) {
+    return guarded<jint>(env, 0, [&] {
+        if (index < 0) { throw_invalid_input(env); return static_cast<jint>(0); }
+        uint32_t value = 0;
+        if (!check_status(env, [&] { return kmipkit_server_request_item_query_function_at(
+                from_java_handle<kmipkit_server_request_item_t>(raw_request),
+                static_cast<uint64_t>(index), &value); })) return 0;
+        return static_cast<jint>(value);
+    });
+}
+
+JNIEXPORT jint JNICALL Java_org_kmipkit_server_ServerNative_endpointRole(
+        JNIEnv* env, jclass, jlong raw_request) {
+    return guarded<jint>(env, 0, [&] {
+        uint32_t value = 0;
+        if (!check_status(env, [&] { return kmipkit_server_request_item_endpoint_role(
+                from_java_handle<kmipkit_server_request_item_t>(raw_request), &value); })) return 0;
+        return static_cast<jint>(value);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_server_ServerNative_responseBuilderCreate(
+        JNIEnv* env, jclass, jlong raw_batch) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_server_response_builder_t>(env, [&](auto output) {
+            return kmipkit_server_response_builder_create(
+                    from_java_handle<kmipkit_server_incoming_batch_t>(raw_batch), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_server_ServerNative_responseDiscoverVersions(
+        JNIEnv* env, jclass, jlong raw_request, jobjectArray raw_versions) {
+    return guarded<jlong>(env, 0, [&] {
+        if (raw_versions == nullptr) { throw_invalid_input(env); return static_cast<jlong>(0); }
+        const jsize count = env->GetArrayLength(raw_versions);
+        if (count < 0 || count > static_cast<jsize>(kMaximumTransportInputCount)) {
+            throw_invalid_input(env); return static_cast<jlong>(0);
+        }
+        std::vector<kmipkit_protocol_version_v1_t> versions;
+        versions.reserve(static_cast<size_t>(count));
+        for (jsize index = 0; index < count; ++index) {
+            auto row = static_cast<jintArray>(env->GetObjectArrayElement(raw_versions, index));
+            if (row == nullptr || env->GetArrayLength(row) != 2) {
+                if (row != nullptr) env->DeleteLocalRef(row);
+                throw_invalid_input(env); return static_cast<jlong>(0);
+            }
+            jint values[2]{};
+            env->GetIntArrayRegion(row, 0, 2, values);
+            env->DeleteLocalRef(row);
+            if (env->ExceptionCheck()) return static_cast<jlong>(0);
+            if (values[0] < 0 || values[0] > UINT8_MAX || values[1] < 0 || values[1] > UINT8_MAX) {
+                throw_invalid_input(env); return static_cast<jlong>(0);
+            }
+            versions.push_back({static_cast<uint8_t>(values[0]), static_cast<uint8_t>(values[1])});
+        }
+        return return_handle<kmipkit_server_response_item_t>(env, [&](auto output) {
+            return kmipkit_server_discover_versions_response_create(
+                    from_java_handle<kmipkit_server_request_item_t>(raw_request),
+                    versions.data(), versions.size(), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_server_ServerNative_responseNotify(
+        JNIEnv* env, jclass, jlong raw_request) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_server_response_item_t>(env, [&](auto output) {
+            return kmipkit_server_notify_response_create(
+                    from_java_handle<kmipkit_server_request_item_t>(raw_request), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_server_ServerNative_responsePut(
+        JNIEnv* env, jclass, jlong raw_request) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_server_response_item_t>(env, [&](auto output) {
+            return kmipkit_server_put_response_create(
+                    from_java_handle<kmipkit_server_request_item_t>(raw_request), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_server_ServerNative_responseQuery(
+        JNIEnv* env, jclass, jlong raw_request, jintArray raw_operations,
+        jintArray raw_object_types, jintArray raw_extension_tags, jstring raw_vendor) {
+    return guarded<jlong>(env, 0, [&] {
+        auto read_values = [&](jintArray raw, std::vector<uint32_t>& values) {
+            if (raw == nullptr) return true;
+            const jsize count = env->GetArrayLength(raw);
+            if (count < 0 || count > static_cast<jsize>(kMaximumTransportInputCount)) {
+                throw_invalid_input(env); return false;
+            }
+            std::vector<jint> source(static_cast<size_t>(count));
+            if (count != 0) env->GetIntArrayRegion(raw, 0, count, source.data());
+            if (env->ExceptionCheck()) return false;
+            for (jint value : source) {
+                if (value < 0) { throw_invalid_input(env); return false; }
+                values.push_back(static_cast<uint32_t>(value));
+            }
+            return true;
+        };
+        std::vector<uint32_t> operations, object_types, extension_tags;
+        std::vector<uint8_t> vendor;
+        if (!read_values(raw_operations, operations) || !read_values(raw_object_types, object_types)
+                || !read_values(raw_extension_tags, extension_tags)
+                || !optional_java_string(env, raw_vendor, vendor)) return static_cast<jlong>(0);
+        return return_handle<kmipkit_server_response_item_t>(env, [&](auto output) {
+            return kmipkit_server_query_response_create(
+                    from_java_handle<kmipkit_server_request_item_t>(raw_request),
+                    operations.data(), operations.size(), object_types.data(), object_types.size(),
+                    extension_tags.data(), extension_tags.size(), byte_span(vendor), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_server_ServerNative_responseEndpointRole(
+        JNIEnv* env, jclass, jlong raw_request, jint role, jstring raw_vendor) {
+    return guarded<jlong>(env, 0, [&] {
+        if (role < 0) { throw_invalid_input(env); return static_cast<jlong>(0); }
+        std::vector<uint8_t> vendor;
+        if (!optional_java_string(env, raw_vendor, vendor)) return static_cast<jlong>(0);
+        return return_handle<kmipkit_server_response_item_t>(env, [&](auto output) {
+            return kmipkit_server_set_endpoint_role_response_create(
+                    from_java_handle<kmipkit_server_request_item_t>(raw_request),
+                    static_cast<uint32_t>(role), byte_span(vendor), output);
+        });
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_server_ServerNative_responseBuilderAddSuccess(
+        JNIEnv* env, jclass, jlong raw_builder, jlong raw_request, jlong raw_response) {
+    guarded<int>(env, 0, [&] {
+        check_status(env, [&] { return kmipkit_server_response_builder_add_success(
+                from_java_handle<kmipkit_server_response_builder_t>(raw_builder),
+                from_java_handle<kmipkit_server_request_item_t>(raw_request),
+                from_java_handle<kmipkit_server_response_item_t>(raw_response)); });
+        return 0;
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_server_ServerNative_responseBuilderAddFailure(
+        JNIEnv* env, jclass, jlong raw_builder, jlong raw_request, jint status,
+        jboolean has_reason, jint reason, jstring raw_message) {
+    guarded<int>(env, 0, [&] {
+        if (status <= 0 || reason < 0) { throw_invalid_input(env); return 0; }
+        std::vector<uint8_t> message;
+        if (!optional_java_string(env, raw_message, message)) return 0;
+        check_status(env, [&] { return kmipkit_server_response_builder_add_failure(
+                from_java_handle<kmipkit_server_response_builder_t>(raw_builder),
+                from_java_handle<kmipkit_server_request_item_t>(raw_request),
+                static_cast<uint32_t>(status), static_cast<uint8_t>(has_reason == JNI_TRUE),
+                static_cast<uint32_t>(reason), byte_span(message)); });
+        return 0;
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_server_ServerNative_responseBuilderBuild(
+        JNIEnv* env, jclass, jlong raw_builder) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_server_response_t>(env, [&](auto output) {
+            return kmipkit_server_response_builder_build(
+                    from_java_handle<kmipkit_server_response_builder_t>(raw_builder), output);
+        });
     });
 }
 
