@@ -137,14 +137,8 @@ fn main() {
     let workspace_root = manifest_dir.join("../..");
     let public_header = workspace_root.join("bindings/c/include");
     let internal_header = workspace_root.join("tests/fixtures/api/generated");
-    let target_deps = PathBuf::from(
-        env::var_os("OUT_DIR").expect("Cargo provides the build-script output directory"),
-    )
-    .join("../../../deps");
-
     println!("cargo:rerun-if-changed={}", public_header.display());
     println!("cargo:rerun-if-changed={}", internal_header.display());
-    println!("cargo:rustc-link-search=native={}", target_deps.display());
 
     for consumer in &CONSUMERS {
         compile_consumer(&workspace_root, &public_header, consumer);
