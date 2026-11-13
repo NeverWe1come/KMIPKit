@@ -2663,6 +2663,208 @@ cleanup:
     return outcome;
 }
 
+static void record_kmip_result(kmip_execution_outcome_t *outcome,
+                               const kmipkit_client_batch_item_metadata_v2_t *metadata) {
+    outcome->has_result_status_code = true;
+    outcome->result_status_code = metadata->result_status;
+    outcome->has_result_reason_code = metadata->has_result_reason != 0;
+    outcome->result_reason_code = metadata->result_reason;
+    outcome->library_validated = true;
+    outcome->success = metadata->result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS;
+    if (!outcome->success && outcome->has_result_reason_code) {
+        outcome->server_unsupported =
+            metadata->result_reason == KMIPKIT_ENUMERATION_RESULT_REASON_OPERATION_NOT_SUPPORTED ||
+            metadata->result_reason == KMIPKIT_ENUMERATION_RESULT_REASON_FEATURE_NOT_SUPPORTED;
+        outcome->policy_restricted =
+            metadata->result_reason == KMIPKIT_ENUMERATION_RESULT_REASON_NOT_AUTHORISED ||
+            metadata->result_reason == KMIPKIT_ENUMERATION_RESULT_REASON_PERMISSION_DENIED;
+    }
+}
+
+static kmip_execution_outcome_t execute_logout_with_login_ticket(kmip_live_client_t *client) {
+    /* OASIS KMIP 2.0 §6.1.29-§6.1.30; KMIP 2.1 §6.1.30-§6.1.31. */
+    kmip_execution_outcome_t outcome = {.executed = true};
+    kmipkit_client_batch_item_t *login_item = NULL;
+    kmipkit_client_batch_item_t *logout_item = NULL;
+    kmipkit_client_batch_t *login_batch = NULL;
+    kmipkit_client_batch_t *logout_batch = NULL;
+    kmipkit_client_batch_response_t *login_response = NULL;
+    kmipkit_client_batch_response_t *logout_response = NULL;
+    kmipkit_client_batch_item_response_t *login_result = NULL;
+    kmipkit_client_batch_item_response_t *logout_result = NULL;
+    kmipkit_ttlv_structure_t *ticket = NULL;
+    kmipkit_authentication_t *authentication = NULL;
+    int32_t status = 0;
+    uint64_t response_count = 0;
+    uint8_t response_present = 0;
+    uint8_t ticket_present = 0;
+    uint32_t ticket_type = 0;
+    kmipkit_byte_span_v1_t ticket_value = {0};
+    kmipkit_client_batch_item_metadata_v2_t metadata = {
+        .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t),
+        .abi_version = 2
+    };
+
+    if (client->protocol_minor == 0) {
+        return outcome_not_run(
+            "the installed C Login builder supports KMIP 2.1 only, so KMIP 2.0 Logout cannot obtain a server-issued Ticket");
+    }
+    status = kmipkit_client_batch_item_login(0, 0, 1, 2, NULL, &login_item);
+    if (status == 0) status = kmipkit_client_batch_create(&login_batch);
+    if (status == 0) status = kmipkit_client_batch_add_item(login_batch, &login_item);
+    if (status == 0 && client->username_env[0] != '\0') {
+        if (!create_authentication(client, &authentication)) {
+            outcome.library_failed = true;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit could not construct configured Username/Password authentication for Login");
+            goto cleanup;
+        }
+        status = kmipkit_client_batch_set_authentication(login_batch, authentication);
+        if (status != 0) {
+            kmipkit_authentication_release(authentication);
+            authentication = NULL;
+        } else {
+            authentication = NULL;
+        }
+    }
+    if (status == 0) status = kmipkit_client_execute(
+        client->client, &login_batch, client->limits, &login_response);
+    if (status == 0) status = kmipkit_client_batch_response_item_count(
+        login_response, &response_count);
+    if (status == 0 && response_count == 1) status = kmipkit_client_batch_response_item_at(
+        login_response, 0, &login_result);
+    if (status != 0 || response_count != 1 || !login_result) {
+        outcome.library_failed = true;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit could not complete the Login prerequisite for Logout (status %d)", status);
+        goto cleanup;
+    }
+    status = kmipkit_client_batch_item_response_metadata_v2(login_result, &metadata);
+    if (status != 0) {
+        outcome.library_failed = true;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit could not inspect the Login prerequisite result (status %d)", status);
+        goto cleanup;
+    }
+    record_kmip_result(&outcome, &metadata);
+    if (!outcome.success) {
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "server rejected the Login prerequisite for Logout (status=%u reason=%u)",
+                 metadata.result_status, metadata.result_reason);
+        goto cleanup;
+    }
+    status = kmipkit_client_batch_item_response_login(
+        login_result, &response_present, &ticket_present, &ticket_type, &ticket_value);
+    if (status == 0) status = kmipkit_client_batch_item_response_login_ttlv(
+        login_result, &response_present, &ticket);
+    if (status != 0 || !response_present || !ticket_present || !ticket ||
+        ticket_type != KMIPKIT_ENUMERATION_TICKET_TYPE_LOGIN ||
+        !ticket_value.data || ticket_value.length == 0) {
+        outcome.library_failed = true;
+        outcome.success = false;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit did not preserve a valid server-issued Login Ticket for Logout");
+        goto cleanup;
+    }
+
+    outcome.library_validated = false;
+    outcome.has_result_status_code = false;
+    outcome.has_result_reason_code = false;
+    outcome.success = false;
+    status = kmipkit_client_batch_item_logout(ticket, &logout_item);
+    if (status == 0) status = kmipkit_client_batch_create(&logout_batch);
+    if (status == 0) status = kmipkit_client_batch_add_item(logout_batch, &logout_item);
+    if (status == 0 && client->username_env[0] != '\0') {
+        if (!create_authentication(client, &authentication)) {
+            outcome.library_failed = true;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit could not construct configured Username/Password authentication for Logout");
+            goto cleanup;
+        }
+        status = kmipkit_client_batch_set_authentication(logout_batch, authentication);
+        if (status != 0) {
+            kmipkit_authentication_release(authentication);
+            authentication = NULL;
+        } else {
+            authentication = NULL;
+        }
+    }
+    if (status == 0) status = kmipkit_client_execute(
+        client->client, &logout_batch, client->limits, &logout_response);
+    if (status == 0) status = kmipkit_client_batch_response_item_count(
+        logout_response, &response_count);
+    if (status == 0 && response_count == 1) status = kmipkit_client_batch_response_item_at(
+        logout_response, 0, &logout_result);
+    if (status != 0 || response_count != 1 || !logout_result) {
+        outcome.library_failed = true;
+        outcome.success = false;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit could not complete Logout with the server-issued Ticket (status %d)", status);
+        goto cleanup;
+    }
+    metadata.struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t);
+    metadata.abi_version = 2;
+    status = kmipkit_client_batch_item_response_metadata_v2(logout_result, &metadata);
+    if (status != 0) {
+        outcome.library_failed = true;
+        outcome.success = false;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit could not inspect the Logout result (status %d)", status);
+        goto cleanup;
+    }
+    record_kmip_result(&outcome, &metadata);
+    if (!outcome.success) {
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "server returned KMIP Logout status=%u reason=%u",
+                 metadata.result_status, metadata.result_reason);
+        goto cleanup;
+    }
+    status = kmipkit_client_batch_item_response_logout(logout_result, &response_present);
+    if (status == 0 && response_present) {
+        uint8_t payload_present = 0;
+        uint64_t payload_field_count = UINT64_MAX;
+        kmipkit_ttlv_structure_t *raw_payload = NULL;
+        kmipkit_ttlv_structure_view_t *payload_view = NULL;
+        status = kmipkit_client_batch_item_response_raw_ttlv(
+            logout_result, &payload_present, &raw_payload);
+        if (status == 0 && payload_present && raw_payload) status =
+            kmipkit_ttlv_structure_view(raw_payload, &payload_view);
+        if (status == 0 && payload_view) status = kmipkit_ttlv_structure_view_item_count(
+            payload_view, &payload_field_count);
+        bool empty_success_payload = status == 0 && payload_present && raw_payload &&
+            payload_view && payload_field_count == 0;
+        if (payload_view) kmipkit_ttlv_structure_view_release(payload_view);
+        if (raw_payload) kmipkit_ttlv_structure_release(raw_payload);
+        if (!empty_success_payload) {
+            outcome.library_failed = true;
+            outcome.success = false;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit Logout typed response did not preserve its empty success payload (status=%d present=%u fields=%llu)",
+                     status, payload_present, (unsigned long long)payload_field_count);
+            goto cleanup;
+        }
+    }
+    if (status != 0 || !response_present) {
+        outcome.library_failed = status != 0 || !response_present;
+        outcome.success = false;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit did not expose a valid typed Logout response");
+    }
+
+cleanup:
+    if (authentication) kmipkit_authentication_release(authentication);
+    if (ticket) kmipkit_ttlv_structure_release(ticket);
+    if (login_result) kmipkit_client_batch_item_response_release(login_result);
+    if (logout_result) kmipkit_client_batch_item_response_release(logout_result);
+    if (login_response) kmipkit_client_batch_response_release(login_response);
+    if (logout_response) kmipkit_client_batch_response_release(logout_response);
+    if (login_batch) kmipkit_client_batch_release(login_batch);
+    if (logout_batch) kmipkit_client_batch_release(logout_batch);
+    if (login_item) kmipkit_client_batch_item_release(login_item);
+    if (logout_item) kmipkit_client_batch_item_release(logout_item);
+    return outcome;
+}
+
 kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_case,
                                                 const kmip_attempt_context_t *attempt,
                                                 void *user_data) {
@@ -2727,6 +2929,12 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         !usage_allocation_identifier_explicit && !usage_allocation_identifier_omitted) {
         return outcome_not_run(
             "controlled peer did not select an optional Unique Identifier form");
+    }
+    if (strcmp(test_case->operation, "Logout") == 0) {
+        if (strcmp(test_case->mode, "server_exchange") != 0) {
+            return outcome_not_run("Logout's live request/response route requires a server exchange");
+        }
+        return execute_logout_with_login_ticket(client);
     }
     if (strcmp(test_case->case_id, "test-op-add-attribute") == 0)
         return execute_attribute_mutation_case(client, ATTRIBUTE_MUTATION_ADD);

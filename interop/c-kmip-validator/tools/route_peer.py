@@ -323,6 +323,7 @@ RECIPES = {
     'test-norm-payload-client-query-response-21-001': ((24,), 'query'),
     'test-op-discover-versions': ((30,), 'discover_versions'),
     'test-op-log': ((44,), 'log'), 'test-op-login': ((45,), 'login'),
+    'test-op-logout': ((45, 46), 'login_logout'),
     'test-op-delegated-login': ((47,), 'delegated_login'),
     'test-op-ping': ((59,), 'ping'),
     'test-attr-cryptographic-algorithm': ((1, 11, 20), 'get_attributes'),
@@ -389,6 +390,65 @@ def assert_registered_crypto_batch(node):
     ]
     if [payload[0][2] for payload in payloads] != expected:
         raise ValueError('fixture_registered_crypto_request_fields_mismatch')
+
+
+def assert_login_logout_exchange(node, version, exchange_index):
+    """Verify Login obtains the Ticket that the following Logout returns (KMIP 2.x §6.1.30/31)."""
+    expected_operation = (45, 46)[exchange_index]
+    header = next(descendants(node, 0x420077), node)
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if (numbers(header, 0x42006A) != [2] or
+            numbers(header, 0x42006B) != [int(version[-1])] or
+            numbers(node, 0x42000D) != [1] or len(items) != 1 or
+            numbers(items[0], 0x42005C) != [expected_operation]):
+        raise ValueError('fixture_login_logout_operation_mismatch')
+    if exchange_index == 0:
+        payloads = [child for child in items[0][2]
+                    if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+        request_counts = [child for payload in payloads for child in payload[2]
+                          if child[0] == 0x42014C and child[1] == 2]
+        if (len(payloads) != 1 or len(request_counts) != 1 or
+                int.from_bytes(request_counts[0][2], 'big', signed=True) != 2):
+            raise ValueError('fixture_logout_login_request_count_mismatch')
+        return
+    payloads = [child for child in items[0][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+    tickets = [child for payload in payloads for child in payload[2]
+               if child[0] == 0x420149 and child[1] == 1]
+    ticket_types = [child for ticket in tickets for child in ticket[2]
+                    if child[0] == 0x42014A and child[1] == 5]
+    ticket_values = [child for ticket in tickets for child in ticket[2]
+                     if child[0] == 0x42014B and child[1] == 8]
+    if (len(payloads) != 1 or len(tickets) != 1 or len(ticket_types) != 1 or
+            ticket_types[0][2] != (1).to_bytes(4, 'big') or len(ticket_values) != 1 or
+            ticket_values[0][2] != b'controlled-login-ticket'):
+        raise ValueError('fixture_logout_ticket_mismatch')
+
+
+def verify_login_logout_response(node, exchange_index):
+    """Check both operation responses and keep the server-issued Ticket out of evidence."""
+    expected_operation = (45, 46)[exchange_index]
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if (len(items) != 1 or numbers(items[0], 0x42005C) != [expected_operation] or
+            numbers(items[0], 0x42007F) != [0]):
+        raise ValueError('fixture_login_logout_response_mismatch')
+    payloads = [child for child in items[0][2]
+                if child[0] == 0x42007C and child[1] == 1]
+    if len(payloads) != 1:
+        raise ValueError('fixture_login_logout_response_payload_mismatch')
+    if exchange_index == 0:
+        tickets = [child for child in payloads[0][2]
+                   if child[0] == 0x420149 and child[1] == 1]
+        ticket_types = [child for ticket in tickets for child in ticket[2]
+                        if child[0] == 0x42014A and child[1] == 5]
+        ticket_values = [child for ticket in tickets for child in ticket[2]
+                         if child[0] == 0x42014B and child[1] == 8]
+        if (len(tickets) != 1 or len(ticket_types) != 1 or
+                ticket_types[0][2] != (1).to_bytes(4, 'big') or
+                len(ticket_values) != 1 or ticket_values[0][2] != b'controlled-login-ticket'):
+            raise ValueError('fixture_login_response_ticket_mismatch')
+    elif payloads[0][2]:
+        raise ValueError('fixture_logout_response_payload_not_empty')
 
 
 def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
@@ -779,6 +839,11 @@ def read_back_attribute_fixture(case, catalog, version, attributes):
     }
 
 
+def target_operation_exchange_index(recipe):
+    """Select the request/response that belongs to the catalog operation under test."""
+    return 1 if recipe is not None and recipe[1] == 'login_logout' else 0
+
+
 def recipe_for_case(case, attribute_fixture):
     recipe = RECIPES.get(case['case_id'])
     if recipe is not None:
@@ -1147,7 +1212,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                         mutation_exchange_index = 2 if delete_attribute_recipe else 1
                         attribute_cleanup_exchange_index = 3 if delete_attribute_recipe else 2
                         reject_case = peer_rejection is not None and peer_rejection.get('case_id') == case_id
-                        if version == '2.0' and case_id in ('test-op-discover-versions', 'test-op-login', 'test-op-get-constraints', 'test-op-ping'):
+                        if version == '2.0' and case_id in ('test-op-discover-versions', 'test-op-login', 'test-op-logout', 'test-op-get-constraints', 'test-op-ping'):
                             continue
                         observation, errors = [], []
                         peer_state = PeerState(
@@ -1164,7 +1229,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                 stream = None
                                 try:
                                     exchange_count = 4 if delete_attribute_recipe else 3 if attribute_mutation_recipe else (
-                                        2 if placeholder_chain_recipe else 1)
+                                        2 if placeholder_chain_recipe or recipe[1] == 'login_logout' else 1)
                                     seed_rejected = False
                                     accepted, _ = server.accept()
                                     stream = context.wrap_socket(accepted, server_side=True)
@@ -1196,7 +1261,11 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             (exchange_index == attribute_cleanup_exchange_index or
                                              (delete_attribute_recipe and seed_rejected and
                                               exchange_index == attribute_cleanup_exchange_index - 1)))
-                                        if cleanup_exchange:
+                                        logout_recipe = recipe[1] == 'login_logout'
+                                        if logout_recipe:
+                                            assert_login_logout_exchange(request_tree, version, exchange_index)
+                                            response_operations = ((45,) if exchange_index == 0 else (46,))
+                                        elif cleanup_exchange:
                                             if placeholder_chain_recipe:
                                                 assert_placeholder_cleanup_request(request_tree, version)
                                             else:
@@ -1295,7 +1364,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             len(byte_string_values(request_tree, 0x4200C2)[0])
                                             if recipe[1] == 'rng_seed' else 16)
                                         response_tree = parse(response_wire)
-                                        if recipe[1] == 'batch_stop_on_first_failure':
+                                        if logout_recipe:
+                                            verify_login_logout_response(response_tree, exchange_index)
+                                        elif recipe[1] == 'batch_stop_on_first_failure':
                                             response_items = [item for item in response_tree[2]
                                                               if item[0] == BATCH_ITEM_TAG and item[1] == 1]
                                             if ([numbers(item, 0x42005C) for item in response_items] != [[10]] or
@@ -1333,7 +1404,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                     [[recipe[0][0]]] or
                                                     [numbers(item, 0x42007F) for item in response_items] != [[0]]):
                                                 raise ValueError('fixture_global_operation_response_mismatch')
-                                        else:
+                                        elif not logout_recipe:
                                             verify_lifecycle(recipe[0], response_tree)
                                         encoded_response = codec.encode(response_wire, encoding)
                                         if transport == 'https':
@@ -1431,7 +1502,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                    (0x420079, 1, [])])])
                                 observation.append((attempted, None, {}))
                             code = errors[0] if errors else 'consumer_check_failed' if not case_passed else 'public_api_trace_missing' if not called_symbols else None
-                            mutation_index = mutation_exchange_index if attribute_mutation_recipe else 0
+                            mutation_index = mutation_exchange_index if attribute_mutation_recipe else \
+                                target_operation_exchange_index(recipe)
                             attribute_check = {}
                             if observation and attribute_fixture:
                                 request_item = next(item for item in observation[0][0][2]
