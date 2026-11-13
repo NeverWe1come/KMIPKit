@@ -504,6 +504,33 @@ static bool request_item_is_valid(kmipkit_client_batch_item_t *item,
     return false;
 }
 
+typedef int32_t (*client_response_ttlv_accessor_t)(
+    kmipkit_client_batch_item_response_t *, uint8_t *, kmipkit_ttlv_structure_t **);
+
+static bool response_ttlv_matches_field_count(
+    kmipkit_client_batch_item_response_t *response_item,
+    client_response_ttlv_accessor_t accessor,
+    uint64_t expected_field_count,
+    int32_t *out_status) {
+    uint8_t present = 0;
+    kmipkit_ttlv_structure_t *structure = NULL;
+    kmipkit_ttlv_structure_view_t *view = NULL;
+    uint64_t field_count = 0;
+    int32_t status = accessor(response_item, &present, &structure);
+    if (status == 0 && present && structure) {
+        status = kmipkit_ttlv_structure_view(structure, &view);
+    }
+    if (status == 0 && present && view) {
+        status = kmipkit_ttlv_structure_view_item_count(view, &field_count);
+    }
+    bool matches = status == 0 && present && structure && view &&
+        field_count == expected_field_count;
+    if (view) kmipkit_ttlv_structure_view_release(view);
+    if (structure) kmipkit_ttlv_structure_release(structure);
+    *out_status = status;
+    return matches;
+}
+
 static bool get_attribute_list_response_matches_key(
     kmipkit_client_batch_item_response_t *response_item,
     const kmipkit_unique_identifier_v1_t *created_identifier,
@@ -546,20 +573,9 @@ static bool get_attribute_list_response_matches_key(
             references[index].tag_value == UINT32_C(0x42002A)) length_found = true;
     }
     free(references);
-    if (valid) {
-        uint8_t ttlv_present = 0;
-        kmipkit_ttlv_structure_t *response_ttlv = NULL;
-        status = kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv(
-            response_item, &ttlv_present, &response_ttlv);
-        kmipkit_ttlv_structure_view_t *view = NULL;
-        uint64_t field_count = 0;
-        valid = status == 0 && ttlv_present && response_ttlv &&
-            kmipkit_ttlv_structure_view(response_ttlv, &view) == 0 && view &&
-            kmipkit_ttlv_structure_view_item_count(view, &field_count) == 0 &&
-            field_count == copied_reference_count + 1;
-        if (view) kmipkit_ttlv_structure_view_release(view);
-        if (response_ttlv) kmipkit_ttlv_structure_release(response_ttlv);
-    }
+    if (valid) valid = response_ttlv_matches_field_count(
+        response_item, kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv,
+        copied_reference_count + 1, &status);
     *out_status = status;
     return valid && algorithm_found && length_found;
 }
@@ -687,20 +703,8 @@ static bool check_response_matches_created_key(
         same_text_identifier(created_identifier, &response_identifier) &&
         !usage_limits_count_present && !cryptographic_usage_mask_present &&
         !lease_time_present;
-    if (valid) {
-        uint8_t ttlv_present = 0;
-        kmipkit_ttlv_structure_t *response_ttlv = NULL;
-        status = kmipkit_client_batch_item_response_check_ttlv(
-            response_item, &ttlv_present, &response_ttlv);
-        kmipkit_ttlv_structure_view_t *view = NULL;
-        uint64_t field_count = 0;
-        valid = status == 0 && ttlv_present && response_ttlv &&
-            kmipkit_ttlv_structure_view(response_ttlv, &view) == 0 && view &&
-            kmipkit_ttlv_structure_view_item_count(view, &field_count) == 0 &&
-            field_count == 4;
-        if (view) kmipkit_ttlv_structure_view_release(view);
-        if (response_ttlv) kmipkit_ttlv_structure_release(response_ttlv);
-    }
+    if (valid) valid = response_ttlv_matches_field_count(
+        response_item, kmipkit_client_batch_item_response_check_ttlv, 4, &status);
     *out_status = status;
     return valid;
 }
@@ -718,20 +722,8 @@ static bool revoke_response_matches_created_key(
         response_item, &present, &response_identifier);
     bool valid = status == 0 && present &&
         same_text_identifier(created_identifier, &response_identifier);
-    if (valid) {
-        uint8_t ttlv_present = 0;
-        kmipkit_ttlv_structure_t *response_ttlv = NULL;
-        status = kmipkit_client_batch_item_response_revoke_ttlv(
-            response_item, &ttlv_present, &response_ttlv);
-        kmipkit_ttlv_structure_view_t *view = NULL;
-        uint64_t field_count = 0;
-        valid = status == 0 && ttlv_present && response_ttlv &&
-            kmipkit_ttlv_structure_view(response_ttlv, &view) == 0 && view &&
-            kmipkit_ttlv_structure_view_item_count(view, &field_count) == 0 &&
-            field_count == 4;
-        if (view) kmipkit_ttlv_structure_view_release(view);
-        if (response_ttlv) kmipkit_ttlv_structure_release(response_ttlv);
-    }
+    if (valid) valid = response_ttlv_matches_field_count(
+        response_item, kmipkit_client_batch_item_response_revoke_ttlv, 4, &status);
     *out_status = status;
     return valid;
 }
@@ -776,24 +768,9 @@ static bool query_response_ttlv_matches_field_count(
     kmipkit_client_batch_item_response_t *response_item,
     uint64_t expected_field_count,
     int32_t *out_status) {
-    uint8_t present = 0;
-    uint64_t field_count = 0;
-    kmipkit_ttlv_structure_t *structure = NULL;
-    kmipkit_ttlv_structure_view_t *view = NULL;
-    int32_t status = kmipkit_client_batch_item_response_query_ttlv(
-        response_item, &present, &structure);
-    if (status == 0 && present && structure) {
-        status = kmipkit_ttlv_structure_view(structure, &view);
-    }
-    if (status == 0 && present && view) {
-        status = kmipkit_ttlv_structure_view_item_count(view, &field_count);
-    }
-    bool matches = status == 0 && present && structure && view &&
-        field_count == expected_field_count;
-    if (view) kmipkit_ttlv_structure_view_release(view);
-    if (structure) kmipkit_ttlv_structure_release(structure);
-    *out_status = status;
-    return matches;
+    return response_ttlv_matches_field_count(
+        response_item, kmipkit_client_batch_item_response_query_ttlv,
+        expected_field_count, out_status);
 }
 
 static int32_t create_revocation_item(
@@ -3204,18 +3181,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         goto cleanup;
     }
     if (strcmp(test_case->operation, "Log") == 0) {
-        uint8_t present = 0;
-        kmipkit_ttlv_structure_t *log_ttlv = NULL;
-        status = kmipkit_client_batch_item_response_log_ttlv(
-            response_item, &present, &log_ttlv);
-        kmipkit_ttlv_structure_view_t *view = NULL;
-        uint64_t field_count = 0;
-        bool valid = status == 0 && present && log_ttlv &&
-            kmipkit_ttlv_structure_view(log_ttlv, &view) == 0 && view &&
-            kmipkit_ttlv_structure_view_item_count(view, &field_count) == 0 &&
-            field_count == 3;
-        if (view) kmipkit_ttlv_structure_view_release(view);
-        if (log_ttlv) kmipkit_ttlv_structure_release(log_ttlv);
+        bool valid = response_ttlv_matches_field_count(
+            response_item, kmipkit_client_batch_item_response_log_ttlv, 3, &status);
         if (!valid) {
             outcome.success = false;
             outcome.library_failed = status != 0;
