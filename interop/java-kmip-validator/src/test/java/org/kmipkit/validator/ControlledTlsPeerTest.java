@@ -350,6 +350,9 @@ class ControlledTlsPeerTest {
         List<String> nistKeyTypeTargets = enumerationTargetIds(localEnumerationFixtures, "NIST-KEY-TYPE");
         assertEquals(20, nistKeyTypeTargets.size(),
                 "The NIST Key Type aggregate must cover every catalogued value.");
+        List<String> keyRoleTypeTargets = enumerationTargetIds(localEnumerationFixtures, "KEY-ROLE-TYPE");
+        assertEquals(25, keyRoleTypeTargets.size(),
+                "The Key Role Type aggregate must cover every catalogued value.");
         List<BitmaskFixture> bitmaskFixtures = genericBitmaskFixtures();
         List<DataTypeFixture> dataTypeFixtures = genericDataTypeFixtures();
         Map<String, JsonNode> dataTypeVectors = dataTypeBoundaryVectors();
