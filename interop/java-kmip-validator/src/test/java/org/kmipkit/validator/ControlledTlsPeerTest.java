@@ -210,7 +210,9 @@ class ControlledTlsPeerTest {
                     .filter(candidate -> "tag".equals(candidate.path("kind").asText()))
                     .anyMatch(candidate -> normalizeTargetName(candidate.path("name").asText())
                             .equals(normalizeTargetName(parentName)));
-            if (hasStandaloneTag && !target.path("wire_value").asText().contains("-")) {
+            boolean hasRepresentativeScalar = !target.path("wire_value").asText().contains("-")
+                    || "reserved".equals(target.path("allocation").asText());
+            if (hasStandaloneTag && hasRepresentativeScalar) {
                 expectedCaseIds.add(testCase.path("case_id").asText());
             }
         }
@@ -234,7 +236,7 @@ class ControlledTlsPeerTest {
 
         assertEquals(1, fixtures.size(),
                 "The Profile Name reserved-range case must exercise its own generic TTLV routes.");
-        assertEquals(0x103L, fixtures.get(0).value(),
+        assertEquals(0x1L, fixtures.get(0).value(),
                 "The generic scalar probe must use the catalogued reserved-range lower boundary.");
         assertEquals(KMIP_2_0_AND_2_1, fixtures.get(0).protocolVersions());
     }
@@ -1782,9 +1784,8 @@ class ControlledTlsPeerTest {
             }
             if (versions.isEmpty()) continue;
             String wireValue = target.path("wire_value").asText();
-            if (wireValue.contains("-")) continue;
-            long enumValue = "extension".equals(target.path("allocation").asText())
-                    ? 0x8000_0000L : Long.parseUnsignedLong(wireValue.replaceFirst("^0[xX]", ""), 16);
+            long enumValue = parseRepresentativeEnumerationValue(
+                    wireValue, target.path("allocation").asText());
             fixtures.add(new EnumerationFixture(testCase.path("case_id").asText(),
                     target.path("target_id").asText(), parentName, rawTag, enumValue,
                     attribute, List.copyOf(versions)));
