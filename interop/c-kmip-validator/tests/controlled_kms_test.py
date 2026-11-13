@@ -113,6 +113,12 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                 tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 3:
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
+        elif operation == 31:
+            payload_value = tlv(0x420094, 7, b"fixture-key-1") + tlv(
+                0x4200C2, 8, bytes.fromhex("69c4e0d86a7b0430d8cdb78070b4c55a"))
+        elif operation == 32:
+            payload_value = tlv(0x420094, 7, b"fixture-key-1") + tlv(
+                0x4200C2, 8, bytes.fromhex("00112233445566778899aabbccddeeff"))
         elif operation in (13, 15, 49):
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 11:
@@ -263,6 +269,11 @@ def main() -> int:
     if protocol_version not in ("2.0", "2.1"):
         raise AssertionError(f"unsupported fixture protocol version {protocol_version!r}")
     protocol_minor = int(protocol_version.split(".")[1])
+    registered_key_batch = (3, 18, 31, 32, 19, 20)
+    registered_key_batch_item_ids = (
+        b"crypto-register", b"crypto-activate", b"crypto-encrypt",
+        b"crypto-decrypt", b"crypto-revoke", b"crypto-destroy",
+    )
     expected_operations = (
         (1, 20, 1, 11, 20, 1, 12, 20, 1, 10, 20, 1, 9, 19, 20, 1, 19, 20,
          1, 20, 19, 20,
@@ -296,12 +307,14 @@ def main() -> int:
     expected_operations += (1, 18, 12, 19, 20)
     expected_operations += (1, 18, 10, 19, 20)
     expected_operations += (10, 12, 10, 12, 10, 12, 10, 12)
+    expected_operations += registered_key_batch
     expected_cases += ("test-op-hash", "test-op-rng-retrieve", "test-op-rng-seed")
     expected_cases += (
         "test-crypto-hash-sha_256-0",
         "test-crypto-rng-retrieve-rng-32",
         "test-crypto-rng-seed-rng-32",
     )
+    expected_cases += ("test-batch-register-encrypt-decrypt-destroy",)
     expected_cases += ("test-neg-destroy-active-without-revoke",)
     expected_cases += ("test-op-add-attribute",)
     expected_cases += ("test-op-set-attribute",)
@@ -388,6 +401,13 @@ def main() -> int:
                                 tlv(0x420093, 8, b"placeholder-revoke-cleanup") in request
                             response_operations = operations
                             response_item_ids = None
+                            if operations == registered_key_batch:
+                                if any(request.count(tlv(0x420093, 8, item_id)) != 1
+                                       for item_id in registered_key_batch_item_ids):
+                                    raise AssertionError(
+                                        "registered-key batch omitted or duplicated a unique item ID"
+                                    )
+                                response_item_ids = registered_key_batch_item_ids
                             if two_read_batch:
                                 continue_after_failure = tlv(0x420094, 7, b"missing-key") in request
                                 expected_fixture_identifiers = 1 if continue_after_failure else 2
@@ -605,7 +625,8 @@ def main() -> int:
         if (handled != len(expected_operations) or sorted(handled_operations) != sorted(expected_operations)
                 or (1, 11, 20) not in handled_batches
                 or (1, 12, 20) not in handled_batches
-                or (1, 10, 20) not in handled_batches):
+                or (1, 10, 20) not in handled_batches
+                or registered_key_batch not in handled_batches):
             raise AssertionError(
                 f"controlled peer observed batches {handled_batches!r}, "
                 f"expected {expected_operations!r}"

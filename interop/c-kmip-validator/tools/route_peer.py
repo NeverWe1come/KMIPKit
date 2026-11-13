@@ -42,6 +42,12 @@ ENUMERATION_TTLV_TYPE = 5
 ID_PLACEHOLDER_ENUMERATION = 1
 PLACEHOLDER_CHAIN_OPERATIONS = (1, 18, 10)
 PLACEHOLDER_CLEANUP_OPERATIONS = (19, 20)
+BATCH_CRYPTO_OPERATIONS = (3, 18, 31, 32, 19, 20)
+BATCH_CRYPTO_ITEM_IDS = (b'crypto-register', b'crypto-activate', b'crypto-encrypt',
+                         b'crypto-decrypt', b'crypto-revoke', b'crypto-destroy')
+BATCH_CRYPTO_KEY = bytes(range(16))
+BATCH_CRYPTO_PLAINTEXT = bytes.fromhex('00112233445566778899aabbccddeeff')
+BATCH_CRYPTO_CIPHERTEXT = bytes.fromhex('69c4e0d86a7b0430d8cdb78070b4c55a')
 
 CERTIFICATE_ATTRIBUTE_FIELDS = (
     'Certificate Subject CN', 'Certificate Subject O', 'Certificate Subject OU',
@@ -283,6 +289,7 @@ RECIPES = {
     'test-obj-certificate': ((3, 20), 'register'),
     'test-obj-certificate-request': ((3, 20), 'register_certificate_request'),
     'test-batch-create-activate-destroy': ((1, 18, 12, 19, 20), 'create_activate_attribute_list_revoke_destroy'),
+    'test-batch-register-encrypt-decrypt-destroy': (BATCH_CRYPTO_OPERATIONS, 'batch_register_crypto'),
     'test-batch-placeholder-chain-resolves': (PLACEHOLDER_CHAIN_OPERATIONS, 'batch_placeholder_chain'),
     'test-batch-single-item-options-omitted': ((10,), 'batch_single_item_options_omitted'),
     'test-batch-count-matches-items': ((10, 12), 'batch_count_two_read_items'),
@@ -342,6 +349,45 @@ CONTROLLED_PEER_LOCAL_MODEL_CASES = frozenset({
     'test-norm-payload-client-get-usage-allocation-request-20-001',
     'test-norm-payload-client-get-usage-allocation-request-21-001',
 })
+
+
+def assert_registered_crypto_batch(node):
+    """Check KMIP 2.0/2.1 Register/crypto fields and the complete ordered batch."""
+    def enumeration(tag, value):
+        return (tag, 5, value.to_bytes(4, 'big'))
+
+    def integer(tag, value):
+        return (tag, 2, value.to_bytes(4, 'big'))
+
+    items = [item for item in node[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    if (len(items) != 6 or
+            [byte_string_values(item, 0x420093) for item in items] !=
+            [[value] for value in BATCH_CRYPTO_ITEM_IDS] or
+            numbers(node, 0x420010) != [1] or numbers(node, 0x42000E) != [1]):
+        raise ValueError('fixture_registered_crypto_batch_shape_mismatch')
+    payloads = [[child for child in item[2] if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+                for item in items]
+    if any(len(payload) != 1 for payload in payloads):
+        raise ValueError('fixture_registered_crypto_payload_missing')
+    identifier = enumeration(UNIQUE_IDENTIFIER_TAG, ID_PLACEHOLDER_ENUMERATION)
+    attributes = (0x420125, 1, [enumeration(0x420028, 3), integer(0x42002A, 128),
+                                integer(0x42002C, 12)])
+    symmetric_key = (0x42008F, 1, [(0x420040, 1, [
+        enumeration(0x420042, 1),
+        (0x420045, 1, [(0x420043, 8, BATCH_CRYPTO_KEY)]),
+        enumeration(0x420028, 3), integer(0x42002A, 128)])])
+    parameters = (0x42002B, 1, [enumeration(0x420011, 2), enumeration(0x42005F, 1),
+                                enumeration(0x420028, 3)])
+    expected = [
+        [enumeration(0x420057, 2), attributes, symmetric_key],
+        [identifier],
+        [identifier, parameters, (0x4200C2, 8, BATCH_CRYPTO_PLAINTEXT)],
+        [identifier, parameters, (0x4200C2, 8, BATCH_CRYPTO_CIPHERTEXT)],
+        [identifier, (0x420081, 1, [enumeration(0x420082, 6)])],
+        [identifier],
+    ]
+    if [payload[0][2] for payload in payloads] != expected:
+        raise ValueError('fixture_registered_crypto_request_fields_mismatch')
 
 
 def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
@@ -424,7 +470,9 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
                                 if item[0] == 0x420079 and item[1] == 1), None)
         attributes = next((item for item in request_payload[2]
                            if item[0] == 0x420125 and item[1] == 1), None) if request_payload else None
-        if selected_recipe[1] == 'register_certificate_request':
+        if selected_recipe[1] == 'batch_register_crypto':
+            assert_registered_crypto_batch(node)
+        elif selected_recipe[1] == 'register_certificate_request':
             certificate_request = next(descendants(register_item, 0x420018), None)
             request_value = next(descendants(register_item, 0x420140), None)
             if (numbers(node, 0x420057) != [10] or certificate_request is None or
@@ -637,6 +685,7 @@ def peer_cleanup_evidence(observations, include_state_hash=False):
 def assert_placeholder_usage(node, case_id):
     """Accept omitted or explicit ID Placeholder identifiers after Create."""
     if case_id not in ('test-batch-create-activate-destroy',
+                       'test-batch-register-encrypt-decrypt-destroy',
                        'test-batch-placeholder-chain-resolves'):
         return
     batch_items = [child for child in node[2]
@@ -792,7 +841,7 @@ class PeerState:
                 identifier = matching_identifiers[0]
                 placeholder = identifier
                 effect = 'located'
-            elif operation in (9, 10, 11, 12, 13, 15, 17, 18, 19, 20, 49, 56):
+            elif operation in (9, 10, 11, 12, 13, 15, 17, 18, 19, 20, 31, 32, 49, 56):
                 state = self.objects.get(identifier)
                 if state is None:
                     status, reason, effect = 1, 55, 'object_not_found'
@@ -817,6 +866,10 @@ class PeerState:
                         raise ValueError('fixture_activate_state_mismatch')
                     self.objects[identifier] = 'active'
                     effect = 'activated'
+                elif operation in (31, 32):
+                    if state != 'active':
+                        raise ValueError('fixture_registered_crypto_key_not_active')
+                    effect = 'encrypted' if operation == 31 else 'decrypted'
                 elif operation == 19:
                     self.objects[identifier] = 'revoked'
                     effect = 'revoked'
@@ -890,6 +943,10 @@ def verify_lifecycle(operations, response_tree):
                 raise ValueError('fixture_activate_state_mismatch')
             state = 'active'
             effects.append('activated')
+        elif operation in (31, 32):
+            if state != 'active':
+                raise ValueError('fixture_registered_crypto_key_not_active')
+            effects.append('encrypted' if operation == 31 else 'decrypted')
         elif operation == 19:
             state = 'revoked'
             effects.append('revoked')
@@ -1172,6 +1229,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 if variant == 'usage-allocation-explicit' else
                                                 b'usage-allocation-omitted',
                                                 b'interop-revoke', b'interop-destroy')
+                                        elif recipe[1] == 'batch_register_crypto':
+                                            response_item_ids = BATCH_CRYPTO_ITEM_IDS
                                         elif placeholder_chain_recipe:
                                             response_item_ids = (
                                                 (b'placeholder-revoke-cleanup', b'placeholder-destroy-cleanup')
@@ -1383,6 +1442,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                            'consumer_result_reason_code': (result.get('cases') or [{}])[0].get('result_reason_code'),
                                            'consumer_diagnostic': (result.get('cases') or [{}])[0].get('diagnostic', ''),
                                            'public_api_trace_symbols': sorted(invoked_symbols),
+                                           **({'peer_final_state_matches_setup':
+                                                   observation[0][2]['peer_observed_state_before_sha256'] ==
+                                                   observation[0][2]['peer_observed_state_after_sha256']}
+                                              if observation and recipe[1] == 'batch_register_crypto' else {}),
                                            **({'peer_seed_operations': [peer_rejection['operation']],
                                                'peer_seed_effects': observation[1][2]['effects'],
                                                'peer_cleanup_operations': [
