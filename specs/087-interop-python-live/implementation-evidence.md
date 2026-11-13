@@ -119,6 +119,12 @@ The push run [43445600626](https://github.com/NeverWe1come/KMIPKit/actions/runs/
 at head `ca2e79c1bbb52fcbc3de6f00d4e0be9efc5644f1` passed all steps and produced
 74,648/74,648 passed cells, zero failures and zero pending cells against the
 feature catalog SHA `93bf7d439fe871cc467d0dd262e6dfe68340de4c81fa0671e5f967bb90a34613`.
+The push run [43453206635](https://github.com/NeverWe1come/KMIPKit/actions/runs/43453206635)
+at head `a322c94a39aa6604d81e57bd98b66f77dad75722` also passed all steps:
+74,648/74,648 cells, zero failed, zero pending; independent validation
+reported `all_invocations_passed: true` with the same catalog SHA. The installed
+artifact SHA was
+`aee5cf55655b0a6ef9390ee6827813b1b7a29ff874aa685c0e0ca04f53127385`.
 The earlier PR merge run
 [43445611360](https://github.com/NeverWe1come/KMIPKit/actions/runs/43445611360)
 used the then-current one-response catalog (`e4a542...`) and reported 74,573
@@ -133,16 +139,21 @@ verify this exact head against that base.
 
 ## Pull-request CI evidence
 
-The latest PR workflow at head
-`ca2e79c1bbb52fcbc3de6f00d4e0be9efc5644f1` used an earlier merge tree with the
-one-response STOP catalog and failed its route matrix (74,573 passed, 75
-failed, zero pending); the subsequent validator error was the missing batch
-order metadata on a failed route. The push workflow passed against the feature
-catalog with two responses. After the current base advanced to
-`4eb22e220c4e016f1cb218879a7e952588bbe6fc`, commits `5b5427dfa` and
-`7a07d5592` fixed the remaining failed-event metadata without claiming peer
-receipt. A new PR run is needed to verify those commits against the current
-base and catalog together.
+The PR workflow [43453215609](https://github.com/NeverWe1come/KMIPKit/actions/runs/43453215609)
+at head `a322c94a39aa6604d81e57bd98b66f77dad75722` checked out merge commit
+`7f1c64dd1e405738f34311db34f9595b703856d8`, whose message identifies the old
+base `66e1e73ce9e8745844686ec51719940d3aa9f8a8`. It used that tree's one-response
+catalog (`e4a542...`) and reported 74,576 passed, 72 failed, zero pending; all
+72 failures were Batch Stop cells whose controlled peer returned the one
+response prescribed by that stale catalog. The independent validator accepted
+the full 74,648-cell evidence report, with `all_invocations_passed: false` and
+no secondary missing-file or structural error. The PR base is now
+`4eb22e220c4e016f1cb218879a7e952588bbe6fc`; its catalog SHA is
+`93bf7d439fe871cc467d0dd262e6dfe68340de4c81fa0671e5f967bb90a34613` and
+expects two responses. The matching push workflow passed the full matrix at the
+same code head. A new PR event is required to verify the current-base merge
+tree. This discrepancy is attributable to the stale PR merge event; no
+library defect is established.
 
 No Cosmian, CipherTrust or ESKM endpoint was available. These fixture results
 are not vendor interoperability evidence. Cross-language parity still

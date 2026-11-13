@@ -116,19 +116,31 @@ catalog SHA-256
 `93bf7d439fe871cc467d0dd262e6dfe68340de4c81fa0671e5f967bb90a34613` and
 route-manifest SHA-256
 `5fdddfb8f004cd858b18f27b432fe6b802d2ac7d969d49abeb5db0b265738116`.
-That evidence predates the current common-base update to the Batch Stop
-scenario and does not establish closure for the current PR merge tree.
+The push workflow at feature head `a322c94a3` also passed all **74,648/74,648**
+cells with zero failures and zero pending against catalog SHA-256
+`93bf7d439fe871cc467d0dd262e6dfe68340de4c81fa0671e5f967bb90a34613`; the
+independent validator passed with the same artifact and route-manifest
+identities.
 
-The current common-base catalog expects one response when the first item of a
-two-item Stop batch fails, while the feature snapshot used by the previous
-complete matrix expected two. OASIS KMIP 2.1 §11.5, Table 434 (and KMIP 2.0
-§11.5, Table 396) says Stop prevents processing subsequent operations and
-that responses to other batch items are returned normally. This leaves a
-catalog-versus-normative-text discrepancy to resolve. The Python client's
-`Client.execute` rejects the one-response fixture selected by the current
-common-base catalog; the route is recorded as failed, not successful. This
-evidence alone does not establish a library defect. The PR remains WIP until
-the common contract and its normative interpretation are resolved.
+The PR workflow run
+[43453215609](https://github.com/NeverWe1come/KMIPKit/actions/runs/43453215609)
+was created before the PR base changed and checked out merge commit
+`7f1c64dd1e405738f34311db34f9595b703856d8`, whose parent was the older
+one-response catalog commit `66e1e73ce9e8745844686ec51719940d3aa9f8a8`. That
+merge-tree run reported 74,576 passed and 72 failed; all 72 failures were
+Batch Stop cells, and the controlled peer returned the single response
+selected by that old catalog. The independent validator accepted the complete
+74,648-cell evidence report and identified catalog SHA-256
+`e4a542bab4831a04e51f5bf04c9019da3f38845bc85839ae9b632dcc610a7d7f`.
+
+The current PR base is `4eb22e220c4e016f1cb218879a7e952588bbe6fc`; its
+catalog SHA-256 is `93bf7d439fe871cc467d0dd262e6dfe68340de4c81fa0671e5f967bb90a34613`
+and it expects two responses. OASIS KMIP 2.1 §11.5, Table 434 (and KMIP 2.0
+§11.5, Table 396) says STOP prevents subsequent operations and that responses
+to other batch items are returned normally. Thus the 72 failures belong to
+the stale one-response merge tree and do not establish a library defect. The
+current-base merge still needs a fresh PR run. The branch remains WIP pending
+that run, cross-language parity, and deployed-server interoperability.
 
 The historical matrix covered KMIP 2.0 and 2.1, TTLV/JSON/XML, raw TLS/HTTPS
 with TLS 1.3 mutual authentication. Reports retain normalized tree and
