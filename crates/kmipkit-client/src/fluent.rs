@@ -11,13 +11,13 @@ use kmipkit_protocol::{
     CheckRequest, CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest,
     CryptographicAlgorithm, CryptographicParameters, CurrentAttribute, DecryptRequest,
     DeleteAttributeRequest, DestroyRequest, DiscoverVersionsRequest, EncryptRequest,
-    GetConstraintsRequest, GetRequest, HashRequest, LocateRequest, MacRequest, MacVerifyRequest,
-    ManagedObject, ModifyAttributeRequest, NewAttribute, ObjectGroupMember, ObjectType,
-    OpaqueObjectContext, OperationData, PingRequest, ProtocolVersion, QueryFunction, QueryRequest,
-    RecertifyRequest, RecoverRequest, RegisterRequest, RekeyKeyPairRequest, RekeyRequest,
-    RevocationReason, RevokeRequest, SecretBytes, SetAttributeRequest, SignRequest,
-    SignatureVerifyRequest, SplitKeyMethod, StorageStatusMask, UniqueIdentifier,
-    ValidateKmipRequest,
+    GetConstraintsRequest, GetRequest, GetUsageAllocationRequest, HashRequest, LocateRequest,
+    MacRequest, MacVerifyRequest, ManagedObject, ModifyAttributeRequest, NewAttribute,
+    ObjectGroupMember, ObjectType, OpaqueObjectContext, OperationData, PingRequest,
+    ProtocolVersion, QueryFunction, QueryRequest, RecertifyRequest, RecoverRequest,
+    RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest,
+    SecretBytes, SetAttributeRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
+    StorageStatusMask, UniqueIdentifier, ValidateKmipRequest,
 };
 use kmipkit_transport::{RequestDeliveryState, RequestOptions};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
@@ -123,6 +123,8 @@ pub enum FluentBuildError {
     InvalidAttributeValue,
     /// Discover Versions was given an empty or uncatalogued protocol offer.
     InvalidProtocolVersions,
+    /// Get Usage Allocation is missing its required Usage Limits Count.
+    MissingGetUsageAllocationCount,
     /// Legacy compatibility error; explicit extension Items are retained as
     /// raw TTLV Object Attribute entries by current fluent builders.
     MessageExtensionTagNotObjectAttribute,
@@ -173,6 +175,9 @@ impl fmt::Display for FluentBuildError {
             Self::InvalidAttributeValue => "fluent Object Attribute value is invalid",
             Self::InvalidProtocolVersions => {
                 "fluent Discover Versions offers are empty or unsupported"
+            }
+            Self::MissingGetUsageAllocationCount => {
+                "Get Usage Allocation requires a Usage Limits Count"
             }
             Self::MessageExtensionTagNotObjectAttribute => {
                 "KMIP message extension tags are not Object Attributes"
@@ -375,6 +380,12 @@ impl<'a> RequestBuilder<'a> {
     #[must_use]
     pub fn get_constraints(self) -> GetConstraintsBuilder<'a> {
         GetConstraintsBuilder::new(self.client)
+    }
+
+    /// Begins constructing a typed Get Usage Allocation request.
+    #[must_use]
+    pub fn get_usage_allocation(self) -> GetUsageAllocationBuilder<'a> {
+        GetUsageAllocationBuilder::new(self.client)
     }
 
     /// Begins constructing a typed Destroy request for an explicit identifier.
@@ -3326,6 +3337,135 @@ fn discover_versions_request(
             .map_err(|_| FluentBuildError::InvalidProtocolVersions),
         None => Ok(DiscoverVersionsRequest::new()),
     }
+}
+
+/// A fluent builder for Get Usage Allocation requests.
+pub struct GetUsageAllocationBuilder<'a> {
+    client: &'a mut Client,
+    usage_limits_count: Option<i64>,
+    unique_identifier: Option<UniqueIdentifier>,
+    options: Option<RequestOptions>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl<'a> GetUsageAllocationBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            client,
+            usage_limits_count: None,
+            unique_identifier: None,
+            options: None,
+            asynchronous_indicator: None,
+        }
+    }
+
+    /// Sets the required requested number of Usage Limits Units.
+    #[must_use]
+    pub const fn usage_limits_count(mut self, value: i64) -> Self {
+        self.usage_limits_count = Some(value);
+        self
+    }
+
+    /// Sets the optional object identifier. Omit it only when the request is
+    /// placed in an ordered batch whose preceding operation produces the
+    /// intended ID Placeholder.
+    #[must_use]
+    pub fn unique_identifier(mut self, value: UniqueIdentifier) -> Self {
+        self.unique_identifier = Some(value);
+        self
+    }
+
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.options = Some(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.asynchronous_indicator = Some(value);
+        self
+    }
+
+    /// Validates the required count and typed request without sending.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError::MissingGetUsageAllocationCount`] when the
+    /// count is absent, or a sanitized typed request error.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        let request =
+            get_usage_allocation_request(self.usage_limits_count, self.unique_identifier.clone())?;
+        validate_fluent_request(&request)
+    }
+
+    /// Builds the existing typed Get Usage Allocation request without sending.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FluentBuildError::MissingGetUsageAllocationCount`] when the
+    /// count is absent, or a sanitized typed request error.
+    pub fn build_request(self) -> Result<GetUsageAllocationRequest, FluentBuildError> {
+        let request =
+            get_usage_allocation_request(self.usage_limits_count, self.unique_identifier)?;
+        validate_fluent_request(&request)?;
+        Ok(request)
+    }
+
+    /// Converts Get Usage Allocation to the existing typed client batch item.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error if the count or typed request
+    /// is invalid.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build_request()
+            .map(|request| ClientBatchItem::new(ClientRequest::GetUsageAllocation(request)))
+    }
+
+    /// Executes one typed exchange and returns the existing operation result.
+    ///
+    /// # Errors
+    ///
+    /// Returns a not-sent validation error before transport if the request is
+    /// invalid, or the existing client error for exchange and decoding failures.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let Self {
+            client,
+            usage_limits_count,
+            unique_identifier,
+            options,
+            asynchronous_indicator,
+        } = self;
+        let request = get_usage_allocation_request(usage_limits_count, unique_identifier)
+            .map_err(fluent_client_validation_error)?;
+        validate_fluent_request(&request).map_err(fluent_client_validation_error)?;
+        execute_fluent_request(
+            client,
+            ClientRequest::GetUsageAllocation(request),
+            asynchronous_indicator,
+            options,
+            limits,
+        )
+    }
+}
+
+fn get_usage_allocation_request(
+    usage_limits_count: Option<i64>,
+    unique_identifier: Option<UniqueIdentifier>,
+) -> Result<GetUsageAllocationRequest, FluentBuildError> {
+    let usage_limits_count =
+        usage_limits_count.ok_or(FluentBuildError::MissingGetUsageAllocationCount)?;
+    let request = GetUsageAllocationRequest::new(usage_limits_count);
+    Ok(match unique_identifier {
+        Some(unique_identifier) => request.with_unique_identifier(unique_identifier),
+        None => request,
+    })
 }
 
 /// A fluent builder for the empty typed Get Constraints request.

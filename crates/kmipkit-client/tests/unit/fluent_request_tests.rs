@@ -187,6 +187,10 @@ fn fluent_build_errors_have_stable_user_facing_messages() {
             "fluent Discover Versions offers are empty or unsupported",
         ),
         (
+            FluentBuildError::MissingGetUsageAllocationCount,
+            "Get Usage Allocation requires a Usage Limits Count",
+        ),
+        (
             FluentBuildError::MissingAddAttributeValue,
             "Add Attribute requires a New Attribute",
         ),
@@ -989,6 +993,7 @@ fn get_usage_allocation_builder_requires_count_and_executes_typed_request() {
         .request()
         .get_usage_allocation()
         .usage_limits_count(3)
+        .unique_identifier(UniqueIdentifier::TextString("limited-key".to_owned()))
         .execute(&CodecLimits::defaults())
         .expect("the scripted usage allocation response is valid");
 
