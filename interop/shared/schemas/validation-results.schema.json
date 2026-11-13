@@ -30,7 +30,9 @@
         "transport": { "enum": ["raw_tls", "https"] },
         "encoding": { "enum": ["TTLV", "JSON", "XML"] },
         "api_level": { "enum": ["high-level", "typed-protocol", "generic-ttlv"] },
-        "library_commit": { "type": "string", "minLength": 7 },
+        "construction_route_id": { "type": "string", "minLength": 1 },
+        "execution_route_id": { "type": "string", "minLength": 1 },
+        "library_commit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
         "artifact_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
       },
       "additionalProperties": false

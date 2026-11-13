@@ -15,14 +15,41 @@ on:
       - 'interop/rust-kmip-validator/**'
       - 'interop/shared/**'
       - 'specs/084-interop-rust-live/**'
-      - '.github/workflows/interop-rust.yml'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      affected: ${{ steps.diff.outputs.affected }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - id: diff
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" != "pull_request" ]]; then
+            echo "affected=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          files="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")"
+          if grep -Eq '^(interop/rust-kmip-validator/|specs/084-interop-rust-live/)' <<< "$files"; then
+            echo "affected=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "affected=false" >> "$GITHUB_OUTPUT"
+          fi
+
   validate-rust:
+    needs: changes
+    if: github.event_name != 'pull_request' || needs.changes.outputs.affected == 'true'
     name: Rust 1.94 installed-package interoperability consumer
     runs-on: ubuntu-latest
     timeout-minutes: 30

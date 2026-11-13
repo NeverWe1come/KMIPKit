@@ -60,6 +60,17 @@ class ImmutableSourceGateTests(unittest.TestCase):
 
         check_immutable_sources(self.root, self.base_sha)
 
+    def test_accepts_new_official_referenced_standard_source_tree(self) -> None:
+        source_root = self.root / "specification/oasis/pkcs11-3.0"
+        (source_root / "upstream/include").mkdir(parents=True)
+        (source_root / "SOURCES.md").write_text("Pinned OASIS PKCS #11 source.\n", encoding="utf-8")
+        (source_root / "upstream/include/pkcs11f.h").write_text(
+            "/* pinned referenced source */\n", encoding="utf-8"
+        )
+        self._git("add", "specification/oasis/pkcs11-3.0")
+
+        check_immutable_sources(self.root, self.base_sha)
+
     def test_change_detection_uses_nul_delimited_diffs_and_streamed_untracked_paths(self) -> None:
         real_run = subprocess.run
         with patch(

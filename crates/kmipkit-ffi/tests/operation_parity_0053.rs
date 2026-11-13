@@ -1,5 +1,8 @@
 #![cfg(feature = "coverage-c-consumer")]
 
+// Keep the crate linked so C consumer calls resolve through the Rust package's rlib.
+use kmipkit_ffi as _;
+
 #[link(name = "kmipkit_operation_parity_0053_consumer", kind = "static")]
 unsafe extern "C" {
     fn kmipkit_operation_parity_0053_all_56() -> i32;

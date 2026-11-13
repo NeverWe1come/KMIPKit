@@ -1,0 +1,823 @@
+#!/usr/bin/env python3
+"""Validate the authored public API route inventory (KMIPKIT-0092).
+
+Construction and execution identities are separate. Public convenience send
+methods taking an already-built request do not create independent routes.
+Source inspection establishes candidates; installed-package probes establish
+artifact availability. Neither establishes an executable validator recipe.
+"""
+from __future__ import annotations
+
+import argparse
+from functools import lru_cache
+import json
+from pathlib import Path
+import re
+import subprocess
+import tempfile
+
+import jsonschema
+
+from cli_paths import validate_git_commit, validate_git_path, resolve_within
+from route_models import _SCALAR_VALUE_KINDS, credential_function_target_ids, model_inventory, value_inventory
+
+ROOT = Path(__file__).resolve().parents[3]
+COVERAGE = ROOT / 'interop/shared/coverage'
+LANGUAGES = ('rust', 'c', 'java', 'python')
+ASYNC = {'cancel', 'poll', 'process', 'queryasyncrequests'}
+PINNED_SOURCE_COMMIT = '489fafc79ef89db2524eafa7a6c6482f5cf75d97'
+_RESPONSE_MESSAGE_EXTENSION_TARGETS = [
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION',
+    'KMIPKIT-ELEM-TAG-420051',
+]
+_FUNCTION_TARGET_OVERRIDES = {
+    # OASIS KMIP 2.0/2.1 §§8.5, 9.5 define response Batch Count.
+    'client_batch_response_item_count': [
+        'KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT',
+        'KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT',
+    ],
+    # OASIS KMIP 2.0/2.1 §§8.6, 9.7 define response Batch Item.
+    'client_batch_response_item_at': [
+        'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM',
+        'KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM',
+    ],
+    # OASIS KMIP 2.0/2.1 §§8.6, 9.13, and 11.56 define response Message Extension.
+    'client_batch_item_response_extension_count': _RESPONSE_MESSAGE_EXTENSION_TARGETS,
+    'client_batch_item_response_extension_ttlv_at': _RESPONSE_MESSAGE_EXTENSION_TARGETS,
+    # OASIS KMIP 2.0/2.1 §§3.1, 9.7, and 11.25; the controlled Get response
+    # preserves Key Format Type::Raw in the raw Batch Item TTLV view.
+    'client_batch_item_response_raw_ttlv': [
+        'KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-RAW-00000001',
+        'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM',
+        'KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM',
+        'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-KEY-FORMAT-TYPE',
+        'KMIPKIT-ELEM-TAG-42000F',
+    ],
+    'client_batch_add_error_continuation_value': [
+        'KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-CONTINUE-00000001',
+        'KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-EXTENSIONS-8XXXXXXX',
+        'KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-STOP-00000002',
+        'KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-UNDO-00000003',
+        'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION',
+        'KMIPKIT-ELEM-MESSAGE-FIELD-9-6-BATCH-ERROR-CONTINUATION-OPTION',
+        'KMIPKIT-ELEM-TAG-42000E',
+    ],
+}
+_FUNCTION_ROUTE_KIND_OVERRIDES = {'client_batch_add_error_continuation_value': 'construct'}
+
+CHECKED_TAG_INPUTS = {
+    ('rust', 'kmipkit_ttlv::Item::new'): 'crates/kmipkit-ttlv/src/item.rs',
+    ('rust', 'kmipkit_ttlv::Structure::try_push'): 'crates/kmipkit-ttlv/src/structure.rs',
+    ('c', 'kmipkit_ttlv_item_create'): 'bindings/c/include/kmipkit.h',
+    ('c', 'kmipkit_ttlv_structure_with_item'): 'bindings/c/include/kmipkit.h',
+    ('java', 'org.kmipkit.ttlv.TtlvItem.create'): 'bindings/java/src/main/java/org/kmipkit/ttlv/TtlvItem.java',
+    ('java', 'org.kmipkit.ttlv.TtlvStructure.withItem'): 'bindings/java/src/main/java/org/kmipkit/ttlv/TtlvStructure.java',
+    ('python', 'kmipkit.ttlv.ttlv_item_create'): 'bindings/python/src/kmipkit/ttlv.py',
+    ('python', 'kmipkit.ttlv.ttlv_structure_with_item'): 'bindings/python/src/kmipkit/ttlv.py',
+}
+ITEM_VIEW_INPUTS = {
+    ('rust', 'kmipkit_ttlv::Item::with_value'): 'crates/kmipkit-ttlv/src/item.rs',
+    ('java', 'org.kmipkit.ttlv.TtlvItem.view'): 'bindings/java/src/main/java/org/kmipkit/ttlv/TtlvItem.java',
+    ('python', 'kmipkit.ttlv.ttlv_item_view_from_item'): 'bindings/python/src/kmipkit/ttlv.py',
+}
+CERTIFICATE_ATTRIBUTE_TTLV_INPUTS = {
+    ('rust', 'kmipkit_ttlv::Item::new'): 'crates/kmipkit-ttlv/src/item.rs',
+    ('rust', 'kmipkit_ttlv::Item::with_value'): 'crates/kmipkit-ttlv/src/item.rs',
+    ('rust', 'kmipkit_ttlv::codec::decode'): 'crates/kmipkit-ttlv/src/codec/decoder.rs',
+    ('c', 'kmipkit_ttlv_item_create'): 'bindings/c/include/kmipkit.h',
+    ('c', 'kmipkit_ttlv_decode'): 'bindings/c/include/kmipkit.h',
+    ('java', 'org.kmipkit.ttlv.TtlvItem.create'): 'bindings/java/src/main/java/org/kmipkit/ttlv/TtlvItem.java',
+    ('java', 'org.kmipkit.ttlv.TtlvCodec.decode'): 'bindings/java/src/main/java/org/kmipkit/ttlv/TtlvCodec.java',
+    ('python', 'kmipkit.ttlv.ttlv_item_create'): 'bindings/python/src/kmipkit/ttlv.py',
+    ('python', 'kmipkit.ttlv.ttlv_decode'): 'bindings/python/src/kmipkit/ttlv.py',
+}
+_CERTIFICATE_ATTRIBUTES_TARGET = 'KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES'
+_CERTIFICATE_CONTENT_SOURCES = [
+    'specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html',
+    'specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html',
+]
+_SECRET_DATA_KEY_PROPERTY_TARGETS = [
+    'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-ALGORITHM',
+    'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-LENGTH',
+]
+_SECRET_DATA_FACTORY = ('python', 'kmipkit.managed_objects.ManagedObject.secret_data')
+
+
+def _case_exclusions(root, commit, language, symbol):
+    exclusions = []
+    path = CHECKED_TAG_INPUTS.get((language, symbol))
+    if path is not None:
+        # Checked constructors cannot represent these tags; RawTag routes can.
+        source_paths = [path, 'crates/kmipkit-ttlv/src/tag.rs']
+        for source_path in source_paths:
+            source(root, commit, source_path)
+        exclusions.append({
+            'target_kinds': ['tag', 'tag_range'],
+            'allocations': ['reserved', 'unused'],
+            'reason': 'This constructor takes an allocation-checked Tag; RawTag::try_checked rejects reserved and unused allocations before an Item can be constructed.',
+            'source_paths': source_paths,
+        })
+    path = ITEM_VIEW_INPUTS.get((language, symbol))
+    if path is not None:
+        # Decoder rejection produces no Item to pass to the Item view accessor.
+        source_paths = [path, 'crates/kmipkit-ttlv/src/codec/decoder.rs', 'crates/kmipkit-ttlv/src/tag.rs']
+        for source_path in source_paths:
+            source(root, commit, source_path)
+        exclusions.append({
+            'target_kinds': ['tag', 'tag_range'],
+            'allocations': ['reserved', 'unused'],
+            'reason': 'The TTLV decoder rejects reserved and unused allocations before it can return an Item; this accessor therefore has no valid Item input for the case.',
+            'source_paths': source_paths,
+        })
+    path = CERTIFICATE_ATTRIBUTE_TTLV_INPUTS.get((language, symbol))
+    if path is not None:
+        source_paths = [path, *_CERTIFICATE_CONTENT_SOURCES]
+        for source_path in source_paths:
+            source(root, commit, source_path)
+        exclusions.append({
+            'target_ids': [_CERTIFICATE_ATTRIBUTES_TARGET],
+            'reason': 'OASIS KMIP 2.0/2.1 §4.6 Table 39 describes X.509 certificate contents, while §2.2 represents a Certificate object through Certificate Value; the §4.6 names are not standalone TTLV tags and cannot be Item targets.',
+            'source_paths': source_paths,
+        })
+    if (language, symbol) == _SECRET_DATA_FACTORY:
+        source_paths = ['bindings/python/src/kmipkit/managed_objects.py',
+                        'specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html',
+                        'specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html']
+        for source_path in source_paths:
+            source(root, commit, source_path)
+        exclusions.append({
+            'target_ids': list(_SECRET_DATA_KEY_PROPERTY_TARGETS),
+            'reason': 'OASIS KMIP 2.0/2.1 §2.7 Table 8 defines Secret Data fields as Secret Data Type and Key Block, while §3.1 defines Cryptographic Algorithm and Cryptographic Length as properties of a key. The Secret Data factory therefore has no valid input for these key-only Key Block member cases.',
+            'source_paths': source_paths,
+        })
+    # KMIP 2.x models Attribute Reference as two alternative wire shapes.
+    # Keep each constructor's obligations scoped to the shape it can emit.
+    if language == 'rust' and symbol in {
+        'kmipkit_protocol::AttributeReference::name',
+        'kmipkit_protocol::AttributeReference::tag',
+    }:
+        source_paths = [
+            'crates/kmipkit-protocol/src/attribute_reference.rs',
+            'specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html',
+            'specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html',
+        ]
+        for source_path in source_paths:
+            source(root, commit, source_path)
+        if symbol.endswith('::name'):
+            target_ids = [
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-5-5-ATTRIBUTE-REFERENCE',
+                'KMIPKIT-ELEM-TAG-42013B',
+            ]
+            reason = ('OASIS KMIP 2.0 §5.5 Table 146 and OASIS KMIP 2.1 §5.5 Table 161 define Attribute Reference as Structure OR Enumeration. '
+                      'The name constructor emits only the Structure variant, so it cannot produce the Enumeration target or the generic tag fixture.')
+        else:
+            target_ids = [
+                'KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-5-ATTRIBUTE-REFERENCE',
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-5-5-ATTRIBUTE-NAME',
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-5-5-VENDOR-IDENTIFICATION',
+                'KMIPKIT-ELEM-TAG-42013B',
+            ]
+            reason = ('OASIS KMIP 2.0 §5.5 Table 146 and OASIS KMIP 2.1 §5.5 Table 161 define Attribute Reference as Structure OR Enumeration. '
+                      'The tag constructor emits only the Enumeration variant, so it cannot produce the named Structure fields or the generic tag fixture.')
+        exclusions.append({
+            'target_ids': target_ids,
+            'reason': reason,
+            'source_paths': source_paths,
+        })
+    timestamp_setter_sources = {
+        ('c', 'kmipkit_client_batch_set_request_time_stamp'): 'bindings/c/include/kmipkit.h',
+        ('rust', 'kmipkit_client::ClientBatch::with_request_time_stamp'):
+            'crates/kmipkit-client/src/execute.rs',
+    }
+    if (language, symbol) in timestamp_setter_sources:
+        source_paths = [
+            timestamp_setter_sources[(language, symbol)],
+            'specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html',
+            'specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html',
+        ]
+        for source_path in source_paths:
+            source(root, commit, source_path)
+        exclusions.append({
+            'target_ids': [
+                'KMIPKIT-ELEM-MESSAGE-FIELD-8-5-TIME-STAMP',
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-TIMESTAMP',
+            ],
+            'reason': ('OASIS KMIP 2.0/2.1 §§8.2, 8.5, 9.11, and 9.20 distinguish the Request Header Time Stamp '
+                       'Date-Time field from the response-header field and the Date Time Extended hashed-password '
+                       'Timestamp. This request-header setter cannot construct the response header or the distinct '
+                       'extended value; its assigned Time Stamp tag remains covered by the builder route.'),
+            'source_paths': source_paths,
+        })
+    return exclusions
+
+
+def _decode_source(path, content):
+    try:
+        return content.decode('utf-8')
+    except UnicodeDecodeError:
+        if path.startswith('specification/oasis/') and path.endswith('.html'):
+            return content.decode('cp1252')
+        raise
+
+
+def normalized(value):
+    return re.sub('[^a-z0-9]', '', value.lower()).replace('asynchronous', 'async')
+
+
+def _name_tokens(value):
+    """Tokenize identifiers and normative labels without substring aliases."""
+    return [token.casefold() for token in re.findall(
+        r'[A-Z]+(?=[A-Z][a-z])|[A-Z]?[a-z]+|[A-Z]+|[0-9]+', value)]
+
+
+def _contains_name_tokens(name, identifier):
+    expected = _name_tokens(name)
+    actual = _name_tokens(identifier)
+    return bool(expected) and any(actual[index:index + len(expected)] == expected
+        for index in range(len(actual) - len(expected) + 1))
+
+
+@lru_cache(maxsize=None)
+def source(root, commit, path):
+    """Read immutable release input, never an uncommitted source approximation."""
+    commit = validate_git_commit(commit)
+    path = validate_git_path(path)
+    content = subprocess.check_output(
+        ['git', '-C', str(root), 'cat-file', 'blob', f'{commit}:{path}']
+    )  # NOSONAR: commit and path are restricted to validated Git identifiers
+    return _decode_source(path, content)
+
+
+@lru_cache(maxsize=4)
+def _api(root, commit):
+    return json.loads(source(root, commit, 'specification/api/public-api.json'))
+
+
+def function_symbols(api):
+    """Resolve both observed declarations and authored ABI function mappings."""
+    result = {language: set() for language in LANGUAGES}
+    packages = {p['id']: p['language'] for p in api['publicPackages']}
+    for declaration in api['publicDeclarations']:
+        result[packages[declaration['packageId']]].add(declaration['exportName'])
+    for function in api['functions']:
+        for language in LANGUAGES:
+            mapping = function.get(language, {})
+            if language == 'c':
+                symbol = mapping.get('symbol')
+            elif language == 'rust':
+                symbol = '::'.join([mapping.get('module', ''), mapping.get('name', '')]).strip(':')
+            elif language == 'java':
+                symbol = '.'.join(mapping.get(k, '') for k in ('package', 'class', 'method')).strip('.')
+            else:
+                symbol = mapping.get('function')
+                if symbol and not symbol.startswith(('kmipkit.', mapping.get('module', '') + '.')):
+                    symbol = mapping.get('module', '') + '.' + symbol
+            if symbol:
+                result[language].add(symbol)
+    return result
+
+
+def declared_package_symbols(api):
+    """Symbols physically exposed by each language's published package."""
+    packages = {package['id']: package['language'] for package in api['publicPackages']}
+    result = {language: set() for language in LANGUAGES}
+    for declaration in api['publicDeclarations']:
+        package_language = packages.get(declaration['packageId'])
+        if package_language in result:
+            result[package_language].add(declaration['exportName'])
+    return result
+
+
+def function_entrypoint(function, language):
+    """Return the exact public package symbol for a versioned API function."""
+    mapping = function.get(language, {})
+    if language == 'c':
+        return mapping.get('symbol')
+    if language == 'rust':
+        return '::'.join(value for value in (mapping.get('module'), mapping.get('name')) if value)
+    if language == 'java':
+        return '.'.join(value for value in (mapping.get('package'), mapping.get('class'), mapping.get('method')) if value)
+    if function['id'] == 'client_batch_response_item_count':
+        return 'kmipkit.client.BatchResult.item_count'
+    if function['id'] == 'client_batch_response_item_at':
+        return 'kmipkit.client.BatchResult.item_at'
+    symbol = mapping.get('function')
+    module = mapping.get('module')
+    if symbol and module and not symbol.startswith(('kmipkit.', module + '.')):
+        return module + '.' + symbol
+    return symbol
+
+
+def _function_route_kind(function_id):
+    """Classify public request serializers and response readers by behavior."""
+    value = function_id.lower()
+    if any(token in value for token in ('_from_ttlv', '_from_item', 'response_')):
+        return 'decode'
+    if any(token in value for token in ('_to_ttlv', '_into_ttlv')):
+        return 'encode'
+    if value in _FUNCTION_ROUTE_KIND_OVERRIDES:
+        return _FUNCTION_ROUTE_KIND_OVERRIDES[value]
+    if '_to_batch_item' in value:
+        return 'construct'
+    return None
+
+
+def _operation_name_tokens(value):
+    value = re.sub(r'([a-z0-9])([A-Z])', r'\1 \2', value)
+    result = re.findall(r'[a-z0-9]+', value.casefold())
+    result = ['async' if token == 'asynchronous' else token for token in result]
+    return tuple('pkcs11' if result[index:index + 2] == ['pkcs', '11'] else token
+                 for index, token in enumerate(result)
+                 if not (token == '11' and index and result[index - 1] == 'pkcs'))
+
+
+def _operation_token_variants(value):
+    value = _operation_name_tokens(value)
+    variants = [value]
+    if len(value) > 1 and value[0] == 're':
+        variants.append((value[0] + value[1], *value[2:]))
+    return variants
+
+
+def _contains_token_sequence(haystack, needle):
+    width = len(needle)
+    return width > 0 and any(haystack[index:index + width] == needle
+                             for index in range(len(haystack) - width + 1))
+
+
+def _function_operation_id(function_id, operations):
+    function_tokens = _operation_name_tokens(function_id)
+    matches = []
+    for operation_id, operation in operations.items():
+        variants = _operation_token_variants(operation['name'])
+        width = max(map(len, variants), default=0)
+        if any(_contains_token_sequence(function_tokens, variant) for variant in variants):
+            matches.append((width, operation_id))
+    return max(matches, default=(0, None))[1]
+
+
+def _function_target_ids(function_id, operation_id, action, targets):
+    """Assign exact protocol targets to a public serializer or response reader."""
+    if operation_id:
+        return [operation_id] + sorted({target['target_id'] for target in targets
+            if target.get('operation_id') == operation_id
+            and target.get('role') == ('response' if action == 'decode' else 'request')})
+    if function_id in _FUNCTION_TARGET_OVERRIDES:
+        return _FUNCTION_TARGET_OVERRIDES[function_id]
+    credential_targets = credential_function_target_ids(function_id, targets)
+    if credential_targets is not None:
+        return credential_targets
+    value = normalized(function_id)
+    result = [target['target_id'] for target in targets
+        if target['kind'] not in _SCALAR_VALUE_KINDS
+        and _contains_name_tokens(target.get('name', ''), function_id)]
+    if re.search(r'(?:^|_)bytes(?:_|$)', function_id):
+        result.extend(target['target_id'] for target in targets
+            if target['kind'] == 'data_type' and normalized(target['name']) == 'bytestring')
+    if re.search(r'(?:^|_)text(?:_|$)', function_id):
+        result.extend(target['target_id'] for target in targets
+            if target['kind'] == 'data_type' and normalized(target['name']) == 'textstring')
+    if 'typedattribute' in value:
+        result.extend(target['target_id'] for target in targets
+            if target['kind'] in {'attribute', 'attribute_structure'})
+    if 'managedobject' in value:
+        result.extend(target['target_id'] for target in targets
+            if target['kind'] in {'object_type', 'object_structure'})
+    return sorted(set(result)) or ['*']
+
+
+def _async_execution_entrypoint(api, language, operation_name, package_symbols):
+    expected = normalized(operation_name)
+    for function in api['functions']:
+        function_id = function['id']
+        if not function_id.startswith('client_execute_'):
+            continue
+        if normalized(function_id.removeprefix('client_execute_')) != expected:
+            continue
+        symbol = function_entrypoint(function, language)
+        if symbol and symbol in package_symbols[language]:
+            return symbol
+    return None
+
+
+@lru_cache(maxsize=None)
+def construction_inventory(root, commit):
+    """Enumerate operation constructors from immutable public source.
+
+    The public API metadata lacks individual Query/Ping Rust declarations and
+    overload signatures. This source association fills that metadata gap without
+    editing generated declarations. Add new constructor forms here when the
+    library surface changes; a missing candidate is a completeness failure.
+    """
+    commit = validate_git_commit(commit)
+    api = _api(root, commit)
+    operations = {normalized(o['name']): o for o in api['operations'] if o['scope'] == 'client_1_0'}
+    # The pinned metadata omits this public KMIP 2.1 constructor. Associate
+    # its exported source directly instead of treating a metadata gap as absence.
+    operations['setendpointrole'] = {'name': 'Set Endpoint Role',
+        'operationId': 'KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE'}
+    paths = subprocess.check_output(['git', '-C', str(root), 'ls-tree', '-r', '--name-only', commit,
+                                     'crates/kmipkit-protocol/src'], text=True).splitlines()  # NOSONAR: immutable SHA and static pathspec; no shell is used
+    inventory = []
+    for path in paths:
+        if not path.endswith('.rs'):
+            continue
+        text = source(root, commit, path)
+        for match in re.finditer(r'impl (\w+Request)\s*\{', text):
+            request_type = match[1]
+            operation = operations.get(normalized(request_type.removesuffix('Request')))
+            if not operation:
+                continue
+            # Balance the impl's braces so a response constructor cannot enter the inventory.
+            depth, end = 1, match.end()
+            while depth and end < len(text):
+                depth += (text[end] == '{') - (text[end] == '}')
+                end += 1
+            body = text[match.end():end - 1]
+            for method in re.findall(r'pub\s+(?:const\s+)?fn\s+(new|try_new|from_managed_object)\s*\(', body):
+                inventory.append(('rust', f'kmipkit_protocol::{request_type}::{method}', operation['operationId'], path, 'network'))
+    # Batch constructors accept raw operation inputs. Methods which only take an
+    # existing Register/Revoke model are adapters; their model constructor below
+    # is the independent construction route.
+    c_path = 'bindings/c/include/kmipkit.h'
+    c_text = source(root, commit, c_path)
+    py_path = 'bindings/python/src/kmipkit/extensions.py'
+    py_text = source(root, commit, py_path)
+    java_path = 'bindings/java/src/main/java/org/kmipkit/extensions/ClientBatchItem.java'
+    java_text = source(root, commit, java_path)
+    rust_client_path = 'crates/kmipkit-client/src/execute.rs'
+    rust_client_text = source(root, commit, rust_client_path)
+    rust_batch_item_impl = re.search(r'impl ClientBatchItem\s*\{', rust_client_text)
+    if rust_batch_item_impl is None:
+        raise ValueError('missing ClientBatchItem implementation in the pinned Rust package')
+    depth, end = 1, rust_batch_item_impl.end()
+    while depth and end < len(rust_client_text):
+        depth += (rust_client_text[end] == '{') - (rust_client_text[end] == '}')
+        end += 1
+    rust_batch_item_methods = set(re.findall(
+        r'pub\s+(?:const\s+)?fn\s+(\w+)\s*\(',
+        rust_client_text[rust_batch_item_impl.end():end - 1]))
+    for key, op in operations.items():
+        if key in {'register', 'revoke'}:
+            request_type = key.title() + 'Request'
+            inventory.extend([
+                ('c', f'kmipkit_{key}_request_create', op['operationId'], c_path, 'network'),
+                ('java', f'org.kmipkit.extensions.{request_type}.create', op['operationId'], f'bindings/java/src/main/java/org/kmipkit/extensions/{request_type}.java', 'network'),
+                ('python', f'kmipkit.extensions.{request_type}.create', op['operationId'], py_path, 'network')])
+            batch_item_id = f'client_batch_item_{key}'
+            batch_item = next((function for function in api['functions']
+                               if function['id'] == batch_item_id), None)
+            if batch_item is None:
+                raise ValueError(f'missing public batch item constructor metadata: {batch_item_id}')
+            rust_symbol = function_entrypoint(batch_item, 'rust')
+            rust_method = rust_symbol.rsplit('::', 1)[-1] if rust_symbol else None
+            if rust_symbol and rust_method in rust_batch_item_methods:
+                inventory.append(('rust', rust_symbol, op['operationId'],
+                                  rust_client_path, 'network'))
+        if key in ASYNC:
+            request_type = {'queryasyncrequests': 'QueryAsyncRequestsRequest'}.get(key, key.title() + 'Request')
+            snake = 'query_async_requests' if key == 'queryasyncrequests' else key
+            candidates = [
+                ('c', f'kmipkit_{snake}_request_create', c_path, 'local'),
+                ('java', f'org.kmipkit.extensions.{request_type}.create', f'bindings/java/src/main/java/org/kmipkit/extensions/{request_type}.java', 'local'),
+                ('python', f'kmipkit.async_operations.{request_type}.create', 'bindings/python/src/kmipkit/async_operations.py', 'local'),
+                ('c', f'kmipkit_client_execute_{snake}', c_path, 'network'),
+                ('java', f'org.kmipkit.extensions.Client.execute{request_type.removesuffix("Request")}', 'bindings/java/src/main/java/org/kmipkit/extensions/Client.java', 'network'),
+                ('python', f'kmipkit.client.Client.execute_{snake}', 'bindings/python/src/kmipkit/client.py', 'network')]
+            inventory.extend((lang, symbol, op['operationId'], path, mode) for lang, symbol, path, mode in candidates)
+            continue
+        # Mapping normalized source names avoids inventing naming conventions
+        # for rekey/re-certify, PKCS#11, and importObject.
+        for suffix in re.findall(r'int32_t kmipkit_client_batch_item_(\w+)\s*\(', c_text):
+            if normalized(suffix) == key:
+                inventory.append(('c', f'kmipkit_client_batch_item_{suffix}', op['operationId'], c_path, 'network'))
+        for suffix in re.findall(r'^def client_batch_item_(\w+)\(', py_text, re.M):
+            if normalized(suffix) == key:
+                inventory.append(('python', f'kmipkit.extensions.client_batch_item_{suffix}', op['operationId'], py_path, 'network'))
+        for suffix in sorted(set(re.findall(r'public static ClientBatchItem (\w+)\(', java_text))):
+            if normalized(suffix.removesuffix('Object')) == key:
+                inventory.append(('java', f'org.kmipkit.extensions.ClientBatchItem.{suffix}', op['operationId'], java_path, 'network'))
+    if 'new' not in rust_batch_item_methods:
+        raise ValueError('missing Rust ClientBatchItem::new public constructor')
+    inventory.append(('rust', 'kmipkit_client::ClientBatchItem::new', '', rust_client_path, 'network'))
+    inventory.extend([
+        ('rust', 'kmipkit_ttlv::Item::new', '', 'crates/kmipkit-ttlv/src/item.rs', 'local'),
+        ('rust', 'kmipkit_ttlv::codec::decode', '', 'crates/kmipkit-ttlv/src/codec/decoder.rs', 'local'),
+        ('c', 'kmipkit_ttlv_item_create', '', c_path, 'local'),
+        ('c', 'kmipkit_ttlv_decode', '', c_path, 'local'),
+        ('java', 'org.kmipkit.ttlv.TtlvItem.create', '', 'bindings/java/src/main/java/org/kmipkit/ttlv/TtlvItem.java', 'local'),
+        ('java', 'org.kmipkit.ttlv.TtlvCodec.decode', '', 'bindings/java/src/main/java/org/kmipkit/ttlv/TtlvCodec.java', 'local'),
+        ('python', 'kmipkit.ttlv.ttlv_item_create', '', 'bindings/python/src/kmipkit/ttlv.py', 'local'),
+        ('python', 'kmipkit.ttlv.ttlv_decode', '', 'bindings/python/src/kmipkit/ttlv.py', 'local')])
+    return sorted(set(inventory))
+
+
+@lru_cache(maxsize=4)
+def _models(root, commit, targets_json):
+    api = _api(root, commit)
+    return model_inventory(root, commit, source, api, json.loads(targets_json))
+
+
+def validate(data, root=ROOT):
+    schema = json.loads((root / 'interop/shared/coverage/route-capabilities.schema.json').read_text())
+    try:
+        jsonschema.Draft202012Validator(schema).validate(data)
+    except jsonschema.ValidationError as error:
+        raise ValueError(f'{list(error.absolute_path)}: {error.message}') from None
+    ids, constructors = set(), set()
+    commit = data['library_commit']
+    api = _api(root, commit)
+    symbols = function_symbols(api)
+    inventory = construction_inventory(root, commit)
+    targets = json.loads((root / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())['normative_targets']
+    models = _models(root, commit, json.dumps(targets, sort_keys=True))
+    expected = {(lang, symbol) for lang, symbol, *_ in inventory}
+    expected.update((row['language'], row['public_api_symbol']) for row in models)
+    package_symbols = declared_package_symbols(api)
+    expected.update((language, symbol) for function in api['functions']
+        if _function_route_kind(function['id']) is not None
+        for language in LANGUAGES
+        if (symbol := function_entrypoint(function, language)) and symbol in package_symbols[language])
+    for route in data['routes']:
+        if route['route_id'] in ids:
+            raise ValueError('duplicate route_id: ' + route['route_id'])
+        ids.add(route['route_id'])
+        key = route['language'], route['public_api_symbol']
+        if key in constructors:
+            raise ValueError('same constructor counted twice: ' + str(key))
+        constructors.add(key)
+        if key not in expected and route['public_api_symbol'] not in symbols[route['language']]:
+            raise ValueError('missing public API symbol: ' + str(key))
+        for combination in route['combinations']:
+            if route['mode'] == 'local' and combination['transport'] is not None:
+                raise ValueError('local construction cannot use a network transport')
+            if route['mode'] == 'network' and combination['transport'] is None:
+                raise ValueError('network route requires transport')
+        if route['artifact_commit'] != commit:
+            raise ValueError('route artifact commit differs from manifest')
+        for path in route['source_paths']:
+            source(root, commit, path)
+        for exclusion in route.get('case_exclusions', []):
+            for path in exclusion['source_paths']:
+                source(root, commit, path)
+    missing = expected - constructors
+    if missing:
+        raise ValueError('missing public API route: ' + repr(sorted(missing)))
+    canonical = build_manifest(root, commit)
+    canonical_routes = {r['route_id']: r for r in canonical['routes']}
+    for route in data['routes']:
+        expected_route = canonical_routes.get(route['route_id'])
+        if expected_route is None:
+            raise ValueError('unknown route_id: ' + route['route_id'])
+        if route['operation_ids'] != expected_route['operation_ids']:
+            raise ValueError('constructor operation mapping differs from public source')
+        if route['combinations'] != expected_route['combinations']:
+            raise ValueError('supported encoding/transport pairs differ from public source')
+        for field in ('public_api_symbol', 'api_level', 'mode', 'actions', 'execution_route_id', 'source_paths', 'normative_target_ids', 'case_categories', 'protocol_versions', 'case_exclusions'):
+            if route.get(field) != expected_route.get(field):
+                raise ValueError('public API route mapping differs: ' + field)
+    if data['execution_routes'] != canonical['execution_routes']:
+        raise ValueError('execution route inventory differs from public source')
+    for limitation in data['unavailable']:
+        if (limitation['language'], limitation.get('public_api_symbol')) in constructors:
+            raise ValueError('public constructor cannot be unavailable')
+    if data['value_symbols'] != canonical['value_symbols']:
+        raise ValueError('public named value symbols differ from source metadata')
+    if data['unavailable'] != canonical['unavailable']:
+        raise ValueError('unavailable capabilities differ from public source evidence')
+    return data
+
+
+def validate_artifact_identity(data, provenance):
+    if provenance.get('library_commit') != data['library_commit']:
+        raise ValueError('artifact commit does not match route capabilities')
+
+
+def validate_installed_symbols(data, language, symbols):
+    required = {r['public_api_symbol'] for r in data['routes'] if r['language'] == language}
+    required.update(r['public_api_symbol'] for r in data['execution_routes'] if r['language'] == language)
+    missing = required - set(symbols)
+    if missing:
+        raise ValueError('installed artifact is missing public symbols: ' + repr(sorted(missing)))
+
+
+def validate_installed_values(data, language, values):
+    for row in data['value_symbols']:
+        if row['language'] == language and row['availability'] == 'named-constant' and values.get(row['public_api_symbol']) != row['wire_value']:
+            raise ValueError('installed named value is missing or has a different wire code: ' + row['public_api_symbol'])
+
+
+def _request_operation_targets(operation_id, targets):
+    """Bind operation constructors to request-side targets only."""
+    return [operation_id] + sorted({target['target_id'] for target in targets
+        if target.get('operation_id') == operation_id and target.get('role') == 'request'})
+
+
+def _client_request_targets(targets):
+    """Bind the generic Rust batch-item constructor to client request obligations."""
+    operation_ids = {target['target_id'] for target in targets
+        if target['kind'] == 'operation' and target['target_id'].startswith('KMIPKIT-ELEM-OP-C2S-')}
+    return sorted(operation_ids | {target['target_id'] for target in targets
+        if target.get('operation_id') in operation_ids and target.get('role') == 'request'})
+
+
+def build_manifest(root=ROOT, commit=PINNED_SOURCE_COMMIT):
+    """Generate constructor identities from the exact package's public sources."""
+    commit = validate_git_commit(commit)
+    categories = ['enums_and_bitmasks', 'attributes', 'object_lifecycle',
+        'cryptography_and_rng', 'managed_objects', 'protocol_and_session',
+        'version_boundaries', 'server_initiated_operations', 'multipart_crypto',
+        'negative_and_boundary', 'batch_workflows', 'asynchronous_workflows']
+    data = {'schema_version': '1.0', 'library_commit': commit,
+            'public_api_manifest': 'specification/api/public-api.json',
+            'routes': [], 'execution_routes': [], 'unavailable': [], 'value_symbols': []}
+    api = _api(root, commit)
+    package_symbols = declared_package_symbols(api)
+    targets = json.loads((root / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())['normative_targets']
+    data['value_symbols'] = value_inventory(api, targets)
+    operations = {o['operationId']: o for o in api['operations']}
+    operations['KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE'] = {'name': 'Set Endpoint Role'}
+    execution = {
+        'rust': ('kmipkit_client::Client::execute', 'crates/kmipkit-client/src/execute.rs'),
+        'c': ('kmipkit_client_execute', 'bindings/c/include/kmipkit.h'),
+        'java': ('org.kmipkit.extensions.Client.execute', 'bindings/java/src/main/java/org/kmipkit/extensions/Client.java'),
+        'python': ('kmipkit.client.Client.execute', 'bindings/python/src/kmipkit/client.py')}
+    for language, (symbol, path) in execution.items():
+        data['execution_routes'].append({'execution_route_id': language + '.execute.typed-batch',
+            'language': language, 'public_api_symbol': symbol, 'source_paths': [path]})
+    for language, symbol, operation_id, path, mode in construction_inventory(root, commit):
+        generic = not operation_id and symbol != 'kmipkit_client::ClientBatchItem::new'
+        family = 'generic-ttlv' if generic else 'typed-protocol'
+        parts = symbol.replace('::', '.').split('.')
+        suffix = '.'.join(parts[-2:]) if language in {'rust', 'java', 'python'} else parts[-1]
+        suffix = re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', suffix).lower()
+        route_id = f'{language}.{family}.{suffix}'
+        execution_id = None if mode == 'local' else language + '.execute.typed-batch'
+        is_async_send = operation_id and normalized(operations[operation_id]['name']) in ASYNC and mode == 'network'
+        if is_async_send:
+            execution_id = language + '.execute.' + normalized(operations[operation_id]['name'])
+            execution_symbol = _async_execution_entrypoint(
+                api, language, operations[operation_id]['name'], package_symbols)
+            if execution_symbol is None:
+                raise ValueError(f'missing public async executor for {language} {operations[operation_id]["name"]}')
+            execution_route = {'execution_route_id': execution_id,
+                'language': language, 'public_api_symbol': execution_symbol,
+                'source_paths': [execution[language][1]]}
+            existing_execution = next((row for row in data['execution_routes']
+                if row['execution_route_id'] == execution_id), None)
+            if existing_execution and existing_execution != execution_route:
+                raise ValueError(f'conflicting public async executors for {execution_id}')
+            if existing_execution is None:
+                data['execution_routes'].append(execution_route)
+        combinations = ([{'encoding': 'TTLV', 'transport': None}] if mode == 'local' else
+            [{'encoding': encoding, 'transport': transport}
+             for encoding in ('TTLV', 'JSON', 'XML') for transport in ('raw_tls', 'https')])
+        data['routes'].append({'route_id': route_id, 'language': language, 'api_level': family,
+            'mode': mode, 'public_api_symbol': symbol,
+            'operation_ids': [operation_id] if operation_id else [],
+            'normative_target_ids': (_request_operation_targets(operation_id, targets) if operation_id else
+                _client_request_targets(targets) if symbol == 'kmipkit_client::ClientBatchItem::new' else ['*']),
+            'case_categories': categories + ['normative_inventory'], 'protocol_versions': ['2.0', '2.1'],
+            'combinations': combinations, 'actions': ['decode'] if generic and 'decode' in symbol else ['construct'],
+            'source_paths': [path], 'artifact_commit': commit,
+            'execution_route_id': execution_id, 'artifact_verification': 'required'})
+    request_symbols = {(route['language'], route['public_api_symbol']) for route in data['routes']}
+    for model in _models(root, commit, json.dumps(targets, sort_keys=True)):
+        if (model['language'], model['public_api_symbol']) in request_symbols:
+            continue
+        language = model['language']
+        symbol = model['public_api_symbol']
+        suffix = re.sub('[^a-z0-9]+', '.', symbol.lower()).strip('.')
+        family = model.get('api_level', 'typed-protocol')
+        data['routes'].append({'route_id': f'{language}.{family}.model.{suffix}',
+            'language': language, 'api_level': family, 'mode': 'local',
+            'public_api_symbol': symbol, 'operation_ids': [model['operation_id']] if model.get('operation_id') else [],
+            'normative_target_ids': model['normative_target_ids'],
+            'case_categories': ['normative_inventory', 'attributes', 'managed_objects', 'enums_and_bitmasks'],
+            'protocol_versions': ['2.0', '2.1'], 'combinations': [{'encoding': 'TTLV', 'transport': None}],
+            'actions': ['decode'] if re.search(r'(?:from|try_from)_(?:ttlv|item)$', symbol.lower())
+                or re.search(r'(?:::|\.)try_from_(?:ttlv|item)$', symbol.lower())
+                or symbol.lower().endswith(('::with_ttlv', '.with_ttlv', '::with_value', '.with_value'))
+                else ['construct'],
+            'source_paths': model['source_paths'],
+            'artifact_commit': commit, 'execution_route_id': None, 'artifact_verification': 'required'})
+    # The API manifest records additional public TTLV converters and response
+    # readers which are not operation constructors or typed model factories.
+    # Keep these paths explicit so recipes must invoke each one rather than
+    # infer coverage from an unrelated request builder or Client.execute call.
+    route_by_symbol = {(route['language'], route['public_api_symbol']): route for route in data['routes']}
+    for function in api['functions']:
+        action = _function_route_kind(function['id'])
+        if action is None:
+            continue
+        for language in LANGUAGES:
+            symbol = function_entrypoint(function, language)
+            if not symbol or symbol not in package_symbols[language]:
+                continue
+            key = language, symbol
+            existing = route_by_symbol.get(key)
+            if existing:
+                if action == 'decode':
+                    existing['actions'] = ['decode']
+                elif action not in existing['actions']:
+                    existing['actions'].append(action)
+                    existing['actions'].sort()
+                continue
+            function_id = function['id']
+            operation_id = _function_operation_id(function_id, operations)
+            if operation_id and not operation_id.startswith('KMIPKIT-'):
+                operation_id = None
+            target_ids = _function_target_ids(function_id, operation_id, action, targets)
+            network = action == 'construct' and '_to_batch_item' in function_id
+            mode = 'network' if network else 'local'
+            family = 'generic-ttlv' if function_id.startswith('ttlv_') else 'typed-protocol'
+            execution_id = language + '.execute.typed-batch' if network else None
+            combinations = ([{'encoding': encoding, 'transport': transport}
+                for encoding in ('TTLV', 'JSON', 'XML') for transport in ('raw_tls', 'https')]
+                if network else [{'encoding': 'TTLV', 'transport': None}])
+            route = {'route_id': f'{language}.{family}.function.{function_id}',
+                'language': language, 'api_level': family, 'mode': mode,
+                'public_api_symbol': symbol, 'operation_ids': [operation_id] if operation_id else [],
+                'normative_target_ids': target_ids,
+                'case_categories': categories + ['normative_inventory'],
+                'protocol_versions': ['2.0', '2.1'], 'combinations': combinations,
+                'actions': [action], 'source_paths': ['specification/api/public-api.json'],
+                'artifact_commit': commit, 'execution_route_id': execution_id,
+                'artifact_verification': 'required'}
+            data['routes'].append(route)
+            route_by_symbol[key] = route
+    for language, (_, path) in execution.items():
+        for capability, reason in [
+            ('high-level-constructor', 'Public client convenience send methods accept an existing typed request or batch; no independent high-level request builder is exported.'),
+            ('generic-encode', 'The public generic TTLV codec exports decode methods only. The client encodes internally for execution; that encoder is not a public generic API.'),
+            ('generic-send', 'The public client sends typed batches or dedicated asynchronous inputs; arbitrary generic TTLV request submission is not exported.')]:
+            generic_path = next(r['source_paths'][0] for r in data['routes'] if r['language'] == language and r['api_level'] == 'generic-ttlv' and r['actions'] == ['decode'])
+            data['unavailable'].append({'language': language, 'capability': capability,
+                'reason': reason, 'source_paths': [path if capability != 'generic-encode' else generic_path]})
+    for language in ('c', 'java', 'python'):
+        data['unavailable'].append({'language': language, 'capability': 'constructor',
+            'operation_ids': ['KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE'],
+            'reason': 'Set Endpoint Role has a Rust typed constructor, but the installed binding public surface has no corresponding request or client constructor.',
+            'source_paths': [execution[language][1]]})
+    for language in LANGUAGES:
+        numeric_targets = [row['target_id'] for row in data['value_symbols'] if row['language'] == language and row['availability'] == 'numeric-only']
+        if numeric_targets:
+            data['unavailable'].append({'language': language, 'capability': 'named-value-symbol',
+                'normative_target_ids': numeric_targets, 'reason': 'The public package does not export assigned named constants for these referenced PKCS#11 functions/return codes. Their exact numeric values are constructible using the declared public generic Enumeration constructor; this is not a missing validator recipe.',
+                'source_paths': ['specification/api/public-api.json']})
+        for source_path in _CERTIFICATE_CONTENT_SOURCES:
+            source(root, commit, source_path)
+        data['unavailable'].append({'language': language, 'capability': 'non-applicable-target',
+            'normative_target_ids': [_CERTIFICATE_ATTRIBUTES_TARGET],
+            'reason': 'OASIS KMIP 2.0/2.1 §4.6 Table 39 describes X.509 certificate contents, while §2.2 represents a Certificate object through Certificate Value; the §4.6 names are not standalone TTLV tags.',
+            'source_paths': list(_CERTIFICATE_CONTENT_SOURCES)})
+    for route in data['routes']:
+        exclusions = _case_exclusions(root, commit, route['language'], route['public_api_symbol'])
+        if exclusions:
+            route['case_exclusions'] = exclusions
+    data['routes'].sort(key=lambda route: route['route_id'])
+    return data
+
+
+def serialize_manifest(data):
+    """Keep generated per-route and per-target records reviewable as JSON rows."""
+    lines = ['{']
+    fields = list(data.items())
+    for index, (key, value) in enumerate(fields):
+        suffix = ',' if index + 1 < len(fields) else ''
+        if isinstance(value, list):
+            lines.append('  ' + json.dumps(key) + ': [')
+            lines.extend('    ' + json.dumps(row) + (',' if i + 1 < len(value) else '')
+                         for i, row in enumerate(value))
+            lines.append('  ]' + suffix)
+        else:
+            lines.append('  ' + json.dumps(key) + ': ' + json.dumps(value) + suffix)
+    lines.append('}')
+    return '\n'.join(lines) + '\n'
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument('--write', action='store_true', help='regenerate metadata from the exact pinned source commit')
+    mode.add_argument('--check', action='store_true', help='verify generated metadata without writing')
+    parser.add_argument('--manifest', type=Path, default=COVERAGE / 'route-capabilities.json')
+    args = parser.parse_args()
+    manifest_path = resolve_within(args.manifest, (COVERAGE,))
+    if args.write:
+        generated = validate(build_manifest())
+        serialized = serialize_manifest(generated)
+        json.loads(serialized)
+        with tempfile.NamedTemporaryFile('w', dir=manifest_path.parent, suffix='.tmp', delete=False) as output:
+            output.write(serialized)
+            temporary = Path(output.name)
+        temporary.replace(manifest_path)  # NOSONAR: CLI destination is canonicalized and confined to interop/shared/coverage
+    data = validate(json.loads(manifest_path.read_text()))  # NOSONAR: resolved beneath the fixed coverage directory above
+    if args.check and manifest_path.read_text() != serialize_manifest(build_manifest()):  # NOSONAR: resolved beneath the fixed coverage directory above
+        raise SystemExit('route capability metadata is stale; regenerate with --write')
+    print(json.dumps({'library_commit': data['library_commit'], 'routes': len(data['routes'])}, sort_keys=True))
+
+
+if __name__ == '__main__':
+    main()

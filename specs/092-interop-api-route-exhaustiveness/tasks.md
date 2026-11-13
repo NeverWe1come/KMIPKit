@@ -1,0 +1,132 @@
+# KMIPKIT-0092 Tasks
+
+- [x] T001 Audit pinned OASIS 2.0/2.1 inventories and normative value references
+  and add red tests for missing operations, objects, attributes, TTLV types,
+  assigned/reserved values, extension allocations, tag ranges, request/response
+  branches, and normative boundary/error classes.
+- [x] T002 Add red tests for route-capability manifest validation and missing
+  case/version/route/encoding/transport matrix cells.
+- [x] T003 Define the shared route-capability schema and authored capability
+  manifest for Rust, C, Java, and Python public packages.
+- [x] T004 Generate the exhaustive coverage matrix from the versioned catalog
+  and per-language route capability manifest.
+- [x] T005 Extend validation evidence and aggregation to retain every execution
+  axis and compare normalized request/response results without overwriting
+  repeated runs.
+- [ ] T006 Add CI checks that reject missing/duplicate coverage, declared
+  routes that do not call the named public API, incomplete generic TTLV
+  roundtrips, and falsely positive cases.
+- [ ] T007 Add cross-language fixture contracts for all matrix axes and
+  deterministic byte comparison rules.
+- [x] T008 Update documentation, requirement traceability, and generated
+  artifacts.
+- [ ] T009 Run common checks, review the scoped diff, commit Red/Green/Refactor
+  evidence, push the feature branch, and remove `[WIP]` only after its exact-head
+  CI passes.
+
+T006 and T007 remain open until each separate language validator consumes the
+generated matrix, invokes every named public route, exchanges requests and
+responses with a controlled peer, and emits validated per-cell evidence. A
+passing shared-contract job does not satisfy those language-level requirements.
+
+## Development evidence: Secret Data constructor applicability
+
+- Red commit `f7cb47c47`: `python3 -m unittest interop.shared.tests.test_route_capabilities.RouteCapabilitiesTests.test_secret_data_constructor_does_not_claim_inapplicable_key_block_crypto_fields -v` failed because the route included Cryptographic Algorithm and Cryptographic Length.
+- Green commit `81a51297a`: the source-backed target mapping now applies the KMIP 2.0/2.1 §3.1 Table 11 exclusions to both `SecretData::try_new` and `SecretData::try_from_item`; focused route tests and `route_capabilities.py --check` passed.
+- Refactor/documentation commit: records the applicability rule in requirement traceability and preserves the exact Red/Green evidence here.
+- Verification: `python3 -m unittest discover -s interop/shared/tests -v` passed all 161 tests on 2026-11-12.
+
+## Development evidence: Secret Data route boundary
+
+- Red commit `8e4f3601c`: the focused parser-scope test failed because the Secret Data parser route also declared eight unrelated object roots.
+- Green commit `ad88c763b`: constructor and parser target generation now use only the Secret Data subtree while excluding the Table 11 fields; the focused tests and route-manifest regeneration check passed.
+- Full verification: `python3 -m unittest discover -s interop/shared/tests -v` passed all 161 tests on 2026-11-12.
+- Refactor/documentation commit: records the object-local boundary in requirement traceability and keeps this Red/Green evidence with the feature.
+
+## Development evidence: release pin refresh after KMIPKIT-0120
+
+- The feature branch conflicted with the updated `release/1.0.0` after PR #204 (`KMIPKIT-0120`) merged as `489fafc79ef89db2524eafa7a6c6482f5cf75d97`. The release merge was preserved as a normal signed merge commit; two FFI coverage script conflicts were resolved by retaining both the isolated `--no-clean` run and the existing package-scoped report checks.
+- Red commit `072f4081a`: the focused release-pin contract test failed because the generated route inventory still identified the old commit.
+- Green commit `9d9dbb308`: the route generator now pins the exact current release commit and regenerates all 1,491 route records. The catalog semantics and route count are unchanged.
+- Refactor/documentation: the approved feature spec now records the updated release base and this evidence.
+- Verification: the focused Red was observed; `python3 -m unittest interop.shared.tests.test_route_capabilities -v` passed 63 tests, `python3 interop/shared/tools/route_capabilities.py --check` passed, and `python3 -m unittest scripts.tests.test_workflow -v` passed 95 tests after conflict resolution. Exact-head CI must still pass after this branch update.
+
+## Development evidence: session mutation policy
+
+KMIPKIT-0083-FR-004 requires explicit mutation enablement for mutating cases.
+The primary Login, Logout, and Delegated Login cases alter authenticated
+session state and therefore require the same explicit opt-in as Log.
+
+- Red commit `c35acc2a8` added a catalog regression; its initial version also
+  assumed Delegated Login applied to KMIP 2.0. The source-backed catalog shows
+  that Delegated Login is KMIP 2.1-only. Red commit `7ccde004f` scoped the
+  assertion to the three primary `protocol_and_session` cases and confirmed
+  that each was incorrectly classified as `read_only`.
+- Green commit `85f4095a2` classifies Log, Login, Logout, and Delegated Login as
+  mutating and regenerates the shared catalog. Negative and boundary cases
+  retain their individual classifications.
+- Verification: `python3 interop/shared/catalog/generate_test_catalog.py
+  --check` passed, and `python3 -m unittest discover -s
+  interop/shared/tests -p 'test_*.py'` passed all 188 tests.
+- Exact-head CI and language-level checks that a policy-restricted session
+  operation makes no network request remain required.
+
+KMIP 2.0 §6.1.25 and KMIP 2.1 §6.1.26 define Interop as test-state
+control and prohibit its availability on production servers. The catalog now
+requires the explicit dedicated-environment mutation opt-in for both versions.
+
+- Red commit `8d1b1b938` added the catalog regression and observed that Interop
+  was incorrectly classified as `read_only` for KMIP 2.0 and 2.1.
+- Green commit `7d3ef6ac7` classifies Interop as `mutating` and regenerates the
+  checked-in catalog. Its exact normative references are asserted by the test.
+- Verification: `python3 interop/shared/catalog/generate_test_catalog.py
+  --check` passed; the focused executable-contract tests passed 12/12; the
+  complete shared test suite passed 189/189.
+- This is test policy and catalog evidence. It does not claim server support,
+  and the language validators still need checks that policy-restricted runs
+  make no network request.
+
+## Development evidence: Ephemeral message field encoding
+
+- Red commit `31d996ec6`: the shared inventory regression failed because the
+  source catalog and generated route catalog did not carry the Boolean type
+  declared for Ephemeral.
+- Green commit `315c2931a`: the normative inventory now records the source
+  encoding and regenerates the executable catalog. The pinned source-table
+  check ties the value to KMIP 2.0 §8.3/Table 358 and KMIP 2.1 §8.3/Table 396.
+- Verification: all 297 normative catalog validation tests passed; all 23
+  shared normative inventory tests passed; the complete catalog validator
+  passed with 4,143 records; and `generate_test_catalog.py --check` passed.
+- This closes the shared recipe-data gap only. Language-level generic TTLV and
+  typed-message routes remain open until each validator emits passing evidence.
+
+## Development evidence: regenerated route targets for Boolean TTLV
+
+- Red: exact-head CI runs `43484370343` and `43484597700` failed the route
+  inventory check because the generated Boolean value-constructor routes did
+  not include the newly catalogued `KMIPKIT-ELEM-MESSAGE-FIELD-8-3-EPHEMERAL`
+  target.
+- Green: `python3 interop/shared/tools/route_capabilities.py --write`
+  regenerated the route manifest from pinned public API source metadata,
+  adding Ephemeral to the Rust, C, Java, and Python Boolean constructor routes.
+- Verification: `python3 interop/shared/tools/route_capabilities.py --check`
+  passed and reported 1,491 routes for library commit
+  `489fafc79ef89db2524eafa7a6c6482f5cf75d97`.
+- This updates generated route metadata only. The broader route execution and
+  completeness gates T006, T007, and T009 remain open.
+
+## Development evidence: New Attribute request structure type
+
+- Red commit `5bfdcca01` added a pinned-source inventory regression for the Add
+  Attribute request payloads. It failed for KMIP 2.0 and 2.1 because generated
+  payload targets did not retain the `New Attribute` TTLV Structure type.
+- Green commit `d23965263` records the Structure encoding and adds OASIS KMIP
+  2.0 §5.7/Table 148 and KMIP 2.1 §5.7/Table 163 as source references. It
+  regenerates the test catalog and shared route manifest, adding the six
+  versioned New Attribute targets to generic TTLV Structure routes for all
+  four language validators.
+- Verification: the focused regression passed; all 24 normative inventory
+  tests passed; `generate_test_catalog.py --check` passed; and
+  `route_capabilities.py --check` passed with 1,491 routes pinned to library
+  commit `489fafc79ef89db2524eafa7a6c6482f5cf75d97`.
+- Language-level execution remains required; T006, T007, and T009 stay open.

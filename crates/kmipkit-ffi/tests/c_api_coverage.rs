@@ -1,6 +1,8 @@
 #![allow(unsafe_code)]
 #![cfg(feature = "coverage-c-consumer")]
 
+// Keep the crate linked so C consumer calls resolve through the Rust package's rlib.
+use kmipkit_ffi as _;
 use std::ffi::{CString, c_char};
 use std::fs::{self, OpenOptions};
 use std::io::{self, Read, Write};

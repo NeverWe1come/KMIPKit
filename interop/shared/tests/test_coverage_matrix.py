@@ -1,0 +1,452 @@
+"""Executable expansion and invariants for all installed public route cells."""
+from __future__ import annotations
+
+import json
+import copy
+import os
+from pathlib import Path
+import sys
+import tempfile
+import unittest
+from unittest.mock import patch
+
+
+SHARED = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(SHARED / "tools"))
+from coverage_matrix import _case_obligations, _operation_ids, _resolve_output_path, build_matrix, iter_cells  # noqa: E402
+
+
+class CoverageMatrixTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.catalog = json.loads((SHARED / "catalog/kmipkit-1.0-test-catalog.json").read_text())
+        cls.manifest = json.loads((SHARED / "coverage/route-capabilities.json").read_text())
+
+    def test_every_case_language_has_a_deterministic_nonempty_route_matrix(self):
+        matrix = build_matrix(self.catalog, self.manifest)
+        self.assertEqual("planned_coverage_obligations", matrix["matrix_kind"])
+        self.assertFalse(matrix["execution_evidence_collected"])
+        self.assertEqual(len(self.catalog["test_cases"]), matrix["case_count"])
+        self.assertEqual(len(self.manifest["routes"]), matrix["public_api_route_count"])
+        self.assertEqual(len(self.manifest["execution_routes"]), matrix["execution_route_count"])
+        self.assertEqual(4 * len(self.catalog["test_cases"]), matrix["case_language_count"])
+        self.assertGreater(matrix["cell_count"], matrix["case_language_count"])
+        self.assertRegex(matrix["matrix_sha256"], r"^[0-9a-f]{64}$")
+        self.assertEqual([], matrix["public_api_routes_without_cells"])
+        self.assertEqual([], matrix["execution_routes_without_cells"])
+        self.assertEqual({language: len(self.catalog["test_cases"]) for language in ("rust", "c", "java", "python")},
+                         matrix["coverage_by_language"])
+
+    def test_output_path_uses_the_active_runner_temp_root_after_symlink_resolution(self):
+        with tempfile.TemporaryDirectory() as directory:
+            temporary_root = Path(directory) / "runner-temp"
+            temporary_root.mkdir()
+            temporary_alias = Path(directory) / "runner-temp-alias"
+            temporary_alias.symlink_to(temporary_root, target_is_directory=True)
+            requested_output = temporary_alias / "matrix.jsonl"
+            with patch.dict(os.environ, {"RUNNER_TEMP": str(temporary_alias)}):
+                self.assertEqual(temporary_root / "matrix.jsonl",
+                                 _resolve_output_path(requested_output, SHARED.parents[1]))
+
+    def test_every_case_version_language_has_at_least_one_route_cell(self):
+        cells = list(iter_cells(self.catalog, self.manifest))
+        observed = {
+            (cell["case_id"], cell["protocol_version"], cell["language"])
+            for cell in cells
+        }
+        expected = {
+            (case["case_id"], version, language)
+            for case in self.catalog["test_cases"]
+            for version in case["execution"]["protocol_versions"]
+            for language in ("rust", "c", "java", "python")
+        }
+        self.assertEqual(expected, observed)
+
+    def test_secret_data_factory_excludes_key_only_cryptographic_fields(self):
+        route_id = "python.typed-protocol.model.kmipkit.managed.objects.managedobject.secret.data"
+        excluded_targets = {
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-ALGORITHM",
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-LENGTH",
+        }
+        case_ids = {
+            "test-norm-structure-member-structure-member-3-1-key-block-cryptographic-algorithm",
+            "test-norm-structure-member-structure-member-3-1-key-block-cryptographic-length",
+        }
+        cases = [case for case in self.catalog["test_cases"] if case["case_id"] in case_ids]
+        self.assertEqual(excluded_targets,
+                         {case["requires"]["normative_target_id"] for case in cases})
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest)
+                 if cell["route_id"] == route_id and cell["case_id"] in case_ids]
+        self.assertFalse(cells, "Secret Data is not a key and cannot carry key cryptographic properties")
+
+    def test_batch_workflow_cells_include_each_ordered_operation_target(self):
+        case = next(case for case in self.catalog["test_cases"]
+                    if case["case_id"] == "test-batch-create-activate-destroy")
+        target_ids = case["requires"]["protocol_scenario"]["target_ids"]
+        self.assertEqual(5, len(target_ids))
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest)
+                 if cell["case_id"] == case["case_id"] and cell["action"] == "construct"]
+        self.assertTrue(all("target_id" in cell for cell in cells))
+        for language in ("rust", "c", "java", "python"):
+            steps = {
+                (cell.get("workflow_step_index"), cell.get("workflow_operation"), cell["target_id"])
+                for cell in cells if cell["language"] == language and cell["target_id"] in target_ids
+            }
+            self.assertEqual({(index, operation, target) for index, (operation, target)
+                              in enumerate(zip(case["requires"]["protocol_scenario"]["operations"], target_ids))},
+                             steps)
+
+    def test_explicit_batch_recipe_does_not_inherit_unrelated_primary_operation(self):
+        case = next(case for case in self.catalog["test_cases"]
+                    if case["case_id"] == "test-batch-register-encrypt-decrypt-destroy")
+        scenario_target_ids = case["requires"]["protocol_scenario"]["target_ids"]
+        obligations = _case_obligations(case, _operation_ids(self.catalog),
+                                        self.catalog["normative_targets"])
+        operation_obligations = [item["target_id"] for item in obligations
+                                 if item["target_id"].startswith("KMIPKIT-ELEM-OP-")]
+
+        self.assertEqual(scenario_target_ids, operation_obligations)
+
+    def test_duplicate_operation_names_default_to_client_initiated_direction(self):
+        operation_ids = _operation_ids(self.catalog)
+        self.assertEqual('KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS',
+                         operation_ids['discoverversions'])
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-op-discover-versions')
+        obligations = _case_obligations(case, operation_ids)
+        self.assertEqual(['KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS'],
+                         [item['target_id'] for item in obligations
+                          if item['target_id'].startswith('KMIPKIT-ELEM-OP-')])
+
+    def test_local_enumeration_case_covers_its_values_without_query_network_cells(self):
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-enum-adjustment-type')
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest)
+                 if cell['case_id'] == case['case_id'] and cell['language'] == 'rust']
+        expected = {target['target_id'] for target in self.catalog['normative_targets']
+                    if target['kind'] == 'enumeration_value'
+                    and 'KMIPKIT-ELEM-ENUMERATION-ADJUSTMENT-TYPE'
+                    in target.get('parent_element_ids', [])}
+        self.assertTrue(expected <= {cell['target_id'] for cell in cells})
+        self.assertFalse(any(cell['mode'] == 'network' for cell in cells))
+        self.assertFalse(any(cell['public_api_symbol'] == 'kmipkit_client_batch_item_query'
+                             for cell in cells))
+
+    def test_local_bitmask_case_covers_its_bits_without_query_network_cells(self):
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-bitmask-cryptographic-usage-mask')
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest)
+                 if cell['case_id'] == case['case_id'] and cell['language'] == 'rust']
+        expected = {target['target_id'] for target in self.catalog['normative_targets']
+                    if target['kind'] == 'bitmask_value'
+                    and 'KMIPKIT-ELEM-BITMASK-CRYPTOGRAPHIC-USAGE-MASK'
+                    in target.get('parent_element_ids', [])}
+        self.assertTrue(expected <= {cell['target_id'] for cell in cells})
+        self.assertFalse(any(cell['mode'] == 'network' for cell in cells))
+
+    def test_tag_enumeration_case_uses_only_generic_ttlv_routes(self):
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest)
+                 if cell['case_id'] == 'test-enum-tag']
+        routes = {route['route_id']: route for route in self.manifest['routes']}
+        self.assertTrue(cells)
+        self.assertEqual({'generic-ttlv'},
+                         {routes[cell['route_id']]['api_level'] for cell in cells})
+        self.assertFalse(any(cell['mode'] == 'network' for cell in cells))
+
+    def test_tag_enum_target_exclusions_apply_to_expanded_obligations(self):
+        reserved = 'KMIPKIT-ELEM-TAG-420009'
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('rust',))
+                 if cell['case_id'] == 'test-enum-tag' and cell['target_id'] == reserved]
+        route_ids = {cell['route_id'] for cell in cells}
+        self.assertNotIn('rust.generic-ttlv.item.new', route_ids)
+        self.assertNotIn('rust.generic-ttlv.function.ttlv_item_view_from_item', route_ids)
+        self.assertIn('rust.generic-ttlv.model.kmipkit.ttlv.rawtag.new', route_ids)
+        self.assertIn('rust.generic-ttlv.codec.decode', route_ids)
+
+    def test_source_backed_target_id_exclusions_apply_to_generic_routes(self):
+        target_id = 'KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES'
+        manifest = copy.deepcopy(self.manifest)
+        route = next(route for route in manifest['routes']
+                     if route['route_id'] == 'rust.generic-ttlv.item.new')
+        route['case_exclusions'] = [{
+            'target_ids': [target_id],
+            'reason': 'OASIS KMIP 2.0/2.1 §4.6 describes certificate contents, not a TTLV tag.',
+            'source_paths': ['specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html',
+                             'crates/kmipkit-ttlv/src/item.rs'],
+        }]
+        cells = list(iter_cells(self.catalog, manifest, languages=('rust',)))
+        self.assertFalse(any(cell['route_id'] == route['route_id']
+                             and cell['target_id'] == target_id for cell in cells))
+        self.assertTrue(any(cell['route_id'] == route['route_id']
+                            and cell['target_id'] == 'KMIPKIT-ELEM-ATTRIBUTE-UNIQUE-IDENTIFIER'
+                            for cell in cells))
+
+    def test_single_item_omission_case_does_not_require_option_setters(self):
+        case_id = 'test-batch-single-item-options-omitted'
+        targets = {
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION',
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION',
+        }
+        case = next(case for case in self.catalog['test_cases'] if case['case_id'] == case_id)
+        self.assertEqual({'continuation_option': 'absent', 'order_option': 'absent'},
+                         case['requires']['protocol_scenario']['expected'])
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('c',))
+                 if cell['case_id'] == case_id]
+        self.assertFalse(any(cell['target_id'] in targets for cell in cells))
+        self.assertTrue(any(cell['target_id'] == 'KMIPKIT-ELEM-OP-C2S-GET'
+                            and cell['action'] == 'construct' and cell['mode'] == 'network'
+                            for cell in cells))
+
+    def test_explicit_server_initiated_operation_target_is_not_overridden(self):
+        operation_ids = _operation_ids(self.catalog)
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-op-discover-versions')
+        case = json.loads(json.dumps(case))
+        case['requires']['normative_target_id'] = 'KMIPKIT-ELEM-OP-S2C-DISCOVER-VERSIONS'
+        obligations = _case_obligations(case, operation_ids)
+        self.assertEqual(['KMIPKIT-ELEM-OP-S2C-DISCOVER-VERSIONS'],
+                         [item['target_id'] for item in obligations
+                          if item['target_id'].startswith('KMIPKIT-ELEM-OP-')])
+
+    def test_repeated_batch_items_remain_separate_ordered_obligations(self):
+        case = next(case for case in self.catalog["test_cases"]
+                    if case["case_id"] == "test-batch-stop-on-first-failure")
+        target_id = "KMIPKIT-ELEM-OP-C2S-GET"
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest)
+                 if cell["case_id"] == case["case_id"] and cell["language"] == "python"
+                 and cell["target_id"] == target_id and cell["action"] == "construct"]
+        item_indices = {cell.get("workflow_item_index") for cell in cells}
+        self.assertEqual({0, 1}, item_indices)
+
+    def test_not_sent_version_boundary_has_no_response_decode_obligation(self):
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest)
+                 if cell["case_id"] == "test-v20-reject-ping"]
+        network_cells = [cell for cell in cells if cell["mode"] == "network"]
+        self.assertTrue(network_cells)
+        self.assertEqual({"construct", "send"}, {cell["action"] for cell in network_cells})
+        self.assertFalse(any("response" in cell["route_id"] for cell in cells))
+
+    def test_network_request_field_targets_do_not_create_response_decode_cells(self):
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest)
+                 if cell["case_id"] == "test-norm-payload-client-query-request-21-001"
+                 and cell["language"] == "c"
+                 and cell["target_id"] == "KMIPKIT-PAYLOAD-CLIENT-QUERY-REQUEST-21-001"
+                 and cell["mode"] == "network"]
+        self.assertTrue(cells)
+        self.assertEqual({"construct", "send"}, {cell["action"] for cell in cells})
+
+    def test_reserved_tag_uses_raw_preservation_routes_not_checked_item_constructors(self):
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest)
+                 if cell["case_id"] == "test-norm-tag-tag-420009"]
+        checked_item_routes = {
+            "rust": {"rust.generic-ttlv.item.new", "rust.generic-ttlv.model.kmipkit.ttlv.structure.try.push"},
+            "c": {"c.generic-ttlv.kmipkit_ttlv_item_create", "c.generic-ttlv.model.kmipkit.ttlv.structure.with.item"},
+            "java": {"java.generic-ttlv.ttlv_item.create", "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem"},
+            "python": {"python.generic-ttlv.ttlv.ttlv_item_create", "python.generic-ttlv.model.kmipkit.ttlv.ttlv.structure.with.item"},
+        }
+        for language, route_ids in checked_item_routes.items():
+            language_cells = [cell for cell in cells if cell["language"] == language]
+            self.assertTrue(language_cells)
+            self.assertFalse(route_ids & {cell["route_id"] for cell in language_cells})
+            self.assertTrue(any("rawtag" in cell["route_id"].replace("_", "").replace(".", "")
+                                and cell["action"] == "construct"
+                                for cell in language_cells))
+
+    def test_reserved_tag_decode_rejection_does_not_require_an_item_view(self):
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest)
+                 if cell["case_id"] == "test-norm-tag-tag-420009"]
+        item_view_routes = {
+            "rust": "rust.generic-ttlv.function.ttlv_item_view_from_item",
+            "java": "java.generic-ttlv.function.ttlv_item_view_from_item",
+            "python": "python.generic-ttlv.function.ttlv_item_view_from_item",
+        }
+        for language, route_id in item_view_routes.items():
+            language_cells = [cell for cell in cells if cell["language"] == language]
+            self.assertNotIn(route_id, {cell["route_id"] for cell in language_cells})
+            self.assertTrue(any(cell["action"] == "decode"
+                                and "decode" in cell["public_api_symbol"].casefold()
+                                for cell in language_cells))
+
+    def test_missing_version_route_fails_even_if_the_case_has_another_version(self):
+        case = {
+            "case_id": "two-version-case",
+            "category": "normative_inventory",
+            "operation": "Ping",
+            "requires": {},
+            "execution": {"protocol_versions": ["2.0", "2.1"]},
+        }
+        catalog = {
+            "test_cases": [case],
+            "normative_targets": [{"kind": "operation", "name": "Ping", "target_id": "PING"}],
+        }
+        manifest = {
+            "routes": [{
+                "route_id": "rust.ping",
+                "language": "rust",
+                "case_categories": ["normative_inventory"],
+                "protocol_versions": ["2.0"],
+                "normative_target_ids": ["PING"],
+                "mode": "local",
+                "actions": ["construct"],
+                "combinations": [{"encoding": "TTLV", "transport": None}],
+                "public_api_symbol": "PingRequest::new",
+                "artifact_commit": "a" * 40,
+                "execution_route_id": None,
+            }],
+            "execution_routes": [],
+            "unavailable": [],
+        }
+        with self.assertRaisesRegex(ValueError, r"two-version-case target PING \(rust, KMIP 2.1\)"):
+            list(iter_cells(catalog, manifest, languages=("rust",)))
+
+    def test_multistep_scenario_requires_every_operation_route_for_each_version(self):
+        case = {
+            "case_id": "two-operation-case",
+            "category": "normative_inventory",
+            "operation": "Ping",
+            "requires": {"protocol_scenario": {
+                "target_ids": ["PING", "GET"],
+                "operations": ["Ping", "Get"],
+                "protocol_versions": ["2.0", "2.1"],
+            }},
+            "execution": {"protocol_versions": ["2.0", "2.1"]},
+        }
+        catalog = {
+            "test_cases": [case],
+            "normative_targets": [
+                {"kind": "operation", "name": "Ping", "target_id": "PING"},
+                {"kind": "operation", "name": "Get", "target_id": "GET"},
+            ],
+        }
+
+        def route(route_id, target_id, versions):
+            return {
+                "route_id": route_id, "language": "rust", "case_categories": ["normative_inventory"],
+                "protocol_versions": versions, "normative_target_ids": [target_id], "mode": "local",
+                "actions": ["construct"], "combinations": [{"encoding": "TTLV", "transport": None}],
+                "public_api_symbol": route_id, "artifact_commit": "a" * 40, "execution_route_id": None,
+            }
+
+        manifest = {"routes": [route("rust.ping", "PING", ["2.0", "2.1"]),
+                                route("rust.get", "GET", ["2.0"])],
+                    "execution_routes": [], "unavailable": []}
+        with self.assertRaisesRegex(ValueError, r"two-operation-case target GET \(rust, KMIP 2.1\)"):
+            list(iter_cells(catalog, manifest, languages=("rust",)))
+
+    def test_scenario_protocol_versions_must_match_case_versions(self):
+        case = {
+            "case_id": "version-mismatch", "category": "normative_inventory", "operation": "Ping",
+            "requires": {"protocol_scenario": {"target_ids": ["PING"], "operations": ["Ping"],
+                                                   "protocol_versions": ["2.0"]}},
+            "execution": {"protocol_versions": ["2.1"]},
+        }
+        catalog = {"test_cases": [case], "normative_targets": [{"kind": "operation", "name": "Ping", "target_id": "PING"}]}
+        manifest = {"routes": [], "execution_routes": [], "unavailable": []}
+        with self.assertRaisesRegex(ValueError, "scenario protocol versions disagree"):
+            list(iter_cells(catalog, manifest, languages=("rust",)))
+
+    def test_scenario_operation_order_must_match_normative_target_order(self):
+        case = {
+            "case_id": "operation-order-mismatch", "category": "normative_inventory", "operation": "Ping",
+            "requires": {"protocol_scenario": {"target_ids": ["GET", "PING"],
+                                                "operations": ["Ping", "Get"],
+                                                "protocol_versions": ["2.0"]}},
+            "execution": {"protocol_versions": ["2.0"]},
+        }
+        catalog = {"test_cases": [case], "normative_targets": [
+            {"kind": "operation", "name": "Ping", "target_id": "PING"},
+            {"kind": "operation", "name": "Get", "target_id": "GET"},
+        ]}
+        with self.assertRaisesRegex(ValueError, "operation order disagrees"):
+            list(iter_cells(catalog, {"routes": [], "execution_routes": [], "unavailable": []},
+                            languages=("rust",)))
+
+    def test_unknown_scenario_operation_or_batch_item_cannot_be_dropped(self):
+        case = {
+            "case_id": "unknown-operation", "category": "normative_inventory", "operation": "Ping",
+            "requires": {"protocol_scenario": {"target_ids": ["PING"], "operations": ["Unknown"],
+                                                "protocol_versions": ["2.0"]}},
+            "execution": {"protocol_versions": ["2.0"]},
+        }
+        catalog = {"test_cases": [case], "normative_targets": [
+            {"kind": "operation", "name": "Ping", "target_id": "PING"},
+        ]}
+        with self.assertRaisesRegex(ValueError, "lacks a normative target"):
+            list(iter_cells(catalog, {"routes": [], "execution_routes": [], "unavailable": []},
+                            languages=("rust",)))
+
+    def test_generated_rows_conform_to_the_versioned_json_schema(self):
+        try:
+            import jsonschema
+        except ImportError:
+            self.skipTest("jsonschema dependency is not installed")
+        schema = json.loads((SHARED / "schemas/coverage-matrix-row.schema.json").read_text())
+        cells = list(iter_cells(self.catalog, self.manifest))
+        selected = [next(cell for cell in cells if cell["mode"] == "local"),
+                    next(cell for cell in cells if cell["mode"] == "network"),
+                    next(cell for cell in cells if "workflow_step_index" in cell)]
+        for cell in selected:
+            with self.subTest(cell=cell):
+                jsonschema.validate(cell, schema)
+        invalid = dict(selected[2])
+        invalid.pop("workflow_operation")
+        with self.assertRaises(jsonschema.ValidationError):
+            jsonschema.validate(invalid, schema)
+
+    def test_cells_preserve_each_supported_version_encoding_and_transport(self):
+        cells = list(iter_cells(self.catalog, self.manifest))
+        self.assertTrue(all(cell["execution_status"] == "required" for cell in cells))
+        self.assertTrue(all(cell["evidence_collected"] is False for cell in cells))
+        identities = [(cell["case_id"], cell["language"], cell["route_id"], cell.get("target_id"),
+                       cell.get("workflow_step_index"), cell.get("workflow_item_index"),
+                       cell["execution_route_id"], cell["action"], cell["protocol_version"],
+                       cell["encoding"], cell["transport"]) for cell in cells]
+        self.assertEqual(len(identities), len(set(identities)))
+        cases = {case["case_id"]: case for case in self.catalog["test_cases"]}
+        routes = {route["route_id"]: route for route in self.manifest["routes"]}
+        execution_routes = {route["execution_route_id"]: route for route in self.manifest["execution_routes"]}
+        for cell in cells:
+            with self.subTest(cell=cell):
+                case = cases[cell["case_id"]]
+                route = routes[cell["route_id"]]
+                self.assertIn(cell["protocol_version"], case["execution"]["protocol_versions"])
+                self.assertIn(cell["protocol_version"], route["protocol_versions"])
+                if route["mode"] == "local":
+                    self.assertIn(cell["action"], route["actions"])
+                    self.assertIsNone(cell["execution_route_id"])
+                    self.assertIsNone(cell["transport"])
+                    self.assertEqual("TTLV", cell["encoding"])
+                elif cell["action"] == "construct":
+                    self.assertIn("construct", route["actions"])
+                    self.assertIsNotNone(cell["execution_route_id"])
+                    self.assertIn({"encoding": cell["encoding"], "transport": cell["transport"]}, route["combinations"])
+                else:
+                    execution = execution_routes[cell["execution_route_id"]]
+                    self.assertIn(cell["action"], {"send", "decode"})
+                    self.assertEqual(route["execution_route_id"], execution["execution_route_id"])
+                    self.assertEqual(cell["language"], execution["language"])
+                    self.assertIsNotNone(cell["execution_api_symbol"])
+
+    def test_network_route_combinations_are_not_satisfied_by_local_ttlv_cells(self):
+        cells = list(iter_cells(self.catalog, self.manifest))
+        network = [cell for cell in cells if cell["mode"] == "network" and cell["action"] in {"send", "decode"}]
+        construction = [cell for cell in cells if cell["mode"] == "network" and cell["action"] == "construct"]
+        self.assertTrue(network)
+        self.assertTrue(construction)
+        self.assertTrue(all(cell["transport"] in {"raw_tls", "https"} for cell in network))
+        self.assertTrue(all(cell["encoding"] in {"TTLV", "JSON", "XML"} for cell in network))
+        self.assertEqual({"send", "decode"}, {cell["action"] for cell in network})
+        self.assertTrue(all(cell["execution_route_id"] for cell in network))
+
+    def test_every_declared_execution_route_gets_send_and_decode_cells(self):
+        cells = list(iter_cells(self.catalog, self.manifest))
+        observed = {cell["execution_route_id"] for cell in cells if cell["execution_route_id"]}
+        expected = {route["execution_route_id"] for route in self.manifest["execution_routes"]}
+        self.assertEqual(expected, observed)
+        self.assertTrue(all(any(cell["execution_route_id"] == route_id and cell["action"] == action
+                                for cell in cells)
+                            for route_id in expected for action in ("send", "decode")))
+
+
+if __name__ == "__main__":
+    unittest.main()
