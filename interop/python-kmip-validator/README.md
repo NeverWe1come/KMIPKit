@@ -111,7 +111,7 @@ library encoder.
 
 The installed-package matrix at feature head `75ad6b7a0` completed all
 **74,648/74,648** cells: 45,470 local construction/encoding/decoding cells
-and 29,178 controlled-peer network cells across 823 catalog cases. It used
+and 29,178 controlled-peer network cells across 2,689 catalog cases. It used
 the package built from release commit `489fafc79ef89db2524eafa7a6c6482f5cf75d97`,
 wheel SHA-256
 `399a9de433a460bd95237e9142c6b19ca082bdc2a94c2d31fe93765cf508a369`, catalog
