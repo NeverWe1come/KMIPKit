@@ -902,13 +902,20 @@ fn attribute_mutation_builders_execute_the_matching_typed_route_once() {
         response: attribute_success_response_bytes(14),
         request_write_chunks: Vec::new(),
     });
-    let response = client
+    let builder = client
         .request()
         .modify_attribute()
+        .unique_identifier("key-42")
+        .current_attribute(CurrentAttribute::from_typed(
+            Attribute::<typed::Comment>::new("before-modify".to_owned())
+                .expect("Comment is a catalogued Text String"),
+        ))
         .new_attribute(NewAttribute::from_typed(
             Attribute::<typed::Comment>::new("modified".to_owned())
                 .expect("Comment is a catalogued Text String"),
-        ))
+        ));
+    assert_eq!(builder.validate(), Ok(()));
+    let response = builder
         .execute(&CodecLimits::defaults())
         .expect("Modify Attribute uses its existing typed client route");
     assert_eq!(
@@ -924,6 +931,7 @@ fn attribute_mutation_builders_execute_the_matching_typed_route_once() {
     let response = client
         .request()
         .set_attribute()
+        .unique_identifier("key-42")
         .new_attribute(NewAttribute::from_typed(
             Attribute::<typed::Comment>::new("set".to_owned())
                 .expect("Comment is a catalogued Text String"),
