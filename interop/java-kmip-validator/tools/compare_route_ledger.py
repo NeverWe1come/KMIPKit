@@ -46,6 +46,23 @@ def refresh_reference(reference: dict, generated: dict) -> dict:
     return refreshed
 
 
+def _write_reference_ledger(ledger: dict) -> None:
+    """Write only to the checked-in ledger directly under this validator root."""
+    root = VALIDATOR_ROOT.resolve(strict=True)
+    if REFERENCE_LEDGER.name != "route-evidence-ledger.json":
+        raise ValueError("route reference path has an unexpected filename")
+    if REFERENCE_LEDGER.parent.resolve(strict=True) != root:
+        raise ValueError("route reference path is outside the validator root")
+    target = root / "route-evidence-ledger.json"
+    try:
+        resolved_target = REFERENCE_LEDGER.resolve(strict=False)
+    except (OSError, RuntimeError) as error:
+        raise ValueError("route reference path cannot be resolved safely") from error
+    if REFERENCE_LEDGER.is_symlink() or resolved_target != target:
+        raise ValueError("route reference path must not be a symlink or escape the validator root")
+    target.write_text(json.dumps(ledger, indent=2) + "\n", encoding="utf-8")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -58,7 +75,7 @@ def main() -> int:
     generated = json.loads(GENERATED_LEDGER.read_text(encoding="utf-8"))
     if arguments.refresh_reference:
         refreshed = refresh_reference(reference, generated)
-        REFERENCE_LEDGER.write_text(json.dumps(refreshed, indent=2) + "\n", encoding="utf-8")
+        _write_reference_ledger(refreshed)
         reference = refreshed
     compare_ledgers(reference, generated)
     print("Java route coverage matches the checked-in reference.")

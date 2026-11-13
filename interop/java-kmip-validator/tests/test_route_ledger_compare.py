@@ -123,6 +123,20 @@ class RouteLedgerComparisonTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "failed invocations"):
             COMPARE_ROUTE_LEDGER.refresh_reference(reference, generated)
 
+    def test_reference_writer_rejects_paths_outside_validator_root(self):
+        original_path = COMPARE_ROUTE_LEDGER.REFERENCE_LEDGER
+        with tempfile.TemporaryDirectory() as outside_directory:
+            outside_path = Path(outside_directory) / "route-evidence-ledger.json"
+            outside_path.write_text("unchanged", encoding="utf-8")
+            COMPARE_ROUTE_LEDGER.REFERENCE_LEDGER = outside_path
+            try:
+                with self.assertRaisesRegex(ValueError, "outside the validator root"):
+                    COMPARE_ROUTE_LEDGER._write_reference_ledger({"artifact_sha256": "a" * 64})
+            finally:
+                COMPARE_ROUTE_LEDGER.REFERENCE_LEDGER = original_path
+
+            self.assertEqual("unchanged", outside_path.read_text(encoding="utf-8"))
+
 
 if __name__ == "__main__":
     unittest.main()
