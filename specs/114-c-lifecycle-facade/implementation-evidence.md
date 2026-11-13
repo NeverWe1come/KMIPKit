@@ -116,3 +116,25 @@ terminal result in this session, so it is not counted as passing. The complete
 tests, and 1 operation-parity integration test. The strict FFI Clippy command
 also passed. A fresh hosted run on the corrected head is still required,
 including the Linux and Windows workspace and coverage jobs.
+
+## T102 manifest audit follow-up (2026-11-13)
+
+A full local audit of the 108 `test_t102*.py` modules found stale scope
+snapshots and incomplete response traceability on the cumulative 0114 branch.
+Locate now has 76 declarations because KMIPKIT-0114 adds direct and
+exchange-options C helpers. The approved KMIPKIT-0093-FR-008 response contract
+was also missing from 25 operation-specific result declarations; the two
+`kmipkit::protocol::LocateResponse` aliases now match their canonical protocol
+metadata. Updated the non-target declaration and operation fingerprints and
+regenerated the public API parity fixtures from `specification/api/public-api.json`.
+
+| Verification | Result |
+|---|---|
+| Isolated execution of all 108 `test_t102*.py` modules (`python3.12 -B -m unittest`, groups of four modules per process) | Passed: 405 tests, zero failed groups. |
+| `python3.12 -B tools/api_manifest/generate.py --check` | Passed; 12 generated outputs verified. |
+| `python3.12 -B tools/api_manifest/audit_binding_exports.py --repo-root . --c-only --check` | Passed; 2,022 exact C export matches and no missing symbols or mismatches. |
+| Focused Locate, operation-result, optional-structure, response-view, Certify, and KMIPKIT-0093 typed-response tests | Passed: 29 tests. |
+| `git diff --check` | Passed. |
+
+The updated branch head still requires a fresh hosted CI run. PR #210 remains
+WIP until all required checks pass on that exact head SHA.
