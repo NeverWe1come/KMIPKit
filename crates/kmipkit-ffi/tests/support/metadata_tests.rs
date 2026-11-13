@@ -89,6 +89,7 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
             "crypto_response_ttlv",
             "discover_versions_request_item",
             "ffi_runtime_metadata",
+            "fluent_dx_api",
             "generic_ttlv_model",
             "hashed_password_timestamp_sequence",
             "kmip30_draft_routes",
@@ -469,6 +470,7 @@ fn source_c_exports() -> Vec<(String, bool)> {
         include_str!("../../src/extension_registry/managed_objects.rs"),
         include_str!("../../src/extension_registry/request_validation.rs"),
         include_str!("../../src/extension_registry/typed_attributes.rs"),
+        include_str!("../../src/extension_registry/client_abi/fluent.rs"),
     ];
     assert_managed_object_helpers_are_guarded(sources[4]);
     let mut exports: Vec<(String, bool)> = sources

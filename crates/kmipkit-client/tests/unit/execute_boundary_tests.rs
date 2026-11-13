@@ -1001,19 +1001,25 @@ impl BoundaryAudit {
             impl_type,
             signature,
         );
+        let fluent_root_scope = self.is_source_root(Path::new("fluent.rs"));
+        let fluent_catalogued_attribute =
+            is_exact_fluent_catalogued_attribute(fluent_root_scope, impl_type, signature);
+        let fluent_explicit_attribute_item =
+            is_exact_fluent_explicit_attribute_item(fluent_root_scope, impl_type, signature);
         let s2c_root_scope = self.is_source_root(Path::new("server_to_client.rs"));
         let server_request_dispatcher =
             is_exact_server_request_dispatch(s2c_root_scope, impl_type, signature);
         let approved_generic_signature = extension_view_callback
             || error_response_ttlv_callback
             || async_outcome_callback
-            || error_validation_source;
+            || error_validation_source
+            || fluent_catalogued_attribute;
         if has_public_type_or_const_generics(signature) && !approved_generic_signature {
             finder
                 .violations
                 .insert(PublicTypeViolation::CallerConversion);
         }
-        if !error_validation_source {
+        if !approved_generic_signature {
             finder.visit_generics(&signature.generics);
         }
         for (index, argument) in signature.inputs.iter().enumerate() {
@@ -1028,6 +1034,9 @@ impl BoundaryAudit {
                     || registry_value_validation && index == 2
                     || registry_inspect && index == 2
                     || server_request_dispatcher && index == 2
+                    || fluent_explicit_attribute_item
+                        && (signature.ident == "attribute_item" && index == 1
+                            || signature.ident == "vendor_attribute" && index == 3)
                 {
                     continue;
                 }
@@ -2197,6 +2206,125 @@ fn has_public_type_or_const_generics(signature: &syn::Signature) -> bool {
             syn::GenericParam::Type(_) | syn::GenericParam::Const(_)
         )
     })
+}
+
+fn is_exact_fluent_catalogued_attribute(
+    fluent_root_scope: bool,
+    impl_type: Option<&str>,
+    signature: &syn::Signature,
+) -> bool {
+    if !fluent_root_scope
+        || impl_type != Some("CreateSymmetricKeyBuilder")
+        || signature.ident != "attribute"
+        || signature.generics.params.len() != 1
+        || signature.generics.where_clause.is_some()
+        || signature.asyncness.is_some()
+        || signature.constness.is_some()
+        || signature.unsafety.is_some()
+        || signature.abi.is_some()
+        || signature.variadic.is_some()
+        || signature.inputs.len() != 2
+        || !matches!(&signature.output, syn::ReturnType::Type(_, output) if is_plain_type_path(output, "Self"))
+    {
+        return false;
+    }
+    let generic_is_attribute_definition = matches!(
+        signature.generics.params.first(),
+        Some(syn::GenericParam::Type(parameter))
+            if parameter.ident == "D"
+                && parameter.attrs.is_empty()
+                && parameter.colon_token.is_some()
+                && parameter.bounds.len() == 1
+                && parameter.eq_token.is_none()
+                && parameter.default.is_none()
+                && matches!(parameter.bounds.first(), Some(syn::TypeParamBound::Trait(bound))
+                    if bound.path.is_ident("AttributeDefinition"))
+    );
+    let receiver_is_value_self = matches!(
+        signature.inputs.first(),
+        Some(syn::FnArg::Receiver(receiver))
+            if receiver.reference.is_none()
+                && receiver.colon_token.is_none()
+                && receiver.attrs.is_empty()
+    );
+    let attribute_is_typed = matches!(
+        signature.inputs.get(1),
+        Some(syn::FnArg::Typed(argument))
+            if matches!(argument.ty.as_ref(), Type::Path(path)
+                if path.qself.is_none()
+                    && path.path.segments.len() == 1
+                    && path.path.segments[0].ident == "Attribute"
+                    && matches!(&path.path.segments[0].arguments,
+                        syn::PathArguments::AngleBracketed(arguments)
+                            if arguments.args.len() == 1
+                                && matches!(arguments.args.first(),
+                                    Some(syn::GenericArgument::Type(ty))
+                                        if is_plain_type_path(ty, "D"))))
+    );
+    generic_is_attribute_definition && receiver_is_value_self && attribute_is_typed
+}
+
+fn is_exact_fluent_explicit_attribute_item(
+    fluent_root_scope: bool,
+    impl_type: Option<&str>,
+    signature: &syn::Signature,
+) -> bool {
+    if !fluent_root_scope
+        || impl_type.is_none_or(|name| !matches!(name, "CreateSymmetricKeyBuilder"))
+        || !matches!(
+            signature.ident.to_string().as_str(),
+            "attribute_item" | "vendor_attribute"
+        )
+        || !signature.generics.params.is_empty()
+        || signature.generics.where_clause.is_some()
+        || signature.asyncness.is_some()
+        || signature.constness.is_some()
+        || signature.unsafety.is_some()
+        || signature.abi.is_some()
+        || signature.variadic.is_some()
+        || !matches!(&signature.output, syn::ReturnType::Type(_, output) if is_plain_type_path(output, "Self"))
+    {
+        return false;
+    }
+    let is_receiver = |argument: Option<&syn::FnArg>| {
+        matches!(
+            argument,
+            Some(syn::FnArg::Receiver(receiver))
+                if receiver.reference.is_none()
+                    && receiver.colon_token.is_none()
+                    && receiver.attrs.is_empty()
+        )
+    };
+    let is_item = |argument: Option<&syn::FnArg>| {
+        matches!(argument, Some(syn::FnArg::Typed(argument))
+            if is_plain_type_path(&argument.ty, "Item"))
+    };
+    let is_item_reference = |argument: Option<&syn::FnArg>| {
+        matches!(argument, Some(syn::FnArg::Typed(argument))
+            if matches!(argument.ty.as_ref(), Type::Reference(reference)
+                if reference.lifetime.is_none()
+                    && reference.mutability.is_none()
+                    && is_plain_type_path(reference.elem.as_ref(), "Item")))
+    };
+    if signature.ident == "attribute_item" {
+        return signature.inputs.len() == 2
+            && is_receiver(signature.inputs.first())
+            && is_item(signature.inputs.get(1));
+    }
+    signature.inputs.len() == 4
+        && is_receiver(signature.inputs.first())
+        && matches!(signature.inputs.get(1), Some(syn::FnArg::Typed(argument))
+            if is_plain_reference_to_str(&argument.ty))
+        && matches!(signature.inputs.get(2), Some(syn::FnArg::Typed(argument))
+            if is_plain_reference_to_str(&argument.ty))
+        && is_item_reference(signature.inputs.get(3))
+}
+
+fn is_plain_reference_to_str(ty: &Type) -> bool {
+    matches!(ty, Type::Reference(reference)
+        if reference.lifetime.is_none()
+            && reference.mutability.is_none()
+            && is_plain_type_path(&reference.elem, "str"))
 }
 
 fn is_exact_error_validation_source(

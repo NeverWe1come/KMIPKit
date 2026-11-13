@@ -67,6 +67,7 @@ mod xml_codec;
 
 mod error;
 pub mod extension_registry;
+pub mod fluent;
 
 #[cfg(test)]
 #[path = "../tests/fixtures/extensions/extension_fixtures.generated.rs"]
@@ -165,6 +166,10 @@ mod cancel_execution_tests;
 #[cfg(test)]
 #[path = "../tests/unit/create_execution_tests.rs"]
 mod create_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/fluent_request_tests.rs"]
+mod fluent_request_tests;
 
 #[cfg(test)]
 #[path = "../tests/unit/create_key_pair_execution_tests.rs"]
@@ -349,6 +354,10 @@ pub use execute::{
     Client, ClientBatch, ClientBatchItem, ClientBatchItemResponse, ClientBatchOutcome,
     ClientBatchResponse, ClientMessageExtension, ClientOperation, ClientOperationOutcome,
     ClientRequest, ClientResponseView, Kmip30OperationResponse, PendingOutcome,
+};
+pub use fluent::{
+    CreateSymmetricKeyBuilder, CryptographicUsageMask, DestroyBuilder, FluentBuildError,
+    GetBuilder, RequestBuilder,
 };
 pub use kmipkit_protocol::{
     ProfileObjectState, ProfileTransport, ProfileValidationContext, ProfileValidationError,
