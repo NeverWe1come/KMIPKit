@@ -413,3 +413,43 @@ from these local constructor checks.
 
 This adds local generic-TTLV coverage only; it does not discharge the remaining
 typed operation and transport cells or the cross-language matrix requirements.
+
+### Nested C TTLV Structures
+
+Generic Structure fixtures now include required child Items selected from the
+pinned normative catalog. The installed ABI route therefore executes both
+`kmipkit_ttlv_structure_with_item` and `kmipkit_ttlv_value_structure` for
+Asynchronous Request (§7.2), Request Header (§8.1), object structures, and
+other nested structures with catalogued required members.
+
+- Red commit `19c13405`: the tests showed that both Asynchronous Request and
+  Request Header fixtures were empty and did not invoke `structure_with_item`.
+- Green commit `ad2e9818`: recursively built fixtures from each Structure's
+  required catalog members and verified exact decode/encode roundtrips.
+- Refactor: record the source hierarchy and full-matrix evidence here.
+- Focused nested-structure test passed; the full installed C matrix reported
+  37,926 invoked cells, 0 failed cells, and 28,802 pending cells. Comparing
+  cell identities with the preceding run shows 85 new structure routes.
+
+### Delegated Login controlled-peer ordering
+
+After the Delegated Login response route was integrated, the controlled peer
+rejected the first KMIP 2.0 and 2.1 exchange because its expected operation
+sequence still began with the older catalog cases. The fixture now expects
+operation 47 and `test-op-delegated-login` first for both versions, then
+validates the response's typed and generic Ticket fields. This follows OASIS
+KMIP 2.0 §6.1.12 Table 185 and KMIP 2.1 §6.1.12 Table 200.
+
+- Red commit `0d4964a0`: the peer-plan test failed because there was no
+  Delegated Login entry in the expected sequence; CTest reproduced the peer's
+  `unexpected operation batch (47,)` failure for both protocol versions.
+- Green commit `799289e3`: prepended the request and result case to the
+  controlled-peer plan. Both focused TLS peer tests passed.
+- Refactor: preserve the incident, normative references, and matrix counts.
+- Full CTest passed 7/7. The full installed C matrix reported 37,966 invoked
+  cells, 0 failed cells, and 28,762 pending cells; the 40 newly invoked
+  Delegated Login cells cover construction, execution, response decoding, and
+  typed and TTLV response accessors across both protocol versions.
+
+These validator changes close only their C route cells; remaining C routes,
+other language matrices, and exact-head CI are still required.
