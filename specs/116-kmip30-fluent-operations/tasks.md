@@ -5,7 +5,7 @@
   API gap.
 - [x] C002 Record the parent-approved scope, field mapping, security limits,
   release-line placement, acceptance criteria, and explicit version behavior.
-- [ ] R001 Add failing consumer/API-shape tests for all seven operation
+- [x] R001 Add failing consumer/API-shape tests for all seven operation
   builders in Rust, C, Java, and Python; record exact Red evidence.
 - [ ] G001 Implement Rust builders, typed conversion, and selected-version
   execution using existing request models.
