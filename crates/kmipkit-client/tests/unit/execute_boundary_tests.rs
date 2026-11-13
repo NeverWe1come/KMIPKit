@@ -1034,6 +1034,8 @@ impl BoundaryAudit {
             is_exact_fluent_catalogued_attribute(fluent_root_scope, impl_type, signature);
         let fluent_explicit_attribute_item =
             is_exact_fluent_explicit_attribute_item(fluent_root_scope, impl_type, signature);
+        let fluent_split_key_explicit_value =
+            is_exact_fluent_split_key_explicit_value(fluent_root_scope, impl_type, signature);
         let s2c_root_scope = self.is_source_root(Path::new("server_to_client.rs"));
         let server_request_dispatcher =
             is_exact_server_request_dispatch(s2c_root_scope, impl_type, signature);
@@ -1066,6 +1068,7 @@ impl BoundaryAudit {
                         && (signature.ident == "attribute_item" && index == 1
                             || signature.ident == "vendor_attribute" && index == 3
                             || signature.ident == "attribute_at" && index == 2)
+                    || fluent_split_key_explicit_value && index == 1
                 {
                     continue;
                 }
@@ -2256,13 +2259,16 @@ fn is_exact_fluent_catalogued_attribute(
     impl_type: Option<&str>,
     signature: &syn::Signature,
 ) -> bool {
-    let supported_method = impl_type == Some("CreateSymmetricKeyBuilder")
-        && signature.ident == "attribute"
-        || impl_type == Some("CreateKeyPairBuilder")
-            && matches!(
-                signature.ident.to_string().as_str(),
-                "common_attribute" | "private_attribute" | "public_attribute"
-            );
+    let supported_method = match impl_type {
+        Some("CreateSymmetricKeyBuilder" | "CreateSplitKeyBuilder") => {
+            signature.ident == "attribute"
+        }
+        Some("CreateKeyPairBuilder") => matches!(
+            signature.ident.to_string().as_str(),
+            "common_attribute" | "private_attribute" | "public_attribute"
+        ),
+        _ => false,
+    };
     if !fluent_root_scope
         || !supported_method
         || signature.generics.params.len() != 1
@@ -2319,7 +2325,9 @@ fn is_exact_fluent_explicit_attribute_item(
     signature: &syn::Signature,
 ) -> bool {
     if !fluent_root_scope
-        || impl_type.is_none_or(|name| !matches!(name, "CreateSymmetricKeyBuilder"))
+        || impl_type.is_none_or(|name| {
+            !matches!(name, "CreateSymmetricKeyBuilder" | "CreateSplitKeyBuilder")
+        })
         || !matches!(
             signature.ident.to_string().as_str(),
             "attribute_item" | "vendor_attribute" | "attribute_at"
@@ -2376,11 +2384,140 @@ fn is_exact_fluent_explicit_attribute_item(
         && is_item_reference(signature.inputs.get(3))
 }
 
+fn is_exact_fluent_split_key_explicit_value(
+    fluent_root_scope: bool,
+    impl_type: Option<&str>,
+    signature: &syn::Signature,
+) -> bool {
+    if !fluent_root_scope
+        || impl_type != Some("CreateSplitKeyBuilder")
+        || !matches!(
+            signature.ident.to_string().as_str(),
+            "prime_field_size" | "protection_storage_masks"
+        )
+        || !signature.generics.params.is_empty()
+        || signature.generics.where_clause.is_some()
+        || signature.asyncness.is_some()
+        || signature.constness.is_some()
+        || signature.unsafety.is_some()
+        || signature.abi.is_some()
+        || signature.variadic.is_some()
+        || signature.inputs.len() != 2
+        || !matches!(&signature.output, syn::ReturnType::Type(_, output) if is_plain_type_path(output, "Self"))
+        || !matches!(
+            signature.inputs.first(),
+            Some(syn::FnArg::Receiver(receiver))
+                if receiver.reference.is_none()
+                    && receiver.colon_token.is_none()
+                    && receiver.attrs.is_empty()
+        )
+    {
+        return false;
+    }
+    let Some(syn::FnArg::Typed(argument)) = signature.inputs.get(1) else {
+        return false;
+    };
+    if !argument.attrs.is_empty() {
+        return false;
+    }
+    match signature.ident.to_string().as_str() {
+        "prime_field_size" => matches!(argument.ty.as_ref(), Type::Path(path)
+            if path.qself.is_none()
+                && path.path.leading_colon.is_none()
+                && path.path.segments.len() == 1
+                && path.path.segments[0].ident == "Vec"
+                && matches!(&path.path.segments[0].arguments,
+                    syn::PathArguments::AngleBracketed(arguments)
+                        if arguments.args.len() == 1
+                            && matches!(arguments.args.first(),
+                                Some(syn::GenericArgument::Type(ty))
+                                    if is_plain_type_path(ty, "u8")))),
+        "protection_storage_masks" => is_plain_type_path(&argument.ty, "Structure"),
+        _ => false,
+    }
+}
+
 fn is_plain_reference_to_str(ty: &Type) -> bool {
     matches!(ty, Type::Reference(reference)
         if reference.lifetime.is_none()
             && reference.mutability.is_none()
             && is_plain_type_path(&reference.elem, "str"))
+}
+
+#[test]
+fn fluent_split_key_signature_exceptions_are_exact_and_method_scoped() {
+    let catalogued = syn::parse_str::<syn::Signature>(
+        "fn attribute<D: AttributeDefinition>(self, attribute: Attribute<D>) -> Self",
+    )
+    .unwrap();
+    assert!(is_exact_fluent_catalogued_attribute(
+        true,
+        Some("CreateSplitKeyBuilder"),
+        &catalogued
+    ));
+    assert!(!is_exact_fluent_catalogued_attribute(
+        false,
+        Some("CreateSplitKeyBuilder"),
+        &catalogued
+    ));
+    assert!(!is_exact_fluent_catalogued_attribute(
+        true,
+        Some("OtherBuilder"),
+        &catalogued
+    ));
+
+    for signature in [
+        "fn attribute_item(self, item: Item) -> Self",
+        "fn vendor_attribute(self, vendor: &str, name: &str, value: &Item) -> Self",
+        "fn attribute_at(self, position: FluentAttributePosition, item: Item) -> Self",
+    ] {
+        let signature = syn::parse_str::<syn::Signature>(signature).unwrap();
+        assert!(is_exact_fluent_explicit_attribute_item(
+            true,
+            Some("CreateSplitKeyBuilder"),
+            &signature
+        ));
+        assert!(!is_exact_fluent_explicit_attribute_item(
+            true,
+            Some("OtherBuilder"),
+            &signature
+        ));
+    }
+
+    for signature in [
+        "fn prime_field_size(self, value: Vec<u8>) -> Self",
+        "fn protection_storage_masks(self, masks: Structure) -> Self",
+    ] {
+        let signature = syn::parse_str::<syn::Signature>(signature).unwrap();
+        assert!(is_exact_fluent_split_key_explicit_value(
+            true,
+            Some("CreateSplitKeyBuilder"),
+            &signature
+        ));
+        assert!(!is_exact_fluent_split_key_explicit_value(
+            false,
+            Some("CreateSplitKeyBuilder"),
+            &signature
+        ));
+        assert!(!is_exact_fluent_split_key_explicit_value(
+            true,
+            Some("OtherBuilder"),
+            &signature
+        ));
+    }
+
+    for signature in [
+        "fn raw_bytes(self, value: Vec<u8>) -> Self",
+        "fn prime_field_size(self, value: Vec<u16>) -> Self",
+        "fn protection_storage_masks(self, masks: Item) -> Self",
+    ] {
+        let signature = syn::parse_str::<syn::Signature>(signature).unwrap();
+        assert!(!is_exact_fluent_split_key_explicit_value(
+            true,
+            Some("CreateSplitKeyBuilder"),
+            &signature
+        ));
+    }
 }
 
 fn is_exact_error_validation_source(

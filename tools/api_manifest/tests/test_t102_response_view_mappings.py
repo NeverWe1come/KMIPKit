@@ -170,14 +170,15 @@ EXPECTED = (
 # The non-target snapshots include subsequent approved T102 manifest slices.
 # They also include the 0047 release stack and reconciled 0048/0049/0050 inventories.
 # The snapshot includes the approved KMIPKIT-0052 async typed-reader routes.
-UNCHANGED_DECLARATIONS_SHA256 = "b3212d8289623f928705345cd30b614950ffacae118a64101f8660bfb7beb067"
+# It also includes the 50 approved KMIPKIT-0099 fluent Create Split Key declarations.
+UNCHANGED_DECLARATIONS_SHA256 = "ebdb36ad52cf790a5e1e97c2a2c4786e876c8c80e4e2962c89ac9a9fc400b3fb"
 UNCHANGED_OPERATIONS_SHA256 = "9ee0f7c51c05a8abd96af7f6d3017f3ffb780c4262f231eaf3cb8c01a38147c7"
 # T098's maintainer-approved reconciliation updates lifecycle approval evidence
 # and inherited requirement links outside the T102 declaration/operation rows.
 # The test separately pins those T098 records; this fingerprint covers the
 # resulting manifest baseline after the explicit T102 normalizations below.
 # The non-target snapshot includes the async reader routes and exact Python adapter exclusions.
-OTHER_MANIFEST_SHA256 = "03148fafcbf2cbec51646166c6c4094b1ba87349a4b5793b218efba061a8146e"
+OTHER_MANIFEST_SHA256 = "29042423af260687c4ad5662f69a1838b3f84892923c27d8269cf8f851a78b52"
 EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",
@@ -549,7 +550,7 @@ class T102ResponseViewMappingTests(unittest.TestCase):
                     | {RETIRED_REKEY_KEY_PAIR_REQUIREMENT}
                 )
         self.assertEqual(
-        "7090bf6074270aa05acdf16e78f53f17de54c813d672aac005400317e3f1781a",
+            UNCHANGED_DECLARATIONS_SHA256,
             canonical_sha256(without_0047_versioned_values(unchanged_declarations)),
         )
 
@@ -668,7 +669,7 @@ class T102ResponseViewMappingTests(unittest.TestCase):
                 requirements.add(LOCATE_SERVER_ONLY_REQUIREMENT)
                 function["requirementIds"] = sorted(requirements)
         self.assertEqual(
-            "2408e103c073ec9732f1129c3a2735fd5fe8c042b1016d4ad59122beb9213a47",
+            OTHER_MANIFEST_SHA256,
             canonical_sha256(other_manifest),
         )
 

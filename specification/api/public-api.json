@@ -405,6 +405,13 @@
     "KMIPKIT-0097-FR-005",
     "KMIPKIT-0097-FR-006",
     "KMIPKIT-0097-FR-007",
+    "KMIPKIT-0099-FR-001",
+    "KMIPKIT-0099-FR-002",
+    "KMIPKIT-0099-FR-003",
+    "KMIPKIT-0099-FR-004",
+    "KMIPKIT-0099-FR-005",
+    "KMIPKIT-0099-FR-006",
+    "KMIPKIT-0099-FR-007",
     "KMIPKIT-REQ-SPEC-4.16-001-001",
     "KMIPKIT-REQ-SPEC-4.16-001-002",
     "KMIPKIT-REQ-SPEC-4.16-002",
@@ -715968,6 +715975,730 @@
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0097",
       "blockedReason": "The Rust Create Key Pair builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-e504d5311f35b3c03ba5",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::CreateSplitKeyBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-001",
+        "KMIPKIT-0099-FR-002",
+        "KMIPKIT-0099-FR-003",
+        "KMIPKIT-0099-FR-004",
+        "KMIPKIT-0099-FR-005",
+        "KMIPKIT-0099-FR-006",
+        "KMIPKIT-0099-FR-007"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-3e960370e3318d53628d",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::RequestBuilder<'a>::create_split_key",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-001",
+        "KMIPKIT-0099-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-1c7759a4d607d3a22938",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateSplitKeyBuilder<'a>::attribute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-ed0b069aa97bb64adb8f",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateSplitKeyBuilder<'a>::attribute_at",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-1ea8bb34436bc55515c4",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateSplitKeyBuilder<'a>::attribute_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-d95e5217917edd50b514",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateSplitKeyBuilder<'a>::attributes",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-5c7915583662c59ed43e",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateSplitKeyBuilder<'a>::build",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-004",
+        "KMIPKIT-0099-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-24f3526b8418b83937da",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateSplitKeyBuilder<'a>::build_request",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-e18c6062761e465ee2c0",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateSplitKeyBuilder<'a>::execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-208a47804cd30e389c6f",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateSplitKeyBuilder<'a>::method",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-001"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-42ae175b492e36c32a3c",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateSplitKeyBuilder<'a>::object_type",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-001"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-15e2f9db564d40bb14cb",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateSplitKeyBuilder<'a>::parts",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-001"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-9669d5d3ee79234ecc1b",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateSplitKeyBuilder<'a>::prime_field_size",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-390e7e522cea9898aa65",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateSplitKeyBuilder<'a>::protection_storage_masks",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-915f2c2dc94d45a1c835",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateSplitKeyBuilder<'a>::threshold",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-001"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-00fcadf2bf5b4c7ba855",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateSplitKeyBuilder<'a>::to_batch_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-8c4b1144b9b603d640ef",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateSplitKeyBuilder<'a>::unique_identifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-9ff2ce082d6bb268195c",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateSplitKeyBuilder<'a>::validate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-99c6c47803d0f22d3020",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateSplitKeyBuilder<'a>::vendor_attribute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-e33d61b96c254df90c7f",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateSplitKeyBuilder<'a>::with_asynchronous_indicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-9b275fb2c5957e050f46",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateSplitKeyBuilder<'a>::with_options",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-5fc484c2fdc93ff9ca28",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::FluentBuildError::MissingCreateSplitKeyObjectType",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-001",
+        "KMIPKIT-0099-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-a7b9a5ea27fcb926c156",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::FluentBuildError::MissingCreateSplitKeyMethod",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-001",
+        "KMIPKIT-0099-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-a3046a1dec0ef5780f41",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::FluentBuildError::MissingCreateSplitKeyParts",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-001",
+        "KMIPKIT-0099-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-f1688a38b2d92782e756",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::FluentBuildError::MissingCreateSplitKeyThreshold",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-001",
+        "KMIPKIT-0099-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-35306cdff8713540bca6",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::fluent::CreateSplitKeyBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-001",
+        "KMIPKIT-0099-FR-002",
+        "KMIPKIT-0099-FR-003",
+        "KMIPKIT-0099-FR-004",
+        "KMIPKIT-0099-FR-005",
+        "KMIPKIT-0099-FR-006",
+        "KMIPKIT-0099-FR-007"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-cd97bced1ea0362f834b",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::RequestBuilder<'a>::create_split_key",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-001",
+        "KMIPKIT-0099-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-c36549784b90a951afc3",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateSplitKeyBuilder<'a>::attribute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-8e0d535232b0d14ae4d2",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateSplitKeyBuilder<'a>::attribute_at",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-5ed98deda5d8c4668b8b",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateSplitKeyBuilder<'a>::attribute_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-1570ed74a02b45b4f874",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateSplitKeyBuilder<'a>::attributes",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-acd0d6419d43a653d88f",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateSplitKeyBuilder<'a>::build",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-004",
+        "KMIPKIT-0099-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-a56223b5bef0b9f45f15",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateSplitKeyBuilder<'a>::build_request",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-50ff9b0ff00da938bcf2",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateSplitKeyBuilder<'a>::execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-b4a6efa3685996283a70",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateSplitKeyBuilder<'a>::method",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-001"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-ddff2d6d838c18feb3bf",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateSplitKeyBuilder<'a>::object_type",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-001"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-79eb02c37d84f4473dd7",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateSplitKeyBuilder<'a>::parts",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-001"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-c65c55ca113911a0b858",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateSplitKeyBuilder<'a>::prime_field_size",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-7e30a8d3070d9602dfee",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateSplitKeyBuilder<'a>::protection_storage_masks",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-73a49e164a58281e7281",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateSplitKeyBuilder<'a>::threshold",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-001"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-ff042869c2ba31a0c08c",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateSplitKeyBuilder<'a>::to_batch_item",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-1e958cfb6af5c4e57091",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateSplitKeyBuilder<'a>::unique_identifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-cd5a16b1d5ac3de5514f",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateSplitKeyBuilder<'a>::validate",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-805c353413d9019d7e3a",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateSplitKeyBuilder<'a>::vendor_attribute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-8a088fc1a342c5ae9dd6",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateSplitKeyBuilder<'a>::with_asynchronous_indicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-c4ba1c51a28e689cdd24",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateSplitKeyBuilder<'a>::with_options",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-006"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-09de7b1e3244699b0965",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::fluent::FluentBuildError::MissingCreateSplitKeyObjectType",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-001",
+        "KMIPKIT-0099-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-cb631570b73db3dc71e1",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::fluent::FluentBuildError::MissingCreateSplitKeyMethod",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-001",
+        "KMIPKIT-0099-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-2263346911c8073e4604",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::fluent::FluentBuildError::MissingCreateSplitKeyParts",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-001",
+        "KMIPKIT-0099-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0099-7b8454c6ca8fa1024e2b",
+      "packageId": "rust-kmipkit-client",
+      "kind": "variant",
+      "exportName": "kmipkit_client::fluent::FluentBuildError::MissingCreateSplitKeyThreshold",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0099-FR-001",
+        "KMIPKIT-0099-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0099",
+      "blockedReason": "The Rust Create Split Key builder is implemented; equivalent C, Java, and Python mappings are pending their dependent binding specifications."
     }
   ],
   "approvedExclusions": [
@@ -978580,6 +979311,222 @@
         "evidence": "Standard Rust trait implementations for the new builder are Rust language\nbehavior, not separate cross-language KMIPKit product capabilities."
       },
       "evidence": "KMIPKIT-0097-FR-001; KMIPKIT-0097-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::CreateSplitKeyBuilder<'a> as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Split Key builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/099-fluent-create-split-key/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0099-FR-001; KMIPKIT-0099-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::CreateSplitKeyBuilder<'a> as core::borrow::Borrow<kmipkit_client::fluent::CreateSplitKeyBuilder<'a>>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Split Key builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/099-fluent-create-split-key/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0099-FR-001; KMIPKIT-0099-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::CreateSplitKeyBuilder<'a> as core::borrow::BorrowMut<kmipkit_client::fluent::CreateSplitKeyBuilder<'a>>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Split Key builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/099-fluent-create-split-key/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0099-FR-001; KMIPKIT-0099-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::CreateSplitKeyBuilder<'a> as core::convert::From<kmipkit_client::fluent::CreateSplitKeyBuilder<'a>>>::from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Split Key builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/099-fluent-create-split-key/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0099-FR-001; KMIPKIT-0099-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::CreateSplitKeyBuilder<'a> as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Split Key builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/099-fluent-create-split-key/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0099-FR-001; KMIPKIT-0099-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::CreateSplitKeyBuilder<'a> as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Split Key builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/099-fluent-create-split-key/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0099-FR-001; KMIPKIT-0099-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::CreateSplitKeyBuilder<'a> as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Split Key builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/099-fluent-create-split-key/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0099-FR-001; KMIPKIT-0099-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::CreateSplitKeyBuilder<'a> as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Split Key builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/099-fluent-create-split-key/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0099-FR-001; KMIPKIT-0099-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::CreateSplitKeyBuilder<'a> as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Split Key builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/099-fluent-create-split-key/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0099-FR-001; KMIPKIT-0099-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::CreateSplitKeyBuilder<'a> as core::any::Any>::type_id",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Split Key builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/099-fluent-create-split-key/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0099-FR-001; KMIPKIT-0099-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::CreateSplitKeyBuilder<'a> as core::borrow::Borrow<kmipkit_client::fluent::CreateSplitKeyBuilder<'a>>>::borrow",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Split Key builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/099-fluent-create-split-key/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0099-FR-001; KMIPKIT-0099-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::CreateSplitKeyBuilder<'a> as core::borrow::BorrowMut<kmipkit_client::fluent::CreateSplitKeyBuilder<'a>>>::borrow_mut",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Split Key builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/099-fluent-create-split-key/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0099-FR-001; KMIPKIT-0099-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::CreateSplitKeyBuilder<'a> as core::convert::From<kmipkit_client::fluent::CreateSplitKeyBuilder<'a>>>::from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Split Key builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/099-fluent-create-split-key/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0099-FR-001; KMIPKIT-0099-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::CreateSplitKeyBuilder<'a> as core::convert::Into<U>>::into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Split Key builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/099-fluent-create-split-key/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0099-FR-001; KMIPKIT-0099-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::CreateSplitKeyBuilder<'a> as core::convert::TryFrom<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Split Key builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/099-fluent-create-split-key/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0099-FR-001; KMIPKIT-0099-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::CreateSplitKeyBuilder<'a> as core::convert::TryFrom<U>>::try_from",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Split Key builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/099-fluent-create-split-key/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0099-FR-001; KMIPKIT-0099-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::CreateSplitKeyBuilder<'a> as core::convert::TryInto<U>>::Error",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Split Key builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/099-fluent-create-split-key/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0099-FR-001; KMIPKIT-0099-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
+    },
+    {
+      "packageId": "rust-kmipkit-client",
+      "exportName": "<kmipkit_client::fluent::CreateSplitKeyBuilder<'a> as core::convert::TryInto<U>>::try_into",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior of the Create Split Key builder, not a separate KMIPKit product capability; request construction and execution remain covered by the explicit builder declarations.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/099-fluent-create-split-key/spec.md",
+        "status": "Approved",
+        "evidence": "language-level behavior, not separate KMIPKit product capabilities."
+      },
+      "evidence": "KMIPKIT-0099-FR-001; KMIPKIT-0099-FR-005; this compiler-visible Rust standard-trait path does not add a separate request behavior or foreign API contract."
     }
   ],
   "apiLevels": [
