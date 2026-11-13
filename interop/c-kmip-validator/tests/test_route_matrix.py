@@ -393,6 +393,15 @@ class RouteMatrixTests(unittest.TestCase):
                 self.assertIn('kmipkit_ttlv_value_structure', result['invoked_symbols'])
                 self.assertEqual(result['constructed_wire'], result['decoded_wire'])
 
+    def test_controlled_peer_plan_includes_delegated_login_request_first(self):
+        import controlled_kms_test
+
+        operations, cases = controlled_kms_test.include_delegated_login(
+            (1, 45), ('test-op-login',))
+
+        self.assertEqual(operations, (47, 1, 45))
+        self.assertEqual(cases, ('test-op-delegated-login', 'test-op-login'))
+
     def test_reserved_tag_is_not_constructed_as_an_assigned_ttlv_item(self):
         from artifact_support import ROOT
         catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
