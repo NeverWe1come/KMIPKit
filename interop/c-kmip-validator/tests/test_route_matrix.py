@@ -814,7 +814,7 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all(check['status'] == 'passed' for check in checks))
         self.assertEqual({check['constructor_variant'] for check in checks}, {'direct', 'standalone'})
         self.assertTrue(all(check['peer_setup_operations'] == [1] for check in checks))
-        self.assertTrue(all(check['peer_request_operations'] == [15] for check in checks))
+        self.assertTrue(all(check['peer_request_operations'] == [49] for check in checks))
         self.assertTrue(all(check['peer_observed_effects'] == ['attribute_set'] for check in checks))
         self.assertTrue(all(check['peer_cleanup_operations'] == [19, 20] for check in checks))
         self.assertTrue(all(check['peer_attribute_state_changed'] for check in checks))

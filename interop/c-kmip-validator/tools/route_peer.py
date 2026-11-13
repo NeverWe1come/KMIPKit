@@ -262,6 +262,7 @@ RECIPES = {
     'test-op-create': ((1, 20), 'create'),
     'test-op-register': ((3, 20), 'register'),
     'test-op-add-attribute': ((1, 13, 19, 20), 'add_attribute'),
+    'test-op-set-attribute': ((1, 49, 19, 20), 'set_attribute'),
     'test-obj-certificate': ((3, 20), 'register'),
     'test-obj-certificate-request': ((3, 20), 'register_certificate_request'),
     'test-batch-create-activate-destroy': ((1, 18, 12, 19, 20), 'create_activate_attribute_list_revoke_destroy'),
@@ -388,11 +389,12 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None):
         raise ValueError('fixture_attribute_reference_mismatch')
     if case_id == 'test-attr-cryptographic-length' and numbers(node, 0x42013B) != [0x42002A]:
         raise ValueError('fixture_attribute_reference_mismatch')
-    if selected_recipe[1] == 'add_attribute':
+    if selected_recipe[1] in ('add_attribute', 'set_attribute'):
+        operation = 13 if selected_recipe[1] == 'add_attribute' else 49
         items = [item for item in node[2]
-                 if item[0] == BATCH_ITEM_TAG and numbers(item, 0x42005C) == [13]]
+                 if item[0] == BATCH_ITEM_TAG and numbers(item, 0x42005C) == [operation]]
         if len(items) != 1:
-            raise ValueError('fixture_add_attribute_item_missing')
+            raise ValueError('fixture_attribute_mutation_item_missing')
         payloads = [item for item in items[0][2]
                     if item[0] == REQUEST_PAYLOAD_TAG and item[1] == 1]
         comments = [item for item in descendants(payloads[0], 0x4200FD) if item[1] == 7] \
@@ -402,7 +404,7 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None):
                         for item in descendants(payloads[0], 0x4200FD)] if len(payloads) == 1 else []
             summary = [(len(item[2]), hashlib.sha256(item[2]).hexdigest()[:12])
                        for item in comments]
-            raise ValueError(f'fixture_add_attribute_comment_mismatch:{observed}:{summary}')
+            raise ValueError(f'fixture_attribute_mutation_comment_mismatch:{observed}:{summary}')
     if attribute_fixture is not None:
         target_item = next(item for item in node[2]
                            if item[0] == 0x42000F and numbers(item, 0x42005C) == [11])
@@ -651,6 +653,7 @@ class PeerState:
         placeholder = None
         labels = {9: 'checked', 10: 'object_retrieved', 11: 'attributes_retrieved',
                   12: 'attribute_list_retrieved', 13: 'attribute_added',
+                  49: 'attribute_set',
                   56: 'constraints_retrieved'}
         items = [item for item in request_tree[2] if item[0] == BATCH_ITEM_TAG]
         for index, item in enumerate(items):
@@ -666,7 +669,7 @@ class PeerState:
                 self.attributes[identifier] = set()
                 placeholder = identifier
                 effect = 'created'
-            elif operation in (9, 10, 11, 12, 13, 18, 19, 20, 56):
+            elif operation in (9, 10, 11, 12, 13, 18, 19, 20, 49, 56):
                 state = self.objects.get(identifier)
                 if state is None:
                     status, reason, effect = 1, 55, 'object_not_found'
@@ -685,7 +688,7 @@ class PeerState:
                         del self.objects[identifier]
                         self.attributes.pop(identifier, None)
                         effect = 'destroyed'
-                elif operation == 13:
+                elif operation in (13, 49):
                     new_attribute = next((child for child in item[2]
                                           if child[0] == REQUEST_PAYLOAD_TAG), None)
                     attribute_tag = next((child[0] for child in new_attribute[2]
@@ -694,7 +697,7 @@ class PeerState:
                     if attribute_tag is None:
                         raise ValueError('fixture_add_attribute_tag_missing')
                     self.attributes.setdefault(identifier, set()).add(attribute_tag)
-                    effect = 'attribute_added'
+                    effect = 'attribute_added' if operation == 13 else 'attribute_set'
                 else:
                     effect = labels[operation]
             else:
@@ -858,7 +861,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
     }
     case_variants = [(case, variant) for case in catalog['test_cases'] for variant in
         (('direct', 'standalone') if case['case_id'] in {'test-op-get-attributes', 'test-op-get-attribute-list',
-                                                         'test-op-add-attribute'}
+                                                         'test-op-add-attribute', 'test-op-set-attribute'}
          or case['case_id'] in attribute_case_ids else ('direct',))]
     cells_by_case = {}
     for cell in all_cells:
@@ -893,7 +896,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                         if recipe is None:
                             continue
                         placeholder_chain_recipe = recipe[1] == 'batch_placeholder_chain'
-                        add_attribute_recipe = recipe[1] == 'add_attribute'
+                        attribute_mutation_recipe = recipe[1] in ('add_attribute', 'set_attribute')
+                        attribute_mutation_operation = 13 if recipe[1] == 'add_attribute' else 49
                         if version == '2.0' and case_id in ('test-op-discover-versions', 'test-op-login', 'test-op-get-constraints', 'test-op-ping'):
                             continue
                         observation, errors = [], []
@@ -907,7 +911,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                             def serve():
                                 stream = None
                                 try:
-                                    exchange_count = 3 if add_attribute_recipe else (
+                                    exchange_count = 3 if attribute_mutation_recipe else (
                                         2 if placeholder_chain_recipe else 1)
                                     accepted, _ = server.accept()
                                     stream = context.wrap_socket(accepted, server_side=True)
@@ -935,16 +939,16 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         if cleanup_exchange:
                                             assert_placeholder_cleanup_request(request_tree, version)
                                             response_operations = PLACEHOLDER_CLEANUP_OPERATIONS
-                                        elif add_attribute_recipe and exchange_index == 0:
+                                        elif attribute_mutation_recipe and exchange_index == 0:
                                             assert_add_attribute_setup_request(request_tree, version)
                                             response_operations = (1,)
-                                        elif add_attribute_recipe and exchange_index == 1:
+                                        elif attribute_mutation_recipe and exchange_index == 1:
                                             assert_recipe(request_tree, case_id, version,
-                                                          ((13,), 'add_attribute'))
+                                                          ((attribute_mutation_operation,), recipe[1]))
                                             if text_values(request_tree, UNIQUE_IDENTIFIER_TAG) != ['fixture-key-1']:
-                                                raise ValueError('fixture_add_attribute_identifier_mismatch')
-                                            response_operations = (13,)
-                                        elif add_attribute_recipe and exchange_index == 2:
+                                                raise ValueError('fixture_attribute_mutation_identifier_mismatch')
+                                            response_operations = (attribute_mutation_operation,)
+                                        elif attribute_mutation_recipe and exchange_index == 2:
                                             assert_add_attribute_cleanup_request(request_tree, version)
                                             response_operations = PLACEHOLDER_CLEANUP_OPERATIONS
                                         else:
@@ -962,7 +966,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 (b'placeholder-revoke-cleanup', b'placeholder-destroy-cleanup')
                                                 if cleanup_exchange else
                                                 (b'placeholder-create', b'placeholder-activate', b'placeholder-get'))
-                                        elif add_attribute_recipe:
+                                        elif attribute_mutation_recipe:
                                             response_item_ids = (
                                                 (b'interop-create',)
                                                 if exchange_index == 0 else
@@ -995,14 +999,14 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         response_tree = parse(response_wire)
                                         if placeholder_chain_recipe:
                                             verify_placeholder_chain_response(response_tree, response_operations)
-                                        elif add_attribute_recipe:
+                                        elif attribute_mutation_recipe:
                                             response_items = [item for item in response_tree[2]
                                                               if item[0] == BATCH_ITEM_TAG and item[1] == 1]
                                             if ([numbers(item, 0x42005C) for item in response_items] !=
                                                     [[operation] for operation in response_operations] or
                                                     [numbers(item, 0x42007F) for item in response_items] !=
                                                     [[0] for _ in response_operations]):
-                                                raise ValueError('fixture_add_attribute_response_mismatch')
+                                                raise ValueError('fixture_attribute_mutation_response_mismatch')
                                         else:
                                             verify_lifecycle(recipe[0], response_tree)
                                         encoded_response = codec.encode(response_wire, encoding)
@@ -1054,11 +1058,11 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                             run = subprocess.run([str(binary.resolve()), 'run', '--connection', str(connection_path),
                                 '--catalog', str(catalog_path), '--allow-mutations', '--output', str(result_path)],
                                 cwd=ROOT, capture_output=True,
-                                timeout=30 if add_attribute_recipe else 10,
+                                timeout=30 if attribute_mutation_recipe else 10,
                                 env={**os.environ, 'KMIPKIT_C_ROUTE_OBSERVATIONS': str(trace_path),
                                      'KMIPKIT_C_ATTRIBUTE_REQUEST_ROUTE': variant})
                             if thread is not None:
-                                thread.join(20 if add_attribute_recipe else 6)
+                                thread.join(20 if attribute_mutation_recipe else 6)
                             result = json.loads(result_path.read_text()) if result_path.exists() else {}
                             verify_consumer_provenance(result, artifact_sha256, catalog_sha256)
                             case_passed = bool(result.get('cases') and result['cases'][0]['status'] == 'passed')
@@ -1144,7 +1148,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                    for item in observation[1][0][2]
                                                    if item[0] == 0x42000F],
                                                 'peer_observed_effects': observation[1][2]['effects']}
-                                               if add_attribute_recipe and len(observation) == 3 else {}),
+                                               if attribute_mutation_recipe and len(observation) == 3 else {}),
                                            **({'peer_setup_operations': [
                                                    numbers(item, 0x42005C)[0]
                                                    for item in observation[0][0][2]
@@ -1159,13 +1163,13 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 'peer_final_state_matches_setup':
                                                    observation[0][2]['peer_observed_state_before_sha256'] ==
                                                    observation[2][2]['peer_observed_state_after_sha256']}
-                                               if add_attribute_recipe and len(observation) == 3 else {}),
+                                               if attribute_mutation_recipe and len(observation) == 3 else {}),
                                            **attribute_check,
                                            **({'failure_code': code or 'peer_observation_missing'} if code or not observation else {})})
                             if not observation or code or run.returncode != 0:
                                 continue
                             request_tree, response_tree, state_evidence = observation[
-                                1 if add_attribute_recipe else 0]
+                                1 if attribute_mutation_recipe else 0]
                             operation_name = case['operation']
                             for cell in cells_by_case[case_id]:
                                 if _key(cell) in keys:
@@ -1187,6 +1191,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         continue
                                     if cell['action'] == 'encode' and cell['public_api_symbol'] not in {
                                             'kmipkit_add_attribute_request_to_ttlv_payload',
+                                            'kmipkit_set_attribute_request_to_ttlv_payload',
                                             'kmipkit_get_attributes_request_to_ttlv_payload',
                                             'kmipkit_get_attribute_list_request_to_ttlv_payload'}:
                                         continue
@@ -1242,7 +1247,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                 elif cell['action'] == 'send':
                                     event.update(request_delivery_state='response_received', transport_invocation_count=1)
                                 if (cell['action'] == 'send' and len(recipe[0]) > 1 and
-                                        not add_attribute_recipe):
+                                        not attribute_mutation_recipe):
                                     operations = [next(t['name'] for t in catalog['normative_targets'] if t['kind'] == 'enumeration_value' and t.get('wire_value') == f'{op:08X}' and any(p.endswith('ENUMERATION-OPERATION') for p in t.get('parent_element_ids', []))) for op in recipe[0]]
                                     event.update(batch_operation_sequence=operations, batch_item_count=len(operations),
                                         peer_observed_operation_sequence=operations,
