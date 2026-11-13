@@ -1280,6 +1280,7 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertIn('kmipkit_ttlv_value_enumeration', result['invoked_symbols'])
 
     def test_normative_item_type_value_case_uses_item_type_route_recipe(self):
+        """OASIS KMIP 2.0/2.1 §11.23 defines the Item Type values under test."""
         executor = self.value_executor()
         case = next(item for item in executor.catalog['test_cases']
                     if item['case_id'] ==

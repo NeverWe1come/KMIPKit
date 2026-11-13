@@ -554,8 +554,8 @@ v2.1 §§9.6, 11.5, and 6.1.19.
   the request Batch Item (§8.3), and two address a second response item that
   the server correctly omits. The current matrix still counts these as pending
   because the shared applicability model does not yet encode these exclusions.
-- The full installed C matrix reports 38,410/66,728 invoked, zero failed, and
-  28,318 pending validator-recipe cells. The completeness gate remains red.
+- The full installed C matrix reports 38,533/66,728 invoked, zero failed, and
+  28,195 pending validator-recipe cells. The completeness gate remains red.
 
 This fixture validates the KMIPKit client against a controlled KMIP peer; it
 does not establish behavior of an external KMS. The shared route-applicability
@@ -590,6 +590,26 @@ only and is never recorded in diagnostics, fixture reports, or matrix evidence.
 
 This recipe verifies KMIPKit against a controlled peer only. External KMS
 compatibility and the remaining C route recipes are still unverified.
+
+### Normative Item Type values
+
+The C local matrix now routes normative `Item Type` enumeration cases through
+the installed TTLV value constructors and decoder using their catalogued
+parent identity. The generated per-case matrix previously left those values
+pending because their parent is a TTLV type enumeration, not a KMIP tag-backed
+enumeration. This follows OASIS KMIP 2.0 and 2.1 §11.23.
+
+- Red commit `634ca89e3` added a regression using the normative Big Integer
+  `Item Type` case. It failed because the value executor accepted only
+  hand-built enum recipes and could not consume the catalog target.
+- Green commit `05947cd69` derives the Item Type recipe from the target's
+  normative parent and dispatches those cells through the existing full
+  Item Type and TTLV boundary checks.
+- Verification: the focused regression passed; all 122 C route-matrix tests
+  passed. The full installed matrix improved from 38,467 to 38,533 invoked
+  cells with zero failures; pending cells decreased from 28,261 to 28,195.
+  The completeness gate remains incomplete and the exhaustive-recipes task
+  stays open.
 
 ### Interop Begin, End, and Reset
 
