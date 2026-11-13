@@ -453,3 +453,30 @@ KMIP 2.0 §6.1.12 Table 185 and KMIP 2.1 §6.1.12 Table 200.
 
 These validator changes close only their C route cells; remaining C routes,
 other language matrices, and exact-head CI are still required.
+
+### Query response field route evidence
+
+The controlled C Query exchanges now credit the three typed response routes
+against the exact Query response field target in each KMIP version. The peer
+checks that the response payload belongs to the Query operation and contains
+the catalogued field before recording the route. This follows KMIP 2.0
+§6.1.37 Table 260 and KMIP 2.1 §6.1.40 Table 283.
+
+- Red commit `c1c90e1b`: the new assertion failed because the typed accessors
+  were observed only against the Query operation target, while the exact
+  response-field target cells remained pending.
+- Green commit `f8d69ff8`: validate response payload fields against the
+  matching response batch item and emit the exact target cell after successful
+  typed decoding.
+- Refactor: share request/response payload-field matching and select the
+  direction-specific payload tag explicitly.
+- The focused Query response test passed. The C route-matrix suite passed
+  109/109 tests, and CTest passed 7/7 tests.
+- The full installed C matrix reports 66,728 expected cells, 38,014 invoked,
+  0 failed, and 28,714 pending. Comparing to 37,966 invoked cells immediately
+  before this change confirms six additional cells: three response accessors
+  for each protocol version. The asynchronous outcome response-payload
+  accessor remains pending for these cases.
+
+This evidence covers the typed Query response views in the C validator only;
+other C routes, language parity, and exact-head CI remain outstanding.

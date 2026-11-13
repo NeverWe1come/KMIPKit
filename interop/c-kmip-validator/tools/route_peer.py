@@ -213,12 +213,12 @@ def byte_string_values(node, tag):
     return [item[2] for item in descendants(node, tag) if item[1] == 8]
 
 
-def request_payload_field_present(target, batch_item, targets, codec):
-    """Check a request payload field under its exact operation's payload."""
+def payload_field_present(target, batch_item, targets, codec, *, role, payload_tag):
+    """Check a payload field under the exact operation and message direction."""
     if (target.get('kind') != 'operation_payload_field'
-            or target.get('role') != 'request'
+            or target.get('role') != role
             or not isinstance(target.get('operation_id'), str)
-            or batch_item[0] != 0x42000F or batch_item[1] != 1):
+            or batch_item[0] != BATCH_ITEM_TAG or batch_item[1] != 1):
         return False
     operation = targets.get(target['operation_id'])
     if operation is None or operation.get('kind') != 'operation':
@@ -232,31 +232,20 @@ def request_payload_field_present(target, batch_item, targets, codec):
     if len(operation_fields) != 1 or int.from_bytes(operation_fields[0][2], 'big') != operation_value:
         return False
     payloads = [child for child in batch_item[2]
-                if child[0] == codec.tag('Request Payload') and child[1] == 1]
+                if child[0] == payload_tag and child[1] == 1]
     return len(payloads) == 1 and any(child[0] == field_tag for child in payloads[0][2])
+
+
+def request_payload_field_present(target, batch_item, targets, codec):
+    """Check a request payload field under its exact operation's payload."""
+    return payload_field_present(target, batch_item, targets, codec,
+                                 role='request', payload_tag=REQUEST_PAYLOAD_TAG)
 
 
 def response_payload_field_present(target, batch_item, targets, codec):
     """Check a response payload field under its exact operation's batch item."""
-    if (target.get('kind') != 'operation_payload_field'
-            or target.get('role') != 'response'
-            or not isinstance(target.get('operation_id'), str)
-            or batch_item[0] != BATCH_ITEM_TAG or batch_item[1] != 1):
-        return False
-    operation = targets.get(target['operation_id'])
-    if operation is None or operation.get('kind') != 'operation':
-        return False
-    operation_value = codec.values.get((codec.tag('Operation'), normalize(operation['name'])))
-    field_tag = codec.tags.get(normalize(target.get('name', '')))
-    if operation_value is None or field_tag is None:
-        return False
-    operation_fields = [child for child in batch_item[2]
-                        if child[0] == codec.tag('Operation') and child[1] == ENUMERATION_TTLV_TYPE]
-    if len(operation_fields) != 1 or int.from_bytes(operation_fields[0][2], 'big') != operation_value:
-        return False
-    payloads = [child for child in batch_item[2]
-                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1]
-    return len(payloads) == 1 and any(child[0] == field_tag for child in payloads[0][2])
+    return payload_field_present(target, batch_item, targets, codec,
+                                 role='response', payload_tag=RESPONSE_PAYLOAD_TAG)
 
 
 def tree_digest(node):
