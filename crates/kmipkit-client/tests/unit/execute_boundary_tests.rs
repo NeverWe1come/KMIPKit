@@ -1018,21 +1018,12 @@ impl BoundaryAudit {
             is_exact_batch_response_iterator(execute_root_scope, impl_type, signature);
         let raw_response_accessor =
             is_exact_raw_response_accessor(execute_root_scope, impl_type, signature);
-        let registry_value_validation = is_exact_registry_value_validation(
-            self.is_source_root(Path::new("extension_registry.rs")),
-            impl_type,
-            signature,
-        );
-        let registry_inspect = is_exact_registry_inspect(
-            self.is_source_root(Path::new("extension_registry.rs")),
-            impl_type,
-            signature,
-        );
-        let registry_generic_accessor = is_exact_registry_generic_accessor(
-            self.is_source_root(Path::new("extension_registry.rs")),
-            impl_type,
-            signature,
-        );
+        let registry_root_scope = self.is_source_root(Path::new("extension_registry.rs"));
+        let registry_value_validation =
+            is_exact_registry_value_validation(registry_root_scope, impl_type, signature);
+        let registry_inspect = is_exact_registry_inspect(registry_root_scope, impl_type, signature);
+        let registry_generic_accessor =
+            is_exact_registry_generic_accessor(registry_root_scope, impl_type, signature);
         let fluent_root_scope = self.is_source_root(Path::new("fluent.rs"));
         let fluent_kmip30_ciphertext =
             is_exact_fluent_kmip30_ciphertext(fluent_root_scope, impl_type, signature);
