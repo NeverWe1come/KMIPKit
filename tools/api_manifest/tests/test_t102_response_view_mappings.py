@@ -174,7 +174,7 @@ EXPECTED = (
 # Register declarations, lifecycle declarations, KMIPKIT-0102 crypto builders,
 # the KMIPKIT-0103 C and KMIPKIT-0104 Java crypto facades, and KMIPKIT-0093
 # inventory reconciliation.
-UNCHANGED_DECLARATIONS_SHA256 = "d8ec8345c70be868a29f2e06c21c07bffcb89d0d0c722f81677a6681e170a0c1"
+UNCHANGED_DECLARATIONS_SHA256 = "0f53e2b39d41eabd96b33b30f59b4a2ad97620eedb02feb1b7620da8e899dcef"
 UNCHANGED_OPERATIONS_SHA256 = "9ee0f7c51c05a8abd96af7f6d3017f3ffb780c4262f231eaf3cb8c01a38147c7"
 # T098's maintainer-approved reconciliation updates lifecycle approval evidence
 # and inherited requirement links outside the T102 declaration/operation rows.
@@ -183,7 +183,7 @@ UNCHANGED_OPERATIONS_SHA256 = "9ee0f7c51c05a8abd96af7f6d3017f3ffb780c4262f231eaf
 # The non-target snapshot includes the async reader routes, exact Python adapter
 # exclusions, KMIPKIT-0101/0102/0103/0104 declarations, and KMIPKIT-0093
 # reconciliation.
-OTHER_MANIFEST_SHA256 = "3b262cb930c42962397b7280060d53e5090a0fa97f1d2f8401c114b9d7bd40be"
+OTHER_MANIFEST_SHA256 = "95d7b3d3299b5aeee2b364b0b6a2411d5f56935cad3411024c7f042683122ac4"
 EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Self
 
 from . import errors, extensions, ttlv
 from ._client_ffi import ffi, lib
@@ -19,7 +19,15 @@ from .client import (
     _request_options_record,
     _unsigned,
 )
+from .cryptographic_parameters import CryptographicParameters
 from .typed_attributes import StandardAttribute
+
+_MAX_CRYPTO_INPUT_BYTES = 16 * 1024 * 1024
+
+
+def _wipe_crypto_stage(staged: bytearray) -> None:
+    """Overwrite a mutable Python buffer owned by this binding."""
+    staged[:] = bytes(len(staged))
 
 
 def _client_abi_pointer(c_type: str, pointer: Any) -> Any:
@@ -120,6 +128,27 @@ class Request:
 
     def destroy(self, unique_identifier: extensions.UniqueIdentifier) -> Operation:
         return Operation(self._client, "destroy", unique_identifier)
+
+    def encrypt(self) -> EncryptBuilder:
+        return EncryptBuilder(client=self._client)
+
+    def decrypt(self) -> DecryptBuilder:
+        return DecryptBuilder(client=self._client)
+
+    def sign(self) -> SignBuilder:
+        return SignBuilder(client=self._client)
+
+    def signature_verify(self) -> SignatureVerifyBuilder:
+        return SignatureVerifyBuilder(client=self._client)
+
+    def mac(self) -> MacBuilder:
+        return MacBuilder(client=self._client)
+
+    def mac_verify(self) -> MacVerifyBuilder:
+        return MacVerifyBuilder(client=self._client)
+
+    def hash(self) -> HashBuilder:
+        return HashBuilder(client=self._client)
 
 
 class Operation:
@@ -326,4 +355,322 @@ class SymmetricKeyBuilder:
             pass
 
 
-__all__ = ["Operation", "Request", "SymmetricKeyBuilder"]
+def _stage_crypto_bytes(value: bytes | bytearray | memoryview) -> tuple[bytearray, Any]:
+    if not isinstance(value, (bytes, bytearray, memoryview)):
+        errors.raise_for_status(4)
+    try:
+        view = memoryview(value)
+    except (TypeError, ValueError):
+        errors.raise_for_status(4)
+    if view.nbytes > _MAX_CRYPTO_INPUT_BYTES:
+        errors.raise_for_status(6)
+    try:
+        staged = bytearray(view.cast("B"))
+    except (BufferError, TypeError, ValueError):
+        errors.raise_for_status(4)
+    if len(staged) > _MAX_CRYPTO_INPUT_BYTES:
+        _wipe_crypto_stage(staged)
+        errors.raise_for_status(6)
+    try:
+        pointer = ffi.from_buffer("const uint8_t[]", staged) if staged else ffi.NULL
+    except BaseException:
+        _wipe_crypto_stage(staged)
+        raise
+    return staged, pointer
+
+
+class _CryptoOperationBuilder:
+    """Shared Python ownership and execution for Rust-owned crypto builders."""
+
+    _creator: Any
+
+    def __init__(self, *, client: Client | None = None) -> None:
+        output = ffi.new("kmipkit_crypto_operation_builder_t **")
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(self._creator(output))
+        if output[0] == ffi.NULL:
+            errors.raise_for_status(7)
+        self._handle = output[0]
+        self._client = client
+        self._options: RequestOptions | None = None
+
+    def _ensure_open(self) -> None:
+        if self._handle == ffi.NULL:
+            raise RuntimeError("fluent builder is closed")
+
+    def _set_status(self, function: Any, *args: Any) -> Self:
+        self._ensure_open()
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(function(self._handle, *args))
+        return self
+
+    def _set_bytes(self, function: Any, value: bytes | bytearray | memoryview) -> Self:
+        self._ensure_open()
+        staged, pointer = _stage_crypto_bytes(value)
+        try:
+            span = ffi.new("kmipkit_byte_span_v1_t *")
+            span.data = pointer
+            span.length = len(staged)
+            with _NATIVE_CALL_LOCK:
+                _raise_client_status(function(self._handle, span))
+        finally:
+            _wipe_crypto_stage(staged)
+        return self
+
+    def _set_ttlv(self, function: Any, c_type: str, value: Any) -> Self:
+        self._ensure_open()
+        pointer = _client_abi_pointer(c_type, value._pointer())
+        return self._set_status(function, pointer)
+
+    def cryptographic_parameters(self, value: CryptographicParameters) -> Self:
+        if not isinstance(value, CryptographicParameters):
+            errors.raise_for_status(4)
+        self._ensure_open()
+        self._set_status(
+            lib.kmipkit_crypto_operation_builder_set_cryptographic_parameters,
+            _client_abi_pointer(
+                "kmipkit_cryptographic_parameters_t *", value._pointer()
+            ),
+        )
+        return self
+
+    def cryptographic_parameters_structure(self, value: ttlv.Structure) -> Self:
+        if not isinstance(value, ttlv.Structure):
+            errors.raise_for_status(4)
+        return self._set_ttlv(
+            lib.kmipkit_crypto_operation_builder_set_cryptographic_parameters_structure,
+            "kmipkit_ttlv_structure_t *",
+            value,
+        )
+
+    def data(self, value: bytes | bytearray | memoryview) -> Self:
+        return self._set_bytes(lib.kmipkit_crypto_operation_builder_set_data, value)
+
+    def data_value(self, value: ttlv.Value) -> Self:
+        if not isinstance(value, ttlv.Value):
+            errors.raise_for_status(4)
+        return self._set_ttlv(
+            lib.kmipkit_crypto_operation_builder_set_data_value,
+            "kmipkit_ttlv_value_t *",
+            value,
+        )
+
+    def correlation_value(self, value: bytes | bytearray | memoryview) -> Self:
+        return self._set_bytes(
+            lib.kmipkit_crypto_operation_builder_set_correlation_value, value
+        )
+
+    def init_indicator(self, value: bool) -> Self:
+        if not isinstance(value, bool):
+            errors.raise_for_status(4)
+        return self._set_status(
+            lib.kmipkit_crypto_operation_builder_set_init_indicator,
+            2 if value else 1,
+        )
+
+    def final_indicator(self, value: bool) -> Self:
+        if not isinstance(value, bool):
+            errors.raise_for_status(4)
+        return self._set_status(
+            lib.kmipkit_crypto_operation_builder_set_final_indicator,
+            2 if value else 1,
+        )
+
+    def with_options(self, options: RequestOptions) -> Self:
+        self._ensure_open()
+        if not isinstance(options, RequestOptions):
+            errors.raise_for_status(4)
+        self._options = options
+        return self
+
+    def asynchronous_indicator(self, value: int) -> Self:
+        self._ensure_open()
+        return self._set_status(
+            lib.kmipkit_crypto_operation_builder_set_asynchronous_indicator,
+            _unsigned(value, 32),
+        )
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        output = ffi.new("kmipkit_client_batch_item_t **")
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(
+                lib.kmipkit_crypto_operation_builder_build_batch_item(
+                    self._handle, output
+                )
+            )
+        if output[0] == ffi.NULL:
+            errors.raise_for_status(7)
+        handle = _base_ffi.cast(
+            "kmipkit_client_batch_item_t *",
+            int(ffi.cast("uintptr_t", output[0])),
+        )
+        return _wrap_owned_handle(extensions.ClientBatchItem, handle)
+
+    to_batch_item = build
+
+    def validate(self) -> None:
+        """Validate the typed request locally without sending it."""
+        item = self.build()
+        item.close()
+
+    def execute(self, limits: ttlv.CodecLimits) -> BatchResult:
+        self._ensure_open()
+        if not isinstance(self._client, Client) or not isinstance(limits, ttlv.CodecLimits):
+            errors.raise_for_status(4)
+        output = ffi.new("kmipkit_client_batch_response_t **")
+        client_pointer = _client_abi_pointer(
+            "kmipkit_client_t *", self._client._pointer()
+        )
+        limits_pointer = _client_abi_pointer(
+            "kmipkit_codec_limits_t *", limits._pointer()
+        )
+        with _NATIVE_CALL_LOCK:
+            if self._options is None:
+                status = lib.kmipkit_crypto_operation_builder_execute_v1(
+                    self._handle, client_pointer, limits_pointer, output
+                )
+            else:
+                options_record = _request_options_record(self._options)
+                status = lib.kmipkit_crypto_operation_builder_execute_with_options_v1(
+                    self._handle,
+                    client_pointer,
+                    limits_pointer,
+                    options_record,
+                    output,
+                )
+            _raise_client_status(status)
+        if output[0] == ffi.NULL:
+            errors.raise_for_status(7)
+        return _batch_result(output[0], limits)
+
+    def close(self) -> None:
+        if self._handle != ffi.NULL:
+            with _NATIVE_CALL_LOCK:
+                lib.kmipkit_crypto_operation_builder_release(self._handle)
+            self._handle = ffi.NULL
+
+    def __enter__(self) -> Self:
+        self._ensure_open()
+        return self
+
+    def __exit__(self, *_: object) -> None:
+        self.close()
+
+    def __del__(self) -> None:
+        try:
+            self.close()
+        except Exception:  # noqa: BLE001 - finalizers must not raise during shutdown.
+            pass
+
+
+class _KeyIdentifierInput:
+    def unique_identifier(self, value: extensions.UniqueIdentifier) -> Self:
+        record, owner = _identifier(value)
+        self._set_status(lib.kmipkit_crypto_operation_builder_set_unique_identifier, record)
+        del owner
+        return self
+
+
+class _CipherInput:
+    def iv_counter_nonce(self, value: bytes | bytearray | memoryview) -> Self:
+        return self._set_bytes(
+            lib.kmipkit_crypto_operation_builder_set_iv_counter_nonce, value
+        )
+
+    def authenticated_encryption_additional_data(
+        self, value: bytes | bytearray | memoryview
+    ) -> Self:
+        return self._set_bytes(
+            lib.kmipkit_crypto_operation_builder_set_authenticated_encryption_additional_data,
+            value,
+        )
+
+
+class _DecryptInput:
+    def authenticated_encryption_tag(
+        self, value: bytes | bytearray | memoryview
+    ) -> Self:
+        return self._set_bytes(
+            lib.kmipkit_crypto_operation_builder_set_authenticated_encryption_tag,
+            value,
+        )
+
+
+class _DigestInput:
+    def digested_data(self, value: bytes | bytearray | memoryview) -> Self:
+        return self._set_bytes(
+            lib.kmipkit_crypto_operation_builder_set_digested_data, value
+        )
+
+
+class _SignatureInput:
+    def signature_data(self, value: bytes | bytearray | memoryview) -> Self:
+        return self._set_bytes(
+            lib.kmipkit_crypto_operation_builder_set_signature_data, value
+        )
+
+
+class _MacInput:
+    def mac_data(self, value: bytes | bytearray | memoryview) -> Self:
+        return self._set_bytes(
+            lib.kmipkit_crypto_operation_builder_set_mac_data, value
+        )
+
+
+class EncryptBuilder(_CryptoOperationBuilder, _KeyIdentifierInput, _CipherInput):
+    """Rust-backed fluent builder for a typed KMIP Encrypt request."""
+
+    _creator = staticmethod(lib.kmipkit_encrypt_builder_create)
+
+
+class DecryptBuilder(_CryptoOperationBuilder, _KeyIdentifierInput, _CipherInput, _DecryptInput):
+    """Rust-backed fluent builder for a typed KMIP Decrypt request."""
+
+    _creator = staticmethod(lib.kmipkit_decrypt_builder_create)
+
+
+class SignBuilder(_CryptoOperationBuilder, _KeyIdentifierInput, _DigestInput):
+    """Rust-backed fluent builder for a typed KMIP Sign request."""
+
+    _creator = staticmethod(lib.kmipkit_sign_builder_create)
+
+
+class SignatureVerifyBuilder(
+    _CryptoOperationBuilder, _KeyIdentifierInput, _DigestInput, _SignatureInput
+):
+    """Rust-backed fluent builder for a typed KMIP Signature Verify request."""
+
+    _creator = staticmethod(lib.kmipkit_signature_verify_builder_create)
+
+
+class MacBuilder(_CryptoOperationBuilder, _KeyIdentifierInput):
+    """Rust-backed fluent builder for a typed KMIP MAC request."""
+
+    _creator = staticmethod(lib.kmipkit_mac_builder_create)
+
+
+class MacVerifyBuilder(_CryptoOperationBuilder, _KeyIdentifierInput, _MacInput):
+    """Rust-backed fluent builder for a typed KMIP MAC Verify request."""
+
+    _creator = staticmethod(lib.kmipkit_mac_verify_builder_create)
+
+
+class HashBuilder(_CryptoOperationBuilder):
+    """Rust-backed fluent builder for a typed KMIP Hash request."""
+
+    _creator = staticmethod(lib.kmipkit_hash_builder_create)
+
+
+__all__ = [
+    "DecryptBuilder",
+    "EncryptBuilder",
+    "HashBuilder",
+    "MacBuilder",
+    "MacVerifyBuilder",
+    "Operation",
+    "Request",
+    "SignBuilder",
+    "SignatureVerifyBuilder",
+    "SymmetricKeyBuilder",
+]

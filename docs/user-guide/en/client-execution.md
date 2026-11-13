@@ -893,10 +893,10 @@ Sign, Signature Verify, MAC, and MAC Verify use the corresponding
 Their builders expose their typed request fields, including precomputed
 digested data, signature or MAC data, and multipart framing when applicable.
 An asynchronous `Pending` result and its correlation value remain visible;
-the client does not poll or retry automatically. KMIPKIT-0102 added the Rust
-builders. KMIPKIT-0103 adds operation-specific C builders for all seven
-operations. Java and Python facades are scheduled in dependent deliveries, so
-this C addition does not claim parity for those bindings yet.
+the client does not poll or retry automatically. KMIPKIT-0102 through
+KMIPKIT-0105 add the Rust, C, Java, and Python builder surfaces in dependent
+deliveries. Each binding uses its language's ownership and result conventions
+while calling the same typed Rust operations.
 
 ## Fluent cryptographic operations in C
 
@@ -966,6 +966,52 @@ KMIP 2.1 asynchronous field is an Enumeration; use the named constants in
 The mTLS client constructor preserves the protocol version selected on its
 configuration, and unsupported versions fail before the request opens a
 connection.
+
+## Fluent cryptographic operations in Python
+
+Python exposes `request().encrypt()`, `decrypt()`, `sign()`,
+`signature_verify()`, `mac()`, `mac_verify()`, and `hash()`. Each factory
+returns an operation-specific builder backed by the existing typed Rust
+request. Builders accept typed `CryptographicParameters` or an explicit TTLV
+structure, validate locally knowable fields, and can build a typed batch item
+or execute one exchange. They do not perform local cryptography or choose
+algorithms, modes, padding, or key usage.
+
+For example, a configured `kmip_client` and `limits` can issue a Hash request
+with an explicit SHA-256 choice:
+
+```python
+from kmipkit import cryptographic_parameters, protocol_values
+
+parameters_builder = cryptographic_parameters.CryptographicParameters.builder()
+try:
+    parameters = parameters_builder.hashing_algorithm(
+        protocol_values.HashingAlgorithm.SHA_256
+    ).build()
+finally:
+    parameters_builder.close()
+
+try:
+    with kmip_client.request().hash() as request:
+        result = request.cryptographic_parameters(parameters).data(b"message").execute(limits)
+    try:
+        outcome = result.items[0]
+        # Inspect the typed operation result before consuming its output.
+        result_status = outcome.result_status
+    finally:
+        result.close()
+finally:
+    parameters.close()
+```
+
+Use `with_options()` for exchange-local timeouts and
+`asynchronous_indicator()` for the Request Header field. Multipart operations
+also expose `correlation_value()`, `init_indicator()`, and `final_indicator()`;
+the typed request validator checks the combination before sending. Python
+copies each bytes-like input into a bounded mutable staging buffer for the
+synchronous native call and overwrites that binding-owned buffer afterward.
+The caller's original Python object and other runtime copies remain under the
+Python runtime's memory-management rules. The binding does not Poll or retry.
 
 ## Message Extensions
 
