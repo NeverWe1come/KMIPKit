@@ -11,11 +11,11 @@ from pathlib import Path
 from typing import Any
 
 if __package__:
-    from .generate_named_values import load_versioned_values, PINNED_VERSION_SOURCES
+    from .generate_named_values import PINNED_VERSION_SOURCES, load_versioned_values
     from .safe_io import PathSecurityError, atomic_write_bytes, safe_read_bytes
     from .validate import MAX_BYTES
 else:
-    from generate_named_values import load_versioned_values, PINNED_VERSION_SOURCES
+    from generate_named_values import PINNED_VERSION_SOURCES, load_versioned_values
     from safe_io import PathSecurityError, atomic_write_bytes, safe_read_bytes
     from validate import MAX_BYTES
 
@@ -77,7 +77,9 @@ def build_inventory(
         and element.get("kind") == "enumeration_value"
         and "KMIPKIT-ELEM-ENUMERATION-OPERATION" in element.get("parent_element_ids", [])
     }
-    if {value for name, value in operation_values.items() if name != "Extensions"} != {f"{value:08X}" for value in range(1, 60)}:
+    # The wildcard extension allocation is not an assigned operation symbol.
+    assigned_values = {value for name, value in operation_values.items() if name != "Extensions"}
+    if assigned_values != {f"{value:08X}" for value in range(1, 60)}:
         raise ValueError("KMIP 2.1 operation assignment set is incomplete or reserved")
     route_keys: set[tuple[str, str, str]] = set()
     seen_values: set[str] = set()
@@ -94,10 +96,6 @@ def build_inventory(
         wire_value = operation_values.get(name)
         if not isinstance(wire_value, str) or len(wire_value) != 8:
             raise ValueError(f"KMIP 2.1 operation {name} has no assigned wire value")
-        if wire_value in seen_values and element.get("direction") not in {
-            "client_to_server", "server_to_client"
-        }:
-            raise ValueError(f"duplicate KMIP 2.1 operation wire value: {wire_value}")
         route_key = (name, wire_value, element.get("direction"))
         if route_key in route_keys:
             raise ValueError(f"duplicate KMIP 2.1 operation route: {route_key}")
@@ -165,18 +163,24 @@ def build_inventory(
         row["publicApiScope"] = public.get("scope") if public else None
         row["publicApiState"] = public.get("apiState") if public else None
         row["testEvidence"]["parity"] = public.get("parityEvidenceIds", []) if public else []
-        row["clientSend"] = row["route"]["kind"] == "client" and row["route"]["state"] == "implemented"
-        row["listenerRoute"] = row["route"]["kind"] == "listener" and row["route"]["state"] == "implemented"
+        implemented = row["route"]["state"] == "implemented"
+        row["clientSend"] = row["route"]["kind"] == "client" and implemented
+        row["listenerRoute"] = row["route"]["kind"] == "listener" and implemented
 
     rows.sort(key=lambda row: (row["version"], int(row["wireValue"], 16)))
     return {
         "formatVersion": 2,
         "sources": [BASE_PATH, VERSIONED_PATH, MANIFEST_PATH, EVIDENCE_PATH],
-        "versionMeaning": "Earliest directional availability in supported pinned source editions; route-version execution is not established by assignment or static evidence.",
-        "evidenceMeaning": "Existing executable test references, not recorded passing results or server capability claims.",
+        "versionMeaning": (
+            "Earliest directional availability in supported pinned source editions; "
+            "route-version execution is not established by assignment or static evidence."
+        ),
+        "evidenceMeaning": (
+            "Existing executable test references, not recorded passing results "
+            "or server capability claims."
+        ),
         "operations": rows,
     }
-
 
 
 def _evidence_by_route(
@@ -197,20 +201,25 @@ def _evidence_by_route(
         if not isinstance(refs, list) or not refs:
             raise ValueError(f"operation matrix evidence has no version sources: {key}")
         versions = [ref.get("version") for ref in refs]
-        if any(v not in {"2.0", "2.1", "3.0"} for v in versions) or versions != sorted(set(versions)):
+        if (any(v not in {"2.0", "2.1", "3.0"} for v in versions)
+                or versions != sorted(set(versions))):
             raise ValueError(f"operation matrix evidence has invalid version order: {key}")
         owners = detail.get("typedOwners", {})
         route = detail.get("route", {})
         if owners.get("state") not in {"available", "unverified"}:
             raise ValueError(f"operation matrix evidence has invalid owner state: {key}")
-        if owners["state"] == "available" and not all(owners.get(role) for role in ("request", "response")):
+        if owners["state"] == "available" and not all(
+            owners.get(role) for role in ("request", "response")
+        ):
             raise ValueError(f"operation matrix evidence has missing typed owners: {key}")
         expected_kind = "client" if detail["direction"] == "client_to_server" else "listener"
         if route.get("kind") != expected_kind or route.get("state") not in {"implemented", "unverified"}:
             raise ValueError(f"operation matrix evidence has invalid route direction/state: {key}")
         if route.get("versionVerification") != "not_established":
             raise ValueError(f"operation matrix evidence cannot claim route-version execution: {key}")
-        if route["state"] == "implemented" and (owners["state"] != "available" or not detail.get("testRefs")):
+        if route["state"] == "implemented" and (
+            owners["state"] != "available" or not detail.get("testRefs")
+        ):
             raise ValueError(f"implemented route lacks typed owners or test evidence: {key}")
         result[key] = detail
     if set(result) != {(row["name"], row["direction"]) for row in rows}:
@@ -241,10 +250,23 @@ class _OperationHeadings(HTMLParser):
 
     def handle_endtag(self, tag: str) -> None:
         if tag == self.heading:
-            match = re.fullmatch(r"(6\.[12]\.\d+)\s+(.*)", " ".join("".join(self.parts).split()))
+            title = " ".join("".join(self.parts).split())
+            match = re.fullmatch(r"(6\.[12]\.\d+)\s+(.*)", title)
             if match:
                 self.operations[match[1]] = match[2]
             self.heading = None
+
+
+
+def _declares_owner(text: str, name: str, role: str) -> bool:
+    """Recognize existing concrete models, including the reviewed create-model macro."""
+    if re.search(r"pub (?:struct|enum) " + re.escape(name) + r"\b", text):
+        return True
+    stem = re.escape(name.removesuffix(role.title()))
+    return re.search(
+        r"define_create_request!\(\s*" + stem + r"Request,\s*" + stem + r"Response,",
+        text,
+    ) is not None
 
 
 def _validate_evidence_files(root: Path, inventory: dict[str, Any]) -> None:
@@ -280,11 +302,7 @@ def _validate_evidence_files(root: Path, inventory: dict[str, Any]) -> None:
                 owner = owners[role]
                 name = owner["symbol"].split("::")[-1]
                 text = read(owner["path"])
-                # The two create models are existing macro-generated declarations.
-                declaration = re.search(r"pub (?:struct|enum) " + re.escape(name) + r"\b", text)
-                macro = re.search(r"define_create_request!\(\s*" + re.escape(name.removesuffix(role.title()))
-                                  + r"Request,\s*" + re.escape(name.removesuffix(role.title())) + r"Response,", text)
-                if not declaration and not macro:
+                if not _declares_owner(text, name, role):
                     raise ValueError(f"missing typed {role} owner: {row['name']}")
         route = row["route"]
         if route["state"] == "implemented":

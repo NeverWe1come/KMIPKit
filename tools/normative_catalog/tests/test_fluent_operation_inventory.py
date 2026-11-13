@@ -2,15 +2,23 @@
 
 from __future__ import annotations
 
+import contextlib
 import copy
+import io
 import json
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 BASE_CATALOG = ROOT / "specification/catalog/kmip-2.1.json"
 VERSIONED_VALUES = ROOT / "specification/catalog/kmip-versioned-values.json"
-from tools.normative_catalog.generate_fluent_operation_inventory import build_inventory, render, _validate_evidence_files
+from tools.normative_catalog.generate_fluent_operation_inventory import (
+    _validate_evidence_files,
+    main,
+    build_inventory,
+    render,
+)
 
 OUTPUT = ROOT / "specification/catalog/fluent-operation-inventory.json"
 
@@ -191,6 +199,87 @@ class FluentOperationInventoryTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "assignment"):
             build_inventory(json.loads(BASE_CATALOG.read_text()), versioned,
                             json.loads((ROOT / "specification/api/public-api.json").read_text()))
+
+    def test_incomplete_catalogs_and_duplicate_routes_are_rejected(self) -> None:
+        base = json.loads(BASE_CATALOG.read_text())
+        versioned = json.loads(VERSIONED_VALUES.read_text())
+        manifest = json.loads((ROOT / "specification/api/public-api.json").read_text())
+        for field in ("name", "source_refs", "unknown", "duplicate", "manifest",
+                      "versions", "groups", "values", "section", "duplicate_assignment"):
+            with self.subTest(field=field):
+                b, v, m = copy.deepcopy((base, versioned, manifest))
+                operation = next(row for row in b["elements"] if row.get("kind") == "operation")
+                if field == "name":
+                    operation["name"] = None
+                elif field == "source_refs":
+                    operation["source_refs"] = []
+                elif field == "unknown":
+                    operation["name"] = "Unassigned Operation"
+                elif field == "duplicate":
+                    b["elements"].append(copy.deepcopy(operation))
+                elif field == "manifest":
+                    m["operations"] = None
+                elif field == "versions":
+                    v["versions"] = None
+                elif field == "groups":
+                    v["versions"]["v3_0"] = []
+                elif field == "values":
+                    v["versions"]["v3_0"][0]["values"] = []
+                elif field == "section":
+                    v["versions"]["v3_0"][0]["values"][0]["name"] = "Unreviewed Operation"
+                else:
+                    v["versions"]["v3_0"][0]["values"].append(
+                        copy.deepcopy(v["versions"]["v3_0"][0]["values"][0]))
+                with self.assertRaises(ValueError):
+                    build_inventory(b, v, m)
+
+    def test_incomplete_or_overclaimed_review_evidence_is_rejected(self) -> None:
+        original = json.loads((ROOT / "specification/catalog/operation-matrix-evidence.json").read_text())
+        for field in ("format", "operations", "version_sources", "version_order",
+                      "owner_state", "route_kind", "route_state", "version_claim", "tests"):
+            with self.subTest(field=field):
+                evidence = copy.deepcopy(original)
+                detail = evidence["operations"][0]
+                if field == "format":
+                    evidence["formatVersion"] = 99
+                elif field == "operations":
+                    evidence["operations"] = None
+                elif field == "version_sources":
+                    detail["versionSourceRefs"] = []
+                elif field == "version_order":
+                    detail["versionSourceRefs"].reverse()
+                elif field == "owner_state":
+                    detail["typedOwners"]["state"] = "invented"
+                elif field == "route_kind":
+                    detail["route"]["kind"] = "listener"
+                elif field == "route_state":
+                    detail["route"]["state"] = "verified_on_all_servers"
+                elif field == "version_claim":
+                    detail["route"]["versionVerification"] = "all_versions_pass"
+                else:
+                    detail["testRefs"] = []
+                with self.assertRaises(ValueError):
+                    self._build_with_evidence(evidence)
+
+    def test_missing_typed_route_variant_is_rejected(self) -> None:
+        inventory = json.loads(OUTPUT.read_text())
+        inventory["operations"][0]["route"]["requestVariant"] = "ClientRequest::Invented"
+        with self.assertRaisesRegex(ValueError, "typed route variant"):
+            _validate_evidence_files(ROOT, inventory)
+
+    def test_cli_check_write_stale_and_invalid_root(self) -> None:
+        import tools.normative_catalog.generate_fluent_operation_inventory as generator
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            for arguments in (["inventory", "--repo-root", str(ROOT), "--check"],
+                              ["inventory", "--repo-root", str(ROOT)]):
+                with patch("sys.argv", arguments):
+                    self.assertEqual(main(), 0)
+            # Compare against an existing non-generated input without editing outputs.
+            with patch.object(generator, "OUTPUT_PATH", "specification/catalog/operation-matrix-evidence.json"), \
+                    patch("sys.argv", ["inventory", "--repo-root", str(ROOT), "--check"]):
+                self.assertEqual(main(), 1)
+            with patch("sys.argv", ["inventory", "--repo-root", str(ROOT / "absent-matrix-root")]):
+                self.assertEqual(main(), 1)
 
 
 if __name__ == "__main__":
