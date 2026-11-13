@@ -18,7 +18,7 @@ public final class JavaRouteInventory {
     public static Map<String, Route> classify(CatalogLoader.Catalog catalog) {
         var operations = new TreeSet<String>();
         catalog.cases().forEach(testCase -> {
-            if ("server_exchange".equals(testCase.execution().mode())) {
+            if (isServerExchange(testCase)) {
                 operations.add(testCase.operation());
                 routeFor(testCase);
             }
@@ -32,6 +32,11 @@ public final class JavaRouteInventory {
             classified.put(operation, route);
         }
         return Map.copyOf(classified);
+    }
+
+    /** Returns whether a catalog case needs a server operation route. */
+    public static boolean isServerExchange(CatalogLoader.CatalogCase testCase) {
+        return "server_exchange".equals(testCase.execution().mode());
     }
 
     /** Returns a route status for one operation, using an explicit fallback for future catalog additions. */

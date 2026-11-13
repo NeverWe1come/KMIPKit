@@ -111,7 +111,7 @@ public final class Main {
         List<RunReport.CaseEvidence> evidence = new ArrayList<>(applicable.size());
 
         boolean hasPotentialLiveRoute = applicable.stream().anyMatch(testCase ->
-                "server_exchange".equals(testCase.execution().mode())
+                JavaRouteInventory.isServerExchange(testCase)
                         && JavaRouteInventory.routeFor(testCase, connection.protocolVersion()).status()
                                 == JavaRouteInventory.Status.EXECUTABLE_TYPED
                         && "typed-protocol".equals(connection.apiLevel())
@@ -228,7 +228,7 @@ public final class Main {
 
     private static long countCases(List<CatalogLoader.CatalogCase> cases, JavaRouteInventory.Status status,
                                    String protocolVersion) {
-        return cases.stream().filter(testCase -> "server_exchange".equals(testCase.execution().mode()))
+        return cases.stream().filter(JavaRouteInventory::isServerExchange)
                 .filter(testCase -> JavaRouteInventory.routeFor(testCase, protocolVersion).status() == status).count();
     }
 

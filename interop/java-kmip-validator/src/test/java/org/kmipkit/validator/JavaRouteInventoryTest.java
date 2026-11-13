@@ -43,6 +43,11 @@ class JavaRouteInventoryTest {
                 .findFirst().orElseThrow();
         assertEquals(JavaRouteInventory.Status.EXECUTABLE_TYPED,
                 JavaRouteInventory.routeFor(clientQuery).status());
+        assertTrue(JavaRouteInventory.isServerExchange(clientQuery));
+        var localCase = catalog.cases().stream()
+                .filter(testCase -> "local_model".equals(testCase.execution().mode()))
+                .findFirst().orElseThrow();
+        assertFalse(JavaRouteInventory.isServerExchange(localCase));
         assertEquals(JavaRouteInventory.Status.WORKFLOW_UNAVAILABLE,
                 JavaRouteInventory.routeFor(serverQuery).status());
         assertTrue(JavaRouteInventory.routeFor(serverQuery).reason().contains("server-initiated"));
