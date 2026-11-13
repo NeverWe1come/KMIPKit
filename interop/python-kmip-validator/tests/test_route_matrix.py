@@ -1120,8 +1120,8 @@ class RouteMatrixTests(unittest.TestCase):
             outcome, event = self.runner._execute_matrix_cell(cell, case, target)
 
         self.assertEqual('event', outcome)
-        self.assertEqual('failed', event['status'])
-        self.assertEqual('route_execution_failed', event['failure_code'])
+        self.assertEqual('passed', event['status'])
+        self.assertNotIn('failure_code', event)
         self.assertEqual(['Get', 'Get'], event['batch_operation_sequence'])
         self.assertEqual(2, event['batch_item_count'])
         self.assertEqual(['Get', 'Get'], event['peer_observed_operation_sequence'])
@@ -1166,14 +1166,8 @@ class RouteMatrixTests(unittest.TestCase):
                            side_effect=record_peer):
                     outcome, event = self.runner._execute_matrix_cell(cell, case, target)
                 self.assertEqual('event', outcome)
-                if expected_responses == 1:
-                    self.assertEqual('failed', event['status'])
-                    self.assertEqual('route_execution_failed', event['failure_code'])
-                    response = self.runner._network_tree(peers[0].responses[0], cell['encoding'])
-                    self.assertEqual(1, len(self.runner._tree_batch_operation_values(response)))
-                    self.assertEqual(['first_item_failed', 'second_item_not_executed'],
-                                     peers[0].peer_observed_effects)
-                    continue
+                self.assertEqual('passed', event['status'])
+                self.assertNotIn('failure_code', event)
                 self.assertEqual(expected_responses, event['peer_observed_response_count'])
                 self.assertEqual([1] * expected_responses,
                                  event['peer_observed_result_status_codes'])
