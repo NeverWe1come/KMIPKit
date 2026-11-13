@@ -70,3 +70,18 @@ session state and therefore require the same explicit opt-in as Log.
   interop/shared/tests -p 'test_*.py'` passed all 188 tests.
 - Exact-head CI and language-level checks that a policy-restricted session
   operation makes no network request remain required.
+
+KMIP 2.0 §6.1.25 and KMIP 2.1 §6.1.26 define Interop as test-state
+control and prohibit its availability on production servers. The catalog now
+requires the explicit dedicated-environment mutation opt-in for both versions.
+
+- Red commit `8d1b1b938` added the catalog regression and observed that Interop
+  was incorrectly classified as `read_only` for KMIP 2.0 and 2.1.
+- Green commit `7d3ef6ac7` classifies Interop as `mutating` and regenerates the
+  checked-in catalog. Its exact normative references are asserted by the test.
+- Verification: `python3 interop/shared/catalog/generate_test_catalog.py
+  --check` passed; the focused executable-contract tests passed 12/12; the
+  complete shared test suite passed 189/189.
+- This is test policy and catalog evidence. It does not claim server support,
+  and the language validators still need checks that policy-restricted runs
+  make no network request.
