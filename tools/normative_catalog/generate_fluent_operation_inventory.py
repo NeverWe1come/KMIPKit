@@ -251,9 +251,9 @@ class _OperationHeadings(HTMLParser):
     def handle_endtag(self, tag: str) -> None:
         if tag == self.heading:
             title = " ".join("".join(self.parts).split())
-            match = re.fullmatch(r"(6\.[12]\.\d+)\s+(.*)", title)
-            if match:
-                self.operations[match[1]] = match[2]
+            section, separator, operation = title.partition(" ")
+            if separator and re.fullmatch(r"6\.[12]\.\d+", section):
+                self.operations[section] = operation
             self.heading = None
 
 

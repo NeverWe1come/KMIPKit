@@ -138,8 +138,10 @@ class FluentOperationInventoryTests(unittest.TestCase):
                             json.loads((ROOT / "specification/api/public-api.json").read_text(encoding="utf-8")))
 
     def test_generated_inventory_is_deterministic_and_current(self) -> None:
-        self.assertEqual(render(ROOT), OUTPUT.read_bytes())
-        self.assertEqual(render(ROOT), render(ROOT))
+        first = render(ROOT)
+        second = render(ROOT)
+        self.assertEqual(first, OUTPUT.read_bytes())
+        self.assertEqual(first, second)
 
     def _build_with_evidence(self, evidence: dict) -> dict:
         return build_inventory(json.loads(BASE_CATALOG.read_text(encoding="utf-8")),
