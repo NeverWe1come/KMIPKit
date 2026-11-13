@@ -60,7 +60,9 @@ def _write_reference_ledger(ledger: dict) -> None:
         raise ValueError("route reference path cannot be resolved safely") from error
     if REFERENCE_LEDGER.is_symlink() or resolved_target != target:
         raise ValueError("route reference path must not be a symlink or escape the validator root")
-    target.write_text(json.dumps(ledger, indent=2) + "\n", encoding="utf-8")
+    with target.open("w", encoding="utf-8") as stream:
+        json.dump(ledger, stream, indent=2)
+        stream.write("\n")
 
 
 def main() -> int:
