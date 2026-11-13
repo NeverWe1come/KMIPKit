@@ -465,12 +465,15 @@ class RouteMatrixTests(unittest.TestCase):
         """OASIS KMIP 2.0 Table 223 and KMIP 2.1 Table 241 require both fields."""
         from route_peer import assert_interop_request, parse, tlv
 
-        def request(functions, identifier=b'kmipkit-interop-fixture'):
+        def request(functions, *, include_batch_item_ids=True,
+                    identifier=b'kmipkit-interop-fixture'):
             items = []
-            for function in functions:
+            for index, function in enumerate(functions):
                 payload = tlv(0x420160, 5, function.to_bytes(4, 'big'))
                 payload += tlv(0x420161, 7, identifier)
                 batch_item = tlv(0x42005C, 5, (52).to_bytes(4, 'big'))
+                if include_batch_item_ids:
+                    batch_item += tlv(0x420093, 8, (f'interop-item-{index}').encode())
                 batch_item += tlv(0x420079, 1, payload)
                 items.append(tlv(0x42000F, 1, batch_item))
             version = tlv(0x420069, 1,
@@ -483,6 +486,8 @@ class RouteMatrixTests(unittest.TestCase):
         assert_interop_request(request((1, 2, 3)), '2.1')
         with self.assertRaisesRegex(ValueError, 'interop_function_sequence_mismatch'):
             assert_interop_request(request((1, 3, 2)), '2.1')
+        with self.assertRaisesRegex(ValueError, 'fixture_interop_batch_item_id_mismatch'):
+            assert_interop_request(request((1, 2, 3), include_batch_item_ids=False), '2.1')
 
     def test_interop_peer_models_begin_end_reset_without_retaining_identifier(self):
         """OASIS KMIP 2.0 §6.1.25 and KMIP 2.1 §6.1.26 define test-state controls."""
