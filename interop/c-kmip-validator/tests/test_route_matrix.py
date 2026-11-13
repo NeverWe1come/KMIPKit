@@ -72,6 +72,39 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(recipe[0], (1, 17, 19, 20))
         self.assertEqual(recipe[1], 'get_usage_allocation')
 
+    def test_stop_on_first_failure_case_has_a_controlled_peer_recipe(self):
+        import route_peer
+        from artifact_support import ROOT
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-batch-stop-on-first-failure')
+
+        self.assertEqual(
+            route_peer.recipe_for_case(case, None),
+            ((10, 10), 'batch_stop_on_first_failure'),
+        )
+
+    def test_stop_batch_peer_does_not_execute_items_after_first_failure(self):
+        from route_peer import PeerState
+
+        get = lambda identifier: (0x42000F, 1, [
+            (0x42005C, 5, (10).to_bytes(4, 'big')),
+            (0x420094, 7, identifier.encode()),
+        ])
+        request = (0x420078, 1, [get('missing-key'), get('fixture-key-1')])
+        peer = PeerState(existing_object=True)
+
+        evidence = peer.execute(request, stop_after_failure=True)
+
+        self.assertEqual(evidence['statuses'], [1])
+        self.assertEqual(evidence['reasons'], [55])
+        self.assertEqual(evidence['effects'], ['object_not_found'])
+        self.assertEqual(
+            evidence['peer_observed_state_before_sha256'],
+            evidence['peer_observed_state_after_sha256'],
+        )
+
     def test_get_usage_allocation_peer_verifies_its_object_lifecycle(self):
         from controlled_kms_test import response
         from route_peer import parse, verify_lifecycle
