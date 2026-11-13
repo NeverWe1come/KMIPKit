@@ -2991,9 +2991,13 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         strcmp(test_case->case_id,
                "test-norm-payload-client-modify-attribute-request-20-003") == 0 ||
         strcmp(test_case->case_id,
+               "test-norm-payload-client-modify-attribute-response-20-001") == 0 ||
+        strcmp(test_case->case_id,
                "test-norm-payload-client-modify-attribute-request-21-002") == 0 ||
         strcmp(test_case->case_id,
-               "test-norm-payload-client-modify-attribute-request-21-003") == 0)
+               "test-norm-payload-client-modify-attribute-request-21-003") == 0 ||
+        strcmp(test_case->case_id,
+               "test-norm-payload-client-modify-attribute-response-21-001") == 0)
         return execute_attribute_mutation_case(client, ATTRIBUTE_MUTATION_MODIFY);
     if (strcmp(test_case->case_id, "test-op-set-attribute") == 0)
         return execute_attribute_mutation_case(client, ATTRIBUTE_MUTATION_SET);
