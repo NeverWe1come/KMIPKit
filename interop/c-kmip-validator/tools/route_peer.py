@@ -282,6 +282,8 @@ RECIPES = {
     'test-op-create': ((1, 20), 'create'),
     'test-op-register': ((3, 20), 'register'),
     'test-op-add-attribute': ((1, 13, 19, 20), 'add_attribute'),
+    'test-norm-payload-client-add-attribute-request-20-002': ((1, 13, 19, 20), 'add_attribute'),
+    'test-norm-payload-client-add-attribute-request-21-002': ((1, 13, 19, 20), 'add_attribute'),
     'test-op-set-attribute': ((1, 49, 19, 20), 'set_attribute'),
     'test-op-set-constraints': ((55,), 'set_constraints'),
     'test-op-set-defaults': ((54,), 'set_defaults'),
@@ -345,6 +347,8 @@ CONTROLLED_PEER_LOCAL_MODEL_CASES = frozenset({
     'test-norm-payload-client-get-request-21-001',
     'test-norm-payload-client-get-attribute-list-request-20-001',
     'test-norm-payload-client-get-attribute-list-request-21-001',
+    'test-norm-payload-client-add-attribute-request-20-002',
+    'test-norm-payload-client-add-attribute-request-21-002',
     'test-norm-payload-client-get-usage-allocation-request-20-001',
     'test-norm-payload-client-get-usage-allocation-request-21-001',
     'test-norm-payload-client-query-request-20-001',
@@ -503,6 +507,17 @@ def assert_interop_request(node, version):
         raise ValueError('fixture_interop_batch_item_id_mismatch')
 
 
+def request_add_attribute_has_new_attribute(node):
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    mutation_items = [item for item in items if numbers(item, 0x42005C) == [13]]
+    if len(mutation_items) != 1:
+        return False
+    payloads = [child for child in mutation_items[0][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+    return len(payloads) == 1 and sum(
+        child[0] == 0x42013D and child[1] == 1 for child in payloads[0][2]) == 1
+
+
 def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
                   constructor_variant=None):
     selected_recipe = recipe or RECIPES[case_id]
@@ -515,6 +530,11 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         raise ValueError('fixture_protocol_version_mismatch')
     if numbers(node, 0x42000D) != [len(expected)]:
         raise ValueError('fixture_batch_count_mismatch')
+    if (case_id in {
+            'test-norm-payload-client-add-attribute-request-20-002',
+            'test-norm-payload-client-add-attribute-request-21-002'} and
+            not request_add_attribute_has_new_attribute(node)):
+        raise ValueError('fixture_add_attribute_new_attribute_missing')
     if selected_recipe[1] == 'delegated_login':
         payloads = list(descendants(node, REQUEST_PAYLOAD_TAG))
         if (len(payloads) != 1 or payloads[0][1] != 1 or
@@ -1258,6 +1278,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
          ('direct', 'standalone') if case['case_id'] in {'test-op-get-attributes', 'test-op-get-attribute-list',
                                                          'test-norm-payload-client-get-attribute-list-request-20-001',
                                                          'test-norm-payload-client-get-attribute-list-request-21-001',
+                                                         'test-norm-payload-client-add-attribute-request-20-002',
+                                                         'test-norm-payload-client-add-attribute-request-21-002',
                                                          'test-op-add-attribute', 'test-op-set-attribute',
                                                          'test-op-delete-attribute'}
          or case['case_id'] in attribute_case_ids else ('direct',))]
@@ -1704,6 +1726,11 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                    'test-norm-payload-client-get-usage-allocation-request-21-001',
                                                    'test-norm-payload-client-get-attribute-list-request-20-001',
                                                    'test-norm-payload-client-get-attribute-list-request-21-001'} else {}),
+                                           **({'peer_new_attribute_present': request_add_attribute_has_new_attribute(
+                                                   observation[mutation_exchange_index][0])}
+                                              if observation and recipe[1] == 'add_attribute' and case_id in {
+                                                  'test-norm-payload-client-add-attribute-request-20-002',
+                                                  'test-norm-payload-client-add-attribute-request-21-002'} else {}),
                                            **(peer_cleanup_evidence(observation, include_state_hash=True)
                                               if placeholder_chain_recipe and len(observation) == 2 else {}),
                                            **({'peer_request_operations': [

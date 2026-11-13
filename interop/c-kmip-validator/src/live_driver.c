@@ -2937,7 +2937,11 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         }
         return execute_logout_with_login_ticket(client);
     }
-    if (strcmp(test_case->case_id, "test-op-add-attribute") == 0)
+    if (strcmp(test_case->case_id, "test-op-add-attribute") == 0 ||
+        strcmp(test_case->case_id,
+               "test-norm-payload-client-add-attribute-request-20-002") == 0 ||
+        strcmp(test_case->case_id,
+               "test-norm-payload-client-add-attribute-request-21-002") == 0)
         return execute_attribute_mutation_case(client, ATTRIBUTE_MUTATION_ADD);
     if (strcmp(test_case->case_id, "test-op-set-attribute") == 0)
         return execute_attribute_mutation_case(client, ATTRIBUTE_MUTATION_SET);
