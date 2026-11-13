@@ -215,3 +215,32 @@ Verification on the implementation worktree:
 This route does not complete C interoperability coverage. Batch attribute
 mutators, the remaining operations and objects, asynchronous flows, and other
 catalogued variants still need executable C recipes. The PR remains WIP.
+
+### Set Attribute direct and standalone routes
+
+The installed consumer now exercises Set Attribute through both the direct C
+batch-item constructor and standalone `SetAttributeRequest` constructor. It
+creates an isolated symmetric key, obtains its returned text Unique Identifier,
+sends Set Attribute with a Comment, validates the typed response identifier,
+and revokes and destroys the object. The controlled KMIP 2.0/2.1 peer checks
+the Set Attribute operation value and request fields, records the attribute
+mutation, and verifies cleanup restores the fixture state. For each version,
+encoding, and transport, the direct and standalone requests have matching
+normalized request-tree digests.
+
+Verification on the implementation worktree:
+
+- Focused Set Attribute integration: 24/24 exchanges passed (two protocol
+  versions, six encoding/transport pairs, and both constructor routes).
+- CTest: 7/7 passed, including both controlled KMIP 2.0 and 2.1 TLS peers.
+- FFI coverage object tests: 12/12 passed.
+- The complete C route evidence matrix records 66,728 expected cells, 37,094
+  invoked, 0 failed, and 29,634 pending. It records 80 passed events for each
+  of Add Attribute and Set Attribute; each operation also passed all 24
+  controlled peer combinations.
+- The completeness validator still exits unsuccessfully because catalogued
+  operation, object, attribute, batch, asynchronous, and normative constructor
+  routes remain pending.
+
+The PR remains WIP while the C catalogue has outstanding operation, object,
+attribute, batch, asynchronous, and normative constructor routes.
