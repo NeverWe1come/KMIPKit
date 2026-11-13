@@ -94,3 +94,45 @@ Final checks after the refactor:
 Python tooling tests use an external, disk-backed task temporary directory
 when `/tmp` is full so that their outside-project path validation fixtures
 retain their intended meaning.
+
+## Version-specific Discover Versions route deferral
+
+Sources: OASIS KMIP 2.0 and 2.1 Specifications §6.1.16. This behavior is
+scoped to the client-initiated `test-op-discover-versions` exchange; the
+server-initiated case remains unavailable for its existing workflow reason,
+and local KMIP 2.0 request/response model checks remain executable.
+
+The installed artifact pinned by the shared route manifest is
+`9a16cc90a12205101d22a38501a5e74c665df4dc`. Its typed Discover Versions
+response conversion validates the response against the default offer, which
+contains KMIP 2.1 only. The public request route exists, but the KMIP 2.0
+response cannot currently complete through that typed API. This is a
+KMIPKit correctness limitation, not evidence about any server's compatibility.
+
+Red commit `579523301` adds an isolated KMIP 2.0 regression case. Before the
+route fix, the consumer attempted the unavailable endpoint and classified the
+transport failure as a failed exchange. The test requires `not_run`, unknown
+server compatibility, and a sanitized diagnostic identifying the default
+KMIP 2.1 offer. Green commit `22f915742` makes route classification depend on
+the selected protocol version and uses that classification consistently in
+`plan` and `run`. KMIP 2.0 Discover Versions is reported as pending without
+opening a connection; KMIP 2.1 remains executable.
+
+The follow-up refinement adds inventory assertions for the KMIP 2.0 pending
+classification and the still-executable KMIP 2.1 and version-neutral routes.
+It also synchronizes FR-003/FR-009 traceability with the current 13,414
+executed and 58,041 pending ledger. It makes no new public API or server
+compatibility claim.
+
+Verification:
+
+```sh
+bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test \
+  --tests org.kmipkit.validator.MainContractTest.kmip20DiscoverVersionsIsPendingInsteadOfClaimingAClientFailure \
+  --tests org.kmipkit.validator.JavaRouteInventoryTest
+```
+
+The focused suite passes. The complete KMIP 2.0/2.1 route matrix is still
+incomplete; this scoped deferral does not satisfy the pending Discover
+Versions route cell or alter the full-matrix gate.

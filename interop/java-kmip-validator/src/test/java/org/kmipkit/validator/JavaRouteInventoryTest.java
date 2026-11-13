@@ -73,6 +73,17 @@ class JavaRouteInventoryTest {
                 .findFirst().orElseThrow();
         assertEquals(JavaRouteInventory.Status.EXECUTABLE_TYPED,
                 JavaRouteInventory.routeFor(clientQuery).status());
+        var clientDiscoverVersions = catalog.cases().stream()
+                .filter(testCase -> testCase.caseId().equals("test-op-discover-versions"))
+                .findFirst().orElseThrow();
+        assertEquals(JavaRouteInventory.Status.TYPED_API_PENDING,
+                JavaRouteInventory.routeFor(clientDiscoverVersions, "2.0").status());
+        assertTrue(JavaRouteInventory.routeFor(clientDiscoverVersions, "2.0").reason()
+                .contains("default KMIP 2.1 offer"));
+        assertEquals(JavaRouteInventory.Status.EXECUTABLE_TYPED,
+                JavaRouteInventory.routeFor(clientDiscoverVersions, "2.1").status());
+        assertEquals(JavaRouteInventory.Status.EXECUTABLE_TYPED,
+                JavaRouteInventory.routeFor(clientDiscoverVersions).status());
         assertEquals(JavaRouteInventory.Status.WORKFLOW_UNAVAILABLE,
                 JavaRouteInventory.routeFor(serverQuery).status());
         assertTrue(JavaRouteInventory.routeFor(serverQuery).reason().contains("server-initiated"));
