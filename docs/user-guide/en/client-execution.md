@@ -378,13 +378,20 @@ generic TTLV Date-Time values; the application owns the timer and subtraction.
 This does not synthesize an outgoing request Time Stamp.
 
 For a multi-item batch, every request item has a Unique Batch Item ID. The
-client associates each response with its request by that ID, even when the
-server returns response items in a different order. Results are returned in
-request order. A supplied ID must be echoed; a single-item response may omit
-the ID when the request did. Duplicate, missing, unexpected, or mismatched
-identities and mismatched operations fail as redacted protocol errors. Batch
-Order Option controls server execution order; it does not select the response
-matching rule.
+client associates each returned response with its request by that ID, even
+when the server returns response items in a different order. Returned results
+are exposed in request order. A supplied ID must be echoed; a single-item
+response may omit the ID when the request did. Duplicate, unexpected, or
+mismatched identities and mismatched operations fail as redacted protocol
+errors. A non-empty partial response is accepted only when effective Batch
+Error Continuation is Stop and a returned item has `Operation Failed`; the
+client returns only outcomes present in the response. Empty or no-failure
+partial responses and partial responses under Continue fail closed. Partial
+Undo responses follow KMIPKIT-0120.
+This KMIPKit policy supports the KMIPKIT-0092 Stop-on-first-failure scenario;
+OASIS §11.5 does not explicitly require omission of unprocessed response
+items. Batch Order Option controls server execution order; it does not select
+the response matching rule.
 
 Each valid item result is represented as completed or Pending. Pending is
 accepted only when the request's effective Asynchronous Indicator permits it

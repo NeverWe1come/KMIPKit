@@ -410,14 +410,21 @@ genéricos; la aplicación es responsable del temporizador y la resta. Esto no
 genera una marca de tiempo para una petición saliente.
 
 Cada elemento de una petición de varios elementos tiene un Unique Batch Item
-ID. El cliente asocia cada respuesta con su petición mediante ese ID, aunque
-el servidor devuelva los elementos en otro orden. Los resultados se devuelven
-en el orden de la petición. Si se proporcionó un ID, el servidor debe
-devolverlo; una respuesta de un solo elemento puede omitir el ID cuando la
-petición también lo omitió. Las identidades duplicadas, ausentes,
-inesperadas o no coincidentes, así como las operaciones distintas, producen
-errores de protocolo redactados. Batch Order Option controla el orden de
-ejecución del servidor; no cambia la regla de asociación de respuestas.
+ID. El cliente asocia cada respuesta devuelta con su petición mediante ese ID,
+aunque el servidor devuelva los elementos en otro orden. Los resultados
+devueltos se exponen en el orden de la petición. Si se proporcionó un ID, el
+servidor debe devolverlo; una respuesta de un solo elemento puede omitir el ID
+cuando la petición también lo omitió. Los ID duplicados, inesperados o
+incompatibles y las operaciones distintas se rechazan con un error de
+protocolo redactado. Se acepta una respuesta parcial no vacía solo si Batch
+Error Continuation efectivo es Stop y algún elemento devuelto tiene
+`Operation Failed`; el cliente devuelve únicamente los resultados presentes.
+Se rechazan las respuestas parciales vacías, sin fallo o bajo Continue. Las
+respuestas parciales bajo Undo siguen KMIPKIT-0120.
+Esta política de KMIPKit admite el caso Stop-on-first-failure de KMIPKIT-0092;
+§11.5 de OASIS no exige explícitamente omitir las respuestas no procesadas.
+Batch Order Option controla el orden de ejecución del servidor, no la regla de
+asociación.
 
 Cada resultado de elemento válido se representa como completado o Pending.
 Pending solo se acepta si el valor efectivo de Asynchronous Indicator de la
