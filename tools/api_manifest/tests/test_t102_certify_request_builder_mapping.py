@@ -168,8 +168,9 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
 # Register declarations, KMIPKIT-0101 lifecycle declarations, and KMIPKIT-0102
 # fluent cryptographic operation builders.
 # Includes the approved KMIPKIT-0093 inventory reconciliation and Rust
-# CreateBuilder surface, plus the approved KMIPKIT-0114 C lifecycle helpers.
-DECLARATIONS_SHA256 = "a070ea1f932a29d686ee9b3cc6aba73ac73d16850d44b8b4a81ee114eeb32704"
+# CreateBuilder surface, KMIPKIT-0114 C lifecycle helpers, and KMIPKIT-0093-FR-008
+# traceability on typed operation result declarations and their Locate aliases.
+DECLARATIONS_SHA256 = "5283b8603254b6a92a8a2dacb39f4b75828e4c376c5f411a694ce4c9db8fa9a1"
 # The approved KMIPKIT-0114 C lifecycle helpers extend five operation rows.
 OPERATIONS_SHA256 = "574b163b50c24b128219f644956cc21c990879c1a5174486cd5b8b9d609597ff"
 
