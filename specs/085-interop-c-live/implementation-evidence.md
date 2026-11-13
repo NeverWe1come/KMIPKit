@@ -502,3 +502,27 @@ request body or key material is retained in evidence.
 
 The C route matrix remains incomplete and exact-head CI is still required;
 this measurement does not establish full API parity or external KMS support.
+
+### Current release artifact and response-matrix verification
+
+After KMIPKIT-0120 merged into `release/1.0.0`, the C validator now installs
+the current shared artifact pin `489fafc79ef89db2524eafa7a6c6482f5cf75d97`.
+Red commit `93c512fcf` demonstrated that the C pin no longer matched the
+shared route manifest; Green commit `240b81ca3` aligned the installer, CMake,
+CI checkout, and documented commands with the regenerated common pin.
+
+- Installed package SHA-256: `7ec610437a0700aefa5163c6bd6e268b383bae2c32749bbdd9311134eb4dbe41`.
+- Installed shared library SHA-256: `0cc7800552ecae4c0f0ba019e64a32a933302b85fe72af05e116c93dc56ed14c`.
+- Artifact pin contract tests: 6/6 passed. CTest: 7/7 passed, including the
+  KMIP 2.0 and 2.1 controlled TLS peers.
+- Full matrix on the current artifact: 38,318/66,728 cells invoked, 0 failed,
+  and 28,410 pending validator recipes. The completeness gate therefore remains
+  red. In particular, the 104 STOP-on-first-failure cells remain pending; this
+  C run does not claim to exercise the partial-response behavior added by
+  KMIPKIT-0120.
+- Refactor/documentation commit records the current installed artifact and
+  keeps earlier matrix snapshots tied to their original source pins.
+
+The current pin and local fixture results do not establish interoperability
+with any deployed KMS; exact-head CI and the remaining route recipes are still
+required.
