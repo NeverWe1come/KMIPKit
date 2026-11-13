@@ -32,3 +32,18 @@
   combinaciones controladas (dos versiones, tres codificaciones y dos
   transportes) pasaron; CTest pasó 7/7. La matriz completa C sigue incompleta,
   por lo que esta PR permanece WIP.
+
+## Evidencia de desarrollo: campo Ephemeral y parser tipado
+
+- Red: `85eaf12cf` y `dc8a0103c` añadieron pruebas que fallaron al faltar una
+  petición KMIP válida para ambas ramas Boolean y al no incluir la función
+  pública de parser tipado en las rutas locales del coordinador.
+- Green: `3c05d47a7` genera un Request Message Get para KMIP 2.0 y 2.1, construye
+  y decodifica TTLV, y llama `kmipkit_request_message_from_ttlv`; verifica el
+  árbol de TTLV original sin guardar el cuerpo en el informe.
+- Referencias: OASIS KMIP 2.0 §8.3/Table 358 y KMIP 2.1 §8.3/Table 396 para el
+  campo; §10.1.2 para el valor Boolean de ocho octetos.
+- Verificación: prueba focal pasada, `test_route_matrix.py` pasó 123/123 y
+  CTest pasó 7/7. La matriz completa quedó en 38.539/66.728 celdas ejecutadas,
+  cero fallidas y 28.189 pendientes. La tarea de cobertura exhaustiva sigue
+  abierta y esta PR permanece WIP.

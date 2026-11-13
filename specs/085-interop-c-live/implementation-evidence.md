@@ -611,6 +611,30 @@ enumeration. This follows OASIS KMIP 2.0 and 2.1 §11.23.
   The completeness gate remains incomplete and the exhaustive-recipes task
   stays open.
 
+### Ephemeral message field through TTLV and typed parsing
+
+The shared normative catalog now records the `Ephemeral` field's Boolean
+encoding from OASIS KMIP 2.0 §8.3/Table 358 and KMIP 2.1 §8.3/Table 396. The C
+fixture embeds both Boolean values in a valid Get Request Message, preserving
+the eight-octet encoding from §10.1.2. The installed C API constructs and
+decodes each generic TTLV tree, then parses it with
+`kmipkit_request_message_from_ttlv` and reads back the original typed message
+tree. The CI route runner now recognizes that model parser as an executable
+local route.
+
+- Red commits `85eaf12cf` and `dc8a0103c` showed the missing contextual
+  Request Message recipe and that the matrix omitted the public parser symbol
+  from its local execution set.
+- Green commit `3c05d47a7` adds the versioned Get fixture, exercises false and
+  true Boolean branches, and validates both the generic TTLV and typed parser
+  routes without recording message bodies.
+- The shared source-catalog correction is in the contract PR #180; it records
+  `source_encoding: Boolean` and regenerates the shared test catalog.
+- Verification: focused Ephemeral coverage passed for KMIP 2.0 and 2.1; all
+  123 C route-matrix tests passed; CTest passed 7/7. The complete matrix now
+  reports 38,539 of 66,728 cells invoked, zero failed, and 28,189 pending.
+  Exhaustive coverage and exact-head CI remain incomplete, so the PR stays WIP.
+
 ### Interop Begin, End, and Reset
 
 The installed C validator executes the KMIP Interop operation as one ordered
