@@ -20,13 +20,14 @@ T102_BLOCKED_CANDIDATES = 0
 # Create Split Key declarations and 18 standard-trait exclusions; KMIPKIT-0100
 # adds 40 exact Rust Register declarations and 18 standard-trait exclusions;
 # KMIPKIT-0101 adds 188 exact Rust lifecycle declarations.
-# KMIPKIT-0093 reconciliation adds 1,614 explicit blocked declarations and
+# KMIPKIT-0093 reconciliation adds 1,614 explicitly blocked declarations and
 # 3,467 reviewed Rust trait exclusions.
+# KMIPKIT-0102 adds the Rust fluent cryptographic operation builders.
 # Update this full-manifest snapshot only when an approved feature intentionally
 # adds or removes declarations.
-T102_PUBLIC_DECLARATIONS = 15_822
+T102_PUBLIC_DECLARATIONS = 16_050
 T102_KMIP30_DRAFT_ROUTE_DECLARATIONS = 36
-T102_APPROVED_EXCLUSIONS = 22_485
+T102_APPROVED_EXCLUSIONS = 22_611
 T102_RUST_AUDIT_MANIFEST = 3_287
 T102_RUST_AUDIT_EXCLUDED = 7_176
 T102_RUST_AUDIT_OBSERVED = 10_463
