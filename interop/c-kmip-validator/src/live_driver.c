@@ -2906,6 +2906,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         strcmp(test_case->case_id, "test-op-set-constraints") == 0;
     bool set_defaults_workflow =
         strcmp(test_case->case_id, "test-op-set-defaults") == 0;
+    bool interop_workflow = strcmp(test_case->case_id, "test-op-interop") == 0;
     if (strcmp(test_case->mode, "local_model") == 0) {
         if (!unsupported_version_boundary_workflow && !get_usage_allocation_uid_variant)
             return execute_local_model_case(test_case);
@@ -3175,6 +3176,20 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         status = kmipkit_client_batch_item_log(message, sizeof(message) - 1, &item);
     } else if (strcmp(test_case->operation, "Login") == 0) {
         status = kmipkit_client_batch_item_login(0, 0, 0, 0, NULL, &item);
+    } else if (interop_workflow) {
+        static const uint8_t interop_identifier[] = "KMIPKit controlled interoperability fixture";
+        status = kmipkit_client_batch_item_interop(
+            KMIPKIT_ENUMERATION_INTEROP_FUNCTION_BEGIN,
+            interop_identifier, sizeof(interop_identifier) - 1, &item);
+        if (status == 0) status = set_batch_item_id(&item, "interop-begin");
+        if (status == 0) status = kmipkit_client_batch_item_interop(
+            KMIPKIT_ENUMERATION_INTEROP_FUNCTION_END,
+            interop_identifier, sizeof(interop_identifier) - 1, &second_item);
+        if (status == 0) status = set_batch_item_id(&second_item, "interop-end");
+        if (status == 0) status = kmipkit_client_batch_item_interop(
+            KMIPKIT_ENUMERATION_INTEROP_FUNCTION_RESET,
+            interop_identifier, sizeof(interop_identifier) - 1, &third_item);
+        if (status == 0) status = set_batch_item_id(&third_item, "interop-reset");
     } else if (delegated_login_workflow) {
         status = kmipkit_ttlv_structure_create(&request_attributes);
         if (status == 0) status = kmipkit_client_batch_item_delegated_login(
@@ -3521,7 +3536,12 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     uint8_t created_identifier_present = 0;
     kmip_execution_outcome_t outcome = { .executed = true };
     status = kmipkit_client_batch_create(&batch);
-    if (status == 0 && single_item_batch_options_workflow) {
+    if (status == 0 && interop_workflow) {
+        status = kmipkit_client_batch_set_order_option(batch, 1);
+        if (status == 0) status = kmipkit_client_batch_add_item(batch, &item);
+        if (status == 0) status = kmipkit_client_batch_add_item(batch, &second_item);
+        if (status == 0) status = kmipkit_client_batch_add_item(batch, &third_item);
+    } else if (status == 0 && single_item_batch_options_workflow) {
         status = kmipkit_client_batch_add_item(batch, &item);
     } else if (status == 0 && batch_two_read_items_workflow) {
         if (strcmp(test_case->case_id, "test-batch-order-false-correlates-response-items") == 0) {
@@ -3613,7 +3633,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
 
     uint64_t response_count = 0;
     status = kmipkit_client_batch_response_item_count(response, &response_count);
-    uint64_t expected_response_count = stop_on_first_failure_workflow ? 1 :
+    uint64_t expected_response_count = interop_workflow ? 3 :
+        stop_on_first_failure_workflow ? 1 :
         get_usage_allocation_identifier_variants_workflow ? 3 :
         batch_two_read_items_workflow ? 2 : create_workflow ? 2 :
         batch_placeholder_chain_workflow ? 3 :
@@ -3625,6 +3646,39 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         snprintf(outcome.result_reason, sizeof(outcome.result_reason),
                  "KMIPKit returned an unexpected response item count");
         goto cleanup;
+    }
+    if (interop_workflow) {
+        for (uint64_t index = 0; status == 0 && index < 3; ++index) {
+            kmipkit_client_batch_item_response_t **response_slot =
+                index == 0 ? &response_item : index == 1 ? &second_response_item :
+                    &third_response_item;
+            kmipkit_client_batch_item_metadata_v2_t interop_metadata = {
+                .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t),
+                .abi_version = 2
+            };
+            status = kmipkit_client_batch_response_item_at(response, index, response_slot);
+            if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
+                *response_slot, &interop_metadata);
+            bool complete_response = status == 0 &&
+                interop_metadata.operation == KMIPKIT_ENUMERATION_OPERATION_INTEROP &&
+                interop_metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS &&
+                response_ttlv_matches_field_count(
+                    *response_slot, kmipkit_client_batch_item_response_interop_ttlv, 4, &status);
+            if (!complete_response) {
+                outcome.success = false;
+                outcome.library_failed = status != 0;
+                snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                         "KMIPKit did not preserve the ordered Interop success response (item %llu, status %d)",
+                         (unsigned long long)index, status);
+                goto cleanup;
+            }
+        }
+        if (status != 0) {
+            outcome.library_failed = true;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit could not inspect the complete Interop response batch (status %d)", status);
+            goto cleanup;
+        }
     }
     if (batch_two_read_items_workflow) {
         bool get_matched = false;

@@ -324,6 +324,7 @@ RECIPES = {
     'test-op-discover-versions': ((30,), 'discover_versions'),
     'test-op-log': ((44,), 'log'), 'test-op-login': ((45,), 'login'),
     'test-op-logout': ((45, 46), 'login_logout'),
+    'test-op-interop': ((52, 52, 52), 'interop'),
     'test-op-delegated-login': ((47,), 'delegated_login'),
     'test-op-ping': ((59,), 'ping'),
     'test-attr-cryptographic-algorithm': ((1, 11, 20), 'get_attributes'),
@@ -449,6 +450,49 @@ def verify_login_logout_response(node, exchange_index):
             raise ValueError('fixture_login_response_ticket_mismatch')
     elif payloads[0][2]:
         raise ValueError('fixture_logout_response_payload_not_empty')
+
+
+def verify_interop_response(node):
+    """Check one successful, empty-payload response per ordered Interop item."""
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if ([numbers(item, 0x42005C) for item in items] != [[52], [52], [52]] or
+            [numbers(item, 0x42007F) for item in items] != [[0], [0], [0]] or
+            [byte_string_values(item, 0x420093) for item in items] !=
+            [[b'interop-begin'], [b'interop-end'], [b'interop-reset']]):
+        raise ValueError('fixture_interop_response_status_mismatch')
+    payloads = [[child for child in item[2]
+                 if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1]
+                for item in items]
+    if len(items) != 3 or any(len(payload) != 1 or payload[0][2] for payload in payloads):
+        raise ValueError('fixture_interop_response_payload_mismatch')
+
+
+def assert_interop_request(node, version):
+    """Check the ordered Begin/End/Reset requests and shared test identifier."""
+    header = next(descendants(node, 0x420077), node)
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    if (numbers(header, 0x42006A) != [2] or
+            numbers(header, 0x42006B) != [int(version[-1])] or
+            numbers(node, 0x42000D) != [3] or len(items) != 3 or
+            [numbers(item, 0x42005C) for item in items] != [[52], [52], [52]]):
+        raise ValueError('fixture_interop_request_shape_mismatch')
+    functions, identifiers = [], []
+    item_identifiers = []
+    for item in items:
+        payloads = [child for child in item[2]
+                    if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+        if len(payloads) != 1:
+            raise ValueError('fixture_interop_payload_missing')
+        functions.append(numbers(payloads[0], 0x420160))
+        identifiers.append(text_values(payloads[0], 0x420161))
+        item_identifiers.append(byte_string_values(item, 0x420093))
+    if functions != [[1], [2], [3]]:
+        raise ValueError('interop_function_sequence_mismatch')
+    if (any(len(values) != 1 or not values[0] for values in identifiers) or
+            len({values[0] for values in identifiers}) != 1):
+        raise ValueError('fixture_interop_identifier_mismatch')
+    if item_identifiers != [[b'interop-begin'], [b'interop-end'], [b'interop-reset']]:
+        raise ValueError('fixture_interop_batch_item_id_mismatch')
 
 
 def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
@@ -867,6 +911,7 @@ class PeerState:
         self.usage_allocation_ready = usage_allocation_ready
         self.usage_allocation_totals = {'fixture-key-1': 1000} if usage_allocation_ready else {}
         self.usage_allocation_counts = {'fixture-key-1': 0} if usage_allocation_ready else {}
+        self.interop_sessions = {}
 
     def digest(self):
         state_value = {'objects': self.objects}
@@ -876,6 +921,8 @@ class PeerState:
             }
         if self.usage_allocation_counts:
             state_value['usage_allocation_counts'] = self.usage_allocation_counts
+        if self.interop_sessions:
+            state_value['interop_sessions'] = self.interop_sessions
         state = json.dumps(state_value, sort_keys=True, separators=(',', ':'))
         return hashlib.sha256(state.encode()).hexdigest()
 
@@ -899,6 +946,29 @@ class PeerState:
             status, reason = 0, 0
             if operation == rejected_operation:
                 status, reason, effect = rejection_status, rejection_reason, 'operation_rejected'
+            elif operation == 52:
+                payloads = [child for child in item[2]
+                            if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+                function_values = [child for payload in payloads for child in payload[2]
+                                   if child[0] == 0x420160 and child[1] == 5]
+                identifier_values = [child for payload in payloads for child in payload[2]
+                                     if child[0] == 0x420161 and child[1] == 7]
+                if (len(payloads) != 1 or len(function_values) != 1 or
+                        len(identifier_values) != 1 or not identifier_values[0][2]):
+                    raise ValueError('fixture_interop_request_fields_mismatch')
+                function = int.from_bytes(function_values[0][2], 'big')
+                identifier_key = hashlib.sha256(identifier_values[0][2]).hexdigest()
+                if function == 1:
+                    self.interop_sessions[identifier_key] = 'in_progress'
+                    effect = 'interop_begun'
+                elif function == 2:
+                    self.interop_sessions[identifier_key] = 'completed'
+                    effect = 'interop_ended'
+                elif function == 3:
+                    self.interop_sessions.pop(identifier_key, None)
+                    effect = 'interop_reset'
+                else:
+                    raise ValueError('fixture_interop_function_unknown')
             elif operation in (1, 3):
                 identifier = 'fixture-key-1'
                 if identifier in self.objects:
@@ -1261,10 +1331,16 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             (exchange_index == attribute_cleanup_exchange_index or
                                              (delete_attribute_recipe and seed_rejected and
                                               exchange_index == attribute_cleanup_exchange_index - 1)))
+                                        response_item_ids = None
                                         logout_recipe = recipe[1] == 'login_logout'
                                         if logout_recipe:
                                             assert_login_logout_exchange(request_tree, version, exchange_index)
                                             response_operations = ((45,) if exchange_index == 0 else (46,))
+                                        elif recipe[1] == 'interop':
+                                            assert_interop_request(request_tree, version)
+                                            response_operations = recipe[0]
+                                            response_item_ids = (b'interop-begin', b'interop-end',
+                                                                 b'interop-reset')
                                         elif cleanup_exchange:
                                             if placeholder_chain_recipe:
                                                 assert_placeholder_cleanup_request(request_tree, version)
@@ -1300,7 +1376,6 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                                 'attribute_response_tag', '000000'), 16)
                                                             if attribute_fixture else 0)
                                         object_type = 4 if case_id == 'test-obj-private-key' else 3 if case_id == 'test-obj-public-key' else 2
-                                        response_item_ids = None
                                         if recipe[1] == 'get_usage_allocation_uid_variant':
                                             response_item_ids = (
                                                 b'interop-create',
@@ -1366,6 +1441,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         response_tree = parse(response_wire)
                                         if logout_recipe:
                                             verify_login_logout_response(response_tree, exchange_index)
+                                        elif recipe[1] == 'interop':
+                                            verify_interop_response(response_tree)
                                         elif recipe[1] == 'batch_stop_on_first_failure':
                                             response_items = [item for item in response_tree[2]
                                                               if item[0] == BATCH_ITEM_TAG and item[1] == 1]

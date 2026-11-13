@@ -473,7 +473,8 @@ class RouteMatrixTests(unittest.TestCase):
                 payload += tlv(0x420161, 7, identifier)
                 batch_item = tlv(0x42005C, 5, (52).to_bytes(4, 'big'))
                 if include_batch_item_ids:
-                    batch_item += tlv(0x420093, 8, (f'interop-item-{index}').encode())
+                    batch_item += tlv(0x420093, 8,
+                        (b'interop-begin', b'interop-end', b'interop-reset')[index])
                 batch_item += tlv(0x420079, 1, payload)
                 items.append(tlv(0x42000F, 1, batch_item))
             version = tlv(0x420069, 1,

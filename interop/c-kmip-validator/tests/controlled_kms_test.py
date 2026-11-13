@@ -286,10 +286,10 @@ def main() -> int:
               1, 11, 20, 1, 20, 1, 20, 1, 20, 1, 18, 20, 19, 20)
     )
     expected_cases = (
-        ("test-op-locate", "test-op-query", "test-op-log")
+        ("test-op-locate", "test-op-query", "test-op-log", "test-op-interop")
         if protocol_version == "2.0"
         else ("test-op-discover-versions", "test-op-ping", "test-op-query", "test-op-log",
-              "test-op-locate", "test-op-login", "test-op-logout", "test-op-get", "test-op-get-attributes",
+              "test-op-locate", "test-op-login", "test-op-logout", "test-op-interop", "test-op-get", "test-op-get-attributes",
               "test-op-get-attribute-list", "test-op-check", "test-op-create", "test-op-activate",
               "test-op-revoke", "test-op-destroy", "test-op-get-constraints",
               "test-attr-cryptographic-algorithm", "test-attr-cryptographic-length",
@@ -308,6 +308,7 @@ def main() -> int:
     expected_operations += (1, 13, 15, 19, 20)
     expected_operations += (1, 18, 12, 19, 20)
     expected_operations += (1, 18, 10, 19, 20)
+    expected_operations += (52, 52, 52)
     expected_operations += (10, 12, 10, 12, 10, 12, 10, 12)
     expected_operations += registered_key_batch
     expected_operations += stop_on_first_failure_batch
@@ -399,12 +400,25 @@ def main() -> int:
                                 raise AssertionError("Check fixture must revoke the created key before destroying it")
                             if any(operation not in expected_operations for operation in operations):
                                 raise AssertionError(f"unexpected operation batch {operations!r} for {protocol_version}")
+                            if operations == (52, 52, 52):
+                                interop_identifier = b"KMIPKit controlled interoperability fixture"
+                                function_offsets = [request.find(enumeration(0x420160, function))
+                                                    for function in (1, 2, 3)]
+                                if (any(offset < 0 for offset in function_offsets) or
+                                        function_offsets != sorted(function_offsets) or
+                                        request.count(tlv(0x420161, 7, interop_identifier)) != 3 or
+                                        any(request.count(tlv(0x420093, 8, item_id)) != 1
+                                            for item_id in (b"interop-begin", b"interop-end",
+                                                            b"interop-reset"))):
+                                    raise AssertionError("Interop function order or shared identifier mismatch")
                             two_read_batch = operations == (10, 12)
                             placeholder_chain = operations == (1, 18, 10)
                             placeholder_cleanup = operations == (19, 20) and \
                                 tlv(0x420093, 8, b"placeholder-revoke-cleanup") in request
                             response_operations = operations
                             response_item_ids = None
+                            if operations == (52, 52, 52):
+                                response_item_ids = (b"interop-begin", b"interop-end", b"interop-reset")
                             if operations == registered_key_batch:
                                 if any(request.count(tlv(0x420093, 8, item_id)) != 1
                                        for item_id in registered_key_batch_item_ids):
