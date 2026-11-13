@@ -120,8 +120,8 @@ limitation is changed by this phase.
 Final checks after the refactor:
 
 - Full Java consumer suite: 52 tests passed, no failures, errors, or skips.
-- Shared route evidence validator: 18,314 executed cells, zero failed cells,
-  53,141 pending cells, and `selected_scope_complete=true`.
+- Shared route evidence validator: 18,652 executed cells, zero failed cells,
+  52,803 pending cells, and `selected_scope_complete=true`.
 - `python3 tools/compare_route_ledger.py`: generated coverage matches the
   checked-in reference.
 - `git diff --check`: passed.
@@ -541,3 +541,43 @@ skips. The shared validator accepts 18,314 cells with zero failures and
 `selected_scope_complete=true`; the generated ledger records 18,314 executed,
 53,141 pending, and 71,455 planned. This completes Digital Signature
 Algorithm's local route scope; the full Java matrix remains incomplete.
+
+## Key Format Type enumeration route completion
+
+Sources: OASIS KMIP 2.0/2.1 §11.25 (Key Format Type Enumeration), §8.6
+(KMIP 2.0 Batch Item response), and §9.7 (KMIP 2.1 Batch Item response).
+The aggregate local case covers all 24 catalogued Key Format Type values
+through the four generic TTLV routes, `TypedAttribute.create`,
+`TypedAttribute.fromItem`, and `AttributeSet.tryNew` for both versions. The
+controlled Get fixture also observes the `Raw` value in its actual response
+and reads the response Batch Item through `ClientBatchItemResult.raw` under
+both versions. This completes 338 cells: 336 local value/route/version cells
+and two controlled-response accessor cells.
+
+Red commit `510b0b804` requires all 24 values and fails because the aggregate
+case has no local fixtures. Green commit `9d1468b63` enables the catalog-driven
+typed/generic routes and emits the aggregate raw-response event only after
+the controlled response contains the exact `Key Format Type=Raw` TTLV item.
+Refactor commit `03356ee68` counts the additional response route evidence as
+one invocation per protocol version.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 37d7eeae9e64644fd7cdde4bfd64b7da5ccbb0bf2be53a949826eb62dc3aaf86 \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+```
+
+The full Java consumer suite passes 52 tests with no failures, errors, or
+skips. The shared validator accepts 18,652 cells with zero failures and
+`selected_scope_complete=true`; the generated ledger records 18,652 executed,
+52,803 pending, and 71,455 planned. This completes Key Format Type's local
+generic, typed, and response accessor scope; the full Java matrix remains
+incomplete.
