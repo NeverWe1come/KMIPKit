@@ -43,7 +43,8 @@ class ExecutableContractTests(unittest.TestCase):
         cases = {
             item["operation"]: item
             for item in catalog["test_cases"]
-            if item.get("operation") in {"Login", "Logout", "Delegated Login"}
+            if item.get("category") == "protocol_and_session"
+            and item.get("operation") in {"Login", "Logout", "Delegated Login"}
         }
 
         self.assertEqual({"Login", "Logout", "Delegated Login"}, set(cases))
