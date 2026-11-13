@@ -84,3 +84,16 @@ passing shared-contract job does not satisfy those language-level requirements.
 - Green commit `9d9dbb308`: the route generator now pins the exact current release commit and regenerates all 1,491 route records. The catalog semantics and route count are unchanged.
 - Refactor/documentation: the approved feature spec now records the updated release base and this evidence.
 - Verification: the focused Red was observed; `python3 -m unittest interop.shared.tests.test_route_capabilities -v` passed 63 tests, `python3 interop/shared/tools/route_capabilities.py --check` passed, and `python3 -m unittest scripts.tests.test_workflow -v` passed 95 tests after conflict resolution. Exact-head CI must still pass after this branch update.
+
+## Development evidence: complete Rust route matrix CI budget
+
+- Exact-head run `43470863653`, attempt 1, spent its full 30-minute job budget.
+  All preceding checks passed; the final canonical route-matrix step was
+  cancelled at timeout before it produced a completeness result.
+- Red commit `cf6ef367` added
+  `test_rust_interop_job_reserves_time_for_the_full_route_matrix`; the focused
+  test failed because the workflow allowed only 30 minutes.
+- Green commit `843be907` raised the bounded job timeout to 60 minutes. The
+  focused test and all 96 tests in `scripts/tests/test_workflow.py` pass.
+- Refactor/documentation commit records the CI time-budget reason in the
+  validator README. Exact-head interop CI is pending after this correction.

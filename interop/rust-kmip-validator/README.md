@@ -184,6 +184,11 @@ compares normalized request and response trees across both API levels, both
 protocol versions, and all six encoding/transport combinations; these
 controlled fixtures do not establish deployed vendor interoperability.
 
+The Rust interop CI job allows 60 minutes for the installed-artifact build,
+controlled-peer checks, coverage collection, and this final canonical matrix
+gate. The previous 30-minute job limit expired before the full-matrix gate
+could report its result.
+
 For batch route evidence, the consumer records the count and ordered numeric
 Result Status values returned by KMIPKit alongside the controlled peer's
 observations. This verifies partial Stop responses as well as complete Continue
