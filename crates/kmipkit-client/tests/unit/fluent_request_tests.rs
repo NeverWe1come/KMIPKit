@@ -1921,3 +1921,86 @@ fn generic_create_builder_preserves_pending_without_follow_up() {
     );
     assert_eq!(transport.borrow().exchange_count(), 1);
 }
+
+#[test]
+fn kmip30_fluent_builders_cover_all_assigned_client_routes() {
+    use crate::ClientRequest;
+    use kmipkit_protocol::{
+        CreateCredentialObject, CredentialType, PasswordCredentialObject,
+        PasswordCredentialObjectFields, SecretText,
+    };
+
+    let mut client = failed_request_client();
+    let id = || UniqueIdentifier::TextString("kmip30-id".to_owned());
+    let requests = [
+        client.request().create_group(AttributeSet::new()).build(),
+        client.request().obliterate(id()).build(),
+        client.request().create_user(AttributeSet::new()).build(),
+        client
+            .request()
+            .create_credential(
+                CredentialType::from_raw(5),
+                AttributeSet::new(),
+                CreateCredentialObject::PasswordCredential(
+                    PasswordCredentialObject::try_new(PasswordCredentialObjectFields {
+                        password: Some(SecretText::new("credential".to_owned())),
+                        ..PasswordCredentialObjectFields::default()
+                    })
+                    .unwrap(),
+                ),
+            )
+            .build(),
+        client.request().deactivate(id()).build(),
+        client.request().encapsulate(id()).build(),
+        client.request().decapsulate(id(), vec![1, 2, 3]).build(),
+    ];
+    assert!(matches!(requests[0], ClientRequest::CreateGroup(_)));
+    assert!(matches!(requests[1], ClientRequest::Obliterate(_)));
+    assert!(matches!(requests[2], ClientRequest::CreateUser(_)));
+    assert!(matches!(requests[3], ClientRequest::CreateCredential(_)));
+    assert!(matches!(requests[4], ClientRequest::Deactivate(_)));
+    assert!(matches!(requests[5], ClientRequest::Encapsulate(_)));
+    assert!(matches!(requests[6], ClientRequest::Decapsulate(_)));
+}
+
+#[test]
+fn kmip30_fluent_execute_requires_an_explicit_v3_version() {
+    let (mut client, transport, captured) = client_for(ExchangeScript::FailBeforeWrite);
+    let builder = client.request().create_group(AttributeSet::new());
+    assert_eq!(builder.validate(), Ok(()));
+    let error = builder.execute(&CodecLimits::defaults()).unwrap_err();
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert_eq!(transport.borrow().exchange_count(), 0);
+    assert!(captured.borrow().is_none());
+}
+
+#[test]
+fn kmip30_fluent_execute_encodes_only_the_explicit_v3_route() {
+    let (mut client, transport, captured) = client_for(ExchangeScript::FailBeforeWrite);
+    let options = RequestOptions::default().with_protocol_version(ProtocolVersion::V3_0);
+    let _error = client
+        .request()
+        .create_group(AttributeSet::new())
+        .with_options(options)
+        .execute(&CodecLimits::defaults())
+        .unwrap_err();
+    assert_eq!(transport.borrow().exchange_count(), 1);
+    let captured = captured.borrow();
+    let root = kmipkit_ttlv::codec::decode_with_limits(
+        captured.as_ref().unwrap(),
+        &CodecLimits::defaults(),
+    )
+    .unwrap();
+    let message = kmipkit_protocol::RequestMessage::try_from_ttlv(
+        root.as_structure().unwrap().try_clone().unwrap(),
+    )
+    .unwrap();
+    assert_eq!(message.header().protocol_version(), ProtocolVersion::V3_0);
+    assert_eq!(
+        message.batch_items().next().unwrap().operation(),
+        Some(0x3c)
+    );
+}

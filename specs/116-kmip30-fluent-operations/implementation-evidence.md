@@ -18,5 +18,10 @@ at the expected missing API assertion:
 - Python consumer contract:
   `/home/ramp1953/.cache/kmipkit-t082-python-venv-20261016/bin/pytest -q bindings/python/tests/test_fluent_kmip30.py`
   failed because `Request.create_credential` is not present.
+- Rust consumer contract:
+  `cargo test -p kmipkit-client kmip30_fluent -- --nocapture` failed at
+  compile time because `RequestBuilder` did not yet expose the seven KMIP 3.0
+  fluent operation methods. The only diagnostics were those missing methods;
+  the focused test source compiled far enough to identify the absent API.
 
 No production code was changed before these tests failed.
