@@ -858,6 +858,13 @@ class RouteMatrixTests(unittest.TestCase):
 
         self.assertEqual(recipe, ((1, 18, 10), 'batch_placeholder_chain'))
 
+    def test_register_operation_maps_to_an_isolated_certificate_recipe(self):
+        from route_peer import recipe_for_case
+
+        recipe = recipe_for_case({'case_id': 'test-op-register'}, None)
+
+        self.assertEqual(recipe, ((3, 20), 'register'))
+
     def test_placeholder_chain_executes_typed_create_activate_get_batch(self):
         from artifact_support import ROOT
         from route_peer import execute_network_cells
