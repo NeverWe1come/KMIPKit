@@ -1,5 +1,8 @@
 use kmipkit_protocol::attribute::typed;
-use kmipkit_protocol::{Attribute, AttributeDefinition, CreateRequest, UniqueIdentifier};
+use kmipkit_protocol::{
+    Attribute, AttributeDefinition, CreateRequest, CurrentAttribute, NewAttribute,
+    UniqueIdentifier,
+};
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestOptions;
 use kmipkit_ttlv::codec::CodecLimits;
@@ -719,5 +722,103 @@ fn create_get_and_destroy_execute_with_exchange_options() {
             .expect_err("Destroy reaches the scripted transport")
             .delivery_state(),
         Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+}
+
+#[test]
+fn attribute_mutation_builders_preserve_typed_selectors_and_existing_requests() {
+    let mut client = failed_request_client();
+    let add = client
+        .request()
+        .add_attribute()
+        .unique_identifier("key-42")
+        .new_attribute(NewAttribute::from_typed(
+            Attribute::<typed::Comment>::new("new-comment".to_owned())
+                .expect("Comment is a catalogued Text String"),
+        ))
+        .build_request()
+        .expect("Add Attribute has its required New Attribute");
+    assert_eq!(add.unique_identifier(), Some("key-42"));
+    assert_eq!(add.new_attribute().item().tag().raw(), typed::Comment::TAG);
+    assert_eq!(
+        client
+            .request()
+            .add_attribute()
+            .new_attribute(NewAttribute::from_typed(
+                Attribute::<typed::Comment>::new("batch-comment".to_owned())
+                    .expect("Comment is a catalogued Text String"),
+            ))
+            .to_batch_item()
+            .expect("Add Attribute converts to the existing batch item" )
+            .operation(),
+        13
+    );
+
+    let modify = client
+        .request()
+        .modify_attribute()
+        .unique_identifier("key-42")
+        .current_attribute(CurrentAttribute::from_typed(
+            Attribute::<typed::Comment>::new("old-comment".to_owned())
+                .expect("Comment is a catalogued Text String"),
+        ))
+        .new_attribute(NewAttribute::from_typed(
+            Attribute::<typed::Comment>::new("updated-comment".to_owned())
+                .expect("Comment is a catalogued Text String"),
+        ))
+        .build_request()
+        .expect("Modify Attribute has its required New Attribute");
+    assert_eq!(modify.unique_identifier(), Some("key-42"));
+    assert_eq!(
+        modify
+            .current_attribute()
+            .expect("the optional current selector is preserved")
+            .item()
+            .tag()
+            .raw(),
+        typed::Comment::TAG
+    );
+    assert_eq!(
+        modify.new_attribute().item().tag().raw(),
+        typed::Comment::TAG
+    );
+    assert_eq!(
+        client
+            .request()
+            .modify_attribute()
+            .new_attribute(NewAttribute::from_typed(
+                Attribute::<typed::Comment>::new("batch-update".to_owned())
+                    .expect("Comment is a catalogued Text String"),
+            ))
+            .to_batch_item()
+            .expect("Modify Attribute converts to the existing batch item")
+            .operation(),
+        14
+    );
+
+    let set = client
+        .request()
+        .set_attribute()
+        .unique_identifier("key-42")
+        .new_attribute(NewAttribute::from_typed(
+            Attribute::<typed::Comment>::new("replacement-comment".to_owned())
+                .expect("Comment is a catalogued Text String"),
+        ))
+        .build_request()
+        .expect("Set Attribute has its required New Attribute");
+    assert_eq!(set.unique_identifier(), Some("key-42"));
+    assert_eq!(set.new_attribute().item().tag().raw(), typed::Comment::TAG);
+    assert_eq!(
+        client
+            .request()
+            .set_attribute()
+            .new_attribute(NewAttribute::from_typed(
+                Attribute::<typed::Comment>::new("batch-replacement".to_owned())
+                    .expect("Comment is a catalogued Text String"),
+            ))
+            .to_batch_item()
+            .expect("Set Attribute converts to the existing batch item")
+            .operation(),
+        49
     );
 }
