@@ -3091,7 +3091,11 @@ class RngSeedResponse:
 
 
 class BatchResult(_ClientHandle):
-    """Owns a native batch response and exposes copied, ordered outcome metadata."""
+    """Owns a native batch response and exposes returned outcomes in request order.
+
+    An accepted partial Stop response contains only the items returned by the
+    server; omitted items do not have fabricated results.
+    """
 
     _release_name = "kmipkit_client_batch_response_release"
 
@@ -3106,11 +3110,11 @@ class BatchResult(_ClientHandle):
         self.items = items
 
     def item_count(self) -> int:
-        """Return the number of ordered response items."""
+        """Return the number of response items actually returned by the server."""
         return len(self.items)
 
     def item_at(self, index: int) -> BatchItemResult:
-        """Return a copied response item by zero-based position."""
+        """Return a copied returned result by zero-based request-order position."""
         if not isinstance(index, int) or isinstance(index, bool) or index < 0:
             errors.raise_for_status(4)
         try:

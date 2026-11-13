@@ -16,13 +16,20 @@ public final class ClientBatchResponse implements AutoCloseable {
         this.maxMessageBytes = maxMessageBytes;
     }
 
-    /** Returns the number of response items in server order. */
+    /**
+     * Returns the number of response items actually returned by the server.
+     * For an accepted partial Stop response, this can be smaller than the
+     * request item count because omitted items have no result entry.
+     */
     public long itemCount() {
         NativeExtensionRegistry.ensureLoaded();
         return handle.withValue(NativeExtensionRegistry::clientBatchResponseItemCount);
     }
 
-    /** Returns an independently closable result view at the requested server-order index. */
+    /**
+     * Returns an independently closable result view at the returned-results
+     * index. Returned results are ordered by their matching request positions.
+     */
     public ClientBatchItemResult itemAt(long index) {
         if (index < 0 || index >= itemCount()) {
             throw new InvalidInputException("response item index is outside the batch");

@@ -2,7 +2,7 @@
 //! 8.6, 9.6, 9.21, and 11.5/Table 434, and the KMIPKIT-0092
 //! `test-batch-stop-on-first-failure` project scenario. OASIS does not
 //! explicitly require omission of unprocessed response items; the partial
-//! response rule is KMIPKit policy under KMIPKIT-0007-FR-018. These are
+//! response rule is `KMIPKit` policy under KMIPKIT-0007-FR-018. These are
 //! deterministic fake-transport tests, not official OASIS vectors.
 //!
 //! Traceability: KMIPKIT-0007-FR-006, FR-018, SC-010.

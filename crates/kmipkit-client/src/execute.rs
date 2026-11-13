@@ -4436,13 +4436,16 @@ pub struct ClientBatchResponse {
 }
 
 impl ClientBatchResponse {
-    /// Returns the number of associated results.
+    /// Returns the number of response results actually returned by the server.
+    ///
+    /// Under the Stop response policy, this may be smaller than the request
+    /// item count because unprocessed items have no fabricated result.
     #[must_use]
     pub fn len(&self) -> usize {
         self.items.len()
     }
 
-    /// Returns whether the response contains no batch results.
+    /// Returns whether the server returned no batch results.
     #[must_use]
     pub fn is_empty(&self) -> bool {
         self.items.is_empty()
