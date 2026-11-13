@@ -1048,9 +1048,49 @@ class RouteMatrixTests(unittest.TestCase):
                 self.assertEqual(2, event['peer_observed_response_count'])
                 _validate_batch_event(event, case, self.catalog, ('batch-count',))
 
+    def test_batch_stop_route_obeys_catalogued_response_count(self):
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-batch-stop-on-first-failure')
+        case = copy.deepcopy(case)
+        scenario = case['requires']['protocol_scenario']
+        scenario['expected'] = {'first': 'OperationFailed', 'response_count': 1}
+        target = next(target for target in self.catalog['normative_targets']
+                      if target['target_id'] == 'KMIPKIT-ELEM-OP-C2S-GET')
+        cell = next(cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
+                    if cell['case_id'] == case['case_id']
+                    and cell['target_id'] == target['target_id']
+                    and cell.get('execution_route_id') == 'python.execute.typed-batch'
+                    and cell['workflow_item_index'] == 0
+                    and cell['protocol_version'] == '2.0'
+                    and cell['encoding'] == 'TTLV'
+                    and cell['transport'] == 'raw_tls'
+                    and cell['action'] == 'send')
+
+        from unittest.mock import patch
+        from kmipkit_validator.controlled_peer import ControlledTlsPeer
+        peers = []
+
+        def record_peer(**options):
+            peer = ControlledTlsPeer(**options)
+            peers.append(peer)
+            return peer
+
+        with patch('kmipkit_validator.controlled_peer.ControlledTlsPeer',
+                   side_effect=record_peer):
+            outcome, event = self.runner._execute_matrix_cell(cell, case, target)
+
+        self.assertEqual('event', outcome)
+        self.assertEqual('failed', event['status'])
+        self.assertEqual('route_execution_failed', event['failure_code'])
+        response = self.runner._network_tree(peers[0].responses[0], cell['encoding'])
+        self.assertEqual(1, len(self.runner._tree_batch_operation_values(response)))
+        self.assertEqual(['first_item_failed', 'second_item_not_executed'],
+                         peers[0].peer_observed_effects)
+
     def test_batch_stop_peer_preserves_stop_semantics_and_result_evidence(self):
         case = next(case for case in self.catalog['test_cases']
                     if case['case_id'] == 'test-batch-stop-on-first-failure')
+        expected_responses = case['requires']['protocol_scenario']['expected']['response_count']
         target = next(target for target in self.catalog['normative_targets']
                       if target['target_id'] == 'KMIPKIT-ELEM-OP-C2S-GET')
         cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
@@ -1079,7 +1119,17 @@ class RouteMatrixTests(unittest.TestCase):
                            side_effect=record_peer):
                     outcome, event = self.runner._execute_matrix_cell(cell, case, target)
                 self.assertEqual('event', outcome)
-                self.assertEqual([1, 1], event['peer_observed_result_status_codes'])
+                if expected_responses == 1:
+                    self.assertEqual('failed', event['status'])
+                    self.assertEqual('route_execution_failed', event['failure_code'])
+                    response = self.runner._network_tree(peers[0].responses[0], cell['encoding'])
+                    self.assertEqual(1, len(self.runner._tree_batch_operation_values(response)))
+                    self.assertEqual(['first_item_failed', 'second_item_not_executed'],
+                                     peers[0].peer_observed_effects)
+                    continue
+                self.assertEqual(expected_responses, event['peer_observed_response_count'])
+                self.assertEqual([1] * expected_responses,
+                                 event['peer_observed_result_status_codes'])
                 self.assertEqual(['first_item_failed', 'second_item_not_executed'],
                                  event['peer_observed_effects'])
                 self.assertEqual(2, peers[0].request_observation['batch_error_continuation_option'])
@@ -1609,6 +1659,21 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertIn('validate_route_evidence.py', workflow)
         self.assertIn('interop/shared/|bindings/python/', workflow)
         self.assertIn('route-execution-evidence.json', workflow)
+
+    def test_ci_runs_matrix_after_test_failure_and_guards_missing_evidence(self):
+        workflow = (ROOT / '.github/workflows/interop-python.yml').read_text()
+        matrix_step = workflow.split('      - name: Execute exhaustive public route matrix', 1)[1]
+        validation_step = workflow.split('      - name: Independently validate every required route execution cell', 1)[1]
+        upload_step = workflow.split('      - name: Retain sanitized matrix evidence and pending coverage', 1)[1]
+        matrix_condition = matrix_step.split('      - name:', 1)[0]
+        self.assertIn('if: ${{ always() && !cancelled()', matrix_condition)
+        self.assertIn("hashFiles('interop/python-kmip-validator/build/artifact-manifest.json') != ''",
+                      matrix_condition)
+        self.assertIn("hashFiles('interop/python-kmip-validator/build/matrix/route-execution-evidence.json') != ''",
+                      validation_step.split('      - name:', 1)[0])
+        self.assertIn("hashFiles('interop/python-kmip-validator/build/matrix/route-execution-evidence.json',",
+                      upload_step.split('      - name:', 1)[0])
+        self.assertIn('if-no-files-found: warn', upload_step.split('      - name:', 1)[0])
 
     def test_cli_matrix_dispatches_without_requiring_a_vendor_connection(self):
         from kmipkit_validator import cli
