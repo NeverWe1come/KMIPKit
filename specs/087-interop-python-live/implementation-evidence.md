@@ -87,13 +87,36 @@ before a library fix or conformance conclusion can be made.
   manifest exists, guarded independent validation on report existence, and
   guarded evidence upload. The same test passed, as did both tests selected by
   `-k batch_stop`.
+- **Red/Green for failed-event evidence** (`0f84eba34`, `cef007b9c`,
+  `876ca8903`): added assertions that a rejected partial response still
+  preserves the observed request batch sequence/count, response count and
+  delivery state. With the new assertions and the prior route handler, the
+  focused test failed with `KeyError: batch_operation_sequence`; after the
+  route handler change, it passed and the shared validator's batch-event
+  structural check accepted the failure event.
 - **Refactor/evidence** (`89d5c6228`): updated README and implementation
   evidence to distinguish the OASIS text from the common-catalog response
   count and to keep the route result classified as unresolved.
 - Full Python consumer suite: 131 tests passed in 323.323 seconds.
+- After preserving failed-route evidence, the full Python consumer suite passed
+  again: 131 tests in 304.723 seconds.
 - Repository requirement traceability: 2 tests passed; feature traceability:
   31 tests passed in 51.596 seconds. The exact pinned wheel was accepted by
   `tools/verify_artifact.py`.
+
+## Exact-head workflow run
+
+PR run [43441808517](https://github.com/NeverWe1come/KMIPKit/actions/runs/43441808517)
+at head `ae4d17d6efc8e99a66bc7ecd7c754ac8e97a19f2` passed wheel installation,
+consumer tests and offline plan validation. The matrix emitted 74,575 passed,
+73 failed and zero pending cells, then uploaded all three evidence artifacts.
+Of the failed events, 72 were Batch Stop; one was a Get Attribute List
+Continue-batch cell that passed when reproduced locally with the same pinned
+wheel and feature snapshot. The independent validator first stopped on missing
+`batch_operation_sequence` in failed route events. Commits `0f84eba34`,
+`cef007b9c`, and `876ca8903` preserve sanitized request/peer evidence on the
+observed client rejection; the focused regression and shared batch-event
+structural check pass locally. The rerun for the new head is pending.
 
 ## Pull-request CI evidence
 
