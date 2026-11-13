@@ -453,13 +453,7 @@ pub extern "C" fn kmipkit_client_create_credential_v1(
     ffi_entrypoint(|| {
         let _out = kmip30_out_slot!(out_response);
         let request = try_ffi!(create_credential_input(credential_type, attributes, object));
-        execute_request(
-            &Kmip30OperationBuilder::new(request),
-            client,
-            limits,
-            None,
-            out_response,
-        )
+        execute_request(request, client, limits, None, out_response)
     })
 }
 
@@ -479,13 +473,7 @@ pub extern "C" fn kmipkit_client_create_credential_with_options_v1(
         let _out = kmip30_out_slot!(out_response);
         let options = try_ffi!(options_input(options));
         let request = try_ffi!(create_credential_input(credential_type, attributes, object));
-        execute_request(
-            &Kmip30OperationBuilder::new(request),
-            client,
-            limits,
-            Some(options),
-            out_response,
-        )
+        execute_request(request, client, limits, Some(options), out_response)
     })
 }
 
@@ -520,13 +508,7 @@ pub extern "C" fn kmipkit_client_create_group_v1(
     ffi_entrypoint(|| {
         let _out = kmip30_out_slot!(out_response);
         let request = try_ffi!(create_group_input(attributes));
-        execute_request(
-            &Kmip30OperationBuilder::new(request),
-            client,
-            limits,
-            None,
-            out_response,
-        )
+        execute_request(request, client, limits, None, out_response)
     })
 }
 
@@ -544,13 +526,7 @@ pub extern "C" fn kmipkit_client_create_group_with_options_v1(
         let _out = kmip30_out_slot!(out_response);
         let options = try_ffi!(options_input(options));
         let request = try_ffi!(create_group_input(attributes));
-        execute_request(
-            &Kmip30OperationBuilder::new(request),
-            client,
-            limits,
-            Some(options),
-            out_response,
-        )
+        execute_request(request, client, limits, Some(options), out_response)
     })
 }
 
@@ -585,13 +561,7 @@ pub extern "C" fn kmipkit_client_create_user_v1(
     ffi_entrypoint(|| {
         let _out = kmip30_out_slot!(out_response);
         let request = try_ffi!(create_user_input(attributes));
-        execute_request(
-            &Kmip30OperationBuilder::new(request),
-            client,
-            limits,
-            None,
-            out_response,
-        )
+        execute_request(request, client, limits, None, out_response)
     })
 }
 
@@ -609,13 +579,7 @@ pub extern "C" fn kmipkit_client_create_user_with_options_v1(
         let _out = kmip30_out_slot!(out_response);
         let options = try_ffi!(options_input(options));
         let request = try_ffi!(create_user_input(attributes));
-        execute_request(
-            &Kmip30OperationBuilder::new(request),
-            client,
-            limits,
-            Some(options),
-            out_response,
-        )
+        execute_request(request, client, limits, Some(options), out_response)
     })
 }
 
@@ -656,13 +620,7 @@ pub extern "C" fn kmipkit_client_deactivate_v1(
     ffi_entrypoint(|| {
         let _out = kmip30_out_slot!(out_response);
         let request = try_ffi!(deactivate_input(identifier));
-        execute_request(
-            &Kmip30OperationBuilder::new(request),
-            client,
-            limits,
-            None,
-            out_response,
-        )
+        execute_request(request, client, limits, None, out_response)
     })
 }
 
@@ -680,13 +638,7 @@ pub extern "C" fn kmipkit_client_deactivate_with_options_v1(
         let _out = kmip30_out_slot!(out_response);
         let options = try_ffi!(options_input(options));
         let request = try_ffi!(deactivate_input(identifier));
-        execute_request(
-            &Kmip30OperationBuilder::new(request),
-            client,
-            limits,
-            Some(options),
-            out_response,
-        )
+        execute_request(request, client, limits, Some(options), out_response)
     })
 }
 
@@ -731,13 +683,7 @@ pub extern "C" fn kmipkit_client_decapsulate_v1(
     ffi_entrypoint(|| {
         let _out = kmip30_out_slot!(out_response);
         let request = try_ffi!(decapsulate_input(identifier, ciphertext));
-        execute_request(
-            &Kmip30OperationBuilder::new(request),
-            client,
-            limits,
-            None,
-            out_response,
-        )
+        execute_request(request, client, limits, None, out_response)
     })
 }
 
@@ -756,13 +702,7 @@ pub extern "C" fn kmipkit_client_decapsulate_with_options_v1(
         let _out = kmip30_out_slot!(out_response);
         let options = try_ffi!(options_input(options));
         let request = try_ffi!(decapsulate_input(identifier, ciphertext));
-        execute_request(
-            &Kmip30OperationBuilder::new(request),
-            client,
-            limits,
-            Some(options),
-            out_response,
-        )
+        execute_request(request, client, limits, Some(options), out_response)
     })
 }
 
@@ -803,13 +743,7 @@ pub extern "C" fn kmipkit_client_encapsulate_v1(
     ffi_entrypoint(|| {
         let _out = kmip30_out_slot!(out_response);
         let request = try_ffi!(encapsulate_input(identifier));
-        execute_request(
-            &Kmip30OperationBuilder::new(request),
-            client,
-            limits,
-            None,
-            out_response,
-        )
+        execute_request(request, client, limits, None, out_response)
     })
 }
 
@@ -827,13 +761,7 @@ pub extern "C" fn kmipkit_client_encapsulate_with_options_v1(
         let _out = kmip30_out_slot!(out_response);
         let options = try_ffi!(options_input(options));
         let request = try_ffi!(encapsulate_input(identifier));
-        execute_request(
-            &Kmip30OperationBuilder::new(request),
-            client,
-            limits,
-            Some(options),
-            out_response,
-        )
+        execute_request(request, client, limits, Some(options), out_response)
     })
 }
 
@@ -870,13 +798,7 @@ pub extern "C" fn kmipkit_client_obliterate_v1(
     ffi_entrypoint(|| {
         let _out = kmip30_out_slot!(out_response);
         let request = try_ffi!(obliterate_input(identifier));
-        execute_request(
-            &Kmip30OperationBuilder::new(request),
-            client,
-            limits,
-            None,
-            out_response,
-        )
+        execute_request(request, client, limits, None, out_response)
     })
 }
 
@@ -894,13 +816,7 @@ pub extern "C" fn kmipkit_client_obliterate_with_options_v1(
         let _out = kmip30_out_slot!(out_response);
         let options = try_ffi!(options_input(options));
         let request = try_ffi!(obliterate_input(identifier));
-        execute_request(
-            &Kmip30OperationBuilder::new(request),
-            client,
-            limits,
-            Some(options),
-            out_response,
-        )
+        execute_request(request, client, limits, Some(options), out_response)
     })
 }
 
@@ -1061,12 +977,13 @@ fn options_input(options: *const kmipkit_request_options_v1_t) -> FfiResult<Requ
 }
 
 fn execute_request(
-    builder: &Kmip30OperationBuilder,
+    request: BuilderRequest,
     client: *mut kmipkit_client_t,
     limits: *mut kmipkit_codec_limits_t,
     options: Option<RequestOptions>,
     out_response: *mut *mut kmipkit_client_batch_response_t,
 ) -> i32 {
+    let builder = Kmip30OperationBuilder::new(request);
     let request = try_ffi!(builder.build_request());
     fluent::execute_fluent_item(
         client,
