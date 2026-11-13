@@ -482,7 +482,7 @@ fn response_item(fixture: &ResponseItemFixture) -> Item {
             Value::byte_string(value.clone()),
         ));
     }
-    if matches!(fixture.result_status, 0 | 2) {
+    if matches!(fixture.result_status, 0 | 2 | 3) {
         fields.push(item(
             RESPONSE_PAYLOAD,
             Value::structure(response_payload(

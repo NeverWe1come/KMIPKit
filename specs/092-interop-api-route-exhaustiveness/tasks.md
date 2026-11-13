@@ -76,3 +76,11 @@ passing shared-contract job does not satisfy those language-level requirements.
 - Green commit `ad88c763b`: constructor and parser target generation now use only the Secret Data subtree while excluding the Table 11 fields; the focused tests and route-manifest regeneration check passed.
 - Full verification: `python3 -m unittest discover -s interop/shared/tests -v` passed all 161 tests on 2026-11-12.
 - Refactor/documentation commit: records the object-local boundary in requirement traceability and keeps this Red/Green evidence with the feature.
+
+## Development evidence: release pin refresh after KMIPKIT-0120
+
+- The feature branch conflicted with the updated `release/1.0.0` after PR #204 (`KMIPKIT-0120`) merged as `489fafc79ef89db2524eafa7a6c6482f5cf75d97`. The release merge was preserved as a normal signed merge commit; two FFI coverage script conflicts were resolved by retaining both the isolated `--no-clean` run and the existing package-scoped report checks.
+- Red commit `072f4081a`: the focused release-pin contract test failed because the generated route inventory still identified the old commit.
+- Green commit `9d9dbb308`: the route generator now pins the exact current release commit and regenerates all 1,491 route records. The catalog semantics and route count are unchanged.
+- Refactor/documentation: the approved feature spec now records the updated release base and this evidence.
+- Verification: the focused Red was observed; `python3 -m unittest interop.shared.tests.test_route_capabilities -v` passed 63 tests, `python3 interop/shared/tools/route_capabilities.py --check` passed, and `python3 -m unittest scripts.tests.test_workflow -v` passed 95 tests after conflict resolution. Exact-head CI must still pass after this branch update.
