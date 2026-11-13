@@ -35,6 +35,17 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(recipe[0], (1, 17, 19, 20))
         self.assertEqual(recipe[1], 'get_usage_allocation')
 
+    def test_get_usage_allocation_peer_verifies_its_object_lifecycle(self):
+        from controlled_kms_test import response
+        from route_peer import parse, verify_lifecycle
+
+        response_tree = parse(response((1, 17, 19, 20), 1))
+
+        self.assertEqual(
+            verify_lifecycle((1, 17, 19, 20), response_tree),
+            ['created', 'usage_allocation_returned', 'revoked', 'destroyed'],
+        )
+
     def test_route_evidence_output_cannot_escape_its_build_directory(self):
         with tempfile.TemporaryDirectory() as directory:
             with self.assertRaisesRegex(ValueError, 'path_outside_allowed_root'):
