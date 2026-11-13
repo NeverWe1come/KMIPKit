@@ -1315,10 +1315,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     errors.append('fixture_unexpected_transport_connection')
                                 if not result.get('cases') or result['cases'][0].get('server_compatibility') != 'unknown':
                                     errors.append('fixture_not_sent_outcome_missing')
-                                # The unsupported typed request has no fields. Its version
-                                # is enforced by the configured public client and observed
-                                # through the expected pre-send rejection. No response exists.
-                                operation_code = 59 if case_id == 'test-v20-reject-ping' else 56
+                                # The unsupported typed request has no payload fields.
+                                # Its recipe supplies the operation code; the configured
+                                # public client rejects it before transport, so no response exists.
+                                operation_code = recipe[0][0]
                                 version_node = (0x420069, 1, [(0x42006A, 2, bytes.fromhex('00000002')),
                                     (0x42006B, 2, bytes(4))])
                                 attempted = (0x420078, 1, [(0x420077, 1, [version_node]),

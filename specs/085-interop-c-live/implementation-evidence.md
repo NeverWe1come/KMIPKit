@@ -366,3 +366,25 @@ field. This covers KMIP 2.0 §9.20 Table 387 and KMIP 2.1 §9.20 Table 425.
 
 The full installed C matrix and exact-head CI still determine the updated
 pending-cell count; this route addition closes only the two timestamp cells.
+
+### C Ping KMIP 2.0 version boundary
+
+The installed C consumer now builds the typed Ping request under KMIP 2.0 and
+confirms that KMIPKit rejects it before transport. KMIP 2.1 §6.1.36 defines
+Ping; the catalog's KMIP 2.0 version-boundary case requires a not-sent result.
+The controlled peer remains unconnected, and the route evidence records both
+the Ping builder and typed batch execution call.
+
+- Red commit `bba45156`: the new recipe test failed because
+  `test-v20-reject-ping` had no executable C peer recipe.
+- Green commit `4799d5dc`: added the boundary recipe, typed request path,
+  not-sent matrix evidence, and controlled-consumer assertions.
+- Refactor: derive the synthetic request operation value from its recipe and
+  record this OASIS reference and verification evidence here.
+- Focused Ping boundary tests: 2/2 passed; all six encoding/transport runs
+  recorded both API calls and zero transport invocations for their send cells.
+- CTest: 7/7 passed, including route-matrix contracts and the controlled
+  KMIP 2.0/2.1 TLS peers.
+
+This closes the 12 Ping boundary cells in the installed C matrix only. Other
+C routes, cross-language parity, and exact-head CI remain outstanding.
