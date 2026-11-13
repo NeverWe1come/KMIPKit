@@ -2598,6 +2598,43 @@ fn is_plain_reference_to_str(ty: &Type) -> bool {
 }
 
 #[test]
+fn generic_create_masks_exception_accepts_only_its_exact_typed_setter() {
+    let masks = syn::parse_str::<syn::Signature>(
+        "fn protection_storage_masks(self, masks: Structure) -> Self",
+    )
+    .unwrap();
+    assert!(is_exact_fluent_builder_explicit_value(
+        true,
+        Some("CreateBuilder"),
+        &masks
+    ));
+    assert!(!is_exact_fluent_builder_explicit_value(
+        false,
+        Some("CreateBuilder"),
+        &masks
+    ));
+    assert!(!is_exact_fluent_builder_explicit_value(
+        true,
+        Some("OtherBuilder"),
+        &masks
+    ));
+    for signature in [
+        "fn protection_storage_masks(self, masks: Item) -> Self",
+        "fn protection_storage_masks(self, masks: Vec<u8>) -> Self",
+        "fn protection_storage_masks(self, masks: Structure) -> Item",
+        "fn execute(self, masks: Structure) -> Self",
+        "fn prime_field_size(self, value: Vec<u8>) -> Self",
+    ] {
+        let signature = syn::parse_str::<syn::Signature>(signature).unwrap();
+        assert!(!is_exact_fluent_builder_explicit_value(
+            true,
+            Some("CreateBuilder"),
+            &signature
+        ));
+    }
+}
+
+#[test]
 fn fluent_builder_signature_exceptions_are_exact_and_method_scoped() {
     let catalogued = syn::parse_str::<syn::Signature>(
         "fn attribute<D: AttributeDefinition>(self, attribute: Attribute<D>) -> Self",
