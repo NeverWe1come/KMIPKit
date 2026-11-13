@@ -1,7 +1,7 @@
 # Rust interoperability consumer
 
 The independent Rust 1.94 workspace consumes installed `.crate` packages built
-from release commit `9a16cc90a12205101d22a38501a5e74c665df4dc`, targeting KMIP
+from source commit `8281fef2e9ca211fde1e1d8e21525a672287eead`, targeting KMIP
 2.0 and 2.1. No deployed vendor KMS or vendor compatibility claim is included.
 
 From the repository root:

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build and install Rust distribution packages from one immutable release tree."""
+"""Build and install Rust distribution packages from one immutable source tree."""
 import hashlib
 import io
 import json
@@ -10,7 +10,7 @@ import subprocess
 import tarfile
 import tempfile
 
-PIN = "9a16cc90a12205101d22a38501a5e74c665df4dc"
+PIN = "8281fef2e9ca211fde1e1d8e21525a672287eead"
 ROOT = Path(__file__).resolve().parents[3]
 LOCAL = ROOT / "interop/.local/rust-live"
 CRATES = ["kmipkit-ttlv", "kmipkit-protocol", "kmipkit-transport", "kmipkit-client", "kmipkit"]

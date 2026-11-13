@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[3]
 LOCAL = ROOT / "interop/.local/rust-test-server"
 SOURCE = LOCAL / "release-source"
 HARNESS = LOCAL / "harness"
-PIN = "9a16cc90a12205101d22a38501a5e74c665df4dc"
+PIN = "8281fef2e9ca211fde1e1d8e21525a672287eead"
 LOCAL.mkdir(parents=True, exist_ok=True)
 if not SOURCE.exists():
     SOURCE.mkdir()
