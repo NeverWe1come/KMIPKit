@@ -444,6 +444,16 @@ class RouteMatrixTests(unittest.TestCase):
         }
         self.assertTrue(all(required_symbols <= set(check['public_api_trace_symbols'])
                             for check in checks))
+        for case_id in case_ids:
+            case = next(item for item in catalog['test_cases'] if item['case_id'] == case_id)
+            target_id = case['requires']['normative_target_id']
+            decoded_response_symbols = {
+                event['public_api_symbol'] for event in events
+                if event['case_id'] == case_id and event['action'] == 'decode'
+                and event['target_id'] == target_id
+                and event['public_api_symbol'] in required_symbols
+            }
+            self.assertEqual(decoded_response_symbols, required_symbols)
 
     def test_reserved_tag_is_not_constructed_as_an_assigned_ttlv_item(self):
         from artifact_support import ROOT
