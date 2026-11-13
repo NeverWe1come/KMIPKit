@@ -64,7 +64,8 @@ readonly artifact_manifest="${report_dir}/cargo-artifacts.jsonl"
         --message-format=json
 ) > "${artifact_manifest}"
 readonly object_manifest="${report_dir}/coverage-objects.bin"
-python3 "${repository_root}/scripts/ffi_coverage_objects.py" "${artifact_manifest}" \
+CARGO_TARGET_DIR="${llvm_cov_target}" \
+    python3 "${repository_root}/scripts/ffi_coverage_objects.py" < "${artifact_manifest}" \
     > "${object_manifest}"
 mapfile -d '' -t object_paths < "${object_manifest}"
 coverage_objects=()

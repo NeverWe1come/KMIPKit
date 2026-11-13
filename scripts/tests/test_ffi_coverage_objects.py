@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -14,7 +15,12 @@ ROOT = Path(__file__).resolve().parents[2]
 
 class FfiCoverageObjectTests(unittest.TestCase):
     def run_resolver(
-        self, layout: str, missing: str | None = None, ambiguous: bool = False
+        self,
+        layout: str,
+        missing: str | None = None,
+        ambiguous: bool = False,
+        target_root: Path | None = None,
+        external_test_role: str | None = None,
     ) -> tuple[subprocess.CompletedProcess[bytes], list[Path]]:
         temporary_root = ROOT / "target"
         temporary_root.mkdir(exist_ok=True)
@@ -53,6 +59,9 @@ class FfiCoverageObjectTests(unittest.TestCase):
                 "filenames": [str(path)],
                 "executable": str(path),
             })
+        if external_test_role:
+            role_index = {"unit": 1, "consumer": 2, "parity": 3}[external_test_role]
+            messages[role_index]["executable"] = str(ROOT / "scripts" / "ffi_coverage_objects.py")
         # Cargo also reports build scripts, unrelated crates, and completion.
         messages.extend([
             {"reason": "build-finished", "success": True},
@@ -69,9 +78,11 @@ class FfiCoverageObjectTests(unittest.TestCase):
         manifest = root / "cargo.jsonl"
         manifest.write_text("\n".join(json.dumps(m) for m in messages), encoding="utf-8")
         result = subprocess.run(
-            [sys.executable, str(ROOT / "scripts/ffi_coverage_objects.py"), str(manifest)],
+            [sys.executable, str(ROOT / "scripts/ffi_coverage_objects.py")],
+            input=manifest.read_bytes(),
             capture_output=True,
             check=False,
+            env={**os.environ, "CARGO_TARGET_DIR": str(target_root or root)},
         )
         return result, paths
 
@@ -98,6 +109,32 @@ class FfiCoverageObjectTests(unittest.TestCase):
                 self.assertNotEqual(result.returncode, 0)
                 self.assertEqual(result.stdout, b"")
                 self.assertIn(b"missing", result.stderr.lower())
+
+    def test_rejects_filesystem_path_arguments(self):
+        result = subprocess.run(
+            [sys.executable, str(ROOT / "scripts/ffi_coverage_objects.py"), "../secrets"],
+            input=b"",
+            capture_output=True,
+            check=False,
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(b"usage", result.stderr.lower())
+
+    def test_rejects_artifacts_outside_the_cargo_target_directory(self):
+        target_root = ROOT / "target" / "unexpected-cargo-target"
+        target_root.mkdir(exist_ok=True)
+        result, _ = self.run_resolver("debug/deps", target_root=target_root)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(result.stdout, b"")
+        self.assertIn(b"outside", result.stderr.lower())
+
+    def test_rejects_test_executables_outside_the_cargo_target_directory(self):
+        for role in ("unit", "consumer", "parity"):
+            with self.subTest(role=role):
+                result, _ = self.run_resolver("debug/deps", external_test_role=role)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertEqual(result.stdout, b"")
+                self.assertIn(b"outside", result.stderr.lower())
 
 
 if __name__ == "__main__":
