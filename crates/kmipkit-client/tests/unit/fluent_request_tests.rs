@@ -899,6 +899,177 @@ fn check_builder_builds_typed_policy_request_and_executes_once() {
 }
 
 #[test]
+fn fluent_builders_validate_typed_requests_without_sending() {
+    let mut client = failed_request_client();
+
+    assert_eq!(
+        client.request().check().usage_limits_count(2).validate(),
+        Ok(())
+    );
+    assert_eq!(
+        client
+            .request()
+            .query()
+            .functions(vec![QueryFunction::OPERATIONS])
+            .validate(),
+        Ok(())
+    );
+    assert_eq!(
+        client
+            .request()
+            .discover_versions()
+            .protocol_versions(vec![ProtocolVersion::V2_1])
+            .validate(),
+        Ok(())
+    );
+    assert_eq!(client.request().ping().validate(), Ok(()));
+
+    let comment = || {
+        Attribute::<typed::Comment>::new("validated-comment".to_owned())
+            .expect("Comment is a catalogued Text String")
+    };
+    assert_eq!(
+        client
+            .request()
+            .add_attribute()
+            .new_attribute(NewAttribute::from_typed(comment()))
+            .validate(),
+        Ok(())
+    );
+    assert_eq!(
+        client
+            .request()
+            .set_attribute()
+            .new_attribute(NewAttribute::from_typed(comment()))
+            .validate(),
+        Ok(())
+    );
+    assert_eq!(
+        client
+            .request()
+            .modify_attribute()
+            .current_attribute(CurrentAttribute::from_typed(comment()))
+            .new_attribute(NewAttribute::from_typed(comment()))
+            .validate(),
+        Ok(())
+    );
+    assert_eq!(
+        client
+            .request()
+            .delete_attribute()
+            .current_attribute(CurrentAttribute::from_typed(comment()))
+            .validate(),
+        Ok(())
+    );
+    assert_eq!(
+        client
+            .request()
+            .adjust_attribute()
+            .attribute_reference(AttributeReference::tag(typed::UsageLimits::TAG))
+            .adjustment_type(AdjustmentType::INCREMENT)
+            .adjustment_value(AttributeAdjustmentValue::integer(1))
+            .validate(),
+        Ok(())
+    );
+}
+
+#[test]
+fn fluent_attribute_mutation_validation_reports_missing_required_values() {
+    let mut client = failed_request_client();
+
+    assert_eq!(
+        client
+            .request()
+            .add_attribute()
+            .validate()
+            .expect_err("Add Attribute requires a New Attribute"),
+        FluentBuildError::MissingAddAttributeValue
+    );
+    assert_eq!(
+        client
+            .request()
+            .modify_attribute()
+            .validate()
+            .expect_err("Modify Attribute requires a New Attribute"),
+        FluentBuildError::MissingModifyAttributeValue
+    );
+    assert_eq!(
+        client
+            .request()
+            .set_attribute()
+            .validate()
+            .expect_err("Set Attribute requires a New Attribute"),
+        FluentBuildError::MissingSetAttributeValue
+    );
+    assert_eq!(
+        client
+            .request()
+            .adjust_attribute()
+            .validate()
+            .expect_err("Adjust Attribute requires an Attribute Reference"),
+        FluentBuildError::MissingAdjustAttributeReference
+    );
+    assert_eq!(
+        client
+            .request()
+            .adjust_attribute()
+            .attribute_reference(AttributeReference::tag(typed::UsageLimits::TAG))
+            .validate()
+            .expect_err("Adjust Attribute requires an Adjustment Type"),
+        FluentBuildError::MissingAdjustAttributeType
+    );
+}
+
+#[test]
+fn adjust_attribute_value_constructors_preserve_explicit_ttlv_types() {
+    let values = [
+        (
+            AttributeAdjustmentValue::long_integer(-7),
+            ItemType::LongInteger,
+        ),
+        (
+            AttributeAdjustmentValue::enumeration(u32::MAX),
+            ItemType::Enumeration,
+        ),
+        (AttributeAdjustmentValue::boolean(true), ItemType::Boolean),
+        (
+            AttributeAdjustmentValue::text_string("exact value".to_owned()),
+            ItemType::TextString,
+        ),
+        (AttributeAdjustmentValue::date_time(-11), ItemType::DateTime),
+        (
+            AttributeAdjustmentValue::interval(u32::MAX),
+            ItemType::Interval,
+        ),
+        (
+            AttributeAdjustmentValue::date_time_extended(-13),
+            ItemType::DateTimeExtended,
+        ),
+    ];
+    let mut client = failed_request_client();
+
+    for (value, expected_type) in values {
+        let builder = client
+            .request()
+            .adjust_attribute()
+            .attribute_reference(AttributeReference::tag(typed::UsageLimits::TAG))
+            .adjustment_type(AdjustmentType::INCREMENT)
+            .adjustment_value(value);
+        assert_eq!(builder.validate(), Ok(()));
+        let request = builder
+            .build_request()
+            .expect("an explicit Adjustment Value is retained");
+        assert_eq!(
+            request
+                .adjustment_value()
+                .expect("the caller supplied an Adjustment Value")
+                .item_type(),
+            expected_type
+        );
+    }
+}
+
+#[test]
 fn get_constraints_builder_builds_typed_request_and_executes_once() {
     failed_request_client()
         .request()
