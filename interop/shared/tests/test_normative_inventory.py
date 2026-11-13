@@ -22,6 +22,19 @@ class NormativeInventoryTests(unittest.TestCase):
         cls.source = json.loads(SOURCE_PATH.read_text(encoding="utf-8"))
         cls.targets = cls.catalog.get("normative_targets", [])
 
+    def test_ephemeral_message_field_preserves_its_boolean_source_encoding(self) -> None:
+        """KMIP 2.0 §8.3 Table 358 and KMIP 2.1 §8.3 Table 396 identify Ephemeral as Boolean."""
+        target_id = "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-EPHEMERAL"
+        source = next(element for element in self.source["elements"]
+                      if element["element_id"] == target_id)
+        target = next(item for item in self.targets if item["target_id"] == target_id)
+        case = next(item for item in self.catalog["test_cases"]
+                    if item["requires"].get("normative_target_id") == target_id)
+
+        self.assertEqual("Boolean", source.get("source_encoding"))
+        self.assertEqual("Boolean", target.get("source_encoding"))
+        self.assertEqual("Boolean", case["requires"].get("source_encoding"))
+
     def test_all_supported_normative_elements_have_versioned_targets(self) -> None:
         expected_kinds = {
             "operation", "object_type", "attribute", "tag", "enumeration_value",
