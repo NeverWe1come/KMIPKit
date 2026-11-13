@@ -60,6 +60,15 @@ _SECRET_TTLV_ROUTE_FIXTURES = {
     },
 }
 
+_NAMED_OBJECT_CONSTRUCTORS = {
+    'Opaque Object': 'kmipkit_opaque_object_from_fields',
+    'PGP Key': 'kmipkit_pgp_key_from_fields',
+    'Private Key': 'kmipkit_private_key_from_fields',
+    'Public Key': 'kmipkit_public_key_from_fields',
+    'Secret Data': 'kmipkit_secret_data_from_fields',
+    'Split Key': 'kmipkit_split_key_from_fields',
+}
+
 
 class _CryptographicParametersFieldsV1(C.Structure):
     _fields_ = [
@@ -822,6 +831,15 @@ class ModelCases:
 
     def execute(self, target: dict, protocol_version: str,
                 public_api_symbol: str | None = None) -> dict | None:
+        if (target.get('kind') == 'object_type'
+                and _NAMED_OBJECT_CONSTRUCTORS.get(target.get('name')) == public_api_symbol):
+            root = next((item for item in self.catalog['normative_targets']
+                         if item['kind'] == 'object_structure'
+                         and item['name'] == target['name']), None)
+            if root is None:
+                return None
+            self.abi.called.clear()
+            return self._execute_named_object(root, protocol_version)
         if (target.get('target_id') == 'KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY'
                 and public_api_symbol == 'kmipkit_symmetric_key_from_fields'):
             self.abi.called.clear()

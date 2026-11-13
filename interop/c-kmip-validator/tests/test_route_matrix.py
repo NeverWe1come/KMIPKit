@@ -552,6 +552,29 @@ class RouteMatrixTests(unittest.TestCase):
                 self.assertIsNotNone(result)
                 self.assertIn(symbol, result['invoked_symbols'])
 
+    def test_named_object_type_cells_execute_their_typed_constructors(self):
+        from artifact_support import INSTALL, ROOT
+        from c_route_models import ModelCases
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        models = ModelCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog)
+        routes = (
+            ('KMIPKIT-ELEM-OBJECT-TYPE-OPAQUE-OBJECT', 'kmipkit_opaque_object_from_fields'),
+            ('KMIPKIT-ELEM-OBJECT-TYPE-PGP-KEY', 'kmipkit_pgp_key_from_fields'),
+            ('KMIPKIT-ELEM-OBJECT-TYPE-SECRET-DATA', 'kmipkit_secret_data_from_fields'),
+            ('KMIPKIT-ELEM-OBJECT-TYPE-SPLIT-KEY', 'kmipkit_split_key_from_fields'),
+            ('KMIPKIT-ELEM-OBJECT-TYPE-PRIVATE-KEY', 'kmipkit_private_key_from_fields'),
+            ('KMIPKIT-ELEM-OBJECT-TYPE-PUBLIC-KEY', 'kmipkit_public_key_from_fields'),
+        )
+        for target_id, symbol in routes:
+            with self.subTest(target_id=target_id):
+                target = next(item for item in catalog['normative_targets']
+                              if item['target_id'] == target_id)
+                result = models.execute(target, '2.0', symbol)
+
+                self.assertIsNotNone(result)
+                self.assertIn(symbol, result['invoked_symbols'])
+
     def test_symmetric_key_model_recipe_invokes_nested_key_block_routes(self):
         from artifact_support import INSTALL, ROOT
         from c_route_models import ModelCases
