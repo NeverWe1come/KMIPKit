@@ -88,6 +88,9 @@ _JAVA_METADATA_ONLY_SOURCE_EXCLUSIONS = frozenset(
         "bindings/java/src/main/java/org/kmipkit/extensions/NativeAttributeRequests.java",
         "bindings/java/src/main/java/org/kmipkit/ttlv/NativeTtlvCodec.java",
         "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvDecodeErrorKind.java",
+        # This interface only declares the callback supplied by the application;
+        # JaCoCo has no executable source line for an abstract method declaration.
+        "bindings/java/src/main/java/org/kmipkit/server/ServerRequestHandler.java",
     }
 )
 _JAVA_PACKAGE_INFO_SOURCE_EXCLUSIONS = frozenset(
