@@ -244,8 +244,18 @@ class RouteExecutionEvidenceTests(unittest.TestCase):
         send_event["transport_invocation_count"] = 0
         self.assertTrue(self.validate(report)["selected_scope_complete"])
         send_event["transport_invocation_count"] = 1
-        with self.assertRaisesRegex(ValueError, "invoked the transport"):
+        with self.assertRaisesRegex(ValueError, "not-sent route invocation must prove transport count zero"):
             self.validate(report)
+
+    def test_expected_not_sent_boundary_can_prove_no_request_was_constructed(self):
+        self.catalog["test_cases"][0]["requires"]["expected_status"] = "NotSent"
+        report = copy.deepcopy(self.report)
+        report["events"] = [event for event in report["events"] if event["action"] != "decode"]
+        for event in report["events"]:
+            event.pop("request_tree_sha256", None)
+            event["request_delivery_state"] = "not_sent"
+            event["transport_invocation_count"] = 0
+        self.assertTrue(self.validate(report)["selected_scope_complete"])
 
     def test_expected_reserved_tag_decode_rejection_needs_input_hash_not_response_tree(self):
         self.catalog['test_cases'][0]['requires'] = {

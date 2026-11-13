@@ -47,7 +47,10 @@ jobs:
             exit 0
           fi
           files="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")"
-          if grep -Eq '^(interop/java-kmip-validator/|bindings/java/|bindings/python/tests/fixtures/login-mtls/|crates/|Cargo\.toml$|Cargo\.lock$)' <<< "$files"; then
+          # This consumer installs its immutable release pin. Shared-contract and
+          # library-core PRs are validated by their own jobs; the stacked Java PR
+          # runs this consumer after it updates to the new contract.
+          if grep -Eq '^(interop/java-kmip-validator/|bindings/java/|bindings/python/tests/fixtures/login-mtls/|Cargo\.toml$|Cargo\.lock$)' <<< "$files"; then
             echo "affected=true" >> "$GITHUB_OUTPUT"
           else
             echo "affected=false" >> "$GITHUB_OUTPUT"

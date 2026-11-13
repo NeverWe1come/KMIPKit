@@ -375,25 +375,25 @@ class RouteCapabilitiesTests(unittest.TestCase):
         }
         self.assertEqual(expected, set(route['normative_target_ids']))
 
-    def test_register_and_revoke_batch_item_constructors_are_network_routes(self):
+    def test_register_and_revoke_batch_item_constructors_match_pinned_public_methods(self):
         expected = {
             ('rust', 'kmipkit_client::ClientBatchItem::register'),
             ('c', 'kmipkit_client_batch_item_register'),
             ('java', 'org.kmipkit.extensions.ClientBatchItem.register'),
             ('python', 'kmipkit.extensions.client_batch_item_register'),
-            ('rust', 'kmipkit_client::ClientBatchItem::revoke'),
             ('c', 'kmipkit_client_batch_item_revoke'),
             ('java', 'org.kmipkit.extensions.ClientBatchItem.revoke'),
             ('python', 'kmipkit.extensions.client_batch_item_revoke'),
         }
         routes = {(route['language'], route['public_api_symbol']): route for route in self.data['routes']}
         self.assertTrue(expected <= set(routes), sorted(expected - set(routes)))
+        self.assertNotIn(('rust', 'kmipkit_client::ClientBatchItem::revoke'), routes)
+        self.assertIn(('rust', 'kmipkit_client::ClientBatchItem::new'), routes)
         operation_ids = {
             ('rust', 'kmipkit_client::ClientBatchItem::register'): 'KMIPKIT-ELEM-OP-C2S-REGISTER',
             ('c', 'kmipkit_client_batch_item_register'): 'KMIPKIT-ELEM-OP-C2S-REGISTER',
             ('java', 'org.kmipkit.extensions.ClientBatchItem.register'): 'KMIPKIT-ELEM-OP-C2S-REGISTER',
             ('python', 'kmipkit.extensions.client_batch_item_register'): 'KMIPKIT-ELEM-OP-C2S-REGISTER',
-            ('rust', 'kmipkit_client::ClientBatchItem::revoke'): 'KMIPKIT-ELEM-OP-C2S-REVOKE',
             ('c', 'kmipkit_client_batch_item_revoke'): 'KMIPKIT-ELEM-OP-C2S-REVOKE',
             ('java', 'org.kmipkit.extensions.ClientBatchItem.revoke'): 'KMIPKIT-ELEM-OP-C2S-REVOKE',
             ('python', 'kmipkit.extensions.client_batch_item_revoke'): 'KMIPKIT-ELEM-OP-C2S-REVOKE',

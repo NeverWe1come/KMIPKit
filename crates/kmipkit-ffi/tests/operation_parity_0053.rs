@@ -1,6 +1,6 @@
 #![cfg(feature = "coverage-c-consumer")]
 
-// Resolve the compiled C consumer against this process's Rust ABI implementation.
+// Keep the crate linked so C consumer calls resolve through the Rust package's rlib.
 use kmipkit_ffi as _;
 
 #[link(name = "kmipkit_operation_parity_0053_consumer", kind = "static")]
