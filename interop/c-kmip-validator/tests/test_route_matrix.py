@@ -268,6 +268,23 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(result['constructed_wire'], result['decoded_wire'])
         self.assertIn('kmipkit_ttlv_item_create', result['invoked_symbols'])
 
+    def test_datetime_constructor_executes_normative_message_timestamp_cells(self):
+        from artifact_support import INSTALL, ROOT
+        from route_ttlv import TreeAbi, encode
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        target = next(item for item in catalog['normative_targets']
+                      if item['target_id'] == 'KMIPKIT-ELEM-MESSAGE-FIELD-9-20-TIME-STAMP')
+        tags = {item['name']: int(item['wire_value'], 16)
+                for item in catalog['normative_targets'] if item['kind'] == 'tag'}
+        trees = self.runner.generic_tree_fixtures(target, catalog, tags, '2.1')
+
+        self.assertIn('kmipkit_ttlv_value_date_time', self.runner.LOCAL_SYMBOLS)
+        self.assertEqual(len(trees), 1)
+        result = TreeAbi(INSTALL / 'lib/libkmipkit_ffi.so').roundtrip(encode(trees[0]))
+        self.assertIn('kmipkit_ttlv_value_date_time', result['invoked_symbols'])
+        self.assertEqual(result['constructed_wire'], result['decoded_wire'])
+
     def test_reserved_tag_is_not_constructed_as_an_assigned_ttlv_item(self):
         from artifact_support import ROOT
         catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
