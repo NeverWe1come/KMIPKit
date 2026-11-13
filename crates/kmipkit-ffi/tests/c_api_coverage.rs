@@ -1010,7 +1010,6 @@ fn c_abi_consumer_matches_shared_registry_cleanup_fixture() {
     );
 }
 
-#[link(name = "kmipkit_ffi")]
 unsafe extern "C" {
     fn kmipkit_codec_limits_defaults(out_limits: *mut *mut kmipkit_codec_limits_t) -> i32;
     fn kmipkit_codec_limits_create(
@@ -1030,6 +1029,8 @@ unsafe extern "C" {
 
 #[test]
 fn existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process() {
+    kmipkit_ffi::__coverage_consumer_test_link_anchor();
+
     let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../tests/fixtures/extensions/cases.json")
         .canonicalize()

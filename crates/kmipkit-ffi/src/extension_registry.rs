@@ -3317,6 +3317,17 @@ macro_rules! read_handle {
 #[allow(unsafe_code)]
 pub(super) mod client_abi;
 
+/// Keeps the Rust C ABI symbols referenced by C consumer integration tests
+/// linked from the crate's Rust archive without requiring a prebuilt shared library.
+#[doc(hidden)]
+#[cfg(feature = "coverage-c-consumer")]
+pub fn coverage_consumer_test_link_anchor() {
+    std::hint::black_box([
+        kmipkit_codec_limits_defaults as *const (),
+        client_abi::kmipkit_client_batch_create as *const (),
+    ]);
+}
+
 mod cryptographic_parameters;
 mod managed_objects;
 mod request_validation;
