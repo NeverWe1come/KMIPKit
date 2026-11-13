@@ -451,6 +451,16 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(target_operation_exchange_index(((45, 46), 'login_logout')), 1)
         self.assertEqual(target_operation_exchange_index(((45,), 'login')), 0)
 
+    def test_interop_recipe_exercises_begin_end_and_reset(self):
+        """OASIS KMIP 2.0 §6.1.25 and KMIP 2.1 §6.1.26 define all three functions."""
+        import route_peer
+        from artifact_support import ROOT
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        case = next(case for case in catalog['test_cases'] if case['case_id'] == 'test-op-interop')
+
+        self.assertEqual(route_peer.recipe_for_case(case, None), ((52, 52, 52), 'interop'))
+
     def test_logout_peer_requires_the_ticket_returned_by_login(self):
         """OASIS KMIP 2.0 §6.1.30 and 2.1 §6.1.31 require Logout's Ticket."""
         from route_peer import assert_login_logout_exchange, parse, tlv
