@@ -3020,6 +3020,8 @@ class ControlledTlsPeerTest {
                 caseIds.add(testCase.path("case_id").asText());
             }
         }
+        caseIds.add("test-enum-pkcs#11-function");
+        caseIds.add("test-enum-pkcs#11-return-code");
         CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().forEach(caseIds::add);
         report.putArray("protocol_versions").add("2.0").add("2.1");
         ObjectNode combination = mapper.createObjectNode();

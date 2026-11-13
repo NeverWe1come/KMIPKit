@@ -17,6 +17,7 @@ import org.kmipkit.ttlv.TtlvStructure;
 import org.kmipkit.ttlv.TtlvValue;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -262,6 +263,11 @@ final class LocalCatalogRouteChecks {
                 case "PKCS#11 Return Code" -> 0x42015d;
                 default -> throw new AssertionError("Referenced enumeration has no source-backed tag fixture.");
             };
+            String aggregateCaseId = switch (requires.path("parent_name").asText()) {
+                case "PKCS#11 Function" -> "test-enum-pkcs#11-function";
+                case "PKCS#11 Return Code" -> "test-enum-pkcs#11-return-code";
+                default -> throw new AssertionError("Referenced enumeration has no aggregate route case.");
+            };
             String caseId = testCase.path("case_id").asText();
             String targetId = requires.path("normative_target_id").asText();
             long expected = Long.parseUnsignedLong(
@@ -272,17 +278,21 @@ final class LocalCatalogRouteChecks {
                     TtlvItem item = TtlvItem.create(tag, value, CodecLimits.defaults())) {
                 assertScalarItem(item, tagCode, TtlvItemType.Enumeration, expected);
             }
-            emit(sink, caseId, targetId, "model.org.kmipkit.ttlv.ttlvvalue.enumeration",
-                    "org.kmipkit.ttlv.TtlvValue.Enumeration", "construct", wire);
-            emit(sink, caseId, targetId, "ttlv_item.create", "org.kmipkit.ttlv.TtlvItem.create",
-                    "construct", wire);
-            emit(sink, caseId, targetId, "function.ttlv_item_view_from_item",
-                    "org.kmipkit.ttlv.TtlvItem.view", "decode", wire);
+            for (String evidenceCaseId : List.of(caseId, aggregateCaseId)) {
+                emit(sink, evidenceCaseId, targetId, "model.org.kmipkit.ttlv.ttlvvalue.enumeration",
+                        "org.kmipkit.ttlv.TtlvValue.Enumeration", "construct", wire);
+                emit(sink, evidenceCaseId, targetId, "ttlv_item.create", "org.kmipkit.ttlv.TtlvItem.create",
+                        "construct", wire);
+                emit(sink, evidenceCaseId, targetId, "function.ttlv_item_view_from_item",
+                        "org.kmipkit.ttlv.TtlvItem.view", "decode", wire);
+            }
             try (TtlvItem decoded = TtlvCodec.decode(wire)) {
                 assertScalarItem(decoded, tagCode, TtlvItemType.Enumeration, expected);
             }
-            emit(sink, caseId, targetId, "ttlv_codec.decode", "org.kmipkit.ttlv.TtlvCodec.decode",
-                    "decode", wire);
+            for (String evidenceCaseId : List.of(caseId, aggregateCaseId)) {
+                emit(sink, evidenceCaseId, targetId, "ttlv_codec.decode", "org.kmipkit.ttlv.TtlvCodec.decode",
+                        "decode", wire);
+            }
         }
     }
 
