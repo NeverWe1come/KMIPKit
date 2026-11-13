@@ -41,6 +41,26 @@ from kmipkit.server import (
 _FIXTURES = Path(__file__).parent / "fixtures" / "server-listener-mtls"
 
 
+def _listener_configuration() -> ServerListenerConfiguration:
+    return ServerListenerConfiguration(
+        bind_host="127.0.0.1",
+        bind_port=0,
+        listener_certificate_chain=((_FIXTURES / "server-cert.pem").read_bytes(),),
+        listener_private_key=(_FIXTURES / "server-key.pem").read_bytes(),
+        trust_certificates=((_FIXTURES / "ca.pem").read_bytes(),),
+    )
+
+
+def _tls13_client_context() -> ssl.SSLContext:
+    context = ssl.create_default_context(
+        ssl.Purpose.SERVER_AUTH, cafile=str(_FIXTURES / "ca.pem")
+    )
+    context.load_cert_chain(_FIXTURES / "client-cert.pem", _FIXTURES / "client-key.pem")
+    context.minimum_version = ssl.TLSVersion.TLSv1_3
+    context.maximum_version = ssl.TLSVersion.TLSv1_3
+    return context
+
+
 def _ttlv(tag: int, item_type: int, value: bytes) -> bytes:
     padding = (-len(value)) % 8
     return (
@@ -126,6 +146,50 @@ def _read_ttlv_frame(stream: ssl.SSLSocket) -> bytes:
     return bytes(header + body)
 
 
+def _run_tls13_mtls_exchange(
+    request_bytes: bytes, handler: ServerRequestHandler
+) -> tuple[bytes, list[type[object]]]:
+    configuration = _listener_configuration()
+    failures: list[str] = []
+    seen: list[type[object]] = []
+
+    def recording_handler(request: object) -> ServerReply:
+        seen.append(type(request))
+        return handler(request)
+
+    with configuration, ServerListener.bind(configuration) as listener:
+        port = listener.port
+
+        def serve() -> None:
+            try:
+                with listener.accept(timeout=5) as connection:
+                    connection.serve_once(recording_handler, timeout=5)
+            except BaseException:
+                failures.append(traceback.format_exc())
+
+        worker = threading.Thread(target=serve, daemon=True)
+        worker.start()
+        context = _tls13_client_context()
+        client_failure: BaseException | None = None
+        response = b""
+        try:
+            with socket.create_connection(("127.0.0.1", port), timeout=5) as raw:
+                with context.wrap_socket(raw, server_hostname="127.0.0.1") as stream:
+                    stream.settimeout(5)
+                    stream.sendall(request_bytes)
+                    response = _read_ttlv_frame(stream)
+        except BaseException as failure:
+            client_failure = failure
+        worker.join(timeout=7)
+
+    assert client_failure is None, (
+        f"client failure={client_failure!r}; server={failures!r}"
+    )
+    assert not worker.is_alive()
+    assert failures == []
+    return response, seen
+
+
 def test_server_listener_exports_typed_request_and_response_families() -> None:
     assert DiscoverVersionsRequest is not None
     assert NotifyRequest is not None
@@ -163,13 +227,7 @@ def test_named_listener_configuration_rejects_invalid_port() -> None:
 
 
 def test_listener_accept_timeout_is_bounded_and_releases_listener() -> None:
-    configuration = ServerListenerConfiguration(
-        bind_host="127.0.0.1",
-        bind_port=0,
-        listener_certificate_chain=((_FIXTURES / "server-cert.pem").read_bytes(),),
-        listener_private_key=(_FIXTURES / "server-key.pem").read_bytes(),
-        trust_certificates=((_FIXTURES / "ca.pem").read_bytes(),),
-    )
+    configuration = _listener_configuration()
     with configuration, ServerListener.bind(configuration) as listener:
         with pytest.raises(KmipKitError):
             listener.accept(timeout=0.01)
@@ -201,67 +259,13 @@ def test_reply_constructor_cannot_bypass_typed_success_or_failure_factories() ->
 
 
 def test_listener_serves_typed_discover_versions_over_tls13_mtls() -> None:
-    server_certificate = (_FIXTURES / "server-cert.pem").read_bytes()
-    server_key = (_FIXTURES / "server-key.pem").read_bytes()
-    authority_certificate = (_FIXTURES / "ca.pem").read_bytes()
-    client_certificate = (_FIXTURES / "client-cert.pem").read_bytes()
-    client_key = (_FIXTURES / "client-key.pem").read_bytes()
-    configuration = ServerListenerConfiguration(
-        bind_host="127.0.0.1",
-        bind_port=0,
-        listener_certificate_chain=(server_certificate,),
-        listener_private_key=server_key,
-        trust_certificates=(authority_certificate,),
-    )
-    failures: list[BaseException] = []
-    stages: list[str] = []
-    seen: list[type[object]] = []
-
     def handler(request: object) -> ServerReply:
         assert isinstance(request, DiscoverVersionsRequest)
-        seen.append(type(request))
         return ServerReply.success(
             DiscoverVersionsResponse.for_request(request, (ProtocolVersion(2, 1),))
         )
 
-    with configuration, ServerListener.bind(configuration) as listener:
-        def serve() -> None:
-            try:
-                stages.append("accepting")
-                with listener.accept(timeout=5) as connection:
-                    stages.append("accepted")
-                    connection.serve_once(handler, timeout=5)
-                    stages.append("served")
-            except BaseException as failure:  # captured for assertion in the test thread
-                failures.append(failure)
-
-        port = listener.port
-        worker = threading.Thread(target=serve, daemon=True)
-        worker.start()
-        context = ssl.create_default_context(
-            ssl.Purpose.SERVER_AUTH, cafile=str(_FIXTURES / "ca.pem")
-        )
-        context.load_cert_chain(_FIXTURES / "client-cert.pem", _FIXTURES / "client-key.pem")
-        context.minimum_version = ssl.TLSVersion.TLSv1_3
-        context.maximum_version = ssl.TLSVersion.TLSv1_3
-        client_failure: BaseException | None = None
-        response = b""
-        try:
-            with socket.create_connection(("127.0.0.1", port), timeout=5) as raw:
-                with context.wrap_socket(raw, server_hostname="127.0.0.1") as stream:
-                    stream.settimeout(5)
-                    stream.sendall(_discover_versions_request())
-                    response = _read_ttlv_frame(stream)
-        except BaseException as failure:  # report both TLS peer states on failure
-            client_failure = failure
-        worker.join(timeout=7)
-
-    assert client_failure is None, (
-        f"client failure={client_failure!r}; stages={stages}; "
-        f"server={failures!r}"
-    )
-    assert not worker.is_alive()
-    assert failures == []
+    response, seen = _run_tls13_mtls_exchange(_discover_versions_request(), handler)
     assert seen == [DiscoverVersionsRequest]
     assert response[:4] == bytes.fromhex("42007b01")
     assert bytes.fromhex("42007f050000000400000000") in response
@@ -292,18 +296,7 @@ def test_listener_dispatches_all_five_typed_operations_over_tls13_mtls() -> None
         50, b"batch-05", _enumeration(0x420151, 2)
     )
     request_bytes = _request_batch(discover, notify, put, query, endpoint_role)
-    configuration = ServerListenerConfiguration(
-        bind_host="127.0.0.1",
-        bind_port=0,
-        listener_certificate_chain=((_FIXTURES / "server-cert.pem").read_bytes(),),
-        listener_private_key=(_FIXTURES / "server-key.pem").read_bytes(),
-        trust_certificates=((_FIXTURES / "ca.pem").read_bytes(),),
-    )
-    failures: list[str] = []
-    seen: list[type[object]] = []
-
     def handler(request: object) -> ServerReply:
-        seen.append(type(request))
         if isinstance(request, DiscoverVersionsRequest):
             assert request.requested_versions == ()
             return ServerReply.success(
@@ -325,33 +318,7 @@ def test_listener_dispatches_all_five_typed_operations_over_tls13_mtls() -> None
         assert request.endpoint_role == 2
         return ServerReply.success(SetEndpointRoleResponse.for_request(request, 1))
 
-    with configuration, ServerListener.bind(configuration) as listener:
-        port = listener.port
-
-        def serve() -> None:
-            try:
-                with listener.accept(timeout=5) as connection:
-                    connection.serve_once(handler, timeout=5)
-            except BaseException:
-                failures.append(traceback.format_exc())
-
-        worker = threading.Thread(target=serve, daemon=True)
-        worker.start()
-        context = ssl.create_default_context(
-            ssl.Purpose.SERVER_AUTH, cafile=str(_FIXTURES / "ca.pem")
-        )
-        context.load_cert_chain(_FIXTURES / "client-cert.pem", _FIXTURES / "client-key.pem")
-        context.minimum_version = ssl.TLSVersion.TLSv1_3
-        context.maximum_version = ssl.TLSVersion.TLSv1_3
-        with socket.create_connection(("127.0.0.1", port), timeout=5) as raw:
-            with context.wrap_socket(raw, server_hostname="127.0.0.1") as stream:
-                stream.settimeout(5)
-                stream.sendall(request_bytes)
-                response = _read_ttlv_frame(stream)
-        worker.join(timeout=7)
-
-    assert not worker.is_alive()
-    assert failures == []
+    response, seen = _run_tls13_mtls_exchange(request_bytes, handler)
     assert seen == [
         DiscoverVersionsRequest,
         NotifyRequest,
@@ -364,15 +331,6 @@ def test_listener_dispatches_all_five_typed_operations_over_tls13_mtls() -> None
 
 
 def test_listener_returns_typed_handler_failure_over_tls13_mtls() -> None:
-    configuration = ServerListenerConfiguration(
-        bind_host="127.0.0.1",
-        bind_port=0,
-        listener_certificate_chain=((_FIXTURES / "server-cert.pem").read_bytes(),),
-        listener_private_key=(_FIXTURES / "server-key.pem").read_bytes(),
-        trust_certificates=((_FIXTURES / "ca.pem").read_bytes(),),
-    )
-    failures: list[str] = []
-
     def handler(_request: object) -> ServerReply:
         return ServerReply.failure(
             ServerResultStatus.OPERATION_FAILED,
@@ -380,47 +338,12 @@ def test_listener_returns_typed_handler_failure_over_tls13_mtls() -> None:
             "unsupported",
         )
 
-    with configuration, ServerListener.bind(configuration) as listener:
-        port = listener.port
-
-        def serve() -> None:
-            try:
-                with listener.accept(timeout=5) as connection:
-                    connection.serve_once(handler, timeout=5)
-            except BaseException:
-                failures.append(traceback.format_exc())
-
-        worker = threading.Thread(target=serve, daemon=True)
-        worker.start()
-        context = ssl.create_default_context(
-            ssl.Purpose.SERVER_AUTH, cafile=str(_FIXTURES / "ca.pem")
-        )
-        context.load_cert_chain(_FIXTURES / "client-cert.pem", _FIXTURES / "client-key.pem")
-        context.minimum_version = ssl.TLSVersion.TLSv1_3
-        context.maximum_version = ssl.TLSVersion.TLSv1_3
-        with socket.create_connection(("127.0.0.1", port), timeout=5) as raw:
-            with context.wrap_socket(raw, server_hostname="127.0.0.1") as stream:
-                stream.settimeout(5)
-                stream.sendall(_discover_versions_request())
-                response = _read_ttlv_frame(stream)
-        worker.join(timeout=7)
-
-    assert not worker.is_alive()
-    assert failures == []
+    response, _ = _run_tls13_mtls_exchange(_discover_versions_request(), handler)
     assert bytes.fromhex("42007f050000000400000001") in response
     assert bytes.fromhex("42007e050000000400000005") in response
 
 
 def test_listener_preserves_notify_changed_attributes_over_tls13_mtls() -> None:
-    configuration = ServerListenerConfiguration(
-        bind_host="127.0.0.1",
-        bind_port=0,
-        listener_certificate_chain=((_FIXTURES / "server-cert.pem").read_bytes(),),
-        listener_private_key=(_FIXTURES / "server-key.pem").read_bytes(),
-        trust_certificates=((_FIXTURES / "ca.pem").read_bytes(),),
-    )
-    failures: list[str] = []
-
     def handler(request: object) -> ServerReply:
         assert isinstance(request, NotifyRequest)
         attributes = request.attributes
@@ -430,50 +353,13 @@ def test_listener_preserves_notify_changed_attributes_over_tls13_mtls() -> None:
                 assert ttlv.ttlv_structure_view_item_count(view) == 1
         return ServerReply.success(NotifyResponse.for_request(request))
 
-    with configuration, ServerListener.bind(configuration) as listener:
-        port = listener.port
-
-        def serve() -> None:
-            try:
-                with listener.accept(timeout=5) as connection:
-                    connection.serve_once(handler, timeout=5)
-            except BaseException:  # report fixture worker failures to the test thread
-                failures.append(traceback.format_exc())
-
-        worker = threading.Thread(target=serve, daemon=True)
-        worker.start()
-        context = ssl.create_default_context(
-            ssl.Purpose.SERVER_AUTH, cafile=str(_FIXTURES / "ca.pem")
-        )
-        context.load_cert_chain(_FIXTURES / "client-cert.pem", _FIXTURES / "client-key.pem")
-        context.minimum_version = ssl.TLSVersion.TLSv1_3
-        context.maximum_version = ssl.TLSVersion.TLSv1_3
-        client_failure: BaseException | None = None
-        response = b""
-        try:
-            with socket.create_connection(("127.0.0.1", port), timeout=5) as raw:
-                with context.wrap_socket(raw, server_hostname="127.0.0.1") as stream:
-                    stream.settimeout(5)
-                    stream.sendall(_notify_request())
-                    response = _read_ttlv_frame(stream)
-        except BaseException as failure:
-            client_failure = failure
-        worker.join(timeout=7)
-
-    assert client_failure is None, f"client={client_failure!r}; server={failures!r}"
-    assert not worker.is_alive()
-    assert failures == []
+    response, seen = _run_tls13_mtls_exchange(_notify_request(), handler)
+    assert seen == [NotifyRequest]
     assert bytes.fromhex("42007f050000000400000000") in response
 
 
 def test_listener_rejects_malformed_ttlv_over_tls13_mtls() -> None:
-    configuration = ServerListenerConfiguration(
-        bind_host="127.0.0.1",
-        bind_port=0,
-        listener_certificate_chain=((_FIXTURES / "server-cert.pem").read_bytes(),),
-        listener_private_key=(_FIXTURES / "server-key.pem").read_bytes(),
-        trust_certificates=((_FIXTURES / "ca.pem").read_bytes(),),
-    )
+    configuration = _listener_configuration()
     failures: list[BaseException] = []
     with configuration, ServerListener.bind(configuration) as listener:
         port = listener.port
@@ -487,12 +373,7 @@ def test_listener_rejects_malformed_ttlv_over_tls13_mtls() -> None:
 
         worker = threading.Thread(target=receive, daemon=True)
         worker.start()
-        context = ssl.create_default_context(
-            ssl.Purpose.SERVER_AUTH, cafile=str(_FIXTURES / "ca.pem")
-        )
-        context.load_cert_chain(_FIXTURES / "client-cert.pem", _FIXTURES / "client-key.pem")
-        context.minimum_version = ssl.TLSVersion.TLSv1_3
-        context.maximum_version = ssl.TLSVersion.TLSv1_3
+        context = _tls13_client_context()
         with socket.create_connection(("127.0.0.1", port), timeout=5) as raw:
             with context.wrap_socket(raw, server_hostname="127.0.0.1") as stream:
                 stream.settimeout(5)
