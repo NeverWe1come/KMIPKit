@@ -893,6 +893,11 @@ fn check_builder_builds_typed_policy_request_and_executes_once() {
 
 #[test]
 fn get_constraints_builder_builds_typed_request_and_executes_once() {
+    failed_request_client()
+        .request()
+        .get_constraints()
+        .validate()
+        .expect("the empty typed Get Constraints request is valid");
     let request = failed_request_client()
         .request()
         .get_constraints()
