@@ -46,6 +46,19 @@ class RouteMatrixTests(unittest.TestCase):
             ['created', 'usage_allocation_returned', 'revoked', 'destroyed'],
         )
 
+    def test_get_usage_allocation_optional_identifier_cases_have_peer_recipes(self):
+        import route_peer
+
+        for case_id in (
+            'test-norm-payload-client-get-usage-allocation-request-20-001',
+            'test-norm-payload-client-get-usage-allocation-request-21-001',
+        ):
+            with self.subTest(case_id=case_id):
+                self.assertEqual(
+                    route_peer.RECIPES.get(case_id),
+                    ((17, 17), 'get_usage_allocation_uid_variants'),
+                )
+
     def test_route_evidence_output_cannot_escape_its_build_directory(self):
         with tempfile.TemporaryDirectory() as directory:
             with self.assertRaisesRegex(ValueError, 'path_outside_allowed_root'):
