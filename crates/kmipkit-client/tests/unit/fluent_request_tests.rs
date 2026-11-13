@@ -1,7 +1,8 @@
 use kmipkit_protocol::attribute::typed;
 use kmipkit_protocol::{
     AdjustmentType, Attribute, AttributeDefinition, AttributeReference, CreateRequest,
-    CurrentAttribute, NewAttribute, PingRequest, UniqueIdentifier,
+    CurrentAttribute, DiscoverVersionsRequest, NewAttribute, PingRequest, ProtocolVersion,
+    UniqueIdentifier,
 };
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestOptions;
@@ -664,6 +665,42 @@ fn ping_fluent_builder_builds_the_existing_typed_request_and_executes_once() {
         crate::execute::ClientOperation::Ping
     );
     assert_eq!(result.outcome().result().status().raw(), 0);
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn discover_versions_builder_preserves_offers_and_executes_once() {
+    let request = failed_request_client()
+        .request()
+        .discover_versions()
+        .protocol_versions(vec![ProtocolVersion::V2_0, ProtocolVersion::V2_1])
+        .build_request()
+        .expect("catalogued protocol offers build a typed Discover Versions request");
+    assert_eq!(
+        request.protocol_versions(),
+        &[ProtocolVersion::V2_0, ProtocolVersion::V2_1]
+    );
+    assert_eq!(
+        DiscoverVersionsRequest::new().protocol_versions(),
+        &[ProtocolVersion::V2_1]
+    );
+
+    let response =
+        asynchronous_response_bytes(0x0000_001e, 0, None, None, Some(test_structure([])));
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: vec![2, 5],
+    });
+    let result = client
+        .request()
+        .discover_versions()
+        .execute(&CodecLimits::defaults())
+        .expect("the scripted empty Discover Versions result is valid");
+
+    assert_eq!(
+        result.outcome().operation(),
+        crate::execute::ClientOperation::DiscoverVersions
+    );
     assert_eq!(transport.borrow().exchange_count(), 1);
 }
 
