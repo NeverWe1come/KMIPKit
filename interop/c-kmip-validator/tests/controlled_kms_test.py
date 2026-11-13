@@ -113,6 +113,12 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                 tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 3:
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
+        elif operation == 31:
+            payload_value = tlv(0x420094, 7, b"fixture-key-1") + tlv(
+                0x4200C2, 8, bytes.fromhex("69c4e0d86a7b0430d8cdb78070b4c55a"))
+        elif operation == 32:
+            payload_value = tlv(0x420094, 7, b"fixture-key-1") + tlv(
+                0x4200C2, 8, bytes.fromhex("00112233445566778899aabbccddeeff"))
         elif operation in (13, 15, 49):
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 11:
