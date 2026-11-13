@@ -505,6 +505,26 @@ class ModelCases:
             return 'p_source', name, 8, b'\x01\x02\x03'
         return None
 
+    def _roundtrip_cryptographic_parameters_ttlv(self, structure: C.c_void_p,
+                                                 expected: list[tuple]) -> None:
+        """Decode an encoded parameter structure and compare its re-encoding."""
+        parameters, roundtrip_structure = C.c_void_p(), C.c_void_p()
+        try:
+            self.abi.bind('kmipkit_cryptographic_parameters_from_ttlv',
+                          [C.c_void_p, C.POINTER(C.c_void_p)])
+            self.abi.call('kmipkit_cryptographic_parameters_from_ttlv',
+                          structure, C.byref(parameters))
+            self.abi.bind('kmipkit_cryptographic_parameters_into_ttlv',
+                          [C.c_void_p, C.POINTER(C.c_void_p)])
+            self.abi.call('kmipkit_cryptographic_parameters_into_ttlv',
+                          parameters, C.byref(roundtrip_structure))
+            parameters = C.c_void_p()
+            if self.abi.read_structure(roundtrip_structure) != expected:
+                raise ValueError('cryptographic_parameters_from_ttlv_roundtrip_mismatch')
+        finally:
+            self.abi.release('ttlv_structure', roundtrip_structure)
+            self.abi.release('cryptographic_parameters', parameters)
+
     def _execute_cryptographic_parameters(self, target: dict, protocol_version: str) -> dict | None:
         selected = self._crypto_target_field(target, protocol_version)
         if selected is None:
@@ -556,7 +576,6 @@ class ModelCases:
                  'mask_generator_hashing_algorithm', 'p_source', 'trailer_field')
         expected = [expected_by_field[name] for name in order if name in expected_by_field]
         parameters, structure = C.c_void_p(), C.c_void_p()
-        roundtrip_parameters, roundtrip_structure = C.c_void_p(), C.c_void_p()
         output = _CryptographicParametersFieldsV1()
         output.struct_size = C.sizeof(output)
         output.abi_version = 1
@@ -588,15 +607,7 @@ class ModelCases:
             children.extend(self.abi.read_structure(structure))
             if children != expected:
                 raise ValueError('cryptographic_parameters_ttlv_mismatch')
-            self.abi.bind('kmipkit_cryptographic_parameters_from_ttlv',
-                          [C.c_void_p, C.POINTER(C.c_void_p)])
-            self.abi.call('kmipkit_cryptographic_parameters_from_ttlv',
-                          structure, C.byref(roundtrip_parameters))
-            self.abi.call('kmipkit_cryptographic_parameters_into_ttlv',
-                          roundtrip_parameters, C.byref(roundtrip_structure))
-            roundtrip_parameters = C.c_void_p()
-            if self.abi.read_structure(roundtrip_structure) != expected:
-                raise ValueError('cryptographic_parameters_from_ttlv_roundtrip_mismatch')
+            self._roundtrip_cryptographic_parameters_ttlv(structure, expected)
             normalized_tree = [
                 [tag, kind, data.hex() if kind != 1 else data]
                 for tag, kind, data in children
@@ -604,8 +615,6 @@ class ModelCases:
             return {'sample_count': 1, 'normalized_tree': normalized_tree,
                     'tree_sha256': digest(normalized_tree), 'invoked_symbols': set(self.abi.called)}
         finally:
-            self.abi.release('ttlv_structure', roundtrip_structure)
-            self.abi.release('cryptographic_parameters', roundtrip_parameters)
             self.abi.release('ttlv_structure', structure)
             self.abi.release('cryptographic_parameters', parameters)
 

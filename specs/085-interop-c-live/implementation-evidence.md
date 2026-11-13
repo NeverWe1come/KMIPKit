@@ -7,9 +7,9 @@ network recipes. Library sources are unchanged.
 
 | Requirement | C evidence and remaining work |
 |---|---|
-| KMIPKIT-0092-FR-001, FR-006 | Shared matrix generator, installed header/symbol/constant probe, verified exact route-manifest source commit and library digest, compiled-consumer provenance comparison. |
+| KMIPKIT-0092-FR-001, FR-006 | Shared matrix generator, installed header/symbol/constant probe, exact `release/1.0.0` pin `9a16cc90a12205101d22a38501a5e74c665df4dc`, library digest, compiled-consumer provenance comparison. |
 | KMIPKIT-0092-FR-002, FR-007, FR-009 | Per-cell evidence and explicit pending sidecar; duplicate protection; common schema and validator in CI. Incomplete recipes keep the gate failing. |
-| KMIPKIT-0092-FR-003 | Exact assigned scalar values and reserved-tag rejection are checked locally. Broader semantic branch/model recipes remain pending. No absent encoder/send/high-level API is fabricated. |
+| KMIPKIT-0092-FR-003 | Exact assigned scalar values, reserved-tag rejection, typed attributes, and cryptographic-parameter field/TTLV round trips are checked locally. Broader semantic branch/model recipes remain pending. No absent encoder/send/high-level API is fabricated. |
 | KMIPKIT-0092-FR-004 | Ordered, redacted tree digests are retained per cell. Cross-language digest normalization/parity is pending. |
 | KMIPKIT-0092-FR-005 | Controlled peers parse all six encoding/transport pairs, check recipe fields, numeric ordered results, lifecycle transitions and deletion. Cryptographic, asynchronous, and remaining positive operation recipes are pending. |
 | KMIPKIT-0092-FR-008 | Reports contain public identities, axes, digests, sanitized failure codes and numeric outcomes. Request bodies and fixture keys/tickets never enter evidence. |
@@ -255,8 +255,9 @@ peer verifies the seed, mutation, cleanup operation order, and restoration of
 the initial fixture state. The placeholder-chain recipe also reports the
 observed revoke/destroy cleanup operations and final state.
 
-Verification against the shared route-manifest source commit
-`8281fef2e9ca211fde1e1d8e21525a672287eead`:
+Historical verification against the previous feature-branch source pin
+`8281fef2e9ca211fde1e1d8e21525a672287eead` (superseded by exact release-pin
+verification below):
 
 - Artifact build and provenance verification passed; library SHA-256 is
   `e2b7a9c21c22551cbbf5ff55d7c1997525413bc2adbe958577283e95e6993d7b`.
@@ -270,3 +271,31 @@ Verification against the shared route-manifest source commit
 - The completeness validator continues to fail on the pending recipe cells.
   This branch is not ready for review until the remaining matrix routes and
   exact-head CI pass.
+
+### Exact release pin and typed local route follow-up
+
+The C artifact and CI now use the shared manifest's exact `release/1.0.0`
+commit `9a16cc90a12205101d22a38501a5e74c665df4dc`. The rebuilt external C
+artifact was verified with SHA-256
+`2eeffb9357b08da5812faf96b3a1b801a5f998c4f29513efa3d1848100298023`.
+
+The cryptographic-parameters route now builds a typed value from fields,
+converts it to TTLV, reads that TTLV back with
+`kmipkit_cryptographic_parameters_from_ttlv`, converts the returned typed value
+to TTLV again, and checks the exact ordered tree. A Red assertion first failed
+because the route was not invoked; the Green implementation now exercises it
+for each applicable field fixture. Local typed attribute routes also run
+independently for cases that have a separate server-exchange scenario.
+
+Verification on the current C worktree:
+
+- Python validator tests: 90/90 passed.
+- Full route matrix: 66,728 expected cells, 37,215 invoked, zero failed, and
+  29,513 still pending. The completeness gate correctly remains unsuccessful.
+- CTest: 7/7 passed after the latest route changes.
+- After extracting the TTLV decode/re-encode ownership helper, its three
+  focused cryptographic-parameters tests passed and CTest passed 7/7 again.
+
+This is incremental evidence only. Thousands of C route cells and the Rust,
+Java, and Python validators still require implementation and exact-head CI.
+The PR remains a WIP draft.
