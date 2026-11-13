@@ -221,7 +221,17 @@ class ModelCases:
                 self.abi.release('ttlv_item', handle)
             self.abi.release('codec_limits', limits)
 
-    def _execute_revocation_reason(self, target: dict, protocol_version: str) -> dict:
+    def _revocation_reason_codes(self, protocol_version: str) -> list[int]:
+        parent_id = 'KMIPKIT-ELEM-ENUMERATION-REVOCATION-REASON-CODE'
+        return sorted({int(item['wire_value'], 16) for item in self.catalog['normative_targets']
+                       if item['kind'] == 'enumeration_value'
+                       and parent_id in item.get('parent_element_ids', [])
+                       and protocol_version in item.get('protocol_versions', [])
+                       and len(item.get('wire_value', '')) == 8
+                       and all(character in '0123456789abcdefABCDEF'
+                               for character in item['wire_value'])})
+
+    def _execute_revocation_reason(self, protocol_version: str) -> dict:
         symbol = 'kmipkit_revocation_reason_create'
         self.abi.bind(symbol, [C.c_uint32, C.c_uint8, C.c_void_p, C.c_uint64,
                                C.POINTER(C.c_void_p)])
@@ -230,15 +240,7 @@ class ModelCases:
         limits = C.c_void_p()
         invoked_symbols = set()
         normalized_samples = []
-        reason_code_parent = 'KMIPKIT-ELEM-ENUMERATION-REVOCATION-REASON-CODE'
-        codes = sorted({int(item['wire_value'], 16) for item in self.catalog['normative_targets']
-                        if item['kind'] == 'enumeration_value'
-                        and reason_code_parent in item.get('parent_element_ids', [])
-                        and protocol_version in item.get('protocol_versions', [])
-                        and len(item.get('wire_value', '')) == 8
-                        and all(character in '0123456789abcdefABCDEF'
-                                for character in item['wire_value'])})
-        codes.append(0x80000000)
+        codes = [*self._revocation_reason_codes(protocol_version), 0x80000000]
         reason_tag = self._tag('Revocation Reason')
         code_tag = self._tag('Revocation Reason Code')
         message_tag = self._tag('Revocation Message')
@@ -827,7 +829,7 @@ class ModelCases:
         if (target.get('target_id') == 'KMIPKIT-ELEM-ATTRIBUTE-REVOCATION-REASON'
                 and public_api_symbol == 'kmipkit_revocation_reason_create'):
             self.abi.called.clear()
-            return self._execute_revocation_reason(target, protocol_version)
+            return self._execute_revocation_reason(protocol_version)
         if public_api_symbol in {'kmipkit_secret_bytes_into_ttlv_value',
                                  'kmipkit_secret_text_into_ttlv_value'}:
             self.abi.called.clear()
