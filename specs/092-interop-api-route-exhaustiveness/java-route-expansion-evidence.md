@@ -701,3 +701,39 @@ validator accepts 19,182 invoked cells with zero failures and
 `selected_scope_complete=true`; 52,273 of 71,455 planned cells remain pending.
 Key Role Type's local scope is complete; the Java matrix and vendor server
 interoperability are not.
+
+## Hashing Algorithm enumeration route completion
+
+Sources: OASIS KMIP 2.0 and 2.1 §11.21 (Hashing Algorithm Enumeration) and
+§4.16 (Cryptographic Parameters). The aggregate local case covers all 18
+catalogued values through four generic TTLV routes and the
+`CryptographicParameters.Builder.hashingAlgorithm` route in both versions,
+adding 180 cells. Assertions check value preservation through generic
+Enumeration construction, Item creation/view, decoding, and the builder setter.
+
+Red commit `4fda41bbe` requires all 18 aggregate targets and fails because the
+case had no local fixtures. Green commit `1c3793ade` adds every catalogued
+value to the generic route fixtures and invokes the builder route for both
+versions. Refactor commit `65d2ed657` groups builder-only enum route scopes so
+their version and route expectations stay consistent.
+
+Verification against installed release commit
+`489fafc79ef89db2524eafa7a6c6482f5cf75d97`:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+```
+
+The Java suite passes 52 tests with no failures, errors, or skips. The shared
+validator accepts 19,362 invoked cells with zero failures and
+`selected_scope_complete=true`; 52,093 of 71,455 planned cells remain pending.
+Hashing Algorithm's local scope is complete; the Java matrix and vendor server
+interoperability are not.
