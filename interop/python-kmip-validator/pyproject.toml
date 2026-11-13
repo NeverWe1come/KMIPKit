@@ -5,10 +5,11 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "kmipkit-validator"
 version = "1.0.0"
-description = "Standalone Python KMIP 2.1 Multi-Vendor KMS Validator"
+description = "Independent installed-package KMIP 2.0 and 2.1 interoperability consumer"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.12,<3.13"
 license = { text = "Apache-2.0" }
+dependencies = ["jsonschema==4.23.0"]
 authors = [
     { name = "KMIPKit Contributors" }
 ]

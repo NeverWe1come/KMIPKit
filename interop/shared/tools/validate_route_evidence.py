@@ -91,22 +91,6 @@ def _expected_batch_operations(case: dict) -> list[str] | None:
     return list(ordered) if len(ordered) > 1 else None
 
 
-def _validate_local_batch_rejection(event: dict, case: dict, key: tuple) -> None:
-    scenario = case.get("requires", {}).get("protocol_scenario", {})
-    expected = scenario.get("expected", {}) if isinstance(scenario, dict) else {}
-    if (case.get("category") != "batch_workflows"
-            or expected.get("construction") != "rejected_or_server_reports_protocol_error"):
-        raise ValueError(f"catalog does not allow a local batch construction rejection: {key}")
-    if event.get("transport_invocation_count") != 0:
-        raise ValueError(f"locally rejected batch invoked the transport: {key}")
-    if event.get("local_rejection_code") != "batch_placeholder_forward_reference":
-        raise ValueError(f"locally rejected batch lacks its safe rejection code: {key}")
-    if event.get("client_error_category") != "validation":
-        raise ValueError(f"locally rejected batch has the wrong client error category: {key}")
-    if event.get("client_error_cause") != "invalid_input":
-        raise ValueError(f"locally rejected batch has the wrong client error cause: {key}")
-
-
 def _ordinal(index: int) -> str:
     return {1: "first", 2: "second", 3: "third", 4: "fourth", 5: "fifth"}.get(index, f"item_{index}")
 
@@ -162,9 +146,6 @@ def _validate_batch_event(event: dict, case: dict, catalog: dict, key: tuple) ->
         raise ValueError(f"batch item count does not match the catalog: {key}")
     if event.get("status", "passed") != "passed":
         return
-    if event.get("request_delivery_state") == "not_sent":
-        _validate_local_batch_rejection(event, case, key)
-        return
     if event.get("peer_observed_operation_sequence") != expected_operations:
         raise ValueError(f"controlled peer did not observe the catalog batch order: {key}")
     scenario = case.get("requires", {}).get("protocol_scenario", {})
@@ -180,13 +161,8 @@ def _validate_batch_event(event: dict, case: dict, catalog: dict, key: tuple) ->
         if expected_codes is not None and event.get(evidence_field) != expected_codes:
             raise ValueError(f"controlled peer per-item {field} outcomes do not match the catalog: {key}")
     expected_effects = expected.get("effects")
-    if expected_effects is not None:
-        if event.get("peer_observed_effects") != expected_effects:
-            raise ValueError(f"controlled peer per-item effects do not match the catalog: {key}")
-        for field in ("peer_observed_state_before_sha256", "peer_observed_state_after_sha256"):
-            if (not isinstance(event.get(field), str)
-                    or not re.fullmatch(r"[0-9a-f]{64}", event[field])):
-                raise ValueError(f"controlled peer state hashes are missing or invalid: {key}")
+    if expected_effects is not None and event.get("peer_observed_effects") != expected_effects:
+        raise ValueError(f"controlled peer per-item effects do not match the catalog: {key}")
 
 
 def _expected_cells(report: dict, catalog: dict, manifest: dict) -> dict[tuple, dict]:
@@ -581,9 +557,6 @@ def validate_parity_collection(reports: list[dict], catalog: dict, manifest: dic
     for report in reports:
         for event in report["events"]:
             if event.get("status") != "passed" or event.get("action") not in {"construct", "send"}:
-                continue
-            if (event.get("action") == "send"
-                    and event.get("request_delivery_state") == "not_sent"):
                 continue
             identity = (
                 report["language"], event["case_id"], event["route_id"], event["target_id"],

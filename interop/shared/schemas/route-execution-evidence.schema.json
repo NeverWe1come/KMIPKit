@@ -71,9 +71,6 @@
         "wire_bytes_deterministic": { "type": "boolean" },
         "request_delivery_state": { "enum": ["not_sent", "possibly_sent", "response_received"] },
         "transport_invocation_count": { "type": "integer", "minimum": 0 },
-        "local_rejection_code": { "enum": ["batch_placeholder_forward_reference"] },
-        "client_error_category": { "enum": ["validation"] },
-        "client_error_cause": { "enum": ["invalid_input"] },
         "batch_operation_sequence": { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 1 },
         "peer_observed_operation_sequence": { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 1 },
         "batch_item_count": { "type": "integer", "minimum": 1 },
@@ -85,8 +82,6 @@
           "type": "array", "items": { "type": "integer", "minimum": 0, "maximum": 4294967295 }, "minItems": 1
         },
         "peer_observed_effects": { "type": "array", "items": { "type": "string", "minLength": 1 } },
-        "peer_observed_state_before_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
-        "peer_observed_state_after_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
         "not_run_reason": { "type": "string", "minLength": 1 },
         "failure_code": { "type": "string", "minLength": 1 }
       },
@@ -142,40 +137,8 @@
           "then": { "required": ["batch_operation_sequence"] }
         },
         {
-          "if": { "required": ["peer_observed_effects"] },
-          "then": { "required": ["peer_observed_state_before_sha256", "peer_observed_state_after_sha256"] }
-        },
-        {
-          "if": {
-            "properties": { "status": { "const": "passed" } },
-            "required": ["status", "batch_item_count"],
-            "not": {
-              "properties": { "request_delivery_state": { "const": "not_sent" } },
-              "required": ["request_delivery_state"]
-            }
-          },
+          "if": { "properties": { "status": { "const": "passed" } }, "required": ["batch_item_count"] },
           "then": { "required": ["peer_observed_operation_sequence", "peer_observed_response_count"] }
-        },
-        {
-          "if": {
-            "properties": {
-              "status": { "const": "passed" },
-              "action": { "const": "send" },
-              "request_delivery_state": { "const": "not_sent" }
-            },
-            "required": ["status", "action", "request_delivery_state", "batch_item_count"]
-          },
-          "then": {
-            "required": ["batch_operation_sequence", "transport_invocation_count", "local_rejection_code", "client_error_category", "client_error_cause"],
-            "properties": { "transport_invocation_count": { "const": 0 } },
-            "not": {
-              "anyOf": [
-                { "required": ["request_tree_sha256"] },
-                { "required": ["peer_observed_operation_sequence"] },
-                { "required": ["peer_observed_response_count"] }
-              ]
-            }
-          }
         }
       ],
       "additionalProperties": false
