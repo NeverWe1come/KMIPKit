@@ -1941,6 +1941,32 @@ static int32_t build_get_attribute_list_item(
     return status;
 }
 
+typedef enum {
+    ATTRIBUTE_MUTATION_ADD,
+    ATTRIBUTE_MUTATION_MODIFY,
+    ATTRIBUTE_MUTATION_SET,
+    ATTRIBUTE_MUTATION_DELETE
+} attribute_mutation_kind_t;
+
+static int32_t create_named_comment_attribute(
+    kmip_live_client_t *client,
+    const char *comment,
+    kmipkit_ttlv_item_t **out_attribute) {
+    kmipkit_ttlv_value_t *value = NULL;
+    kmipkit_raw_tag_t *raw_tag = NULL;
+    kmipkit_tag_t *tag = NULL;
+    int32_t status = kmipkit_ttlv_value_text_string(
+        client->limits, (const uint8_t *)comment, (uint64_t)strlen(comment), &value);
+    if (status == 0) status = kmipkit_ttlv_raw_tag_create(UINT32_C(0x4200FD), &raw_tag);
+    if (status == 0) status = kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag);
+    if (status == 0) status = kmipkit_ttlv_item_create(tag, value, client->limits, out_attribute);
+    if (status == 0) value = NULL;
+    if (value) kmipkit_ttlv_value_release(value);
+    if (tag) kmipkit_tag_release(tag);
+    if (raw_tag) kmipkit_raw_tag_release(raw_tag);
+    return status;
+}
+
 static bool attribute_mutation_payload_matches(
     kmipkit_ttlv_structure_t *payload,
     const kmipkit_unique_identifier_v1_t *identifier) {
@@ -2009,26 +2035,52 @@ static bool attribute_mutation_payload_matches(
 static int32_t build_comment_attribute_mutation_item(
     kmip_live_client_t *client,
     const kmipkit_unique_identifier_v1_t *identifier,
-    bool set_attribute,
+    attribute_mutation_kind_t mutation,
     kmipkit_client_batch_item_t **out_item) {
     static const uint8_t comment[] = "KMIPKit interoperability comment";
     kmipkit_ttlv_value_t *value = NULL;
     kmipkit_raw_tag_t *raw_tag = NULL;
     kmipkit_tag_t *tag = NULL;
     kmipkit_ttlv_item_t *attribute = NULL;
+    kmipkit_ttlv_item_t *current_attribute = NULL;
     kmipkit_add_attribute_request_t *add_request = NULL;
+    kmipkit_modify_attribute_request_t *modify_request = NULL;
     kmipkit_set_attribute_request_t *set_request = NULL;
     kmipkit_ttlv_structure_t *payload = NULL;
-    int32_t status = kmipkit_ttlv_value_text_string(
-        client->limits, comment, sizeof(comment) - 1, &value);
-    if (status == 0) status = kmipkit_ttlv_raw_tag_create(
-        UINT32_C(0x4200FD), &raw_tag);
-    if (status == 0) status = kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag);
-    if (status == 0) status = kmipkit_ttlv_item_create(
-        tag, value, client->limits, &attribute);
-    if (status == 0) value = NULL;
-    if (status == 0 && standalone_attribute_route_selected()) {
-        if (set_attribute) {
+    int32_t status = 0;
+    if (mutation == ATTRIBUTE_MUTATION_MODIFY) {
+        static const char old_comment[] = "KMIPKit interoperability comment";
+        static const char new_comment[] = "KMIPKit modified interoperability comment";
+        const char *current_form = getenv("KMIPKIT_C_MODIFY_CURRENT_ATTRIBUTE");
+        bool include_current = !current_form || strcmp(current_form, "omitted") != 0;
+        if (include_current) status = create_named_comment_attribute(
+            client, old_comment, &current_attribute);
+        if (status == 0) status = create_named_comment_attribute(
+            client, new_comment, &attribute);
+        if (status == 0 && standalone_attribute_route_selected()) {
+            status = kmipkit_modify_attribute_request_create(
+                identifier, current_attribute, attribute, &modify_request);
+            if (status == 0) status = kmipkit_modify_attribute_request_to_ttlv_payload(
+                modify_request, &payload);
+            if (status == 0) status = kmipkit_client_batch_item_modify_attribute_from_request(
+                modify_request, out_item);
+        } else if (status == 0) {
+            status = kmipkit_client_batch_item_modify_attribute(
+                identifier, current_attribute, attribute, out_item);
+        }
+    } else {
+        status = kmipkit_ttlv_value_text_string(
+            client->limits, comment, sizeof(comment) - 1, &value);
+        if (status == 0) status = kmipkit_ttlv_raw_tag_create(
+            UINT32_C(0x4200FD), &raw_tag);
+        if (status == 0) status = kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag);
+        if (status == 0) status = kmipkit_ttlv_item_create(
+            tag, value, client->limits, &attribute);
+        if (status == 0) value = NULL;
+    }
+    if (status == 0 && mutation != ATTRIBUTE_MUTATION_MODIFY &&
+        standalone_attribute_route_selected()) {
+        if (mutation == ATTRIBUTE_MUTATION_SET) {
             status = kmipkit_set_attribute_request_create(identifier, attribute, &set_request);
             if (status == 0) status = kmipkit_set_attribute_request_to_ttlv_payload(
                 set_request, &payload);
@@ -2047,15 +2099,18 @@ static int32_t build_comment_attribute_mutation_item(
             if (status == 0) status = kmipkit_client_batch_item_add_attribute_from_request(
                 add_request, out_item);
         }
-    } else if (status == 0 && set_attribute) {
+    } else if (status == 0 && mutation != ATTRIBUTE_MUTATION_MODIFY &&
+               mutation == ATTRIBUTE_MUTATION_SET) {
         status = kmipkit_client_batch_item_set_attribute(identifier, attribute, out_item);
-    } else if (status == 0) {
+    } else if (status == 0 && mutation == ATTRIBUTE_MUTATION_ADD) {
         status = kmipkit_client_batch_item_add_attribute(identifier, attribute, out_item);
     }
     if (payload) kmipkit_ttlv_structure_release(payload);
     if (add_request) kmipkit_add_attribute_request_release(add_request);
+    if (modify_request) kmipkit_modify_attribute_request_release(modify_request);
     if (set_request) kmipkit_set_attribute_request_release(set_request);
     if (attribute) kmipkit_ttlv_item_release(attribute);
+    if (current_attribute) kmipkit_ttlv_item_release(current_attribute);
     if (tag) kmipkit_tag_release(tag);
     if (raw_tag) kmipkit_raw_tag_release(raw_tag);
     if (value) kmipkit_ttlv_value_release(value);
@@ -2130,15 +2185,10 @@ static int32_t build_delete_comment_attribute_item(
     return status;
 }
 
-typedef enum {
-    ATTRIBUTE_MUTATION_ADD,
-    ATTRIBUTE_MUTATION_SET,
-    ATTRIBUTE_MUTATION_DELETE
-} attribute_mutation_kind_t;
-
 static const char *attribute_mutation_name(attribute_mutation_kind_t mutation) {
     switch (mutation) {
         case ATTRIBUTE_MUTATION_ADD: return "Add Attribute";
+        case ATTRIBUTE_MUTATION_MODIFY: return "Modify Attribute";
         case ATTRIBUTE_MUTATION_SET: return "Set Attribute";
         case ATTRIBUTE_MUTATION_DELETE: return "Delete Attribute";
     }
@@ -2229,9 +2279,9 @@ static kmip_execution_outcome_t execute_attribute_mutation_case(
     }
     cleanup_needed = true;
 
-    if (mutation == ATTRIBUTE_MUTATION_DELETE) {
+    if (mutation == ATTRIBUTE_MUTATION_DELETE || mutation == ATTRIBUTE_MUTATION_MODIFY) {
         status = build_comment_attribute_mutation_item(
-            client, &created_identifier, false, &seed_item);
+            client, &created_identifier, ATTRIBUTE_MUTATION_ADD, &seed_item);
         if (status == 0) status = set_batch_item_id(&seed_item, "interop-attributes");
         if (status == 0) status = kmipkit_client_batch_create(&seed_batch);
         if (status == 0 && client->username_env[0] != '\0') {
@@ -2281,14 +2331,15 @@ static kmip_execution_outcome_t execute_attribute_mutation_case(
                 (seed_metadata.result_reason == KMIPKIT_ENUMERATION_RESULT_REASON_NOT_AUTHORISED ||
                  seed_metadata.result_reason == KMIPKIT_ENUMERATION_RESULT_REASON_PERMISSION_DENIED);
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                     "KMIPKit could not seed the isolated Delete Attribute Comment fixture");
+                     "KMIPKit could not seed the isolated %s Comment fixture",
+                     attribute_mutation_name(mutation));
             goto cleanup;
         }
     }
 
     status = mutation == ATTRIBUTE_MUTATION_DELETE ? build_delete_comment_attribute_item(
         &created_identifier, &mutation_item) : build_comment_attribute_mutation_item(
-        client, &created_identifier, mutation == ATTRIBUTE_MUTATION_SET, &mutation_item);
+        client, &created_identifier, mutation, &mutation_item);
     if (status == 0) status = set_batch_item_id(
         &mutation_item, mutation == ATTRIBUTE_MUTATION_DELETE ?
             "interop-delete-attribute" : "interop-attributes");
@@ -2325,6 +2376,10 @@ static kmip_execution_outcome_t execute_attribute_mutation_case(
         switch (mutation) {
             case ATTRIBUTE_MUTATION_ADD:
                 status = kmipkit_client_batch_item_response_add_attribute(
+                    mutation_item_response, &mutation_present, &mutation_identifier);
+                break;
+            case ATTRIBUTE_MUTATION_MODIFY:
+                status = kmipkit_client_batch_item_response_modify_attribute(
                     mutation_item_response, &mutation_present, &mutation_identifier);
                 break;
             case ATTRIBUTE_MUTATION_SET:
@@ -2943,6 +2998,16 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         strcmp(test_case->case_id,
                "test-norm-payload-client-add-attribute-request-21-002") == 0)
         return execute_attribute_mutation_case(client, ATTRIBUTE_MUTATION_ADD);
+    if (strcmp(test_case->case_id, "test-op-modify-attribute") == 0 ||
+        strcmp(test_case->case_id,
+               "test-norm-payload-client-modify-attribute-request-20-002") == 0 ||
+        strcmp(test_case->case_id,
+               "test-norm-payload-client-modify-attribute-request-20-003") == 0 ||
+        strcmp(test_case->case_id,
+               "test-norm-payload-client-modify-attribute-request-21-002") == 0 ||
+        strcmp(test_case->case_id,
+               "test-norm-payload-client-modify-attribute-request-21-003") == 0)
+        return execute_attribute_mutation_case(client, ATTRIBUTE_MUTATION_MODIFY);
     if (strcmp(test_case->case_id, "test-op-set-attribute") == 0)
         return execute_attribute_mutation_case(client, ATTRIBUTE_MUTATION_SET);
     if (strcmp(test_case->case_id, "test-op-delete-attribute") == 0)
@@ -3448,7 +3513,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                 }
             } else if (add_attribute_workflow) {
                 status = build_comment_attribute_mutation_item(
-                    client, &placeholder, false, &item);
+                    client, &placeholder, ATTRIBUTE_MUTATION_ADD, &item);
             } else {
                 const kmipkit_unique_identifier_v1_t *identifier =
                     normative_get_attribute_list_payload_workflow &&

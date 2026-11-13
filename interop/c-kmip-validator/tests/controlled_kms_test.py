@@ -119,7 +119,7 @@ def response(operations: tuple[int, ...], protocol_minor: int,
         elif operation == 32:
             payload_value = tlv(0x420094, 7, b"fixture-key-1") + tlv(
                 0x4200C2, 8, bytes.fromhex("00112233445566778899aabbccddeeff"))
-        elif operation in (13, 15, 49):
+        elif operation in (13, 14, 15, 49):
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 11:
             if selected_attribute_wire is not None:
@@ -151,6 +151,7 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                                 if unique_batch_item_ids is not None else {
                                     3: b"interop-register",
                                     13: b"interop-attributes",
+                                    14: b"interop-attributes",
                                     15: b"interop-delete-attribute",
                                     49: b"interop-attributes",
                                     54: b"interop-set-defaults",
@@ -306,6 +307,7 @@ def main() -> int:
         expected_operations += (45, 46)
         expected_operations += (55, 54)
     expected_operations += (1, 13, 15, 19, 20)
+    expected_operations += (1, 13, 14, 19, 20)
     expected_operations += (1, 18, 12, 19, 20)
     expected_operations += (1, 18, 10, 19, 20)
     expected_operations += (52, 52, 52)
@@ -327,6 +329,7 @@ def main() -> int:
     if protocol_version == "2.1":
         expected_cases += ("test-op-set-constraints", "test-op-set-defaults")
     expected_cases += ("test-op-delete-attribute",)
+    expected_cases += ("test-op-modify-attribute",)
     expected_cases += ("test-batch-create-activate-destroy",)
     expected_cases += ("test-batch-placeholder-chain-resolves",)
     expected_cases += (

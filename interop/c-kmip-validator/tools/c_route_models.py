@@ -132,9 +132,7 @@ class ModelCases:
         self.abi.library.kmipkit_modify_attribute_request_release.argtypes = [C.c_void_p]
         self.abi.library.kmipkit_modify_attribute_request_release.restype = None
 
-        attribute_tag = self._tag('Attribute')
-        attribute_name_tag = self._tag('Attribute Name')
-        attribute_value_tag = self._tag('Attribute Value')
+        comment_tag = self._tag('Comment')
         unique_identifier_tag = self._tag('Unique Identifier')
         current_attribute_tag = self._tag('Current Attribute')
         new_attribute_tag = self._tag('New Attribute')
@@ -142,8 +140,7 @@ class ModelCases:
         self.abi.called.clear()
 
         def attribute_tree(value: bytes) -> tuple:
-            return (attribute_tag, 1, [
-                (attribute_name_tag, 7, b'Comment'), (attribute_value_tag, 7, value)])
+            return (comment_tag, 7, value)
 
         for include_optional_fields in (True, False):
             limits, request, payload = C.c_void_p(), C.c_void_p(), C.c_void_p()

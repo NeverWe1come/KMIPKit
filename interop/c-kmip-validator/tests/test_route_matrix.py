@@ -731,6 +731,25 @@ class RouteMatrixTests(unittest.TestCase):
                                     for check in variant_checks))
                 self.assertTrue(any(event['case_id'] == case_id and
                                     event['public_api_symbol'] == symbol for event in events))
+            request_events = [event for event in events if event['case_id'] == case_id and
+                              event['action'] == 'send']
+            version_digits = case_id.split('-request-')[1][:2]
+            version = f'{version_digits[0]}.{version_digits[1]}'
+            for encoding in ('TTLV', 'JSON', 'XML'):
+                for transport in ('raw_tls', 'https'):
+                    cell_events = [event for event in request_events
+                                   if event['protocol_version'] == version and
+                                   event['encoding'] == encoding and event['transport'] == transport and
+                                   event['target_id'].startswith(
+                                       'KMIPKIT-PAYLOAD-CLIENT-ADD-ATTRIBUTE-REQUEST-')]
+                    direct = [event for event in cell_events if event['public_api_symbol'] ==
+                              'kmipkit_client_batch_item_add_attribute']
+                    standalone = [event for event in cell_events if event['public_api_symbol'] ==
+                                  'kmipkit_client_batch_item_add_attribute_from_request']
+                    self.assertEqual(len(direct), 1)
+                    self.assertEqual(len(standalone), 1)
+                    self.assertEqual(direct[0]['request_tree_sha256'],
+                                     standalone[0]['request_tree_sha256'])
 
     def test_normative_modify_attribute_request_payload_routes_execute_in_both_versions(self):
         """OASIS KMIP 2.0 §6.1.33/Table 247 and KMIP 2.1 §6.1.34/Table 265 define this payload."""
@@ -753,7 +772,8 @@ class RouteMatrixTests(unittest.TestCase):
 
         self.assertEqual(len(checks), 48,
                          'Modify Attribute current/new payload fields must run through both constructors')
-        self.assertTrue(all(check['status'] == 'passed' for check in checks))
+        self.assertTrue(all(check['status'] == 'passed' for check in checks),
+                        repr([check for check in checks if check['status'] != 'passed'][:8]))
         for case_id in case_ids:
             case_checks = [check for check in checks if check['case_id'] == case_id]
             self.assertEqual(len(case_checks), 12)
@@ -767,6 +787,36 @@ class RouteMatrixTests(unittest.TestCase):
                                     for check in variant_checks))
                 self.assertTrue(any(event['case_id'] == case_id and
                                     event['public_api_symbol'] == symbol for event in events))
+            expected_current = case_id.endswith('-002')
+            self.assertTrue(all(check['peer_current_attribute_present'] == expected_current
+                                for check in case_checks))
+            self.assertTrue(all(check['peer_new_attribute_present'] is True
+                                for check in case_checks))
+            self.assertTrue(all(check['peer_attribute_state_changed'] is True
+                                for check in case_checks))
+            self.assertTrue(all(check['peer_seed_operations'] == [13] and
+                                check['peer_request_operations'] == [14] and
+                                check['peer_cleanup_operations'] == [19, 20]
+                                for check in case_checks))
+            request_events = [event for event in events if event['case_id'] == case_id and
+                              event['action'] == 'send']
+            version_digits = case_id.split('-request-')[1][:2]
+            version = f'{version_digits[0]}.{version_digits[1]}'
+            for encoding in ('TTLV', 'JSON', 'XML'):
+                for transport in ('raw_tls', 'https'):
+                    cell_events = [event for event in request_events
+                                   if event['protocol_version'] == version and
+                                   event['encoding'] == encoding and event['transport'] == transport and
+                                   event['target_id'].startswith(
+                                       'KMIPKIT-PAYLOAD-CLIENT-MODIFY-ATTRIBUTE-REQUEST-')]
+                    direct = [event for event in cell_events if event['public_api_symbol'] ==
+                              'kmipkit_client_batch_item_modify_attribute']
+                    standalone = [event for event in cell_events if event['public_api_symbol'] ==
+                                  'kmipkit_client_batch_item_modify_attribute_from_request']
+                    self.assertEqual(len(direct), 1)
+                    self.assertEqual(len(standalone), 1)
+                    self.assertEqual(direct[0]['request_tree_sha256'],
+                                     standalone[0]['request_tree_sha256'])
 
     def test_reserved_tag_is_not_constructed_as_an_assigned_ttlv_item(self):
         from artifact_support import ROOT
@@ -2508,12 +2558,9 @@ class RouteMatrixTests(unittest.TestCase):
                          'kmipkit_modify_attribute_request_to_ttlv_payload'} <= result['invoked_symbols'])
         self.assertEqual(result['normalized_trees'], [
             [[0x420094, 7, b'fixture-object-1'.hex()],
-             [0x42013C, 1, [[0x420008, 1, [
-                 [0x42000A, 7, b'Comment'.hex()], [0x42000B, 7, b'old'.hex()]]]]],
-             [0x42013D, 1, [[0x420008, 1, [
-                 [0x42000A, 7, b'Comment'.hex()], [0x42000B, 7, b'new'.hex()]]]]]],
-            [[0x42013D, 1, [[0x420008, 1, [
-                [0x42000A, 7, b'Comment'.hex()], [0x42000B, 7, b'new'.hex()]]]]]],
+             [0x42013C, 1, [[0x4200FD, 7, b'old'.hex()]]],
+             [0x42013D, 1, [[0x4200FD, 7, b'new'.hex()]]]],
+            [[0x42013D, 1, [[0x4200FD, 7, b'new'.hex()]]]],
         ])
 
     def test_structured_name_attribute_has_both_required_fields(self):

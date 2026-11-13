@@ -284,6 +284,11 @@ RECIPES = {
     'test-op-add-attribute': ((1, 13, 19, 20), 'add_attribute'),
     'test-norm-payload-client-add-attribute-request-20-002': ((1, 13, 19, 20), 'add_attribute'),
     'test-norm-payload-client-add-attribute-request-21-002': ((1, 13, 19, 20), 'add_attribute'),
+    'test-op-modify-attribute': ((1, 13, 14, 19, 20), 'modify_attribute'),
+    'test-norm-payload-client-modify-attribute-request-20-002': ((1, 13, 14, 19, 20), 'modify_attribute'),
+    'test-norm-payload-client-modify-attribute-request-20-003': ((1, 13, 14, 19, 20), 'modify_attribute'),
+    'test-norm-payload-client-modify-attribute-request-21-002': ((1, 13, 14, 19, 20), 'modify_attribute'),
+    'test-norm-payload-client-modify-attribute-request-21-003': ((1, 13, 14, 19, 20), 'modify_attribute'),
     'test-op-set-attribute': ((1, 49, 19, 20), 'set_attribute'),
     'test-op-set-constraints': ((55,), 'set_constraints'),
     'test-op-set-defaults': ((54,), 'set_defaults'),
@@ -349,6 +354,10 @@ CONTROLLED_PEER_LOCAL_MODEL_CASES = frozenset({
     'test-norm-payload-client-get-attribute-list-request-21-001',
     'test-norm-payload-client-add-attribute-request-20-002',
     'test-norm-payload-client-add-attribute-request-21-002',
+    'test-norm-payload-client-modify-attribute-request-20-002',
+    'test-norm-payload-client-modify-attribute-request-20-003',
+    'test-norm-payload-client-modify-attribute-request-21-002',
+    'test-norm-payload-client-modify-attribute-request-21-003',
     'test-norm-payload-client-get-usage-allocation-request-20-001',
     'test-norm-payload-client-get-usage-allocation-request-21-001',
     'test-norm-payload-client-query-request-20-001',
@@ -518,11 +527,35 @@ def request_add_attribute_has_new_attribute(node):
         child[0] == 0x42013D and child[1] == 1 for child in payloads[0][2]) == 1
 
 
+def modify_attribute_value(attribute_field):
+    comments = [child for child in attribute_field[2]
+                if child[0] == 0x4200FD and child[1] == 7]
+    if attribute_field[0] not in (0x42013C, 0x42013D) or len(comments) != 1:
+        raise ValueError('fixture_modify_attribute_structure_mismatch')
+    return 'Comment', comments[0][2]
+
+
+def request_modify_attribute_fields(batch_item):
+    payloads = [child for child in batch_item[2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+    if len(payloads) != 1:
+        raise ValueError('fixture_modify_attribute_payload_missing')
+    current = [child for child in payloads[0][2]
+               if child[0] == 0x42013C and child[1] == 1]
+    new = [child for child in payloads[0][2]
+           if child[0] == 0x42013D and child[1] == 1]
+    if len(current) > 1 or len(new) != 1:
+        raise ValueError('fixture_modify_attribute_field_cardinality_mismatch')
+    return (modify_attribute_value(current[0]) if current else None,
+            modify_attribute_value(new[0]))
+
+
 def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
                   constructor_variant=None):
     selected_recipe = recipe or RECIPES[case_id]
     expected, _ = selected_recipe
-    if tuple(numbers(node, 0x42005C)) != expected:
+    observed_operations = tuple(numbers(node, 0x42005C))
+    if observed_operations != expected:
         raise ValueError('fixture_operation_order_mismatch')
     assert_placeholder_usage(node, case_id)
     header = next(descendants(node, 0x420077), node)
@@ -535,6 +568,16 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
             'test-norm-payload-client-add-attribute-request-21-002'} and
             not request_add_attribute_has_new_attribute(node)):
         raise ValueError('fixture_add_attribute_new_attribute_missing')
+    if selected_recipe[1] == 'modify_attribute' and case_id.startswith(
+            'test-norm-payload-client-modify-attribute-request-'):
+        current, new = request_modify_attribute_fields(
+            next(item for item in node[2] if item[0] == BATCH_ITEM_TAG and
+                 item[1] == 1 and numbers(item, 0x42005C) == [14]))
+        current_expected = case_id.endswith('-002')
+        if ((current is not None) != current_expected or new[0] != 'Comment' or
+                new[1] != b'KMIPKit modified interoperability comment' or
+                (current_expected and current != ('Comment', b'KMIPKit interoperability comment'))):
+            raise ValueError('fixture_modify_attribute_request_fields_mismatch')
     if selected_recipe[1] == 'delegated_login':
         payloads = list(descendants(node, REQUEST_PAYLOAD_TAG))
         if (len(payloads) != 1 or payloads[0][1] != 1 or
@@ -938,6 +981,17 @@ def recipe_for_case(case, attribute_fixture):
     return None
 
 
+def attribute_item_value(attribute_field):
+    direct_comments = [child for child in attribute_field[2]
+                       if child[0] == 0x4200FD and child[1] == 7]
+    if len(direct_comments) == 1:
+        return 0x4200FD, direct_comments[0][2]
+    name, value = modify_attribute_value(attribute_field)
+    if name != 'Comment':
+        raise ValueError('fixture_attribute_name_not_supported')
+    return 0x4200FD, value
+
+
 
 class PeerState:
     """Maintain the public object lifecycle represented by the controlled peer."""
@@ -947,6 +1001,7 @@ class PeerState:
             'fixture-key-1': 'active' if usage_allocation_ready else 'pre_active'
         } if existing_object else {}
         self.attributes = {'fixture-key-1': set()} if existing_object else {}
+        self.attribute_values = {'fixture-key-1': {}} if existing_object else {}
         self.usage_allocation_ready = usage_allocation_ready
         self.usage_allocation_totals = {'fixture-key-1': 1000} if usage_allocation_ready else {}
         self.usage_allocation_counts = {'fixture-key-1': 0} if usage_allocation_ready else {}
@@ -957,6 +1012,11 @@ class PeerState:
         if any(self.attributes.values()):
             state_value['attributes'] = {
                 key: sorted(value) for key, value in self.attributes.items() if value
+            }
+        if any(self.attribute_values.values()):
+            state_value['attribute_values_sha256'] = {
+                key: {f'{tag:06X}': digest for tag, digest in sorted(values.items())}
+                for key, values in self.attribute_values.items() if values
             }
         if self.usage_allocation_counts:
             state_value['usage_allocation_counts'] = self.usage_allocation_counts
@@ -1014,6 +1074,7 @@ class PeerState:
                     raise ValueError('fixture_duplicate_create')
                 self.objects[identifier] = 'pre_active'
                 self.attributes[identifier] = set()
+                self.attribute_values[identifier] = {}
                 placeholder = identifier
                 effect = 'created'
             elif operation == 8:
@@ -1023,7 +1084,7 @@ class PeerState:
                 identifier = matching_identifiers[0]
                 placeholder = identifier
                 effect = 'located'
-            elif operation in (9, 10, 11, 12, 13, 15, 17, 18, 19, 20, 31, 32, 49, 56):
+            elif operation in (9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 20, 31, 32, 49, 56):
                 state = self.objects.get(identifier)
                 if state is None:
                     status, reason, effect = 1, 55, 'object_not_found'
@@ -1061,6 +1122,7 @@ class PeerState:
                     else:
                         del self.objects[identifier]
                         self.attributes.pop(identifier, None)
+                        self.attribute_values.pop(identifier, None)
                         effect = 'destroyed'
                 elif operation in (13, 49):
                     new_attribute = next((child for child in item[2]
@@ -1068,13 +1130,28 @@ class PeerState:
                     new_attribute_value = next((child for child in new_attribute[2]
                                                 if child[0] == 0x42013D), None) \
                         if new_attribute is not None and new_attribute[1] == 1 else None
-                    attribute_tag = new_attribute_value[2][0][0] \
-                        if new_attribute_value is not None and new_attribute_value[1] == 1 and \
-                        new_attribute_value[2] else None
-                    if attribute_tag is None:
+                    if new_attribute_value is None:
                         raise ValueError('fixture_add_attribute_tag_missing')
+                    attribute_tag, attribute_value = attribute_item_value(new_attribute_value)
                     self.attributes.setdefault(identifier, set()).add(attribute_tag)
+                    self.attribute_values.setdefault(identifier, {})[attribute_tag] = hashlib.sha256(
+                        attribute_value).hexdigest()
                     effect = 'attribute_added' if operation == 13 else 'attribute_set'
+                elif operation == 14:
+                    current, new = request_modify_attribute_fields(item)
+                    attribute_tag = 0x4200FD
+                    if attribute_tag not in self.attributes.setdefault(identifier, set()):
+                        raise ValueError('fixture_modify_attribute_target_missing')
+                    values = self.attribute_values.setdefault(identifier, {})
+                    old_digest = values.get(attribute_tag)
+                    if old_digest is None:
+                        raise ValueError('fixture_modify_attribute_value_missing')
+                    if current is not None and hashlib.sha256(current[1]).hexdigest() != old_digest:
+                        raise ValueError('fixture_modify_attribute_current_value_mismatch')
+                    if new[0] != 'Comment':
+                        raise ValueError('fixture_modify_attribute_name_mismatch')
+                    values[attribute_tag] = hashlib.sha256(new[1]).hexdigest()
+                    effect = 'attribute_modified'
                 elif operation == 15:
                     references = numbers(item, 0x42013B)
                     if references != [0x4200FD]:
@@ -1084,6 +1161,7 @@ class PeerState:
                         raise ValueError('fixture_delete_attribute_target_missing')
                     else:
                         attributes.remove(0x4200FD)
+                        self.attribute_values.setdefault(identifier, {}).pop(0x4200FD, None)
                         effect = 'attribute_deleted'
                 else:
                     effect = labels[operation]
@@ -1280,7 +1358,12 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                          'test-norm-payload-client-get-attribute-list-request-21-001',
                                                          'test-norm-payload-client-add-attribute-request-20-002',
                                                          'test-norm-payload-client-add-attribute-request-21-002',
-                                                         'test-op-add-attribute', 'test-op-set-attribute',
+                                                         'test-op-add-attribute',
+                                                         'test-norm-payload-client-modify-attribute-request-20-002',
+                                                         'test-norm-payload-client-modify-attribute-request-20-003',
+                                                         'test-norm-payload-client-modify-attribute-request-21-002',
+                                                         'test-norm-payload-client-modify-attribute-request-21-003',
+                                                         'test-op-modify-attribute', 'test-op-set-attribute',
                                                          'test-op-delete-attribute'}
          or case['case_id'] in attribute_case_ids else ('direct',))]
     cells_by_case = {}
@@ -1317,13 +1400,16 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                             continue
                         placeholder_chain_recipe = recipe[1] == 'batch_placeholder_chain'
                         attribute_mutation_recipe = recipe[1] in (
-                            'add_attribute', 'set_attribute', 'delete_attribute')
+                            'add_attribute', 'modify_attribute', 'set_attribute', 'delete_attribute')
                         delete_attribute_recipe = recipe[1] == 'delete_attribute'
+                        modify_attribute_recipe = recipe[1] == 'modify_attribute'
                         attribute_mutation_operation = {
-                            'add_attribute': 13, 'set_attribute': 49, 'delete_attribute': 15,
+                            'add_attribute': 13, 'modify_attribute': 14,
+                            'set_attribute': 49, 'delete_attribute': 15,
                         }.get(recipe[1])
-                        mutation_exchange_index = 2 if delete_attribute_recipe else 1
-                        attribute_cleanup_exchange_index = 3 if delete_attribute_recipe else 2
+                        seeded_attribute_recipe = delete_attribute_recipe or modify_attribute_recipe
+                        mutation_exchange_index = 2 if seeded_attribute_recipe else 1
+                        attribute_cleanup_exchange_index = 3 if seeded_attribute_recipe else 2
                         reject_case = peer_rejection is not None and peer_rejection.get('case_id') == case_id
                         if version == '2.0' and case_id in ('test-op-discover-versions', 'test-op-login', 'test-op-logout', 'test-op-get-constraints', 'test-op-ping'):
                             continue
@@ -1341,7 +1427,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                             def serve():
                                 stream = None
                                 try:
-                                    exchange_count = 4 if delete_attribute_recipe else 3 if attribute_mutation_recipe else (
+                                    exchange_count = 4 if seeded_attribute_recipe else 3 if attribute_mutation_recipe else (
                                         2 if placeholder_chain_recipe or recipe[1] == 'login_logout' else 1)
                                     seed_rejected = False
                                     accepted, _ = server.accept()
@@ -1393,7 +1479,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         elif attribute_mutation_recipe and exchange_index == 0:
                                             assert_add_attribute_setup_request(request_tree, version)
                                             response_operations = (1,)
-                                        elif delete_attribute_recipe and exchange_index == 1:
+                                        elif seeded_attribute_recipe and exchange_index == 1:
                                             assert_recipe(request_tree, case_id, version,
                                                           ((13,), 'add_attribute'))
                                             if text_values(request_tree, UNIQUE_IDENTIFIER_TAG) != ['fixture-key-1']:
@@ -1590,6 +1676,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     'test-norm-payload-client-get-attribute-list-request-20-001',
                                     'test-norm-payload-client-get-attribute-list-request-21-001'}:
                                 run_environment['KMIPKIT_C_ATTRIBUTE_REQUEST_IDENTIFIER'] = 'fixture-key-1'
+                            if recipe[1] == 'modify_attribute':
+                                run_environment['KMIPKIT_C_MODIFY_CURRENT_ATTRIBUTE'] = (
+                                    'present' if case_id.endswith('-002') else 'omitted')
                             run = subprocess.run([str(binary.resolve()), 'run', '--connection', str(connection_path),
                                 '--catalog', str(catalog_path), '--allow-mutations', '--output', str(result_path)],
                                 cwd=ROOT, capture_output=True,
@@ -1731,6 +1820,20 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                               if observation and recipe[1] == 'add_attribute' and case_id in {
                                                   'test-norm-payload-client-add-attribute-request-20-002',
                                                   'test-norm-payload-client-add-attribute-request-21-002'} else {}),
+                                           **({'peer_current_attribute_present':
+                                               request_modify_attribute_fields(
+                                                   next(item for item in observation[mutation_exchange_index][0][2]
+                                                        if item[0] == BATCH_ITEM_TAG and
+                                                        numbers(item, 0x42005C) == [14]))[0] is not None,
+                                               'peer_new_attribute_present':
+                                               request_modify_attribute_fields(
+                                                   next(item for item in observation[mutation_exchange_index][0][2]
+                                                        if item[0] == BATCH_ITEM_TAG and
+                                                        numbers(item, 0x42005C) == [14]))[1] is not None}
+                                              if len(observation) > mutation_exchange_index and
+                                              recipe[1] == 'modify_attribute' and
+                                              case_id.startswith(
+                                                  'test-norm-payload-client-modify-attribute-request-') else {}),
                                            **(peer_cleanup_evidence(observation, include_state_hash=True)
                                               if placeholder_chain_recipe and len(observation) == 2 else {}),
                                            **({'peer_request_operations': [
@@ -1747,7 +1850,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                     'peer_attribute_seeded':
                                                         observation[1][2]['peer_observed_state_before_sha256'] !=
                                                         observation[1][2]['peer_observed_state_after_sha256']}
-                                                   if delete_attribute_recipe else {}),
+                                                   if seeded_attribute_recipe else {}),
                                                 'peer_setup_operations': [
                                                     numbers(item, 0x42005C)[0]
                                                     for item in observation[0][0][2]
@@ -1760,7 +1863,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                         'peer_observed_state_after_sha256'],
                                                 }
                                                if attribute_mutation_recipe and len(observation) ==
-                                               (4 if delete_attribute_recipe else 3) else {}),
+                                               (4 if seeded_attribute_recipe else 3) else {}),
                                            **attribute_check,
                                            **({'failure_code': code or 'peer_observation_missing'} if code or not observation else {})})
                             if not observation or code or run.returncode != 0:
