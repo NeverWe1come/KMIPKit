@@ -49,3 +49,10 @@ passing shared-contract job does not satisfy those language-level requirements.
 - Red commit `051647e3a80c95dfbb61fa478ed9f364a6882fe0`: `python3 -m unittest interop.c-kmip-validator.tests.test_route_matrix.RouteMatrixTests.test_named_object_type_cells_execute_their_typed_constructors -v` failed for all six Object Type targets because the matrix dispatcher returned no execution result.
 - Green commit `120a29b5822e6de675d7a047a54109604412a94d`: dispatch each supported Object Type constructor to its matching catalogued object structure recipe; the focused test and all 92 C route-matrix contract tests passed.
 - Refactor/documentation commit: retain the six-route evidence and exact normative sections with the implementation record.
+
+## Development evidence: named managed-object adapter routes
+
+- Normative scope: KMIP 2.0 and 2.1 §§2.3–2.8 define the six object structures and §11.34 defines their Object Type values. This extends KMIPKIT-0092-FR-003 to both installed C `Managed Object` adapters.
+- Red commit `6c1e20bf1bdffded690d796a9f4a99357a7f90c7`: `python3 -m unittest interop.c-kmip-validator.tests.test_route_matrix.RouteMatrixTests.test_named_object_type_cells_execute_managed_object_routes -v` failed for all 12 object-type/adapter pairs because the dispatcher did not produce model evidence for those routes.
+- Green commit `a0ccba4563da7bf6087d8be2691ae19ca1f51be4`: route both `kmipkit_managed_object_from_fields` and `kmipkit_managed_object_from_item` through the matching catalogued object model. The focused test and all 93 C route-matrix contract tests passed.
+- Refactor/documentation commit: preserve the route-specific Red/Green evidence and normative references in this implementation record.
