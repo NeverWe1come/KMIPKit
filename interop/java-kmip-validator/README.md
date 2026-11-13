@@ -94,6 +94,10 @@ uploads `route-execution-evidence.json` with the generated ledger, and compares
 stable coverage fields with the checked-in `route-evidence-ledger.json` using
 `tools/compare_route_ledger.py`. The comparer reads the checked-in reference and
 the generated ledger from fixed project paths, and accepts no path overrides.
+After a separately validated run changes the route-manifest or coverage
+baseline, regenerate the checked-in ledger with
+`python3 tools/compare_route_ledger.py --refresh-reference`; the command
+rejects generated ledgers that do not record successful invocations.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
 baseline. These recipes execute 12,470 of 71,455 planned Java route cells, with

@@ -33,11 +33,33 @@ def compare_ledgers(reference: dict, generated: dict) -> bool:
     return True
 
 
+def refresh_reference(reference: dict, generated: dict) -> dict:
+    """Refresh the checked-in matrix from a separately validated execution ledger."""
+    _validated_artifact_digest(reference)
+    _validated_artifact_digest(generated)
+    if generated.get("all_invocations_passed") is not True:
+        raise ValueError("cannot refresh the route reference from failed invocations")
+    refreshed = dict(generated)
+    # The installed artifact digest is build-specific and intentionally is not
+    # part of the checked-in route coverage baseline.
+    refreshed["artifact_sha256"] = reference["artifact_sha256"]
+    return refreshed
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.parse_args()
+    parser.add_argument(
+        "--refresh-reference",
+        action="store_true",
+        help="regenerate the checked-in ledger from the validated build ledger",
+    )
+    arguments = parser.parse_args()
     reference = json.loads(REFERENCE_LEDGER.read_text(encoding="utf-8"))
     generated = json.loads(GENERATED_LEDGER.read_text(encoding="utf-8"))
+    if arguments.refresh_reference:
+        refreshed = refresh_reference(reference, generated)
+        REFERENCE_LEDGER.write_text(json.dumps(refreshed, indent=2) + "\n", encoding="utf-8")
+        reference = refreshed
     compare_ledgers(reference, generated)
     print("Java route coverage matches the checked-in reference.")
     return 0

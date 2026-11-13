@@ -90,6 +90,39 @@ class RouteLedgerComparisonTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             COMPARE_ROUTE_LEDGER.compare_ledgers(reference, generated)
 
+    def test_reference_refresh_uses_validated_coverage_and_keeps_artifact_hash_build_specific(self):
+        reference = {
+            "artifact_sha256": "a" * 64,
+            "catalog_sha256": "c" * 64,
+            "route_manifest_sha256": "d" * 64,
+            "planned_cells": 3,
+            "executed_cells": 1,
+            "pending_cells": 2,
+        }
+        generated = {
+            "artifact_sha256": "b" * 64,
+            "catalog_sha256": "c" * 64,
+            "route_manifest_sha256": "e" * 64,
+            "planned_cells": 3,
+            "executed_cells": 2,
+            "pending_cells": 1,
+            "all_invocations_passed": True,
+        }
+
+        refreshed = COMPARE_ROUTE_LEDGER.refresh_reference(reference, generated)
+
+        self.assertEqual("a" * 64, refreshed["artifact_sha256"])
+        self.assertEqual("e" * 64, refreshed["route_manifest_sha256"])
+        self.assertEqual(2, refreshed["executed_cells"])
+        self.assertEqual(1, refreshed["pending_cells"])
+
+    def test_reference_refresh_rejects_failed_invocations(self):
+        reference = {"artifact_sha256": "a" * 64}
+        generated = {"artifact_sha256": "b" * 64, "all_invocations_passed": False}
+
+        with self.assertRaisesRegex(ValueError, "failed invocations"):
+            COMPARE_ROUTE_LEDGER.refresh_reference(reference, generated)
+
 
 if __name__ == "__main__":
     unittest.main()
