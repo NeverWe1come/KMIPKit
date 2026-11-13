@@ -289,7 +289,7 @@ def main() -> int:
         ("test-op-locate", "test-op-query", "test-op-log")
         if protocol_version == "2.0"
         else ("test-op-discover-versions", "test-op-ping", "test-op-query", "test-op-log",
-              "test-op-locate", "test-op-login", "test-op-get", "test-op-get-attributes",
+              "test-op-locate", "test-op-login", "test-op-logout", "test-op-get", "test-op-get-attributes",
               "test-op-get-attribute-list", "test-op-check", "test-op-create", "test-op-activate",
               "test-op-revoke", "test-op-destroy", "test-op-get-constraints",
               "test-attr-cryptographic-algorithm", "test-attr-cryptographic-length",
@@ -303,6 +303,7 @@ def main() -> int:
     expected_operations += (1, 49, 19, 20)
     expected_operations += (1, 17, 19, 20)
     if protocol_version == "2.1":
+        expected_operations += (45, 46)
         expected_operations += (55, 54)
     expected_operations += (1, 13, 15, 19, 20)
     expected_operations += (1, 18, 12, 19, 20)
@@ -694,6 +695,9 @@ def main() -> int:
             login = next(case for case in result["cases"] if case["case_id"] == "test-op-login")
             if login["status"] != "not_run" or "Login builder only supports KMIP 2.1" not in login.get("diagnostic", ""):
                 raise AssertionError("KMIP 2.0 Login must report the documented public C API limitation")
+            logout = next(case for case in result["cases"] if case["case_id"] == "test-op-logout")
+            if logout["status"] != "not_run" or "cannot obtain a server-issued Ticket" not in logout.get("diagnostic", ""):
+                raise AssertionError("KMIP 2.0 Logout must report the missing Login Ticket prerequisite")
         if run.returncode != 0:
             raise AssertionError(
                 f"C validator exited {run.returncode}; stderr={run.stderr[-400:]!r}; "

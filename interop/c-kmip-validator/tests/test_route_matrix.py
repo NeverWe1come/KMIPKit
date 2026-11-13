@@ -435,6 +435,54 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(operations, (47, 1, 45))
         self.assertEqual(cases, ('test-op-delegated-login', 'test-op-login'))
 
+    def test_logout_recipe_requires_a_login_ticket_before_logout(self):
+        """OASIS KMIP 2.0 §6.1.30 and KMIP 2.1 §6.1.31 require a Logout Ticket."""
+        import route_peer
+        from artifact_support import ROOT
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        case = next(case for case in catalog['test_cases'] if case['case_id'] == 'test-op-logout')
+        self.assertEqual(route_peer.recipe_for_case(case, None), ((45, 46), 'login_logout'))
+
+    def test_logout_peer_requires_the_ticket_returned_by_login(self):
+        """OASIS KMIP 2.0 §6.1.30 and 2.1 §6.1.31 require Logout's Ticket."""
+        from route_peer import assert_login_logout_exchange, parse, tlv
+
+        integer = lambda tag, value: tlv(tag, 2, value.to_bytes(4, 'big'))
+        enumeration = lambda tag, value: tlv(tag, 5, value.to_bytes(4, 'big'))
+        def request(operation, payload=b''):
+            if operation == 45 and not payload:
+                payload = tlv(0x420079, 1, integer(0x42014F, 2))
+            item = enumeration(0x42005C, operation) + payload
+            return parse(tlv(0x420078, 1,
+                tlv(0x420077, 1,
+                    tlv(0x420069, 1, integer(0x42006A, 2) + integer(0x42006B, 1)) +
+                    integer(0x42000D, 1)) + tlv(0x42000F, 1, item)))
+
+        assert_login_logout_exchange(request(45), '2.1', 0)
+        ticket = tlv(0x420149, 1,
+                     enumeration(0x42014A, 1) + tlv(0x42014B, 8, b'controlled-login-ticket'))
+        logout_payload = tlv(0x420079, 1, ticket)
+        assert_login_logout_exchange(request(46, logout_payload), '2.1', 1)
+        bad_ticket = tlv(0x420149, 1,
+                         enumeration(0x42014A, 1) + tlv(0x42014B, 8, b'other-ticket'))
+        with self.assertRaisesRegex(ValueError, 'fixture_logout_ticket_mismatch'):
+            assert_login_logout_exchange(
+                request(46, tlv(0x420079, 1, bad_ticket)), '2.1', 1)
+
+    def test_logout_peer_checks_success_ticket_and_empty_logout_payload(self):
+        """OASIS KMIP 2.0 §6.1.29-§6.1.30 and 2.1 §6.1.30-§6.1.31 define response payloads."""
+        from controlled_kms_test import response
+        from route_peer import parse, verify_login_logout_response
+
+        login = parse(response((45,), 1))
+        logout = parse(response((46,), 1))
+        verify_login_logout_response(login, 0)
+        verify_login_logout_response(logout, 1)
+        logout[2][1][2][2][2].append((0x420094, 7, b'bad'))
+        with self.assertRaisesRegex(ValueError, 'fixture_logout_response_payload_not_empty'):
+            verify_login_logout_response(logout, 1)
+
     def test_query_operation_response_cases_have_controlled_peer_recipes(self):
         """OASIS KMIP 2.0 §6.1.37 Table 260 and KMIP 2.1 §6.1.40 Table 283 define Query responses."""
         import route_peer
