@@ -39,6 +39,18 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all(event['status'] == 'passed' for event in events))
         return events
 
+    def assert_batch_stop_response(self, event, peer, encoding, case, response_count):
+        self.assertEqual('passed', event['status'])
+        self.assertNotIn('failure_code', event)
+        self.assertEqual(response_count, event['peer_observed_response_count'])
+        self.assertEqual([1] * response_count, event['peer_observed_result_status_codes'])
+        self.assertEqual(['first_item_failed', 'second_item_not_executed'],
+                         peer.peer_observed_effects)
+        response = self.runner._network_tree(peer.responses[0], encoding)
+        self.assertEqual(response_count, len(self.runner._tree_batch_operation_values(response)))
+        self.assertEqual(2, peer.request_observation['batch_error_continuation_option'])
+        _validate_batch_event(event, case, self.catalog, ('batch-stop',))
+
     def test_tag_decode_rejection_code_preserves_reserved_and_unused_classes(self):
         self.assertEqual(
             'tag_reserved', self.runner._tag_decode_rejection_code('reserved')
@@ -1120,19 +1132,11 @@ class RouteMatrixTests(unittest.TestCase):
             outcome, event = self.runner._execute_matrix_cell(cell, case, target)
 
         self.assertEqual('event', outcome)
-        self.assertEqual('passed', event['status'])
-        self.assertNotIn('failure_code', event)
         self.assertEqual(['Get', 'Get'], event['batch_operation_sequence'])
         self.assertEqual(2, event['batch_item_count'])
         self.assertEqual(['Get', 'Get'], event['peer_observed_operation_sequence'])
-        self.assertEqual(1, event['peer_observed_response_count'])
         self.assertEqual('response_received', event['request_delivery_state'])
-        from validate_route_evidence import _validate_batch_event
-        _validate_batch_event(event, case, self.catalog, ('batch-stop',))
-        response = self.runner._network_tree(peers[0].responses[0], cell['encoding'])
-        self.assertEqual(1, len(self.runner._tree_batch_operation_values(response)))
-        self.assertEqual(['first_item_failed', 'second_item_not_executed'],
-                         peers[0].peer_observed_effects)
+        self.assert_batch_stop_response(event, peers[0], cell['encoding'], case, 1)
 
     def test_batch_stop_peer_preserves_stop_semantics_and_result_evidence(self):
         case = next(case for case in self.catalog['test_cases']
@@ -1166,15 +1170,9 @@ class RouteMatrixTests(unittest.TestCase):
                            side_effect=record_peer):
                     outcome, event = self.runner._execute_matrix_cell(cell, case, target)
                 self.assertEqual('event', outcome)
-                self.assertEqual('passed', event['status'])
-                self.assertNotIn('failure_code', event)
-                self.assertEqual(expected_responses, event['peer_observed_response_count'])
-                self.assertEqual([1] * expected_responses,
-                                 event['peer_observed_result_status_codes'])
-                self.assertEqual(['first_item_failed', 'second_item_not_executed'],
-                                 event['peer_observed_effects'])
-                self.assertEqual(2, peers[0].request_observation['batch_error_continuation_option'])
-                _validate_batch_event(event, case, self.catalog, ('batch-stop',))
+                self.assert_batch_stop_response(
+                    event, peers[0], cell['encoding'], case, expected_responses
+                )
 
     def test_batch_continue_peer_executes_later_item_across_wire_combinations(self):
         case = next(case for case in self.catalog['test_cases']
