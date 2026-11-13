@@ -896,6 +896,38 @@ class RouteMatrixTests(unittest.TestCase):
                     self.assertEqual(len(standalone), 1)
                     self.assertEqual(direct[0]['request_tree_sha256'], standalone[0]['request_tree_sha256'])
 
+    def test_delete_attribute_setup_rejections_are_classified_by_result_reason(self):
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-op-delete-attribute'
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+
+        for reason, expected_compatibility in ((5, 'unsupported'), (12, 'policy_restricted')):
+            with self.subTest(reason=reason):
+                _, _, checks = execute_network_cells(
+                    ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest,
+                    protocol_versions=('2.1',), network_combinations=(('TTLV', 'raw_tls'),),
+                    peer_rejection={'case_id': case_id, 'exchange_index': 1,
+                                    'operation': 13, 'result_status': 1,
+                                    'result_reason': reason})
+
+                self.assertEqual(len(checks), 2)
+                self.assertTrue(all(check['status'] == 'passed' for check in checks))
+                self.assertTrue(all(check['consumer_server_compatibility'] ==
+                                    expected_compatibility for check in checks))
+                self.assertTrue(all(check['consumer_library_correctness'] == 'passed'
+                                    for check in checks))
+                self.assertTrue(all(check['consumer_result_status_code'] == 1
+                                    for check in checks))
+                self.assertTrue(all(check['consumer_result_reason_code'] == reason
+                                    for check in checks))
+                self.assertTrue(all('kmipkit_client_batch_item_delete_attribute' not in
+                                    check['public_api_trace_symbols'] for check in checks))
+
 
     def test_read_back_attribute_recipe_calls_get_attributes_with_exact_tag(self):
         from artifact_support import ROOT
