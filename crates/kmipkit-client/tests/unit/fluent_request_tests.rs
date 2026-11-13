@@ -1,6 +1,7 @@
 use kmipkit_protocol::attribute::typed;
 use kmipkit_protocol::{
-    Attribute, AttributeDefinition, CreateRequest, CurrentAttribute, NewAttribute, UniqueIdentifier,
+    AdjustmentType, Attribute, AttributeDefinition, AttributeReference, CreateRequest,
+    CurrentAttribute, NewAttribute, UniqueIdentifier,
 };
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestOptions;
@@ -854,6 +855,66 @@ fn attribute_mutation_builders_preserve_typed_selectors_and_existing_requests() 
             .operation(),
         49
     );
+
+    let delete = client
+        .request()
+        .delete_attribute()
+        .unique_identifier("key-42")
+        .current_attribute(CurrentAttribute::from_typed(
+            Attribute::<typed::Comment>::new("old-comment".to_owned())
+                .expect("Comment is a catalogued Text String"),
+        ))
+        .build_request();
+    assert_eq!(delete.unique_identifier(), Some("key-42"));
+    assert_eq!(
+        delete
+            .current_attribute()
+            .expect("the selected current value is preserved")
+            .item()
+            .tag()
+            .raw(),
+        typed::Comment::TAG
+    );
+    assert_eq!(
+        client
+            .request()
+            .delete_attribute()
+            .unique_identifier("key-42")
+            .attribute_reference(AttributeReference::tag(typed::Comment::TAG))
+            .to_batch_item()
+            .expect("Delete Attribute converts to the existing batch item")
+            .operation(),
+        15
+    );
+
+    let adjust = client
+        .request()
+        .adjust_attribute()
+        .unique_identifier("key-42")
+        .attribute_reference(AttributeReference::tag(typed::UsageLimits::TAG))
+        .adjustment_type(AdjustmentType::INCREMENT)
+        .adjustment_value(Value::integer(1))
+        .build_request()
+        .expect("Adjust Attribute retains the selected type and caller value");
+    assert_eq!(adjust.unique_identifier(), Some("key-42"));
+    assert_eq!(
+        adjust.attribute_reference().tag_value(),
+        Some(typed::UsageLimits::TAG)
+    );
+    assert_eq!(adjust.adjustment_type(), AdjustmentType::INCREMENT);
+    assert!(adjust.adjustment_value().is_some());
+    assert_eq!(
+        client
+            .request()
+            .adjust_attribute()
+            .attribute_reference(AttributeReference::tag(typed::UsageLimits::TAG))
+            .adjustment_type(AdjustmentType::INCREMENT)
+            .adjustment_value(Value::integer(1))
+            .to_batch_item()
+            .expect("Adjust Attribute converts to the existing batch item")
+            .operation(),
+        48
+    );
 }
 
 #[test]
@@ -941,6 +1002,42 @@ fn attribute_mutation_builders_execute_the_matching_typed_route_once() {
     assert_eq!(
         response.outcome().operation(),
         crate::execute::ClientOperation::SetAttribute
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: attribute_success_response_bytes(15),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .request()
+        .delete_attribute()
+        .unique_identifier("key-42")
+        .attribute_reference(AttributeReference::tag(typed::Comment::TAG))
+        .execute(&CodecLimits::defaults())
+        .expect("Delete Attribute uses its existing typed client route");
+    assert_eq!(
+        response.outcome().operation(),
+        crate::execute::ClientOperation::DeleteAttribute
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: attribute_success_response_bytes(48),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .request()
+        .adjust_attribute()
+        .unique_identifier("key-42")
+        .attribute_reference(AttributeReference::tag(typed::UsageLimits::TAG))
+        .adjustment_type(AdjustmentType::INCREMENT)
+        .adjustment_value(Value::integer(1))
+        .execute(&CodecLimits::defaults())
+        .expect("Adjust Attribute uses its existing typed client route");
+    assert_eq!(
+        response.outcome().operation(),
+        crate::execute::ClientOperation::AdjustAttribute
     );
     assert_eq!(fake.borrow().exchange_count(), 1);
 }
