@@ -6053,16 +6053,19 @@ fn ttlv_item(tag: u32, item_type: u8, value: &[u8]) -> Vec<u8> {
     encoded
 }
 
-
 #[link(name = "kmipkit_fluent_kmip30_consumer", kind = "static")]
 unsafe extern "C" {
     fn kmipkit_c_kmip30_builders_probe() -> i32;
     fn kmipkit_c_kmip30_tls_probe(
         port: u16,
-        leaf_certificate: *const u8, leaf_certificate_length: u64,
-        intermediate_certificate: *const u8, intermediate_certificate_length: u64,
-        private_key: *const u8, private_key_length: u64,
-        trust_root: *const u8, trust_root_length: u64,
+        leaf_certificate: *const u8,
+        leaf_certificate_length: u64,
+        intermediate_certificate: *const u8,
+        intermediate_certificate_length: u64,
+        private_key: *const u8,
+        private_key_length: u64,
+        trust_root: *const u8,
+        trust_root_length: u64,
         out_version_rejection_verified: *mut u8,
     ) -> i32;
 }
@@ -6093,7 +6096,7 @@ fn public_c_kmip30_executes_all_seven_typed_routes_with_explicit_version() {
     let server_config = mtls_server_config(&pki);
     let peer = thread::spawn(move || -> io::Result<()> {
         let deadline = Instant::now() + Duration::from_secs(5);
-        for expected_operation in OPERATIONS {
+        for (stage, expected_operation) in OPERATIONS.into_iter().enumerate() {
             let (stream, _) = loop {
                 match listener.accept() {
                     Ok(accepted) => break accepted,
@@ -6116,8 +6119,8 @@ fn public_c_kmip30_executes_all_seven_typed_routes_with_explicit_version() {
                 .expect("the mutual-TLS server configuration is valid");
             let mut tls = StreamOwned::new(connection, stream);
             let request = read_ttlv_frame(&mut tls)?;
-            assert_c_kmip30_request(&request, expected_operation);
-            tls.write_all(&c_kmip30_response(expected_operation))?;
+            assert_c_kmip30_request(&request, expected_operation, stage >= 7);
+            tls.write_all(&c_kmip30_response(expected_operation, stage >= 7))?;
             tls.flush()?;
             let _ = tls.get_ref().shutdown(Shutdown::Both);
         }
@@ -6154,8 +6157,7 @@ fn public_c_kmip30_executes_all_seven_typed_routes_with_explicit_version() {
     );
 }
 
-
-fn assert_c_kmip30_request(encoded: &[u8], operation: u32) {
+fn assert_c_kmip30_request(encoded: &[u8], operation: u32, builder_path: bool) {
     // KMIPKIT-0116 FR-002; KMIP 3.0 WD section 11.37, Table 584.
     let root = decode_test_request(encoded).expect("valid encoded request");
     let tree = root.with_value(|value| match value {
@@ -6163,43 +6165,95 @@ fn assert_c_kmip30_request(encoded: &[u8], operation: u32) {
         _ => panic!("expected Request Message structure"),
     });
     let request = kmipkit_protocol::RequestMessage::try_from_ttlv(tree).expect("valid request");
-    assert_eq!(request.header().protocol_version(), kmipkit_protocol::ProtocolVersion::V3_0);
+    assert_eq!(
+        request.header().protocol_version(),
+        kmipkit_protocol::ProtocolVersion::V3_0
+    );
+    assert_eq!(
+        request.header().asynchronous_indicator(),
+        if builder_path { Some(2) } else { None }
+    );
     assert_eq!(request.batch_items().len(), 1);
     let batch = request.batch_items().next().expect("one batch item");
     assert_eq!(batch.operation(), Some(operation));
-    batch.with_request_payload(|payload| {
-    let tags = payload.children().iter().map(|item| item.tag().raw()).collect::<Vec<_>>();
-    let expected = match operation {
-        63 => vec![0x420024, 0x420125, 0x4201a1],
-        60 | 62 => vec![0x420125],
-        66 => vec![0x420094, 0x4200c2],
-        _ => vec![0x420094],
-    };
-    assert_eq!(tags, expected, "typed fields retain pinned Table order");
-    for field in payload.children() {
-        if field.tag().raw() == 0x4200c2 {
-            field.with_value(|value| assert!(matches!(value, ValueView::ByteString(b"credential"))));
-        }
-    }
-    }).expect("typed payload");
+    batch
+        .with_request_payload(|payload| {
+            let tags = payload
+                .children()
+                .iter()
+                .map(|item| item.tag().raw())
+                .collect::<Vec<_>>();
+            let expected = match operation {
+                63 => vec![0x0042_0024, 0x0042_0125, 0x0042_01A1],
+                60 | 62 => vec![0x0042_0125],
+                64 if builder_path => vec![0x0042_0094, 0x0042_002F],
+                65 if builder_path => vec![0x0042_0094, 0x0042_002B, 0x0042_0125],
+                66 if builder_path => vec![0x0042_0094, 0x0042_002B, 0x0042_00C2, 0x0042_0125],
+                66 => vec![0x0042_0094, 0x0042_00C2],
+                _ => vec![0x0042_0094],
+            };
+            assert_eq!(tags, expected, "typed fields retain pinned Table order");
+            for field in payload.children() {
+                if field.tag().raw() == 0x0042_01A1 {
+                    field.with_value(|value| {
+                        let ValueView::Structure(object) = value else {
+                            panic!("typed credential object");
+                        };
+                        let password = &object.children()[0];
+                        assert_eq!(password.tag().raw(), 0x0042_00A1);
+                        password.with_value(|value| {
+                            assert!(matches!(value, ValueView::TextString("credential")));
+                        });
+                    });
+                }
+                if field.tag().raw() == 0x0042_002F {
+                    field.with_value(|value| assert!(matches!(value, ValueView::DateTime(42))));
+                }
+                if field.tag().raw() == 0x0042_00C2 {
+                    field.with_value(|value| {
+                        assert!(matches!(value, ValueView::ByteString(b"credential")));
+                    });
+                }
+            }
+        })
+        .expect("typed payload");
 }
 
-fn c_kmip30_response(operation: u32) -> Vec<u8> {
-    let header = structure(0x42007a, [
-        structure(0x420069, [integer(0x42006a, 3), integer(0x42006b, 0)]),
-        date_time(0x420092, 1_700_000_000), integer(0x42000d, 1),
-    ]);
-    let status = match operation { 60 => 2, 62 => 1, _ => 0 };
-    let mut fields = vec![enumeration(0x42005c, operation), enumeration(0x42007f, status)];
+fn c_kmip30_response(operation: u32, builder_path: bool) -> Vec<u8> {
+    let header = structure(
+        0x0042_007A,
+        [
+            structure(
+                0x0042_0069,
+                [integer(0x0042_006A, 3), integer(0x0042_006B, 0)],
+            ),
+            date_time(0x0042_0092, 1_700_000_000),
+            integer(0x0042_000D, 1),
+        ],
+    );
+    let status = match operation {
+        60 if builder_path => 2,
+        62 => 1,
+        _ => 0,
+    };
+    let mut fields = vec![
+        enumeration(0x0042_005C, operation),
+        enumeration(0x0042_007F, status),
+    ];
     if status == 2 {
-        fields.push(ttlv_item(0x420006, 0x08, b"pending-correlation"));
+        fields.push(ttlv_item(0x0042_0006, 0x08, b"pending-correlation"));
+        fields.push(structure(0x0042_007C, []));
     } else if status == 1 {
-        fields.push(enumeration(0x42007e, 256));
+        fields.push(enumeration(0x0042_007E, 256));
     } else {
         let mut payload = Vec::new();
-        if operation != 61 { payload.push(ttlv_item(0x420094, 0x07, b"result-id")); }
-        if operation == 65 { payload.push(ttlv_item(0x4200c2, 0x08, b"public-ciphertext")); }
-        fields.push(structure(0x42007c, payload));
+        if operation != 61 {
+            payload.push(ttlv_item(0x0042_0094, 0x07, b"result-id"));
+        }
+        if operation == 65 {
+            payload.push(ttlv_item(0x0042_00C2, 0x08, b"public-ciphertext"));
+        }
+        fields.push(structure(0x0042_007C, payload));
     }
-    structure(0x42007b, [header, structure(0x42000f, fields)])
+    structure(0x0042_007B, [header, structure(0x0042_000F, fields)])
 }
