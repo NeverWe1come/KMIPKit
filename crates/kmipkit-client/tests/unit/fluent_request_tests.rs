@@ -16,6 +16,8 @@ use crate::fluent::{
     FluentAttributePosition, FluentBuildError,
 };
 
+const PING_OPERATION: u32 = 0x0000_003b;
+
 fn item(raw_tag: u32, value: Value) -> Item {
     Item::new(
         RawTag::new(raw_tag)
@@ -646,7 +648,7 @@ fn ping_fluent_builder_builds_the_existing_typed_request_and_executes_once() {
     assert_eq!(request, PingRequest::new());
 
     let response =
-        asynchronous_response_bytes(0x0000_003b, 0, None, None, Some(test_structure([])));
+        asynchronous_response_bytes(PING_OPERATION, 0, None, None, Some(test_structure([])));
     let (mut client, transport, _) = client_for(ExchangeScript::Success {
         response,
         request_write_chunks: vec![2, 5],
