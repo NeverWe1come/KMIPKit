@@ -654,15 +654,10 @@ fn response_builder_ffi_rejects_missing_handles() {
     kmipkit_server_response_release(ptr::null_mut());
 }
 
-#[test]
-fn ffi_role_reversal_rejects_active_batch_and_handles_idle_timeout() {
+fn role_reversal_test_listener(pki: &EphemeralPki) -> (*mut crate::kmipkit_server_listener_t, u16) {
     use kmipkit_transport::listener::ListenerTransportConfig;
     use kmipkit_transport::{CertificateInput, ClientIdentity, PrivateKeyInput, TrustSource};
-    use std::io::Write;
-    use std::sync::mpsc;
-    use std::thread;
 
-    let pki = EphemeralPki::generate().expect("ephemeral test PKI generation succeeds");
     let server_identity = pki.server_identity();
     let config = ListenerTransportConfig::builder("127.0.0.1", 0)
         .listener_identity(ClientIdentity::new(
@@ -688,8 +683,18 @@ fn ffi_role_reversal_rejects_active_batch_and_handles_idle_timeout() {
         HandleValue::ServerListener(Box::new(Mutex::new(listener))),
     )
     .expect("listener handle is created");
+    (listener, port)
+}
 
-    let client_config = test_listener_client_tls_config(&pki);
+fn role_reversal_test_peer(
+    port: u16,
+    pki: &EphemeralPki,
+) -> (std::thread::JoinHandle<()>, std::sync::mpsc::Receiver<()>) {
+    use std::io::Write;
+    use std::sync::mpsc;
+    use std::thread;
+
+    let client_config = test_listener_client_tls_config(pki);
     let request = discover_versions_request();
     let (response_received, response_received_rx) = mpsc::channel();
     let peer = thread::spawn(move || {
@@ -711,7 +716,18 @@ fn ffi_role_reversal_rejects_active_batch_and_handles_idle_timeout() {
                 .expect("server test is still waiting for both responses");
         }
     });
+    (peer, response_received_rx)
+}
 
+fn accept_role_reversal_test_batches(
+    listener: *mut crate::kmipkit_server_listener_t,
+) -> (
+    *mut crate::kmipkit_server_connection_t,
+    *mut crate::kmipkit_server_connection_t,
+    *mut crate::kmipkit_codec_limits_t,
+    *mut crate::kmipkit_server_incoming_batch_t,
+    *mut crate::kmipkit_server_incoming_batch_t,
+) {
     let mut connection = ptr::null_mut();
     assert_eq!(
         kmipkit_server_listener_accept(listener, 5, 0, &raw mut connection),
@@ -737,18 +753,16 @@ fn ffi_role_reversal_rejects_active_batch_and_handles_idle_timeout() {
         kmipkit_server_connection_recv_batch(other_connection, limits, 5, 0, &raw mut other_batch),
         SUCCESS
     );
+    (connection, other_connection, limits, batch, other_batch)
+}
 
+fn assert_role_reversal_consumes_only_matching_responses(
+    connection: *mut crate::kmipkit_server_connection_t,
+    other_connection: *mut crate::kmipkit_server_connection_t,
+    response: *mut crate::kmipkit_server_response_t,
+    other_response: *mut crate::kmipkit_server_response_t,
+) -> *mut crate::kmipkit_server_role_reversed_session_t {
     let mut session = ptr::null_mut();
-    assert_eq!(
-        kmipkit_server_connection_into_role_reversed_session(connection, &raw mut session),
-        ERROR_INVALID_INPUT,
-        "role reversal cannot consume a connection while its request batch is active"
-    );
-    assert!(session.is_null());
-
-    let (request_item, response_builder, response) = test_failure_response(batch);
-    let (other_request_item, other_response_builder, other_response) =
-        test_failure_response(other_batch);
     assert_eq!(
         kmipkit_server_connection_send_response(connection, other_response, 5, 0),
         ERROR_INVALID_INPUT,
@@ -772,6 +786,7 @@ fn ffi_role_reversal_rejects_active_batch_and_handles_idle_timeout() {
         SUCCESS
     );
     assert!(!session.is_null());
+
     let mut duplicate_session = ptr::null_mut();
     assert_eq!(
         kmipkit_server_connection_into_role_reversed_session(
@@ -782,12 +797,13 @@ fn ffi_role_reversal_rejects_active_batch_and_handles_idle_timeout() {
         "the connection is consumed by successful role reversal"
     );
     assert!(duplicate_session.is_null());
+    session
+}
 
-    for _ in 0..2 {
-        response_received_rx
-            .recv_timeout(std::time::Duration::from_secs(5))
-            .expect("the TLS peer received both responses");
-    }
+fn assert_role_reversed_session_idle_timeout_and_poisoning(
+    session: *mut crate::kmipkit_server_role_reversed_session_t,
+    limits: *mut crate::kmipkit_codec_limits_t,
+) {
     let mut next_batch = ptr::null_mut();
     assert_eq!(
         kmipkit_server_role_reversed_session_recv_batch(
@@ -825,6 +841,40 @@ fn ffi_role_reversal_rejects_active_batch_and_handles_idle_timeout() {
         ERROR_INTERNAL
     );
     assert!(next_batch.is_null());
+}
+
+#[test]
+fn ffi_role_reversal_rejects_active_batch_and_handles_idle_timeout() {
+    let pki = EphemeralPki::generate().expect("ephemeral test PKI generation succeeds");
+    let (listener, port) = role_reversal_test_listener(&pki);
+    let (peer, response_received_rx) = role_reversal_test_peer(port, &pki);
+    let (connection, other_connection, limits, batch, other_batch) =
+        accept_role_reversal_test_batches(listener);
+
+    let mut session = ptr::null_mut();
+    assert_eq!(
+        kmipkit_server_connection_into_role_reversed_session(connection, &raw mut session),
+        ERROR_INVALID_INPUT,
+        "role reversal cannot consume a connection while its request batch is active"
+    );
+    assert!(session.is_null());
+
+    let (request_item, response_builder, response) = test_failure_response(batch);
+    let (other_request_item, other_response_builder, other_response) =
+        test_failure_response(other_batch);
+    session = assert_role_reversal_consumes_only_matching_responses(
+        connection,
+        other_connection,
+        response,
+        other_response,
+    );
+
+    for _ in 0..2 {
+        response_received_rx
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .expect("the TLS peer received both responses");
+    }
+    assert_role_reversed_session_idle_timeout_and_poisoning(session, limits);
 
     kmipkit_server_role_reversed_session_release(session);
     kmipkit_server_response_release(response);
