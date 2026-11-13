@@ -697,6 +697,26 @@ pub(crate) fn asynchronous(
 #[cfg(test)]
 mod tests {
     #[test]
+    fn protocol_failure_codes_distinguish_safe_cause_categories() {
+        use kmipkit::ClientErrorCategory;
+
+        assert_eq!(
+            super::route_failure_code(
+                ClientErrorCategory::Protocol,
+                Some("protocol: invalid encoding"),
+            ),
+            "route_protocol_invalid_encoding_failed"
+        );
+        assert_eq!(
+            super::route_failure_code(
+                ClientErrorCategory::Protocol,
+                Some("protocol: invalid value"),
+            ),
+            "route_protocol_invalid_value_failed"
+        );
+    }
+
+    #[test]
     fn route_failure_codes_distinguish_safe_client_error_categories() {
         use kmipkit::ClientErrorCategory;
 
