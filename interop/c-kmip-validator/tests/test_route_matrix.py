@@ -416,6 +416,35 @@ class RouteMatrixTests(unittest.TestCase):
             with self.subTest(case_id=case_id):
                 self.assertEqual(route_peer.recipe_for_case(cases[case_id], None), ((24,), 'query'))
 
+    def test_query_operation_responses_execute_and_read_typed_and_ttlv_fields(self):
+        """OASIS KMIP 2.0 §6.1.37 Table 260 and KMIP 2.1 §6.1.40 Table 283 define Query responses."""
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_ids = {
+            'test-norm-payload-client-query-response-20-001',
+            'test-norm-payload-client-query-response-21-001',
+        }
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] in case_ids]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12)
+        self.assertEqual(len([event for event in events if event['action'] == 'send']), 12)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks))
+        self.assertTrue(all(check['consumer_library_correctness'] == 'passed' for check in checks))
+        required_symbols = {
+            'kmipkit_client_batch_item_response_query_field_count',
+            'kmipkit_client_batch_item_response_query_field_at',
+            'kmipkit_client_batch_item_response_query_ttlv',
+        }
+        self.assertTrue(all(required_symbols <= set(check['public_api_trace_symbols'])
+                            for check in checks))
+
     def test_reserved_tag_is_not_constructed_as_an_assigned_ttlv_item(self):
         from artifact_support import ROOT
         catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
