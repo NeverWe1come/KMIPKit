@@ -1,6 +1,7 @@
 package org.kmipkit.validator;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.Test;
 import org.kmipkit.extensions.ClientBatchItem;
@@ -13,6 +14,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ArtifactProvenanceTest {
     private static final String COMMIT = "9692057c9ade474fb0c4e0b7130539da368eb794";
+
+    @Test
+    void libraryPinMatchesTheExactSharedReleaseArtifactCommit() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode pin = mapper.readTree(Path.of("library-pin.json").toFile());
+        JsonNode routeManifest = mapper.readTree(Path.of("../shared/coverage/route-capabilities.json").toFile());
+
+        assertEquals("9a16cc90a12205101d22a38501a5e74c665df4dc", routeManifest.path("library_commit").asText());
+        assertEquals(routeManifest.path("library_commit").asText(), pin.path("commit").asText());
+    }
 
     @Test
     void verifiesPinnedCommitAndJarDigest() throws Exception {
