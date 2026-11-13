@@ -338,6 +338,29 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(result['constructed_wire'], result['decoded_wire'])
         self.assertIn('kmipkit_ttlv_item_create', result['invoked_symbols'])
 
+    def test_ephemeral_boolean_field_roundtrips_for_both_kmip_versions(self):
+        """OASIS KMIP 2.0 §8.3/Table 358 and KMIP 2.1 §8.3/Table 396 define Ephemeral as Boolean."""
+        from artifact_support import INSTALL, ROOT
+        from route_ttlv import TreeAbi, encode
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        target = next(item for item in catalog['normative_targets']
+                      if item['target_id'] == 'KMIPKIT-ELEM-MESSAGE-FIELD-8-3-EPHEMERAL')
+        tags = {item['name']: int(item['wire_value'], 16)
+                for item in catalog['normative_targets'] if item['kind'] == 'tag'}
+        abi = TreeAbi(INSTALL / 'lib/libkmipkit_ffi.so')
+
+        for version in ('2.0', '2.1'):
+            with self.subTest(protocol_version=version):
+                trees = self.runner.generic_tree_fixtures(target, catalog, tags, version)
+                self.assertEqual(trees[0][0], tags['Request Message'])
+                self.assertEqual(trees, [(tags['Ephemeral'], 6, bytes(8))])
+                result = abi.roundtrip(encode(trees[0]))
+                self.assertIn('kmipkit_ttlv_value_boolean', result['invoked_symbols'])
+                self.assertIn('kmipkit_ttlv_item_create', result['invoked_symbols'])
+                self.assertIn('kmipkit_ttlv_decode', result['invoked_symbols'])
+                self.assertEqual(result['constructed_wire'], result['decoded_wire'])
+
     def test_datetime_constructor_executes_normative_message_timestamp_cells(self):
         """OASIS KMIP 2.0 §9.20 Table 387 and KMIP 2.1 §9.20 Table 425 define Time Stamp as Date-Time."""
         from artifact_support import INSTALL, ROOT
