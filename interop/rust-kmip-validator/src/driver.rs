@@ -580,6 +580,16 @@ pub(crate) fn execute_route(
     execute(client, connection, request)
 }
 
+pub(crate) const fn route_failure_code(category: kmipkit::ClientErrorCategory) -> &'static str {
+    match category {
+        kmipkit::ClientErrorCategory::Validation => "route_validation_failed",
+        kmipkit::ClientErrorCategory::Protocol => "route_protocol_failed",
+        kmipkit::ClientErrorCategory::Transport => "route_transport_failed",
+        kmipkit::ClientErrorCategory::ServerResult => "route_server_result_failed",
+        _ => "route_exchange_failed",
+    }
+}
+
 pub(crate) fn batch(
     client: &mut Client,
     connection: &Connection,

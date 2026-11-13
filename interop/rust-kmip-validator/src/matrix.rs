@@ -5474,27 +5474,39 @@ fn run_operation_network(rows: &[Json], connection: &Connection, output: &Path) 
                 )
             })
         };
-        let (mut status, response_tree, delivery_state, transport_count) = match exchange {
-            Some(Ok(observed)) => (
-                "passed",
-                observed.response_tree_sha256,
-                Some("response_received"),
-                1,
-            ),
-            Some(Err(error))
-                if expected_not_sent
-                    && error.delivery_state() == Some(kmipkit::RequestDeliveryState::NotSent) =>
-            {
-                ("passed", None, Some("not_sent"), 0)
-            }
-            Some(Err(error)) => match error.delivery_state() {
-                Some(kmipkit::RequestDeliveryState::NotSent) | None => {
-                    ("failed", None, Some("not_sent"), 0)
+        let (mut status, response_tree, delivery_state, transport_count, failure_code) =
+            match exchange {
+                Some(Ok(observed)) => (
+                    "passed",
+                    observed.response_tree_sha256,
+                    Some("response_received"),
+                    1,
+                    None,
+                ),
+                Some(Err(error))
+                    if expected_not_sent
+                        && error.delivery_state()
+                            == Some(kmipkit::RequestDeliveryState::NotSent) =>
+                {
+                    ("passed", None, Some("not_sent"), 0, None)
                 }
-                Some(_) => ("failed", None, Some("possibly_sent"), 1),
-            },
-            None => ("failed", None, Some("not_sent"), 0),
-        };
+                Some(Err(error)) => {
+                    let failure_code = crate::driver::route_failure_code(error.category());
+                    match error.delivery_state() {
+                        Some(kmipkit::RequestDeliveryState::NotSent) | None => {
+                            ("failed", None, Some("not_sent"), 0, Some(failure_code))
+                        }
+                        Some(_) => ("failed", None, Some("possibly_sent"), 1, Some(failure_code)),
+                    }
+                }
+                None => (
+                    "failed",
+                    None,
+                    Some("not_sent"),
+                    0,
+                    Some("route_recipe_missing"),
+                ),
+            };
         if status == "passed" && row["action"] == "decode" && response_tree.is_none() {
             status = "failed";
         }
@@ -5531,7 +5543,7 @@ fn run_operation_network(rows: &[Json], connection: &Connection, output: &Path) 
             event["transport_invocation_count"] = transport_count.into();
         }
         if status == "failed" {
-            event["failure_code"] = "route_request_exchange_failed".into();
+            event["failure_code"] = failure_code.unwrap_or("route_execution_failed").into();
         }
         events.push(event);
     }
