@@ -120,8 +120,8 @@ limitation is changed by this phase.
 Final checks after the refactor:
 
 - Full Java consumer suite: 52 tests passed, no failures, errors, or skips.
-- Shared route evidence validator: 17,514 executed cells, zero failed cells,
-  53,941 pending cells, and `selected_scope_complete=true`.
+- Shared route evidence validator: 17,994 executed cells, zero failed cells,
+  53,461 pending cells, and `selected_scope_complete=true`.
 - `python3 tools/compare_route_ledger.py`: generated coverage matches the
   checked-in reference.
 - `git diff --check`: passed.
@@ -467,3 +467,40 @@ skips. The shared validator accepts 17,514 cells with zero failures and
 `selected_scope_complete=true`; the generated ledger records 17,514 executed,
 53,941 pending, and 71,455 planned. This completes Result Reason's local
 generic TTLV scope; the overall Java matrix remains incomplete.
+
+## Operation enumeration route completion
+
+Sources: OASIS KMIP 2.0 §11.36, KMIP 2.1 §11.36, and §10.1 (TTLV
+Enumeration representation). The aggregate local case covers all 60
+catalogued Operation values through `TtlvValue.Enumeration`,
+`TtlvItem.create`, `TtlvItem.view`, and `TtlvCodec.decode` for both protocol
+versions, adding 480 value/route/version cells. Six Operations are assigned
+in KMIP 2.1 only; the fixture also tests them as unknown Enumeration values
+under KMIP 2.0 to verify forward-compatible preservation.
+
+Red commit `c57db322f` requires all 60 catalogued targets and fails because
+the Operation aggregate has no local fixtures. Green commit `39527b5aa`
+adds the aggregate to the catalog-driven scope and round-trips the six
+KMIP 2.1-only values as unknown in KMIP 2.0. Refactor commit `fe8490d7d`
+declares the version-specific enum families together so their preservation
+rule is explicit and shared with Result Reason.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 37d7eeae9e64644fd7cdde4bfd64b7da5ccbb0bf2be53a949826eb62dc3aaf86 \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+```
+
+The full Java consumer suite passes 52 tests with no failures, errors, or
+skips. The shared validator accepts 17,994 cells with zero failures and
+`selected_scope_complete=true`; the generated ledger records 17,994 executed,
+53,461 pending, and 71,455 planned. This completes Operation's local generic
+TTLV scope; the overall Java matrix remains incomplete.
