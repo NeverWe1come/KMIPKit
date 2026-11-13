@@ -15,7 +15,7 @@ if(NOT KMIPKIT_C_INSTALL_DIR)
 endif()
 get_filename_component(KMIPKIT_C_INSTALL_DIR_ABSOLUTE "${KMIPKIT_C_INSTALL_DIR}"
     ABSOLUTE BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..")
-set(KMIPKIT_LIBRARY_COMMIT "9a16cc90a12205101d22a38501a5e74c665df4dc")
+set(KMIPKIT_LIBRARY_COMMIT "489fafc79ef89db2524eafa7a6c6482f5cf75d97")
 # The selected install is authoritative even when reusing an older build cache.
 unset(KMIPKIT_FFI_LIBRARY CACHE)
 find_library(KMIPKIT_FFI_LIBRARY

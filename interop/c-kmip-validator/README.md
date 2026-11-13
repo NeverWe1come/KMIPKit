@@ -3,7 +3,7 @@
 This standalone C11 consumer links the public KMIPKit C ABI installed from the
 exact `release/1.0.0` source commit pinned by
 `interop/shared/coverage/route-capabilities.json`
-(`9a16cc90a12205101d22a38501a5e74c665df4dc`). It targets KMIP 2.0 and 2.1 and
+(`489fafc79ef89db2524eafa7a6c6482f5cf75d97`). It targets KMIP 2.0 and 2.1 and
 uses the shared 2,689-case catalog. A successful build or controlled fixture
 does not assert compatibility with a deployed vendor KMS.
 
@@ -15,7 +15,7 @@ python3 interop/c-kmip-validator/tools/verify_artifact.py
 python3 -m pip install --only-binary ':all:' jsonschema==4.23.0
 cmake -S interop/c-kmip-validator -B interop/c-kmip-validator/build \
   -DPython3_EXECUTABLE="$(command -v python3)" \
-  -DKMIPKIT_C_INSTALL_DIR=interop/.local/c-live/install/9a16cc90a12205101d22a38501a5e74c665df4dc
+  -DKMIPKIT_C_INSTALL_DIR=interop/.local/c-live/install/489fafc79ef89db2524eafa7a6c6482f5cf75d97
 cmake --build interop/c-kmip-validator/build
 ctest --test-dir interop/c-kmip-validator/build --output-on-failure
 ```
@@ -120,7 +120,7 @@ python3 interop/c-kmip-validator/tools/route_matrix.py \
   --output interop/c-kmip-validator/build/route-execution-evidence.json
 python3 interop/shared/tools/validate_route_evidence.py \
   --report interop/c-kmip-validator/build/route-execution-evidence.json \
-  --artifact-sha256 "$(sha256sum interop/.local/c-live/install/9a16cc90a12205101d22a38501a5e74c665df4dc/lib/libkmipkit_ffi.so | cut -d ' ' -f 1)"
+  --artifact-sha256 "$(sha256sum interop/.local/c-live/install/489fafc79ef89db2524eafa7a6c6482f5cf75d97/lib/libkmipkit_ffi.so | cut -d ' ' -f 1)"
 ```
 
 Both completeness commands currently exit nonzero because semantic branch,
