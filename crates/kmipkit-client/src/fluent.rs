@@ -85,6 +85,8 @@ impl BitOr for CryptographicUsageMask {
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum FluentBuildError {
+    /// Create is missing its explicit Object Type.
+    MissingCreateObjectType,
     /// Create Symmetric Key is missing Cryptographic Algorithm.
     MissingCryptographicAlgorithm,
     /// Create Symmetric Key is missing Cryptographic Length.
@@ -143,6 +145,7 @@ pub enum FluentBuildError {
 impl fmt::Display for FluentBuildError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter.write_str(match self {
+            Self::MissingCreateObjectType => "Create requires Object Type",
             Self::MissingCryptographicAlgorithm => {
                 "Create Symmetric Key requires Cryptographic Algorithm"
             }
@@ -285,6 +288,12 @@ pub struct RequestBuilder<'a> {
 impl<'a> RequestBuilder<'a> {
     pub(crate) const fn new(client: &'a mut Client) -> Self {
         Self { client }
+    }
+
+    /// Begins constructing a typed Create request with explicit Object Type.
+    #[must_use]
+    pub fn create(self) -> CreateBuilder<'a> {
+        CreateBuilder::new(self.client)
     }
 
     /// Begins constructing a Create Symmetric Key request.
@@ -3927,6 +3936,138 @@ fn copy_adjustment_value(
     value: &AttributeAdjustmentValue,
 ) -> Result<AttributeAdjustmentValue, FluentBuildError> {
     value.try_clone()
+}
+
+/// A fluent builder for the typed Create request in KMIP v2.1 §6.1.8,
+/// Table 186. Object Type is explicit; no cryptographic attributes are inferred.
+pub struct CreateBuilder<'a> {
+    client: &'a mut Client,
+    object_type: Option<ObjectType>,
+    attributes: AttributeSet,
+    protection_storage_masks: Option<Structure>,
+    options: Option<RequestOptions>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl<'a> CreateBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            client,
+            object_type: None,
+            attributes: AttributeSet::new(),
+            protection_storage_masks: None,
+            options: None,
+            asynchronous_indicator: None,
+        }
+    }
+
+    /// Sets the required Object Type, preserving its exact raw value.
+    #[must_use]
+    pub const fn object_type(mut self, object_type: ObjectType) -> Self {
+        self.object_type = Some(object_type);
+        self
+    }
+
+    /// Replaces the complete ordered attribute set without adding attributes.
+    #[must_use]
+    pub fn attributes(mut self, attributes: AttributeSet) -> Self {
+        self.attributes = attributes;
+        self
+    }
+
+    /// Sets the optional ordered Protection Storage Masks Structure.
+    #[must_use]
+    pub fn protection_storage_masks(mut self, masks: Structure) -> Self {
+        self.protection_storage_masks = Some(masks);
+        self
+    }
+
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.options = Some(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.asynchronous_indicator = Some(value);
+        self
+    }
+
+    /// Validates the existing typed Create request without sending.
+    ///
+    /// # Errors
+    ///
+    /// Returns a payload-free error for a missing Object Type, an invalid
+    /// typed request, or a TTLV value that cannot be copied.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        self.build_request().map(|_| ())
+    }
+
+    /// Builds the existing typed Create request, retaining the builder inputs.
+    ///
+    /// # Errors
+    ///
+    /// Returns a payload-free error for a missing Object Type, an invalid
+    /// typed request, or a TTLV value that cannot be copied.
+    pub fn build_request(&self) -> Result<CreateRequest, FluentBuildError> {
+        let object_type = self
+            .object_type
+            .ok_or(FluentBuildError::MissingCreateObjectType)?;
+        let mut attributes = AttributeSet::new();
+        for attribute in self.attributes.as_items() {
+            attributes.try_push(
+                attribute
+                    .try_clone()
+                    .map_err(|_| FluentBuildError::InvalidTtlvValue)?,
+            )?;
+        }
+        let mut request = CreateRequest::new(object_type, attributes);
+        if let Some(masks) = &self.protection_storage_masks {
+            request = request.with_protection_storage_masks(
+                masks
+                    .view()
+                    .try_clone()
+                    .map_err(|_| FluentBuildError::InvalidTtlvValue)?,
+            );
+        }
+        validate_fluent_request(&request)?;
+        Ok(request)
+    }
+
+    /// Converts Create to the existing typed client batch item.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error if request validation fails.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build_request()
+            .map(|request| ClientBatchItem::new(ClientRequest::Create(request)))
+    }
+
+    /// Executes one typed Create exchange, preserving its existing outcome.
+    ///
+    /// # Errors
+    ///
+    /// Returns a not-sent error for local construction failures, or the
+    /// existing client error for exchange and response decoding failures.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let request = self
+            .build_request()
+            .map_err(fluent_client_validation_error)?;
+        execute_fluent_request(
+            self.client,
+            ClientRequest::Create(request),
+            self.asynchronous_indicator,
+            self.options,
+            limits,
+        )
+    }
 }
 
 /// A fluent builder for the existing typed Add Attribute request.

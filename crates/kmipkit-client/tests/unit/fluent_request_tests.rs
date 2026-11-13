@@ -1687,7 +1687,11 @@ fn generic_create_builder_executes_one_typed_exchange_with_explicit_options() {
     use crate::asynchronous_execution_test_support::client_for_with_options_observer;
     use std::cell::RefCell;
     use std::rc::Rc;
-    let options = RequestOptions::default();
+    let options = RequestOptions::default()
+        .with_wire_encoding(kmipkit_transport::WireEncoding::Ttlv)
+        .with_read(kmipkit_transport::TimeoutLimit::Bounded(
+            std::time::Duration::from_secs(4),
+        ));
     let observed = Rc::new(RefCell::new(Vec::new()));
     let (mut client, transport, captured) = client_for_with_options_observer(
         ExchangeScript::Success {

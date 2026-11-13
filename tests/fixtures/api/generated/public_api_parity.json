@@ -3495,6 +3495,18 @@
     },
     {
       "approvalSource": {
+        "evidence": "**Status**: Approved for implementation.",
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and KMIPKIT-0095-FR-003. Applications use ClientBatchItemResult.json(CodecLimits), returning an AutoCloseable native zeroizing owner.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseJson",
+      "packageId": "java-kmipkit",
+      "reason": "JNI plumbing for the typed response renderer; no independent product capability."
+    },
+    {
+      "approvalSource": {
         "evidence": "**Status**: Approved for implementation",
         "kind": "feature-specification",
         "path": "specs/043-public-api-bindings/spec.md",
@@ -3891,6 +3903,18 @@
     },
     {
       "approvalSource": {
+        "evidence": "**Status**: Approved for implementation.",
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and KMIPKIT-0095-FR-003. Applications use ClientBatchItemResult.ttlvHex(CodecLimits), returning an AutoCloseable native zeroizing owner.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseTtlvHex",
+      "packageId": "java-kmipkit",
+      "reason": "JNI plumbing for the typed response renderer; no independent product capability."
+    },
+    {
+      "approvalSource": {
         "evidence": "**Status**: Approved for implementation",
         "kind": "feature-specification",
         "path": "specs/043-public-api-bindings/spec.md",
@@ -3912,6 +3936,18 @@
       "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseValidate",
       "packageId": "java-kmipkit",
       "reason": "This exact public member is raw-handle JNI bridge plumbing used by the Java adapter; applications use the typed org.kmipkit.extensions and org.kmipkit.ttlv facades, and this bridge member has no independent product capability."
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved for implementation.",
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and KMIPKIT-0095-FR-003. Applications use ClientBatchItemResult.xml(CodecLimits), returning an AutoCloseable native zeroizing owner.",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseXml",
+      "packageId": "java-kmipkit",
+      "reason": "JNI plumbing for the typed response renderer; no independent product capability."
     },
     {
       "approvalSource": {
@@ -170149,6 +170185,114 @@
     },
     {
       "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::CreateBuilder<'a> as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::CreateBuilder<'a> as core::borrow::Borrow<kmipkit_client::fluent::CreateBuilder<'a>>>::borrow",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::CreateBuilder<'a> as core::borrow::BorrowMut<kmipkit_client::fluent::CreateBuilder<'a>>>::borrow_mut",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::CreateBuilder<'a> as core::convert::From<kmipkit_client::fluent::CreateBuilder<'a>>>::from",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::CreateBuilder<'a> as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::CreateBuilder<'a> as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::CreateBuilder<'a> as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::CreateBuilder<'a> as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::CreateBuilder<'a> as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
         "evidence": "Standard Rust trait implementations for the new builder are Rust language\nbehavior, not separate cross-language KMIPKit product capabilities.",
         "kind": "feature-specification",
         "path": "specs/097-fluent-create-key-pair/spec.md",
@@ -178137,6 +178281,114 @@
       },
       "evidence": "KMIPKIT-0093-FR-011",
       "exportName": "<kmipkit_client::fluent::ArchiveBuilder<'a> as core::convert::TryInto<U>>::try_into",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::fluent::CreateBuilder<'a> as core::any::Any>::type_id",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::fluent::CreateBuilder<'a> as core::borrow::Borrow<kmipkit_client::fluent::CreateBuilder<'a>>>::borrow",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::fluent::CreateBuilder<'a> as core::borrow::BorrowMut<kmipkit_client::fluent::CreateBuilder<'a>>>::borrow_mut",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::fluent::CreateBuilder<'a> as core::convert::From<kmipkit_client::fluent::CreateBuilder<'a>>>::from",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::fluent::CreateBuilder<'a> as core::convert::Into<U>>::into",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::fluent::CreateBuilder<'a> as core::convert::TryFrom<U>>::Error",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::fluent::CreateBuilder<'a> as core::convert::TryFrom<U>>::try_from",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::fluent::CreateBuilder<'a> as core::convert::TryInto<U>>::Error",
+      "packageId": "rust-kmipkit-client",
+      "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
+    },
+    {
+      "approvalSource": {
+        "evidence": "Cross-language mappings cover KMIPKit capabilities; standard-library Rust trait implementation methods are language-level behavior and their exact paths MUST be recorded as approved exclusions.",
+        "kind": "feature-specification",
+        "path": "specs/093-fluent-complete-api/spec.md",
+        "status": "Approved"
+      },
+      "evidence": "KMIPKIT-0093-FR-011",
+      "exportName": "<kmipkit_client::fluent::CreateBuilder<'a> as core::convert::TryInto<U>>::try_into",
       "packageId": "rust-kmipkit-client",
       "reason": "This exact Rust standard-trait implementation is language-level behavior, not a separate KMIPKit capability requiring a binding mapping."
     },
@@ -306180,42 +306432,6 @@
       "exportName": "kmipkit_ttlv::try_clone_value",
       "packageId": "rust-kmipkit-ttlv",
       "reason": "This exact doc-hidden Rust helper exists for the binding implementation to copy secret-bearing values safely. It is not a supported end-user operation; each binding already performs owned copies at its opaque-handle boundary."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation.",
-        "kind": "feature-specification",
-        "path": "specs/095-fluent-response-views/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and KMIPKIT-0095-FR-003. Applications use ClientBatchItemResult.ttlvHex(CodecLimits), returning an AutoCloseable native zeroizing owner.",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseTtlvHex",
-      "packageId": "java-kmipkit",
-      "reason": "JNI plumbing for the typed response renderer; no independent product capability."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation.",
-        "kind": "feature-specification",
-        "path": "specs/095-fluent-response-views/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and KMIPKIT-0095-FR-003. Applications use ClientBatchItemResult.json(CodecLimits), returning an AutoCloseable native zeroizing owner.",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseJson",
-      "packageId": "java-kmipkit",
-      "reason": "JNI plumbing for the typed response renderer; no independent product capability."
-    },
-    {
-      "approvalSource": {
-        "evidence": "**Status**: Approved for implementation.",
-        "kind": "feature-specification",
-        "path": "specs/095-fluent-response-views/spec.md",
-        "status": "Approved"
-      },
-      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and KMIPKIT-0095-FR-003. Applications use ClientBatchItemResult.xml(CodecLimits), returning an AutoCloseable native zeroizing owner.",
-      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseXml",
-      "packageId": "java-kmipkit",
-      "reason": "JNI plumbing for the typed response renderer; no independent product capability."
     }
   ],
   "capabilities": [

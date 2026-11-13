@@ -2410,7 +2410,10 @@ fn is_exact_fluent_builder_explicit_value(
         (
             Some("CreateSplitKeyBuilder"),
             "prime_field_size" | "protection_storage_masks"
-        ) | (Some("RegisterBuilder"), "protection_storage_masks")
+        ) | (
+            Some("CreateBuilder" | "RegisterBuilder"),
+            "protection_storage_masks"
+        )
     );
     if !fluent_root_scope
         || !supported_method
@@ -2452,8 +2455,10 @@ fn is_exact_fluent_builder_explicit_value(
                                 Some(syn::GenericArgument::Type(ty))
                                     if is_plain_type_path(ty, "u8")))),
         "protection_storage_masks" => {
-            matches!(impl_type, Some("CreateSplitKeyBuilder" | "RegisterBuilder"))
-                && is_plain_type_path(&argument.ty, "Structure")
+            matches!(
+                impl_type,
+                Some("CreateBuilder" | "CreateSplitKeyBuilder" | "RegisterBuilder")
+            ) && is_plain_type_path(&argument.ty, "Structure")
         }
         _ => false,
     }
