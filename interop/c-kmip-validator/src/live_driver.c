@@ -2303,8 +2303,10 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         return outcome_not_run(
             "the C binding exposes no high-level client route for this case");
     }
-    bool get_constraints_boundary_workflow =
-        strcmp(test_case->case_id, "test-v20-reject-get-constraints") == 0;
+    bool unsupported_version_boundary_workflow =
+        strcmp(test_case->case_id, "test-v20-reject-get-constraints") == 0 ||
+        strcmp(test_case->case_id, "test-v20-reject-ping") == 0;
+    bool ping_boundary_workflow = strcmp(test_case->case_id, "test-v20-reject-ping") == 0;
     bool get_usage_allocation_uid_variant =
         strcmp(test_case->case_id,
                "test-norm-payload-client-get-usage-allocation-request-20-001") == 0 ||
@@ -2321,7 +2323,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     bool set_defaults_workflow =
         strcmp(test_case->case_id, "test-op-set-defaults") == 0;
     if (strcmp(test_case->mode, "local_model") == 0) {
-        if (!get_constraints_boundary_workflow && !get_usage_allocation_uid_variant)
+        if (!unsupported_version_boundary_workflow && !get_usage_allocation_uid_variant)
             return execute_local_model_case(test_case);
         if (strcmp(client->api_level, "typed-protocol") != 0) {
             return outcome_not_run(
@@ -2336,7 +2338,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         return outcome_not_run("live client is not initialized");
     }
     if (strcmp(test_case->mode, "server_exchange") != 0 &&
-        !get_constraints_boundary_workflow && !get_usage_allocation_uid_variant) {
+        !unsupported_version_boundary_workflow && !get_usage_allocation_uid_variant) {
         return outcome_not_run("catalog mode is not supported by the C validator");
     }
     if (get_usage_allocation_uid_variant &&
@@ -2499,7 +2501,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         return outcome_not_run("Destroy variations are not yet mapped to isolated C fixtures");
     }
     if (strcmp(test_case->operation, "Get Constraints") == 0 &&
-        !get_constraints_workflow && !get_constraints_boundary_workflow) {
+        !get_constraints_workflow && !unsupported_version_boundary_workflow) {
         return outcome_not_run("Get Constraints variations are not yet mapped to isolated C fixtures");
     }
     if (strcmp(test_case->operation, "Get") == 0 && !get_workflow &&
@@ -2531,7 +2533,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     int32_t status = 0;
     const char *request_construction_step = "typed request";
     char request_validation_diagnostic[256] = {0};
-    if (get_constraints_boundary_workflow) {
+    if (ping_boundary_workflow) {
+        status = kmipkit_client_batch_item_ping(&item);
+    } else if (unsupported_version_boundary_workflow) {
         status = kmipkit_client_batch_item_get_constraints(&item);
     } else if (set_constraints_workflow) {
         request_construction_step = "Set Constraints structure";
@@ -2979,11 +2983,11 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         uint32_t cause = 0;
         uint32_t delivery = 0;
         (void)kmipkit_last_error_get(&last_status, &category, &cause, &delivery);
-        if (get_constraints_boundary_workflow && delivery == 1) {
+        if (unsupported_version_boundary_workflow && delivery == 1) {
             outcome.success = true;
             outcome.library_validated = true;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                     "KMIPKit rejected the KMIP 2.1-only operation before sending under KMIP 2.0");
+                     "KMIPKit rejected the operation before sending under KMIP 2.0");
             goto cleanup;
         }
         snprintf(outcome.result_reason, sizeof(outcome.result_reason),

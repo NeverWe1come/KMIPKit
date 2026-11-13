@@ -259,6 +259,7 @@ RECIPES = {
     'test-op-rng-seed': ((38,), 'rng_seed'),
     'test-crypto-rng-seed-rng-32': ((38,), 'rng_seed'),
     'test-v20-reject-get-constraints': ((56,), 'get_constraints'),
+    'test-v20-reject-ping': ((59,), 'ping'),
     'test-op-create': ((1, 20), 'create'),
     'test-op-register': ((3, 20), 'register'),
     'test-op-add-attribute': ((1, 13, 19, 20), 'add_attribute'),
@@ -1062,7 +1063,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                         peer_state = PeerState(
                             existing_object=recipe[0][0] not in (1, 3),
                             usage_allocation_ready=recipe[1] == 'get_usage_allocation_uid_variants')
-                        boundary = case_id == 'test-v20-reject-get-constraints'
+                        boundary = case_id in (
+                            'test-v20-reject-get-constraints', 'test-v20-reject-ping')
                         with socket.socket() as server:
                             server.bind(('127.0.0.1', 0))
                             server.listen(1)
@@ -1316,10 +1318,12 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                 # The unsupported typed request has no fields. Its version
                                 # is enforced by the configured public client and observed
                                 # through the expected pre-send rejection. No response exists.
+                                operation_code = 59 if case_id == 'test-v20-reject-ping' else 56
                                 version_node = (0x420069, 1, [(0x42006A, 2, bytes.fromhex('00000002')),
                                     (0x42006B, 2, bytes(4))])
                                 attempted = (0x420078, 1, [(0x420077, 1, [version_node]),
-                                    (0x42000F, 1, [(0x42005C, 5, (56).to_bytes(4, 'big')), (0x420079, 1, [])])])
+                                    (0x42000F, 1, [(0x42005C, 5, operation_code.to_bytes(4, 'big')),
+                                                   (0x420079, 1, [])])])
                                 observation.append((attempted, None, {}))
                             code = errors[0] if errors else 'consumer_check_failed' if not case_passed else 'public_api_trace_missing' if not called_symbols else None
                             mutation_index = mutation_exchange_index if attribute_mutation_recipe else 0
