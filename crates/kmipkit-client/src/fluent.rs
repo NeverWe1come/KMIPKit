@@ -13,10 +13,10 @@ use kmipkit_protocol::{
     DestroyRequest, DiscoverVersionsRequest, EncryptRequest, GetRequest, HashRequest,
     LocateRequest, MacRequest, MacVerifyRequest, ManagedObject, ModifyAttributeRequest,
     NewAttribute, ObjectGroupMember, ObjectType, OpaqueObjectContext, OperationData, PingRequest,
-    ProtocolVersion, RecertifyRequest, RecoverRequest, RegisterRequest, RekeyKeyPairRequest,
-    RekeyRequest, RevocationReason, RevokeRequest, SecretBytes, SetAttributeRequest, SignRequest,
-    SignatureVerifyRequest, SplitKeyMethod, StorageStatusMask, UniqueIdentifier,
-    ValidateKmipRequest,
+    ProtocolVersion, QueryFunction, QueryRequest, RecertifyRequest, RecoverRequest,
+    RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest,
+    SecretBytes, SetAttributeRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
+    StorageStatusMask, UniqueIdentifier, ValidateKmipRequest,
 };
 use kmipkit_transport::{RequestDeliveryState, RequestOptions};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
@@ -356,6 +356,12 @@ impl<'a> RequestBuilder<'a> {
     #[must_use]
     pub fn discover_versions(self) -> DiscoverVersionsBuilder<'a> {
         DiscoverVersionsBuilder::new(self.client)
+    }
+
+    /// Begins constructing a typed Query request.
+    #[must_use]
+    pub fn query(self) -> QueryBuilder<'a> {
+        QueryBuilder::new(self.client)
     }
 
     /// Begins constructing a typed Destroy request for an explicit identifier.
@@ -2906,6 +2912,127 @@ fn append_key_pair_attributes(
         )?;
     }
     Ok(())
+}
+
+/// A fluent builder for typed Query requests.
+pub struct QueryBuilder<'a> {
+    client: &'a mut Client,
+    functions: Vec<QueryFunction>,
+    object_groups: Option<Vec<String>>,
+    options: Option<RequestOptions>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl<'a> QueryBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            client,
+            functions: Vec::new(),
+            object_groups: None,
+            options: None,
+            asynchronous_indicator: None,
+        }
+    }
+
+    /// Sets the ordered Query Functions explicitly.
+    #[must_use]
+    pub fn functions(mut self, value: Vec<QueryFunction>) -> Self {
+        self.functions = value;
+        self
+    }
+
+    /// Sets ordered Object Group text values without deduplication.
+    #[must_use]
+    pub fn object_groups(mut self, value: Vec<String>) -> Self {
+        self.object_groups = Some(value);
+        self
+    }
+
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.options = Some(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.asynchronous_indicator = Some(value);
+        self
+    }
+
+    /// Validates the Query functions and typed request without sending.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error for an empty or invalid function
+    /// list, or another typed request validation failure.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        let request = query_request(self.functions.clone(), self.object_groups.clone());
+        validate_fluent_request(&request)
+    }
+
+    /// Builds the existing typed Query request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error for an empty or invalid function
+    /// list, or another typed request validation failure.
+    pub fn build_request(self) -> Result<QueryRequest, FluentBuildError> {
+        let request = query_request(self.functions, self.object_groups);
+        validate_fluent_request(&request)?;
+        Ok(request)
+    }
+
+    /// Converts Query to the existing typed client batch item.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error when the request is invalid.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build_request()
+            .map(|request| ClientBatchItem::new(ClientRequest::Query(request)))
+    }
+
+    /// Executes one typed exchange and returns the existing operation result.
+    ///
+    /// # Errors
+    ///
+    /// Returns a not-sent validation error before transport if the request is
+    /// invalid, or the existing client error for exchange and decoding failures.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let Self {
+            client,
+            functions,
+            object_groups,
+            options,
+            asynchronous_indicator,
+        } = self;
+        let request = query_request(functions, object_groups);
+        validate_fluent_request(&request).map_err(fluent_client_validation_error)?;
+        execute_fluent_request(
+            client,
+            ClientRequest::Query(request),
+            asynchronous_indicator,
+            options,
+            limits,
+        )
+    }
+}
+
+fn query_request(
+    functions: Vec<QueryFunction>,
+    object_groups: Option<Vec<String>>,
+) -> QueryRequest {
+    let request = QueryRequest::new(functions);
+    match object_groups {
+        Some(groups) => request.with_object_groups(groups),
+        None => request,
+    }
 }
 
 /// A fluent builder for typed Discover Versions requests.
