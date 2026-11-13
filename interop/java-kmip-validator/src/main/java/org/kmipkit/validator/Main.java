@@ -61,11 +61,15 @@ public final class Main {
         List<CatalogLoader.CatalogCase> applicable = applicableCases(catalog, connection.protocolVersion());
         long local = applicable.stream().filter(testCase -> "local_model".equals(testCase.execution().mode())).count();
         long typed = "typed-protocol".equals(connection.apiLevel())
-                ? countCases(applicable, JavaRouteInventory.Status.EXECUTABLE_TYPED) : 0;
-        long recipePending = countCases(applicable, JavaRouteInventory.Status.TYPED_API_PENDING);
-        long payloadOnly = countCases(applicable, JavaRouteInventory.Status.PAYLOAD_ONLY);
-        long apiUnavailable = countCases(applicable, JavaRouteInventory.Status.NO_PUBLIC_ROUTE);
-        long workflowUnavailable = countCases(applicable, JavaRouteInventory.Status.WORKFLOW_UNAVAILABLE);
+                ? countCases(applicable, JavaRouteInventory.Status.EXECUTABLE_TYPED, connection.protocolVersion()) : 0;
+        long recipePending = countCases(applicable, JavaRouteInventory.Status.TYPED_API_PENDING,
+                connection.protocolVersion());
+        long payloadOnly = countCases(applicable, JavaRouteInventory.Status.PAYLOAD_ONLY,
+                connection.protocolVersion());
+        long apiUnavailable = countCases(applicable, JavaRouteInventory.Status.NO_PUBLIC_ROUTE,
+                connection.protocolVersion());
+        long workflowUnavailable = countCases(applicable, JavaRouteInventory.Status.WORKFLOW_UNAVAILABLE,
+                connection.protocolVersion());
         long mutation = applicable.stream().filter(testCase -> "mutating".equals(testCase.execution().mutation())).count();
         out.println("KMIPKit Java interoperability plan");
         out.println("Server ID: " + connection.serverId());
@@ -109,7 +113,7 @@ public final class Main {
 
         boolean hasPotentialLiveRoute = applicable.stream().anyMatch(testCase ->
                 "server_exchange".equals(testCase.execution().mode())
-                        && JavaRouteInventory.routeFor(testCase).status()
+                        && JavaRouteInventory.routeFor(testCase, connection.protocolVersion()).status()
                                 == JavaRouteInventory.Status.EXECUTABLE_TYPED
                         && "typed-protocol".equals(connection.apiLevel())
                         && (!"mutating".equals(testCase.execution().mutation())
@@ -162,8 +166,9 @@ public final class Main {
             return JavaKmipDriver.CaseOutcome.notRun("The selected Java API level has no server request route.",
                     elapsedMillis(start));
         }
-        if (!hasTypedRoute(testCase)) {
-            return JavaKmipDriver.CaseOutcome.notRun(JavaRouteInventory.routeFor(testCase).reason(),
+        if (!hasTypedRoute(testCase, connection.protocolVersion())) {
+            return JavaKmipDriver.CaseOutcome.notRun(
+                    JavaRouteInventory.routeFor(testCase, connection.protocolVersion()).reason(),
                     elapsedMillis(start));
         }
         if ("mutating".equals(testCase.execution().mutation())) {
@@ -216,13 +221,15 @@ public final class Main {
                 testCase.execution().protocolVersions().contains(version)).toList();
     }
 
-    private static boolean hasTypedRoute(CatalogLoader.CatalogCase testCase) {
-        return JavaRouteInventory.routeFor(testCase).status() == JavaRouteInventory.Status.EXECUTABLE_TYPED;
+    private static boolean hasTypedRoute(CatalogLoader.CatalogCase testCase, String protocolVersion) {
+        return JavaRouteInventory.routeFor(testCase, protocolVersion).status()
+                == JavaRouteInventory.Status.EXECUTABLE_TYPED;
     }
 
-    private static long countCases(List<CatalogLoader.CatalogCase> cases, JavaRouteInventory.Status status) {
+    private static long countCases(List<CatalogLoader.CatalogCase> cases, JavaRouteInventory.Status status,
+                                   String protocolVersion) {
         return cases.stream().filter(testCase -> "server_exchange".equals(testCase.execution().mode()))
-                .filter(testCase -> JavaRouteInventory.routeFor(testCase).status() == status).count();
+                .filter(testCase -> JavaRouteInventory.routeFor(testCase, protocolVersion).status() == status).count();
     }
 
     private static double elapsedMillis(long start) {

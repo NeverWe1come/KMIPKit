@@ -45,6 +45,11 @@ public final class JavaRouteInventory {
 
     /** Classifies one case while preserving its client-to-server or server-to-client workflow. */
     public static Route routeFor(CatalogLoader.CatalogCase testCase) {
+        return routeFor(testCase, null);
+    }
+
+    /** Classifies one catalog case for the selected protocol version. */
+    public static Route routeFor(CatalogLoader.CatalogCase testCase, String protocolVersion) {
         if ("local_model".equals(testCase.execution().mode())) {
             return new Route(testCase.operation(), Status.LOCAL_MODEL,
                     "This case is checked locally through public TTLV or protocol-value APIs.");
@@ -58,6 +63,10 @@ public final class JavaRouteInventory {
             return new Route(testCase.operation(), Status.TYPED_API_PENDING,
                     "The installed Java package exposes the dedicated asynchronous executor, but this catalog recipe "
                             + "does not supply a server-issued correlation value for its live exchange.");
+        }
+        if ("Discover Versions".equals(testCase.operation()) && "2.0".equals(protocolVersion)) {
+            return new Route(testCase.operation(), Status.TYPED_API_PENDING,
+                    "The pinned Java Discover Versions response parser validates against its default KMIP 2.1 offer.");
         }
         return routeFor(testCase.operation());
     }
