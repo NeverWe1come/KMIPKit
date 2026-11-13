@@ -33345,6 +33345,10 @@
         {
           "section": "6.1.2",
           "table": "152"
+        },
+        {
+          "section": "5.7",
+          "table": "148"
         }
       ],
       "operation_id": "KMIPKIT-ELEM-OP-C2S-ADD-ATTRIBUTE",
@@ -33357,7 +33361,8 @@
       "branch_classes": [
         "present",
         "missing_rejected"
-      ]
+      ],
+      "source_encoding": "Structure"
     },
     {
       "target_id": "KMIPKIT-PAYLOAD-CLIENT-ADD-ATTRIBUTE-RESPONSE-20-001",
@@ -33420,6 +33425,10 @@
         {
           "section": "6.1.2",
           "table": "167"
+        },
+        {
+          "section": "5.7",
+          "table": "163"
         }
       ],
       "operation_id": "KMIPKIT-ELEM-OP-C2S-ADD-ATTRIBUTE",
@@ -33432,7 +33441,8 @@
       "branch_classes": [
         "present",
         "missing_rejected"
-      ]
+      ],
+      "source_encoding": "Structure"
     },
     {
       "target_id": "KMIPKIT-PAYLOAD-CLIENT-ADD-ATTRIBUTE-RESPONSE-21-001",
@@ -43177,6 +43187,10 @@
         {
           "section": "6.1.33",
           "table": "247"
+        },
+        {
+          "section": "5.7",
+          "table": "148"
         }
       ],
       "operation_id": "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
@@ -43189,7 +43203,8 @@
       "branch_classes": [
         "present",
         "missing_rejected"
-      ]
+      ],
+      "source_encoding": "Structure"
     },
     {
       "target_id": "KMIPKIT-PAYLOAD-CLIENT-MODIFY-ATTRIBUTE-RESPONSE-20-001",
@@ -43277,6 +43292,10 @@
         {
           "section": "6.1.34",
           "table": "265"
+        },
+        {
+          "section": "5.7",
+          "table": "163"
         }
       ],
       "operation_id": "KMIPKIT-ELEM-OP-C2S-MODIFY-ATTRIBUTE",
@@ -43289,7 +43308,8 @@
       "branch_classes": [
         "present",
         "missing_rejected"
-      ]
+      ],
+      "source_encoding": "Structure"
     },
     {
       "target_id": "KMIPKIT-PAYLOAD-CLIENT-MODIFY-ATTRIBUTE-RESPONSE-21-001",
@@ -47660,6 +47680,10 @@
         {
           "section": "6.1.47",
           "table": "296"
+        },
+        {
+          "section": "5.7",
+          "table": "148"
         }
       ],
       "operation_id": "KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE",
@@ -47672,7 +47696,8 @@
       "branch_classes": [
         "present",
         "missing_rejected"
-      ]
+      ],
+      "source_encoding": "Structure"
     },
     {
       "target_id": "KMIPKIT-PAYLOAD-CLIENT-SET-ATTRIBUTE-RESPONSE-20-001",
@@ -47735,6 +47760,10 @@
         {
           "section": "6.1.51",
           "table": "322"
+        },
+        {
+          "section": "5.7",
+          "table": "163"
         }
       ],
       "operation_id": "KMIPKIT-ELEM-OP-C2S-SET-ATTRIBUTE",
@@ -47747,7 +47776,8 @@
       "branch_classes": [
         "present",
         "missing_rejected"
-      ]
+      ],
+      "source_encoding": "Structure"
     },
     {
       "target_id": "KMIPKIT-PAYLOAD-CLIENT-SET-ATTRIBUTE-RESPONSE-21-001",
@@ -148267,7 +148297,8 @@
           "present",
           "missing_rejected"
         ],
-        "source_table": "152"
+        "source_table": "152",
+        "source_encoding": "Structure"
       },
       "isolation_recipe": {
         "unique_name_prefix": "kmipkit-payload-add-attribute",
@@ -148441,7 +148472,8 @@
           "present",
           "missing_rejected"
         ],
-        "source_table": "167"
+        "source_table": "167",
+        "source_encoding": "Structure"
       },
       "isolation_recipe": {
         "unique_name_prefix": "kmipkit-payload-add-attribute",
@@ -170513,7 +170545,8 @@
           "present",
           "missing_rejected"
         ],
-        "source_table": "247"
+        "source_table": "247",
+        "source_encoding": "Structure"
       },
       "isolation_recipe": {
         "unique_name_prefix": "kmipkit-payload-modify-attribute",
@@ -170745,7 +170778,8 @@
           "present",
           "missing_rejected"
         ],
-        "source_table": "265"
+        "source_table": "265",
+        "source_encoding": "Structure"
       },
       "isolation_recipe": {
         "unique_name_prefix": "kmipkit-payload-modify-attribute",
@@ -180606,7 +180640,8 @@
           "present",
           "missing_rejected"
         ],
-        "source_table": "296"
+        "source_table": "296",
+        "source_encoding": "Structure"
       },
       "isolation_recipe": {
         "unique_name_prefix": "kmipkit-payload-set-attribute",
@@ -180780,7 +180815,8 @@
           "present",
           "missing_rejected"
         ],
-        "source_table": "322"
+        "source_table": "322",
+        "source_encoding": "Structure"
       },
       "isolation_recipe": {
         "unique_name_prefix": "kmipkit-payload-set-attribute",

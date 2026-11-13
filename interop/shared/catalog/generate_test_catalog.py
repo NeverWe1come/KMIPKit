@@ -436,6 +436,12 @@ def _operation_payload_targets(elements: list[dict], indexes: dict[str, dict[str
                         "description": description,
                         "branch_classes": branch_classes,
                     }
+                    if field_name == "New Attribute" and role == "request":
+                        target["source_encoding"] = "Structure"
+                        target["source_refs"].append({
+                            "section": "5.7",
+                            "table": "148" if version == "2.0" else "163",
+                        })
                     if presence_branches:
                         target["presence_branches"] = presence_branches
                     case_id = f"test-norm-payload-{direction_label.lower()}-{suffix.lower()}-{role}-{version.replace('.', '')}-{ordinal:03d}"
@@ -464,6 +470,8 @@ def _operation_payload_targets(elements: list[dict], indexes: dict[str, dict[str
                             "teardown_steps": [],
                         },
                     })
+                    if target.get("source_encoding"):
+                        cases[-1]["requires"]["source_encoding"] = target["source_encoding"]
                     if presence_branches:
                         cases[-1]["requires"]["presence_branches"] = presence_branches
                     type_variants = []
