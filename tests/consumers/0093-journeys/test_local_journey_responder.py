@@ -238,6 +238,10 @@ class BatchIdPlaceholderJourneyContractTests(unittest.TestCase):
         self.assertEqual(len(response_items), 2)
         decoded = [responder._children(item) for item in response_items]
         self.assertEqual(
+            [(tag, kind) for tag, kind, _value in decoded[0][:3]],
+            [(0x42005C, 5), (0x420093, 8), (0x42007F, 5)],
+        )
+        self.assertEqual(
             [
                 next(value for tag, kind, value in fields if tag == 0x42005C and kind == 5)
                 for fields in decoded
