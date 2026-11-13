@@ -120,7 +120,11 @@
           "then": { "required": ["response_tree_sha256"] }
         },
         {
-          "if": { "properties": { "status": { "const": "passed" }, "action": { "enum": ["construct", "encode", "send"] } } },
+          "if": {
+            "properties": { "status": { "const": "passed" }, "action": { "enum": ["construct", "encode", "send"] } },
+            "required": ["status", "action"],
+            "not": { "properties": { "request_delivery_state": { "const": "not_sent" } }, "required": ["request_delivery_state"] }
+          },
           "then": { "required": ["request_tree_sha256"] }
         },
         {
