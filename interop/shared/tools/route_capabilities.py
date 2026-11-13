@@ -25,6 +25,7 @@ ROOT = Path(__file__).resolve().parents[3]
 COVERAGE = ROOT / 'interop/shared/coverage'
 LANGUAGES = ('rust', 'c', 'java', 'python')
 ASYNC = {'cancel', 'poll', 'process', 'queryasyncrequests'}
+PINNED_SOURCE_COMMIT = '9a16cc90a12205101d22a38501a5e74c665df4dc'
 _RESPONSE_MESSAGE_EXTENSION_TARGETS = [
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION',
     'KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION',
@@ -621,7 +622,7 @@ def _client_request_targets(targets):
         if target.get('operation_id') in operation_ids and target.get('role') == 'request'})
 
 
-def build_manifest(root=ROOT, commit='9a16cc90a12205101d22a38501a5e74c665df4dc'):
+def build_manifest(root=ROOT, commit=PINNED_SOURCE_COMMIT):
     """Generate constructor identities from the exact package's public sources."""
     commit = validate_git_commit(commit)
     categories = ['enums_and_bitmasks', 'attributes', 'object_lifecycle',
@@ -799,7 +800,7 @@ def serialize_manifest(data):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     mode = parser.add_mutually_exclusive_group()
-    mode.add_argument('--write', action='store_true', help='regenerate metadata from the exact release source')
+    mode.add_argument('--write', action='store_true', help='regenerate metadata from the exact pinned source commit')
     mode.add_argument('--check', action='store_true', help='verify generated metadata without writing')
     parser.add_argument('--manifest', type=Path, default=COVERAGE / 'route-capabilities.json')
     args = parser.parse_args()

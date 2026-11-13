@@ -1,7 +1,7 @@
 {
   "all_invocations_passed": true,
   "artifact_sha256": "37d7eeae9e64644fd7cdde4bfd64b7da5ccbb0bf2be53a949826eb62dc3aaf86",
-  "catalog_sha256": "93bf7d439fe871cc467d0dd262e6dfe68340de4c81fa0671e5f967bb90a34613",
+  "catalog_sha256": "e4a542bab4831a04e51f5bf04c9019da3f38845bc85839ae9b632dcc610a7d7f",
   "complete_matrix": false,
   "controlled_peer_cells": 6,
   "evidence_case_ids": [
