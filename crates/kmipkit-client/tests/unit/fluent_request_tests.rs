@@ -1,8 +1,8 @@
 use kmipkit_protocol::attribute::typed;
 use kmipkit_protocol::{
-    AdjustmentType, Attribute, AttributeDefinition, AttributeReference, CreateRequest,
-    CurrentAttribute, DiscoverVersionsRequest, NewAttribute, PingRequest, ProtocolVersion,
-    QueryFunction, QueryRequest, UniqueIdentifier,
+    AdjustmentType, Attribute, AttributeDefinition, AttributeReference, CheckRequest,
+    CreateRequest, CurrentAttribute, DiscoverVersionsRequest, NewAttribute, PingRequest,
+    ProtocolVersion, QueryFunction, QueryRequest, UniqueIdentifier,
 };
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestOptions;
@@ -819,6 +819,49 @@ fn query_builder_rejects_empty_functions_before_transport() {
         Some(kmipkit_transport::RequestDeliveryState::NotSent)
     );
     assert_eq!(transport.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn check_builder_builds_typed_policy_request_and_executes_once() {
+    let identifier = UniqueIdentifier::TextString("checked-key".to_owned());
+    let request = failed_request_client()
+        .request()
+        .check()
+        .unique_identifier(identifier.clone())
+        .usage_limits_count(3)
+        .cryptographic_usage_mask(2)
+        .lease_time(60)
+        .build_request()
+        .expect("explicit Check policy fields build a typed request");
+    assert_eq!(request.unique_identifier(), Some(&identifier));
+    let _: CheckRequest = request;
+
+    let response = asynchronous_response_bytes(
+        0x0000_0009,
+        0,
+        None,
+        None,
+        Some(test_structure([test_item(
+            0x0042_0094,
+            Value::text_string("checked-key".to_owned()),
+        )])),
+    );
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: vec![2, 5],
+    });
+    let result = client
+        .request()
+        .check()
+        .unique_identifier(identifier)
+        .execute(&CodecLimits::defaults())
+        .expect("the scripted Check result is valid");
+
+    assert_eq!(
+        result.outcome().operation(),
+        crate::execute::ClientOperation::Check
+    );
+    assert_eq!(transport.borrow().exchange_count(), 1);
 }
 
 #[test]
