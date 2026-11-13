@@ -296,6 +296,7 @@ RECIPES = {
     'test-batch-unique-item-id-response-correlation': ((10, 12), 'batch_count_two_read_items'),
     'test-batch-order-false-correlates-response-items': ((10, 12), 'batch_order_false_two_read_items'),
     'test-batch-continue-after-failure': ((10, 12), 'batch_continue_after_failure'),
+    'test-batch-stop-on-first-failure': ((10, 10), 'batch_stop_on_first_failure'),
     'test-norm-payload-client-create-request-20-001': ((1, 20), 'create'),
     'test-norm-payload-client-create-request-20-002': ((1, 20), 'create'),
     'test-norm-payload-client-create-request-21-001': ((1, 20), 'create'),
@@ -571,12 +572,15 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         if byte_string_values(items[0], 0x420093) != [b'interop-get']:
             raise ValueError('fixture_single_item_batch_item_id_mismatch')
     if selected_recipe[1] in ('batch_count_two_read_items', 'batch_order_false_two_read_items',
-                              'batch_continue_after_failure'):
+                              'batch_continue_after_failure', 'batch_stop_on_first_failure'):
         items = [child for child in node[2]
                  if child[0] == 0x42000F and child[1] == 1]
-        first_id = 'missing-key' if selected_recipe[1] == 'batch_continue_after_failure' else 'fixture-key-1'
+        failing_batch = selected_recipe[1] in ('batch_continue_after_failure',
+                                                'batch_stop_on_first_failure')
+        first_id = 'missing-key' if failing_batch else 'fixture-key-1'
+        expected_operations = [[10], [10]] if selected_recipe[1] == 'batch_stop_on_first_failure' else [[10], [12]]
         if (numbers(node, 0x42000D) != [2] or
-                [numbers(item, 0x42005C) for item in items] != [[10], [12]] or
+                [numbers(item, 0x42005C) for item in items] != expected_operations or
                 [text_values(item, 0x420094) for item in items] != [[first_id], ['fixture-key-1']] or
                 [byte_string_values(item, 0x420093) for item in items] !=
                 [[b'item-a'], [b'item-b']]):
@@ -589,6 +593,9 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         if selected_recipe[1] == 'batch_continue_after_failure':
             if numbers(node, 0x42000E) != [1]:
                 raise ValueError('fixture_batch_continue_option_missing')
+        elif selected_recipe[1] == 'batch_stop_on_first_failure':
+            if numbers(node, 0x42000E) != [2]:
+                raise ValueError('fixture_batch_stop_option_missing')
     if selected_recipe[1] == 'query' and numbers(node, 0x420074) != [1]:
         raise ValueError('fixture_query_function_mismatch')
     if case_id == 'test-norm-payload-client-create-request-21-003':
@@ -807,7 +814,8 @@ class PeerState:
         state = json.dumps(state_value, sort_keys=True, separators=(',', ':'))
         return hashlib.sha256(state.encode()).hexdigest()
 
-    def execute(self, request_tree, *, continued_batch=False, rejected_operation=None,
+    def execute(self, request_tree, *, continued_batch=False, stop_after_failure=False,
+                rejected_operation=None,
                 rejection_status=1, rejection_reason=5):
         before = self.digest()
         effects, statuses, reasons = [], [], []
@@ -913,6 +921,8 @@ class PeerState:
             effects.append(effect)
             statuses.append(status)
             reasons.append(reason)
+            if stop_after_failure and status != 0:
+                break
         return {'effects': effects, 'statuses': statuses, 'reasons': reasons,
                 'peer_observed_state_before_sha256': before,
                 'peer_observed_state_after_sha256': self.digest()}
@@ -1258,9 +1268,13 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             if recipe[1] == 'batch_order_false_two_read_items':
                                                 response_operations = tuple(reversed(recipe[0]))
                                                 response_item_ids = (b'item-b', b'item-a')
+                                        elif recipe[1] == 'batch_stop_on_first_failure':
+                                            response_operations = (10,)
+                                            response_item_ids = (b'item-a',)
                                         state_evidence = peer_state.execute(
                                             request_tree,
                                             continued_batch=recipe[1] == 'batch_continue_after_failure',
+                                            stop_after_failure=recipe[1] == 'batch_stop_on_first_failure',
                                             rejected_operation=peer_rejection.get('operation')
                                             if reject_this_exchange else None,
                                             rejection_status=peer_rejection.get('result_status', 1)
@@ -1281,7 +1295,16 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             len(byte_string_values(request_tree, 0x4200C2)[0])
                                             if recipe[1] == 'rng_seed' else 16)
                                         response_tree = parse(response_wire)
-                                        if placeholder_chain_recipe:
+                                        if recipe[1] == 'batch_stop_on_first_failure':
+                                            response_items = [item for item in response_tree[2]
+                                                              if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+                                            if ([numbers(item, 0x42005C) for item in response_items] != [[10]] or
+                                                    [byte_string_values(item, 0x420093) for item in response_items] !=
+                                                    [[b'item-a']] or
+                                                    [numbers(item, 0x42007F) for item in response_items] != [[1]] or
+                                                    [numbers(item, 0x42007E) for item in response_items] != [[55]]):
+                                                raise ValueError('fixture_stop_partial_response_mismatch')
+                                        elif placeholder_chain_recipe:
                                             verify_placeholder_chain_response(response_tree, response_operations)
                                         elif recipe[1] == 'get_usage_allocation_uid_variants':
                                             verify_usage_allocation_identifier_variants(response_tree)
@@ -1442,6 +1465,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                            'consumer_result_reason_code': (result.get('cases') or [{}])[0].get('result_reason_code'),
                                            'consumer_diagnostic': (result.get('cases') or [{}])[0].get('diagnostic', ''),
                                            'public_api_trace_symbols': sorted(invoked_symbols),
+                                           'public_api_success_symbols': sorted(called_symbols),
                                            **({'peer_final_state_matches_setup':
                                                    observation[0][2]['peer_observed_state_before_sha256'] ==
                                                    observation[0][2]['peer_observed_state_after_sha256']}
@@ -1465,6 +1489,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                    'test-batch-unique-item-id-response-correlation',
                                                    'test-batch-order-false-correlates-response-items',
                                                    'test-batch-continue-after-failure',
+                                                   'test-batch-stop-on-first-failure',
                                                    'test-norm-payload-client-get-usage-allocation-request-20-001',
                                                    'test-norm-payload-client-get-usage-allocation-request-21-001'} else {}),
                                            **({'peer_response_result_statuses': [
@@ -1476,8 +1501,22 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                    'test-batch-unique-item-id-response-correlation',
                                                    'test-batch-order-false-correlates-response-items',
                                                    'test-batch-continue-after-failure',
+                                                   'test-batch-stop-on-first-failure',
                                                    'test-norm-payload-client-get-usage-allocation-request-20-001',
                                                    'test-norm-payload-client-get-usage-allocation-request-21-001'} else {}),
+                                           **({'peer_response_unique_batch_item_ids': [
+                                               value.decode('utf-8') for item in observation[0][1][2]
+                                               if item[0] == BATCH_ITEM_TAG
+                                               for value in byte_string_values(item, 0x420093)]}
+                                              if observation and case_id ==
+                                              'test-batch-stop-on-first-failure' else {}),
+                                           **({'peer_observed_effects': observation[0][2]['effects'],
+                                               'peer_observed_state_before_sha256': observation[0][2][
+                                                   'peer_observed_state_before_sha256'],
+                                               'peer_observed_state_after_sha256': observation[0][2][
+                                                   'peer_observed_state_after_sha256']}
+                                              if observation and case_id ==
+                                              'test-batch-stop-on-first-failure' else {}),
                                            **({'peer_request_unique_identifier_present_by_batch_item': [
                                                bool(text_values(item, UNIQUE_IDENTIFIER_TAG))
                                                for item in observation[0][0][2]
@@ -1525,6 +1564,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                 continue
                             request_tree, response_tree, state_evidence = observation[mutation_index]
                             operation_name = case['operation']
+                            response_batch_item_count = len([
+                                item for item in response_tree[2]
+                                if item[0] == BATCH_ITEM_TAG and item[1] == 1
+                            ]) if response_tree is not None else 0
                             for cell in cells_by_case[case_id]:
                                 if _key(cell) in keys:
                                     continue
@@ -1539,7 +1582,14 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                 else:
                                     # Accessor routes remain local TTLV obligations.
                                     # Emit them once from an actual decoded TLS response.
-                                    if (encoding, transport) != ('TTLV', 'raw_tls') or cell['action'] not in ('decode', 'encode'):
+                                    stop_continuation_constructor = (
+                                        case_id == 'test-batch-stop-on-first-failure' and
+                                        cell['action'] == 'construct' and
+                                        cell['public_api_symbol'] ==
+                                        'kmipkit_client_batch_add_error_continuation_value')
+                                    if ((encoding, transport) != ('TTLV', 'raw_tls') or
+                                            (cell['action'] not in ('decode', 'encode') and
+                                             not stop_continuation_constructor)):
                                         continue
                                     if (cell['action'] == 'decode' and not cell['public_api_symbol'].startswith('kmipkit_client_batch_')):
                                         continue
@@ -1551,11 +1601,24 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             'kmipkit_get_attribute_list_request_to_ttlv_payload'}:
                                         continue
                                 target = targets_by_id[cell['target_id']]
+                                response_accessor_route = cell['public_api_symbol'].startswith(
+                                    'kmipkit_client_batch_item_response_')
+                                if response_accessor_route:
+                                    source_sections = {reference.get('section')
+                                                      for reference in target.get('source_refs', [])}
+                                    if (case_id == 'test-batch-stop-on-first-failure' and
+                                            '8.3' in source_sections):
+                                        continue
+                                    response_item_index = cell.get('workflow_item_index')
+                                    if (response_item_index is not None and
+                                            response_item_index >= response_batch_item_count):
+                                        continue
                                 if target['kind'] == 'message_field':
                                     field_tag = codec.tags.get(normalize(target['name']))
                                     if field_tag is None:
                                         continue
-                                    field_present = bool(list(descendants(request_tree, field_tag)))
+                                    field_tree = response_tree if response_accessor_route else request_tree
+                                    field_present = bool(list(descendants(field_tree, field_tag)))
                                     if case_id == 'test-batch-single-item-options-omitted':
                                         expected_presence = {
                                             'Batch Count': True,
@@ -1572,6 +1635,13 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         (codec.tag('Operation'), normalize(target['name'])))
                                     if operation_value is None or operation_value not in numbers(
                                             request_tree, 0x42005C):
+                                        continue
+                                elif target['kind'] == 'enumeration_value':
+                                    option_tag = codec.tag('Batch Error Continuation Option')
+                                    expected_value = int(target['wire_value'], 16)
+                                    if (case_id != 'test-batch-stop-on-first-failure' or
+                                            cell['action'] != 'construct' or
+                                            numbers(request_tree, option_tag) != [expected_value]):
                                         continue
                                 elif target['kind'] == 'operation_payload_field':
                                     if cell['action'] == 'decode':
@@ -1607,9 +1677,11 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                 if (cell['action'] == 'send' and len(recipe[0]) > 1 and
                                         not attribute_mutation_recipe):
                                     operations = [next(t['name'] for t in catalog['normative_targets'] if t['kind'] == 'enumeration_value' and t.get('wire_value') == f'{op:08X}' and any(p.endswith('ENUMERATION-OPERATION') for p in t.get('parent_element_ids', []))) for op in recipe[0]]
+                                    response_item_count = len([item for item in response_tree[2]
+                                                               if item[0] == BATCH_ITEM_TAG and item[1] == 1])
                                     event.update(batch_operation_sequence=operations, batch_item_count=len(operations),
                                         peer_observed_operation_sequence=operations,
-                                        peer_observed_response_count=len(operations),
+                                        peer_observed_response_count=response_item_count,
                                         peer_observed_result_status_codes=numbers(response_tree, 0x42007F),
                                         peer_observed_effects=state_evidence['effects'],
                                         peer_observed_state_before_sha256=state_evidence[

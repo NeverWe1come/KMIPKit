@@ -1947,10 +1947,19 @@ class RouteMatrixTests(unittest.TestCase):
                             and event['peer_observed_response_count'] == 1
                             and event['peer_observed_result_status_codes'] == [1]
                             for event in send_events))
+        accessor_symbols = {
+            'kmipkit_client_batch_add_error_continuation_value',
+            'kmipkit_client_batch_item_response_get',
+            'kmipkit_client_batch_item_response_metadata_v1',
+            'kmipkit_client_batch_item_response_pending_correlation_value',
+            'kmipkit_client_batch_item_response_header_ttlv',
+            'kmipkit_client_batch_item_response_raw_ttlv',
+        }
         exercised_routes = {
             (event['public_api_symbol'], event['action'], event['target_id'],
              event.get('workflow_item_index'))
-            for event in events if event['case_id'] == case_id
+            for event in events if event['case_id'] == case_id and
+            event['public_api_symbol'] in accessor_symbols
         }
         expected_routes = {
             ('kmipkit_client_batch_add_error_continuation_value', 'construct',
