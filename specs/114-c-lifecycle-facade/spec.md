@@ -1,8 +1,9 @@
 # KMIPKIT-0114 C Lifecycle Direct Helpers
 
-**Status**: Approved for implementation under the maintainer's standing
-authorization to execute the complete KMIPKit plan without further approval
-requests.
+**Status**: Approved
+
+The maintainer's standing authorization to execute the complete KMIPKit plan
+without further approval requests applies to this delivery.
 
 ## Purpose
 

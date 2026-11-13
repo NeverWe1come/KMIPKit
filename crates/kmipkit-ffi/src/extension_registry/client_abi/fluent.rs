@@ -2,7 +2,10 @@
 
 use super::*;
 use kmipkit_protocol::attribute::typed;
-use kmipkit_protocol::{Attribute, CreateKeyPairRequest, ValidateKmipRequest};
+use kmipkit_protocol::{
+    ActivateRequest, ArchiveRequest, Attribute, AttributeSet, CreateKeyPairRequest, LocateRequest,
+    RecoverRequest, RevokeRequest, ValidateKmipRequest,
+};
 use std::sync::Arc;
 
 type SymmetricBuilder = kmipkit_client::fluent::CreateSymmetricKeyBuilder<'static>;
@@ -619,6 +622,366 @@ pub unsafe extern "C" fn kmipkit_client_destroy_by_id_with_options_v1(
         execute_simple_request(
             client,
             ClientRequest::Destroy(DestroyRequest::new(Some(identifier))),
+            limits,
+            Some(options),
+            out_response,
+        )
+    })
+}
+
+fn required_lifecycle_identifier(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+) -> FfiResult<UniqueIdentifier> {
+    match super::super::copy_unique_identifier(unique_identifier)? {
+        Some(identifier) => Ok(identifier),
+        None => Err(ERROR_INVALID_INPUT),
+    }
+}
+
+fn copy_fluent_attribute_set(attributes: *mut kmipkit_attribute_set_t) -> FfiResult<AttributeSet> {
+    let handle = reference_handle(attributes, Kind::AttributeSet)?;
+    let HandleValue::AttributeSet(attributes) = &handle.value else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    let attributes = attributes.lock().map_err(|_| ERROR_INTERNAL)?;
+    let mut items = Vec::new();
+    items
+        .try_reserve_exact(attributes.as_items().len())
+        .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    for item in attributes.as_items() {
+        items.push(item.try_clone().map_err(model_status)?);
+    }
+    AttributeSet::try_new(items).map_err(|_| ERROR_INVALID_INPUT)
+}
+
+fn revoke_request_by_id(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    revocation_reason: *mut kmipkit_revocation_reason_t,
+    has_compromise_occurrence_date: u8,
+    compromise_occurrence_date: i64,
+) -> FfiResult<RevokeRequest> {
+    let unique_identifier = required_lifecycle_identifier(unique_identifier)?;
+    let reason_handle = reference_handle(revocation_reason, Kind::RevocationReason)?;
+    let HandleValue::RevocationReason { reason, message } = &reason_handle.value else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    let compromise_occurrence_date = match has_compromise_occurrence_date {
+        0 if compromise_occurrence_date == 0 => None,
+        1 => Some(compromise_occurrence_date),
+        _ => return Err(ERROR_INVALID_INPUT),
+    };
+    let mut request = RevokeRequest::new(*reason).with_unique_identifier(unique_identifier);
+    if let Some(message) = message {
+        request = request.with_revocation_message(message.clone());
+    }
+    if let Some(date) = compromise_occurrence_date {
+        request = request.with_compromise_occurrence_date(date);
+    }
+    if !request.validate().is_valid() {
+        return Err(ERROR_INVALID_INPUT);
+    }
+    Ok(request)
+}
+
+/// Executes Activate for one explicit Unique Identifier.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_activate_by_id_v1(
+    client: *mut kmipkit_client_t,
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    limits: *mut kmipkit_codec_limits_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let identifier = match required_lifecycle_identifier(unique_identifier) {
+            Ok(identifier) => identifier,
+            Err(status) => return record_ffi_error(status),
+        };
+        execute_simple_request(
+            client,
+            ClientRequest::Activate(ActivateRequest::new(Some(identifier))),
+            limits,
+            None,
+            out_response,
+        )
+    })
+}
+
+/// Executes Activate with exchange-local timeout options.
+///
+/// # Safety
+///
+/// `options` must be null or point to an aligned, initialized v1 options
+/// record readable for this call. All handle and output-pointer requirements
+/// match [`kmipkit_client_activate_by_id_v1`].
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_client_activate_by_id_with_options_v1(
+    client: *mut kmipkit_client_t,
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    limits: *mut kmipkit_codec_limits_t,
+    options: *const kmipkit_request_options_v1_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if options.is_null() || !options.is_aligned() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        // SAFETY: The validated pointer is read only for this synchronous call.
+        let options = unsafe { &*options };
+        let identifier = match required_lifecycle_identifier(unique_identifier) {
+            Ok(identifier) => identifier,
+            Err(status) => return record_ffi_error(status),
+        };
+        execute_simple_request(
+            client,
+            ClientRequest::Activate(ActivateRequest::new(Some(identifier))),
+            limits,
+            Some(options),
+            out_response,
+        )
+    })
+}
+
+/// Executes Archive for one explicit Unique Identifier.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_archive_by_id_v1(
+    client: *mut kmipkit_client_t,
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    limits: *mut kmipkit_codec_limits_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let identifier = match required_lifecycle_identifier(unique_identifier) {
+            Ok(identifier) => identifier,
+            Err(status) => return record_ffi_error(status),
+        };
+        execute_simple_request(
+            client,
+            ClientRequest::Archive(ArchiveRequest::new(Some(identifier))),
+            limits,
+            None,
+            out_response,
+        )
+    })
+}
+
+/// Executes Archive with exchange-local timeout options.
+///
+/// # Safety
+///
+/// `options` must be null or point to an aligned, initialized v1 options
+/// record readable for this call. All handle and output-pointer requirements
+/// match [`kmipkit_client_archive_by_id_v1`].
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_client_archive_by_id_with_options_v1(
+    client: *mut kmipkit_client_t,
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    limits: *mut kmipkit_codec_limits_t,
+    options: *const kmipkit_request_options_v1_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if options.is_null() || !options.is_aligned() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        // SAFETY: The validated pointer is read only for this synchronous call.
+        let options = unsafe { &*options };
+        let identifier = match required_lifecycle_identifier(unique_identifier) {
+            Ok(identifier) => identifier,
+            Err(status) => return record_ffi_error(status),
+        };
+        execute_simple_request(
+            client,
+            ClientRequest::Archive(ArchiveRequest::new(Some(identifier))),
+            limits,
+            Some(options),
+            out_response,
+        )
+    })
+}
+
+/// Executes Locate using an owned copy of a typed attribute set.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_locate_v1(
+    client: *mut kmipkit_client_t,
+    attributes: *mut kmipkit_attribute_set_t,
+    limits: *mut kmipkit_codec_limits_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let attributes = match copy_fluent_attribute_set(attributes) {
+            Ok(attributes) => attributes,
+            Err(status) => return record_ffi_error(status),
+        };
+        execute_simple_request(
+            client,
+            ClientRequest::Locate(LocateRequest::new(attributes)),
+            limits,
+            None,
+            out_response,
+        )
+    })
+}
+
+/// Executes Locate with exchange-local timeout options.
+///
+/// # Safety
+///
+/// `options` must be null or point to an aligned, initialized v1 options
+/// record readable for this call. All handle and output-pointer requirements
+/// match [`kmipkit_client_locate_v1`].
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_client_locate_with_options_v1(
+    client: *mut kmipkit_client_t,
+    attributes: *mut kmipkit_attribute_set_t,
+    limits: *mut kmipkit_codec_limits_t,
+    options: *const kmipkit_request_options_v1_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if options.is_null() || !options.is_aligned() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        // SAFETY: The validated pointer is read only for this synchronous call.
+        let options = unsafe { &*options };
+        let attributes = match copy_fluent_attribute_set(attributes) {
+            Ok(attributes) => attributes,
+            Err(status) => return record_ffi_error(status),
+        };
+        execute_simple_request(
+            client,
+            ClientRequest::Locate(LocateRequest::new(attributes)),
+            limits,
+            Some(options),
+            out_response,
+        )
+    })
+}
+
+/// Executes Recover for one explicit Unique Identifier.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_recover_by_id_v1(
+    client: *mut kmipkit_client_t,
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    limits: *mut kmipkit_codec_limits_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let identifier = match required_lifecycle_identifier(unique_identifier) {
+            Ok(identifier) => identifier,
+            Err(status) => return record_ffi_error(status),
+        };
+        execute_simple_request(
+            client,
+            ClientRequest::Recover(RecoverRequest::new(Some(identifier))),
+            limits,
+            None,
+            out_response,
+        )
+    })
+}
+
+/// Executes Recover with exchange-local timeout options.
+///
+/// # Safety
+///
+/// `options` must be null or point to an aligned, initialized v1 options
+/// record readable for this call. All handle and output-pointer requirements
+/// match [`kmipkit_client_recover_by_id_v1`].
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_client_recover_by_id_with_options_v1(
+    client: *mut kmipkit_client_t,
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    limits: *mut kmipkit_codec_limits_t,
+    options: *const kmipkit_request_options_v1_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if options.is_null() || !options.is_aligned() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        // SAFETY: The validated pointer is read only for this synchronous call.
+        let options = unsafe { &*options };
+        let identifier = match required_lifecycle_identifier(unique_identifier) {
+            Ok(identifier) => identifier,
+            Err(status) => return record_ffi_error(status),
+        };
+        execute_simple_request(
+            client,
+            ClientRequest::Recover(RecoverRequest::new(Some(identifier))),
+            limits,
+            Some(options),
+            out_response,
+        )
+    })
+}
+
+/// Executes Revoke with a typed revocation reason and optional occurrence date.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_revoke_by_id_v1(
+    client: *mut kmipkit_client_t,
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    revocation_reason: *mut kmipkit_revocation_reason_t,
+    has_compromise_occurrence_date: u8,
+    compromise_occurrence_date: i64,
+    limits: *mut kmipkit_codec_limits_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let request = match revoke_request_by_id(
+            unique_identifier,
+            revocation_reason,
+            has_compromise_occurrence_date,
+            compromise_occurrence_date,
+        ) {
+            Ok(request) => request,
+            Err(status) => return record_ffi_error(status),
+        };
+        execute_simple_request(
+            client,
+            ClientRequest::Revoke(request),
+            limits,
+            None,
+            out_response,
+        )
+    })
+}
+
+/// Executes Revoke with exchange-local timeout options.
+///
+/// # Safety
+///
+/// `options` must be null or point to an aligned, initialized v1 options
+/// record readable for this call. All other pointer requirements match
+/// [`kmipkit_client_revoke_by_id_v1`].
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn kmipkit_client_revoke_by_id_with_options_v1(
+    client: *mut kmipkit_client_t,
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    revocation_reason: *mut kmipkit_revocation_reason_t,
+    has_compromise_occurrence_date: u8,
+    compromise_occurrence_date: i64,
+    limits: *mut kmipkit_codec_limits_t,
+    options: *const kmipkit_request_options_v1_t,
+    out_response: *mut *mut kmipkit_client_batch_response_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        if options.is_null() || !options.is_aligned() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        // SAFETY: The validated pointer is read only for this synchronous call.
+        let options = unsafe { &*options };
+        let request = match revoke_request_by_id(
+            unique_identifier,
+            revocation_reason,
+            has_compromise_occurrence_date,
+            compromise_occurrence_date,
+        ) {
+            Ok(request) => request,
+            Err(status) => return record_ffi_error(status),
+        };
+        execute_simple_request(
+            client,
+            ClientRequest::Revoke(request),
             limits,
             Some(options),
             out_response,
