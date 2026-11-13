@@ -241,6 +241,38 @@ class ControlledTlsPeerTest {
         assertEquals(KMIP_2_0_AND_2_1, fixtures.get(0).protocolVersions());
     }
 
+    @Test
+    void bitmaskFixturesCoverEveryCataloguedPerTargetValueCase() throws Exception {
+        JsonNode catalog = readRouteEvidenceCatalog();
+        Map<String, JsonNode> targets = new HashMap<>();
+        for (JsonNode target : catalog.path("normative_targets")) {
+            targets.put(target.path("target_id").asText(), target);
+        }
+        Set<String> expected = new java.util.HashSet<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            JsonNode requires = testCase.path("requires");
+            if (!"bitmask_value".equals(requires.path("target_kind").asText())
+                    || !"local_model".equals(testCase.path("execution").path("mode").asText())) continue;
+            JsonNode target = targets.get(requires.path("normative_target_id").asText());
+            if (target == null || !target.path("parent_element_ids").isArray()
+                    || target.path("parent_element_ids").isEmpty()) continue;
+            String familyName = target.path("parent_element_ids").get(0).asText()
+                    .replace("KMIPKIT-ELEM-BITMASK-", "");
+            boolean hasStandaloneTag = targets.values().stream()
+                    .filter(candidate -> "tag".equals(candidate.path("kind").asText()))
+                    .anyMatch(candidate -> normalizeTargetName(candidate.path("name").asText())
+                            .equals(normalizeTargetName(familyName)));
+            if (hasStandaloneTag) expected.add(testCase.path("case_id").asText());
+        }
+        Set<String> actual = genericBitmaskFixtures().stream()
+                .map(BitmaskFixture::caseId)
+                .filter(caseId -> caseId.startsWith("test-norm-bitmask-value-"))
+                .collect(java.util.stream.Collectors.toSet());
+
+        assertEquals(expected, actual,
+                "Each catalogued bitmask value with a standalone tag needs its own generic and typed routes.");
+    }
+
     // OASIS KMIP 2.1 §6.1.16 and §4.1.2: Discover Versions request and response.
     @Test
     void typedDiscoverVersionsUsesInstalledPackageAndVerifiedMutualTls() throws Exception {
