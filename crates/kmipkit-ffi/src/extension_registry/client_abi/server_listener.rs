@@ -383,7 +383,7 @@ pub extern "C" fn kmipkit_server_listener_accept(
                 *out = try_ffi!(try_make_handle(
                     Kind::ServerConnection,
                     HandleValue::ServerConnection(Box::new(Mutex::new(ServerConnectionState {
-                        connection,
+                        connection: Some(connection),
                         active_batch: None,
                     }))),
                 ));
@@ -416,10 +416,94 @@ pub extern "C" fn kmipkit_server_connection_recv_batch(
         let Ok(mut connection) = connection.lock() else {
             return record_ffi_error(ERROR_INTERNAL);
         };
-        match connection.connection.recv_batch(limits, read_timeout) {
+        let Some(connection_handle) = connection.connection.as_mut() else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        match connection_handle.recv_batch(limits, read_timeout) {
             Ok(batch) => {
                 let batch = Arc::new(batch);
                 connection.active_batch = Some(Arc::clone(&batch));
+                *out = try_ffi!(try_make_handle(
+                    Kind::ServerIncomingBatch,
+                    HandleValue::ServerIncomingBatch(batch),
+                ));
+                SUCCESS
+            }
+            Err(error) => record_client_error(&error),
+        }
+    })
+}
+
+/// Converts a raw-TLS client listener connection into its role-reversed session.
+///
+/// The caller must release the connection handle after a conversion attempt. An active request
+/// batch is rejected before conversion and leaves the connection usable. Once conversion starts,
+/// the underlying connection is consumed even if the transport cannot be converted.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_server_connection_into_role_reversed_session(
+    connection: *mut kmipkit_server_connection_t,
+    out_session: *mut *mut kmipkit_server_role_reversed_session_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_session);
+        let connection = read_handle!(connection, ServerConnection);
+        let HandleValue::ServerConnection(connection) = &connection.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(mut connection) = connection.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        if connection.active_batch.is_some() {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let Some(connection_handle) = connection.connection.take() else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        match connection_handle.into_role_reversed() {
+            Ok(session) => {
+                *out = try_ffi!(try_make_handle(
+                    Kind::ServerRoleReversedSession,
+                    HandleValue::ServerRoleReversedSession(Box::new(Mutex::new(
+                        ServerRoleReversedSessionState {
+                            session,
+                            active_batch: None,
+                        },
+                    ))),
+                ));
+                SUCCESS
+            }
+            Err(error) => record_client_error(&error),
+        }
+    })
+}
+
+/// Receives a request batch in a raw-TLS role-reversed session.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_server_role_reversed_session_recv_batch(
+    session: *mut kmipkit_server_role_reversed_session_t,
+    limits: *mut kmipkit_codec_limits_t,
+    timeout_seconds: u64,
+    timeout_nanoseconds: u32,
+    out_batch: *mut *mut kmipkit_server_incoming_batch_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_batch);
+        let read_timeout = try_ffi!(timeout(timeout_seconds, timeout_nanoseconds));
+        let limits = read_handle!(limits, CodecLimits);
+        let HandleValue::CodecLimits(limits) = &limits.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let session = read_handle!(session, ServerRoleReversedSession);
+        let HandleValue::ServerRoleReversedSession(session) = &session.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(mut session) = session.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        match session.session.recv_batch(limits, read_timeout) {
+            Ok(batch) => {
+                let batch = Arc::new(batch);
+                session.active_batch = Some(Arc::clone(&batch));
                 *out = try_ffi!(try_make_handle(
                     Kind::ServerIncomingBatch,
                     HandleValue::ServerIncomingBatch(batch),
@@ -1363,8 +1447,46 @@ pub extern "C" fn kmipkit_server_connection_send_response(
             return record_ffi_error(ERROR_INVALID_INPUT);
         }
         connection.active_batch = None;
-        match connection
-            .connection
+        let Some(connection_handle) = connection.connection.as_mut() else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        match connection_handle.send_response(&response.message, send_timeout) {
+            Ok(()) => SUCCESS,
+            Err(error) => record_client_error(&error),
+        }
+    })
+}
+
+/// Sends a response for the active batch in a role-reversed session.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_server_role_reversed_session_send_response(
+    session: *mut kmipkit_server_role_reversed_session_t,
+    response: *mut kmipkit_server_response_t,
+    timeout_seconds: u64,
+    timeout_nanoseconds: u32,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let send_timeout = try_ffi!(timeout(timeout_seconds, timeout_nanoseconds));
+        let session = read_handle!(session, ServerRoleReversedSession);
+        let HandleValue::ServerRoleReversedSession(session) = &session.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let response = read_handle!(response, ServerResponse);
+        let HandleValue::ServerResponse(response) = &response.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        let Ok(mut session) = session.lock() else {
+            return record_ffi_error(ERROR_INTERNAL);
+        };
+        let Some(active_batch) = session.active_batch.as_ref() else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        if !Arc::ptr_eq(active_batch, &response.batch) {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        session.active_batch = None;
+        match session
+            .session
             .send_response(&response.message, send_timeout)
         {
             Ok(()) => SUCCESS,
@@ -1388,6 +1510,13 @@ pub extern "C" fn kmipkit_server_listener_release(listener: *mut kmipkit_server_
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_server_connection_release(connection: *mut kmipkit_server_connection_t) {
     ffi_entrypoint(|| release(connection, Kind::ServerConnection));
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_server_role_reversed_session_release(
+    session: *mut kmipkit_server_role_reversed_session_t,
+) {
+    ffi_entrypoint(|| release(session, Kind::ServerRoleReversedSession));
 }
 
 #[unsafe(no_mangle)]

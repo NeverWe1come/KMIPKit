@@ -7,25 +7,6 @@
 
 typedef void (*kmipkit_start_test_client_fn)(uint16_t, void *);
 
-/* These declarations deliberately precede the public C role-reversal API. */
-typedef struct kmipkit_server_role_reversed_session kmipkit_server_role_reversed_session_t;
-int32_t kmipkit_server_connection_into_role_reversed_session(
-    kmipkit_server_connection_t *connection,
-    kmipkit_server_role_reversed_session_t **out_session);
-int32_t kmipkit_server_role_reversed_session_recv_batch(
-    kmipkit_server_role_reversed_session_t *session,
-    kmipkit_codec_limits_t *limits,
-    uint64_t timeout_seconds,
-    uint32_t timeout_nanoseconds,
-    kmipkit_server_incoming_batch_t **out_batch);
-int32_t kmipkit_server_role_reversed_session_send_response(
-    kmipkit_server_role_reversed_session_t *session,
-    kmipkit_server_response_t *response,
-    uint64_t timeout_seconds,
-    uint32_t timeout_nanoseconds);
-void kmipkit_server_role_reversed_session_release(
-    kmipkit_server_role_reversed_session_t *session);
-
 static void kmipkit_check_test_secret(const uint8_t *bytes, uint64_t length, void *context) {
     uint32_t *valid = (uint32_t *)context;
     static const uint8_t expected[] = { 0x11u, 0x22u, 0x33u, 0x44u };
@@ -390,6 +371,7 @@ int32_t kmipkit_s2c_consumer_receives_after_role_reversal(
     kmipkit_server_listener_t *listener = NULL;
     kmipkit_server_connection_t *connection = NULL;
     kmipkit_server_role_reversed_session_t *session = NULL;
+    kmipkit_server_incoming_batch_t *probe_batch = NULL;
     kmipkit_server_incoming_batch_t *batch = NULL;
     kmipkit_server_request_item_t *request = NULL;
     kmipkit_server_response_builder_t *builder = NULL;
@@ -412,9 +394,12 @@ int32_t kmipkit_s2c_consumer_receives_after_role_reversal(
     if (status != 0) goto cleanup;
     status = kmipkit_server_incoming_batch_item_at(batch, 0u, &request);
     if (status != 0) goto cleanup;
+    status = kmipkit_server_connection_into_role_reversed_session(connection, &session);
+    if (status != KMIPKIT_ERROR_INVALID_INPUT || session != NULL) { status = 202; goto cleanup; }
     status = kmipkit_server_response_builder_create(batch, &builder);
     if (status != 0) goto cleanup;
-    status = kmipkit_server_notify_response_create(request, &response_item);
+    status = kmipkit_server_set_endpoint_role_response_create(
+        request, 2u, (kmipkit_byte_span_v1_t){ NULL, 0u }, &response_item);
     if (status != 0) goto cleanup;
     status = kmipkit_server_response_builder_add_success(builder, request, response_item);
     if (status != 0) goto cleanup;
@@ -434,6 +419,8 @@ int32_t kmipkit_s2c_consumer_receives_after_role_reversal(
     batch = NULL;
     status = kmipkit_server_connection_into_role_reversed_session(connection, &session);
     if (status != 0) goto cleanup;
+    status = kmipkit_server_connection_recv_batch(connection, limits, 0u, 0u, &probe_batch);
+    if (status != KMIPKIT_ERROR_INVALID_INPUT || probe_batch != NULL) { status = 203; goto cleanup; }
     status = kmipkit_server_role_reversed_session_recv_batch(session, limits, 5u, 0u, &batch);
     if (status != 0) goto cleanup;
     status = kmipkit_server_incoming_batch_item_at(batch, 0u, &request);
@@ -447,9 +434,14 @@ int32_t kmipkit_s2c_consumer_receives_after_role_reversal(
     status = kmipkit_server_response_builder_build(builder, &response);
     if (status != 0) goto cleanup;
     status = kmipkit_server_role_reversed_session_send_response(session, response, 5u, 0u);
+    if (status != 0) goto cleanup;
+    status = kmipkit_server_role_reversed_session_send_response(session, response, 0u, 0u);
+    if (status != KMIPKIT_ERROR_INVALID_INPUT) { status = 204; goto cleanup; }
+    status = 0;
 
 cleanup:
     if (limits != NULL) kmipkit_codec_limits_release(limits);
+    if (probe_batch != NULL) kmipkit_server_incoming_batch_release(probe_batch);
     if (response != NULL) kmipkit_server_response_release(response);
     if (response_item != NULL) kmipkit_server_response_item_release(response_item);
     if (builder != NULL) kmipkit_server_response_builder_release(builder);

@@ -67,6 +67,10 @@ pub struct kmipkit_server_connection_t {
     _private: [u8; 0],
 }
 #[repr(C)]
+pub struct kmipkit_server_role_reversed_session_t {
+    _private: [u8; 0],
+}
+#[repr(C)]
 pub struct kmipkit_server_incoming_batch_t {
     _private: [u8; 0],
 }

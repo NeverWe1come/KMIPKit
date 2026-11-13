@@ -393,6 +393,7 @@
     "KMIPKIT-0093-FR-008",
     "KMIPKIT-0093-FR-009",
     "KMIPKIT-0093-FR-011",
+    "KMIPKIT-0093-FR-012",
     "KMIPKIT-0095-FR-001",
     "KMIPKIT-0095-FR-002",
     "KMIPKIT-0095-FR-003",
@@ -769146,6 +769147,259 @@
           "kmipkit_server_set_endpoint_role_response_create is part of the KMIPKIT-0066 C server-listener route."
         ]
       }
+    },
+    {
+      "declarationId": "KMIPKIT-0093:kmipkit_server_role_reversed_session_t",
+      "packageId": "c-kmipkit",
+      "kind": "type",
+      "exportName": "kmipkit_server_role_reversed_session_t",
+      "capabilityId": "server_to_client_listener_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-012",
+        "REQ-066-007",
+        "REQ-066-009"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134)."
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_server_role_reversed_session_t"
+        }
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0093:kmipkit_server_connection_into_role_reversed_session",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_server_connection_into_role_reversed_session",
+      "capabilityId": "server_to_client_listener_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-012",
+        "REQ-066-007",
+        "REQ-066-009"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134)."
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_server_connection_into_role_reversed_session"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "connection",
+            "kind": "handle",
+            "type": "kmipkit_server_connection_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_session",
+            "kind": "output",
+            "type": "kmipkit_server_role_reversed_session_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "documentation": [
+          "Converts a raw-TLS listener connection after a successful Set Endpoint Role exchange. An active request batch is rejected without consuming the connection; once conversion starts, the underlying connection is consumed even if the transport cannot be converted. Release the connection handle after the conversion attempt."
+        ]
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0093:kmipkit_server_role_reversed_session_recv_batch",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_server_role_reversed_session_recv_batch",
+      "capabilityId": "server_to_client_listener_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-012",
+        "REQ-066-007",
+        "REQ-066-009"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134)."
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_server_role_reversed_session_recv_batch"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "session",
+            "kind": "handle",
+            "type": "kmipkit_server_role_reversed_session_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "timeout_seconds",
+            "kind": "scalar",
+            "type": "uint64_t"
+          },
+          {
+            "name": "timeout_nanoseconds",
+            "kind": "scalar",
+            "type": "uint32_t"
+          },
+          {
+            "name": "out_batch",
+            "kind": "output",
+            "type": "kmipkit_server_incoming_batch_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "documentation": [
+          "Receives one incoming server request batch through a raw TLS role-reversed session."
+        ]
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0093:kmipkit_server_role_reversed_session_send_response",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_server_role_reversed_session_send_response",
+      "capabilityId": "server_to_client_listener_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-012",
+        "REQ-066-007",
+        "REQ-066-009"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134)."
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_server_role_reversed_session_send_response"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "session",
+            "kind": "handle",
+            "type": "kmipkit_server_role_reversed_session_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "response",
+            "kind": "handle",
+            "type": "kmipkit_server_response_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "timeout_seconds",
+            "kind": "scalar",
+            "type": "uint64_t"
+          },
+          {
+            "name": "timeout_nanoseconds",
+            "kind": "scalar",
+            "type": "uint32_t"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "internal",
+          "protocol",
+          "transport"
+        ],
+        "documentation": [
+          "Sends the response built for the session current incoming batch."
+        ]
+      }
+    },
+    {
+      "declarationId": "KMIPKIT-0093:kmipkit_server_role_reversed_session_release",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_server_role_reversed_session_release",
+      "capabilityId": "server_to_client_listener_c_abi",
+      "requirementIds": [
+        "KMIPKIT-0093-FR-012",
+        "REQ-066-007",
+        "REQ-066-009"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/066-server-to-client-operations/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved (merged into `release/1.0.0` by PR #134)."
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_server_role_reversed_session_release"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "session",
+            "kind": "handle",
+            "type": "kmipkit_server_role_reversed_session_t *",
+            "ownership": "borrowed"
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [],
+        "documentation": [
+          "Releases the role-reversed session handle."
+        ]
+      }
     }
   ],
   "approvedExclusions": [
@@ -1093601,6 +1093855,7 @@
           "KMIPKIT_SERVER_PUT_READ_SECRET_TEXT",
           "KMIPKIT_SERVER_PUT_READ_STRUCTURE_VIEW",
           "KMIPKIT_SERVER_PUT_READ_TYPE",
+          "kmipkit_server_connection_into_role_reversed_session",
           "kmipkit_server_connection_recv_batch",
           "kmipkit_server_connection_release",
           "kmipkit_server_connection_send_response",
@@ -1093653,6 +1093908,10 @@
           "kmipkit_server_response_item_t",
           "kmipkit_server_response_release",
           "kmipkit_server_response_t",
+          "kmipkit_server_role_reversed_session_recv_batch",
+          "kmipkit_server_role_reversed_session_release",
+          "kmipkit_server_role_reversed_session_send_response",
+          "kmipkit_server_role_reversed_session_t",
           "kmipkit_server_set_endpoint_role_response_create"
         ]
       }

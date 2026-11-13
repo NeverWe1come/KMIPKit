@@ -1012,6 +1012,7 @@ typedef struct kmipkit_server_put_object_t kmipkit_server_put_object_t;
 typedef struct kmipkit_server_response_builder_t kmipkit_server_response_builder_t;
 typedef struct kmipkit_server_response_item_t kmipkit_server_response_item_t;
 typedef struct kmipkit_server_response_t kmipkit_server_response_t;
+typedef struct kmipkit_server_role_reversed_session_t kmipkit_server_role_reversed_session_t;
 
 typedef struct kmipkit_byte_span_v1_t kmipkit_byte_span_v1_t;
 typedef struct kmipkit_client_batch_item_metadata_v1_t kmipkit_client_batch_item_metadata_v1_t;
@@ -3777,6 +3778,22 @@ void kmipkit_server_response_release(kmipkit_server_response_t * response);
  */
 /* REQ-066-001, REQ-066-009 */
 int32_t kmipkit_server_set_endpoint_role_response_create(kmipkit_server_request_item_t * request, uint32_t endpoint_role, kmipkit_byte_span_v1_t vendor_identification, kmipkit_server_response_item_t ** out_response_item);
+/* Converts a raw-TLS listener connection after a successful Set Endpoint Role exchange. An active request batch is rejected without consuming the connection; once conversion starts, the underlying connection is consumed even if the transport cannot be converted. Release the connection handle after the conversion attempt.
+ */
+/* KMIPKIT-0093-FR-012, REQ-066-007, REQ-066-009 */
+int32_t kmipkit_server_connection_into_role_reversed_session(kmipkit_server_connection_t * connection, kmipkit_server_role_reversed_session_t ** out_session);
+/* Receives one incoming server request batch through a raw TLS role-reversed session.
+ */
+/* KMIPKIT-0093-FR-012, REQ-066-007, REQ-066-009 */
+int32_t kmipkit_server_role_reversed_session_recv_batch(kmipkit_server_role_reversed_session_t * session, kmipkit_codec_limits_t * limits, uint64_t timeout_seconds, uint32_t timeout_nanoseconds, kmipkit_server_incoming_batch_t ** out_batch);
+/* Sends the response built for the session current incoming batch.
+ */
+/* KMIPKIT-0093-FR-012, REQ-066-007, REQ-066-009 */
+int32_t kmipkit_server_role_reversed_session_send_response(kmipkit_server_role_reversed_session_t * session, kmipkit_server_response_t * response, uint64_t timeout_seconds, uint32_t timeout_nanoseconds);
+/* Releases the role-reversed session handle.
+ */
+/* KMIPKIT-0093-FR-012, REQ-066-007, REQ-066-009 */
+int32_t kmipkit_server_role_reversed_session_release(kmipkit_server_role_reversed_session_t * session);
 /* Executes one KMIP batch and returns an owned generic ResponseMessage TTLV only for an approved missing, repeated, or malformed Unique Identifier in a successful MAC, MAC Verify, Sign, or Signature Verify response.
  * The caller owns and must release out_error_response_ttlv when it is non-null; it remains null for all other failures and successful execution.
  * The generic response is preserved without placing raw response bytes in diagnostics.

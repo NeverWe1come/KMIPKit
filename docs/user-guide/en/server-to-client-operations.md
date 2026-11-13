@@ -28,6 +28,14 @@ The C, Java, and Python bindings expose corresponding listener, dispatcher,
 and typed request access. Use the published API manifest and each language's
 reference docs for exact ownership and cleanup rules.
 
+In C, respond to the received Set Endpoint Role request first, then call
+`kmipkit_server_connection_into_role_reversed_session`. The connection handle
+must be released after the conversion attempt. An active batch prevents
+conversion and leaves the connection usable; once conversion starts, the
+underlying connection is consumed even if the transport is HTTPS and cannot
+be converted. Use the role-reversed session's `recv_batch` and
+`send_response` functions for the subsequent exchange.
+
 ## Endpoint role reversal
 
 KMIP Set Endpoint Role is supported in both directions. After a successful

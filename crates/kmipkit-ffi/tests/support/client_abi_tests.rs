@@ -362,9 +362,30 @@ fn s2c_test_notify_batch() -> Vec<u8> {
     ));
     header.extend(encode_test_ttlv(0x0042_000D, INTEGER, &1i32.to_be_bytes()));
     let item = s2c_test_notify_item(b"role-reversal-notify", 0x73, true);
-    let mut message = encode_test_structure(0x0042_0077, &header);
-    message.extend(item);
-    message
+    let mut root = encode_test_structure(0x0042_0077, &header);
+    root.extend(item);
+    encode_test_structure(0x0042_0078, &root)
+}
+
+fn s2c_test_set_endpoint_role_batch() -> Vec<u8> {
+    const INTEGER: u8 = 2;
+    const ENUMERATION: u8 = 5;
+    let mut protocol_version = encode_test_ttlv(0x0042_006A, INTEGER, &2i32.to_be_bytes());
+    protocol_version.extend(encode_test_ttlv(0x0042_006B, INTEGER, &1i32.to_be_bytes()));
+    let mut header = encode_test_structure(0x0042_0069, &protocol_version);
+    header.extend(encode_test_ttlv(
+        0x0042_004F,
+        INTEGER,
+        &65536i32.to_be_bytes(),
+    ));
+    header.extend(encode_test_ttlv(0x0042_000D, INTEGER, &1i32.to_be_bytes()));
+    let payload = encode_test_ttlv(0x0042_0151, ENUMERATION, &1u32.to_be_bytes());
+    let mut item = encode_test_ttlv(0x0042_005C, ENUMERATION, &0x32u32.to_be_bytes());
+    item.extend(encode_test_ttlv(0x0042_0093, 8, &[0x72]));
+    item.extend(encode_test_structure(0x0042_0079, &payload));
+    let mut root = encode_test_structure(0x0042_0077, &header);
+    root.extend(encode_test_structure(0x0042_000F, &item));
+    encode_test_structure(0x0042_0078, &root)
 }
 
 #[test]
@@ -455,11 +476,11 @@ fn s2c_c_consumer_receives_and_responds_after_role_reversal() {
         )),
     )
     .expect("test client identity is valid");
-    let request = s2c_test_notify_batch();
+    let request = s2c_test_set_endpoint_role_batch();
     let mut context = S2cClientStartContext {
         config: Arc::new(config),
         request: request.clone(),
-        request_after_response: Some(request),
+        request_after_response: Some(s2c_test_notify_batch()),
         worker: None,
         spawn_error: None,
     };
