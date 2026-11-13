@@ -92,3 +92,27 @@ The same hosted CI run's Ubuntu Python job timed out while fetching the pinned
 `uv` version manifest from `raw.githubusercontent.com`, before Python tests
 started. This is an infrastructure failure; the next exact-head CI run must
 complete the Python setup and tests.
+
+## Exact-head hosted CI correction (2026-11-13)
+
+The hosted run on `91cc9022` failed the workspace test and coverage jobs on
+Linux and Windows. The failing invariant was
+`every_exported_c_function_starts_inside_the_shared_panic_boundary`; the five
+new `*_with_options_v1` lifecycle entry points delegated to the shared helper
+without first entering `ffi_entrypoint`. Coverage collection also failed when
+the same workspace test failed. The failure was reproduced locally with:
+
+```text
+cargo test -p kmipkit-ffi --all-features extension_registry::metadata_tests::every_exported_c_function_starts_inside_the_shared_panic_boundary -- --exact
+```
+
+Green wraps Get, Destroy, Activate, Archive, and Recover option-aware exports
+in the existing `ffi_entrypoint` panic boundary before they call the shared
+lifecycle helper. The focused test now passes (1 passed), and
+`cargo fmt --all --check` plus `git diff --check` pass. A full
+`cargo test --workspace --all-features --locked` attempt did not yield a
+terminal result in this session, so it is not counted as passing. The complete
+`kmipkit-ffi` suite did pass locally: 480 unit tests, 56 C ABI integration
+tests, and 1 operation-parity integration test. The strict FFI Clippy command
+also passed. A fresh hosted run on the corrected head is still required,
+including the Linux and Windows workspace and coverage jobs.

@@ -546,17 +546,21 @@ pub unsafe extern "C" fn kmipkit_client_get_by_id_with_options_v1(
     options: *const kmipkit_request_options_v1_t,
     out_response: *mut *mut kmipkit_client_batch_response_t,
 ) -> i32 {
-    // SAFETY: This exported function's pointer contract is the helper's precondition.
-    unsafe {
-        execute_lifecycle_request_with_options(
-            client,
-            unique_identifier,
-            limits,
-            options,
-            out_response,
-            |identifier| ClientRequest::Get(GetRequest::new().with_unique_identifier(identifier)),
-        )
-    }
+    ffi_entrypoint(|| {
+        // SAFETY: This exported function's pointer contract is the helper's precondition.
+        unsafe {
+            execute_lifecycle_request_with_options(
+                client,
+                unique_identifier,
+                limits,
+                options,
+                out_response,
+                |identifier| {
+                    ClientRequest::Get(GetRequest::new().with_unique_identifier(identifier))
+                },
+            )
+        }
+    })
 }
 
 /// Executes Destroy with an explicit versioned Unique Identifier.
@@ -600,17 +604,19 @@ pub unsafe extern "C" fn kmipkit_client_destroy_by_id_with_options_v1(
     options: *const kmipkit_request_options_v1_t,
     out_response: *mut *mut kmipkit_client_batch_response_t,
 ) -> i32 {
-    // SAFETY: This exported function's pointer contract is the helper's precondition.
-    unsafe {
-        execute_lifecycle_request_with_options(
-            client,
-            unique_identifier,
-            limits,
-            options,
-            out_response,
-            |identifier| ClientRequest::Destroy(DestroyRequest::new(Some(identifier))),
-        )
-    }
+    ffi_entrypoint(|| {
+        // SAFETY: This exported function's pointer contract is the helper's precondition.
+        unsafe {
+            execute_lifecycle_request_with_options(
+                client,
+                unique_identifier,
+                limits,
+                options,
+                out_response,
+                |identifier| ClientRequest::Destroy(DestroyRequest::new(Some(identifier))),
+            )
+        }
+    })
 }
 
 fn required_lifecycle_identifier(
@@ -756,17 +762,19 @@ pub unsafe extern "C" fn kmipkit_client_activate_by_id_with_options_v1(
     options: *const kmipkit_request_options_v1_t,
     out_response: *mut *mut kmipkit_client_batch_response_t,
 ) -> i32 {
-    // SAFETY: This exported function's pointer contract is the helper's precondition.
-    unsafe {
-        execute_lifecycle_request_with_options(
-            client,
-            unique_identifier,
-            limits,
-            options,
-            out_response,
-            |identifier| ClientRequest::Activate(ActivateRequest::new(Some(identifier))),
-        )
-    }
+    ffi_entrypoint(|| {
+        // SAFETY: This exported function's pointer contract is the helper's precondition.
+        unsafe {
+            execute_lifecycle_request_with_options(
+                client,
+                unique_identifier,
+                limits,
+                options,
+                out_response,
+                |identifier| ClientRequest::Activate(ActivateRequest::new(Some(identifier))),
+            )
+        }
+    })
 }
 
 /// Executes Archive for one explicit Unique Identifier.
@@ -807,17 +815,19 @@ pub unsafe extern "C" fn kmipkit_client_archive_by_id_with_options_v1(
     options: *const kmipkit_request_options_v1_t,
     out_response: *mut *mut kmipkit_client_batch_response_t,
 ) -> i32 {
-    // SAFETY: This exported function's pointer contract is the helper's precondition.
-    unsafe {
-        execute_lifecycle_request_with_options(
-            client,
-            unique_identifier,
-            limits,
-            options,
-            out_response,
-            |identifier| ClientRequest::Archive(ArchiveRequest::new(Some(identifier))),
-        )
-    }
+    ffi_entrypoint(|| {
+        // SAFETY: This exported function's pointer contract is the helper's precondition.
+        unsafe {
+            execute_lifecycle_request_with_options(
+                client,
+                unique_identifier,
+                limits,
+                options,
+                out_response,
+                |identifier| ClientRequest::Archive(ArchiveRequest::new(Some(identifier))),
+            )
+        }
+    })
 }
 
 /// Executes Locate using an owned copy of a typed attribute set.
@@ -915,17 +925,19 @@ pub unsafe extern "C" fn kmipkit_client_recover_by_id_with_options_v1(
     options: *const kmipkit_request_options_v1_t,
     out_response: *mut *mut kmipkit_client_batch_response_t,
 ) -> i32 {
-    // SAFETY: This exported function's pointer contract is the helper's precondition.
-    unsafe {
-        execute_lifecycle_request_with_options(
-            client,
-            unique_identifier,
-            limits,
-            options,
-            out_response,
-            |identifier| ClientRequest::Recover(RecoverRequest::new(Some(identifier))),
-        )
-    }
+    ffi_entrypoint(|| {
+        // SAFETY: This exported function's pointer contract is the helper's precondition.
+        unsafe {
+            execute_lifecycle_request_with_options(
+                client,
+                unique_identifier,
+                limits,
+                options,
+                out_response,
+                |identifier| ClientRequest::Recover(RecoverRequest::new(Some(identifier))),
+            )
+        }
+    })
 }
 
 /// Executes Revoke with a typed revocation reason and optional occurrence date.
