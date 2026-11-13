@@ -541,11 +541,18 @@ def run(output: Path, binary: Path | None = None) -> int:
         scalar_target_case = (
             case['category'] == 'normative_inventory' and not case.get('requires', {}).get('protocol_scenario')
         ) or target['kind'] in {'operation', 'object_type'} or tag_target_case
+        item_type_target_case = (
+            target['kind'] == 'enumeration_value'
+            and 'KMIPKIT-ELEM-ENUMERATION-ITEM-TYPE'
+            in target.get('parent_element_ids', [])
+        )
         if (cell['transport'] is None and not tag_target_case
-                and any(key in case.get('requires', {}) for key in ('enum_type', 'bitmask_type'))):
+                and (any(key in case.get('requires', {}) for key in ('enum_type', 'bitmask_type'))
+                     or item_type_target_case)):
             value_key = (case['case_id'], cell['protocol_version'])
             if value_key not in value_cache:
-                value_cache[value_key] = value_cases.execute(case, cell['protocol_version'])
+                value_cache[value_key] = value_cases.execute(
+                    case, cell['protocol_version'], target if item_type_target_case else None)
             result = value_cache[value_key]
             if result is not None and cell['public_api_symbol'] in result['invoked_symbols']:
                 event = cell_fields(cell)

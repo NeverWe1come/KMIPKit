@@ -27,9 +27,13 @@ class ValueCases:
             and target.get('parent_element_ids') == ['KMIPKIT-ELEM-ENUMERATION-ITEM-TYPE']
             and version in target['protocol_versions'])
 
-    def execute(self, case, version):
+    def execute(self, case, version, target=None):
         requires = case['requires']
         type_name = requires.get('enum_type') or requires.get('bitmask_type')
+        if (type_name is None and target is not None
+                and 'KMIPKIT-ELEM-ENUMERATION-ITEM-TYPE'
+                in target.get('parent_element_ids', [])):
+            type_name = 'Item Type'
         if not type_name:
             return None
         if type_name == 'Item Type':
