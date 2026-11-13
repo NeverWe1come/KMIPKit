@@ -31,6 +31,14 @@ class RecipePending(Exception):
     """The validator cannot yet demonstrate the required case semantics."""
 
 
+class ObservedRouteFailure(Exception):
+    """A public route failed after its sanitized wire evidence was collected."""
+
+    def __init__(self, evidence: dict):
+        super().__init__()
+        self.evidence = evidence
+
+
 def digest(value: Any) -> str:
     return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
 
@@ -2329,6 +2337,12 @@ def _execute_matrix_cell(cell: dict, case: dict, target: dict) -> tuple[str, dic
             raise RecipePending
         return 'event', {**identity, 'invocation_id': str(uuid.uuid4()),
                          'invocation_count': 1, 'status': 'passed', **observed}
+    except ObservedRouteFailure as failure:
+        if trace is not None and set(symbols) <= trace.observed:
+            return 'event', {**identity, 'invocation_id': str(uuid.uuid4()),
+                             'invocation_count': 1, 'status': 'failed',
+                             'failure_code': 'route_execution_failed', **failure.evidence}
+        return 'gap', {**identity, 'failure_code': 'recipe_execution_failed'}
     except RecipePending:
         return 'gap', {**identity, 'failure_code': 'recipe_pending'}
     except Exception:
@@ -2538,7 +2552,7 @@ def _find_tree_value(roots: list, tag: int) -> Any | None:
 
 def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | None) -> dict:
     from .controlled_peer import ControlledTlsPeer, PKI
-    from kmipkit import extensions, protocol_values, ttlv
+    from kmipkit import errors, extensions, protocol_values, ttlv
 
     if case.get('requires', {}).get('expected_status') == 'NotSent':
         return _not_sent_cell(cell, case)
@@ -2610,6 +2624,7 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
     driver = None
     item = None
     identifier = None
+    route_execution_failed = False
     try:
         driver = PythonKmipDriver(connection)
         symbol = cell['public_api_symbol']
@@ -2619,9 +2634,15 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
         elif batch_operations is not None:
             identifier = extensions.UniqueIdentifier.text_string('KMIPKit-python-route')
             name = 'KMIPKit-python-route'
-            result = _execute_typed_batch(driver, case, cell, batch_operations,
-                                          identifier, name, peer_status, peer_reason,
-                                          batch_result_statuses, batch_result_reasons)
+            try:
+                result = _execute_typed_batch(driver, case, cell, batch_operations,
+                                              identifier, name, peer_status, peer_reason,
+                                              batch_result_statuses, batch_result_reasons)
+            except errors.ClientExecutionError:
+                if (case['case_id'] != 'test-batch-stop-on-first-failure'
+                        or _batch_response_count(case, batch_operations) >= len(batch_operations)):
+                    raise
+                route_execution_failed = True
         else:
             route_case = case if case['operation'] == operation else {**case, 'operation': operation}
             identifier = extensions.UniqueIdentifier.text_string('KMIPKit-python-route')
@@ -2641,8 +2662,10 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
             else:
                 item = driver._build_item(route_case, identifier, name=name)
             result = driver._exchange(item)
-        if (result['status'] != expected_driver_status or result['result_status_code'] != peer_status
-                or result.get('result_reason_code') != peer_reason):
+        if (not route_execution_failed
+                and (result['status'] != expected_driver_status
+                     or result['result_status_code'] != peer_status
+                     or result.get('result_reason_code') != peer_reason)):
             raise ValueError('controlled peer response status did not match the expected route outcome')
     finally:
         if item is not None:
@@ -2737,6 +2760,8 @@ def _network_cell(cell: dict, case: dict, target: dict, *, trace: CallTrace | No
         observed['batch_item_count'] = len(batch_operations)
     if peer.peer_observed_effects:
         observed['peer_observed_effects'] = list(peer.peer_observed_effects)
+    if route_execution_failed:
+        raise ObservedRouteFailure(observed)
     return observed
 
 
