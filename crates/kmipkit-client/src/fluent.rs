@@ -8,15 +8,15 @@ use kmipkit_protocol::attribute::typed;
 use kmipkit_protocol::{
     ActivateRequest, AddAttributeRequest, AdjustAttributeRequest, AdjustmentType, ArchiveRequest,
     Attribute, AttributeDefinition, AttributeReference, AttributeSet, AttributeSetError,
-    CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest, CryptographicAlgorithm,
-    CryptographicParameters, CurrentAttribute, DecryptRequest, DeleteAttributeRequest,
-    DestroyRequest, DiscoverVersionsRequest, EncryptRequest, GetRequest, HashRequest,
-    LocateRequest, MacRequest, MacVerifyRequest, ManagedObject, ModifyAttributeRequest,
-    NewAttribute, ObjectGroupMember, ObjectType, OpaqueObjectContext, OperationData, PingRequest,
-    ProtocolVersion, QueryFunction, QueryRequest, RecertifyRequest, RecoverRequest,
-    RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest,
-    SecretBytes, SetAttributeRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
-    StorageStatusMask, UniqueIdentifier, ValidateKmipRequest,
+    CheckRequest, CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest,
+    CryptographicAlgorithm, CryptographicParameters, CurrentAttribute, DecryptRequest,
+    DeleteAttributeRequest, DestroyRequest, DiscoverVersionsRequest, EncryptRequest, GetRequest,
+    HashRequest, LocateRequest, MacRequest, MacVerifyRequest, ManagedObject,
+    ModifyAttributeRequest, NewAttribute, ObjectGroupMember, ObjectType, OpaqueObjectContext,
+    OperationData, PingRequest, ProtocolVersion, QueryFunction, QueryRequest, RecertifyRequest,
+    RecoverRequest, RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason,
+    RevokeRequest, SecretBytes, SetAttributeRequest, SignRequest, SignatureVerifyRequest,
+    SplitKeyMethod, StorageStatusMask, UniqueIdentifier, ValidateKmipRequest,
 };
 use kmipkit_transport::{RequestDeliveryState, RequestOptions};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
@@ -362,6 +362,12 @@ impl<'a> RequestBuilder<'a> {
     #[must_use]
     pub fn query(self) -> QueryBuilder<'a> {
         QueryBuilder::new(self.client)
+    }
+
+    /// Begins constructing a typed Check request.
+    #[must_use]
+    pub fn check(self) -> CheckBuilder<'a> {
+        CheckBuilder::new(self.client)
     }
 
     /// Begins constructing a typed Destroy request for an explicit identifier.
@@ -2912,6 +2918,172 @@ fn append_key_pair_attributes(
         )?;
     }
     Ok(())
+}
+
+/// A fluent builder for typed Check requests.
+pub struct CheckBuilder<'a> {
+    client: &'a mut Client,
+    unique_identifier: Option<UniqueIdentifier>,
+    usage_limits_count: Option<i64>,
+    cryptographic_usage_mask: Option<i32>,
+    lease_time: Option<u32>,
+    options: Option<RequestOptions>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl<'a> CheckBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            client,
+            unique_identifier: None,
+            usage_limits_count: None,
+            cryptographic_usage_mask: None,
+            lease_time: None,
+            options: None,
+            asynchronous_indicator: None,
+        }
+    }
+
+    /// Sets the optional object identifier. Omit it only when the request is
+    /// placed in an ordered batch whose preceding operation produces the
+    /// intended ID Placeholder.
+    #[must_use]
+    pub fn unique_identifier(mut self, value: UniqueIdentifier) -> Self {
+        self.unique_identifier = Some(value);
+        self
+    }
+
+    /// Sets the optional requested Usage Limits count.
+    #[must_use]
+    pub const fn usage_limits_count(mut self, value: i64) -> Self {
+        self.usage_limits_count = Some(value);
+        self
+    }
+
+    /// Sets the optional raw Cryptographic Usage Mask, preserving unknown bits.
+    #[must_use]
+    pub const fn cryptographic_usage_mask(mut self, value: i32) -> Self {
+        self.cryptographic_usage_mask = Some(value);
+        self
+    }
+
+    /// Sets the optional requested Lease Time interval.
+    #[must_use]
+    pub const fn lease_time(mut self, value: u32) -> Self {
+        self.lease_time = Some(value);
+        self
+    }
+
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.options = Some(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.asynchronous_indicator = Some(value);
+        self
+    }
+
+    /// Validates the typed Check request without sending.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error if request validation fails.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        validate_fluent_request(&check_request(
+            self.unique_identifier.clone(),
+            self.usage_limits_count,
+            self.cryptographic_usage_mask,
+            self.lease_time,
+        ))
+    }
+
+    /// Builds the existing typed Check request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error if request validation fails.
+    pub fn build_request(self) -> Result<CheckRequest, FluentBuildError> {
+        let request = check_request(
+            self.unique_identifier,
+            self.usage_limits_count,
+            self.cryptographic_usage_mask,
+            self.lease_time,
+        );
+        validate_fluent_request(&request)?;
+        Ok(request)
+    }
+
+    /// Converts Check to the existing typed client batch item.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error if request validation fails.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build_request()
+            .map(|request| ClientBatchItem::new(ClientRequest::Check(request)))
+    }
+
+    /// Executes one Check exchange and returns the existing operation result.
+    ///
+    /// # Errors
+    ///
+    /// Returns a not-sent validation error before transport if request
+    /// validation fails, or the existing client error for exchange and decoding failures.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let Self {
+            client,
+            unique_identifier,
+            usage_limits_count,
+            cryptographic_usage_mask,
+            lease_time,
+            options,
+            asynchronous_indicator,
+        } = self;
+        let request = check_request(
+            unique_identifier,
+            usage_limits_count,
+            cryptographic_usage_mask,
+            lease_time,
+        );
+        validate_fluent_request(&request).map_err(fluent_client_validation_error)?;
+        execute_fluent_request(
+            client,
+            ClientRequest::Check(request),
+            asynchronous_indicator,
+            options,
+            limits,
+        )
+    }
+}
+
+fn check_request(
+    unique_identifier: Option<UniqueIdentifier>,
+    usage_limits_count: Option<i64>,
+    cryptographic_usage_mask: Option<i32>,
+    lease_time: Option<u32>,
+) -> CheckRequest {
+    let mut request = CheckRequest::new();
+    if let Some(unique_identifier) = unique_identifier {
+        request = request.with_unique_identifier(unique_identifier);
+    }
+    if let Some(usage_limits_count) = usage_limits_count {
+        request = request.with_usage_limits_count(usage_limits_count);
+    }
+    if let Some(cryptographic_usage_mask) = cryptographic_usage_mask {
+        request = request.with_cryptographic_usage_mask(cryptographic_usage_mask);
+    }
+    if let Some(lease_time) = lease_time {
+        request = request.with_lease_time(lease_time);
+    }
+    request
 }
 
 /// A fluent builder for typed Query requests.
