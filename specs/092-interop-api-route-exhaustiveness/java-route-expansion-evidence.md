@@ -807,3 +807,40 @@ validator accepts 19,592 invoked cells with zero failures and
 `selected_scope_complete=true`; 51,863 of 71,455 planned cells remain pending.
 Padding Method's local scope is complete; the Java matrix and vendor server
 interoperability are not.
+
+## Profile Name aggregate route completion
+
+Source: OASIS KMIP 2.0 and 2.1 §11.41 (Profile Name Enumeration). The local
+aggregate now checks all 43 catalogued targets (37 assigned, five reserved,
+and one extension allocation) through generic Enumeration construction, Item
+creation, Item view, and TTLV decoding in both protocol versions. The reserved
+range target uses its catalogued lower boundary; the separate target-specific
+reserved-range and Profile Information structure-member cases remain pending.
+
+Red commit `0c0156ab` added an assertion for all 43 Profile Name targets; the
+focused controlled-peer test failed as expected with zero aggregate fixtures.
+Green commit `dd6994fd` added the Profile Name case to the catalog-driven local
+enum scope. The installed-package test then passed and the shared validator
+accepted 19,936 invoked cells, zero failed cells, and 51,519 pending cells out
+of 71,455 planned cells.
+
+Verification against installed release commit
+`489fafc79ef89db2524eafa7a6c6482f5cf75d97` (artifact SHA-256
+`830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e`):
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test \
+  --tests org.kmipkit.validator.ControlledTlsPeerTest.controlledQueryProducesPerRouteEvidenceForBothProtocolVersions \
+  --rerun-tasks
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+```
+
+The complete Java route matrix and deployed-server interoperability remain
+incomplete.
