@@ -628,3 +628,39 @@ accepts 18,652 invoked cells with zero failures and
 `selected_scope_complete=true`; 52,803 of the 71,455 planned cells remain
 pending. This refresh does not establish interoperability with a deployed KMS
 or complete the Java matrix.
+
+## NIST Key Type enumeration route completion
+
+Sources: OASIS KMIP 2.0 and 2.1 §11.32 (NIST Key Type Enumeration) and
+§4.34 (NIST Key Type Attribute). The aggregate local case covers all 20
+catalogued values through four generic TTLV routes and three typed attribute
+routes in both versions, adding 280 cells. These local constructors verify
+that every value remains readable through generic Enumeration, Item view,
+decode, TypedAttribute creation/fromItem, and AttributeSet construction.
+
+Red commit `d10d03473` requires 20 aggregate targets and fails because no
+NIST Key Type fixtures were selected. Green commit `1ec3dbd15` adds the case to
+the catalog-driven local enum fixtures and records all seven applicable
+routes. Refactor commit `4e35ba1b0` shares the typed-attribute route list with
+the other enum families that use the same installed API.
+
+Verification against installed release commit
+`489fafc79ef89db2524eafa7a6c6482f5cf75d97`:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+```
+
+The Java suite passes 52 tests with no failures, errors, or skips. The shared
+validator accepts 18,932 invoked cells with zero failures and
+`selected_scope_complete=true`; 52,523 of 71,455 planned cells remain pending.
+NIST Key Type's local scope is complete; the Java matrix and vendor server
+interoperability are not.
