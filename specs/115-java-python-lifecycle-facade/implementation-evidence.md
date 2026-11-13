@@ -18,6 +18,6 @@
 
 ## Refactor
 
-- Red commit: `3d5aee2c`; Green commit: `8309c9df`; Refactor is recorded in its separate commit.
+- Red commit: `3d5aee2c`; Green commit: `8309c9df`; Refactor commit: `aaafa4a7`.
 - Centralize one-item batch execution for Get/Destroy/Activate/Archive/Recover, Locate, and Revoke in Java and Python; request construction, timeout options, asynchronous indicator handling, and transfer/release boundaries remain unchanged.
 - Post-refactor full suites passed: Java 712 tests, 1 skipped; Python 1,362 tests.
