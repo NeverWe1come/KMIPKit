@@ -1079,15 +1079,12 @@ class WorkflowContractTests(unittest.TestCase):
         )
         self.assertIn("cargo llvm-cov --no-clean -p kmipkit-ffi --all-targets --all-features --locked", collector)
         self.assertIn('cargo_output="${report_dir}/cargo-llvm-cov.log"', collector)
-        self.assertIn(r"Running unittests src\/lib\.rs", collector)
-        self.assertIn(r"Running tests\/c_api_coverage\.rs", collector)
+        self.assertIn(r"Running unittests src\/lib\.rs /s@.*\(([^)]*)\).*@", collector)
         self.assertIn(
-            'mapfile -t test_binary_names < <(',
+            'mapfile -t test_binaries < <(',
             collector,
         )
-        self.assertIn("test_binaries=()", collector)
-        self.assertIn('test_binaries+=("${test_binary}")', collector)
-        self.assertIn("c_api_coverage-[[:xdigit:]]+", collector)
+        self.assertIn('test_binary="${test_binaries[${index}]}"', collector)
         self.assertIn('for test_binary in "${test_binaries[@]}"', collector)
         self.assertIn('coverage_objects+=(-object "${test_binary}")', collector)
         self.assertIn('rustc --print sysroot', collector)
@@ -1095,8 +1092,10 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn('"${llvm_cov}" export -format=text', collector)
         self.assertNotIn('llvm-cov-20', collector)
         self.assertIn('rustup component add llvm-tools-preview --toolchain stable', job)
-        self.assertIn("KMIPKit.profdata", collector)
-        self.assertIn("libkmipkit_ffi.so", collector)
+        self.assertIn('repository_name="$(basename -- "${repository_root}")"', collector)
+        self.assertIn('${repository_name}.profdata', collector)
+        self.assertNotIn("libkmipkit_ffi.so", collector)
+        self.assertNotIn("libkmipkit_ffi.a", collector)
         self.assertIn("--sources", collector)
         self.assertIn("mapfile -d '' -t source_files < <(", collector)
         self.assertIn(
@@ -1121,9 +1120,8 @@ class WorkflowContractTests(unittest.TestCase):
             "cargo llvm-cov --no-clean -p kmipkit-ffi --all-targets --all-features --locked",
             collector,
         )
-        self.assertIn(r"Running unittests src\/lib\.rs", collector)
-        self.assertIn(r"Running tests\/c_api_coverage\.rs", collector)
-        self.assertIn('test_binaries+=("${test_binary}")', collector)
+        self.assertIn(r"Running unittests src\/lib\.rs /s@.*\(([^)]*)\).*@", collector)
+        self.assertIn('for index in "${!test_binaries[@]}"', collector)
         self.assertIn('for test_binary in "${test_binaries[@]}"', collector)
 
     def test_coverage_gate_waits_for_platform_and_adapter_reports(self) -> None:

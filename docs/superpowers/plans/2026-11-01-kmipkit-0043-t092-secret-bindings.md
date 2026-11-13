@@ -29,7 +29,7 @@
 
 **Files:**
 - Modify: `tools/api_manifest/tests/test_t092_credentials_parity_manifest.py`
-- Modify: `crates/kmipkit-ffi/tests/c_api_coverage.rs`
+- Modify: `crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs`
 - Create: `bindings/java/src/test/java/org/kmipkit/credentials/SecretCredentialFacadeTest.java`
 - Create: `bindings/python/tests/test_credential_secrets.py`
 - Modify: `bindings/c/tests/credential_abi_consumer.c`
@@ -50,7 +50,7 @@
 - Create: `crates/kmipkit-ffi/src/extension_registry/credential_secrets.rs`
 - Modify: `bindings/c/include/kmipkit.h`
 - Modify: `bindings/c/tests/credential_abi_consumer.c`
-- Modify: `crates/kmipkit-ffi/tests/c_api_coverage.rs`
+- Modify: `crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs`
 
 - [ ] Add opaque secret-handle types, `Kind` and `HandleValue` entries, constructors, callback-scoped access, consuming TTLV conversion, and release functions in the focused credential-secret module.
 - [ ] Check `u64` lengths against `usize` and `isize::MAX`, reserve fallibly before copying, reject invalid pointer/length pairs and UTF-8 without formatting input, and zeroize owned input bytes on every failed conversion.

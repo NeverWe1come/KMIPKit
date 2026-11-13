@@ -706,7 +706,10 @@ class PublicApiParityTests(unittest.TestCase):
                     test_path = consumer["testFile"]
                 self.assertIn(test_path, evidence)
         c_harness = consumers["c"]["supportingTests"][0]
-        self.assertEqual(c_harness["testFile"], "crates/kmipkit-ffi/tests/c_api_coverage.rs")
+        self.assertEqual(
+            c_harness["testFile"],
+            "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
+        )
         self.assertIn(c_harness["testFile"], evidence)
 
     def test_generated_rust_api_uses_rust_mapping_and_excludes_blocked_records(self) -> None:
@@ -1299,7 +1302,7 @@ class PublicApiParityTests(unittest.TestCase):
     def test_discover_versions_consumers_read_the_shared_expected_versions(self) -> None:
         consumers = {
             "rust": ROOT / "crates/kmipkit-client/tests/unit/execute_lifecycle_tests.rs",
-            "c_harness": ROOT / "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "c_harness": ROOT / "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
             "c_abi": ROOT / "bindings/c/tests/client_abi_consumer.c",
             "java": ROOT / "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
             "python": ROOT / "bindings/python/tests/test_client.py",

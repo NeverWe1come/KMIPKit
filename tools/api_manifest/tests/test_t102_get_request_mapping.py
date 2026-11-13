@@ -26,7 +26,7 @@ REQUIRED_EVIDENCE = {
     "bindings/java/src/test/java/org/kmipkit/extensions/GetLocateResponseMappingTest.java",
     "bindings/python/tests/test_get_locate_operation.py",
     "crates/kmipkit-client/tests/unit/object_read_execution_tests.rs",
-    "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+    "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
     "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
     "crates/kmipkit-protocol/tests/unit/get_tests.rs",
     "tools/api_manifest/tests/test_get_locate_parity_manifest.py",
