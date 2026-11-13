@@ -126,7 +126,10 @@ class ControlledTlsPeerTest {
             "test-norm-message-field-message-field-8-4-batch-item";
     private static final Set<String> LOCAL_ENUMERATION_SCOPE_CASE_IDS = Set.of(
             "test-enum-block-cipher-mode", "test-enum-rotate-name-type", "test-enum-opaque-data-type",
-            "test-enum-processing-stage", "test-enum-ticket-type", "test-enum-mask-generator");
+            "test-enum-processing-stage", "test-enum-ticket-type", "test-enum-mask-generator",
+            "test-enum-encoding-option", "test-enum-endpoint-role", "test-enum-key-value-location-type",
+            "test-enum-key-wrap-type", "test-enum-name-type", "test-enum-object-group-member",
+            "test-enum-put-function", "test-enum-secret-data-type", "test-enum-usage-limits-unit");
     private static final String RESPONSE_BATCH_ITEM_TARGET_ID =
             "KMIPKIT-ELEM-MESSAGE-FIELD-8-4-BATCH-ITEM";
     private static final List<NormativeTarget> RESPONSE_MESSAGE_PARSE_TARGETS = List.of(
