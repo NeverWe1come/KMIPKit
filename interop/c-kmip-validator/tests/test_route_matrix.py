@@ -475,6 +475,7 @@ class RouteMatrixTests(unittest.TestCase):
             'kmipkit_cryptographic_parameters_from_fields_v1',
             'kmipkit_cryptographic_parameters_read_fields_v1',
             'kmipkit_cryptographic_parameters_into_ttlv',
+            'kmipkit_cryptographic_parameters_from_ttlv',
             'kmipkit_ttlv_structure_view',
         }.issubset(result['invoked_symbols']))
 
@@ -1457,10 +1458,10 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(result['negative_checks'], 5)
         self.assertGreater(result['sample_count'], 1)
 
-    def test_attribute_local_routes_cover_attribute_cases_without_protocol_scenarios(self):
+    def test_attribute_local_routes_also_run_for_server_exchange_cases(self):
         self.assertTrue(self.runner.should_execute_attribute_case(
             {'transport': None}, {'category': 'attributes', 'requires': {}}, {'kind': 'attribute'}))
-        self.assertFalse(self.runner.should_execute_attribute_case(
+        self.assertTrue(self.runner.should_execute_attribute_case(
             {'transport': None}, {'category': 'attributes', 'requires': {'protocol_scenario': 'lifecycle'}},
             {'kind': 'attribute'}))
         self.assertFalse(self.runner.should_execute_attribute_case(
