@@ -586,6 +586,12 @@ class ControlledTlsPeerTest {
                 .map(EnumerationFixture::targetId).distinct().sorted().toList();
         assertEquals(57, cryptographicAlgorithmTargets.size(),
                 "The local Cryptographic Algorithm aggregate must cover every catalogued target value.");
+        JsonNode routeCatalog = readRouteEvidenceCatalog();
+        List<String> pkcs11FunctionTargets = referencedEnumerationTargetIds(routeCatalog, "PKCS#11 Function");
+        List<String> pkcs11ReturnCodeTargets = referencedEnumerationTargetIds(routeCatalog, "PKCS#11 Return Code");
+        assertEquals(92, pkcs11FunctionTargets.size(), "The PKCS#11 Function aggregate must cover every value.");
+        assertEquals(97, pkcs11ReturnCodeTargets.size(),
+                "The PKCS#11 Return Code aggregate must cover every value.");
         List<LocalEnumerationScope> additionalEnumerationScopes = List.of(
                 new LocalEnumerationScope("test-enum-opaque-data-type", List.of(
                         "KMIPKIT-ELEM-ENUM-VALUE-OPAQUE-DATA-TYPE-EXTENSIONS-8XXXXXXX"),
@@ -657,7 +663,11 @@ class ControlledTlsPeerTest {
                                 "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
                                 "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
                                 "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
-                                "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.cryptographicalgorithm")));
+                                "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.cryptographicalgorithm")),
+                new LocalEnumerationScope("test-enum-pkcs#11-function", pkcs11FunctionTargets,
+                        List.of("2.0", "2.1"), List.of()),
+                new LocalEnumerationScope("test-enum-pkcs#11-return-code", pkcs11ReturnCodeTargets,
+                        List.of("2.0", "2.1"), List.of()));
         for (LocalEnumerationScope scope : additionalEnumerationScopes) {
             List<String> routes = new ArrayList<>(genericEnumerationRoutes);
             routes.addAll(scope.additionalRoutes());
@@ -746,11 +756,14 @@ class ControlledTlsPeerTest {
                 .mapToInt(fixture -> fixture.protocolVersions().size()).sum();
         int genericTagEventCount = 0;
         int referencedEnumEventCount = 0;
+        int referencedEnumAggregateEventCount = 0;
         int referencedEnumCaseCount = 0;
         Set<String> genericTagCaseIds = genericOnlyTagCaseIds();
         for (JsonNode testCase : readRouteEvidenceCatalog().path("test_cases")) {
             if ("referenced_enum_value".equals(testCase.path("requires").path("target_kind").asText())) {
                 referencedEnumEventCount += 4 * testCase.path("execution").path("protocol_versions").size();
+                referencedEnumAggregateEventCount +=
+                        4 * testCase.path("execution").path("protocol_versions").size();
                 referencedEnumCaseCount++;
             }
             if (!genericTagCaseIds.contains(testCase.path("case_id").asText())) continue;
@@ -764,7 +777,7 @@ class ControlledTlsPeerTest {
                         + normativeMessageFieldGenericRouteEventCount + normativeMessageFieldParserRouteEventCount
                         + normativeBatchItemAccessorRouteEventCount + credentialEnvelopeEventCount
                         + batchErrorContinuationEventCount + genericTagEventCount + typedTagIdentityEventCount
-                        + referencedEnumEventCount,
+                        + referencedEnumEventCount + referencedEnumAggregateEventCount,
                 report.path("events").size());
         long bitmaskEvents = 0;
         for (JsonNode event : report.path("events")) {
@@ -789,7 +802,7 @@ class ControlledTlsPeerTest {
         assertEquals(15 + enumerationFixtures.size() + localEnumerationCaseCount + bitmaskCaseCount
                         + dataTypeCaseCount
                         + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + genericTagCaseIds.size()
-                        + typedTagIdentityCaseIds().size() + referencedEnumCaseCount,
+                        + typedTagIdentityCaseIds().size() + referencedEnumCaseCount + 2,
                 report.path("case_ids").size());
         List<String> expectedCredentialCaseIds = CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().toList();
         int credentialCaseStart = report.path("case_ids").size() - expectedCredentialCaseIds.size();
@@ -1814,6 +1827,18 @@ class ControlledTlsPeerTest {
     private static boolean containsText(JsonNode values, String expected) {
         for (JsonNode value : values) if (expected.equals(value.asText())) return true;
         return false;
+    }
+
+    private static List<String> referencedEnumerationTargetIds(JsonNode catalog, String parentName) {
+        List<String> targetIds = new ArrayList<>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            JsonNode requires = testCase.path("requires");
+            if ("referenced_enum_value".equals(requires.path("target_kind").asText())
+                    && parentName.equals(requires.path("parent_name").asText())) {
+                targetIds.add(requires.path("normative_target_id").asText());
+            }
+        }
+        return List.copyOf(targetIds);
     }
 
     private static void appendGenericLocalEnumerationRouteEvents(ArrayNode events,
