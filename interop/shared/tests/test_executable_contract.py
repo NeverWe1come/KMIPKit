@@ -38,6 +38,20 @@ class ExecutableContractTests(unittest.TestCase):
             case["normative_refs"],
         )
 
+    def test_session_state_operations_require_explicit_mutation_opt_in(self) -> None:
+        catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
+        cases = {
+            item["operation"]: item
+            for item in catalog["test_cases"]
+            if item.get("operation") in {"Login", "Logout", "Delegated Login"}
+        }
+
+        self.assertEqual({"Login", "Logout", "Delegated Login"}, set(cases))
+        for operation, case in cases.items():
+            with self.subTest(operation=operation):
+                self.assertTrue(case["execution"]["protocol_versions"])
+                self.assertEqual("mutating", case["execution"]["mutation"])
+
     def test_negative_modify_attribute_case_exercises_current_value_mismatch(self) -> None:
         catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
         case = next(
