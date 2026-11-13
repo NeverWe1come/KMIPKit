@@ -132,6 +132,36 @@ final class FluentFacadeShapeTest {
     }
 
     @Test
+    void builderCanInsertAnExpertItemAtAnExplicitFinalAttributePosition() {
+        CodecLimits limits = CodecLimits.defaults();
+        try (RawTag raw = RawTag.fromRaw(0x54F001);
+                Tag tag = raw.checked();
+                TtlvValue value = TtlvValue.Integer(17);
+                TtlvItem item = TtlvItem.create(tag, value, limits);
+                SymmetricKeyBuilder builder = new SymmetricKeyBuilder(null)) {
+            builder.aes256()
+                    .usageMask((int) CryptographicUsageMask.ENCRYPT)
+                    .attributeItemAt(0, item);
+            try (ClientBatchItem batchItem = builder.build()) {
+                assertEquals(1, batchItem.operation());
+            }
+            assertThrows(InvalidInputException.class,
+                    () -> builder.attributeItemAt(-1, item));
+        }
+
+        try (RawTag raw = RawTag.fromRaw(0x54F001);
+                Tag tag = raw.checked();
+                TtlvValue value = TtlvValue.Integer(17);
+                TtlvItem item = TtlvItem.create(tag, value, limits);
+                SymmetricKeyBuilder builder = new SymmetricKeyBuilder(null)) {
+            builder.aes256()
+                    .usageMask((int) CryptographicUsageMask.ENCRYPT)
+                    .attributeItemAt(99, item);
+            assertThrows(InvalidInputException.class, builder::build);
+        }
+    }
+
+    @Test
     void facadeConveniencesBuildAndExecuteTypedCreateGetAndDestroy() throws Exception {
         int unusedPort;
         try (ServerSocket reservation = new ServerSocket(0)) {

@@ -77,7 +77,9 @@ RELATED_STATES = {
     "DeriveKeyRequest": {"": "verified", "::into_ttlv_payload": "verified", "::new": "verified"},
     "DeriveKeyResponse": {"": "verified", "::result": "verified", "::try_from_response_item": "verified", "::unique_identifier": "verified", "::with_ttlv": "verified"},
     "ExportRequest": {"": "verified", "::into_ttlv_payload": "verified", "::new": "verified", "::with_key_compression_type": "verified", "::with_key_format_type": "verified", "::with_key_wrap_type": "verified", "::with_key_wrapping_specification": "verified", "::with_unique_identifier": "verified", "::unique_identifier": "verified"},
-    "ExportResponse": {"": "verified", "::attributes": "verified", "::object": "verified", "::object_type": "verified", "::result": "verified", "::try_from_response_item": "verified", "::unique_identifier": "verified", "::with_ttlv": "verified"},
+    # KMIPKIT-0093 keeps the two observed Rust-only response accessors blocked
+    # until their four-language mapping receives an approved owner.
+    "ExportResponse": {"": "verified", "::attributes": "verified", "::key_block": "blocked", "::managed_object": "blocked", "::object": "verified", "::object_type": "verified", "::result": "verified", "::try_from_response_item": "verified", "::unique_identifier": "verified", "::with_ttlv": "verified"},
     "ImportRequest": {
         "::from_managed_object": "verified",
         "": "verified",

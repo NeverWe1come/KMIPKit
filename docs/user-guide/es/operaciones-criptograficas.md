@@ -1,5 +1,35 @@
 # Operaciones Hash, MAC y firma
 
+La fachada fluida de Java ofrece `encrypt()`, `decrypt()`, `sign()`,
+`signatureVerify()`, `mac()`, `macVerify()` y `hash()` desde
+`KmipClient.request()`. Cada builder expone solo los campos de su operación,
+construye el elemento de lote tipado existente y puede ejecutar directamente
+un intercambio. Por ejemplo, un cliente ya configurado puede enviar Hash sin
+crear un lote manual:
+
+```java
+import org.kmipkit.protocol.CryptographicParameters;
+import org.kmipkit.protocol.KmipValues.HashingAlgorithm;
+
+try (var parameters = CryptographicParameters.builder()
+             .hashingAlgorithm(HashingAlgorithm.SHA_256).build();
+     var response = client.request().hash()
+             .cryptographicParameters(parameters)
+             .data("entrada proporcionada por la aplicación".getBytes(java.nio.charset.StandardCharsets.UTF_8))
+             .execute(limits)) {
+    // Inspeccionar el resultado tipado antes de cerrar la respuesta.
+}
+```
+
+`withOptions(RequestOptions)` configura el intercambio de transporte. Usa
+`asynchronousIndicator(...)` solo cuando la aplicación elija explícitamente
+ese campo de la cabecera KMIP. El builder no consulta ni reintenta. Java copia
+los arrays de entrada al builder nativo; borra los arrays secretos que posea
+la aplicación cuando ya no los necesite. KMIPKit pone a cero la copia nativa
+propia al cerrar el builder. `build()` devuelve un elemento de lote tipado con
+propiedad independiente para crear un lote explícito en vez de llamar a
+`execute()`.
+
 KMIPKit envía peticiones Hash, MAC, MAC Verify, Sign y Signature Verify a un
 servidor KMIP 2.1. No calcula hashes ni MAC, no firma y no verifica datos de
 forma local. Cada llamada explícita a `Client` realiza un intercambio; el

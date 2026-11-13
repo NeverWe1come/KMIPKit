@@ -1,5 +1,34 @@
 # Hash, MAC, and signature operations
 
+The Java fluent facade provides `encrypt()`, `decrypt()`, `sign()`,
+`signatureVerify()`, `mac()`, `macVerify()`, and `hash()` from
+`KmipClient.request()`. Each builder exposes only the fields for its operation,
+builds the existing typed batch item, and can execute one exchange directly.
+For example, a preconfigured client can send a Hash request without creating a
+batch manually:
+
+```java
+import org.kmipkit.protocol.CryptographicParameters;
+import org.kmipkit.protocol.KmipValues.HashingAlgorithm;
+
+try (var parameters = CryptographicParameters.builder()
+             .hashingAlgorithm(HashingAlgorithm.SHA_256).build();
+     var response = client.request().hash()
+             .cryptographicParameters(parameters)
+             .data("input supplied by the application".getBytes(java.nio.charset.StandardCharsets.UTF_8))
+             .execute(limits)) {
+    // Inspect the typed result before closing the response.
+}
+```
+
+`withOptions(RequestOptions)` controls the transport exchange. Use
+`asynchronousIndicator(...)` only when the application explicitly selects the
+KMIP Request Header field. The builder does not poll or retry. Java input
+arrays are copied into the native builder; clear caller-owned secret arrays
+when they are no longer needed. KMIPKit zeroizes the native owned copy when the
+builder is closed. `build()` returns a separately owned typed batch item when
+the caller needs to compose an explicit batch instead of calling `execute()`.
+
 KMIPKit sends Hash, MAC, MAC Verify, Sign, and Signature Verify requests to a
 KMIP 2.1 server. It does not hash, calculate a MAC, sign, or verify data
 locally. Each explicit `Client` call makes one exchange; the client does not

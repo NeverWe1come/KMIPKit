@@ -3090,6 +3090,154 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_symmetricKeyBuil
     });
 }
 
+JNIEXPORT void JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_symmetricKeyBuilderInsertAttributeItem(
+        JNIEnv* env, jclass, jlong raw_builder, jint index, jlong raw_item) {
+    guarded<int>(env, 0, [&] {
+        if (index < 0) {
+            throw_invalid_input(env);
+            return 0;
+        }
+        check_status(env, [&] {
+            return kmipkit_symmetric_key_builder_insert_attribute_item(
+                    from_java_handle<kmipkit_symmetric_key_builder_t>(raw_builder),
+                    static_cast<uint64_t>(index),
+                    from_java_handle<kmipkit_ttlv_item_t>(raw_item));
+        });
+        return 0;
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_cryptoOperationBuilderCreate(
+        JNIEnv* env, jclass, jint operation) {
+    return guarded<jlong>(env, 0, [&] {
+        if (operation < 0 || operation > 6) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        return return_handle<kmipkit_crypto_operation_builder_t>(env, [&](auto output) {
+            switch (operation) {
+                case 0: return kmipkit_encrypt_builder_create(output);
+                case 1: return kmipkit_decrypt_builder_create(output);
+                case 2: return kmipkit_sign_builder_create(output);
+                case 3: return kmipkit_signature_verify_builder_create(output);
+                case 4: return kmipkit_mac_builder_create(output);
+                case 5: return kmipkit_mac_verify_builder_create(output);
+                case 6: return kmipkit_hash_builder_create(output);
+                default: return static_cast<int32_t>(KMIPKIT_ERROR_INVALID_INPUT);
+            }
+        });
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_cryptoOperationBuilderSetUniqueIdentifier(
+        JNIEnv* env, jclass, jlong raw_builder, jint kind, jbyteArray raw_text, jlong number) {
+    guarded<int>(env, 0, [&] {
+        kmipkit_unique_identifier_v1_t identifier{};
+        std::vector<uint8_t> text;
+        kmipkit::secure::VectorWiper text_wiper(text);
+        bool present = false;
+        if (!read_optional_identifier(env, kind, raw_text, number,
+                    &identifier, text, &present) || !present) {
+            if (!env->ExceptionCheck()) throw_invalid_input(env);
+            return 0;
+        }
+        check_status(env, [&] { return kmipkit_crypto_operation_builder_set_unique_identifier(
+                from_java_handle<kmipkit_crypto_operation_builder_t>(raw_builder), &identifier); });
+        return 0;
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_cryptoOperationBuilderSetBytes(
+        JNIEnv* env, jclass, jlong raw_builder, jint field, jbyteArray raw_value) {
+    guarded<int>(env, 0, [&] {
+        std::vector<uint8_t> value;
+        kmipkit::secure::VectorWiper value_wiper(value);
+        bool present = false;
+        if (!read_optional_java_bytes(env, raw_value, value, &present) || !present) {
+            if (!env->ExceptionCheck()) throw_invalid_input(env);
+            return 0;
+        }
+        const auto builder = from_java_handle<kmipkit_crypto_operation_builder_t>(raw_builder);
+        const kmipkit_byte_span_v1_t span = byte_span(value);
+        check_status(env, [&] {
+            switch (field) {
+                case 0: return kmipkit_crypto_operation_builder_set_data(builder, &span);
+                case 1: return kmipkit_crypto_operation_builder_set_iv_counter_nonce(builder, &span);
+                case 2: return kmipkit_crypto_operation_builder_set_authenticated_encryption_additional_data(builder, &span);
+                case 3: return kmipkit_crypto_operation_builder_set_authenticated_encryption_tag(builder, &span);
+                case 4: return kmipkit_crypto_operation_builder_set_digested_data(builder, &span);
+                case 5: return kmipkit_crypto_operation_builder_set_signature_data(builder, &span);
+                case 6: return kmipkit_crypto_operation_builder_set_mac_data(builder, &span);
+                case 7: return kmipkit_crypto_operation_builder_set_correlation_value(builder, &span);
+                default:
+                    throw_invalid_input(env);
+                    return static_cast<int32_t>(KMIPKIT_ERROR_INVALID_INPUT);
+            }
+        });
+        return 0;
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_cryptoOperationBuilderSetDataValue(
+        JNIEnv* env, jclass, jlong raw_builder, jlong raw_value) {
+    guarded<int>(env, 0, [&] {
+        check_status(env, [&] { return kmipkit_crypto_operation_builder_set_data_value(
+                from_java_handle<kmipkit_crypto_operation_builder_t>(raw_builder),
+                from_java_handle<kmipkit_ttlv_value_t>(raw_value)); });
+        return 0;
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_cryptoOperationBuilderSetCryptographicParameters(
+        JNIEnv* env, jclass, jlong raw_builder, jlong raw_parameters) {
+    guarded<int>(env, 0, [&] {
+        check_status(env, [&] { return kmipkit_crypto_operation_builder_set_cryptographic_parameters(
+                from_java_handle<kmipkit_crypto_operation_builder_t>(raw_builder),
+                from_java_handle<kmipkit_cryptographic_parameters_t>(raw_parameters)); });
+        return 0;
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_cryptoOperationBuilderSetCryptographicParametersStructure(
+        JNIEnv* env, jclass, jlong raw_builder, jlong raw_parameters) {
+    guarded<int>(env, 0, [&] {
+        check_status(env, [&] { return kmipkit_crypto_operation_builder_set_cryptographic_parameters_structure(
+                from_java_handle<kmipkit_crypto_operation_builder_t>(raw_builder),
+                from_java_handle<kmipkit_ttlv_structure_t>(raw_parameters)); });
+        return 0;
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_cryptoOperationBuilderSetIndicator(
+        JNIEnv* env, jclass, jlong raw_builder, jint indicator, jboolean value) {
+    guarded<int>(env, 0, [&] {
+        const uint8_t encoded = value == JNI_TRUE ? 2 : 1;
+        check_status(env, [&] {
+            if (indicator == 0) {
+                return kmipkit_crypto_operation_builder_set_init_indicator(
+                        from_java_handle<kmipkit_crypto_operation_builder_t>(raw_builder), encoded);
+            }
+            if (indicator == 1) {
+                return kmipkit_crypto_operation_builder_set_final_indicator(
+                        from_java_handle<kmipkit_crypto_operation_builder_t>(raw_builder), encoded);
+            }
+            throw_invalid_input(env);
+            return static_cast<int32_t>(KMIPKIT_ERROR_INVALID_INPUT);
+        });
+        return 0;
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_fluent_NativeFluentRegistry_cryptoOperationBuilderBuildBatchItem(
+        JNIEnv* env, jclass, jlong raw_builder) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_crypto_operation_builder_build_batch_item(
+                    from_java_handle<kmipkit_crypto_operation_builder_t>(raw_builder), output);
+        });
+    });
+}
+
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemLogout(
         JNIEnv* env, jclass, jlong raw_ticket) {
     return guarded<jlong>(env, 0, [&] {
@@ -5736,6 +5884,8 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_release(
                 from_java_handle<kmipkit_validation_report_t>(raw_handle)); break;
         case 71: kmipkit_symmetric_key_builder_release(
                 from_java_handle<kmipkit_symmetric_key_builder_t>(raw_handle)); break;
+        case 72: kmipkit_crypto_operation_builder_release(
+                from_java_handle<kmipkit_crypto_operation_builder_t>(raw_handle)); break;
         default: throw_invalid_input(env); break;
         }
         return 0;

@@ -438,6 +438,11 @@
     "KMIPKIT-0103-FR-004",
     "KMIPKIT-0103-FR-005",
     "KMIPKIT-0103-FR-006",
+    "KMIPKIT-0104-FR-001",
+    "KMIPKIT-0104-FR-002",
+    "KMIPKIT-0104-FR-003",
+    "KMIPKIT-0104-FR-004",
+    "KMIPKIT-0104-FR-005",
     "KMIPKIT-REQ-SPEC-4.16-001-001",
     "KMIPKIT-REQ-SPEC-4.16-001-002",
     "KMIPKIT-REQ-SPEC-4.16-002",
@@ -747564,6 +747569,1700 @@
       "mappingSemantics": "native-handle-release"
     },
     {
+      "declarationId": "T104:java-fluent-crypto:205114d072c3fbe6",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.FluentRequest.encrypt",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-001"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:09587704d1a8b657",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.FluentRequest.decrypt",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-001"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:7c64b2c26d0c5043",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.FluentRequest.sign",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-001"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:49ff5eaca970ef95",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.FluentRequest.signatureVerify",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-001"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:91aeec6892e840ca",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.FluentRequest.mac",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-001"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:0c758d70e0c4d26e",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.FluentRequest.macVerify",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-001"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:d18ea26f18ad0131",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.FluentRequest.hash",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-001"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:eb7741d30c0517fb",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.fluent.EncryptBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-001"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:33f76898cb487470",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.EncryptBuilder.uniqueIdentifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:91a67f473f692e95",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.EncryptBuilder.cryptographicParameters",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:4f5e3e558be3ba48",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.EncryptBuilder.cryptographicParametersStructure",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:c2aca9d61eb2641f",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.EncryptBuilder.data",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:62579ad8c3d367d9",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.EncryptBuilder.dataValue",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:c419d19e5b4456ae",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.EncryptBuilder.correlationValue",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:f661553377a85a83",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.EncryptBuilder.initIndicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:07927992e7897a02",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.EncryptBuilder.finalIndicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:f7ac5a3f225d3881",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.EncryptBuilder.ivCounterNonce",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:989bf1cbe567df8e",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.EncryptBuilder.authenticatedEncryptionAdditionalData",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:74a93dee3dde7c40",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.EncryptBuilder.withOptions",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:bb923c202581e87b",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.EncryptBuilder.asynchronousIndicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:2c5a6afbada4b586",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.EncryptBuilder.build",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:bf0315c6452e91f3",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.EncryptBuilder.toBatchItem",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:ad0ab67a08858157",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.EncryptBuilder.execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:8b85edec2e7356ac",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.EncryptBuilder.close",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:176cdfe4b537d079",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.fluent.DecryptBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-001"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:bca078f14d0caec3",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.DecryptBuilder.uniqueIdentifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:9d0851c6d96edd0c",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.DecryptBuilder.cryptographicParameters",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:54518fea89f9bdf3",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.DecryptBuilder.cryptographicParametersStructure",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:d414ba741f54b50d",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.DecryptBuilder.data",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:18bc93c8036536c8",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.DecryptBuilder.dataValue",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:ab6fd2b8815706c9",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.DecryptBuilder.correlationValue",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:caf1e9da6d36ccb6",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.DecryptBuilder.initIndicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:918aa28c2a39b52e",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.DecryptBuilder.finalIndicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:3ff2ac47e8301cb9",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.DecryptBuilder.ivCounterNonce",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:7ea5166e1eff8de9",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.DecryptBuilder.authenticatedEncryptionAdditionalData",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:ef321bce3dccd64e",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.DecryptBuilder.authenticatedEncryptionTag",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:456189d544371e07",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.DecryptBuilder.withOptions",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:b819b8195db66fca",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.DecryptBuilder.asynchronousIndicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:e6fe12bbab5e4cf7",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.DecryptBuilder.build",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:7858e56d8b15c727",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.DecryptBuilder.toBatchItem",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:27847b15cf2aff41",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.DecryptBuilder.execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:ac6a1eee1e55cfd2",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.DecryptBuilder.close",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:b67b56e59c8619ad",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.fluent.SignBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-001"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:34d9afae09241e5a",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SignBuilder.uniqueIdentifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:90dee8ab4e9ee8a4",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SignBuilder.cryptographicParameters",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:86da4f4353678d41",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SignBuilder.cryptographicParametersStructure",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:b34629968694ec54",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SignBuilder.data",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:824104816f6412e5",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SignBuilder.dataValue",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:3324bdcb3241477f",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SignBuilder.correlationValue",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:48224da5e38681e9",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SignBuilder.initIndicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:231efcfaf747e313",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SignBuilder.finalIndicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:f6e6652fc647a85e",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SignBuilder.digestedData",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:e95b98a78971bfbb",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SignBuilder.withOptions",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:db05a3a2c2216781",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SignBuilder.asynchronousIndicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:5acb760f55543530",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SignBuilder.build",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:9e5c8df5e97919fb",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SignBuilder.toBatchItem",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:d8c7dfda284345bf",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SignBuilder.execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:e7e76ee0b02752c9",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SignBuilder.close",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:9aeb6d5f32896223",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.fluent.SignatureVerifyBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-001"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:7718c0c9340484ca",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SignatureVerifyBuilder.uniqueIdentifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:41877e51d95c61f8",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SignatureVerifyBuilder.cryptographicParameters",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:1d40557d804c09f8",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SignatureVerifyBuilder.cryptographicParametersStructure",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:f5160bf0509a4093",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SignatureVerifyBuilder.data",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:2bbb95a9b94c5f99",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SignatureVerifyBuilder.dataValue",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:ecb5fcbb05926f6e",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SignatureVerifyBuilder.correlationValue",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:69e8327dc33f4a28",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SignatureVerifyBuilder.initIndicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:376d546f05a8fc5d",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SignatureVerifyBuilder.finalIndicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:e97f5759c6aeec77",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SignatureVerifyBuilder.digestedData",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:e7e9a62494f5d4e5",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SignatureVerifyBuilder.signatureData",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:6a7860f76560d6f1",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SignatureVerifyBuilder.withOptions",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:588fc63cfc70286c",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SignatureVerifyBuilder.asynchronousIndicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:c64a6436f1374604",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SignatureVerifyBuilder.build",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:39efff3fec553ccc",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SignatureVerifyBuilder.toBatchItem",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:c750cf11fa8d1310",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SignatureVerifyBuilder.execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:9bd8e8e9195c1bca",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SignatureVerifyBuilder.close",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:0a4dcc891974eb72",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.fluent.MacBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-001"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:1a3c9e4cea53f3b7",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.MacBuilder.uniqueIdentifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:2ccaf281f0f88cb9",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.MacBuilder.cryptographicParameters",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:db95c528f986d33e",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.MacBuilder.cryptographicParametersStructure",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:0c7e9a0f76a2a258",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.MacBuilder.data",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:ba484b4c47473f51",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.MacBuilder.dataValue",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:812190632e4e4e9c",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.MacBuilder.correlationValue",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:6894f000b579a9de",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.MacBuilder.initIndicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:469eaa47c09c8b30",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.MacBuilder.finalIndicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:95da32b9a176409c",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.MacBuilder.withOptions",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:ce833f94d19a22fa",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.MacBuilder.asynchronousIndicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:f1d3f6b62bd51592",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.MacBuilder.build",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:cd14d9622d6616a9",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.MacBuilder.toBatchItem",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:c64ed1e2caa54548",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.MacBuilder.execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:da7d0b58d9314d22",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.MacBuilder.close",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:5ff532e9f5f4efb7",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.fluent.MacVerifyBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-001"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:dea16bebdb109f53",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.MacVerifyBuilder.uniqueIdentifier",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:97fa78d751fe66eb",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.MacVerifyBuilder.cryptographicParameters",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:7d0ec2d76b775382",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.MacVerifyBuilder.cryptographicParametersStructure",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:e5416f6329cd2632",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.MacVerifyBuilder.data",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:fcfc39e5387fb390",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.MacVerifyBuilder.dataValue",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:fd9e27938b32924a",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.MacVerifyBuilder.correlationValue",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:c6bb9c27f36671b7",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.MacVerifyBuilder.initIndicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:882ce2601f49469a",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.MacVerifyBuilder.finalIndicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:a4cafeaffcd072c2",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.MacVerifyBuilder.macData",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:8bacdc0d1651c15b",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.MacVerifyBuilder.withOptions",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:fd7e85996f23fd74",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.MacVerifyBuilder.asynchronousIndicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:96215efcf5afc104",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.MacVerifyBuilder.build",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:5ff225dcdc793a1e",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.MacVerifyBuilder.toBatchItem",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:7d7c30cc82d0ed65",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.MacVerifyBuilder.execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:0cd4ae4eb1989b95",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.MacVerifyBuilder.close",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:7a0719e4ccf2cbd2",
+      "packageId": "java-kmipkit",
+      "kind": "type",
+      "exportName": "org.kmipkit.fluent.HashBuilder",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-001"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:1f79bab9ef0ddfed",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.HashBuilder.cryptographicParameters",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:4ed4508aa9d90973",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.HashBuilder.cryptographicParametersStructure",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:7decdf86d8a94dcf",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.HashBuilder.data",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:802413bf9f85f407",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.HashBuilder.dataValue",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:b4f5f4f264156ae6",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.HashBuilder.correlationValue",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:3830b871ff038947",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.HashBuilder.initIndicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:2375fbdd789e5a21",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.HashBuilder.finalIndicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:91573b66b49b11b8",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.HashBuilder.withOptions",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:b009f5e7ee2f3db8",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.HashBuilder.asynchronousIndicator",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-005"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:7f38f1a9213d64d1",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.HashBuilder.build",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:8e1ac33a2f2877a1",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.HashBuilder.toBatchItem",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:06e7853753581fb7",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.HashBuilder.execute",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:4e32ab6f4a3f2871",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.HashBuilder.close",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
+      "declarationId": "T104:java-fluent-crypto:eaca5a34b585493e",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.protocol.CryptographicParameters.nativeHandleOwner",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0104-FR-003"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0104",
+      "blockedReason": "The Java fluent crypto API is implemented in this delivery branch; full KMIPKIT-0093 parity remains pending, including the Python fluent facade."
+    },
+    {
       "declarationId": "symmetric_key_builder_insert_attribute_item:c",
       "packageId": "c-kmipkit",
       "kind": "c-symbol",
@@ -747618,6 +749317,22 @@
           "Inserts an explicit Object Attribute item at its final zero-based position. The item is copied and validated before request execution."
         ]
       }
+    },
+    {
+      "declarationId": "T096:java-fluent-crypto:attribute-item-at",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.fluent.SymmetricKeyBuilder.attributeItemAt",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0096-FR-002",
+        "KMIPKIT-0096-FR-003",
+        "KMIPKIT-0096-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0096",
+      "blockedReason": "The Java insertion method is implemented, but KMIPKIT-0096 binding parity remains incomplete until response views and equivalent expert insertion are delivered in all bindings."
     }
   ],
   "approvedExclusions": [

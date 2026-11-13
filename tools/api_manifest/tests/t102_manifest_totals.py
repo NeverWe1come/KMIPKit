@@ -23,11 +23,13 @@ T102_BLOCKED_CANDIDATES = 0
 # KMIPKIT-0093 reconciliation adds 1,614 explicitly blocked declarations and
 # 3,467 reviewed Rust trait exclusions.
 # KMIPKIT-0102 adds the Rust fluent cryptographic operation builders.
-# KMIPKIT-0103 adds 27 C fluent cryptographic operation declarations.
-# KMIPKIT-0096 adds one C fluent expert attribute insertion declaration.
+# KMIPKIT-0103 adds 27 C fluent cryptographic operation declarations and
+# one KMIPKIT-0096 C expert attribute insertion declaration. KMIPKIT-0104 adds
+# 121 Java fluent cryptographic declarations and one blocked KMIPKIT-0096 Java
+# insertion declaration until all binding parity is delivered.
 # Update this full-manifest snapshot only when an approved feature intentionally
 # adds or removes declarations.
-T102_PUBLIC_DECLARATIONS = 16_078
+T102_PUBLIC_DECLARATIONS = 16_200
 T102_KMIP30_DRAFT_ROUTE_DECLARATIONS = 36
 T102_APPROVED_EXCLUSIONS = 22_611
 T102_RUST_AUDIT_MANIFEST = 3_287
