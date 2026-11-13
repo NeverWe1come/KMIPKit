@@ -2,8 +2,8 @@ use kmipkit_protocol::attribute::typed;
 use kmipkit_protocol::{
     AdjustmentType, Attribute, AttributeDefinition, AttributeReference, CheckRequest,
     CreateRequest, CurrentAttribute, DiscoverVersionsRequest, GetConstraintsRequest,
-    GetUsageAllocationRequest, NewAttribute, PingRequest, ProtocolVersion, QueryFunction,
-    QueryRequest, UniqueIdentifier,
+    GetUsageAllocationRequest, NewAttribute, ObtainLeaseRequest, PingRequest, ProtocolVersion,
+    QueryFunction, QueryRequest, UniqueIdentifier,
 };
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestOptions;
@@ -24,6 +24,7 @@ const QUERY_OPERATION: u32 = 0x0000_0018;
 const CHECK_OPERATION: u32 = 0x0000_0009;
 const GET_CONSTRAINTS_OPERATION: u32 = 0x0000_0038;
 const GET_USAGE_ALLOCATION_OPERATION: u32 = 0x0000_0011;
+const OBTAIN_LEASE_OPERATION: u32 = 0x0000_0010;
 
 fn item(raw_tag: u32, value: Value) -> Item {
     Item::new(
@@ -1006,6 +1007,55 @@ fn get_usage_allocation_builder_requires_count_and_executes_typed_request() {
     assert_eq!(
         result.outcome().operation(),
         crate::execute::ClientOperation::GetUsageAllocation
+    );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn obtain_lease_builder_preserves_identifier_and_executes_once() {
+    let identifier = UniqueIdentifier::TextString("leased-key".to_owned());
+    let request = failed_request_client()
+        .request()
+        .obtain_lease()
+        .unique_identifier(identifier.clone())
+        .build_request()
+        .expect("the optional explicit object identifier is a typed request field");
+    assert_eq!(request.unique_identifier(), Some(&identifier));
+    let _: ObtainLeaseRequest = request;
+
+    let batch_item = failed_request_client()
+        .request()
+        .obtain_lease()
+        .unique_identifier(identifier.clone())
+        .to_batch_item()
+        .expect("Obtain Lease converts to the existing typed batch item");
+    assert_eq!(batch_item.operation(), OBTAIN_LEASE_OPERATION);
+
+    let response = asynchronous_response_bytes(
+        OBTAIN_LEASE_OPERATION,
+        0,
+        None,
+        None,
+        Some(test_structure([
+            test_item(0x0042_0094, Value::text_string("leased-key".to_owned())),
+            test_item(0x0042_0049, Value::interval(60)),
+            test_item(0x0042_0048, Value::date_time(1)),
+        ])),
+    );
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: vec![2, 5],
+    });
+    let result = client
+        .request()
+        .obtain_lease()
+        .unique_identifier(identifier)
+        .execute(&CodecLimits::defaults())
+        .expect("the scripted Obtain Lease result is valid");
+
+    assert_eq!(
+        result.outcome().operation(),
+        crate::execute::ClientOperation::ObtainLease
     );
     assert_eq!(transport.borrow().exchange_count(), 1);
 }
