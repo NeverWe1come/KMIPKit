@@ -1,6 +1,7 @@
 package org.kmipkit.validator;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -80,6 +81,56 @@ class ControlledTlsPeerTest {
         assertEquals("supported", outcome.serverCompatibility());
         assertTrue(contains(request, new byte[] {0x42, 0x00, 0x5c, 0x05, 0, 0, 0, 4, 0, 0, 0, 30}),
                 "The controlled peer must receive the typed Discover Versions operation.");
+    }
+
+    // OASIS KMIP 2.0 §6.1.37: preserve the selected protocol version on the live Java route.
+    @Test
+    void runSendsQueryWithConfiguredKmip20Version() throws Exception {
+        byte[] serverCertificatePem = fixture("server-cert.pem");
+        byte[] serverPrivateKeyPem = fixture("server-key.pem");
+        byte[] clientCertificatePem = fixture("client-cert.pem");
+        byte[] clientPrivateKeyPem = fixture("client-key.pem");
+        X509Certificate serverCertificate = certificate(serverCertificatePem);
+        X509Certificate clientCertificate = certificate(clientCertificatePem);
+        SSLServerSocket listener = listener(serverCertificate, privateKey(serverPrivateKeyPem), clientCertificate);
+        FutureTask<byte[]> peer = new FutureTask<>(() -> serveOneResponse(listener, queryResponse(0)));
+        Thread peerThread = new Thread(peer, "java-validator-controlled-kmip20-peer");
+        peerThread.setDaemon(true);
+        peerThread.start();
+
+        Path connectionFile = temporaryDirectory.resolve("kmip20-connection.json");
+        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                clientCertificatePem, clientPrivateKeyPem, false, "2.0"));
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode catalog = (ObjectNode) mapper.readTree(
+                Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json").toFile());
+        Path catalogFile = temporaryDirectory.resolve("kmip20-query-catalog.json");
+        var queryCase = mapper.createArrayNode();
+        catalog.path("test_cases").forEach(testCase -> {
+            if ("test-op-query".equals(testCase.path("case_id").asText())) {
+                queryCase.add(testCase.deepCopy());
+            }
+        });
+        catalog.set("test_cases", queryCase);
+        ((ObjectNode) catalog.path("statistics")).put("total_cases", queryCase.size());
+        mapper.writeValue(catalogFile.toFile(), catalog);
+        Path output = temporaryDirectory.resolve("kmip20-report");
+
+        int status = Main.execute(new String[] {"run", "--connection", connectionFile.toString(),
+                "--catalog", catalogFile.toString(), "--artifact-manifest",
+                System.getProperty("kmipkit.artifactManifest"), "--output-dir", output.toString()},
+                System.out, System.err);
+        byte[] request = peer.get(15, TimeUnit.SECONDS);
+        listener.close();
+
+        JsonNode outcome = mapper.readTree(output.resolve("results.json").toFile()).path("cases").get(0);
+        assertEquals(0, status, outcome.toString());
+        assertEquals("passed", outcome.path("status").asText(), outcome.toString());
+        assertTrue(contains(request, structure(0x420069,
+                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(0)))),
+                "The Java client must transmit the configured KMIP 2.0 protocol version.");
+        assertTrue(contains(request, item(0x42005c, 5, intBytes(0x18))),
+                "The controlled peer must receive the Query operation.");
     }
 
     @Test
@@ -213,6 +264,12 @@ class ControlledTlsPeerTest {
 
     private String connectionJson(int port, byte[] serverCertificate, byte[] clientCertificate,
                                   byte[] clientPrivateKey, boolean allowMutations) throws Exception {
+        return connectionJson(port, serverCertificate, clientCertificate, clientPrivateKey, allowMutations, "2.1");
+    }
+
+    private String connectionJson(int port, byte[] serverCertificate, byte[] clientCertificate,
+                                  byte[] clientPrivateKey, boolean allowMutations, String protocolVersion)
+            throws Exception {
         Path serverCert = temporaryDirectory.resolve("server-cert.pem");
         Path clientCert = temporaryDirectory.resolve("client-cert.pem");
         Path clientKey = temporaryDirectory.resolve("client-key.pem");
@@ -222,7 +279,7 @@ class ControlledTlsPeerTest {
         ObjectNode root = new ObjectMapper().createObjectNode();
         root.put("server_id", "controlled-test-peer");
         root.put("server_configuration_fingerprint", "a".repeat(64));
-        root.put("protocol_version", "2.1");
+        root.put("protocol_version", protocolVersion);
         root.put("transport", "raw_tls");
         root.put("encoding", "TTLV");
         root.put("api_level", "typed-protocol");
@@ -294,8 +351,12 @@ class ControlledTlsPeerTest {
     }
 
     private static byte[] discoverVersionsResponse() throws Exception {
+        return discoverVersionsResponse(1);
+    }
+
+    private static byte[] discoverVersionsResponse(int minorVersion) throws Exception {
         byte[] protocolVersion = structure(0x420069,
-                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(1)));
+                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(minorVersion)));
         byte[] header = structure(0x42007a, protocolVersion,
                 item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(1)));
         byte[] payload = structure(0x42007c, protocolVersion);
@@ -306,8 +367,12 @@ class ControlledTlsPeerTest {
     }
 
     private static byte[] queryResponse() throws Exception {
+        return queryResponse(1);
+    }
+
+    private static byte[] queryResponse(int minorVersion) throws Exception {
         byte[] protocolVersion = structure(0x420069,
-                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(1)));
+                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(minorVersion)));
         byte[] header = structure(0x42007a, protocolVersion,
                 item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(1)));
         byte[] responseItem = structure(0x42000f,

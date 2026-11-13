@@ -47,5 +47,7 @@ coverage pending.
 
 The pinned artifact is built from the exact `release/1.0.0` commit also
 recorded by the shared route manifest. That release commit preserves the
-configured KMIP protocol version for Java clients, so the validator exercises
-both KMIP 2.0 and KMIP 2.1 without a version-specific client workaround.
+configured KMIP protocol version for Java clients, so supported typed routes
+are exercised with KMIP 2.0 and KMIP 2.1. The pinned Discover Versions response
+parser still validates against a default offer containing only KMIP 2.1; the
+KMIP 2.0 Discover Versions cases remain pending and expose this library limit.

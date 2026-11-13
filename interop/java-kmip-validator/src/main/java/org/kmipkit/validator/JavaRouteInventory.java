@@ -18,8 +18,10 @@ public final class JavaRouteInventory {
     public static Map<String, Route> classify(CatalogLoader.Catalog catalog) {
         var operations = new TreeSet<String>();
         catalog.cases().forEach(testCase -> {
-            operations.add(testCase.operation());
-            routeFor(testCase);
+            if ("server_exchange".equals(testCase.execution().mode())) {
+                operations.add(testCase.operation());
+                routeFor(testCase);
+            }
         });
         var classified = new LinkedHashMap<String, Route>();
         for (String operation : operations) {
@@ -39,10 +41,20 @@ public final class JavaRouteInventory {
 
     /** Classifies one case while preserving its client-to-server or server-to-client workflow. */
     public static Route routeFor(CatalogLoader.CatalogCase testCase) {
+        return routeFor(testCase, null);
+    }
+
+    /** Classifies one catalog case for the selected protocol version. */
+    public static Route routeFor(CatalogLoader.CatalogCase testCase, String protocolVersion) {
         String workflow = testCase.requires().path("workflow_type").asText();
         if ("server_to_client".equals(workflow)) {
             return new Route(testCase.operation(), Status.WORKFLOW_UNAVAILABLE,
                     "This catalog case requires a server-initiated workflow; the Java consumer has no server request listener.");
+        }
+        if ("Discover Versions".equals(testCase.operation())
+                && "2.0".equals(protocolVersion)) {
+            return new Route(testCase.operation(), Status.TYPED_API_PENDING,
+                    "The pinned Java Discover Versions response parser validates against its default KMIP 2.1 offer.");
         }
         return routeFor(testCase.operation());
     }

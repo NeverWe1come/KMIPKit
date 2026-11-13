@@ -73,14 +73,17 @@ public final class TtlvModelChecks {
         if (requirements.hasNonNull("enum_type")) {
             long constructed = constructAndReadEnumeration(0xf0000001L);
             long decoded = decodeEnumeration(0xf0000001L);
-            return new ModelCheck(constructed == decoded, "generic enumeration construction and decoding");
+            return new ModelCheck(true, constructed == decoded,
+                    "generic enumeration construction and decoding");
         }
         if (requirements.hasNonNull("bitmask_type")) {
             int constructed = constructAndReadIntegerMask(0x80000001);
             int decoded = decodeIntegerMask(0x80000001);
-            return new ModelCheck(constructed == decoded, "generic integer mask construction and decoding");
+            return new ModelCheck(true, constructed == decoded,
+                    "generic integer mask construction and decoding");
         }
-        return new ModelCheck(false, "local model case has no supported generic value type");
+        return new ModelCheck(false, false,
+                "No Java generic TTLV recipe is implemented for this normative target.");
     }
 
     private static TtlvStructure appendEnumeration(TtlvStructure structure, int tagValue, long value) {
@@ -97,5 +100,5 @@ public final class TtlvModelChecks {
                 .put((byte) type).putInt(4).putInt(value).putInt(0).array();
     }
 
-    public record ModelCheck(boolean passed, String diagnostic) { }
+    public record ModelCheck(boolean supported, boolean passed, String diagnostic) { }
 }

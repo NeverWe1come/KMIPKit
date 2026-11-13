@@ -47,6 +47,16 @@ class JavaRouteInventoryTest {
                 JavaRouteInventory.routeFor(serverQuery).status());
         assertTrue(JavaRouteInventory.routeFor(serverQuery).reason().contains("server-initiated"));
 
+        var kmip20DiscoverVersions = catalog.cases().stream()
+                .filter(testCase -> testCase.caseId().equals("test-op-discover-versions"))
+                .filter(testCase -> testCase.execution().protocolVersions().contains("2.0"))
+                .findFirst().orElseThrow();
+        assertEquals(JavaRouteInventory.Status.TYPED_API_PENDING,
+                JavaRouteInventory.routeFor(kmip20DiscoverVersions, "2.0").status());
+        assertTrue(JavaRouteInventory.routeFor(kmip20DiscoverVersions, "2.0").reason().contains("2.1 offer"));
+        assertEquals(JavaRouteInventory.Status.EXECUTABLE_TYPED,
+                JavaRouteInventory.routeFor(kmip20DiscoverVersions, "2.1").status());
+
         for (String caseId : Set.of(
                 "test-op-log", "test-op-get-attribute-list", "test-op-get-constraints")) {
             var statefulCase = catalog.cases().stream()

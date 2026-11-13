@@ -63,7 +63,9 @@ public client request route carry separate API limitation reasons. The
 validator also constructs and decodes generic TTLV values locally. It does not
 send arbitrary generic TTLV requests, and the Java package has no distinct
 high-level API route. The exact pinned release artifact preserves the configured
-protocol version; implemented typed routes can run with KMIP 2.0 and 2.1.
+protocol version; implemented typed routes can run with KMIP 2.0 and 2.1. The
+Java Discover Versions parser still uses a KMIP 2.1 default offer, so its KMIP
+2.0 catalog cases stay pending until that library behavior is corrected.
 
 CI builds the pinned JNI JAR and runs the validator against a local TLS 1.3
 mTLS peer with a controlled KMIP response. This verifies the external package
