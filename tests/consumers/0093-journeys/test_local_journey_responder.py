@@ -124,6 +124,19 @@ class BatchIdPlaceholderJourneyContractTests(unittest.TestCase):
         self.assertIn((0x42000D, 2, struct.pack(">i", 2)), header)
         self.assertIn((0x42000E, 6, b"\x01"), header)
 
+    def test_batch_parser_rejects_declared_count_that_disagrees_with_items(self) -> None:
+        parser = getattr(responder, "_request_batch", None)
+        self.assertTrue(callable(parser), "fixture must parse every ordered batch item")
+        malformed = self._request_frame(
+            (
+                self._batch_item(1, _item(0x420057, 5, struct.pack(">I", 2))),
+                self._batch_item(10, _item(0x420094, 5, struct.pack(">I", 1))),
+            ),
+            declared_count=1,
+        )
+        with self.assertRaisesRegex(RuntimeError, "Batch Count"):
+            parser(malformed)
+
     def test_placeholder_batch_rejects_unordered_or_non_placeholder_get(self) -> None:
         validator = getattr(responder, "_validate_placeholder_batch", None)
         self.assertTrue(callable(validator), "fixture must validate placeholder resolution")
@@ -170,6 +183,13 @@ class BatchIdPlaceholderJourneyContractTests(unittest.TestCase):
         actual_identifier = b"server-created-batch-key"
         frame = response_builder((1, 10), actual_identifier)
         top_level = responder._children(frame[8:])
+        response_header = next(
+            value for tag, kind, value in top_level if tag == 0x42007A and kind == 1
+        )
+        self.assertIn(
+            (0x42000D, 2, struct.pack(">i", 2)),
+            responder._children(response_header),
+        )
         response_items = [
             value
             for tag, kind, value in top_level
