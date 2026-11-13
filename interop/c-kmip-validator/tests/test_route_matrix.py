@@ -31,11 +31,18 @@ def get_usage_allocation_identifier_variants_request(protocol_minor=1, second_id
             (0x420079, 1, payload),
         ])
 
+    locate_item = (0x42000F, 1, [
+        enumeration(0x42005C, 8),
+        (0x420093, 8, b'usage-locate'),
+        (0x420079, 1, [integer(0x42004F, 3)]),
+    ])
+
     return (0x420078, 1, [
         (0x420077, 1, [
             (0x420069, 1, [integer(0x42006A, 2), integer(0x42006B, protocol_minor)]),
-            integer(0x42000D, 2),
+            integer(0x42000D, 3),
         ]),
+        locate_item,
         batch_item(b'usage-explicit', 'fixture-key-1'),
         batch_item(b'usage-placeholder', second_identifier),
     ])
@@ -86,7 +93,7 @@ class RouteMatrixTests(unittest.TestCase):
             with self.subTest(case_id=case_id):
                 self.assertEqual(
                     route_peer.RECIPES.get(case_id),
-                    ((17, 17), 'get_usage_allocation_uid_variants'),
+                    ((8, 17, 17), 'get_usage_allocation_uid_variants'),
                 )
 
     def test_get_usage_allocation_recipe_validates_present_then_omitted_identifier(self):
@@ -109,8 +116,8 @@ class RouteMatrixTests(unittest.TestCase):
         from route_peer import parse, verify_usage_allocation_identifier_variants
 
         response_tree = parse(response(
-            (17, 17), 1,
-            unique_batch_item_ids=(b'usage-explicit', b'usage-placeholder'),
+            (8, 17, 17), 1,
+            unique_batch_item_ids=(b'usage-locate', b'usage-explicit', b'usage-placeholder'),
         ))
 
         self.assertEqual(
@@ -123,10 +130,10 @@ class RouteMatrixTests(unittest.TestCase):
         from route_peer import parse, verify_usage_allocation_identifier_variants
 
         response_tree = parse(response(
-            (17, 17), 1,
-            unique_batch_item_ids=(b'usage-explicit', b'usage-placeholder'),
-            result_statuses=(0, 1),
-            result_reasons=(None, 55),
+            (8, 17, 17), 1,
+            unique_batch_item_ids=(b'usage-locate', b'usage-explicit', b'usage-placeholder'),
+            result_statuses=(0, 0, 1),
+            result_reasons=(None, None, 55),
         ))
 
         with self.assertRaisesRegex(ValueError, 'fixture_usage_allocation_identifier_response_mismatch'):
@@ -137,13 +144,13 @@ class RouteMatrixTests(unittest.TestCase):
 
         request = get_usage_allocation_identifier_variants_request()
 
-        evidence = PeerState(existing_object=True).execute(request)
+        evidence = PeerState(existing_object=True, usage_allocation_ready=True).execute(request)
 
         self.assertEqual(evidence['statuses'], [0, 0])
         self.assertEqual(evidence['reasons'], [0, 0])
         self.assertEqual(
             evidence['effects'],
-            ['usage_allocation_returned', 'usage_allocation_returned'],
+            ['located', 'usage_allocation_returned', 'usage_allocation_returned'],
         )
 
     def test_route_evidence_output_cannot_escape_its_build_directory(self):
