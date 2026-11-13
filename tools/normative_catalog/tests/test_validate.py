@@ -1716,6 +1716,10 @@ def _pinned_message_structure_rows() -> set[tuple[str, str, str | None, str | No
             comment = row[comment_index] if comment_index is not None and len(row) > comment_index else None
             if encoding_index is None and name in {"Request Header", "Response Header", "Batch Item"} and comment == "Structure":
                 encoding = comment
+            if section == "8.3" and name == "Ephemeral":
+                if comment != "Indicates that the Data output of the operation should not be returned to the client. Boolean.":
+                    raise AssertionError("pinned Ephemeral comment does not identify its Boolean encoding")
+                encoding = "Boolean"
             records.add((section, name, encoding, requiredness, comment or None))
     return records
 
