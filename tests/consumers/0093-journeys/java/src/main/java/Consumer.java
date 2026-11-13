@@ -3,6 +3,8 @@ import java.util.Arrays;
 import java.util.List;
 import org.kmipkit.client.KmipClient;
 import org.kmipkit.extensions.ClientBatchItemResult;
+import org.kmipkit.extensions.ClientBatch;
+import org.kmipkit.extensions.ClientBatchItem;
 import org.kmipkit.extensions.ClientBatchResponse;
 import org.kmipkit.extensions.ClientConfiguration;
 import org.kmipkit.extensions.ClientExtensionRegistry;
@@ -103,7 +105,47 @@ public final class Consumer {
             executeAesGcmJourney(kmipClient, limits);
             executeKeyPairSignatureJourney(kmipClient, limits);
             executeExpertAttributeJourney(kmipClient, limits);
+            executeBatchIdPlaceholderJourney(kmipClient, limits);
         }
+    }
+
+    private static void executeBatchIdPlaceholderJourney(KmipClient client, CodecLimits limits)
+            throws org.kmipkit.ClientOperationException {
+        ClientBatchItem createItem;
+        try (SymmetricKeyBuilder createBuilder = client.request().createSymmetricKey()) {
+            createItem = createBuilder.aes256().usageMask((int) (
+                                KmipValues.CryptographicUsageMask.ENCRYPT
+                                        | KmipValues.CryptographicUsageMask.DECRYPT))
+                    .name("fluent-batch-placeholder").toBatchItem()
+                    .withUniqueBatchItemId("create-placeholder-source".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        }
+        ClientBatchItem getItem = client.request()
+                .get(UniqueIdentifier.enumeration(1)).toBatchItem()
+                .withUniqueBatchItemId("get-placeholder-target".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        try (createItem; getItem; ClientBatch batch = ClientBatch.create()) {
+            batch.ordered(true).add(createItem).add(getItem);
+            try (ClientBatchResponse response = client.execute(batch, limits);
+                    ClientBatchItemResult createResult = response.itemAt(0);
+                    ClientBatchItemResult getResult = response.itemAt(1)) {
+                var createResponse = createResult.createResponse().orElseThrow();
+                var getResponse = getResult.getResponse().orElseThrow();
+                UniqueIdentifier identifier = createResponse.uniqueIdentifier();
+                if (response.itemCount() != 2 || !createResult.outcomeKind().isCompleted()
+                        || createResult.resultStatus() != 0 || createResult.operation() != 1
+                        || !Arrays.equals(createResult.uniqueBatchItemId().orElseThrow(),
+                                "create-placeholder-source".getBytes(java.nio.charset.StandardCharsets.UTF_8))
+                        || !identifier.text().equals("server-created-batch-key")
+                        || !getResult.outcomeKind().isCompleted() || getResult.resultStatus() != 0
+                        || getResult.operation() != 10
+                        || !Arrays.equals(getResult.uniqueBatchItemId().orElseThrow(),
+                                "get-placeholder-target".getBytes(java.nio.charset.StandardCharsets.UTF_8))
+                        || !getResponse.uniqueIdentifier().orElseThrow().text().equals(identifier.text())
+                        || getResponse.object().isEmpty()) {
+                    throw new IllegalStateException("batch ID Placeholder did not resolve to the created object");
+                }
+            }
+        }
+        System.out.println("java: fluent Create/Get batch ID Placeholder journey verified");
     }
 
     private static void executeAesGcmJourney(KmipClient client, CodecLimits limits) {

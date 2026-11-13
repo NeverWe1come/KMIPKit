@@ -1,5 +1,5 @@
 use kmipkit::{
-    Client, CryptographicUsageMask, RequestDeliveryState,
+    Client, ClientBatch, CryptographicUsageMask, RequestDeliveryState,
     client_config::ClientConfiguration,
     protocol::{
         Attribute, CryptographicParameters, CryptographicParametersBuilder, UniqueIdentifier,
@@ -324,6 +324,63 @@ fn execute_expert_attribute_journey(
     Ok(())
 }
 
+fn execute_batch_id_placeholder_journey(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let create_item = client
+        .request()
+        .create_symmetric_key()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT | CryptographicUsageMask::DECRYPT)
+        .name("fluent-batch-placeholder")
+        .to_batch_item()?
+        .with_unique_batch_item_id(b"create-placeholder-source".to_vec());
+    let get_item = client
+        .request()
+        .get(UniqueIdentifier::Enumeration(1))
+        .to_batch_item()
+        .with_unique_batch_item_id(b"get-placeholder-target".to_vec());
+    let mut batch = ClientBatch::new(create_item).with_batch_order_option(true);
+    batch.push(get_item);
+
+    let response = client.execute(batch, limits)?;
+    if response.len() != 2 {
+        return Err("ID Placeholder batch did not return two ordered results".into());
+    }
+    let create_result = response.get(0).ok_or("batch response omitted Create")?;
+    let create_response = create_result
+        .outcome()
+        .create_response()
+        .ok_or("batch Create did not return its typed successful response")?;
+    let identifier = create_response
+        .unique_identifier()
+        .ok_or("batch Create omitted its server-assigned identifier")?;
+    if create_result.outcome().operation().raw() != 1
+        || create_result.unique_batch_item_id() != Some(&b"create-placeholder-source"[..])
+        || create_response.result().status().raw() != 0
+        || identifier != &UniqueIdentifier::from("server-created-batch-key")
+    {
+        return Err("batch Create result did not match the fixture response".into());
+    }
+
+    let get_result = response.get(1).ok_or("batch response omitted Get")?;
+    let get_response = get_result
+        .outcome()
+        .get_response()
+        .ok_or("placeholder Get did not return its typed successful response")?;
+    if get_result.outcome().operation().raw() != 10
+        || get_result.unique_batch_item_id() != Some(&b"get-placeholder-target"[..])
+        || get_response.result().status().raw() != 0
+        || get_response.unique_identifier() != Some(identifier)
+        || get_response.object().is_none()
+    {
+        return Err("placeholder Get did not resolve to the created object".into());
+    }
+    println!("rust: fluent Create/Get batch ID Placeholder journey verified");
+    Ok(())
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let port: u16 = std::env::var("KMIPKIT_CONSUMER_TEST_PORT")?.parse()?;
     let fixtures = std::path::PathBuf::from(std::env::var("KMIPKIT_CONSUMER_TEST_FIXTURES")?);
@@ -347,5 +404,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     execute_fluent_key_lifecycle(&mut client, &limits)?;
     execute_aes_gcm_journey(&mut client, &limits)?;
     execute_key_pair_signature_journey(&mut client, &limits)?;
-    execute_expert_attribute_journey(&mut client, &limits)
+    execute_expert_attribute_journey(&mut client, &limits)?;
+    execute_batch_id_placeholder_journey(&mut client, &limits)
 }
