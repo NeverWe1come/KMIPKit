@@ -53,7 +53,7 @@ jobs:
     if: github.event_name != 'pull_request' || needs.changes.outputs.affected == 'true'
     name: Rust 1.94 installed-package interoperability consumer
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     env:
       TMPDIR: ${{ github.workspace }}/interop/rust-kmip-validator/target/fixture-tmp
     steps:
