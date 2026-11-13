@@ -21,7 +21,7 @@ const BATCH_ERROR_CONTINUATION_CONTINUE: u32 = 1;
 const BATCH_ERROR_CONTINUATION_STOP: u32 = 2;
 const BATCH_ERROR_CONTINUATION_UNDO: u32 = 3;
 const OPERATION_FAILED: u32 = 1;
-const PING_OPERATION: u32 = 0x0000_0039;
+const PING_OPERATION: u32 = 0x0000_003B;
 
 fn request_batch(ids: &[&[u8]], continuation: Option<u32>) -> ClientBatch {
     let items = ids.iter().map(|id| {

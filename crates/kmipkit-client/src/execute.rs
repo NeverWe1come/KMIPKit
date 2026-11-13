@@ -237,6 +237,7 @@ const ENUMERATION_EXTENSION_MAX: u32 = 0x8fff_ffff;
 // KMIP v2.1 §11.58, Table 489 assigns Enumeration 1 to ID Placeholder.
 const ID_PLACEHOLDER_ENUMERATION_VALUE: u32 = 1;
 const RESULT_STATUS_PENDING: u32 = 2;
+const RESULT_STATUS_OPERATION_FAILED: u32 = 1;
 
 /// An opt-in KMIP 3.0 Working Draft operation exposed through generic TTLV.
 ///
@@ -4447,13 +4448,17 @@ impl ClientBatchResponse {
         self.items.is_empty()
     }
 
-    /// Returns a result by its request-order index.
+    /// Returns a result by its position in the returned-results collection.
+    ///
+    /// When a valid Stop response omits unprocessed items, this index addresses
+    /// the returned-results collection, which is ordered by the matching
+    /// request positions and contains no placeholder for an omitted result.
     #[must_use]
     pub fn get(&self, index: usize) -> Option<&ClientBatchItemResponse> {
         self.items.get(index)
     }
 
-    /// Iterates over the results in request order, independent of response order.
+    /// Iterates over returned results in request order, independent of response order.
     #[must_use = "use the iterator or explicitly ignore its results"]
     pub fn iter(&self) -> impl ExactSizeIterator<Item = &ClientBatchItemResponse> + '_ {
         self.items.iter()
@@ -8537,7 +8542,23 @@ pub(super) fn associate_batch_items(
     requests: &[BatchIdentity],
     responses: &[BatchIdentity],
 ) -> Result<Vec<usize>, ResponseAssociationError> {
-    if requests.len() != responses.len() {
+    associate_batch_items_with_omissions(requests, responses, false).map(|associated| {
+        associated
+            .into_iter()
+            .map(|(_, response_index)| response_index)
+            .collect()
+    })
+}
+
+fn associate_batch_items_with_omissions(
+    requests: &[BatchIdentity],
+    responses: &[BatchIdentity],
+    allow_omitted_requests: bool,
+) -> Result<Vec<(usize, usize)>, ResponseAssociationError> {
+    if responses.len() > requests.len()
+        || (!allow_omitted_requests && requests.len() != responses.len())
+        || (allow_omitted_requests && (responses.is_empty() || responses.len() == requests.len()))
+    {
         return Err(ResponseAssociationError::ItemCountMismatch);
     }
     if requests.len() > 1
@@ -8556,9 +8577,9 @@ pub(super) fn associate_batch_items(
         }
     }
 
-    let mut associated = Vec::with_capacity(requests.len());
+    let mut associated = Vec::with_capacity(responses.len());
     let mut consumed = vec![false; responses.len()];
-    for request in requests {
+    for (request_index, request) in requests.iter().enumerate() {
         let index = match &request.unique_batch_item_id {
             Some(id) => responses
                 .iter()
@@ -8566,8 +8587,13 @@ pub(super) fn associate_batch_items(
             None => {
                 (responses.len() == 1 && responses[0].unique_batch_item_id.is_none()).then_some(0)
             }
-        }
-        .ok_or(ResponseAssociationError::UnknownId)?;
+        };
+        let Some(index) = index else {
+            if allow_omitted_requests {
+                continue;
+            }
+            return Err(ResponseAssociationError::UnknownId);
+        };
         if consumed[index] {
             return Err(ResponseAssociationError::DuplicateId);
         }
@@ -8575,7 +8601,7 @@ pub(super) fn associate_batch_items(
             return Err(ResponseAssociationError::ItemOperationMismatch);
         }
         consumed[index] = true;
-        associated.push(index);
+        associated.push((request_index, index));
     }
     if consumed.iter().any(|matched| !matched) {
         return Err(ResponseAssociationError::UnknownId);
@@ -8707,8 +8733,18 @@ fn validate_response_inner(
         .iter()
         .map(BatchIdentity::from_response)
         .collect::<Vec<_>>();
-    let association = associate_batch_items(request_identities, &response_identities)
-        .map_err(ProtocolError::from)?;
+    let stop_failure_subset = !response_items.is_empty()
+        && response_items.len() < request_identities.len()
+        && options.batch_error_continuation.effective == BATCH_ERROR_CONTINUATION_STOP
+        && response_items.iter().any(|item| {
+            item.result_status() == Some(ResultStatus::from_raw(RESULT_STATUS_OPERATION_FAILED))
+        });
+    let association = associate_batch_items_with_omissions(
+        request_identities,
+        &response_identities,
+        stop_failure_subset,
+    )
+    .map_err(ProtocolError::from)?;
 
     let outcome_states = response_items
         .iter()
@@ -8720,8 +8756,8 @@ fn validate_response_inner(
     validate_pending_states(options.asynchronous_indicator, &outcome_states)
         .map_err(ProtocolError::from)?;
 
-    let mut ordered = Vec::with_capacity(request_identities.len());
-    for (request_index, response_index) in association.into_iter().enumerate() {
+    let mut ordered = Vec::with_capacity(association.len());
+    for (request_index, response_index) in association {
         let item = response_items[response_index];
         let extensions = preserve_response_extensions(item, registry, limits)?;
         let outcome = response_outcome(
