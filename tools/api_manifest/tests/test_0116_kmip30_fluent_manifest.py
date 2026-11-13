@@ -8,6 +8,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification/api/public-api.json"
+KMIP30_DRAFT_API = ROOT / "specification/api/kmip-3.0-draft-api.json"
 OPERATIONS = {
     "Create Credential",
     "Create Group",
@@ -20,21 +21,38 @@ OPERATIONS = {
 
 
 class Kmip30FluentManifestTests(unittest.TestCase):
-    def test_all_assigned_kmip30_operations_publish_verified_four_language_api(self) -> None:
+    def test_kmip30_fluent_capability_maps_all_routes_without_changing_21_inventory(self) -> None:
         document = json.loads(MANIFEST.read_text(encoding="utf-8"))
-        rows = {
-            row["name"]: row
-            for row in document.get("operations", [])
-            if row.get("version") == "3.0" or row.get("scope") == "client_3_0_draft"
+        operations_21 = [
+            row for row in document.get("operations", [])
+            if row.get("scope") == "client_1_0"
+        ]
+        self.assertEqual(len(operations_21), 56)
+
+        capabilities = {
+            row.get("capabilityId"): row
+            for row in document.get("capabilities", [])
         }
-        self.assertEqual(set(rows), OPERATIONS)
-        for name, row in rows.items():
+        capability = capabilities.get("kmip30_fluent_operations")
+        self.assertIsNotNone(capability)
+        assert capability is not None
+        self.assertEqual(capability.get("ownerSpecId"), "KMIPKIT-0116")
+        self.assertEqual(capability.get("capabilityState"), "verified")
+        self.assertEqual(capability.get("parityScope"), "four-language")
+        self.assertTrue(capability.get("parityEvidenceIds"))
+        language_mappings = capability.get("mappings", {})
+        self.assertEqual(set(language_mappings), {"rust", "c", "java", "python"})
+
+        draft = json.loads(KMIP30_DRAFT_API.read_text(encoding="utf-8"))
+        routes = {row["operation"]: row for row in draft.get("operations", [])}
+        self.assertEqual(set(routes), OPERATIONS)
+        for name, route in routes.items():
             with self.subTest(operation=name):
-                self.assertEqual(row.get("scope"), "client_3_0_draft")
-                self.assertEqual(row.get("apiState"), "verified")
-                self.assertEqual(set(row.get("languageParity", [])),
-                                 {"rust", "c", "java", "python"})
-                self.assertTrue(row.get("parityEvidenceIds"))
+                mappings = route.get("fluentApi", {})
+                self.assertEqual(set(mappings), {"rust", "c", "java", "python"})
+                for language, mapping in mappings.items():
+                    self.assertIsInstance(mapping, str)
+                    self.assertIn(mapping, language_mappings[language])
 
 
 if __name__ == "__main__":

@@ -84,6 +84,20 @@ class FluentOperationInventoryTests(unittest.TestCase):
             },
         )
 
+    def test_kmip30_fluent_routes_are_visible_in_versioned_api_matrix(self) -> None:
+        inventory = json.loads(OUTPUT.read_text(encoding="utf-8"))
+        rows = [row for row in inventory["operations"] if row["version"] == "3.0"]
+        self.assertEqual(len(rows), 7)
+        for row in rows:
+            with self.subTest(operation=row["name"]):
+                self.assertEqual(row["publicApiScope"], "client_3_0_draft")
+                self.assertEqual(row["publicApiState"], "verified")
+                self.assertEqual(
+                    set(row["publicApiMappings"]),
+                    {"rust", "c", "java", "python"},
+                )
+                self.assertTrue(row["testEvidence"]["parity"])
+
     def test_server_initiated_operations_are_not_client_send_routes(self) -> None:
         inventory = json.loads(OUTPUT.read_text(encoding="utf-8"))
         server_rows = [row for row in inventory["operations"] if row["direction"] == "server_to_client"]
