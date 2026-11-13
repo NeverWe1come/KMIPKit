@@ -320,6 +320,11 @@ class ControlledTlsPeerTest {
         ArrayNode events = mapper.createArrayNode();
         List<EnumerationFixture> enumerationFixtures = genericEnumerationFixtures();
         List<EnumerationFixture> localEnumerationFixtures = genericLocalEnumerationFixtures();
+        List<String> recommendedCurveTargets = localEnumerationFixtures.stream()
+                .filter(fixture -> "RECOMMENDED-CURVE".equals(fixture.parentName()))
+                .map(EnumerationFixture::targetId).distinct().sorted().toList();
+        assertEquals(71, recommendedCurveTargets.size(),
+                "The Recommended Curve aggregate must cover every catalogued value.");
         List<BitmaskFixture> bitmaskFixtures = genericBitmaskFixtures();
         List<DataTypeFixture> dataTypeFixtures = genericDataTypeFixtures();
         Map<String, JsonNode> dataTypeVectors = dataTypeBoundaryVectors();
@@ -593,6 +598,8 @@ class ControlledTlsPeerTest {
         assertEquals(97, pkcs11ReturnCodeTargets.size(),
                 "The PKCS#11 Return Code aggregate must cover every value.");
         List<LocalEnumerationScope> additionalEnumerationScopes = List.of(
+                new LocalEnumerationScope("test-enum-recommended-curve", recommendedCurveTargets,
+                        List.of("2.0", "2.1"), List.of()),
                 new LocalEnumerationScope("test-enum-opaque-data-type", List.of(
                         "KMIPKIT-ELEM-ENUM-VALUE-OPAQUE-DATA-TYPE-EXTENSIONS-8XXXXXXX"),
                         List.of("2.0", "2.1"), List.of(
