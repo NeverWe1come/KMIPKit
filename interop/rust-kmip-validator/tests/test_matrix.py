@@ -85,7 +85,45 @@ class MatrixContract(unittest.TestCase):
                 '--connection', str(connection), '--output', str(output),
             ], capture_output=True, text=True, timeout=30)
         self.assertNotEqual(0, process.returncode)
-        self.assertIn('controlled fixture query failed', process.stderr)
+        self.assertIn('client certificate unavailable or invalid', process.stderr)
+
+    def test_network_runner_rejects_non_loopback_fixture_endpoints(self):
+        combinations = (
+            ('raw_tls', '2.1', 'TTLV'),
+            ('https', '2.1', 'TTLV'),
+        )
+        with tempfile.TemporaryDirectory() as work:
+            root = Path(work)
+            for transport, version, encoding in combinations:
+                with self.subTest(transport=transport):
+                    cell = next(cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
+                                if cell['mode'] == 'network' and cell['case_id'] == 'test-op-query'
+                                and cell['protocol_version'] == version and cell['encoding'] == encoding
+                                and cell['transport'] == transport and cell['action'] == 'construct')
+                    matrix = root / f'{transport}.jsonl'
+                    connection = root / f'{transport}.json'
+                    output = root / f'{transport}-evidence.json'
+                    matrix.write_text(json.dumps(cell) + '\n')
+                    connection.write_text(json.dumps({
+                        'server_id': 'controlled-fixture', 'protocol_version': version,
+                        'transport': transport, 'encoding': encoding, 'api_level': 'typed-protocol',
+                        'endpoints': {'raw_tls': {'host': '192.0.2.10', 'port': 1},
+                                      'https': {'url': 'https://kms.example.invalid/kmip'}},
+                        'tls': {'ca_cert_path': str(root / 'missing-ca.pem'),
+                                'client_cert_path': str(root / 'missing-client.pem'),
+                                'client_key_path': str(root / 'missing-key.pem'),
+                                'server_name_override': 'localhost'},
+                        'environment': {'kind': 'dedicated_test',
+                                        'dedicated_test_environment_confirmed': True},
+                        'execution_policy': {'probe_unsupported': False, 'allow_mutations': False},
+                    }))
+                    process = subprocess.run([
+                        str(VALIDATOR), 'matrix-network', '--matrix', str(matrix),
+                        '--connection', str(connection), '--output', str(output),
+                    ], capture_output=True, text=True, timeout=30)
+                    self.assertNotEqual(0, process.returncode)
+                    self.assertIn('controlled network evidence requires a loopback endpoint',
+                                  process.stderr)
 
     def test_named_typed_constructor_emits_actual_cell_evidence(self):
         cell = self.cell('kmipkit_protocol::attribute::Attribute::<kmipkit_protocol::attribute::typed::CryptographicLength>::new')
@@ -421,6 +459,78 @@ class MatrixContract(unittest.TestCase):
             self.assertEqual(summary['invoked_response_cells'], 1)
             self.assertEqual(summary['invoked_local_cells'], 1)
             self.assertEqual(summary['pending_local_cells'], summary['required_local_cells'] - 2)
+            self.assertEqual(summary['gate_failure_code'], 'missing_required_matrix_cells')
+
+    def test_route_gate_consumes_controlled_network_request_evidence(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            matrix = root / 'selected-cells.jsonl'
+            local_cell = self.cell('kmipkit_ttlv::Item::new')
+            network_cell = next(
+                cell for cell in iter_cells(CATALOG, ROUTES, languages=('rust',))
+                if cell['mode'] == 'network' and cell['case_id'] == 'test-op-query'
+                and cell['protocol_version'] == '2.1' and cell['encoding'] == 'TTLV'
+                and cell['transport'] == 'raw_tls' and cell['action'] == 'construct'
+            )
+            matrix.write_text(''.join(
+                json.dumps(cell, sort_keys=True, separators=(',', ':')) + '\n'
+                for cell in (local_cell, network_cell)
+            ))
+            provenance = json.loads((ROOT / 'interop/.local/rust-live/provenance.json').read_bytes())
+            event = {
+                key: network_cell.get(key)
+                for key in (
+                    'case_id', 'route_id', 'target_id', 'workflow_step_index',
+                    'workflow_operation', 'workflow_item_index', 'public_api_symbol',
+                    'execution_route_id', 'execution_api_symbol', 'action',
+                    'protocol_version', 'encoding', 'transport',
+                )
+                if key in network_cell or key in ('execution_route_id', 'execution_api_symbol')
+            }
+            event.update({
+                'invocation_id': 'controlled-query-constructor',
+                'status': 'passed',
+                'invocation_count': 1,
+                'request_tree_sha256': 'a' * 64,
+                'request_delivery_state': 'response_received',
+                'transport_invocation_count': 1,
+            })
+            report = {
+                'schema_version': '1.0',
+                'run_id': 'controlled-query-route-run',
+                'language': 'rust',
+                'server': {
+                    'id': 'controlled-fixture',
+                    'product': 'controlled-fixture',
+                    'version': 'offline-1',
+                    'configuration_fingerprint': 'b' * 64,
+                },
+                'library_commit': provenance['library_commit'],
+                'artifact_sha256': provenance['artifact_sha256'],
+                'catalog_sha256': hashlib.sha256(CATALOG_PATH.read_bytes()).hexdigest(),
+                'route_manifest_sha256': hashlib.sha256(ROUTES_PATH.read_bytes()).hexdigest(),
+                'protocol_versions': ['2.1'],
+                'network_combinations': [{'encoding': 'TTLV', 'transport': 'raw_tls'}],
+                'events': [event],
+            }
+            evidence_dir = root / 'evidence'
+            (evidence_dir / 'routes').mkdir(parents=True)
+            (evidence_dir / 'routes/rust-network-routes-2.1-ttlv-raw_tls.json').write_text(
+                json.dumps(report)
+            )
+            output_dir = root / 'output'
+            process = subprocess.run([
+                sys.executable,
+                str(ROOT / 'interop/rust-kmip-validator/tools/run_route_matrix.py'),
+                '--matrix', str(matrix),
+                '--output-dir', str(output_dir),
+                '--response-evidence-dir', str(evidence_dir),
+            ], capture_output=True, text=True, timeout=30)
+            self.assertNotEqual(process.returncode, 0)
+            summary = json.loads((output_dir / 'matrix-summary.json').read_bytes())
+            self.assertTrue(summary['schema_valid'])
+            self.assertEqual(summary['invoked_network_cells'], 1)
+            self.assertEqual(summary['pending_network_cells'], summary['required_network_cells'] - 1)
             self.assertEqual(summary['gate_failure_code'], 'missing_required_matrix_cells')
 
     def test_route_matrix_runner_does_not_accept_a_caller_selected_executable(self):

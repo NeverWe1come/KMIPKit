@@ -5050,7 +5050,7 @@ fn response_item(
         .ok_or("controlled fixture returned no response item")
 }
 
-fn response_digest(response: &kmipkit::ClientBatchItemResponse) -> Result<String> {
+pub(crate) fn response_digest(response: &kmipkit::ClientBatchItemResponse) -> Result<String> {
     let mut fields = vec![
         crate::driver::item(
             0x0042_005c,
@@ -5101,6 +5101,39 @@ fn response_digest(response: &kmipkit::ClientBatchItemResponse) -> Result<String
         )?),
     )?;
     crate::local_wire::roundtrip(&message)
+}
+
+pub(crate) fn operation_outcome_digest(
+    response: &kmipkit::ClientOperationOutcome,
+) -> Result<String> {
+    let mut fields = vec![
+        crate::driver::item(0x0042_005c, Value::enumeration(response.operation().raw()))?,
+        crate::driver::item(
+            0x0042_007f,
+            Value::enumeration(response.result().status().raw()),
+        )?,
+    ];
+    if let Some(reason) = response.result().reason() {
+        fields.push(crate::driver::item(
+            0x0042_007e,
+            Value::enumeration(reason.raw()),
+        )?);
+    }
+    if let Some(payload) = response.raw() {
+        fields.push(crate::driver::item(
+            0x0042_007c,
+            Value::structure(
+                payload
+                    .try_clone()
+                    .map_err(|_| "response payload copy failed")?,
+            ),
+        )?);
+    }
+    let item = crate::driver::item(
+        0x0042_000f,
+        Value::structure(crate::driver::structure(0x0042_000f, fields)?),
+    )?;
+    crate::local_wire::roundtrip(&item)
 }
 
 fn response_route_invoked(
@@ -5173,6 +5206,404 @@ fn response_route_invoked(
 /// turn this evidence command into a probe against an external KMIP service.
 #[allow(clippy::too_many_lines)] // Keep fixture selection and its exact response calls auditable together.
 pub(crate) fn run_network(matrix: &Path, connection: &Connection, output: &Path) -> Result<bool> {
+    let rows: Vec<Json> =
+        BufReader::new(std::fs::File::open(matrix).map_err(|_| "matrix unavailable")?)
+            .lines()
+            .map(|line| {
+                serde_json::from_str(&line.map_err(|_| "matrix read failed")?)
+                    .map_err(|_| "matrix row invalid")
+            })
+            .collect::<Result<_>>()?;
+    if rows.is_empty() {
+        return Err("network route matrix is empty");
+    }
+    if rows.iter().all(|row| row["mode"] == "network") {
+        return run_operation_network(&rows, connection, output);
+    }
+    run_response_network(matrix, connection, output)
+}
+
+fn workflow_operation_names(case: &Json) -> Option<Vec<String>> {
+    if case["category"] != "batch_workflows" {
+        return None;
+    }
+    let scenario = &case["requires"]["protocol_scenario"];
+    let parameters = &scenario["parameters"];
+    if let Some(items) = parameters["items"].as_array()
+        && !items.is_empty()
+    {
+        return items
+            .iter()
+            .map(|item| {
+                item.as_str()
+                    .map(|name| name.split('(').next().unwrap_or(name).trim().to_owned())
+                    .or_else(|| item["operation"].as_str().map(str::to_owned))
+            })
+            .collect();
+    }
+    for candidate in [
+        &parameters["operations_in_request_order"],
+        &scenario["expected"]["operation_order"],
+        &scenario["operations"],
+    ] {
+        if let Some(operations) = candidate.as_array()
+            && operations.len() > 1
+        {
+            return operations
+                .iter()
+                .map(|operation| operation.as_str().map(str::to_owned))
+                .collect();
+        }
+    }
+    None
+}
+
+fn batch_response_digest(responses: &[crate::driver::Observed]) -> Option<String> {
+    let digests = responses
+        .iter()
+        .map(|response| response.response_tree_sha256.as_deref())
+        .collect::<Option<Vec<_>>>()?;
+    serde_json::to_vec(&digests).ok().map(|bytes| hash(&bytes))
+}
+
+// This orchestrator keeps ordered client state, the controlled exchange, and its evidence row together.
+#[allow(clippy::too_many_lines)]
+fn run_operation_network(rows: &[Json], connection: &Connection, output: &Path) -> Result<bool> {
+    connection.validate()?;
+    if !controlled_loopback_endpoint(connection) {
+        return Err("controlled network evidence requires a loopback endpoint");
+    }
+    if connection.api_level != "typed-protocol"
+        || connection.protocol_version != rows[0]["protocol_version"]
+        || connection.encoding != rows[0]["encoding"]
+        || connection.transport != rows[0]["transport"]
+    {
+        return Err("network route matrix does not match its selected connection");
+    }
+    let routes_bytes = include_bytes!("../../shared/coverage/route-capabilities.json");
+    let routes: Json =
+        serde_json::from_slice(routes_bytes).map_err(|_| "route manifest invalid")?;
+    if routes["library_commit"] != env!("KMIPKIT_LIBRARY_COMMIT") {
+        return Err("route artifact commit mismatch");
+    }
+    let canonical_rows: HashSet<_> =
+        include_str!(concat!(env!("OUT_DIR"), "/route-cell-hashes.txt"))
+            .lines()
+            .collect();
+    let catalog_bytes = include_bytes!("../../shared/catalog/kmipkit-1.0-test-catalog.json");
+    let catalog: Json = serde_json::from_slice(catalog_bytes).map_err(|_| "catalog invalid")?;
+    let mut seen = HashSet::new();
+    for row in rows {
+        let canonical = serde_json::to_vec(row).map_err(|_| "matrix normalization failed")?;
+        if !canonical_rows.contains(hash(&canonical).as_str())
+            || row["language"] != "rust"
+            || row["mode"] != "network"
+            || row["protocol_version"] != connection.protocol_version
+            || row["encoding"] != connection.encoding
+            || row["transport"] != connection.transport
+            || !["construct", "send", "decode"]
+                .contains(&row["action"].as_str().unwrap_or_default())
+        {
+            return Err("network route matrix contains an unsupported cell");
+        }
+        let key = json!([
+            row["case_id"],
+            row["route_id"],
+            row["target_id"],
+            row["workflow_step_index"],
+            row["workflow_item_index"],
+            row["execution_route_id"],
+            row["action"],
+        ])
+        .to_string();
+        if !seen.insert(key) {
+            return Err("duplicate network route cell");
+        }
+    }
+
+    let mut client = crate::driver::client(connection)?;
+    let identifier = UniqueIdentifier::TextString("kmipkit-route-fixture-object".to_owned());
+    let mut events = Vec::with_capacity(rows.len());
+    for row in rows {
+        let case = catalog["test_cases"]
+            .as_array()
+            .and_then(|cases| cases.iter().find(|case| case["case_id"] == row["case_id"]))
+            .ok_or("network route case is missing from the catalog")?;
+        let mut case_document = case.clone();
+        let route_operation_name = routes["routes"]
+            .as_array()
+            .and_then(|declared| {
+                declared
+                    .iter()
+                    .find(|route| route["route_id"] == row["route_id"])
+            })
+            .and_then(|route| route["operation_ids"].as_array())
+            .and_then(|operation_ids| operation_ids.first())
+            .and_then(Json::as_str)
+            .and_then(|operation_id| {
+                catalog["normative_targets"]
+                    .as_array()
+                    .and_then(|targets| {
+                        targets
+                            .iter()
+                            .find(|target| target["target_id"] == operation_id)
+                    })
+                    .and_then(|target| target["name"].as_str())
+            });
+        let cell_operation_name = row["workflow_operation"].as_str().or_else(|| {
+            catalog["normative_targets"]
+                .as_array()
+                .and_then(|targets| {
+                    targets.iter().find(|target| {
+                        target["target_id"] == row["target_id"] && target["kind"] == "operation"
+                    })
+                })
+                .and_then(|target| target["name"].as_str())
+        });
+        if let Some(operation_name) = route_operation_name.or(cell_operation_name) {
+            case_document["operation"] = operation_name.into();
+        }
+        let case: crate::models::Case =
+            serde_json::from_value(case_document).map_err(|_| "network route case is invalid")?;
+        let expected_not_sent = case.requires["expected_status"] == "NotSent";
+        let batch_operations = workflow_operation_names(
+            catalog["test_cases"]
+                .as_array()
+                .and_then(|cases| cases.iter().find(|item| item["case_id"] == row["case_id"]))
+                .ok_or("network route case is missing from the catalog")?,
+        );
+        let exchange = if ["Cancel", "Poll", "Process", "Query Asynchronous Requests"]
+            .contains(&case.operation.as_str())
+        {
+            Some(crate::driver::asynchronous(
+                &mut client,
+                connection,
+                &case.operation,
+                b"route-probe",
+            ))
+        } else if let Some(operations) = &batch_operations {
+            let catalog_case = catalog["test_cases"]
+                .as_array()
+                .and_then(|cases| cases.iter().find(|item| item["case_id"] == row["case_id"]))
+                .ok_or("network route case is missing from the catalog")?;
+            let mut requests = Vec::with_capacity(operations.len());
+            for operation in operations {
+                let mut item_document = catalog_case.clone();
+                item_document["operation"] = operation.clone().into();
+                if item_document["requires"].is_object() {
+                    item_document["requires"]["operation"] = operation.clone().into();
+                }
+                let item_case: crate::models::Case = serde_json::from_value(item_document)
+                    .map_err(|_| "network batch item case is invalid")?;
+                let item_identifier = if catalog_case["requires"]["protocol_scenario"]["parameters"]
+                    ["items"]
+                    .as_array()
+                    .is_some_and(|items| {
+                        items.iter().any(|item| {
+                            item.as_str().is_some_and(|value| {
+                                value.split('(').next().unwrap_or(value).trim() == operation
+                                    && value.contains("missing")
+                            })
+                        })
+                    }) {
+                    UniqueIdentifier::TextString("kmipkit-route-missing-object".to_owned())
+                } else {
+                    identifier.clone()
+                };
+                let request = crate::adapters::request(
+                    &item_case,
+                    Some(&item_identifier),
+                    "kmipkit-route-matrix",
+                )?;
+                requests.push(request);
+            }
+            let route_symbol = row["public_api_symbol"].as_str().unwrap_or_default();
+            let parameters = &catalog_case["requires"]["protocol_scenario"]["parameters"];
+            let batch_error_continuation_option =
+                match parameters["batch_error_continuation_option"].as_str() {
+                    None | Some("omitted") => None,
+                    Some("Continue") => Some(1),
+                    Some("Stop") => Some(2),
+                    Some("Undo") => Some(3),
+                    Some(_) => return Err("unknown batch error continuation option"),
+                };
+            let batch_order_option = match parameters["batch_order_option"].as_bool() {
+                Some(value) => Some(value),
+                None if parameters["batch_order_option"].is_null()
+                    || parameters["batch_order_option"] == "omitted" =>
+                {
+                    None
+                }
+                None => return Err("invalid batch order option"),
+            };
+            Some(
+                crate::driver::batch_route(
+                    &mut client,
+                    connection,
+                    requests,
+                    false,
+                    route_symbol,
+                    batch_error_continuation_option,
+                    batch_order_option,
+                )
+                .map(|responses| crate::driver::Observed {
+                    status: 0,
+                    reason: None,
+                    payload_tags: Vec::new(),
+                    identifier: None,
+                    identifiers: Vec::new(),
+                    correlation: None,
+                    bytes: None,
+                    ticket: None,
+                    response_tree_sha256: batch_response_digest(&responses),
+                }),
+            )
+        } else {
+            let request = if row["public_api_symbol"] == "kmipkit_client::ClientBatchItem::register"
+            {
+                crate::fixtures::register("Opaque Object")
+            } else {
+                crate::adapters::request(&case, Some(&identifier), "kmipkit-route-matrix")
+            };
+            request.ok().map(|request| {
+                crate::driver::execute_route(
+                    &mut client,
+                    connection,
+                    request,
+                    row["public_api_symbol"].as_str().unwrap_or_default(),
+                )
+            })
+        };
+        let (mut status, response_tree, delivery_state, transport_count) = match exchange {
+            Some(Ok(observed)) => (
+                "passed",
+                observed.response_tree_sha256,
+                Some("response_received"),
+                1,
+            ),
+            Some(Err(error))
+                if expected_not_sent
+                    && error.delivery_state() == Some(kmipkit::RequestDeliveryState::NotSent) =>
+            {
+                ("passed", None, Some("not_sent"), 0)
+            }
+            Some(Err(error)) => match error.delivery_state() {
+                Some(kmipkit::RequestDeliveryState::NotSent) | None => {
+                    ("failed", None, Some("not_sent"), 0)
+                }
+                Some(_) => ("failed", None, Some("possibly_sent"), 1),
+            },
+            None => ("failed", None, Some("not_sent"), 0),
+        };
+        if status == "passed" && row["action"] == "decode" && response_tree.is_none() {
+            status = "failed";
+        }
+        let mut event = json!({
+            "case_id": row["case_id"], "route_id": row["route_id"], "target_id": row["target_id"],
+            "public_api_symbol": row["public_api_symbol"],
+            "execution_route_id": row["execution_route_id"],
+            "execution_api_symbol": row["execution_api_symbol"],
+            "invocation_id": format!("rust-network-{}", events.len()),
+            "action": row["action"], "protocol_version": row["protocol_version"],
+            "encoding": row["encoding"], "transport": row["transport"],
+            "status": status, "invocation_count": 1,
+        });
+        for field in [
+            "workflow_step_index",
+            "workflow_operation",
+            "workflow_item_index",
+        ] {
+            if let Some(value) = row.get(field) {
+                event[field] = value.clone();
+            }
+        }
+        if let Some(operations) = &batch_operations {
+            event["batch_operation_sequence"] = json!(operations);
+            event["batch_item_count"] = json!(operations.len());
+        }
+        if let Some(response_tree) = response_tree
+            && row["action"] == "decode"
+        {
+            event["response_tree_sha256"] = response_tree.into();
+        }
+        if let Some(delivery_state) = delivery_state {
+            event["request_delivery_state"] = delivery_state.into();
+            event["transport_invocation_count"] = transport_count.into();
+        }
+        if status == "failed" {
+            event["failure_code"] = "route_request_exchange_failed".into();
+        }
+        events.push(event);
+    }
+    let configuration_fingerprint = crate::models::configuration_fingerprint(connection)?;
+    let success = events.iter().all(|event| event["status"] == "passed");
+    let report = json!({
+        "schema_version":"1.0", "run_id":format!("rust-network-{}", uuid::Uuid::new_v4()),
+        "language":"rust", "server":{"id":connection.server_id,"product":"controlled-fixture",
+            "version":"offline-1","configuration_fingerprint":configuration_fingerprint},
+        "library_commit":env!("KMIPKIT_LIBRARY_COMMIT"), "artifact_sha256":env!("KMIPKIT_ARTIFACT_SHA256"),
+        "catalog_sha256":hash(catalog_bytes), "route_manifest_sha256":hash(routes_bytes),
+        "protocol_versions":[connection.protocol_version],
+        "network_combinations":[{"encoding":connection.encoding,"transport":connection.transport}],
+        "events":events,
+    });
+    std::fs::write(
+        output,
+        serde_json::to_vec_pretty(&report).map_err(|_| "matrix output failed")?,
+    )
+    .map_err(|_| "matrix output unavailable")?;
+    Ok(success)
+}
+
+fn controlled_loopback_endpoint(connection: &Connection) -> bool {
+    match connection.transport.as_str() {
+        "raw_tls" => connection
+            .endpoints
+            .raw_tls
+            .as_ref()
+            .and_then(|endpoint| endpoint.host.parse::<std::net::IpAddr>().ok())
+            .is_some_and(|address| address.is_loopback()),
+        "https" => {
+            let Some(endpoint) = connection.endpoints.https.as_ref() else {
+                return false;
+            };
+            let Some(authority) = endpoint.url.strip_prefix("https://") else {
+                return false;
+            };
+            let authority = authority.split(['/', '?', '#']).next().unwrap_or_default();
+            if authority.is_empty() || authority.contains('@') {
+                return false;
+            }
+            let host = if let Some(bracketed) = authority.strip_prefix('[') {
+                let Some((host, suffix)) = bracketed.split_once(']') else {
+                    return false;
+                };
+                if !suffix.is_empty()
+                    && (!suffix.starts_with(':')
+                        || !suffix[1..].bytes().all(|byte| byte.is_ascii_digit()))
+                {
+                    return false;
+                }
+                host
+            } else {
+                let host = authority
+                    .rsplit_once(':')
+                    .map_or(authority, |(host, _)| host);
+                if host.contains(':') {
+                    return false;
+                }
+                host
+            };
+            host.parse::<std::net::IpAddr>()
+                .is_ok_and(|address| address.is_loopback())
+        }
+        _ => false,
+    }
+}
+
+// The reader checks ordering, payload access, and per-cell evidence in one response session.
+#[allow(clippy::too_many_lines)]
+fn run_response_network(matrix: &Path, connection: &Connection, output: &Path) -> Result<bool> {
     connection.validate()?;
     if connection.transport != "raw_tls"
         || connection.encoding != "TTLV"

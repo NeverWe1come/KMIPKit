@@ -31,11 +31,32 @@ from request_parity import RequestNormalizer, parity_signature, result_code
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "interop/shared/tools"))
 from coverage_matrix import iter_cells
+from validate_route_evidence import validate_report
 
 VALIDATOR = Path(os.environ.get("KMIPKIT_VALIDATOR_BIN", ROOT / "interop/rust-kmip-validator/target/debug/rust-kmip-validator"))
 SERVER = Path(os.environ.get("KMIPKIT_TEST_SERVER", ROOT / "interop/.local/rust-test-server/harness/target/debug/kmipkit-interop-local-server"))
 CATALOG = json.loads((ROOT / "interop/shared/catalog/kmipkit-1.0-test-catalog.json").read_text())
 SCHEMA = json.loads((ROOT / "interop/shared/schemas/validation-results.schema.json").read_text())
+OPERATION_NAMES_BY_CODE = {
+    int(target["wire_value"], 16): target["name"]
+    for target in CATALOG["normative_targets"]
+    if target["kind"] == "enumeration_value"
+    and any("ENUMERATION-OPERATION" in parent for parent in target["parent_element_ids"])
+    and all(character in "0123456789abcdefABCDEF" for character in target["wire_value"])
+}
+
+
+def attach_peer_batch_observation(event, batch):
+    if "batch_item_count" not in event:
+        return
+    event["peer_observed_operation_sequence"] = [
+        OPERATION_NAMES_BY_CODE[operation] for operation in batch["operations"]
+    ]
+    event["peer_observed_response_count"] = batch["response_count"]
+    if batch["statuses"]:
+        event["peer_observed_result_status_codes"] = batch["statuses"]
+    if batch["reasons"]:
+        event["peer_observed_result_reason_codes"] = batch["reasons"]
 
 
 def ttlv(tag, kind, value):
@@ -117,14 +138,38 @@ def successful_batch(tree):
 
 def operation_failed_batch(tree):
     request_items = [value for tag, kind, value in tree[0][2] if tag == 0x42000f]
+    continuation = find(tree, 0x42000e)
+    missing_indexes = [
+        index for index, request_item in enumerate(request_items)
+        if find(request_item, 0x420094) == "kmipkit-route-missing-object"
+    ]
+    failure_index = missing_indexes[0] if missing_indexes else 0
+    statuses = [1] * len(request_items)
+    if continuation == 1:
+        statuses = [0] * len(request_items)
+        statuses[failure_index] = 1
+    elif continuation == 2:
+        statuses = [0] * len(request_items)
+        statuses[failure_index:] = [3] * (len(request_items) - failure_index)
+        statuses[failure_index] = 1
+    elif continuation == 3:
+        statuses = [3] * len(request_items)
+        statuses[failure_index] = 1
     results = []
-    for request_item in request_items:
+    for index, request_item in enumerate(request_items):
         operation = find(request_item, 0x42005c)
         fields = [ttlv(0x42005c, 5, operation)]
         batch_id = find(request_item, 0x420093)
         if batch_id is not None:
             fields.append(ttlv(0x420093, 8, batch_id))
-        fields.extend([ttlv(0x42007f, 5, 1), ttlv(0x42007e, 5, 5)])
+        fields.append(ttlv(0x42007f, 5, statuses[index]))
+        if statuses[index] == 1:
+            fields.append(ttlv(0x42007e, 5, 5))
+        else:
+            payload = [ttlv(0x420094, 7, "controlled-batch-object")]
+            if operation == 0x0c:
+                payload.append(ttlv(0x42013b, 5, 0x420001))
+            fields.append(ttlv(0x42007c, 1, payload))
         results.append(ttlv(0x42000f, 1, fields))
     major = find(tree, 0x42006a)
     minor = find(tree, 0x42006b)
@@ -257,6 +302,7 @@ class ControlledPeer:
         self.operations = []
         self.request_trees = []
         self.route_request_tree_hashes = []
+        self.route_batches = []
         self.response_trees = []
         self.normalizer = RequestNormalizer()
         self.connections = 0
@@ -283,10 +329,26 @@ class ControlledPeer:
                     self.route_request_tree_hashes.append(hashlib.sha256(
                         json.dumps(route_tree, separators=(",", ":")).encode()
                     ).hexdigest())
-                    self.operations.extend(find(batch, 0x42005c) for tag, kind, batch in tree[0][2] if tag == 0x42000f)
+                    request_items = [batch for tag, kind, batch in tree[0][2] if tag == 0x42000f]
+                    batch_record = {
+                        "operations": [find(item, 0x42005c) for item in request_items],
+                        "response_count": 0,
+                        "statuses": [],
+                        "reasons": [],
+                    }
+                    self.route_batches.append(batch_record)
+                    self.operations.extend(batch_record["operations"])
                     reply = self.responder(tree)
                     if reply is not None:
                         parsed_reply = parse(reply)
+                        response_items = [item for tag, kind, item in parsed_reply[0][2]
+                                          if tag == 0x42000F]
+                        batch_record["response_count"] = len(response_items)
+                        batch_record["statuses"] = [find(item, 0x42007F)
+                                                     for item in response_items]
+                        batch_record["reasons"] = [find(item, 0x42007E)
+                                                    for item in response_items
+                                                    if find(item, 0x42007E) is not None]
                         self.normalizer.observe_response(parsed_reply)
                         self.response_trees.append(self.normalizer.normalize(parsed_reply))
                         wire_reply = reply if self.encoding == "TTLV" else controlled_wire.encoded(parsed_reply, self.encoding)
@@ -586,9 +648,76 @@ class LiveContract(unittest.TestCase):
             )
         self.assertEqual(0, process.returncode, process.stderr)
         report = json.loads(output.read_text())
-        self.assertEqual([operation_codes[name] for name in expected_names], peer.operations)
+        expected_batch = [operation_codes[name] for name in expected_names]
+        self.assertEqual(expected_batch * len(rows), peer.operations)
         self.assertEqual(5, len(report["events"]))
         self.assertTrue(all(event["status"] == "passed" for event in report["events"]))
+        for event, request_hash, batch in zip(
+            report["events"], peer.route_request_tree_hashes, peer.route_batches, strict=True
+        ):
+            event["request_tree_sha256"] = request_hash
+            attach_peer_batch_observation(event, batch)
+        jsonschema.Draft202012Validator(json.loads(
+            (ROOT / "interop/shared/schemas/route-execution-evidence.schema.json").read_text()
+        )).validate(report)
+
+    def test_batch_continue_and_stop_options_match_ordered_peer_outcomes(self):
+        route_manifest = json.loads((ROOT / "interop/shared/coverage/route-capabilities.json").read_text())
+        schema = json.loads((ROOT / "interop/shared/schemas/route-execution-evidence.schema.json").read_text())
+        catalog_bytes = (ROOT / "interop/shared/catalog/kmipkit-1.0-test-catalog.json").read_bytes()
+        manifest_bytes = (ROOT / "interop/shared/coverage/route-capabilities.json").read_bytes()
+        for case_id, expected_codes in (
+            ("test-batch-stop-on-first-failure", [1, 3]),
+            ("test-batch-continue-after-failure", [1, 0]),
+        ):
+            with self.subTest(case_id=case_id):
+                rows = [cell for cell in iter_cells(CATALOG, route_manifest, languages=("rust",))
+                        if cell["mode"] == "network"
+                        and cell["public_api_symbol"] == "kmipkit_client::ClientBatchItem::new"
+                        and cell["case_id"] == case_id
+                        and cell["protocol_version"] == "2.0"
+                        and cell["encoding"] == "TTLV"
+                        and cell["transport"] == "raw_tls"
+                        and cell["action"] == "send"]
+                matrix = self.directory / f"{case_id}.jsonl"
+                output = self.directory / f"{case_id}-evidence.json"
+                configuration = self.directory / f"{case_id}-connection.json"
+                matrix.write_text("".join(
+                    json.dumps(cell, sort_keys=True, separators=(",", ":")) + "\n"
+                    for cell in rows
+                ))
+                with ControlledPeer(self.pki, operation_failed_batch) as peer:
+                    configuration.write_text(json.dumps(
+                        self.connection(peer.port, version="2.0", mutations=True), sort_keys=True
+                    ))
+                    process = subprocess.run(
+                        [str(VALIDATOR), "matrix-network", "--matrix", str(matrix),
+                         "--connection", str(configuration), "--output", str(output)],
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30, text=True,
+                    )
+                self.assertEqual(
+                    0,
+                    process.returncode,
+                    process.stderr or process.stdout or (output.read_text() if output.exists() else "no evidence"),
+                )
+                report = json.loads(output.read_text())
+                self.assertEqual(len(rows), len(report["events"]))
+                for event, request_hash, batch in zip(
+                    report["events"], peer.route_request_tree_hashes, peer.route_batches, strict=True
+                ):
+                    event["request_tree_sha256"] = request_hash
+                    attach_peer_batch_observation(event, batch)
+                self.assertEqual(expected_codes, report["events"][0]["peer_observed_result_status_codes"])
+                jsonschema.Draft202012Validator(schema).validate(report)
+                validate_report(
+                    report,
+                    CATALOG,
+                    route_manifest,
+                    catalog_sha256=hashlib.sha256(catalog_bytes).hexdigest(),
+                    route_manifest_sha256=hashlib.sha256(manifest_bytes).hexdigest(),
+                    expected_artifact_sha256=report["artifact_sha256"],
+                    scope_cells=rows,
+                )
 
     def test_complete_network_route_matrix_runs_against_controlled_mtls_peers(self):
         """KMIP 2.0/2.1 §§6-9: every declared request route and transport axis."""
@@ -649,9 +778,12 @@ class LiveContract(unittest.TestCase):
                 sent_events = [event for event in report["events"]
                                if event.get("transport_invocation_count") == 1]
                 self.assertEqual(len(sent_events), len(peer.route_request_tree_hashes))
-                for event, request_hash in zip(sent_events, peer.route_request_tree_hashes, strict=True):
+                for event, request_hash, batch in zip(
+                    sent_events, peer.route_request_tree_hashes, peer.route_batches, strict=True
+                ):
                     if event["status"] == "passed" and event["action"] in {"construct", "send"}:
                         event["request_tree_sha256"] = request_hash
+                    attach_peer_batch_observation(event, batch)
                 jsonschema.Draft202012Validator(json.loads(
                     (ROOT / "interop/shared/schemas/route-execution-evidence.schema.json").read_text()
                 )).validate(report)

@@ -60,10 +60,36 @@ def load_response_evidence(evidence_dir: Path, schema: dict) -> list[dict]:
     return reports
 
 
+def load_network_evidence(evidence_dir: Path, schema: dict) -> list[dict]:
+    reports = []
+    route_dir = evidence_dir / 'routes'
+    if not route_dir.is_dir():
+        return reports
+    for path in sorted(route_dir.glob('rust-network-routes-*.json')):
+        try:
+            report = json.loads(path.read_bytes())
+        except (OSError, json.JSONDecodeError) as error:
+            raise ValueError('network route evidence is unreadable') from error
+        jsonschema.Draft202012Validator(schema).validate(report)
+        if (report['language'] != 'rust'
+                or report['server']['id'] != 'controlled-fixture'
+                or report['server']['product'] != 'controlled-fixture'
+                or len(report['protocol_versions']) != 1
+                or len(report['network_combinations']) != 1
+                or not report['events']
+                or any(event['execution_route_id'] is None
+                       or event['execution_api_symbol'] is None
+                       for event in report['events'])):
+            raise ValueError('network route evidence is not from the controlled Rust fixture')
+        reports.append(report)
+    return reports
+
+
 def route_cell_key(record: dict) -> tuple:
     return (
         record['case_id'], record['route_id'], record['target_id'],
-        record.get('workflow_step_index'), record.get('workflow_item_index'),
+        record.get('workflow_step_index'), record.get('workflow_operation'),
+        record.get('workflow_item_index'),
         record.get('execution_route_id'), record['action'], record['protocol_version'],
         record['encoding'], record['transport'],
     )
@@ -105,7 +131,7 @@ def main():
     matrix = args.matrix or args.output_dir / 'rust-local-matrix.jsonl'
     if args.matrix is None:
         with matrix.open('w') as stream:
-            for cell in canonical_local_cells:
+            for cell in canonical_cells:
                 stream.write(json.dumps(cell, sort_keys=True, separators=(',', ':')) + '\n')
     selected_cells = [json.loads(line) for line in matrix.read_text().splitlines() if line.strip()]
     selected_local_cells = executable_local_cells(selected_cells)
@@ -113,6 +139,7 @@ def main():
         cell for cell in selected_cells
         if cell.get('mode') == 'local' and cell.get('public_api_symbol') in RESPONSE_ACCESSOR_SYMBOLS
     ]
+    selected_network_cells = [cell for cell in selected_cells if cell.get('mode') == 'network']
     evidence_path = args.output_dir / 'rust-local-route-evidence.json'
     evidence_path.unlink(missing_ok=True)
     validator = ROOT / 'interop/rust-kmip-validator/target/debug/rust-kmip-validator'
@@ -153,13 +180,16 @@ def main():
                     validate_scope(report, selected_local_cells, catalog, routes, hashes,
                                    provenance['artifact_sha256'])
                 response_reports = load_response_evidence(args.response_evidence_dir, schema)
+                network_reports = load_network_evidence(args.response_evidence_dir, schema)
             except ValueError:
                 summary['gate_failure_code'] = 'route_evidence_contract_failed'
                 response_reports = None
+                network_reports = None
             except jsonschema.ValidationError:
                 summary['gate_failure_code'] = 'route_evidence_schema_invalid'
                 summary['schema_valid'] = False
                 response_reports = None
+                network_reports = None
             if response_reports is not None:
                 selected_response_keys = {route_cell_key(cell) for cell in selected_response_cells}
                 response_events = [
@@ -180,7 +210,31 @@ def main():
                 except ValueError:
                     summary['gate_failure_code'] = 'response_route_evidence_invalid'
                 else:
-                    summary['gate_failure_code'] = None
+                    network_events = []
+                    try:
+                        for network_report in network_reports:
+                            version = network_report['protocol_versions'][0]
+                            combination = network_report['network_combinations'][0]
+                            scope = [cell for cell in selected_network_cells
+                                     if cell['protocol_version'] == version
+                                     and cell['encoding'] == combination['encoding']
+                                     and cell['transport'] == combination['transport']]
+                            if not scope:
+                                continue
+                            validate_scope(network_report, scope, catalog, routes, hashes,
+                                           provenance['artifact_sha256'])
+                            network_events.extend(network_report['events'])
+                        network_keys = [route_cell_key(event) for event in network_events]
+                        if len(network_keys) != len(set(network_keys)):
+                            raise ValueError('duplicate network route evidence cell')
+                    except ValueError:
+                        summary['gate_failure_code'] = 'network_route_evidence_invalid'
+                    else:
+                        summary['invoked_network_cells'] = len(network_events)
+                        summary['failed_network_cells'] = sum(
+                            event['status'] == 'failed' for event in network_events
+                        )
+                        summary['gate_failure_code'] = None
     summary['pending_local_cells'] = max(0, summary['required_local_cells']
         - summary['invoked_local_cells'] - summary['invoked_response_cells'])
     summary['pending_network_cells'] = max(0, summary['required_network_cells']

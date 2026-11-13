@@ -110,12 +110,6 @@ pub(crate) fn client(connection: &Connection) -> Result<Client> {
     Client::new(configuration, transport).map_err(|_| "client configuration rejected")
 }
 
-pub(crate) fn authenticated_batch(
-    connection: &Connection,
-    request: ClientRequest,
-) -> Result<ClientBatch> {
-    authenticate(connection, ClientBatch::new(ClientBatchItem::new(request)))
-}
 fn authenticate(connection: &Connection, mut batch: ClientBatch) -> Result<ClientBatch> {
     if let Some(credentials) = connection
         .authentication
@@ -163,6 +157,7 @@ pub(crate) struct Observed {
     pub correlation: Option<kmipkit::protocol::SecretBytes>,
     pub bytes: Option<kmipkit::protocol::SecretBytes>,
     pub ticket: Option<kmipkit::protocol::Ticket>,
+    pub response_tree_sha256: Option<String>,
 }
 
 pub(crate) fn observed(response: &ClientBatchItemResponse) -> Observed {
@@ -227,6 +222,7 @@ pub(crate) fn observed(response: &ClientBatchItemResponse) -> Observed {
         correlation,
         bytes,
         ticket,
+        response_tree_sha256: crate::matrix::response_digest(response).ok(),
     }
 }
 
@@ -519,7 +515,16 @@ fn execute_batch(
     request: ClientRequest,
     limits: &kmipkit::ttlv::codec::CodecLimits,
 ) -> std::result::Result<Observed, kmipkit::ClientError> {
-    let batch = authenticated_batch(connection, request).map_err(|_| {
+    execute_batch_item(client, connection, ClientBatchItem::new(request), limits)
+}
+
+fn execute_batch_item(
+    client: &mut Client,
+    connection: &Connection,
+    item: ClientBatchItem,
+    limits: &kmipkit::ttlv::codec::CodecLimits,
+) -> std::result::Result<Observed, kmipkit::ClientError> {
+    let batch = authenticate(connection, ClientBatch::new(item)).map_err(|_| {
         kmipkit::ClientError::validation(
             kmipkit::ClientCauseCategory::InvalidInput,
             kmipkit::RequestDeliveryState::NotSent,
@@ -536,24 +541,103 @@ fn execute_batch(
     })
 }
 
+pub(crate) fn execute_route(
+    client: &mut Client,
+    connection: &Connection,
+    request: ClientRequest,
+    route_symbol: &str,
+) -> std::result::Result<Observed, kmipkit::ClientError> {
+    if route_symbol == "kmipkit_client::ClientBatchItem::new" {
+        return execute_batch_item(
+            client,
+            connection,
+            ClientBatchItem::new(request),
+            &kmipkit::ttlv::codec::CodecLimits::defaults(),
+        );
+    }
+    if route_symbol == "kmipkit_client::ClientBatchItem::register" {
+        let ClientRequest::Register(request) = request else {
+            return Err(kmipkit::ClientError::validation(
+                kmipkit::ClientCauseCategory::InvalidInput,
+                kmipkit::RequestDeliveryState::NotSent,
+                std::io::Error::other("Register route has a different request variant"),
+            ));
+        };
+        let item = ClientBatchItem::register(request).map_err(|_| {
+            kmipkit::ClientError::validation(
+                kmipkit::ClientCauseCategory::InvalidInput,
+                kmipkit::RequestDeliveryState::NotSent,
+                std::io::Error::other("Register batch item rejected"),
+            )
+        })?;
+        return execute_batch_item(
+            client,
+            connection,
+            item,
+            &kmipkit::ttlv::codec::CodecLimits::defaults(),
+        );
+    }
+    execute(client, connection, request)
+}
+
 pub(crate) fn batch(
     client: &mut Client,
     connection: &Connection,
     requests: Vec<ClientRequest>,
     asynchronous: bool,
 ) -> std::result::Result<Vec<Observed>, kmipkit::ClientError> {
+    let batch_order_option = (requests.len() > 1).then_some(true);
+    batch_route(
+        client,
+        connection,
+        requests,
+        asynchronous,
+        "",
+        None,
+        batch_order_option,
+    )
+}
+
+pub(crate) fn batch_route(
+    client: &mut Client,
+    connection: &Connection,
+    requests: Vec<ClientRequest>,
+    asynchronous: bool,
+    route_symbol: &str,
+    batch_error_continuation_option: Option<u32>,
+    batch_order_option: Option<bool>,
+) -> std::result::Result<Vec<Observed>, kmipkit::ClientError> {
     let count = requests.len();
-    let mut batch =
-        ClientBatch::from_items(requests.into_iter().enumerate().map(|(index, request)| {
-            let item = ClientBatchItem::new(request);
-            if count > 1 {
-                item.with_unique_batch_item_id(index.to_be_bytes().to_vec())
-            } else {
-                item
+    let mut items = Vec::with_capacity(count);
+    for (index, request) in requests.into_iter().enumerate() {
+        let item = if route_symbol == "kmipkit_client::ClientBatchItem::register" {
+            match request {
+                ClientRequest::Register(register) => {
+                    ClientBatchItem::register(register).map_err(|_| {
+                        kmipkit::ClientError::validation(
+                            kmipkit::ClientCauseCategory::InvalidInput,
+                            kmipkit::RequestDeliveryState::NotSent,
+                            std::io::Error::other("Register batch item rejected"),
+                        )
+                    })?
+                }
+                other => ClientBatchItem::new(other),
             }
-        }));
-    if count > 1 {
-        batch = batch.with_batch_order_option(true);
+        } else {
+            ClientBatchItem::new(request)
+        };
+        items.push(if count > 1 {
+            item.with_unique_batch_item_id(index.to_be_bytes().to_vec())
+        } else {
+            item
+        });
+    }
+    let mut batch = ClientBatch::from_items(items);
+    if let Some(value) = batch_order_option {
+        batch = batch.with_batch_order_option(value);
+    }
+    if let Some(value) = batch_error_continuation_option {
+        batch = batch.with_batch_error_continuation_option(value);
     }
     if asynchronous {
         batch = batch.with_asynchronous_indicator(1);
@@ -596,5 +680,6 @@ pub(crate) fn asynchronous(
         bytes: None,
         ticket: None,
         correlation: None,
+        response_tree_sha256: crate::matrix::operation_outcome_digest(&response).ok(),
     })
 }
