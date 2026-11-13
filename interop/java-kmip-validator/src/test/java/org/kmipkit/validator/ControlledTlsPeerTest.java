@@ -83,6 +83,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ControlledTlsPeerTest {
+    private static final List<String> KMIP_2_0_AND_2_1 = List.of("2.0", "2.1");
+
     private record NormativeTarget(String caseId, String targetId) { }
 
     private static final String LOG_MESSAGE = "KMIPKit interoperability diagnostic";
@@ -375,7 +377,7 @@ class ControlledTlsPeerTest {
         String requestTreeHash = normalizedTreeSha256(queryOperation);
         int typedTagIdentityEventCount = 0;
 
-        for (String protocolVersion : List.of("2.0", "2.1")) {
+        for (String protocolVersion : KMIP_2_0_AND_2_1) {
             appendLocalQueryRouteEvents(events, protocolVersion, requestTreeHash);
             appendTagRangeRouteEvents(events, protocolVersion);
             appendActivationDateLocalRouteEvents(events, protocolVersion);
@@ -573,7 +575,7 @@ class ControlledTlsPeerTest {
         assertEquals(0, routeEventCount(report.path("events"), RESPONSE_BATCH_ITEM_CASE_ID,
                         "java.typed-protocol.function.client_batch_response_item_at"),
                 "The response item accessor must use its exact normative Batch Item cases.");
-        for (String protocolVersion : List.of("2.0", "2.1")) {
+        for (String protocolVersion : KMIP_2_0_AND_2_1) {
             assertEquals("KMIPKIT-ELEM-ENUM-VALUE-BLOCK-CIPHER-MODE-AEAD-00000012",
                     findRouteEvent(report.path("events"), "test-enum-block-cipher-mode",
                             "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
@@ -641,27 +643,27 @@ class ControlledTlsPeerTest {
                 "The PKCS#11 Return Code aggregate must cover every value.");
         List<LocalEnumerationScope> additionalEnumerationScopes = List.of(
                 new LocalEnumerationScope("test-enum-key-format-type", keyFormatTargets,
-                        List.of("2.0", "2.1"), TYPED_ATTRIBUTE_ENUMERATION_ROUTES),
+                        KMIP_2_0_AND_2_1, TYPED_ATTRIBUTE_ENUMERATION_ROUTES),
                 new LocalEnumerationScope("test-enum-digital-signature-algorithm", digitalSignatureTargets,
-                        List.of("2.0", "2.1"), concatRoutes(
+                        KMIP_2_0_AND_2_1, concatRoutes(
                                 TYPED_ATTRIBUTE_ENUMERATION_ROUTES,
                                 CRYPTOGRAPHIC_PARAMETER_BUILDER_ROUTES.get("DIGITAL-SIGNATURE-ALGORITHM"))),
-                genericEnumerationScope("test-enum-operation", operationTargets, List.of("2.0", "2.1")),
-                genericEnumerationScope("test-enum-result-reason", resultReasonTargets, List.of("2.0", "2.1")),
+                genericEnumerationScope("test-enum-operation", operationTargets, KMIP_2_0_AND_2_1),
+                genericEnumerationScope("test-enum-result-reason", resultReasonTargets, KMIP_2_0_AND_2_1),
                 genericEnumerationScope("test-enum-recommended-curve", recommendedCurveTargets,
-                        List.of("2.0", "2.1")),
+                        KMIP_2_0_AND_2_1),
                 new LocalEnumerationScope("test-enum-nist-key-type", nistKeyTypeTargets,
-                        List.of("2.0", "2.1"), TYPED_ATTRIBUTE_ENUMERATION_ROUTES),
+                        KMIP_2_0_AND_2_1, TYPED_ATTRIBUTE_ENUMERATION_ROUTES),
                 cryptographicParameterBuilderScope("test-enum-key-role-type", keyRoleTypeTargets,
                         "KEY-ROLE-TYPE"),
                 cryptographicParameterBuilderScope("test-enum-hashing-algorithm", hashingAlgorithmTargets,
                         "HASHING-ALGORITHM"),
-                genericEnumerationScope("test-enum-link-type", linkTypeTargets, List.of("2.0", "2.1")),
+                genericEnumerationScope("test-enum-link-type", linkTypeTargets, KMIP_2_0_AND_2_1),
                 cryptographicParameterBuilderScope("test-enum-padding-method", paddingMethodTargets,
                         "PADDING-METHOD"),
                 new LocalEnumerationScope("test-enum-opaque-data-type", List.of(
                         "KMIPKIT-ELEM-ENUM-VALUE-OPAQUE-DATA-TYPE-EXTENSIONS-8XXXXXXX"),
-                        List.of("2.0", "2.1"), List.of(
+                        KMIP_2_0_AND_2_1, List.of(
                                 "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
                                 "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
                                 "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew")),
@@ -674,7 +676,7 @@ class ControlledTlsPeerTest {
                 new LocalEnumerationScope("test-enum-ticket-type", List.of(
                         "KMIPKIT-ELEM-ENUM-VALUE-TICKET-TYPE-EXTENSIONS-8XXXXXXX",
                         "KMIPKIT-ELEM-ENUM-VALUE-TICKET-TYPE-LOGIN-00000001"),
-                        List.of("2.0", "2.1"), List.of()),
+                        KMIP_2_0_AND_2_1, List.of()),
                 cryptographicParameterBuilderScope("test-enum-mask-generator", List.of(
                         "KMIPKIT-ELEM-ENUM-VALUE-MASK-GENERATOR-EXTENSIONS-8XXXXXXX",
                         "KMIPKIT-ELEM-ENUM-VALUE-MASK-GENERATOR-MFG1-00000001"), "MASK-GENERATOR"),
@@ -682,54 +684,54 @@ class ControlledTlsPeerTest {
                         "KMIPKIT-ELEM-ENUM-VALUE-ENCODING-OPTION-EXTENSIONS-8XXXXXXX",
                         "KMIPKIT-ELEM-ENUM-VALUE-ENCODING-OPTION-NO-ENCODING-00000001",
                         "KMIPKIT-ELEM-ENUM-VALUE-ENCODING-OPTION-TTLV-ENCODING-00000002"),
-                        List.of("2.0", "2.1"), List.of()),
+                        KMIP_2_0_AND_2_1, List.of()),
                 new LocalEnumerationScope("test-enum-endpoint-role", List.of(
                         ENDPOINT_ROLE_CLIENT_TARGET_ID,
                         "KMIPKIT-ELEM-ENUM-VALUE-ENDPOINT-ROLE-EXTENSIONS-8XXXXXXX",
-                        ENDPOINT_ROLE_SERVER_TARGET_ID), List.of("2.0", "2.1"), List.of()),
+                        ENDPOINT_ROLE_SERVER_TARGET_ID), KMIP_2_0_AND_2_1, List.of()),
                 new LocalEnumerationScope("test-enum-key-value-location-type", List.of(
                         "KMIPKIT-ELEM-ENUM-VALUE-KEY-VALUE-LOCATION-TYPE-EXTENSIONS-8XXXXXXX",
                         "KMIPKIT-ELEM-ENUM-VALUE-KEY-VALUE-LOCATION-TYPE-UNINTERPRETED-TEXT-STRING-00000001",
                         "KMIPKIT-ELEM-ENUM-VALUE-KEY-VALUE-LOCATION-TYPE-URI-00000002"),
-                        List.of("2.0", "2.1"), List.of()),
+                        KMIP_2_0_AND_2_1, List.of()),
                 new LocalEnumerationScope("test-enum-key-wrap-type", List.of(
                         "KMIPKIT-ELEM-ENUM-VALUE-KEY-WRAP-TYPE-AS-REGISTERED-00000002",
                         "KMIPKIT-ELEM-ENUM-VALUE-KEY-WRAP-TYPE-EXTENSIONS-8XXXXXXX",
                         "KMIPKIT-ELEM-ENUM-VALUE-KEY-WRAP-TYPE-NOT-WRAPPED-00000001"),
-                        List.of("2.0", "2.1"), List.of()),
+                        KMIP_2_0_AND_2_1, List.of()),
                 new LocalEnumerationScope("test-enum-name-type", List.of(
                         "KMIPKIT-ELEM-ENUM-VALUE-NAME-TYPE-EXTENSIONS-8XXXXXXX",
                         "KMIPKIT-ELEM-ENUM-VALUE-NAME-TYPE-UNINTERPRETED-TEXT-STRING-00000001",
                         "KMIPKIT-ELEM-ENUM-VALUE-NAME-TYPE-URI-00000002"),
-                        List.of("2.0", "2.1"), List.of()),
+                        KMIP_2_0_AND_2_1, List.of()),
                 new LocalEnumerationScope("test-enum-object-group-member", List.of(
                         "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-GROUP-MEMBER-EXTENSIONS-8XXXXXXX",
                         "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-GROUP-MEMBER-GROUP-MEMBER-DEFAULT-00000002",
                         "KMIPKIT-ELEM-ENUM-VALUE-OBJECT-GROUP-MEMBER-GROUP-MEMBER-FRESH-00000001"),
-                        List.of("2.0", "2.1"), List.of()),
+                        KMIP_2_0_AND_2_1, List.of()),
                 new LocalEnumerationScope("test-enum-put-function", List.of(
                         "KMIPKIT-ELEM-ENUM-VALUE-PUT-FUNCTION-EXTENSIONS-8XXXXXXX",
                         "KMIPKIT-ELEM-ENUM-VALUE-PUT-FUNCTION-NEW-00000001",
                         "KMIPKIT-ELEM-ENUM-VALUE-PUT-FUNCTION-REPLACE-00000002"),
-                        List.of("2.0", "2.1"), List.of()),
+                        KMIP_2_0_AND_2_1, List.of()),
                 new LocalEnumerationScope("test-enum-secret-data-type", List.of(
                         "KMIPKIT-ELEM-ENUM-VALUE-SECRET-DATA-TYPE-EXTENSIONS-8XXXXXXX",
                         "KMIPKIT-ELEM-ENUM-VALUE-SECRET-DATA-TYPE-PASSWORD-00000001",
                         "KMIPKIT-ELEM-ENUM-VALUE-SECRET-DATA-TYPE-SEED-00000002"),
-                        List.of("2.0", "2.1"), List.of()),
+                        KMIP_2_0_AND_2_1, List.of()),
                 new LocalEnumerationScope("test-enum-usage-limits-unit", List.of(
                         "KMIPKIT-ELEM-ENUM-VALUE-USAGE-LIMITS-UNIT-BYTE-00000001",
                         "KMIPKIT-ELEM-ENUM-VALUE-USAGE-LIMITS-UNIT-EXTENSIONS-8XXXXXXX",
                         "KMIPKIT-ELEM-ENUM-VALUE-USAGE-LIMITS-UNIT-OBJECT-00000002"),
-                        List.of("2.0", "2.1"), List.of()),
+                        KMIP_2_0_AND_2_1, List.of()),
                 new LocalEnumerationScope("test-enum-cryptographic-algorithm", cryptographicAlgorithmTargets,
-                        List.of("2.0", "2.1"), concatRoutes(
+                        KMIP_2_0_AND_2_1, concatRoutes(
                                 TYPED_ATTRIBUTE_ENUMERATION_ROUTES,
                                 CRYPTOGRAPHIC_PARAMETER_BUILDER_ROUTES.get("CRYPTOGRAPHIC-ALGORITHM"))),
                 new LocalEnumerationScope("test-enum-pkcs#11-function", pkcs11FunctionTargets,
-                        List.of("2.0", "2.1"), List.of()),
+                        KMIP_2_0_AND_2_1, List.of()),
                 new LocalEnumerationScope("test-enum-pkcs#11-return-code", pkcs11ReturnCodeTargets,
-                        List.of("2.0", "2.1"), List.of()));
+                        KMIP_2_0_AND_2_1, List.of()));
         for (LocalEnumerationScope scope : additionalEnumerationScopes) {
             List<String> routes = new ArrayList<>(genericEnumerationRoutes);
             routes.addAll(scope.additionalRoutes());
@@ -749,7 +751,7 @@ class ControlledTlsPeerTest {
         assertEquals(2, routeEventCount(report.path("events"), "test-enum-key-format-type",
                         CLIENT_BATCH_ITEM_RAW_TTLV_ROUTE),
                 "The aggregate Key Format Type case must capture the controlled Raw value responses.");
-        for (String version : List.of("2.0", "2.1")) {
+        for (String version : KMIP_2_0_AND_2_1) {
             JsonNode event = findRouteEvent(report.path("events"), "test-enum-key-format-type",
                     CLIENT_BATCH_ITEM_RAW_TTLV_ROUTE, version, KEY_FORMAT_RAW_TARGET_ID);
             assertEquals("passed", event.path("status").asText());
@@ -810,17 +812,17 @@ class ControlledTlsPeerTest {
         int bitmaskEventCount = bitmaskFixtures.stream()
                 .mapToInt(fixture -> fixture.protocolVersions().size() * (4 + (fixture.attribute() == null ? 0 : 3)))
                 .sum();
-        int batchItemAccessorEventCount = List.of("2.0", "2.1").size() * 4;
-        int batchItemExtensionCountEventCount = List.of("2.0", "2.1").size() * 3;
-        int batchItemGenericRouteEventCount = List.of("2.0", "2.1").size() * 4;
-        int batchItemAdditionalResponseRouteEventCount = List.of("2.0", "2.1").size() * 12;
-        int normativeMessageFieldGenericRouteEventCount = List.of("2.0", "2.1").size() * 27;
-        int normativeMessageFieldParserRouteEventCount = List.of("2.0", "2.1").size() * 9;
-        int normativeBatchItemAccessorRouteEventCount = List.of("2.0", "2.1").size() * 10;
+        int batchItemAccessorEventCount = KMIP_2_0_AND_2_1.size() * 4;
+        int batchItemExtensionCountEventCount = KMIP_2_0_AND_2_1.size() * 3;
+        int batchItemGenericRouteEventCount = KMIP_2_0_AND_2_1.size() * 4;
+        int batchItemAdditionalResponseRouteEventCount = KMIP_2_0_AND_2_1.size() * 12;
+        int normativeMessageFieldGenericRouteEventCount = KMIP_2_0_AND_2_1.size() * 27;
+        int normativeMessageFieldParserRouteEventCount = KMIP_2_0_AND_2_1.size() * 9;
+        int normativeBatchItemAccessorRouteEventCount = KMIP_2_0_AND_2_1.size() * 10;
         int credentialGenericRouteEventCount = CREDENTIAL_TYPE_MODEL_CASE_IDS.size()
-                * List.of("2.0", "2.1").size() * 4;
+                * KMIP_2_0_AND_2_1.size() * 4;
         int credentialEnvelopeEventCount = CREDENTIAL_TYPE_MODEL_CASE_IDS.size()
-                * List.of("2.0", "2.1").size();
+                * KMIP_2_0_AND_2_1.size();
         int batchErrorContinuationEventCount = enumerationFixtures.stream()
                 .filter(fixture -> "BATCH-ERROR-CONTINUATION-OPTION".equals(fixture.parentName()))
                 .mapToInt(fixture -> fixture.protocolVersions().size()).sum();
@@ -1984,7 +1986,7 @@ class ControlledTlsPeerTest {
                         "The Endpoint Role enum target is missing from the generated fixture set."));
         assertEquals(installedValue, installedEnumerationValue(fixture));
         assertEquals(expectedName, KmipValues.EndpointRole.name(installedValue));
-        for (String protocolVersion : List.of("2.0", "2.1")) {
+        for (String protocolVersion : KMIP_2_0_AND_2_1) {
             for (String routeId : ENDPOINT_ROLE_GENERIC_ROUTES) {
                 JsonNode event = findRouteEvent(events, caseId, routeId, protocolVersion, targetId);
                 assertEquals(targetId, event.path("target_id").asText());
@@ -3369,7 +3371,7 @@ class ControlledTlsPeerTest {
 
     private static LocalEnumerationScope cryptographicParameterBuilderScope(String caseId,
             List<String> targetIds, String enumType) {
-        return new LocalEnumerationScope(caseId, targetIds, List.of("2.0", "2.1"),
+        return new LocalEnumerationScope(caseId, targetIds, KMIP_2_0_AND_2_1,
                 List.of(CRYPTOGRAPHIC_PARAMETER_BUILDER_ROUTES.get(enumType)));
     }
 
