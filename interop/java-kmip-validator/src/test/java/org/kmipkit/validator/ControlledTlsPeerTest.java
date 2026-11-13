@@ -1786,8 +1786,6 @@ class ControlledTlsPeerTest {
             for (JsonNode version : testCase.path("execution").path("protocol_versions")) {
                 caseVersions.add(version.asText());
             }
-            boolean exerciseUnknownResultReasons = "Result Reason".equals(enumType);
-
             for (JsonNode target : targets) {
                 String targetKind = target.path("kind").asText();
                 if (!"enumeration_value".equals(targetKind)) continue;
@@ -1795,12 +1793,7 @@ class ControlledTlsPeerTest {
                 String wireValue = target.path("wire_value").asText();
                 long value = parseRepresentativeEnumerationValue(
                         wireValue, target.path("allocation").asText());
-                List<String> versions = caseVersions.stream()
-                        // Three Result Reason codes are new in KMIP 2.1 and are unknown values to KMIP 2.0.
-                        // KMIPKIT's generic Enumeration path must preserve them in both versions.
-                        .filter(version -> exerciseUnknownResultReasons || target.path("protocol_versions").isEmpty()
-                                || containsText(target.path("protocol_versions"), version))
-                        .toList();
+                List<String> versions = localEnumerationVersions(target, enumType, caseVersions);
                 if (!versions.isEmpty()) {
                     fixtures.add(new EnumerationFixture(testCase.path("case_id").asText(),
                             target.path("target_id").asText(), parentName, rawTag, value,
@@ -1809,6 +1802,17 @@ class ControlledTlsPeerTest {
             }
         }
         return List.copyOf(fixtures);
+    }
+
+    private static List<String> localEnumerationVersions(JsonNode target, String enumType,
+            List<String> caseVersions) {
+        // Three Result Reason codes are new in KMIP 2.1 and are unknown values to KMIP 2.0.
+        // KMIPKIT's generic Enumeration path must preserve them in both versions.
+        boolean preserveUnknownResultReasons = "Result Reason".equals(enumType);
+        return caseVersions.stream()
+                .filter(version -> preserveUnknownResultReasons || target.path("protocol_versions").isEmpty()
+                        || containsText(target.path("protocol_versions"), version))
+                .toList();
     }
 
     private static boolean belongsToEnumeration(JsonNode target, String enumType) {
