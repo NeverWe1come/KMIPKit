@@ -116,7 +116,7 @@ class BatchIdPlaceholderJourneyContractTests(unittest.TestCase):
             _item(0x42000D, 2, struct.pack(">i", declared_count)),
         ]
         if ordered:
-            header_fields.append(_item(0x420010, 6, b"\x01"))
+            header_fields.append(_item(0x420010, 6, struct.pack(">Q", 1)))
         header = _structure(0x420077, *header_fields)
         body = header + b"".join(items)
         return _item(0x420078, 1, body)
@@ -145,7 +145,7 @@ class BatchIdPlaceholderJourneyContractTests(unittest.TestCase):
             [b"create-placeholder-source", b"get-placeholder-target"],
         )
         self.assertIn((0x42000D, 2, struct.pack(">i", 2)), header)
-        self.assertIn((0x420010, 6, b"\x01"), header)
+        self.assertIn((0x420010, 6, struct.pack(">Q", 1)), header)
 
     def test_batch_parser_rejects_declared_count_that_disagrees_with_items(self) -> None:
         parser = getattr(responder, "_request_batch", None)
