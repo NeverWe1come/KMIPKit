@@ -70,3 +70,25 @@ five affected operation rows. The focused test
 passes. The local all-T102 discovery run was interrupted before its summary, so
 it is not counted as passing; the hosted checks must validate the complete
 suite at the exact PR head.
+
+SonarCloud on head `2130bc05` found 9.3% duplicated new lines in the C fluent
+adapter (quality gate: at most 3%). The duplicate blocks were shared option
+and identifier validation for five lifecycle requests and repeated symmetric
+key builder request extraction. The implementation now centralizes those
+paths in `execute_lifecycle_request_with_options` and
+`build_symmetric_key_client_request`, preserving each operation's typed
+request. Red is the hosted SonarCloud quality-gate failure; Green is the
+behavior-preserving helper extraction. Local verification on the refactor:
+
+| Command | Result |
+|---|---|
+| `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage public_c_fluent_client_executes_lifecycle_helpers_over_mutual_tls -- --exact` | Passed; all ten lifecycle helper variants execute against the controlled mTLS peer. |
+| `cargo test -p kmipkit-ffi --features coverage-c-consumer --test c_api_coverage public_c_header_constructs_a_batch_and_reaches_the_encoding_override_entrypoint -- --exact` | Passed; the compiled public C consumer validates the builder execution entry points. |
+| `cargo clippy -p kmipkit-ffi --all-targets --all-features -- -D warnings` | Passed. |
+| `cargo fmt --all --check` | Passed. |
+| `git diff --check` | Passed. |
+
+The same hosted CI run's Ubuntu Python job timed out while fetching the pinned
+`uv` version manifest from `raw.githubusercontent.com`, before Python tests
+started. This is an infrastructure failure; the next exact-head CI run must
+complete the Python setup and tests.
