@@ -159,8 +159,15 @@ class FfiCoverageObjectTests(unittest.TestCase):
             root, log, objects = self.fixture(directory, 'cargo-1.100')
             result = subprocess.run([sys.executable, str(HELPER), '--target-root', str(root),
                                      '--report-dir', str(log.parent)], capture_output=True, check=True)
-            self.assertEqual(result.stdout.split(b'\0'),
-                             [os.fsencode(path) for path in objects] + [b''])
+            reported = result.stdout.split(b'\0')
+            self.assertEqual(reported.pop(), b'')
+            # Windows can resolve a temporary path from its short 8.3 alias to
+            # the canonical long path (including different case). Compare the
+            # filesystem objects while still checking that the CLI emits one
+            # NUL-delimited path per selected artifact.
+            self.assertEqual(len(reported), len(objects))
+            self.assertTrue(all(Path(os.fsdecode(actual)).samefile(expected)
+                                for actual, expected in zip(reported, objects)))
 
 
 if __name__ == '__main__':
