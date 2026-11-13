@@ -2256,9 +2256,15 @@ fn is_exact_fluent_catalogued_attribute(
     impl_type: Option<&str>,
     signature: &syn::Signature,
 ) -> bool {
+    let supported_method = impl_type == Some("CreateSymmetricKeyBuilder")
+        && signature.ident == "attribute"
+        || impl_type == Some("CreateKeyPairBuilder")
+            && matches!(
+                signature.ident.to_string().as_str(),
+                "common_attribute" | "private_attribute" | "public_attribute"
+            );
     if !fluent_root_scope
-        || impl_type != Some("CreateSymmetricKeyBuilder")
-        || signature.ident != "attribute"
+        || !supported_method
         || signature.generics.params.len() != 1
         || signature.generics.where_clause.is_some()
         || signature.asyncness.is_some()

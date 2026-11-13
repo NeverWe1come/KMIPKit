@@ -4,7 +4,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use kmipkit_test_support::{ExchangeScript, ScriptedTransport};
-use kmipkit_transport::{Transport, TransportError, TransportResponse};
+use kmipkit_transport::{RequestOptions, Transport, TransportError, TransportResponse};
 use zeroize::Zeroizing;
 
 use crate::execute::{Client, ZeroizationObserver};
@@ -75,4 +75,20 @@ pub(crate) fn request_contains(request: &CapturedRequest, value: &[u8]) -> bool 
         .borrow()
         .as_ref()
         .is_some_and(|bytes| bytes.windows(value.len()).any(|window| window == value))
+}
+
+pub(crate) fn client_for_with_options_observer(
+    script: ExchangeScript,
+    options: Rc<RefCell<Vec<RequestOptions>>>,
+) -> ClientFixture {
+    let fake = Rc::new(RefCell::new(ScriptedTransport::new(script)));
+    let request = Rc::new(RefCell::new(None));
+    let client = Client::for_test_with_options_observer(
+        CapturingTransport {
+            fake: Rc::clone(&fake),
+            request: Rc::clone(&request),
+        },
+        options,
+    );
+    (client, fake, request)
 }
