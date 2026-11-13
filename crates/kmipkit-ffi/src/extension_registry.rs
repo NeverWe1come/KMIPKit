@@ -38,6 +38,9 @@ mod api_parity_0053_tests;
 #[cfg(all(test, feature = "coverage-c-consumer"))]
 #[path = "../tests/support/managed_object_0053_tests.rs"]
 mod managed_object_0053_tests;
+#[cfg(all(test, feature = "coverage-c-consumer"))]
+#[path = "../tests/support/operation_parity_0053_tests.rs"]
+mod operation_parity_0053_tests;
 #[cfg(test)]
 #[path = "../tests/support/parameters_auth_0053_tests.rs"]
 mod parameters_auth_0053_tests;

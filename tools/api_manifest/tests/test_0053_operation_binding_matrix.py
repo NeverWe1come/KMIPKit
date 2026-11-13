@@ -111,7 +111,14 @@ class OperationBindingMatrixTests(unittest.TestCase):
 
     def test_runtime_operation_identity_and_response_matrices_cover_all_56(self) -> None:
         c_source = _read(ROOT / "bindings" / "c" / "tests" / "operation_parity_consumer.c")
-        c_test = _read(ROOT / "crates" / "kmipkit-ffi" / "tests" / "operation_parity_0053.rs")
+        c_test = _read(
+            ROOT
+            / "crates"
+            / "kmipkit-ffi"
+            / "tests"
+            / "support"
+            / "operation_parity_0053_tests.rs"
+        )
         java_test = _read(
             ROOT / "bindings" / "java" / "src" / "test" / "java" / "org" / "kmipkit"
             / "extensions" / "OperationFacadeParityMatrixTest.java"
