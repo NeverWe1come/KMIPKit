@@ -186,3 +186,37 @@ public route probe verified 243 API symbols, 677 named values, and 189 numeric
 values against the installed JAR. The offline report also conforms to the
 shared result schema. The artifact and controlled-peer checks do not establish
 compatibility with an external KMS.
+
+## Rotate Name Type enumeration route completion
+
+Source: OASIS KMIP 2.1 Specification §11.51 (Rotate Name Type Enumeration)
+and §10.1 (TTLV representation). The selected local case covers its two
+assigned values and the extension-range representative through four public
+routes: `TtlvValue.Enumeration`, `TtlvItem.create`, `TtlvItem.view`, and
+`TtlvCodec.decode`. All 12 value/route cells run under KMIP 2.1 against the
+installed artifact pinned to `9a16cc90a12205101d22a38501a5e74c665df4dc`.
+
+Red commit `237ac7d07` asserted all three catalogued targets on each route.
+The focused controlled-peer route test failed because no
+`test-enum-rotate-name-type` route events were emitted. Green commit
+`87908fac0` adds this case to the catalog-driven local enumeration fixture;
+the same test then passed, including all 12 target/route assertions.
+
+Verification:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test --rerun-tasks
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 37d7eeae9e64644fd7cdde4bfd64b7da5ccbb0bf2be53a949826eb62dc3aaf86 \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+```
+
+The selected scope contains 13,616 invocations with zero failures, and the
+updated ledger records 13,616 executed, 57,839 pending, and 71,455 planned
+cells. Rotate Name Type is complete for this local route scope; the remaining
+enum values and the full KMIP 2.0/2.1 matrix are still pending.

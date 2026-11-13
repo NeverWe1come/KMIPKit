@@ -724,6 +724,7 @@
     "test-norm-enumeration-value-enum-value-wrapping-method-mac-sign-then-encrypt-00000004",
     "test-norm-enumeration-value-enum-value-wrapping-method-tr-31-00000005",
     "test-enum-block-cipher-mode",
+    "test-enum-rotate-name-type",
     "test-bitmask-cryptographic-usage-mask",
     "test-bitmask-protection-storage-mask",
     "test-bitmask-storage-status-mask",
@@ -1266,7 +1267,7 @@
     "test-norm-credential-credential-hashed-password",
     "test-norm-credential-credential-username-and-password"
   ],
-  "executed_cells": 13604,
+  "executed_cells": 13616,
   "language": "java",
   "library_commit": "9a16cc90a12205101d22a38501a5e74c665df4dc",
   "pending_case_ids": [
@@ -1427,7 +1428,6 @@
     "test-enum-revocation-reason-code",
     "test-enum-rng-algorithm",
     "test-enum-rng-mode",
-    "test-enum-rotate-name-type",
     "test-enum-secret-data-type",
     "test-enum-shredding-algorithm",
     "test-enum-split-key-method",
@@ -3330,10 +3330,6 @@
     {
       "case_id": "test-enum-rng-mode",
       "pending_cells": 32
-    },
-    {
-      "case_id": "test-enum-rotate-name-type",
-      "pending_cells": 12
     },
     {
       "case_id": "test-enum-secret-data-type",
@@ -8428,7 +8424,7 @@
       "pending_cells": 15
     }
   ],
-  "pending_cells": 57851,
+  "pending_cells": 57839,
   "pending_reason": "No validated per-cell route execution evidence is recorded for this cell.",
   "pending_reason_code": "route_evidence_not_emitted",
   "planned_cells": 71455,
@@ -8446,8 +8442,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 1337,
-      "pending_cells": 2842,
+      "executed_cells": 1340,
+      "pending_cells": 2839,
       "protocol_version": "2.1",
       "required_cells": 4179,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -8646,8 +8642,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 920,
-      "pending_cells": 975,
+      "executed_cells": 923,
+      "pending_cells": 972,
       "protocol_version": "2.1",
       "required_cells": 1895,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
@@ -8766,8 +8762,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 1361,
-      "pending_cells": 2865,
+      "executed_cells": 1364,
+      "pending_cells": 2862,
       "protocol_version": "2.1",
       "required_cells": 4226,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
@@ -8786,8 +8782,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 1337,
-      "pending_cells": 2841,
+      "executed_cells": 1340,
+      "pending_cells": 2838,
       "protocol_version": "2.1",
       "required_cells": 4178,
       "route_id": "java.generic-ttlv.ttlv_item.create",
@@ -34957,8 +34953,8 @@
   "route_manifest_sha256": "b57cad2dccc15f9a58fb251b7bd39434c2c4c2678bc1673d8bb0eccc051770da",
   "route_summary": [
     {
-      "executed_cells": 2658,
-      "pending_cells": 5605,
+      "executed_cells": 2661,
+      "pending_cells": 5602,
       "required_cells": 8263,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item"
     },
@@ -35017,8 +35013,8 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.datetimeextended"
     },
     {
-      "executed_cells": 1824,
-      "pending_cells": 1939,
+      "executed_cells": 1827,
+      "pending_cells": 1936,
       "required_cells": 3763,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration"
     },
@@ -35053,14 +35049,14 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring"
     },
     {
-      "executed_cells": 2706,
-      "pending_cells": 5651,
+      "executed_cells": 2709,
+      "pending_cells": 5648,
       "required_cells": 8357,
       "route_id": "java.generic-ttlv.ttlv_codec.decode"
     },
     {
-      "executed_cells": 2658,
-      "pending_cells": 5603,
+      "executed_cells": 2661,
+      "pending_cells": 5600,
       "required_cells": 8261,
       "route_id": "java.generic-ttlv.ttlv_item.create"
     },
@@ -36410,7 +36406,7 @@
     }
   ],
   "schema_version": "1.0",
-  "selected_scope_cells": 13604,
+  "selected_scope_cells": 13616,
   "selected_scope_complete": true,
   "vendor_interoperability_claim": false
 }
