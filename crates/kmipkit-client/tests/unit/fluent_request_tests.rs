@@ -19,6 +19,7 @@ use crate::fluent::{
 
 const PING_OPERATION: u32 = 0x0000_003b;
 const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001e;
+const QUERY_OPERATION: u32 = 0x0000_0018;
 
 fn item(raw_tag: u32, value: Value) -> Item {
     Item::new(
@@ -769,7 +770,7 @@ fn query_builder_preserves_functions_and_groups_and_executes_once() {
     let _: QueryRequest = request;
 
     let response = asynchronous_response_bytes(
-        0x0000_0018,
+        QUERY_OPERATION,
         0,
         None,
         None,
