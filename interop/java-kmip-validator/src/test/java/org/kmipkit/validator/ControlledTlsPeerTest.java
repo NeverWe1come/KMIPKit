@@ -641,20 +641,17 @@ class ControlledTlsPeerTest {
                         List.of("2.0", "2.1"), concatRoutes(
                                 TYPED_ATTRIBUTE_ENUMERATION_ROUTES,
                                 CRYPTOGRAPHIC_PARAMETER_BUILDER_ROUTES.get("DIGITAL-SIGNATURE-ALGORITHM"))),
-                new LocalEnumerationScope("test-enum-operation", operationTargets,
-                        List.of("2.0", "2.1"), List.of()),
-                new LocalEnumerationScope("test-enum-result-reason", resultReasonTargets,
-                        List.of("2.0", "2.1"), List.of()),
-                new LocalEnumerationScope("test-enum-recommended-curve", recommendedCurveTargets,
-                        List.of("2.0", "2.1"), List.of()),
+                genericEnumerationScope("test-enum-operation", operationTargets, List.of("2.0", "2.1")),
+                genericEnumerationScope("test-enum-result-reason", resultReasonTargets, List.of("2.0", "2.1")),
+                genericEnumerationScope("test-enum-recommended-curve", recommendedCurveTargets,
+                        List.of("2.0", "2.1")),
                 new LocalEnumerationScope("test-enum-nist-key-type", nistKeyTypeTargets,
                         List.of("2.0", "2.1"), TYPED_ATTRIBUTE_ENUMERATION_ROUTES),
                 cryptographicParameterBuilderScope("test-enum-key-role-type", keyRoleTypeTargets,
                         "KEY-ROLE-TYPE"),
                 cryptographicParameterBuilderScope("test-enum-hashing-algorithm", hashingAlgorithmTargets,
                         "HASHING-ALGORITHM"),
-                new LocalEnumerationScope("test-enum-link-type", linkTypeTargets,
-                        List.of("2.0", "2.1"), List.of()),
+                genericEnumerationScope("test-enum-link-type", linkTypeTargets, List.of("2.0", "2.1")),
                 new LocalEnumerationScope("test-enum-opaque-data-type", List.of(
                         "KMIPKIT-ELEM-ENUM-VALUE-OPAQUE-DATA-TYPE-EXTENSIONS-8XXXXXXX"),
                         List.of("2.0", "2.1"), List.of(
@@ -3367,6 +3364,11 @@ class ControlledTlsPeerTest {
             List<String> targetIds, String enumType) {
         return new LocalEnumerationScope(caseId, targetIds, List.of("2.0", "2.1"),
                 List.of(CRYPTOGRAPHIC_PARAMETER_BUILDER_ROUTES.get(enumType)));
+    }
+
+    private static LocalEnumerationScope genericEnumerationScope(String caseId,
+            List<String> targetIds, List<String> protocolVersions) {
+        return new LocalEnumerationScope(caseId, targetIds, protocolVersions, List.of());
     }
 
     private static JsonNode findRouteEvent(JsonNode events, String routeId, String protocolVersion) {
