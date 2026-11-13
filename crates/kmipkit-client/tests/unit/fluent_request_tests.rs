@@ -1,8 +1,9 @@
 use kmipkit_protocol::attribute::typed;
 use kmipkit_protocol::{
     AdjustmentType, Attribute, AttributeDefinition, AttributeReference, CheckRequest,
-    CreateRequest, CurrentAttribute, DiscoverVersionsRequest, GetConstraintsRequest, NewAttribute,
-    PingRequest, ProtocolVersion, QueryFunction, QueryRequest, UniqueIdentifier,
+    CreateRequest, CurrentAttribute, DiscoverVersionsRequest, GetConstraintsRequest,
+    GetUsageAllocationRequest, NewAttribute, PingRequest, ProtocolVersion, QueryFunction,
+    QueryRequest, UniqueIdentifier,
 };
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestOptions;
@@ -22,6 +23,7 @@ const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001e;
 const QUERY_OPERATION: u32 = 0x0000_0018;
 const CHECK_OPERATION: u32 = 0x0000_0009;
 const GET_CONSTRAINTS_OPERATION: u32 = 0x0000_0038;
+const GET_USAGE_ALLOCATION_OPERATION: u32 = 0x0000_0011;
 
 fn item(raw_tag: u32, value: Value) -> Item {
     Item::new(
@@ -934,6 +936,65 @@ fn get_constraints_builder_builds_typed_request_and_executes_once() {
     assert_eq!(
         result.outcome().operation(),
         crate::execute::ClientOperation::GetConstraints
+    );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn get_usage_allocation_builder_requires_count_and_executes_typed_request() {
+    assert_eq!(
+        failed_request_client()
+            .request()
+            .get_usage_allocation()
+            .build_request()
+            .expect_err("Get Usage Allocation requires its requested count"),
+        FluentBuildError::MissingGetUsageAllocationCount
+    );
+
+    let identifier = UniqueIdentifier::TextString("limited-key".to_owned());
+    let request = failed_request_client()
+        .request()
+        .get_usage_allocation()
+        .usage_limits_count(3)
+        .unique_identifier(identifier.clone())
+        .build_request()
+        .expect("an explicit count forms a typed request");
+    assert_eq!(request.usage_limits_count(), 3);
+    assert_eq!(request.unique_identifier(), Some(&identifier));
+    let _: GetUsageAllocationRequest = request;
+
+    let batch_item = failed_request_client()
+        .request()
+        .get_usage_allocation()
+        .usage_limits_count(3)
+        .to_batch_item()
+        .expect("Get Usage Allocation converts to the existing typed batch item");
+    assert_eq!(batch_item.operation(), GET_USAGE_ALLOCATION_OPERATION);
+
+    let response = asynchronous_response_bytes(
+        GET_USAGE_ALLOCATION_OPERATION,
+        0,
+        None,
+        None,
+        Some(test_structure([test_item(
+            0x0042_0094,
+            Value::text_string("limited-key".to_owned()),
+        )])),
+    );
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: vec![2, 5],
+    });
+    let result = client
+        .request()
+        .get_usage_allocation()
+        .usage_limits_count(3)
+        .execute(&CodecLimits::defaults())
+        .expect("the scripted usage allocation response is valid");
+
+    assert_eq!(
+        result.outcome().operation(),
+        crate::execute::ClientOperation::GetUsageAllocation
     );
     assert_eq!(transport.borrow().exchange_count(), 1);
 }
