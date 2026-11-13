@@ -380,8 +380,15 @@ class RouteMatrixTests(unittest.TestCase):
             with self.subTest(target_id=target_id):
                 trees = self.runner.generic_tree_fixtures(targets[target_id], catalog, tags, '2.1')
                 self.assertTrue(trees)
-                self.assertTrue(any(tree[1] == 1 and tree[2] for tree in trees))
-                result = abi.roundtrip(encode(next(tree for tree in trees if tree[1] == 1 and tree[2])))
+                tree = next(tree for tree in trees if tree[1] == 1 and tree[2])
+                required_tags = {
+                    tags[child['name']] for child in catalog['normative_targets']
+                    if target_id in child.get('parent_element_ids', [])
+                    and '2.1' in child.get('protocol_versions', [])
+                    and child.get('source_requiredness', '').strip().lower() in {'yes', 'required'}
+                }
+                self.assertLessEqual(required_tags, {child[0] for child in tree[2]})
+                result = abi.roundtrip(encode(tree))
                 self.assertIn('kmipkit_ttlv_structure_with_item', result['invoked_symbols'])
                 self.assertIn('kmipkit_ttlv_value_structure', result['invoked_symbols'])
                 self.assertEqual(result['constructed_wire'], result['decoded_wire'])

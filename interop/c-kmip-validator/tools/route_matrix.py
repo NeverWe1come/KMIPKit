@@ -175,6 +175,26 @@ def _fixture_value(target: dict, tag: int, kind: int, catalog: dict,
     return tag, kind, value
 
 
+def _required_structure_items(target: dict, catalog: dict, tags: dict[str, int],
+                              protocol_version: str) -> list[tuple]:
+    """Build child Items from required fields in the pinned normative inventory."""
+    target_id = target.get('target_id')
+    if not target_id:
+        return []
+    children = [candidate for candidate in catalog['normative_targets']
+                if target_id in candidate.get('parent_element_ids', [])
+                and protocol_version in candidate.get('protocol_versions', [])]
+    required = [child for child in children
+                if child.get('source_requiredness', '').strip().lower() in {'yes', 'required'}]
+    selected = required or children
+    items = []
+    for child in selected:
+        fixtures = generic_tree_fixtures(child, catalog, tags, protocol_version)
+        if fixtures:
+            items.append(fixtures[0])
+    return items
+
+
 def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
                           protocol_version: str) -> list[tuple] | None:
     """Build item trees only where the pinned catalog identifies tag and type."""
@@ -220,13 +240,20 @@ def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
             encoding = candidate.get('value_type') if candidate['kind'] == 'operation_payload_value_variant' else candidate.get('source_encoding')
             if candidate_tag == tag and encoding and protocol_version in candidate['protocol_versions']:
                 encodings.extend(_type_codes(encoding))
-    elif target_kind == 'attribute_structure':
+    elif target_kind in {'attribute_structure', 'operation_structure'}:
         encodings.append(1)
 
     encodings = list(dict.fromkeys(encodings))
     if not encodings:
         return None
-    return [_fixture_value(target, tag, kind, catalog, protocol_version) for kind in encodings]
+    fixtures = []
+    for kind in encodings:
+        if kind == 1:
+            fixtures.append((tag, kind, _required_structure_items(
+                target, catalog, tags, protocol_version)))
+        else:
+            fixtures.append(_fixture_value(target, tag, kind, catalog, protocol_version))
+    return fixtures
 
 
 def execute_tag_range_case(tree_abi, target: dict, catalog: dict) -> dict:
