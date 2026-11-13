@@ -3194,24 +3194,17 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                  metadata.result_status, metadata.result_reason);
         goto cleanup;
     }
-    if (set_constraints_workflow) {
+    client_response_ttlv_accessor_t server_configuration_accessor =
+        set_constraints_workflow ? kmipkit_client_batch_item_response_set_constraints_ttlv :
+        set_defaults_workflow ? kmipkit_client_batch_item_response_set_defaults_ttlv : NULL;
+    if (server_configuration_accessor) {
         bool valid = response_ttlv_matches_field_count(
-            response_item, kmipkit_client_batch_item_response_set_constraints_ttlv, 4, &status);
+            response_item, server_configuration_accessor, 4, &status);
         if (!valid) {
             outcome.success = false;
             outcome.library_failed = status != 0;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                     "KMIPKit Set Constraints response TTLV did not preserve the complete success item");
-            goto cleanup;
-        }
-    } else if (set_defaults_workflow) {
-        bool valid = response_ttlv_matches_field_count(
-            response_item, kmipkit_client_batch_item_response_set_defaults_ttlv, 4, &status);
-        if (!valid) {
-            outcome.success = false;
-            outcome.library_failed = status != 0;
-            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                     "KMIPKit Set Defaults response TTLV did not preserve the complete success item");
+                     "KMIPKit server configuration response TTLV did not preserve the complete success item");
             goto cleanup;
         }
     } else if (strcmp(test_case->operation, "Log") == 0) {
