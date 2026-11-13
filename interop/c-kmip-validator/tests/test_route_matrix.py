@@ -83,7 +83,8 @@ class RouteMatrixTests(unittest.TestCase):
         )
         self.assertTrue(all(
             {'kmipkit_client_batch_item_get_usage_allocation',
-             'kmipkit_client_batch_item_response_get_usage_allocation'} <=
+             'kmipkit_client_batch_item_response_get_usage_allocation',
+             'kmipkit_client_batch_item_response_get_usage_allocation_ttlv'} <=
             set(check['public_api_trace_symbols']) for check in checks
         ))
 
