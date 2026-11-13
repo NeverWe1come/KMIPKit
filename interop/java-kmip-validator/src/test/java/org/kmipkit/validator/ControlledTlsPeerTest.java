@@ -321,9 +321,7 @@ class ControlledTlsPeerTest {
         ArrayNode events = mapper.createArrayNode();
         List<EnumerationFixture> enumerationFixtures = genericEnumerationFixtures();
         List<EnumerationFixture> localEnumerationFixtures = genericLocalEnumerationFixtures();
-        List<String> recommendedCurveTargets = localEnumerationFixtures.stream()
-                .filter(fixture -> "RECOMMENDED-CURVE".equals(fixture.parentName()))
-                .map(EnumerationFixture::targetId).distinct().sorted().toList();
+        List<String> recommendedCurveTargets = enumerationTargetIds(localEnumerationFixtures, "RECOMMENDED-CURVE");
         assertEquals(71, recommendedCurveTargets.size(),
                 "The Recommended Curve aggregate must cover every catalogued value.");
         List<BitmaskFixture> bitmaskFixtures = genericBitmaskFixtures();
@@ -587,9 +585,8 @@ class ControlledTlsPeerTest {
                 "java.generic-ttlv.ttlv_item.create",
                 "java.generic-ttlv.function.ttlv_item_view_from_item",
                 "java.generic-ttlv.ttlv_codec.decode");
-        List<String> cryptographicAlgorithmTargets = genericEnumerationFixtures().stream()
-                .filter(fixture -> "CRYPTOGRAPHIC-ALGORITHM".equals(fixture.parentName()))
-                .map(EnumerationFixture::targetId).distinct().sorted().toList();
+        List<String> cryptographicAlgorithmTargets = enumerationTargetIds(
+                genericEnumerationFixtures(), "CRYPTOGRAPHIC-ALGORITHM");
         assertEquals(57, cryptographicAlgorithmTargets.size(),
                 "The local Cryptographic Algorithm aggregate must cover every catalogued target value.");
         JsonNode routeCatalog = readRouteEvidenceCatalog();
@@ -3269,6 +3266,12 @@ class ControlledTlsPeerTest {
                     && routeId.equals(event.path("route_id").asText())) count++;
         }
         return count;
+    }
+
+    private static List<String> enumerationTargetIds(List<EnumerationFixture> fixtures, String parentName) {
+        return fixtures.stream()
+                .filter(fixture -> parentName.equals(fixture.parentName()))
+                .map(EnumerationFixture::targetId).distinct().sorted().toList();
     }
 
     private static int expectedEnumerationRouteEvents(EnumerationFixture fixture) {
