@@ -432,7 +432,11 @@ class InstalledAbi:
 LOCAL_SYMBOLS = {
     'kmipkit_ttlv_decode', 'kmipkit_ttlv_item_create', 'kmipkit_ttlv_raw_tag_create',
     'kmipkit_ttlv_raw_tag_try_checked', 'kmipkit_ttlv_value_integer',
-    'kmipkit_ttlv_value_enumeration', 'kmipkit_ttlv_value_date_time',
+    'kmipkit_ttlv_value_long_integer', 'kmipkit_ttlv_value_enumeration',
+    'kmipkit_ttlv_value_boolean', 'kmipkit_ttlv_value_date_time',
+    'kmipkit_ttlv_value_interval', 'kmipkit_ttlv_value_date_time_extended',
+    'kmipkit_ttlv_value_big_integer', 'kmipkit_ttlv_value_text_string',
+    'kmipkit_ttlv_value_byte_string', 'kmipkit_ttlv_value_structure',
     'kmipkit_ttlv_structure_create',
     'kmipkit_ttlv_structure_with_item', 'kmipkit_ttlv_item_view_from_item',
 }
