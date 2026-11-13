@@ -27,6 +27,39 @@ use crate::{
     ClientRequest,
 };
 
+macro_rules! fluent_option_field_setters {
+    ($option_doc:literal; $($options_path:ident).+; $($indicator_path:ident).+; const) => {
+        #[doc = $option_doc]
+        #[must_use]
+        pub fn with_options(mut self, options: RequestOptions) -> Self {
+            self.$($options_path).+ = Some(options);
+            self
+        }
+
+        /// Sets the Request Header Asynchronous Indicator for this exchange.
+        #[must_use]
+        pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+            self.$($indicator_path).+ = Some(value);
+            self
+        }
+    };
+    ($option_doc:literal; $($options_path:ident).+; $($indicator_path:ident).+; non_const) => {
+        #[doc = $option_doc]
+        #[must_use]
+        pub fn with_options(mut self, options: RequestOptions) -> Self {
+            self.$($options_path).+ = Some(options);
+            self
+        }
+
+        /// Sets the Request Header Asynchronous Indicator for this exchange.
+        #[must_use]
+        pub fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+            self.$($indicator_path).+ = Some(value);
+            self
+        }
+    };
+}
+
 const SYMMETRIC_KEY_OBJECT_TYPE: u32 = 2;
 const MESSAGE_EXTENSION_TAG_START: u32 = 0x0054_0000;
 const MESSAGE_EXTENSION_TAG_END: u32 = 0x0054_FFFF;
@@ -1027,19 +1060,7 @@ impl<'a> DecryptBuilder<'a> {
         self
     }
 
-    /// Sets exchange-local transport options.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.execution.options = Some(options);
-        self
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.execution.asynchronous_indicator = Some(value);
-        self
-    }
+    fluent_option_field_setters!("Sets exchange-local transport options."; execution.options; execution.asynchronous_indicator; const);
 
     fn into_request_and_execution(
         self,
@@ -1180,19 +1201,7 @@ impl<'a> SignBuilder<'a> {
         self
     }
 
-    /// Sets exchange-local transport options.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.state.execution.options = Some(options);
-        self
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.state.execution.asynchronous_indicator = Some(value);
-        self
-    }
+    fluent_option_field_setters!("Sets exchange-local transport options."; state.execution.options; state.execution.asynchronous_indicator; const);
 
     fn into_request_and_execution(
         self,
@@ -1331,19 +1340,7 @@ impl<'a> SignatureVerifyBuilder<'a> {
         self
     }
 
-    /// Sets exchange-local transport options.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.state.execution.options = Some(options);
-        self
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.state.execution.asynchronous_indicator = Some(value);
-        self
-    }
+    fluent_option_field_setters!("Sets exchange-local transport options."; state.execution.options; state.execution.asynchronous_indicator; const);
 
     fn into_request_and_execution(
         self,
@@ -1456,19 +1453,7 @@ impl<'a> MacBuilder<'a> {
         self
     }
 
-    /// Sets exchange-local transport options.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.state.execution.options = Some(options);
-        self
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.state.execution.asynchronous_indicator = Some(value);
-        self
-    }
+    fluent_option_field_setters!("Sets exchange-local transport options."; state.execution.options; state.execution.asynchronous_indicator; const);
 
     fn into_request_and_execution(
         self,
@@ -1596,19 +1581,7 @@ impl<'a> MacVerifyBuilder<'a> {
         self
     }
 
-    /// Sets exchange-local transport options.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.state.execution.options = Some(options);
-        self
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.state.execution.asynchronous_indicator = Some(value);
-        self
-    }
+    fluent_option_field_setters!("Sets exchange-local transport options."; state.execution.options; state.execution.asynchronous_indicator; const);
 
     fn into_request_and_execution(
         self,
@@ -1717,19 +1690,7 @@ impl<'a> HashBuilder<'a> {
         self
     }
 
-    /// Sets exchange-local transport options.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.execution.options = Some(options);
-        self
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.execution.asynchronous_indicator = Some(value);
-        self
-    }
+    fluent_option_field_setters!("Sets exchange-local transport options."; execution.options; execution.asynchronous_indicator; const);
 
     fn into_request_and_execution(
         self,
@@ -1915,19 +1876,7 @@ impl<'a> RegisterBuilder<'a> {
         self
     }
 
-    /// Sets exchange-local options without changing client or batch policy.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.options = Some(options);
-        self
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.asynchronous_indicator = Some(value);
-        self
-    }
+    fluent_option_field_setters!("Sets exchange-local options without changing client or batch policy."; options; asynchronous_indicator; const);
 
     /// Validates all accumulated inputs without sending a request.
     ///
@@ -2194,19 +2143,7 @@ impl<'a> CreateSymmetricKeyBuilder<'a> {
         self
     }
 
-    /// Sets exchange-local options without changing client or batch policy.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.options = Some(options);
-        self
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.asynchronous_indicator = Some(value);
-        self
-    }
+    fluent_option_field_setters!("Sets exchange-local options without changing client or batch policy."; options; asynchronous_indicator; const);
 
     /// Builds the existing typed Create request without sending it.
     ///
@@ -2497,19 +2434,7 @@ impl<'a> CreateSplitKeyBuilder<'a> {
         self
     }
 
-    /// Sets exchange-local options without changing client or batch policy.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.options = Some(options);
-        self
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.asynchronous_indicator = Some(value);
-        self
-    }
+    fluent_option_field_setters!("Sets exchange-local options without changing client or batch policy."; options; asynchronous_indicator; const);
 
     /// Validates locally using the existing typed request rules.
     ///
@@ -2784,19 +2709,7 @@ impl<'a> CreateKeyPairBuilder<'a> {
         self
     }
 
-    /// Sets exchange-local options without changing client or batch policy.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.options = Some(options);
-        self
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.asynchronous_indicator = Some(value);
-        self
-    }
+    fluent_option_field_setters!("Sets exchange-local options without changing client or batch policy."; options; asynchronous_indicator; const);
 
     /// Validates the accumulated inputs locally without consuming the builder.
     ///
@@ -3007,19 +2920,7 @@ impl<'a> CheckBuilder<'a> {
         self
     }
 
-    /// Sets exchange-local options without changing client policy.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.options = Some(options);
-        self
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.asynchronous_indicator = Some(value);
-        self
-    }
+    fluent_option_field_setters!("Sets exchange-local options without changing client policy."; options; asynchronous_indicator; const);
 
     /// Validates the typed Check request without sending.
     ///
@@ -3153,19 +3054,7 @@ impl<'a> QueryBuilder<'a> {
         self
     }
 
-    /// Sets exchange-local options without changing client policy.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.options = Some(options);
-        self
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.asynchronous_indicator = Some(value);
-        self
-    }
+    fluent_option_field_setters!("Sets exchange-local options without changing client policy."; options; asynchronous_indicator; const);
 
     /// Validates the Query functions and typed request without sending.
     ///
@@ -3268,19 +3157,7 @@ impl<'a> DiscoverVersionsBuilder<'a> {
         self
     }
 
-    /// Sets exchange-local options without changing client policy.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.options = Some(options);
-        self
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.asynchronous_indicator = Some(value);
-        self
-    }
+    fluent_option_field_setters!("Sets exchange-local options without changing client policy."; options; asynchronous_indicator; const);
 
     /// Validates the offered versions without sending.
     ///
@@ -3390,19 +3267,7 @@ impl<'a> GetUsageAllocationBuilder<'a> {
         self
     }
 
-    /// Sets exchange-local options without changing client policy.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.options = Some(options);
-        self
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.asynchronous_indicator = Some(value);
-        self
-    }
+    fluent_option_field_setters!("Sets exchange-local options without changing client policy."; options; asynchronous_indicator; const);
 
     /// Validates the required count and typed request without sending.
     ///
@@ -3511,19 +3376,7 @@ impl<'a> ObtainLeaseBuilder<'a> {
         self
     }
 
-    /// Sets exchange-local options without changing client policy.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.options = Some(options);
-        self
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.asynchronous_indicator = Some(value);
-        self
-    }
+    fluent_option_field_setters!("Sets exchange-local options without changing client policy."; options; asynchronous_indicator; const);
 
     /// Validates the typed Obtain Lease request without sending it.
     ///
@@ -3614,19 +3467,7 @@ impl<'a> GetConstraintsBuilder<'a> {
         }
     }
 
-    /// Sets exchange-local options without changing client policy.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.options = Some(options);
-        self
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.asynchronous_indicator = Some(value);
-        self
-    }
+    fluent_option_field_setters!("Sets exchange-local options without changing client policy."; options; asynchronous_indicator; const);
 
     /// Validates the typed Get Constraints request without sending.
     ///
@@ -3701,19 +3542,7 @@ impl<'a> PingBuilder<'a> {
         }
     }
 
-    /// Sets exchange-local options without changing client policy.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.options = Some(options);
-        self
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.asynchronous_indicator = Some(value);
-        self
-    }
+    fluent_option_field_setters!("Sets exchange-local options without changing client policy."; options; asynchronous_indicator; const);
 
     /// Validates the typed Ping request without sending it.
     ///
@@ -3781,19 +3610,7 @@ pub struct GetBuilder<'a> {
 }
 
 impl GetBuilder<'_> {
-    /// Sets exchange-local options.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.options = Some(options);
-        self
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.asynchronous_indicator = Some(value);
-        self
-    }
+    fluent_option_field_setters!("Sets exchange-local options."; options; asynchronous_indicator; const);
 
     /// Builds the existing typed Get request without sending it.
     #[must_use]
@@ -3836,19 +3653,7 @@ pub struct DestroyBuilder<'a> {
 }
 
 impl DestroyBuilder<'_> {
-    /// Sets exchange-local options.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.options = Some(options);
-        self
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.asynchronous_indicator = Some(value);
-        self
-    }
+    fluent_option_field_setters!("Sets exchange-local options."; options; asynchronous_indicator; const);
 
     /// Builds the existing typed Destroy request without sending it.
     #[must_use]
@@ -3982,19 +3787,7 @@ impl<'a> CreateBuilder<'a> {
         self
     }
 
-    /// Sets exchange-local options without changing client policy.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.options = Some(options);
-        self
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.asynchronous_indicator = Some(value);
-        self
-    }
+    fluent_option_field_setters!("Sets exchange-local options without changing client policy."; options; asynchronous_indicator; const);
 
     /// Validates the existing typed Create request without sending.
     ///
@@ -4098,19 +3891,7 @@ impl<'a> AddAttributeBuilder<'a> {
         self
     }
 
-    /// Sets exchange-local options without changing client policy.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.options = Some(options);
-        self
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.asynchronous_indicator = Some(value);
-        self
-    }
+    fluent_option_field_setters!("Sets exchange-local options without changing client policy."; options; asynchronous_indicator; const);
 
     /// Validates completeness and protocol constraints without sending.
     ///
@@ -4221,19 +4002,7 @@ impl<'a> SetAttributeBuilder<'a> {
         self
     }
 
-    /// Sets exchange-local options without changing client policy.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.options = Some(options);
-        self
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.asynchronous_indicator = Some(value);
-        self
-    }
+    fluent_option_field_setters!("Sets exchange-local options without changing client policy."; options; asynchronous_indicator; const);
 
     /// Validates completeness and protocol constraints without sending.
     ///
@@ -4353,19 +4122,7 @@ impl<'a> ModifyAttributeBuilder<'a> {
         self
     }
 
-    /// Sets exchange-local options without changing client policy.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.options = Some(options);
-        self
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.asynchronous_indicator = Some(value);
-        self
-    }
+    fluent_option_field_setters!("Sets exchange-local options without changing client policy."; options; asynchronous_indicator; const);
 
     /// Validates completeness and protocol constraints without sending.
     ///
@@ -4503,19 +4260,7 @@ impl<'a> DeleteAttributeBuilder<'a> {
         self
     }
 
-    /// Sets exchange-local options without changing client policy.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.options = Some(options);
-        self
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.asynchronous_indicator = Some(value);
-        self
-    }
+    fluent_option_field_setters!("Sets exchange-local options without changing client policy."; options; asynchronous_indicator; const);
 
     /// Validates the selectors and typed request without sending.
     ///
@@ -4646,19 +4391,7 @@ impl<'a> AdjustAttributeBuilder<'a> {
         self
     }
 
-    /// Sets exchange-local options without changing client policy.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.options = Some(options);
-        self
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.asynchronous_indicator = Some(value);
-        self
-    }
+    fluent_option_field_setters!("Sets exchange-local options without changing client policy."; options; asynchronous_indicator; const);
 
     /// Validates completeness and protocol constraints without sending.
     ///
@@ -4789,19 +4522,7 @@ impl<'a> ActivateBuilder<'a> {
         self
     }
 
-    /// Sets exchange-local options without changing client policy.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.options = Some(options);
-        self
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.asynchronous_indicator = Some(value);
-        self
-    }
+    fluent_option_field_setters!("Sets exchange-local options without changing client policy."; options; asynchronous_indicator; const);
 
     /// Validates the typed request without sending it.
     ///
@@ -4884,19 +4605,7 @@ impl<'a> ArchiveBuilder<'a> {
         self
     }
 
-    /// Sets exchange-local options without changing client policy.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.options = Some(options);
-        self
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.asynchronous_indicator = Some(value);
-        self
-    }
+    fluent_option_field_setters!("Sets exchange-local options without changing client policy."; options; asynchronous_indicator; const);
 
     /// Validates the typed request without sending it.
     ///
@@ -4979,19 +4688,7 @@ impl<'a> RecoverBuilder<'a> {
         self
     }
 
-    /// Sets exchange-local options without changing client policy.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.options = Some(options);
-        self
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.asynchronous_indicator = Some(value);
-        self
-    }
+    fluent_option_field_setters!("Sets exchange-local options without changing client policy."; options; asynchronous_indicator; const);
 
     /// Validates the typed request without sending it.
     ///
@@ -5088,19 +4785,7 @@ impl<'a> RevokeBuilder<'a> {
         self
     }
 
-    /// Sets exchange-local options without changing client policy.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.options = Some(options);
-        self
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.asynchronous_indicator = Some(value);
-        self
-    }
+    fluent_option_field_setters!("Sets exchange-local options without changing client policy."; options; asynchronous_indicator; const);
 
     /// Validates the typed Revoke request without sending it.
     ///
@@ -5232,19 +4917,7 @@ impl<'a> LocateBuilder<'a> {
         self
     }
 
-    /// Sets exchange-local options without changing client policy.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.options = Some(options);
-        self
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.asynchronous_indicator = Some(value);
-        self
-    }
+    fluent_option_field_setters!("Sets exchange-local options without changing client policy."; options; asynchronous_indicator; const);
 
     /// Validates the typed Locate request without sending it.
     ///
@@ -5476,19 +5149,7 @@ impl<'a> RekeyBuilder<'a> {
         self
     }
 
-    /// Sets exchange-local options without changing client policy.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.state.options = Some(options);
-        self
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.state.asynchronous_indicator = Some(value);
-        self
-    }
+    fluent_option_field_setters!("Sets exchange-local options without changing client policy."; state.options; state.asynchronous_indicator; non_const);
 
     /// Validates the typed request without sending it.
     ///
@@ -5608,19 +5269,7 @@ impl<'a> RekeyKeyPairBuilder<'a> {
         self
     }
 
-    /// Sets exchange-local options without changing client policy.
-    #[must_use]
-    pub fn with_options(mut self, options: RequestOptions) -> Self {
-        self.options = Some(options);
-        self
-    }
-
-    /// Sets the Request Header Asynchronous Indicator for this exchange.
-    #[must_use]
-    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
-        self.asynchronous_indicator = Some(value);
-        self
-    }
+    fluent_option_field_setters!("Sets exchange-local options without changing client policy."; options; asynchronous_indicator; const);
 
     /// Validates the typed request without sending it.
     ///
