@@ -641,8 +641,7 @@ class ControlledTlsPeerTest {
                 new LocalEnumerationScope("test-enum-nist-key-type", nistKeyTypeTargets,
                         List.of("2.0", "2.1"), TYPED_ATTRIBUTE_ENUMERATION_ROUTES),
                 new LocalEnumerationScope("test-enum-key-role-type", keyRoleTypeTargets,
-                        List.of("2.0", "2.1"), List.of(
-                                CRYPTOGRAPHIC_PARAMETER_BUILDER_ROUTES.get("KEY-ROLE-TYPE"))),
+                        List.of("2.0", "2.1"), cryptographicParameterBuilderRoutes("KEY-ROLE-TYPE")),
                 new LocalEnumerationScope("test-enum-opaque-data-type", List.of(
                         "KMIPKIT-ELEM-ENUM-VALUE-OPAQUE-DATA-TYPE-EXTENSIONS-8XXXXXXX"),
                         List.of("2.0", "2.1"), List.of(
@@ -662,8 +661,7 @@ class ControlledTlsPeerTest {
                 new LocalEnumerationScope("test-enum-mask-generator", List.of(
                         "KMIPKIT-ELEM-ENUM-VALUE-MASK-GENERATOR-EXTENSIONS-8XXXXXXX",
                         "KMIPKIT-ELEM-ENUM-VALUE-MASK-GENERATOR-MFG1-00000001"),
-                        List.of("2.0", "2.1"), List.of(
-                                "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.maskgenerator")),
+                        List.of("2.0", "2.1"), cryptographicParameterBuilderRoutes("MASK-GENERATOR")),
                 new LocalEnumerationScope("test-enum-encoding-option", List.of(
                         "KMIPKIT-ELEM-ENUM-VALUE-ENCODING-OPTION-EXTENSIONS-8XXXXXXX",
                         "KMIPKIT-ELEM-ENUM-VALUE-ENCODING-OPTION-NO-ENCODING-00000001",
@@ -3351,6 +3349,10 @@ class ControlledTlsPeerTest {
         var combined = new ArrayList<>(routes);
         combined.add(additionalRoute);
         return List.copyOf(combined);
+    }
+
+    private static List<String> cryptographicParameterBuilderRoutes(String enumType) {
+        return List.of(CRYPTOGRAPHIC_PARAMETER_BUILDER_ROUTES.get(enumType));
     }
 
     private static JsonNode findRouteEvent(JsonNode events, String routeId, String protocolVersion) {
