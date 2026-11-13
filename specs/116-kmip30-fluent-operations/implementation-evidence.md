@@ -25,3 +25,13 @@ at the expected missing API assertion:
   the focused test source compiled far enough to identify the absent API.
 
 No production code was changed before these tests failed.
+
+## Green
+
+- Rust fluent builders are now available for all seven KMIP 3.0 operations.
+  `cargo test -p kmipkit-client kmip30_fluent -- --nocapture` passed all
+  three focused tests: operation-specific typed request construction,
+  no-send rejection when KMIP 3.0 is not explicitly selected, and explicit
+  KMIP 3.0 wire version/operation encoding. `cargo fmt --all --check` passed.
+- `cargo clippy -p kmipkit-client --all-targets --all-features -- -D warnings`
+  passed after documenting the validation result contract.
