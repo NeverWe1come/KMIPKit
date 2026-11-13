@@ -2,7 +2,14 @@
 
 from __future__ import annotations
 
+import socket
+import ssl
+import threading
+from pathlib import Path
+
 import pytest
+from kmipkit.errors import InvalidInputError
+from kmipkit._protocol_version import ProtocolVersion
 
 from kmipkit.server import (
     DiscoverVersionsRequest,
@@ -18,12 +25,70 @@ from kmipkit.server import (
     ServerListenerConfiguration,
     ServerRequestBatch,
     ServerRequestHandler,
+    ServerReply,
     ServerResponse,
     ServerResponseBuilder,
     ServerResultReason,
+    ServerResultStatus,
     SetEndpointRoleRequest,
     SetEndpointRoleResponse,
 )
+
+
+_FIXTURES = Path(__file__).parent / "fixtures" / "server-listener-mtls"
+
+
+def _ttlv(tag: int, item_type: int, value: bytes) -> bytes:
+    padding = (-len(value)) % 8
+    return (
+        tag.to_bytes(3, "big")
+        + bytes((item_type,))
+        + len(value).to_bytes(4, "big")
+        + value
+        + bytes(padding)
+    )
+
+
+def _structure(tag: int, *children: bytes) -> bytes:
+    return _ttlv(tag, 1, b"".join(children))
+
+
+def _integer(tag: int, value: int) -> bytes:
+    return _ttlv(tag, 2, value.to_bytes(4, "big", signed=True))
+
+
+def _enumeration(tag: int, value: int) -> bytes:
+    return _ttlv(tag, 5, value.to_bytes(4, "big"))
+
+
+def _discover_versions_request() -> bytes:
+    version = _structure(0x420069, _integer(0x42006A, 2), _integer(0x42006B, 1))
+    header = _structure(0x420077, version, _integer(0x42000D, 1))
+    batch_item = _structure(
+        0x42000F,
+        _enumeration(0x42005C, 30),
+        _ttlv(0x420093, 8, b"batch-01"),
+        _structure(0x420079),
+    )
+    return _structure(0x420078, header, batch_item)
+
+
+def _read_ttlv_frame(stream: ssl.SSLSocket) -> bytes:
+    header = bytearray()
+    while len(header) < 8:
+        chunk = stream.recv(8 - len(header))
+        if not chunk:
+            raise AssertionError("listener closed before a complete response header")
+        header.extend(chunk)
+    value_length = int.from_bytes(header[4:8], "big")
+    remaining = (value_length + 7) & ~7
+    body = bytearray()
+    while len(body) < remaining:
+        chunk = stream.recv(remaining - len(body))
+        if not chunk:
+            raise AssertionError("listener closed before a complete response body")
+        body.extend(chunk)
+    return bytes(header + body)
 
 
 def test_server_listener_exports_typed_request_and_response_families() -> None:
@@ -51,7 +116,7 @@ def test_server_initiated_requests_have_no_client_send_route() -> None:
 
 
 def test_named_listener_configuration_rejects_invalid_port() -> None:
-    with pytest.raises(ValueError):
+    with pytest.raises(InvalidInputError):
         ServerListenerConfiguration(
             bind_host="127.0.0.1",
             bind_port=65536,
@@ -62,11 +127,83 @@ def test_named_listener_configuration_rejects_invalid_port() -> None:
 
 
 def test_handler_can_return_typed_success_or_failure() -> None:
-    handler: ServerRequestHandler = lambda request: ServerResponse.failure(
-        request, ServerResultReason.OPERATION_NOT_SUPPORTED, "unsupported"
+    handler: ServerRequestHandler = lambda request: ServerReply.failure(
+        ServerResultStatus.OPERATION_FAILED,
+        ServerResultReason.OPERATION_NOT_SUPPORTED,
+        "unsupported",
     )
     assert callable(handler)
     assert ServerListener is not None
     assert ServerConnection is not None
     assert ServerRequestBatch is not None
+    assert ServerReply is not None
     assert ServerResponseBuilder is not None
+
+
+def test_listener_serves_typed_discover_versions_over_tls13_mtls() -> None:
+    server_certificate = (_FIXTURES / "server-cert.pem").read_bytes()
+    server_key = (_FIXTURES / "server-key.pem").read_bytes()
+    authority_certificate = (_FIXTURES / "ca.pem").read_bytes()
+    client_certificate = (_FIXTURES / "client-cert.pem").read_bytes()
+    client_key = (_FIXTURES / "client-key.pem").read_bytes()
+    configuration = ServerListenerConfiguration(
+        bind_host="127.0.0.1",
+        bind_port=0,
+        listener_certificate_chain=(server_certificate,),
+        listener_private_key=server_key,
+        trust_certificates=(authority_certificate,),
+    )
+    failures: list[BaseException] = []
+    stages: list[str] = []
+    seen: list[type[object]] = []
+
+    def handler(request: object) -> ServerReply:
+        assert isinstance(request, DiscoverVersionsRequest)
+        seen.append(type(request))
+        return ServerReply.success(
+            DiscoverVersionsResponse.for_request(request, (ProtocolVersion(2, 1),))
+        )
+
+    with configuration, ServerListener.bind(configuration) as listener:
+        def serve() -> None:
+            try:
+                stages.append("accepting")
+                with listener.accept(timeout=5) as connection:
+                    stages.append("accepted")
+                    connection.serve_once(handler, timeout=5)
+                    stages.append("served")
+            except BaseException as failure:  # captured for assertion in the test thread
+                failures.append(failure)
+
+        port = listener.port
+        worker = threading.Thread(target=serve, daemon=True)
+        worker.start()
+        context = ssl.create_default_context(
+            ssl.Purpose.SERVER_AUTH, cafile=str(_FIXTURES / "ca.pem")
+        )
+        context.load_cert_chain(_FIXTURES / "client-cert.pem", _FIXTURES / "client-key.pem")
+        context.minimum_version = ssl.TLSVersion.TLSv1_3
+        context.maximum_version = ssl.TLSVersion.TLSv1_3
+        client_failure: BaseException | None = None
+        response = b""
+        try:
+            with socket.create_connection(("127.0.0.1", port), timeout=5) as raw:
+                with context.wrap_socket(raw, server_hostname="127.0.0.1") as stream:
+                    stream.settimeout(5)
+                    stream.sendall(_discover_versions_request())
+                    response = _read_ttlv_frame(stream)
+        except BaseException as failure:  # report both TLS peer states on failure
+            client_failure = failure
+        worker.join(timeout=7)
+
+    assert client_failure is None, (
+        f"client failure={client_failure!r}; stages={stages}; "
+        f"server={failures!r}"
+    )
+    assert not worker.is_alive()
+    assert failures == []
+    assert seen == [DiscoverVersionsRequest]
+    assert response[:4] == bytes.fromhex("42007b01")
+    assert bytes.fromhex("42007f050000000400000000") in response
+    assert bytes.fromhex("42006a020000000400000002") in response
+    assert bytes.fromhex("42006b020000000400000001") in response
