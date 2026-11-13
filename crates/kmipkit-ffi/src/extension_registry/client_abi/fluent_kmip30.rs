@@ -33,7 +33,7 @@ pub(in crate::extension_registry) struct Kmip30OperationBuilder {
 
 enum BuilderRequest {
     CreateCredential {
-        credential_type: u32,
+        credential_type: CredentialType,
         attributes: AttributeSet,
         object: Item,
     },
@@ -315,7 +315,7 @@ impl Kmip30OperationBuilder {
                 attributes,
                 object,
             } => ClientRequest::create_credential(CreateCredentialRequest::new(
-                CredentialType::from_raw(*credential_type),
+                *credential_type,
                 copy_attributes(attributes)?,
                 credential_object(object.try_clone().map_err(model_status)?)?,
             )),
@@ -411,14 +411,22 @@ fn update_builder(
 }
 
 fn create_credential_input(
-    credential_type: u32,
     attributes: *mut kmipkit_attribute_set_t,
     object: *mut kmipkit_create_credential_object_t,
 ) -> FfiResult<BuilderRequest> {
+    let object = input_object(object)?;
+    let credential_type = match object.tag().raw() {
+        0x0042_0013 => CredentialType::Attestation,
+        0x0042_01A1 => CredentialType::UsernameAndPassword,
+        0x0042_01A6 => CredentialType::Device,
+        0x0042_01AF => CredentialType::HashedPassword,
+        0x0042_01A7 => CredentialType::OneTimePassword,
+        _ => return Err(ERROR_INVALID_INPUT),
+    };
     Ok(BuilderRequest::CreateCredential {
         credential_type,
         attributes: input_attributes(attributes)?,
-        object: input_object(object)?,
+        object,
     })
 }
 
@@ -426,14 +434,13 @@ fn create_credential_input(
 /// The caller retains every input handle and byte span.
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_create_credential_builder_create(
-    credential_type: u32,
     attributes: *mut kmipkit_attribute_set_t,
     object: *mut kmipkit_create_credential_object_t,
     out_builder: *mut *mut kmipkit_kmip30_operation_builder_t,
 ) -> i32 {
     ffi_entrypoint(|| {
         let out = kmip30_out_slot!(out_builder);
-        let request = try_ffi!(create_credential_input(credential_type, attributes, object));
+        let request = try_ffi!(create_credential_input(attributes, object));
         *out = try_ffi!(builder_handle(request));
         SUCCESS
     })
@@ -444,7 +451,6 @@ pub extern "C" fn kmipkit_create_credential_builder_create(
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_create_credential_v1(
     client: *mut kmipkit_client_t,
-    credential_type: u32,
     attributes: *mut kmipkit_attribute_set_t,
     object: *mut kmipkit_create_credential_object_t,
     limits: *mut kmipkit_codec_limits_t,
@@ -452,7 +458,7 @@ pub extern "C" fn kmipkit_client_create_credential_v1(
 ) -> i32 {
     ffi_entrypoint(|| {
         let _out = kmip30_out_slot!(out_response);
-        let request = try_ffi!(create_credential_input(credential_type, attributes, object));
+        let request = try_ffi!(create_credential_input(attributes, object));
         execute_request(request, client, limits, None, out_response)
     })
 }
@@ -462,7 +468,6 @@ pub extern "C" fn kmipkit_client_create_credential_v1(
 #[unsafe(no_mangle)]
 pub extern "C" fn kmipkit_client_create_credential_with_options_v1(
     client: *mut kmipkit_client_t,
-    credential_type: u32,
     attributes: *mut kmipkit_attribute_set_t,
     object: *mut kmipkit_create_credential_object_t,
     limits: *mut kmipkit_codec_limits_t,
@@ -472,7 +477,7 @@ pub extern "C" fn kmipkit_client_create_credential_with_options_v1(
     ffi_entrypoint(|| {
         let _out = kmip30_out_slot!(out_response);
         let options = try_ffi!(options_input(options));
-        let request = try_ffi!(create_credential_input(credential_type, attributes, object));
+        let request = try_ffi!(create_credential_input(attributes, object));
         execute_request(request, client, limits, Some(options), out_response)
     })
 }

@@ -9,7 +9,7 @@ use kmipkit_protocol::{
     ActivateRequest, AddAttributeRequest, AdjustAttributeRequest, AdjustmentType, ArchiveRequest,
     Attribute, AttributeDefinition, AttributeReference, AttributeSet, AttributeSetError,
     CheckRequest, CreateCredentialObject, CreateCredentialRequest, CreateGroupRequest,
-    CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest, CreateUserRequest, CredentialType,
+    CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest, CreateUserRequest,
     CryptographicAlgorithm, CryptographicParameters, CurrentAttribute, DeactivateRequest,
     DecapsulateRequest, DecryptRequest, DeleteAttributeRequest, DestroyRequest,
     DiscoverVersionsRequest, EncapsulateRequest, EncryptRequest, GetConstraintsRequest, GetRequest,
@@ -349,17 +349,17 @@ impl<'a> RequestBuilder<'a> {
         CreateSplitKeyBuilder::new(self.client)
     }
 
-    /// Begins a KMIP 3.0 Create Credential builder using typed credential
-    /// alternatives. The caller must explicitly select protocol version 3.0
-    /// on the client or in exchange options before execution.
+    /// Begins a KMIP 3.0 Create Credential builder using a typed credential
+    /// alternative. Its Credential Type is derived from the selected object.
+    /// The caller must explicitly select protocol version 3.0 on the client or
+    /// in exchange options before execution.
     #[must_use]
     pub fn create_credential(
         self,
-        credential_type: CredentialType,
         attributes: AttributeSet,
         object: CreateCredentialObject,
     ) -> CreateCredentialBuilder<'a> {
-        CreateCredentialBuilder::new(self.client, credential_type, attributes, object)
+        CreateCredentialBuilder::new(self.client, attributes, object)
     }
 
     /// Begins a KMIP 3.0 Create Group builder. Protocol version 3.0 remains an
@@ -5773,7 +5773,6 @@ macro_rules! impl_kmip30_builder_methods {
 /// A KMIP 3.0 Create Credential fluent builder.
 pub struct CreateCredentialBuilder<'a> {
     execution: Kmip30BuilderExecution<'a>,
-    credential_type: CredentialType,
     attributes: AttributeSet,
     object: CreateCredentialObject,
 }
@@ -5781,13 +5780,11 @@ pub struct CreateCredentialBuilder<'a> {
 impl<'a> CreateCredentialBuilder<'a> {
     fn new(
         client: &'a mut Client,
-        credential_type: CredentialType,
         attributes: AttributeSet,
         object: CreateCredentialObject,
     ) -> Self {
         Self {
             execution: Kmip30BuilderExecution::new(client),
-            credential_type,
             attributes,
             object,
         }
@@ -5798,7 +5795,7 @@ impl<'a> Kmip30BuilderParts<'a> for CreateCredentialBuilder<'a> {
         (
             self.execution,
             ClientRequest::create_credential(CreateCredentialRequest::new(
-                self.credential_type,
+                self.object.credential_type(),
                 self.attributes,
                 self.object,
             )),
