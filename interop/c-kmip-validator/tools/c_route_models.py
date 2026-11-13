@@ -141,6 +141,10 @@ class ModelCases:
         payload_trees = []
         self.abi.called.clear()
 
+        def attribute_tree(value: bytes) -> tuple:
+            return (attribute_tag, 1, [
+                (attribute_name_tag, 7, b'Comment'), (attribute_value_tag, 7, value)])
+
         for include_optional_fields in (True, False):
             limits, request, payload = C.c_void_p(), C.c_void_p(), C.c_void_p()
             current_item, new_item = C.c_void_p(), C.c_void_p()
@@ -153,12 +157,8 @@ class ModelCases:
             try:
                 self.abi.call('kmipkit_codec_limits_defaults', C.byref(limits))
                 if include_optional_fields:
-                    current_tree = (attribute_tag, 1, [
-                        (attribute_name_tag, 7, b'Comment'), (attribute_value_tag, 7, b'old')])
-                    current_item = self.abi.construct(current_tree, limits)
-                new_tree = (attribute_tag, 1, [
-                    (attribute_name_tag, 7, b'Comment'), (attribute_value_tag, 7, b'new')])
-                new_item = self.abi.construct(new_tree, limits)
+                    current_item = self.abi.construct(attribute_tree(b'old'), limits)
+                new_item = self.abi.construct(attribute_tree(b'new'), limits)
                 self.abi.call('kmipkit_modify_attribute_request_create', unique_pointer, current_item,
                               new_item, C.byref(request))
                 self.abi.call('kmipkit_modify_attribute_request_to_ttlv_payload', request,
@@ -168,13 +168,9 @@ class ModelCases:
                 if include_optional_fields:
                     expected.extend([
                         [unique_identifier_tag, 7, identifier_bytes.hex()],
-                        [current_attribute_tag, 1, [[attribute_tag, 1, [
-                            [attribute_name_tag, 7, b'Comment'.hex()],
-                            [attribute_value_tag, 7, b'old'.hex()]]]]],
+                        [current_attribute_tag, 1, [normalized(attribute_tree(b'old'))]],
                     ])
-                expected.append([new_attribute_tag, 1, [[attribute_tag, 1, [
-                    [attribute_name_tag, 7, b'Comment'.hex()],
-                    [attribute_value_tag, 7, b'new'.hex()]]]]])
+                expected.append([new_attribute_tag, 1, [normalized(attribute_tree(b'new'))]])
                 if actual != expected:
                     raise ValueError('modify_attribute_payload_mismatch')
                 payload_trees.append(actual)
