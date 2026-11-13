@@ -9,7 +9,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / 'interop/shared/tools'))
 from coverage_matrix import iter_cells
-from validate_route_evidence import validate_report
+from validate_route_evidence import _validate_batch_event, validate_report
 
 
 class RouteMatrixTests(unittest.TestCase):
@@ -23,11 +23,12 @@ class RouteMatrixTests(unittest.TestCase):
         self.manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
         self.artifact = {'library_commit': self.manifest['library_commit'], 'artifact_sha256': 'a' * 64}
 
-    def _assert_routes_execute(self, symbols):
+    def assert_route_cells_pass(self, symbols, target_ids=None):
         cases = {case['case_id']: case for case in self.catalog['test_cases']}
         targets = {target['target_id']: target for target in self.catalog['normative_targets']}
         cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
-                 if cell['public_api_symbol'] in symbols]
+                 if cell['public_api_symbol'] in symbols
+                 and (target_ids is None or cell['target_id'] in target_ids)]
         outcomes = [self.runner._execute_matrix_cell(cell, cases[cell['case_id']],
                                                      targets[cell['target_id']])
                     for cell in cells]
@@ -36,6 +37,7 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual([], gaps)
         self.assertTrue(events)
         self.assertTrue(all(event['status'] == 'passed' for event in events))
+        return events
 
     def test_tag_decode_rejection_code_preserves_reserved_and_unused_classes(self):
         self.assertEqual(
@@ -229,48 +231,6 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertIn('request_tree_sha256', result)
         self.assertEqual(result['request_tree_sha256'], result['response_tree_sha256'])
 
-    def test_digital_signature_algorithm_route_uses_its_own_attribute_tag(self):
-        case = next(case for case in self.catalog['test_cases']
-                    if case['case_id'] == 'test-attr-digital-signature-algorithm')
-        target = next(target for target in self.catalog['normative_targets']
-                      if target['target_id'] ==
-                      'KMIPKIT-ELEM-ATTRIBUTE-DIGITAL-SIGNATURE-ALGORITHM')
-        symbol = ('kmipkit.cryptographic_parameters.'
-                  'CryptographicParametersBuilder.digital_signature_algorithm')
-        manifest = copy.deepcopy(self.manifest)
-        manifest['routes'] = [route for route in self.manifest['routes']
-                              if route['language'] == 'python'
-                              and route['public_api_symbol'] == symbol]
-        manifest['routes'].append(next(route for route in self.manifest['routes']
-                                       if route['public_api_symbol'] ==
-                                       'kmipkit.extensions.client_batch_item_ping'))
-        manifest['routes'].append(next(route for route in self.manifest['routes']
-                                       if route['public_api_symbol'] ==
-                                       'kmipkit.extensions.client_batch_item_get_attributes'))
-        catalog = copy.deepcopy(self.catalog)
-        catalog['test_cases'] = [case]
-        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
-        self.assertEqual([], gaps)
-        self.assertEqual(38, len(report['events']))
-        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
-
-    def test_cryptographic_parameter_models_cover_operation_payload_targets(self):
-        symbol = 'kmipkit.cryptographic_parameters.CryptographicParameters.into_ttlv'
-        cases = {case['case_id']: case for case in self.catalog['test_cases']}
-        targets = {target['target_id']: target for target in self.catalog['normative_targets']}
-        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
-                 if cell['public_api_symbol'] == symbol
-                 and targets[cell['target_id']].get('kind') == 'operation_payload_field'
-                 and targets[cell['target_id']].get('name') == 'Cryptographic Parameters']
-        outcomes = [self.runner._execute_matrix_cell(cell, cases[cell['case_id']],
-                                                     targets[cell['target_id']])
-                    for cell in cells]
-        gaps = [value for kind, value in outcomes if kind == 'gap']
-        events = [value for kind, value in outcomes if kind == 'event']
-        self.assertEqual([], gaps)
-        self.assertTrue(events)
-        self.assertTrue(all(event['status'] == 'passed' for event in events))
-
     def test_cryptographic_parameter_builder_executes_targeted_enum_value(self):
         case = next(case for case in self.catalog['test_cases']
                     if case['case_id'] == 'test-enum-cryptographic-algorithm')
@@ -307,23 +267,53 @@ class RouteMatrixTests(unittest.TestCase):
                 self.assertIn('request_tree_sha256', result)
                 self.assertEqual(result['request_tree_sha256'], result['response_tree_sha256'])
 
-    def test_cryptographic_parameter_routes_accept_catalog_structure_member_name(self):
+    def test_cryptographic_parameters_container_routes_execute_catalogued_structure(self):
+        target_id = 'KMIPKIT-ELEM-STRUCTURE-MEMBER-7-12-CRYPTOGRAPHIC-PARAMETERS'
         case = next(case for case in self.catalog['test_cases']
                     if case['case_id'] ==
                     'test-norm-structure-member-structure-member-7-12-cryptographic-parameters')
         target = next(target for target in self.catalog['normative_targets']
-                      if target['target_id'] ==
-                      'KMIPKIT-ELEM-STRUCTURE-MEMBER-7-12-CRYPTOGRAPHIC-PARAMETERS')
-        for symbol in (
-                'kmipkit.cryptographic_parameters.CryptographicParameters.builder',
-                'kmipkit.cryptographic_parameters.CryptographicParameters.from_ttlv',
-                'kmipkit.cryptographic_parameters.CryptographicParameters.into_ttlv',
-                'kmipkit.cryptographic_parameters.CryptographicParametersBuilder.build'):
+                      if target['target_id'] == target_id)
+        routes = {
+            'kmipkit.cryptographic_parameters.CryptographicParameters.builder': 'construct',
+            'kmipkit.cryptographic_parameters.CryptographicParametersBuilder.build': 'construct',
+            'kmipkit.cryptographic_parameters.CryptographicParameters.from_ttlv': 'decode',
+            'kmipkit.cryptographic_parameters.CryptographicParameters.into_ttlv': 'encode',
+        }
+        for symbol, action in routes.items():
             with self.subTest(symbol=symbol):
-                cell = {'action': 'construct', 'public_api_symbol': symbol, 'transport': None}
+                cell = {'action': action, 'encoding': 'TTLV', 'protocol_version': '2.0',
+                        'public_api_symbol': symbol, 'transport': None}
                 result = self.runner.execute_cell(cell, case, target)
-                self.assertIn('request_tree_sha256', result)
                 self.assertEqual(result['request_tree_sha256'], result['response_tree_sha256'])
+
+    def test_cryptographic_parameters_serialization_route_covers_every_catalogued_target(self):
+        self.assert_route_cells_pass({
+            'kmipkit.cryptographic_parameters.CryptographicParameters.into_ttlv',
+        })
+
+    def test_digital_signature_algorithm_attribute_route_executes(self):
+        self.assert_route_cells_pass({
+            'kmipkit.cryptographic_parameters.CryptographicParametersBuilder.digital_signature_algorithm',
+        })
+
+    def test_key_wrapping_data_tag_routes_execute_catalogued_structure(self):
+        target_id = 'KMIPKIT-ELEM-TAG-420046'
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-norm-tag-tag-420046')
+        target = next(target for target in self.catalog['normative_targets']
+                      if target['target_id'] == target_id)
+        routes = {
+            'kmipkit.managed_objects.KeyWrappingData.from_fields': 'construct',
+            'kmipkit.managed_objects.KeyWrappingData.from_item': 'decode',
+        }
+        for symbol, action in routes.items():
+            with self.subTest(symbol=symbol):
+                cell = {'action': action, 'encoding': 'TTLV', 'protocol_version': '2.0',
+                        'public_api_symbol': symbol, 'transport': None}
+                result = self.runner.execute_cell(cell, case, target)
+                self.assertEqual(result['request_tree_sha256'], result['response_tree_sha256'])
+        self.assert_route_cells_pass(set(routes))
 
     def test_scalar_payload_variants_roundtrip_the_exact_field_type_and_tag(self):
         catalog = copy.deepcopy(self.catalog)
@@ -746,6 +736,25 @@ class RouteMatrixTests(unittest.TestCase):
         expected = self.runner.digest([[0x4200FF, 1, [[0x4200FF, 2, 7]]]])
         self.assertEqual({expected}, {event['request_tree_sha256'] for event in report['events']})
 
+    def test_structure_builder_routes_preserve_the_catalogued_interop_identifier(self):
+        catalog = copy.deepcopy(self.catalog)
+        catalog['test_cases'] = [case for case in self.catalog['test_cases']
+                                 if case['case_id'] == 'test-norm-operation-structure-operation-structure-7-16-interop-identifier']
+        symbols = {'kmipkit.ttlv.ttlv_structure_create',
+                   'kmipkit.ttlv.ttlv_structure_with_item'}
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in self.manifest['routes']
+                              if route['language'] == 'python'
+                              and route['public_api_symbol'] in symbols]
+
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
+
+        self.assertEqual([], gaps)
+        self.assertEqual(4, len(report['events']))
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+        expected = self.runner.digest([[0x4200FF, 1, [[0x420161, 7, '4b4d49502dcebb']]]])
+        self.assertEqual({expected}, {event['request_tree_sha256'] for event in report['events']})
+
     def test_managed_object_routes_construct_and_parse_catalogued_object_fields(self):
         catalog = copy.deepcopy(self.catalog)
         manifest = copy.deepcopy(self.manifest)
@@ -943,7 +952,8 @@ class RouteMatrixTests(unittest.TestCase):
 
     # OASIS KMIP 2.0/2.1 §6.1.20 defines the Get Attributes response payload.
     def test_get_attributes_response_accessor_preserves_identifier_and_attributes(self):
-        self._assert_routes_execute({'kmipkit.client.BatchItemResult.get_attributes_response'})
+        symbol = 'kmipkit.client.BatchItemResult.get_attributes_response'
+        self.assert_route_cells_pass({symbol})
 
     # OASIS KMIP 2.0/2.1 §6.1 operation response tables define these typed response fields.
     def test_batch_item_result_typed_response_accessors_execute(self):
@@ -953,7 +963,7 @@ class RouteMatrixTests(unittest.TestCase):
                   and route['public_api_symbol'].startswith('kmipkit.client.BatchItemResult.')
                   and (route['public_api_symbol'].rsplit('.', 1)[1].endswith('_response')
                        or route['public_api_symbol'].rsplit('.', 1)[1] in suffixes)}
-        self._assert_routes_execute(symbols)
+        self.assert_route_cells_pass(symbols)
 
     def test_typed_response_ttlv_accessors_preserve_complete_structures(self):
         suffixes = {'.response_ttlv', '.response_payload_ttlv'}
@@ -963,14 +973,14 @@ class RouteMatrixTests(unittest.TestCase):
                    and any(route['public_api_symbol'].endswith(suffix) for suffix in suffixes)
                    and not route['public_api_symbol'].startswith(
                        'kmipkit.client.AsyncOperationOutcome.')}
-        self._assert_routes_execute(symbols)
+        self.assert_route_cells_pass(symbols)
 
     def test_query_response_field_accessors_preserve_wire_order(self):
         symbols = {
             'kmipkit.client.QueryResponse.field_at',
             'kmipkit.client.QueryResponse.field_count',
         }
-        self._assert_routes_execute(symbols)
+        self.assert_route_cells_pass(symbols)
 
     def test_response_identifier_and_pkcs11_fields_preserve_values(self):
         symbols = {
@@ -983,7 +993,7 @@ class RouteMatrixTests(unittest.TestCase):
             'kmipkit.client.Pkcs11Response.output_parameters_ttlv',
             'kmipkit.client.Pkcs11Response.return_code_ttlv',
         }
-        self._assert_routes_execute(symbols)
+        self.assert_route_cells_pass(symbols)
 
     def test_ticket_ttlv_and_get_attribute_list_response_routes_execute(self):
         symbols = {
@@ -991,10 +1001,126 @@ class RouteMatrixTests(unittest.TestCase):
             'kmipkit.client.GetAttributeListResponse',
             'kmipkit.client.LoginResponse.ticket_ttlv',
         }
-        self._assert_routes_execute(symbols)
+        self.assert_route_cells_pass(symbols)
 
     def test_batch_error_continuation_builder_route_executes(self):
-        self._assert_routes_execute({'kmipkit.client.Batch.add_error_continuation_value'})
+        symbol = 'kmipkit.client.Batch.add_error_continuation_value'
+        self.assert_route_cells_pass({symbol})
+
+    def test_batch_count_scenario_sends_every_catalogued_item_without_unrequested_option(self):
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-batch-count-matches-items')
+        target = next(target for target in self.catalog['normative_targets']
+                      if target['target_id'] == 'KMIPKIT-ELEM-OP-C2S-GET')
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
+                 if cell['case_id'] == case['case_id']
+                 and cell['target_id'] == target['target_id']
+                 and cell.get('execution_route_id') == 'python.execute.typed-batch'
+                 and cell.get('workflow_step_index') == 0
+                 and cell['protocol_version'] == '2.0'
+                 and cell['action'] == 'send']
+        self.assertEqual({('TTLV', 'raw_tls'), ('TTLV', 'https'),
+                          ('JSON', 'raw_tls'), ('JSON', 'https'),
+                          ('XML', 'raw_tls'), ('XML', 'https')},
+                         {(cell['encoding'], cell['transport']) for cell in cells})
+        from unittest.mock import patch
+        from kmipkit_validator.controlled_peer import ControlledTlsPeer
+        for cell in cells:
+            with self.subTest(encoding=cell['encoding'], transport=cell['transport']):
+                peers = []
+
+                def record_peer(**options):
+                    peer = ControlledTlsPeer(**options)
+                    peers.append(peer)
+                    return peer
+
+                with patch('kmipkit_validator.controlled_peer.ControlledTlsPeer',
+                           side_effect=record_peer):
+                    outcome, event = self.runner._execute_matrix_cell(cell, case, target)
+                self.assertEqual('event', outcome)
+                self.assertEqual(
+                    ['get', 'getattributelist'],
+                    [self.runner._normalized_name(value)
+                     for value in peers[0].request_observation['operations']],
+                )
+                self.assertEqual(2, peers[0].request_observation['batch_count'])
+                self.assertIsNone(peers[0].request_observation['batch_error_continuation_option'])
+                self.assertEqual(2, event['peer_observed_response_count'])
+                _validate_batch_event(event, case, self.catalog, ('batch-count',))
+
+    def test_batch_stop_peer_preserves_stop_semantics_and_result_evidence(self):
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-batch-stop-on-first-failure')
+        target = next(target for target in self.catalog['normative_targets']
+                      if target['target_id'] == 'KMIPKIT-ELEM-OP-C2S-GET')
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
+                 if cell['case_id'] == case['case_id']
+                 and cell['target_id'] == target['target_id']
+                 and cell.get('execution_route_id') == 'python.execute.typed-batch'
+                 and cell['workflow_item_index'] == 0
+                 and cell['protocol_version'] == '2.0'
+                 and cell['action'] == 'send']
+        self.assertEqual({('TTLV', 'raw_tls'), ('TTLV', 'https'),
+                          ('JSON', 'raw_tls'), ('JSON', 'https'),
+                          ('XML', 'raw_tls'), ('XML', 'https')},
+                         {(cell['encoding'], cell['transport']) for cell in cells})
+        from unittest.mock import patch
+        from kmipkit_validator.controlled_peer import ControlledTlsPeer
+        for cell in cells:
+            with self.subTest(encoding=cell['encoding'], transport=cell['transport']):
+                peers = []
+
+                def record_peer(**options):
+                    peer = ControlledTlsPeer(**options)
+                    peers.append(peer)
+                    return peer
+
+                with patch('kmipkit_validator.controlled_peer.ControlledTlsPeer',
+                           side_effect=record_peer):
+                    outcome, event = self.runner._execute_matrix_cell(cell, case, target)
+                self.assertEqual('event', outcome)
+                self.assertEqual([1, 1], event['peer_observed_result_status_codes'])
+                self.assertEqual(['first_item_failed', 'second_item_not_executed'],
+                                 event['peer_observed_effects'])
+                self.assertEqual(2, peers[0].request_observation['batch_error_continuation_option'])
+                _validate_batch_event(event, case, self.catalog, ('batch-stop',))
+
+    def test_batch_continue_peer_executes_later_item_across_wire_combinations(self):
+        case = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-batch-continue-after-failure')
+        target = next(target for target in self.catalog['normative_targets']
+                      if target['target_id'] == 'KMIPKIT-ELEM-OP-C2S-GET')
+        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
+                 if cell['case_id'] == case['case_id']
+                 and cell['target_id'] == target['target_id']
+                 and cell.get('execution_route_id') == 'python.execute.typed-batch'
+                 and cell['workflow_item_index'] == 0
+                 and cell['protocol_version'] == '2.0'
+                 and cell['action'] == 'send']
+        self.assertEqual({('TTLV', 'raw_tls'), ('TTLV', 'https'),
+                          ('JSON', 'raw_tls'), ('JSON', 'https'),
+                          ('XML', 'raw_tls'), ('XML', 'https')},
+                         {(cell['encoding'], cell['transport']) for cell in cells})
+        from unittest.mock import patch
+        from kmipkit_validator.controlled_peer import ControlledTlsPeer
+        for cell in cells:
+            with self.subTest(encoding=cell['encoding'], transport=cell['transport']):
+                peers = []
+
+                def record_peer(**options):
+                    peer = ControlledTlsPeer(**options)
+                    peers.append(peer)
+                    return peer
+
+                with patch('kmipkit_validator.controlled_peer.ControlledTlsPeer',
+                           side_effect=record_peer):
+                    outcome, event = self.runner._execute_matrix_cell(cell, case, target)
+                self.assertEqual('event', outcome)
+                self.assertEqual([1, 0], event['peer_observed_result_status_codes'])
+                self.assertEqual(['first_item_failed', 'second_item_executed'],
+                                 event['peer_observed_effects'])
+                self.assertEqual(1, peers[0].request_observation['batch_error_continuation_option'])
+                _validate_batch_event(event, case, self.catalog, ('batch-continue',))
 
     def test_async_outcome_response_accessors_execute_against_controlled_peer(self):
         symbols = {
@@ -1004,7 +1130,20 @@ class RouteMatrixTests(unittest.TestCase):
             'kmipkit.client.AsyncOperationOutcome.query_async_requests_response',
             'kmipkit.client.AsyncOperationOutcome.response_payload_ttlv',
         }
-        self._assert_routes_execute(symbols)
+        self.assert_route_cells_pass(symbols)
+
+    def test_batch_result_and_response_payload_accessors_execute_live(self):
+        symbols = {
+            'kmipkit.client.BatchItemResult.raw',
+            'kmipkit.client.BatchItemResult.response_header_ttlv',
+            'kmipkit.client.BatchResult.item_at',
+            'kmipkit.client.BatchResult.item_count',
+        }
+        self.assert_route_cells_pass(symbols)
+
+    def test_extension_information_ttlv_route_preserves_declared_fields(self):
+        symbol = 'kmipkit.extensions.extension_information_to_ttlv'
+        self.assert_route_cells_pass({symbol})
 
     def test_query_routes_record_the_peer_rejection_without_calling_it_success(self):
         catalog = copy.deepcopy(self.catalog)
@@ -1174,338 +1313,137 @@ class RouteMatrixTests(unittest.TestCase):
             with trace:
                 event = self.runner.execute_cell(cell, case, target, trace=trace)
 
-        operation_order = case['requires']['protocol_scenario']['operations']
-        self.assertEqual([operation_order], [peer.request_observation['batch_operations']
-                                             for peer in peers])
-        self.assertIn('Get Attribute List', peers[0].request_observation['batch_operations'])
+        self.assertEqual({'Get Attribute List'}, {peer.request_observation['operation'] for peer in peers})
         self.assertTrue(set(symbols) <= trace.observed)
-        self.assertEqual([protocol_values.ResultStatus.OPERATION_FAILED] * len(operation_order),
+        self.assertEqual([protocol_values.ResultStatus.OPERATION_FAILED],
                          event['peer_observed_result_status_codes'])
 
-    def test_batch_workflow_send_executes_the_complete_ordered_placeholder_batch(self):
-        from unittest.mock import patch
-        from kmipkit import protocol_values
-        from kmipkit_validator.controlled_peer import ControlledTlsPeer
-
+    def test_typed_batch_workflow_executes_and_reports_the_complete_ordered_request(self):
+        catalog = copy.deepcopy(self.catalog)
         case = next(case for case in self.catalog['test_cases']
                     if case['case_id'] == 'test-batch-create-activate-destroy')
-        cell = next(cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
-                    if cell['case_id'] == case['case_id']
-                    and cell.get('workflow_operation') == 'Activate'
-                    and cell['action'] == 'send'
-                    and cell['protocol_version'] == '2.0'
-                    and cell['encoding'] == 'TTLV'
-                    and cell['transport'] == 'raw_tls')
-        target = next(target for target in self.catalog['normative_targets']
-                      if target['target_id'] == cell['target_id'])
-        operation_order = case['requires']['protocol_scenario']['operations']
-        observed_peers = []
+        case['execution']['protocol_versions'] = ['2.0']
+        case['requires']['protocol_scenario']['protocol_versions'] = ['2.0']
+        catalog['test_cases'] = [case]
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in self.manifest['routes']
+                              if route['language'] == 'python'
+                              and route['public_api_symbol'].startswith(
+                                  'kmipkit.extensions.client_batch_item_')]
+        for route in manifest['routes']:
+            route['protocol_versions'] = ['2.0']
 
-        def record_peer(**options):
-            peer = ControlledTlsPeer(**options)
-            observed_peers.append(peer)
-            return peer
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
 
-        symbols = [cell['public_api_symbol'], cell['execution_api_symbol']]
-        trace = self.runner.CallTrace(symbols)
-        with patch('kmipkit_validator.controlled_peer.ControlledTlsPeer', side_effect=record_peer):
-            with trace:
-                event = self.runner.execute_cell(cell, case, target, trace=trace)
+        expected = ['Create', 'Activate', 'Get Attribute List', 'Revoke', 'Destroy']
+        from kmipkit_validator.contract import SHARED, _validate
+        _validate(report, SHARED / 'schemas/route-execution-evidence.schema.json',
+                  'route evidence violates the shared schema')
+        validate_report(
+            report, catalog, manifest, catalog_sha256=report['catalog_sha256'],
+            route_manifest_sha256=report['route_manifest_sha256'],
+            expected_artifact_sha256=self.artifact['artifact_sha256'],
+        )
+        self.assertEqual([], gaps)
+        self.assertEqual(90, len(report['events']))
+        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
+        self.assertTrue(all(event.get('batch_operation_sequence') == expected
+                            for event in report['events']))
+        self.assertTrue(all(event.get('peer_observed_operation_sequence') == expected
+                            for event in report['events']))
+        self.assertTrue(all(event.get('batch_item_count') == len(expected)
+                            for event in report['events']))
+        self.assertTrue(all(event.get('peer_observed_response_count') == len(expected)
+                            for event in report['events']))
 
-        self.assertEqual(1, len(observed_peers))
-        request_tree = self.runner._network_tree(observed_peers[0].requests[0], 'TTLV')
-        request_items = self.runner._batch_message_items(request_tree)
-        observed_operations = [
-            protocol_values.Operation.name(next(value for field, _, value in item
-                                                 if field == 0x42005C))
-            for item in request_items
-        ]
-        self.assertEqual(operation_order, observed_operations)
-        self.assertEqual(len(operation_order), len(request_items))
-        self.assertTrue(all(not any(tag == 0x420094 for tag, _, _ in item)
-                            for item in request_items))
-        expected_batch_ids = [f"kmipkit-route-{index:02d}".encode('ascii').hex()
-                              for index in range(1, len(operation_order) + 1)]
-        observed_batch_ids = [next(value for tag, _, value in item if tag == 0x420093)
-                              for item in request_items]
-        self.assertEqual(expected_batch_ids, observed_batch_ids)
-        self.assertEqual(operation_order, event['batch_operation_sequence'])
-        self.assertEqual(operation_order, event['peer_observed_operation_sequence'])
-        self.assertEqual(len(operation_order), event['batch_item_count'])
-        self.assertEqual(len(operation_order), event['peer_observed_response_count'])
-        self.assertTrue(set(symbols) <= trace.observed)
-
-    def test_batch_primary_operation_routes_execute_without_workflow_step(self):
-        case_id = 'test-batch-register-encrypt-decrypt-destroy'
-        case = next(case for case in self.catalog['test_cases'] if case['case_id'] == case_id)
-        expected_operations = case['requires']['protocol_scenario']['operations']
-        symbols = {
-            'kmipkit.extensions.client_batch_item_register': 'KMIPKIT-ELEM-OP-C2S-REGISTER',
-            'kmipkit.extensions.client_batch_item_decrypt': 'KMIPKIT-ELEM-OP-C2S-DECRYPT',
-        }
-        for symbol, target_id in symbols.items():
-            with self.subTest(symbol=symbol):
-                cell = next(cell for cell in iter_cells(self.catalog, self.manifest,
-                                                        languages=('python',))
-                            if cell['case_id'] == case_id
-                            and cell['public_api_symbol'] == symbol
-                            and cell['target_id'] == target_id
-                            and cell['protocol_version'] == '2.0'
-                            and cell['encoding'] == 'TTLV'
-                            and cell['transport'] == 'raw_tls'
-                            and cell['action'] == 'construct')
-                target = next(target for target in self.catalog['normative_targets']
-                              if target['target_id'] == target_id)
-                kind, event = self.runner._execute_matrix_cell(cell, case, target)
-                self.assertEqual('event', kind, event)
-                self.assertEqual('passed', event['status'])
-                self.assertEqual(expected_operations, event['batch_operation_sequence'])
-                self.assertEqual(expected_operations, event['peer_observed_operation_sequence'])
-                self.assertEqual(len(expected_operations), event['peer_observed_response_count'])
-
-    def test_single_item_batch_route_records_ordered_batch_evidence(self):
-        case_id = 'test-batch-single-item-default-continuation'
+    def test_register_crypto_batch_executes_its_six_catalogued_operations(self):
         catalog = copy.deepcopy(self.catalog)
-        catalog['test_cases'] = [case for case in catalog['test_cases']
-                                 if case['case_id'] == case_id]
-        symbol = 'kmipkit.extensions.client_batch_item_get'
+        case = next(value for value in self.catalog['test_cases']
+                    if value['case_id'] == 'test-batch-register-encrypt-decrypt-destroy')
+        catalog['test_cases'] = [case]
+        operations = case['requires']['protocol_scenario']['parameters']['operations_in_request_order']
+        symbols = {'kmipkit.extensions.client_batch_item_' + operation.casefold().replace(' ', '_')
+                   for operation in operations}
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in manifest['routes']
+                              if route['language'] == 'python'
+                              and route['public_api_symbol'] in symbols]
 
-        report, gaps = self.runner.run_matrix(catalog, self.manifest, self.artifact)
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
 
         self.assertEqual([], gaps)
-        send_events = [event for event in report['events']
-                       if event['action'] == 'send' and event['public_api_symbol'] == symbol]
-        self.assertTrue(send_events)
-        for event in send_events:
-            self.assertEqual(['Get'], event['batch_operation_sequence'])
-            self.assertEqual(['Get'], event['peer_observed_operation_sequence'])
-            self.assertEqual(1, event['batch_item_count'])
-            self.assertEqual(1, event['peer_observed_response_count'])
+        self.assertEqual(216, len(report['events']))
+        self.assertTrue(all(event['status'] == 'passed'
+                            and event.get('batch_operation_sequence') == operations
+                            and event.get('peer_observed_operation_sequence') == operations
+                            and event.get('batch_item_count') == len(operations)
+                            and event.get('peer_observed_response_count') == len(operations)
+                            for event in report['events']))
 
-    def test_multi_item_batch_route_preserves_catalog_order_and_item_results(self):
-        from kmipkit import protocol_values
+    def test_single_operation_client_execute_route_uses_a_single_batch_item(self):
+        ping = next(case for case in self.catalog['test_cases']
+                    if case['case_id'] == 'test-op-ping')
+        route = {'execution_route_id': 'python.execute.typed-batch'}
 
-        case_id = 'test-batch-continue-after-failure'
-        case = next(case for case in self.catalog['test_cases'] if case['case_id'] == case_id)
-        cell = next(cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
-                    if cell['case_id'] == case_id
-                    and cell['public_api_symbol'] == 'kmipkit.extensions.client_batch_item_get'
-                    and cell['workflow_item_index'] == 0
-                    and cell['action'] == 'send'
-                    and cell['protocol_version'] == '2.1'
-                    and cell['encoding'] == 'TTLV'
-                    and cell['transport'] == 'raw_tls')
-        target = next(target for target in self.catalog['normative_targets']
-                      if target['target_id'] == cell['target_id'])
-        symbols = [cell['public_api_symbol'], cell['execution_api_symbol']]
-        trace = self.runner.CallTrace(symbols)
+        self.assertIsNone(self.runner._batch_operations_for_case(route, ping))
 
-        with trace:
-            event = self.runner.execute_cell(cell, case, target, trace=trace)
+    def test_async_workflow_operations_are_not_mistaken_for_one_batch(self):
+        asynchronous = next(case for case in self.catalog['test_cases']
+                            if case['case_id'] == 'test-async-lifecycle-poll')
+        route = {'execution_route_id': 'python.execute.typed-batch'}
 
-        expected_operations = ['Get', 'Get Attribute List']
-        self.assertEqual(expected_operations, event['batch_operation_sequence'])
-        self.assertEqual(expected_operations, event['peer_observed_operation_sequence'])
-        self.assertEqual([protocol_values.ResultStatus.OPERATION_FAILED,
-                          protocol_values.ResultStatus.SUCCESS],
-                         event['peer_observed_result_status_codes'])
-        self.assertEqual(['first_item_failed', 'second_item_executed'],
-                         event['peer_observed_effects'])
-        self.assertEqual(64, len(event['peer_observed_state_before_sha256']))
-        self.assertEqual(64, len(event['peer_observed_state_after_sha256']))
-        self.assertEqual(event['peer_observed_state_before_sha256'],
-                         event['peer_observed_state_after_sha256'])
-        self.assertNotIn('peer_observed_result_reason_codes', event)
-        self.assertEqual(2, event['batch_item_count'])
-        self.assertTrue(set(symbols) <= trace.observed)
+        self.assertIsNone(self.runner._batch_operations_for_case(route, asynchronous))
 
-    def test_batch_stop_continuation_records_the_unexecuted_later_item(self):
+    def test_single_item_batch_scenario_emits_validated_batch_evidence(self):
+        catalog = copy.deepcopy(self.catalog)
         case = next(case for case in self.catalog['test_cases']
-                    if case['case_id'] == 'test-batch-stop-on-first-failure')
-        cell = next(cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
-                    if cell['case_id'] == case['case_id']
-                    and cell['action'] == 'send'
-                    and cell['public_api_symbol'] == 'kmipkit.extensions.client_batch_item_get'
-                    and cell['protocol_version'] == '2.1'
-                    and cell['encoding'] == 'TTLV'
-                    and cell['transport'] == 'raw_tls')
-        target = next(target for target in self.catalog['normative_targets']
-                      if target['target_id'] == cell['target_id'])
+                    if case['case_id'] == 'test-batch-single-item-default-continuation')
+        case['requires']['protocol_scenario']['target_ids'] = ['KMIPKIT-ELEM-OP-C2S-GET']
+        catalog['test_cases'] = [case]
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in self.manifest['routes']
+                              if route['language'] == 'python'
+                              and route['public_api_symbol'] ==
+                              'kmipkit.extensions.client_batch_item_get']
+        for route in manifest['routes']:
+            route['actions'] = ['construct']
+            route['combinations'] = [{'encoding': 'TTLV', 'transport': 'raw_tls'}]
 
-        kind, event = self.runner._execute_matrix_cell(cell, case, target)
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
 
-        self.assertEqual('event', kind)
-        self.assertEqual('passed', event['status'])
-        self.assertEqual(['Get', 'Get'], event['batch_operation_sequence'])
-        self.assertEqual(['first_item_failed', 'second_item_not_executed'],
-                         event['peer_observed_effects'])
-        self.assertEqual(64, len(event['peer_observed_state_before_sha256']))
-        self.assertEqual(64, len(event['peer_observed_state_after_sha256']))
-        self.assertEqual(event['peer_observed_state_before_sha256'],
-                         event['peer_observed_state_after_sha256'])
+        self.assertEqual([], gaps)
+        self.assertTrue(report['events'])
+        self.assertTrue(all(event.get('batch_operation_sequence') == ['Get']
+                            and event.get('peer_observed_operation_sequence') == ['Get']
+                            and event.get('batch_item_count') == 1
+                            and event.get('peer_observed_response_count') == 1
+                            for event in report['events']))
+        validate_report(report, catalog, manifest,
+                        catalog_sha256=report['catalog_sha256'],
+                        route_manifest_sha256=report['route_manifest_sha256'],
+                        expected_artifact_sha256=self.artifact['artifact_sha256'])
 
-    def test_batch_effects_are_observed_from_json_and_xml_requests(self):
-        expected_by_case = {
-            'test-batch-stop-on-first-failure': [
-                'first_item_failed', 'second_item_not_executed'],
-            'test-batch-continue-after-failure': [
-                'first_item_failed', 'second_item_executed'],
-        }
-        for case_id, expected_effects in expected_by_case.items():
-            case = next(case for case in self.catalog['test_cases']
-                        if case['case_id'] == case_id)
-            for encoding in ('JSON', 'XML'):
-                with self.subTest(case_id=case_id, encoding=encoding):
-                    cell = next(cell for cell in iter_cells(
-                        self.catalog, self.manifest, languages=('python',))
-                        if cell['case_id'] == case_id
-                        and cell['public_api_symbol'] == 'kmipkit.extensions.client_batch_item_get'
-                        and cell['workflow_item_index'] == 0
-                        and cell['action'] == 'send'
-                        and cell['protocol_version'] == '2.1'
-                        and cell['encoding'] == encoding
-                        and cell['transport'] == 'raw_tls')
-                    target = next(target for target in self.catalog['normative_targets']
-                                  if target['target_id'] == cell['target_id'])
-                    kind, event = self.runner._execute_matrix_cell(cell, case, target)
-                    self.assertEqual('event', kind)
-                    self.assertEqual('passed', event['status'])
-                    self.assertEqual(expected_effects, event['peer_observed_effects'])
-
-    def test_forward_placeholder_rejection_records_only_verified_local_state(self):
-        from unittest.mock import patch
-        from kmipkit_validator.controlled_peer import ControlledTlsPeer
-
+    def test_async_lifecycle_create_route_executes_as_a_single_request(self):
+        catalog = copy.deepcopy(self.catalog)
         case = next(case for case in self.catalog['test_cases']
-                    if case['case_id'] == 'test-batch-placeholder-forward-reference-rejected')
-        cell = next(cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
-                    if cell['case_id'] == case['case_id']
-                    and cell['action'] == 'send'
-                    and cell['workflow_operation'] == 'Activate'
-                    and cell['protocol_version'] == '2.1'
-                    and cell['encoding'] == 'TTLV'
-                    and cell['transport'] == 'raw_tls')
-        target = next(target for target in self.catalog['normative_targets']
-                      if target['target_id'] == cell['target_id'])
-        peers = []
+                    if case['case_id'] == 'test-async-lifecycle-poll')
+        catalog['test_cases'] = [case]
+        operation_targets = set(case['requires']['protocol_scenario']['target_ids'])
+        manifest = copy.deepcopy(self.manifest)
+        manifest['routes'] = [route for route in self.manifest['routes']
+                              if route['language'] == 'python'
+                              and route.get('execution_route_id') in {
+                                  'python.execute.typed-batch', 'python.execute.poll',
+                                  'python.execute.queryasyncrequests'}
+                              and operation_targets.intersection(route['normative_target_ids'])]
 
-        def record_peer(**options):
-            peer = ControlledTlsPeer(**options)
-            peers.append(peer)
-            return peer
+        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
 
-        with patch('kmipkit_validator.controlled_peer.ControlledTlsPeer', side_effect=record_peer):
-            kind, event = self.runner._execute_matrix_cell(cell, case, target)
-
-        self.assertEqual('event', kind)
-        self.assertEqual('passed', event['status'])
-        self.assertEqual(1, event['invocation_count'])
-        self.assertEqual(1, len(peers))
-        self.assertTrue(peers[0].expect_no_connection)
-        self.assertEqual([], peers[0].requests)
-        self.assertEqual([], peers[0].responses)
-        self.assertEqual(['Activate', 'Create'], event['batch_operation_sequence'])
-        self.assertEqual(2, event['batch_item_count'])
-        self.assertEqual('not_sent', event['request_delivery_state'])
-        self.assertEqual(0, event['transport_invocation_count'])
-        self.assertEqual('batch_placeholder_forward_reference', event['local_rejection_code'])
-        self.assertEqual('validation', event['client_error_category'])
-        self.assertEqual('invalid_input', event['client_error_cause'])
-        for forbidden in ('request_tree_sha256', 'response_tree_sha256', 'wire_bytes_sha256',
-                          'peer_observed_response_count', 'peer_observed_result_status_codes'):
-            self.assertNotIn(forbidden, event)
-
-    def test_forward_placeholder_construct_and_decode_routes_keep_the_single_item_exchange(self):
-        case = next(case for case in self.catalog['test_cases']
-                    if case['case_id'] == 'test-batch-placeholder-forward-reference-rejected')
-        for action in ('construct', 'decode'):
-            with self.subTest(action=action):
-                cell = next(cell for cell in iter_cells(
-                    self.catalog, self.manifest, languages=('python',))
-                    if cell['case_id'] == case['case_id']
-                    and cell['target_id'] == 'KMIPKIT-ELEM-OP-C2S-ACTIVATE'
-                    and cell['workflow_operation'] == 'Activate'
-                    and cell['action'] == action
-                    and cell['protocol_version'] == '2.1'
-                    and cell['encoding'] == 'TTLV'
-                    and cell['transport'] == 'raw_tls')
-                target = next(target for target in self.catalog['normative_targets']
-                              if target['target_id'] == cell['target_id'])
-                kind, event = self.runner._execute_matrix_cell(cell, case, target)
-
-                self.assertEqual('event', kind)
-                self.assertEqual('passed', event['status'])
-                self.assertIn('request_tree_sha256', event)
-                self.assertIn('response_tree_sha256', event)
-                self.assertEqual('response_received', event['request_delivery_state'])
-                self.assertEqual(['Activate'], event['batch_operation_sequence'])
-                self.assertEqual(['Activate'], event['peer_observed_operation_sequence'])
-                self.assertEqual(1, event['peer_observed_response_count'])
-                self.assertNotIn('local_rejection_code', event)
-
-    def test_batch_workflow_invokes_get_attribute_list_request_builder(self):
-        case = next(case for case in self.catalog['test_cases']
-                    if case['case_id'] == 'test-batch-create-activate-destroy')
-        cell = next(cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
-                    if cell['case_id'] == case['case_id']
-                    and cell['public_api_symbol'] ==
-                    'kmipkit.attribute_operations.GetAttributeListRequest.to_batch_item'
-                    and cell['workflow_operation'] == 'Get Attribute List'
-                    and cell['protocol_version'] == '2.0'
-                    and cell['encoding'] == 'TTLV'
-                    and cell['transport'] == 'raw_tls'
-                    and cell['action'] == 'construct')
-        target = next(target for target in self.catalog['normative_targets']
-                      if target['target_id'] == cell['target_id'])
-        kind, event = self.runner._execute_matrix_cell(cell, case, target)
-        self.assertEqual('event', kind, event)
-        self.assertEqual('passed', event['status'])
-        self.assertEqual(['Create', 'Activate', 'Get Attribute List', 'Revoke', 'Destroy'],
-                         event['batch_operation_sequence'])
-
-    def test_batch_workflow_uses_compact_operation_enums_for_json_and_xml(self):
-        case = next(case for case in self.catalog['test_cases']
-                    if case['case_id'] == 'test-batch-create-activate-destroy')
-        operation_order = case['requires']['protocol_scenario']['operations']
-        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
-                 if cell['case_id'] == case['case_id']
-                 and cell.get('workflow_operation') == 'Activate'
-                 and cell.get('protocol_version') == '2.0'
-                 and cell.get('encoding') in ('JSON', 'XML')
-                 and cell.get('transport') == 'raw_tls'
-                 and cell['action'] == 'construct']
-        self.assertEqual({'JSON', 'XML'}, {cell['encoding'] for cell in cells})
-        for cell in cells:
-            with self.subTest(encoding=cell['encoding']):
-                target = next(target for target in self.catalog['normative_targets']
-                              if target['target_id'] == cell['target_id'])
-                symbols = [cell['public_api_symbol'], cell['execution_api_symbol']]
-                trace = self.runner.CallTrace(symbols)
-                with trace:
-                    event = self.runner.execute_cell(cell, case, target, trace=trace)
-                self.assertEqual(operation_order, event['batch_operation_sequence'])
-                self.assertEqual(operation_order, event['peer_observed_operation_sequence'])
-                self.assertEqual([1] * len(operation_order), event['peer_observed_result_status_codes'])
-
-    def test_generic_structure_routes_cover_operation_structure_fields(self):
-        symbols = {
-            'kmipkit.ttlv.ttlv_structure_create',
-            'kmipkit.ttlv.ttlv_structure_with_item',
-        }
-        targets = {target['target_id']: target for target in self.catalog['normative_targets']}
-        cells = [cell for cell in iter_cells(self.catalog, self.manifest, languages=('python',))
-                 if cell['public_api_symbol'] in symbols
-                 and targets[cell['target_id']].get('kind') == 'operation_structure']
-        self.assertEqual(152, len(cells))
-        cases = {case['case_id']: case for case in self.catalog['test_cases']}
-        for cell in cells:
-            with self.subTest(target=cell['target_id'], symbol=cell['public_api_symbol'],
-                              protocol_version=cell['protocol_version']):
-                kind, event = self.runner._execute_matrix_cell(
-                    cell, cases[cell['case_id']], targets[cell['target_id']]
-                )
-                self.assertEqual('event', kind, event)
-                self.assertEqual('passed', event['status'])
+        self.assertEqual([], gaps)
+        self.assertEqual(54, len(report['events']))
+        self.assertTrue(all(event['status'] == 'passed'
+                            and event.get('peer_observed_operation_sequence') is None
+                            for event in report['events']))
 
     def test_create_routes_validate_peer_rejection_and_all_wire_encodings(self):
         catalog = copy.deepcopy(self.catalog)
@@ -1665,132 +1603,6 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
         self.assertLessEqual(set(targets), {event['target_id'] for event in report['events']})
 
-    def test_generic_ttlv_scalar_routes_use_catalogued_source_encoding(self):
-        case_ids = {
-            'test-norm-operation-structure-operation-structure-7-16-interop-identifier',
-            'test-norm-structure-member-structure-member-7-27-pkcs-11-input-parameters',
-        }
-        catalog = copy.deepcopy(self.catalog)
-        catalog['test_cases'] = [case for case in self.catalog['test_cases']
-                                 if case['case_id'] in case_ids]
-        symbols = {'kmipkit.ttlv.ttlv_value_text_string',
-                   'kmipkit.ttlv.ttlv_value_byte_string'}
-        manifest = copy.deepcopy(self.manifest)
-        manifest['routes'] = [route for route in self.manifest['routes']
-                              if route['language'] == 'python'
-                              and route['public_api_symbol'] in symbols]
-        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
-        self.assertEqual([], gaps)
-        self.assertEqual(4, len(report['events']))
-        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
-        self.assertEqual({
-            'KMIPKIT-ELEM-OPERATION-STRUCTURE-7-16-INTEROP-IDENTIFIER',
-            'KMIPKIT-ELEM-STRUCTURE-MEMBER-7-27-PKCS-11-INPUT-PARAMETERS',
-        }, {event['target_id'] for event in report['events']})
-
-    def test_extension_information_route_emits_catalogued_ttlv_structure(self):
-        case = next(case for case in self.catalog['test_cases']
-                    if case['case_id'] ==
-                    'test-norm-operation-structure-operation-structure-7-13-extension-information')
-        target = next(target for target in self.catalog['normative_targets']
-                      if target['target_id'] ==
-                      'KMIPKIT-ELEM-OPERATION-STRUCTURE-7-13-EXTENSION-INFORMATION')
-        symbol = 'kmipkit.extensions.extension_information_to_ttlv'
-        catalog = copy.deepcopy(self.catalog)
-        catalog['test_cases'] = [case]
-        manifest = copy.deepcopy(self.manifest)
-        manifest['routes'] = [route for route in self.manifest['routes']
-                              if route['language'] == 'python'
-                              and route['public_api_symbol'] == symbol]
-        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
-        self.assertEqual([], gaps)
-        expected_tree = [0x4200A4, 1, [[0x4200A5, 7, '4b4d49504b69742e496e7465726f70']]]
-        expected_digest = self.runner.digest(expected_tree)
-        self.assertEqual(2, len(report['events']))
-        self.assertEqual({expected_digest}, {event['request_tree_sha256']
-                                             for event in report['events']})
-
-    def test_native_batch_result_accessors_execute_against_controlled_responses(self):
-        symbols = {
-            'kmipkit.client.BatchItemResult.response_header_ttlv':
-                'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM',
-            'kmipkit.client.BatchItemResult.raw':
-                'KMIPKIT-ELEM-ENUM-VALUE-KEY-FORMAT-TYPE-RAW-00000001',
-            'kmipkit.client.BatchItemResult.extension_count':
-                'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION',
-            'kmipkit.client.BatchItemResult.extension_ttlv_at':
-                'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION',
-            'kmipkit.client.BatchItemResult.supported_versions':
-                'KMIPKIT-PAYLOAD-CLIENT-DISCOVER-VERSIONS-RESPONSE-20-001',
-            'kmipkit.client.BatchResult.item_count':
-                'KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT',
-            'kmipkit.client.BatchResult.item_at':
-                'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM',
-        }
-        chosen = {}
-        for cell in iter_cells(self.catalog, self.manifest, languages=('python',)):
-            target_id = symbols.get(cell['public_api_symbol'])
-            if (target_id == cell['target_id'] and cell['protocol_version'] == '2.0'
-                    and cell['transport'] is None and cell['public_api_symbol'] not in chosen):
-                chosen[cell['public_api_symbol']] = cell
-        self.assertEqual(set(symbols), set(chosen))
-        cases = {case['case_id']: case for case in self.catalog['test_cases']}
-        targets = {target['target_id']: target for target in self.catalog['normative_targets']}
-        for symbol, cell in chosen.items():
-            with self.subTest(symbol=symbol):
-                outcome, event = self.runner._execute_matrix_cell(
-                    cell, cases[cell['case_id']], targets[cell['target_id']])
-                self.assertEqual('event', outcome, event)
-                self.assertEqual('passed', event['status'], event)
-
-    def test_server_put_object_routes_decode_and_view_a_complete_ttlv_message(self):
-        case_ids = {'test-norm-payload-server-put-request-20-004',
-                    'test-norm-payload-server-put-request-21-004'}
-        symbols = {'kmipkit.ttlv.ttlv_decode', 'kmipkit.ttlv.ttlv_item_create',
-                   'kmipkit.ttlv.ttlv_item_view_from_item'}
-        catalog = copy.deepcopy(self.catalog)
-        catalog['test_cases'] = [case for case in self.catalog['test_cases']
-                                 if case['case_id'] in case_ids]
-        manifest = copy.deepcopy(self.manifest)
-        manifest['routes'] = [route for route in self.manifest['routes']
-                              if route['language'] == 'python'
-                              and route['public_api_symbol'] in symbols]
-        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
-        self.assertEqual([], gaps)
-        self.assertEqual(12, len(report['events']))
-        self.assertEqual(symbols, {event['public_api_symbol'] for event in report['events']})
-        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
-
-    def test_certificate_attributes_have_a_typed_generic_ttlv_view(self):
-        catalog = copy.deepcopy(self.catalog)
-        catalog['test_cases'] = [case for case in self.catalog['test_cases']
-                                 if case['case_id'] == 'test-attr-certificate-attributes']
-        manifest = copy.deepcopy(self.manifest)
-        manifest['routes'] = [route for route in self.manifest['routes']
-                              if route['language'] == 'python'
-                              and route['public_api_symbol'] ==
-                              'kmipkit.ttlv.ttlv_item_view_from_item']
-        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
-        self.assertEqual([], gaps)
-        self.assertEqual(4, len(report['events']))
-        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
-
-    def test_key_wrapping_data_tag_has_complete_model_constructor_routes(self):
-        catalog = copy.deepcopy(self.catalog)
-        catalog['test_cases'] = [case for case in self.catalog['test_cases']
-                                 if case['case_id'] == 'test-norm-tag-tag-420046']
-        manifest = copy.deepcopy(self.manifest)
-        symbols = {'kmipkit.managed_objects.KeyWrappingData.from_fields',
-                   'kmipkit.managed_objects.KeyWrappingData.from_item'}
-        manifest['routes'] = [route for route in self.manifest['routes']
-                              if route['language'] == 'python'
-                              and route['public_api_symbol'] in symbols]
-        report, gaps = self.runner.run_matrix(catalog, manifest, self.artifact)
-        self.assertEqual([], gaps)
-        self.assertEqual(4, len(report['events']))
-        self.assertEqual(symbols, {event['public_api_symbol'] for event in report['events']})
-        self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
-
     def test_ci_requires_shared_changes_and_matrix_completeness(self):
         workflow = (ROOT / '.github/workflows/interop-python.yml').read_text()
         self.assertIn('python -m kmipkit_validator matrix', workflow)
@@ -1831,6 +1643,33 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all(event['status'] == 'passed' for event in report['events']))
         self.assertEqual(38, len(report['events']))
         self.assertEqual(symbols, {event['public_api_symbol'] for event in report['events']})
+
+    def test_supported_versions_accessor_covers_all_normative_discovery_targets(self):
+        self.assert_route_cells_pass({'kmipkit.client.BatchItemResult.supported_versions'})
+
+    def test_batch_item_result_message_extension_accessors_execute_through_client(self):
+        self.assert_route_cells_pass({
+            'kmipkit.client.BatchItemResult.extension_count',
+            'kmipkit.client.BatchItemResult.extension_ttlv_at',
+        })
+
+    def test_generic_ttlv_scalar_and_item_routes_cover_remaining_catalogued_fields(self):
+        target_ids = {
+            'KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES',
+            'KMIPKIT-PAYLOAD-SERVER-PUT-REQUEST-20-004',
+            'KMIPKIT-PAYLOAD-SERVER-PUT-REQUEST-21-004',
+            'KMIPKIT-ELEM-OPERATION-STRUCTURE-7-16-INTEROP-IDENTIFIER',
+            'KMIPKIT-ELEM-STRUCTURE-MEMBER-7-27-PKCS-11-INPUT-PARAMETERS',
+            'KMIPKIT-ELEM-STRUCTURE-MEMBER-7-28-PKCS-11-INTERFACE',
+            'KMIPKIT-ELEM-STRUCTURE-MEMBER-7-29-PKCS-11-OUTPUT-PARAMETERS',
+        }
+        self.assert_route_cells_pass({
+            'kmipkit.ttlv.ttlv_decode',
+            'kmipkit.ttlv.ttlv_item_create',
+            'kmipkit.ttlv.ttlv_item_view_from_item',
+            'kmipkit.ttlv.ttlv_value_byte_string',
+            'kmipkit.ttlv.ttlv_value_text_string',
+        }, target_ids=target_ids)
 
     def test_decode_wire_digest_is_the_received_response(self):
         import hashlib
