@@ -517,6 +517,12 @@ class ControlledTlsPeerTest {
                         "java.typed-protocol.function.client_batch_response_item_at"),
                 "The response item accessor must use its exact normative Batch Item cases.");
         for (String protocolVersion : List.of("2.0", "2.1")) {
+            assertEquals("KMIPKIT-ELEM-ENUM-VALUE-BLOCK-CIPHER-MODE-AEAD-00000012",
+                    findRouteEvent(report.path("events"), "test-enum-block-cipher-mode",
+                            "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
+                            protocolVersion, "KMIPKIT-ELEM-ENUM-VALUE-BLOCK-CIPHER-MODE-AEAD-00000012")
+                            .path("target_id").asText(),
+                    "Each named Block Cipher Mode value must be constructed through generic TTLV.");
             assertEquals("KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT",
                     findRouteEvent(report.path("events"),
                             "test-norm-message-field-message-field-8-5-batch-count",
