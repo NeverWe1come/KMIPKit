@@ -11,6 +11,36 @@ TOOLS = Path(__file__).resolve().parents[1] / 'tools'
 sys.path.insert(0, str(TOOLS))
 
 
+def get_usage_allocation_identifier_variants_request(protocol_minor=1, second_identifier=None):
+    def integer(tag, value, width=4):
+        return (tag, 2 if width == 4 else 3, value.to_bytes(width, 'big', signed=True))
+
+    def enumeration(tag, value):
+        return (tag, 5, value.to_bytes(4, 'big'))
+
+    def text(tag, value):
+        return (tag, 7, value.encode())
+
+    def batch_item(item_id, identifier):
+        payload = [integer(0x420096, 1, width=8)]
+        if identifier is not None:
+            payload.insert(0, text(0x420094, identifier))
+        return (0x42000F, 1, [
+            enumeration(0x42005C, 17),
+            (0x420093, 8, item_id),
+            (0x420079, 1, payload),
+        ])
+
+    return (0x420078, 1, [
+        (0x420077, 1, [
+            (0x420069, 1, [integer(0x42006A, 2), integer(0x42006B, protocol_minor)]),
+            integer(0x42000D, 2),
+        ]),
+        batch_item(b'usage-explicit', 'fixture-key-1'),
+        batch_item(b'usage-placeholder', second_identifier),
+    ])
+
+
 class RouteMatrixTests(unittest.TestCase):
     def setUp(self):
         self.assertIsNotNone(importlib.util.find_spec("route_matrix"),
@@ -59,36 +89,53 @@ class RouteMatrixTests(unittest.TestCase):
                     ((17, 17), 'get_usage_allocation_uid_variants'),
                 )
 
+    def test_get_usage_allocation_recipe_validates_present_then_omitted_identifier(self):
+        from route_peer import assert_recipe
+
+        request = get_usage_allocation_identifier_variants_request()
+
+        assert_recipe(request, 'test-norm-payload-client-get-usage-allocation-request-21-001', '2.1')
+
+    def test_get_usage_allocation_recipe_rejects_identifier_on_omitted_branch(self):
+        from route_peer import assert_recipe
+
+        request = get_usage_allocation_identifier_variants_request(second_identifier='fixture-key-1')
+
+        with self.assertRaisesRegex(ValueError, 'fixture_usage_allocation_identifier_variants_mismatch'):
+            assert_recipe(request, 'test-norm-payload-client-get-usage-allocation-request-21-001', '2.1')
+
+    def test_get_usage_allocation_identifier_variant_response_checks_each_correlated_result(self):
+        from controlled_kms_test import response
+        from route_peer import parse, verify_usage_allocation_identifier_variants
+
+        response_tree = parse(response(
+            (17, 17), 1,
+            unique_batch_item_ids=(b'usage-explicit', b'usage-placeholder'),
+        ))
+
+        self.assertEqual(
+            verify_usage_allocation_identifier_variants(response_tree),
+            ['fixture-key-1', 'fixture-key-1'],
+        )
+
+    def test_get_usage_allocation_identifier_variant_response_rejects_failed_placeholder_result(self):
+        from controlled_kms_test import response
+        from route_peer import parse, verify_usage_allocation_identifier_variants
+
+        response_tree = parse(response(
+            (17, 17), 1,
+            unique_batch_item_ids=(b'usage-explicit', b'usage-placeholder'),
+            result_statuses=(0, 1),
+            result_reasons=(None, 55),
+        ))
+
+        with self.assertRaisesRegex(ValueError, 'fixture_usage_allocation_identifier_response_mismatch'):
+            verify_usage_allocation_identifier_variants(response_tree)
+
     def test_get_usage_allocation_omitted_identifier_resolves_to_prior_response_identifier(self):
         from route_peer import PeerState
 
-        def integer(tag, value, width=4):
-            return (tag, 2 if width == 4 else 3, value.to_bytes(width, 'big', signed=True))
-
-        def enumeration(tag, value):
-            return (tag, 5, value.to_bytes(4, 'big'))
-
-        def text(tag, value):
-            return (tag, 7, value.encode())
-
-        def batch_item(item_id, identifier):
-            payload = [integer(0x420096, 1, width=8)]
-            if identifier is not None:
-                payload.insert(0, text(0x420094, identifier))
-            return (0x42000F, 1, [
-                enumeration(0x42005C, 17),
-                (0x420093, 8, item_id),
-                (0x420079, 1, payload),
-            ])
-
-        request = (0x420078, 1, [
-            (0x420077, 1, [
-                (0x420069, 1, [integer(0x42006A, 2), integer(0x42006B, 1)]),
-                integer(0x42000D, 2),
-            ]),
-            batch_item(b'usage-explicit', 'fixture-key-1'),
-            batch_item(b'usage-placeholder', None),
-        ])
+        request = get_usage_allocation_identifier_variants_request()
 
         evidence = PeerState(existing_object=True).execute(request)
 
