@@ -1,0 +1,1252 @@
+{
+  "formatVersion": 1,
+  "sources": [
+    "specification/catalog/kmip-2.1.json",
+    "specification/catalog/kmip-versioned-values.json",
+    "specification/api/public-api.json"
+  ],
+  "operations": [
+    {
+      "name": "Create",
+      "version": "2.1",
+      "wireValue": "00000001",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.8"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0014",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Create Key Pair",
+      "version": "2.1",
+      "wireValue": "00000002",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.9"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0014",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Register",
+      "version": "2.1",
+      "wireValue": "00000003",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.43"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0036",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Re-key",
+      "version": "2.1",
+      "wireValue": "00000004",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.46"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0036",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Derive Key",
+      "version": "2.1",
+      "wireValue": "00000005",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.14"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0037",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Certify",
+      "version": "2.1",
+      "wireValue": "00000006",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.6"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0036",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Re-certify",
+      "version": "2.1",
+      "wireValue": "00000007",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.45"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0036",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Locate",
+      "version": "2.1",
+      "wireValue": "00000008",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.28"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0017",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Check",
+      "version": "2.1",
+      "wireValue": "00000009",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.7"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0036",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Get",
+      "version": "2.1",
+      "wireValue": "0000000A",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.19"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0017",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Get Attributes",
+      "version": "2.1",
+      "wireValue": "0000000B",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.20"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0016",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Get Attribute List",
+      "version": "2.1",
+      "wireValue": "0000000C",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.21"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0016",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Add Attribute",
+      "version": "2.1",
+      "wireValue": "0000000D",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.2"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0016",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Modify Attribute",
+      "version": "2.1",
+      "wireValue": "0000000E",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.34"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0016",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Delete Attribute",
+      "version": "2.1",
+      "wireValue": "0000000F",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.13"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0016",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Obtain Lease",
+      "version": "2.1",
+      "wireValue": "00000010",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.35"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0036",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Get Usage Allocation",
+      "version": "2.1",
+      "wireValue": "00000011",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.23"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0039",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Activate",
+      "version": "2.1",
+      "wireValue": "00000012",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.1"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0018",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Revoke",
+      "version": "2.1",
+      "wireValue": "00000013",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.44"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0036",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Destroy",
+      "version": "2.1",
+      "wireValue": "00000014",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.15"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0018",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Archive",
+      "version": "2.1",
+      "wireValue": "00000015",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.4"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0018",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Recover",
+      "version": "2.1",
+      "wireValue": "00000016",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.42"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0018",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Validate",
+      "version": "2.1",
+      "wireValue": "00000017",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.57"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0042",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Query",
+      "version": "2.1",
+      "wireValue": "00000018",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.40"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0020",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Query",
+      "version": "2.1",
+      "wireValue": "00000018",
+      "direction": "server_to_client",
+      "scopeState": "client_1_1",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.2.4"
+        }
+      ],
+      "featureSpec": null,
+      "publicApiScope": null,
+      "publicApiState": null,
+      "clientSend": false,
+      "listenerRoute": true
+    },
+    {
+      "name": "Cancel",
+      "version": "2.1",
+      "wireValue": "00000019",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.5"
+        }
+      ],
+      "featureSpec": null,
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Poll",
+      "version": "2.1",
+      "wireValue": "0000001A",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.38"
+        }
+      ],
+      "featureSpec": null,
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Notify",
+      "version": "2.1",
+      "wireValue": "0000001B",
+      "direction": "server_to_client",
+      "scopeState": "client_1_1",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.2.2"
+        }
+      ],
+      "featureSpec": null,
+      "publicApiScope": null,
+      "publicApiState": null,
+      "clientSend": false,
+      "listenerRoute": true
+    },
+    {
+      "name": "Put",
+      "version": "2.1",
+      "wireValue": "0000001C",
+      "direction": "server_to_client",
+      "scopeState": "client_1_1",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.2.3"
+        }
+      ],
+      "featureSpec": null,
+      "publicApiScope": null,
+      "publicApiState": null,
+      "clientSend": false,
+      "listenerRoute": true
+    },
+    {
+      "name": "Re-key Key Pair",
+      "version": "2.1",
+      "wireValue": "0000001D",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.47"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0036",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Discover Versions",
+      "version": "2.1",
+      "wireValue": "0000001E",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.16"
+        }
+      ],
+      "featureSpec": null,
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Discover Versions",
+      "version": "2.1",
+      "wireValue": "0000001E",
+      "direction": "server_to_client",
+      "scopeState": "client_1_1",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.2.1"
+        }
+      ],
+      "featureSpec": null,
+      "publicApiScope": null,
+      "publicApiState": null,
+      "clientSend": false,
+      "listenerRoute": true
+    },
+    {
+      "name": "Encrypt",
+      "version": "2.1",
+      "wireValue": "0000001F",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.17"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0019",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Decrypt",
+      "version": "2.1",
+      "wireValue": "00000020",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.11"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0019",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Sign",
+      "version": "2.1",
+      "wireValue": "00000021",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.55"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0021",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Signature Verify",
+      "version": "2.1",
+      "wireValue": "00000022",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.56"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0021",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "MAC",
+      "version": "2.1",
+      "wireValue": "00000023",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.32"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0021",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "MAC Verify",
+      "version": "2.1",
+      "wireValue": "00000024",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.33"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0021",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "RNG Retrieve",
+      "version": "2.1",
+      "wireValue": "00000025",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.49"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0041",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "RNG Seed",
+      "version": "2.1",
+      "wireValue": "00000026",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.50"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0041",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Hash",
+      "version": "2.1",
+      "wireValue": "00000027",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.24"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0021",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Create Split Key",
+      "version": "2.1",
+      "wireValue": "00000028",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.10"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0014",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Join Split Key",
+      "version": "2.1",
+      "wireValue": "00000029",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.27"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0037",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Import",
+      "version": "2.1",
+      "wireValue": "0000002A",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.25"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0037",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Export",
+      "version": "2.1",
+      "wireValue": "0000002B",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.18"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0037",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Log",
+      "version": "2.1",
+      "wireValue": "0000002C",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.29"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0042",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Login",
+      "version": "2.1",
+      "wireValue": "0000002D",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.30"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0038",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Logout",
+      "version": "2.1",
+      "wireValue": "0000002E",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.31"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0038",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Delegated Login",
+      "version": "2.1",
+      "wireValue": "0000002F",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.12"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0038",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Adjust Attribute",
+      "version": "2.1",
+      "wireValue": "00000030",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.3"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0016",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Set Attribute",
+      "version": "2.1",
+      "wireValue": "00000031",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.51"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0016",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Set Endpoint Role",
+      "version": "2.1",
+      "wireValue": "00000032",
+      "direction": "client_to_server",
+      "scopeState": "client_1_1",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.54"
+        }
+      ],
+      "featureSpec": null,
+      "publicApiScope": null,
+      "publicApiState": null,
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Set Endpoint Role",
+      "version": "2.1",
+      "wireValue": "00000032",
+      "direction": "server_to_client",
+      "scopeState": "client_1_1",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.2.5"
+        }
+      ],
+      "featureSpec": null,
+      "publicApiScope": null,
+      "publicApiState": null,
+      "clientSend": false,
+      "listenerRoute": true
+    },
+    {
+      "name": "PKCS#11",
+      "version": "2.1",
+      "wireValue": "00000033",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.37"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0040",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Interop",
+      "version": "2.1",
+      "wireValue": "00000034",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.26"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0042",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Re-Provision",
+      "version": "2.1",
+      "wireValue": "00000035",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.48"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0036",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Set Defaults",
+      "version": "2.1",
+      "wireValue": "00000036",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.53"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0039",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Set Constraints",
+      "version": "2.1",
+      "wireValue": "00000037",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.52"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0039",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Get Constraints",
+      "version": "2.1",
+      "wireValue": "00000038",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.22"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0039",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Query Asynchronous Requests",
+      "version": "2.1",
+      "wireValue": "00000039",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.41"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0009",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Process",
+      "version": "2.1",
+      "wireValue": "0000003A",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.39"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0009",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Ping",
+      "version": "2.1",
+      "wireValue": "0000003B",
+      "direction": "client_to_server",
+      "scopeState": "client_1_0",
+      "sourceRefs": [
+        {
+          "sourceId": "KMIPKIT-SRC-spec",
+          "section": "6.1.36"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0020",
+      "publicApiScope": "client_1_0",
+      "publicApiState": "verified",
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Create Group",
+      "version": "3.0",
+      "wireValue": "0000003C",
+      "direction": "client_to_server",
+      "scopeState": "client_3_0_draft",
+      "sourceRefs": [
+        {
+          "sourceId": "kmip-3.0",
+          "section": "6.1.10"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0071",
+      "publicApiScope": null,
+      "publicApiState": null,
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Obliterate",
+      "version": "3.0",
+      "wireValue": "0000003D",
+      "direction": "client_to_server",
+      "scopeState": "client_3_0_draft",
+      "sourceRefs": [
+        {
+          "sourceId": "kmip-3.0",
+          "section": "6.1.41"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0071",
+      "publicApiScope": null,
+      "publicApiState": null,
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Create User",
+      "version": "3.0",
+      "wireValue": "0000003E",
+      "direction": "client_to_server",
+      "scopeState": "client_3_0_draft",
+      "sourceRefs": [
+        {
+          "sourceId": "kmip-3.0",
+          "section": "6.1.13"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0071",
+      "publicApiScope": null,
+      "publicApiState": null,
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Create Credential",
+      "version": "3.0",
+      "wireValue": "0000003F",
+      "direction": "client_to_server",
+      "scopeState": "client_3_0_draft",
+      "sourceRefs": [
+        {
+          "sourceId": "kmip-3.0",
+          "section": "6.1.9"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0071",
+      "publicApiScope": null,
+      "publicApiState": null,
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Deactivate",
+      "version": "3.0",
+      "wireValue": "00000040",
+      "direction": "client_to_server",
+      "scopeState": "client_3_0_draft",
+      "sourceRefs": [
+        {
+          "sourceId": "kmip-3.0",
+          "section": "6.1.14"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0071",
+      "publicApiScope": null,
+      "publicApiState": null,
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Encapsulate",
+      "version": "3.0",
+      "wireValue": "00000041",
+      "direction": "client_to_server",
+      "scopeState": "client_3_0_draft",
+      "sourceRefs": [
+        {
+          "sourceId": "kmip-3.0",
+          "section": "6.1.22"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0071",
+      "publicApiScope": null,
+      "publicApiState": null,
+      "clientSend": true,
+      "listenerRoute": false
+    },
+    {
+      "name": "Decapsulate",
+      "version": "3.0",
+      "wireValue": "00000042",
+      "direction": "client_to_server",
+      "scopeState": "client_3_0_draft",
+      "sourceRefs": [
+        {
+          "sourceId": "kmip-3.0",
+          "section": "6.1.15"
+        }
+      ],
+      "featureSpec": "KMIPKIT-0071",
+      "publicApiScope": null,
+      "publicApiState": null,
+      "clientSend": true,
+      "listenerRoute": false
+    }
+  ]
+}
