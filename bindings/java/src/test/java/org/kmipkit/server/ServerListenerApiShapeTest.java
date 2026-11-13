@@ -1,12 +1,14 @@
 package org.kmipkit.server;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
 final class ServerListenerApiShapeTest {
     @Test
-    void serverInitiatedOperationsHaveTypedRequestAndResponseFactories() {
+    void serverInitiatedOperationsHaveTypedRequestAndResponseFactories()
+            throws ReflectiveOperationException {
         assertNotNull(DiscoverVersionsRequest.class);
         assertNotNull(NotifyRequest.class);
         assertNotNull(PutRequest.class);
@@ -17,8 +19,18 @@ final class ServerListenerApiShapeTest {
         assertNotNull(PutResponse.class);
         assertNotNull(QueryResponse.class);
         assertNotNull(SetEndpointRoleResponse.class);
+        assertEquals(org.kmipkit.extensions.AttributeSet.class,
+                NotifyRequest.class.getMethod("attributes").getReturnType());
         assertNotNull(NotifyResponse.class.getMethod("forRequest", NotifyRequest.class));
         assertNotNull(PutResponse.class.getMethod("forRequest", PutRequest.class));
+    }
+
+    @Test
+    void serverResultReasonsUseKmipEnumerationValues() {
+        assertEquals(1, ServerResultReason.ITEM_NOT_FOUND.nativeValue);
+        assertEquals(5, ServerResultReason.OPERATION_NOT_SUPPORTED.nativeValue);
+        assertEquals(10, ServerResultReason.CRYPTOGRAPHIC_FAILURE.nativeValue);
+        assertEquals(12, ServerResultReason.PERMISSION_DENIED.nativeValue);
     }
 
     @Test

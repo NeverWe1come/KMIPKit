@@ -26,10 +26,66 @@ recibido y envíalo con `send_response`. Aplica la política de la aplicación
 usando los modelos por operación y la especificación KMIP 2.1; recibir una
 solicitud válida no obliga a la aplicación a aceptar sus efectos.
 
-Los bindings de C, Java y Python exponen las APIs correspondientes de
-listener, dispatcher y acceso tipado a solicitudes. Consulta el manifiesto de
-API publicado y la referencia de cada lenguaje para conocer las reglas exactas
-de propiedad y liberación.
+### Java
+
+`org.kmipkit.server` ofrece una fachada `AutoCloseable`. Configura la identidad
+del listener y los certificados de confianza del peer, enlaza con
+`ServerListener.bindRawTls` o `bindHttps`, acepta con un `Duration` explícito
+y recibe con `CodecLimits`. `ServerRequestBatch.items()` devuelve tipos de
+solicitud específicos de cada operación. Las fábricas `forRequest` construyen
+respuestas de éxito tipadas; `ServerReply.failure` crea un fallo KMIP explícito.
+`ServerResponseBuilder` rechaza respuestas asociadas a otra solicitud. Envía
+la respuesta de forma explícita por la conexión aceptada.
+`NotifyRequest.attributes()` devuelve una copia independiente de tipo
+`AttributeSet` con los atributos modificados opcionales; ciérrala al terminar.
+
+```java
+try (ServerListenerConfiguration config = ServerListenerConfiguration.builder()
+        .bindHost("127.0.0.1").bindPort(5696)
+        .listenerCertificateChain(List.of(serverCertificatePem))
+        .listenerPrivateKey(serverPrivateKeyPem)
+        .trustCertificates(List.of(clientCaPem)).build();
+     ServerListener listener = ServerListener.bindRawTls(config);
+     ServerConnection connection = listener.accept(Duration.ofSeconds(5));
+     ServerRequestBatch batch = connection.receive(CodecLimits.defaults(), Duration.ofSeconds(5));
+     ServerResponseMessage response = batch.respond(request -> {
+         if (request instanceof DiscoverVersionsRequest discover) {
+             return ServerReply.success(DiscoverVersionsResponse.forRequest(
+                     discover, List.of(new ProtocolVersion(2, 1))));
+         }
+         return ServerReply.failure(ServerResultStatus.OPERATION_FAILED,
+                 ServerResultReason.OPERATION_NOT_SUPPORTED, "operación no admitida");
+     })) {
+    connection.send(response, Duration.ofSeconds(5));
+}
+```
+
+### Python
+
+`kmipkit.server` expone el mismo flujo explícito de recepción, respuesta y
+envío mediante gestores de contexto. La configuración acepta certificados en
+bytes y sobrescribe la copia temporal de la clave privada al pasarla al código
+nativo. `NotifyRequest.attributes` devuelve una copia validada de tipo
+`AttributeSet`, que se puede cerrar o usar como gestor de contexto. Python no
+permite poner a cero de forma fiable todas las copias que mantiene el runtime.
+
+```python
+with ServerListenerConfiguration(
+    bind_host="127.0.0.1",
+    bind_port=5696,
+    listener_certificate_chain=(server_certificate_pem,),
+    listener_private_key=server_private_key_pem,
+    trust_certificates=(client_ca_pem,),
+) as config, ServerListener.bind(config) as listener:
+    with listener.accept(timeout=5) as connection:
+        connection.serve_once(handler, ttlv.CodecLimits.defaults(), timeout=5)
+```
+
+El binding C mantiene la ruta ABI de bajo nivel con handles opacos y códigos
+de estado de ancho fijo. Los cuatro bindings reciben y responden solicitudes
+tipadas del servidor; ninguno añade un `send()` de cliente a esos tipos.
+Consulta la referencia de cada lenguaje para conocer las reglas de propiedad y
+liberación.
 
 ## Cambio del rol de endpoint
 

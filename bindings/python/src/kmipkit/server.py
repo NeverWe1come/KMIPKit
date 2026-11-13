@@ -13,6 +13,7 @@ from typing import Callable, Sequence, TypeAlias
 
 from . import errors, extensions, ttlv
 from ._ffi import ffi, lib
+from ._client_ffi import ffi as _client_ffi, lib as _client_lib
 from ._handles import (
     _NATIVE_HANDLE_TOKEN,
     NativeHandle,
@@ -21,6 +22,7 @@ from ._handles import (
     _wrap_owned_handle,
 )
 from ._protocol_version import ProtocolVersion
+from .attribute_operations import AttributeSet
 
 _MAX_INPUT_BYTES = 16 * 1024 * 1024
 _MAX_INPUTS = 4_096
@@ -306,6 +308,8 @@ class ServerConnection(NativeHandle):
     def send(self, response: ServerResponseMessage, timeout: float | None = None) -> None:
         if not isinstance(response, ServerResponseMessage):
             errors.raise_for_status(4)
+        if response._owner is None or response._owner._owner is not self:
+            errors.raise_for_status(4)
         seconds, nanoseconds = _timeout(timeout)
         with _NATIVE_CALL_LOCK:
             _status(
@@ -470,6 +474,37 @@ class NotifyRequest(ServerRequest):
                                         int(output.attribute_name_length))).decode("utf-8")
                 references.append(extensions.AttributeReference.name(vendor, name))
         return tuple(references)
+
+    @property
+    def attributes(self) -> AttributeSet | None:
+        """Return an independent validated copy of optional changed Attributes."""
+        present = ffi.new("uint8_t *")
+        native_attributes = ffi.new("kmipkit_attribute_set_t **")
+        with _NATIVE_CALL_LOCK:
+            _status(
+                lib.kmipkit_server_request_item_notify_attributes(
+                    self._pointer(), present, native_attributes
+                )
+            )
+        if not present[0]:
+            return None
+        if native_attributes[0] == ffi.NULL:
+            errors.raise_for_status(4)
+        address = int(ffi.cast("uintptr_t", native_attributes[0]))
+        client_attributes = _client_ffi.cast("kmipkit_attribute_set_t *", address)
+        try:
+            structure = _client_ffi.new("kmipkit_ttlv_structure_t **")
+            with _NATIVE_CALL_LOCK:
+                _status(_client_lib.kmipkit_attribute_set_as_items(client_attributes, structure))
+            address = int(_client_ffi.cast("uintptr_t", structure[0]))
+            items = ttlv._structure_from_native_address(address)
+            try:
+                return AttributeSet.try_new(items)
+            finally:
+                items.close()
+        finally:
+            with _NATIVE_CALL_LOCK:
+                lib.kmipkit_attribute_set_release(native_attributes[0])
 
 
 class PutObject(NativeHandle):
@@ -679,19 +714,22 @@ class ServerResultStatus(IntEnum):
 class ServerResultReason(IntEnum):
     """Common KMIP Result Reason values; raw values remain accepted."""
 
-    GENERAL_FAILURE = 1
-    ITEM_NOT_FOUND = 2
-    OPERATION_NOT_SUPPORTED = 3
-    PERMISSION_DENIED = 4
-    CRYPTOGRAPHIC_FAILURE = 5
+    ITEM_NOT_FOUND = 1
+    OPERATION_NOT_SUPPORTED = 5
+    ILLEGAL_OPERATION = 11
+    PERMISSION_DENIED = 12
+    CRYPTOGRAPHIC_FAILURE = 10
 
 
 class ServerReply:
     """Handler outcome paired with one received server-originated request."""
 
     __slots__ = ("response", "status", "reason", "message")
+    _TOKEN = object()
 
-    def __init__(self, response=None, status=None, reason=None, message=None):
+    def __init__(self, response=None, status=None, reason=None, message=None, *, _token=None):
+        if _token is not self._TOKEN:
+            errors.raise_for_status(4)
         self.response = response
         self.status = status
         self.reason = reason
@@ -701,7 +739,7 @@ class ServerReply:
     def success(cls, response: ServerResponse) -> ServerReply:
         if not isinstance(response, ServerResponse):
             errors.raise_for_status(4)
-        return cls(response=response)
+        return cls(response=response, _token=cls._TOKEN)
 
     @classmethod
     def failure(
@@ -712,7 +750,7 @@ class ServerReply:
         result_reason = None if reason is None else _integer_range(reason, 0, 0xFFFF_FFFF)
         if message is not None:
             _text(message, optional=True)
-        return cls(status=result_status, reason=result_reason, message=message)
+        return cls(status=result_status, reason=result_reason, message=message, _token=cls._TOKEN)
 
 
 ServerRequestHandler: TypeAlias = Callable[[ServerRequest], ServerReply]
