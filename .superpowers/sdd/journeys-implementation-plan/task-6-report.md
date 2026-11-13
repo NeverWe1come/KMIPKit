@@ -35,3 +35,22 @@ adding the artifact resolver (3 tests, 6 assertion failures: resolver absent).
 The regression requires all four existing export inputs (DSO, static library,
 FFI unit test, C consumer test) for both Cargo layouts, including spaces in
 paths, and fails closed when any required file is missing.
+
+## Green
+
+- The focused Rust command above, without `--no-run`, passes on 1.100.0:
+  `c_api_coverage`: 56 passed; `operation_parity_0053`: 1 passed. Output:
+  `target/ci-110-layout-green.log`.
+- Remove the redundant package-native link directives and layout-derived
+  package library search. Cargo links the existing rlib; every `extern "C"`
+  declaration, compiled C consumer, ABI assertion, and test remains enabled.
+- Keep the coverage collector's complete four-object export. A no-run Cargo
+  invocation under `cargo llvm-cov show-env` reports exact instrumented
+  compiler-artifact paths. Missing/ambiguous artifacts fail the collection;
+  there is no fallback that could publish a partial report.
+- `python3 -B -m unittest scripts.tests.test_ffi_coverage_objects scripts.tests.test_workflow -v`:
+  98 passed. Output: `target/ci-110-python-green.log`.
+- `cargo +1.100.0 fmt --all --check`, `bash -n scripts/collect_ffi_coverage.sh`,
+  and `git diff --check`: exit 0.
+- Workspace Clippy and real instrumented FFI coverage validation are in
+  progress; their final outcomes are recorded below before closeout.
