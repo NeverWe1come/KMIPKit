@@ -26,7 +26,13 @@ SHARED_REQUIREMENTS = {
     "KMIPKIT-0043-FR-004", "KMIPKIT-0043-FR-005", "KMIPKIT-0043-FR-010",
     "KMIPKIT-0043-FR-017", "KMIPKIT-0043-FR-021", "KMIPKIT-0043-FR-022",
 }
-SUCCESS_TTLV_REQUIREMENTS = SHARED_REQUIREMENTS | {"KMIPKIT-0021-FR-009", "KMIPKIT-0043-FR-011"}
+SUCCESS_TTLV_REQUIREMENTS = SHARED_REQUIREMENTS | {
+    "KMIPKIT-0021-FR-009",
+    "KMIPKIT-0043-FR-011",
+}
+SUCCESS_TTLV_FUNCTION_REQUIREMENTS = SUCCESS_TTLV_REQUIREMENTS | {"KMIPKIT-0093-FR-008"}
+MASTER_BATCH_RESULT_REQUIREMENTS = {"KMIPKIT-0093-FR-005", "KMIPKIT-0093-FR-008"}
+MASTER_RESPONSE_REQUIREMENTS = {"KMIPKIT-0093-FR-008"}
 LANGUAGES = {"rust", "c", "java", "python"}
 APPROVAL_SOURCE = {"kind": "feature-specification", "path": OWNER_SPEC, "status": "Approved"}
 OPS = {
@@ -294,6 +300,10 @@ class T101HashMacSignatureDeclarationMappingTests(unittest.TestCase):
                 self.assertEqual(targets, {lang: row["languageMappings"][lang]["name"] for lang in LANGUAGES})
                 self.assertEqual({"rust": row["packageId"], "c": "c-kmipkit", "java": "java-kmipkit", "python": "python-kmipkit"}, {lang: row["languageMappings"][lang]["packageId"] for lang in LANGUAGES})
                 expected_requirements = _expected_owner_frs(row["exportName"]) | SHARED_REQUIREMENTS
+                if "ClientBatchOutcome::" in row["exportName"]:
+                    expected_requirements |= MASTER_BATCH_RESULT_REQUIREMENTS
+                elif "ClientResponseView::" in row["exportName"]:
+                    expected_requirements |= MASTER_RESPONSE_REQUIREMENTS
                 if row["exportName"].endswith("Response::with_ttlv"):
                     expected_requirements |= {"KMIPKIT-0043-FR-011"}
                 self.assertEqual(expected_requirements, set(row["requirementIds"]))
@@ -394,7 +404,7 @@ class T101HashMacSignatureDeclarationMappingTests(unittest.TestCase):
                 if function_id not in functions:
                     self.fail(f"missing T101 function record: {function_id}")
                 function = functions[function_id]
-                self.assertEqual(SUCCESS_TTLV_REQUIREMENTS, set(function["requirementIds"]))
+                self.assertEqual(SUCCESS_TTLV_FUNCTION_REQUIREMENTS, set(function["requirementIds"]))
                 self.assertEqual(f"kmipkit_protocol::{response_type}", function["rust"]["module"])
                 self.assertEqual("with_ttlv", function["rust"]["name"])
                 self.assertEqual("protocol", function["rust"]["owner"])
