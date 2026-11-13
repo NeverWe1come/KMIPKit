@@ -96,6 +96,17 @@ class RouteMatrixTests(unittest.TestCase):
                     ((8, 17, 17), 'get_usage_allocation_uid_variants'),
                 )
 
+    def test_ping_v20_boundary_has_a_typed_pre_send_recipe(self):
+        """KMIP 2.1 §6.1.36 defines Ping; KMIP 2.0 does not define the operation."""
+        import route_peer
+        from artifact_support import ROOT
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-v20-reject-ping')
+
+        self.assertEqual(route_peer.recipe_for_case(case, None), ((59,), 'ping'))
+
     def test_get_usage_allocation_recipe_validates_present_then_omitted_identifier(self):
         from route_peer import assert_recipe
 
