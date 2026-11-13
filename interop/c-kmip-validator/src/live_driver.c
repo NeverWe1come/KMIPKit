@@ -225,8 +225,12 @@ static int32_t register_payload_identifier_status(
     return status;
 }
 
-static bool register_response_ttlv_matches_identifier(
+typedef int32_t (*client_response_ttlv_accessor_t)(
+    kmipkit_client_batch_item_response_t *, uint8_t *, kmipkit_ttlv_structure_t **);
+
+static bool response_ttlv_matches_identifier(
     kmipkit_client_batch_item_response_t *response_item,
+    client_response_ttlv_accessor_t accessor,
     const kmipkit_unique_identifier_v1_t *expected_identifier,
     int32_t *out_status) {
     if (!out_status) return false;
@@ -239,8 +243,7 @@ static bool register_response_ttlv_matches_identifier(
     uint8_t present = 0;
     kmipkit_ttlv_structure_t *structure = NULL;
     kmipkit_ttlv_structure_view_t *structure_view = NULL;
-    int32_t status = kmipkit_client_batch_item_response_register_ttlv(
-        response_item, &present, &structure);
+    int32_t status = accessor(response_item, &present, &structure);
     if (status == 0 && (!present || !structure)) status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_ttlv_structure_view(structure, &structure_view);
     uint64_t item_count = 0;
@@ -503,9 +506,6 @@ static bool request_item_is_valid(kmipkit_client_batch_item_t *item,
     kmipkit_validation_report_release(report);
     return false;
 }
-
-typedef int32_t (*client_response_ttlv_accessor_t)(
-    kmipkit_client_batch_item_response_t *, uint8_t *, kmipkit_ttlv_structure_t **);
 
 static bool response_ttlv_matches_field_count(
     kmipkit_client_batch_item_response_t *response_item,
@@ -805,6 +805,30 @@ static bool locate_response_matches_single_identifier(
     *out_status = status;
     return status == 0 && present && payload_present && located_items_present &&
         located_items == 1 && same_text_identifier(expected_identifier, &located_identifier);
+}
+
+static bool get_usage_allocation_response_ttlv_matches_identifier(
+    kmipkit_client_batch_item_response_t *response_item,
+    const kmipkit_unique_identifier_v1_t *created_identifier,
+    int32_t *out_status) {
+    return response_ttlv_matches_identifier(
+        response_item, kmipkit_client_batch_item_response_get_usage_allocation_ttlv,
+        created_identifier, out_status);
+}
+
+static int32_t create_get_usage_allocation_variant_item(
+    bool include_identifier,
+    kmipkit_client_batch_item_t **out_item) {
+    static const uint8_t fixture_identifier[] = "fixture-key-1";
+    const kmipkit_unique_identifier_v1_t identifier = {
+        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+        .abi_version = 1,
+        .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
+        .text_data = fixture_identifier,
+        .text_length = sizeof(fixture_identifier) - 1
+    };
+    return kmipkit_client_batch_item_get_usage_allocation(
+        include_identifier ? &identifier : NULL, 1, out_item);
 }
 
 static bool query_response_ttlv_matches_field_count(
@@ -2281,12 +2305,24 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     }
     bool get_constraints_boundary_workflow =
         strcmp(test_case->case_id, "test-v20-reject-get-constraints") == 0;
+    bool get_usage_allocation_uid_variant =
+        strcmp(test_case->case_id,
+               "test-norm-payload-client-get-usage-allocation-request-20-001") == 0 ||
+        strcmp(test_case->case_id,
+               "test-norm-payload-client-get-usage-allocation-request-21-001") == 0;
+    const char *usage_allocation_identifier_form =
+        getenv("KMIPKIT_C_USAGE_ALLOCATION_IDENTIFIER_FORM");
+    bool usage_allocation_identifier_explicit = usage_allocation_identifier_form &&
+        strcmp(usage_allocation_identifier_form, "explicit") == 0;
+    bool usage_allocation_identifier_omitted = usage_allocation_identifier_form &&
+        strcmp(usage_allocation_identifier_form, "omitted") == 0;
     bool set_constraints_workflow =
         strcmp(test_case->case_id, "test-op-set-constraints") == 0;
     bool set_defaults_workflow =
         strcmp(test_case->case_id, "test-op-set-defaults") == 0;
     if (strcmp(test_case->mode, "local_model") == 0) {
-        if (!get_constraints_boundary_workflow) return execute_local_model_case(test_case);
+        if (!get_constraints_boundary_workflow && !get_usage_allocation_uid_variant)
+            return execute_local_model_case(test_case);
         if (strcmp(client->api_level, "typed-protocol") != 0) {
             return outcome_not_run(
                 "the generic C TTLV API cannot invoke a typed request to verify pre-transport version rejection");
@@ -2299,8 +2335,14 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     if (!client->client || !client->limits) {
         return outcome_not_run("live client is not initialized");
     }
-    if (strcmp(test_case->mode, "server_exchange") != 0 && !get_constraints_boundary_workflow) {
+    if (strcmp(test_case->mode, "server_exchange") != 0 &&
+        !get_constraints_boundary_workflow && !get_usage_allocation_uid_variant) {
         return outcome_not_run("catalog mode is not supported by the C validator");
+    }
+    if (get_usage_allocation_uid_variant &&
+        !usage_allocation_identifier_explicit && !usage_allocation_identifier_omitted) {
+        return outcome_not_run(
+            "controlled peer did not select an optional Unique Identifier form");
     }
     if (strcmp(test_case->case_id, "test-op-add-attribute") == 0)
         return execute_attribute_mutation_case(client, ATTRIBUTE_MUTATION_ADD);
@@ -2384,7 +2426,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     bool get_attribute_list_workflow = strcmp(test_case->case_id, "test-op-get-attribute-list") == 0;
     bool get_constraints_workflow = strcmp(test_case->case_id, "test-op-get-constraints") == 0;
     bool get_usage_allocation_workflow =
-        strcmp(test_case->case_id, "test-op-get-usage-allocation") == 0;
+        strcmp(test_case->case_id, "test-op-get-usage-allocation") == 0 ||
+        get_usage_allocation_uid_variant;
     bool get_usage_allocation_identifier_variants_workflow =
         strcmp(test_case->case_id,
                "test-norm-payload-client-get-usage-allocation-request-20-001") == 0 ||
@@ -2713,7 +2756,15 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             } else if (get_constraints_workflow) {
                 status = kmipkit_client_batch_item_get_constraints(&item);
             } else if (get_usage_allocation_workflow) {
-                status = kmipkit_client_batch_item_get_usage_allocation(&placeholder, 1, &item);
+                if (get_usage_allocation_uid_variant) {
+                    request_construction_step =
+                        "Get Usage Allocation optional Unique Identifier variant";
+                    status = create_get_usage_allocation_variant_item(
+                        usage_allocation_identifier_explicit, &item);
+                } else {
+                    status = kmipkit_client_batch_item_get_usage_allocation(
+                        &placeholder, 1, &item);
+                }
             } else if (get_workflow) {
                 status = kmipkit_client_batch_item_get(&placeholder, 0, 0, 0, 0, 0, 0, NULL, &item);
             } else if (get_attributes_workflow) {
@@ -2795,6 +2846,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                            revoke_workflow ? "interop-revoke" :
                            destroy_workflow ? "interop-destroy-target" :
                            get_constraints_workflow ? "interop-get-constraints" :
+                           get_usage_allocation_uid_variant
+                               ? (usage_allocation_identifier_explicit
+                                   ? "usage-allocation-explicit" : "usage-allocation-omitted") :
                            get_usage_allocation_workflow ? "interop-get-usage-allocation" :
                            get_workflow ? "interop-get" : "interop-attributes");
                 if (status == 0 && revoke_cleanup_workflow) {
@@ -3001,6 +3055,11 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                         metadata.operation == KMIPKIT_ENUMERATION_OPERATION_GET_USAGE_ALLOCATION &&
                         get_usage_allocation_response_matches_identifier(
                             *response_slot, &expected_allocation_identifier, &status);
+                    if (allocation_response_valid) {
+                        allocation_response_valid =
+                            get_usage_allocation_response_ttlv_matches_identifier(
+                                *response_slot, &expected_allocation_identifier, &status);
+                    }
                     if (allocation_response_valid && index == 1) {
                         attribute_list_matched = true;
                     } else if (allocation_response_valid && index == 2) {
@@ -3233,8 +3292,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             goto cleanup;
         }
         if ((register_certificate_workflow || register_certificate_request_workflow) &&
-            !register_response_ttlv_matches_identifier(
-                setup_response_item, &created_identifier, &status)) {
+            !response_ttlv_matches_identifier(
+                setup_response_item, kmipkit_client_batch_item_response_register_ttlv,
+                &created_identifier, &status)) {
             outcome.library_failed = true;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
                      "KMIPKit Register response TTLV disagreed with its typed Unique Identifier");
@@ -3545,11 +3605,13 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         }
     } else if (get_usage_allocation_workflow) {
         if (!get_usage_allocation_response_matches_identifier(
+                response_item, &created_identifier, &status) ||
+            !get_usage_allocation_response_ttlv_matches_identifier(
                 response_item, &created_identifier, &status)) {
             outcome.success = false;
             outcome.library_failed = status != 0;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                     "KMIPKit Get Usage Allocation did not return the isolated object identifier");
+                     "KMIPKit Get Usage Allocation typed or TTLV response lost the isolated object identifier");
             goto cleanup;
         }
     } else if (destroy_workflow) {

@@ -335,10 +335,12 @@ Red/Green/Refactor evidence:
 Verification on the current implementation head:
 
 - Focused Get Usage Allocation route tests: 9/9 passed.
-- The installed C consumer passed all 12 controlled TLS 1.3/mTLS cells across
-  KMIP 2.0 and 2.1, TTLV/JSON/XML, and raw TLS/HTTPS. Each exchange sent the
-  ordered Locate/Get Usage Allocation/Get Usage Allocation batch and verified
-  the omitted identifier response against the Locate result.
+- The installed C consumer passed all 24 controlled TLS 1.3/mTLS route runs
+  across KMIP 2.0 and 2.1, TTLV/JSON/XML, raw TLS/HTTPS, and the explicit and
+  omitted identifier selectors. Every request sent the ordered Locate/Get
+  Usage Allocation/Get Usage Allocation batch, so each run exercised both
+  identifier forms and verified both typed and TTLV allocation responses
+  against the Locate result.
 - CTest: 7/7 passed, including route-matrix contracts, both controlled TLS
   peers, artifact checkout history, and the offline generic route.
 - `cmake --build interop/c-kmip-validator/build --parallel 4` and

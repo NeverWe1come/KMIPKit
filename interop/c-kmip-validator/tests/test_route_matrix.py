@@ -128,13 +128,22 @@ class RouteMatrixTests(unittest.TestCase):
         events, _, checks = execute_network_cells(
             ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
 
-        self.assertEqual(len(checks), 12)
+        self.assertEqual(len(checks), 24)
         self.assertTrue(all(check['status'] == 'passed' for check in checks))
+        self.assertEqual(
+            {check['protocol_version'] for check in checks},
+            {'2.0', '2.1'},
+        )
+        self.assertEqual(
+            {check['constructor_variant'] for check in checks},
+            {'usage-allocation-explicit', 'usage-allocation-omitted'},
+        )
         required_symbols = {
             'kmipkit_client_batch_item_locate',
             'kmipkit_client_batch_item_get_usage_allocation',
             'kmipkit_client_batch_item_response_locate_unique_identifier_at',
             'kmipkit_client_batch_item_response_get_usage_allocation',
+            'kmipkit_client_batch_item_response_get_usage_allocation_ttlv',
             'kmipkit_client_execute',
         }
         self.assertTrue(all(required_symbols <= set(check['public_api_trace_symbols'])
@@ -539,6 +548,33 @@ class RouteMatrixTests(unittest.TestCase):
             'kmipkit_symmetric_key_from_fields', 'kmipkit_managed_object_from_fields',
             'kmipkit_managed_object_from_item',
         }.issubset(result['invoked_symbols']))
+
+    def test_symmetric_key_object_type_cell_executes_its_typed_constructor(self):
+        from artifact_support import INSTALL, ROOT
+        from c_route_models import ModelCases
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        target = next(item for item in catalog['normative_targets']
+                      if item['target_id'] == 'KMIPKIT-ELEM-OBJECT-TYPE-SYMMETRIC-KEY')
+        result = ModelCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog).execute(
+            target, '2.0', 'kmipkit_symmetric_key_from_fields')
+
+        self.assertIsNotNone(result)
+        self.assertIn('kmipkit_symmetric_key_from_fields', result['invoked_symbols'])
+
+    def test_revocation_reason_attribute_cell_executes_its_constructor(self):
+        from artifact_support import INSTALL, ROOT
+        from c_route_models import ModelCases
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        target = next(item for item in catalog['normative_targets']
+                      if item['target_id'] == 'KMIPKIT-ELEM-ATTRIBUTE-REVOCATION-REASON')
+        result = ModelCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog).execute(
+            target, '2.0', 'kmipkit_revocation_reason_create')
+
+        self.assertIsNotNone(result)
+        self.assertIn('kmipkit_revocation_reason_create', result['invoked_symbols'])
+        self.assertEqual(result['sample_count'], 16)
 
     def test_named_managed_object_recipes_cover_catalogued_object_structures(self):
         from artifact_support import INSTALL, ROOT
