@@ -215,7 +215,9 @@ conflict was presented. The approved answer was: “Aclarar/actualizar 0007 para
 aceptar el caso de 0092 (Recomendado)”. The resulting FR-018 is a bounded
 KMIPKit response-cardinality policy: effective Stop, a non-empty response
 subset, and at least one returned `Operation Failed`; only returned outcomes
-are exposed. Empty, no-failure, Continue/Undo, and malformed-ID responses
-remain errors. The spec and contract record that OASIS KMIP 2.1 §11.5/Table
-434 does not explicitly require omission. This approval authorizes the bounded
+are exposed. Empty, no-failure, Continue, and malformed-ID responses remain
+errors under this Stop-specific amendment. Partial Undo responses remain
+supported under the already-approved KMIPKIT-0120-FR-001 and are not changed
+here. The spec and contract record that OASIS KMIP 2.1 §11.5/Table 434 does
+not explicitly require omission. This approval authorizes the bounded
 amendment and implementation; it does not approve or merge a PR.

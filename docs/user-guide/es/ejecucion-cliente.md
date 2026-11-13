@@ -419,7 +419,8 @@ incompatibles y las operaciones distintas se rechazan con un error de
 protocolo redactado. Se acepta una respuesta parcial no vacía solo si Batch
 Error Continuation efectivo es Stop y algún elemento devuelto tiene
 `Operation Failed`; el cliente devuelve únicamente los resultados presentes.
-Se rechazan las respuestas parciales vacías, sin fallo o bajo Continue o Undo.
+Se rechazan las respuestas parciales vacías, sin fallo o bajo Continue. Las
+respuestas parciales bajo Undo siguen KMIPKIT-0120.
 Esta política de KMIPKit admite el caso Stop-on-first-failure de KMIPKIT-0092;
 §11.5 de OASIS no exige explícitamente omitir las respuestas no procesadas.
 Batch Order Option controla el orden de ejecución del servidor, no la regla de

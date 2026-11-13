@@ -5,6 +5,10 @@ mod extension_registry;
 #[allow(dead_code)]
 mod public_api_generated;
 
+#[doc(hidden)]
+#[cfg(feature = "coverage-c-consumer")]
+pub use extension_registry::coverage_consumer_test_link_anchor as __coverage_consumer_test_link_anchor;
+
 #[cfg(test)]
 #[allow(unsafe_code)]
 #[path = "../tests/support/profile_readiness_identifier_parity_tests.rs"]

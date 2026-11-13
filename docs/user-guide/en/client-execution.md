@@ -386,7 +386,8 @@ mismatched identities and mismatched operations fail as redacted protocol
 errors. A non-empty partial response is accepted only when effective Batch
 Error Continuation is Stop and a returned item has `Operation Failed`; the
 client returns only outcomes present in the response. Empty or no-failure
-partial responses and partial responses under Continue or Undo fail closed.
+partial responses and partial responses under Continue fail closed. Partial
+Undo responses follow KMIPKIT-0120.
 This KMIPKit policy supports the KMIPKIT-0092 Stop-on-first-failure scenario;
 OASIS §11.5 does not explicitly require omission of unprocessed response
 items. Batch Order Option controls server execution order; it does not select

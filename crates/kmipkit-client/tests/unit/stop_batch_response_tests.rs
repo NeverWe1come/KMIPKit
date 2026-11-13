@@ -112,14 +112,32 @@ fn stop_batch_rejects_partial_response_without_failure() {
 }
 
 #[test]
-fn stop_batch_rejects_partial_continue_or_undo_response() {
+fn stop_batch_rejects_partial_continue_response() {
     let failure = [ResponseItemFixture::failure(Some(FIRST_ID))];
-    for continuation in [
-        BATCH_ERROR_CONTINUATION_CONTINUE,
-        BATCH_ERROR_CONTINUATION_UNDO,
-    ] {
-        assert!(execute_response(&[FIRST_ID, SECOND_ID], Some(continuation), &failure,).is_err());
-    }
+    assert!(
+        execute_response(
+            &[FIRST_ID, SECOND_ID],
+            Some(BATCH_ERROR_CONTINUATION_CONTINUE),
+            &failure,
+        )
+        .is_err()
+    );
+}
+
+#[test]
+fn partial_undo_response_remains_supported_under_kmipkit_0120() {
+    let response = execute_response(
+        &[FIRST_ID, SECOND_ID],
+        Some(BATCH_ERROR_CONTINUATION_UNDO),
+        &[ResponseItemFixture::failure(Some(FIRST_ID))],
+    )
+    .expect("the KMIPKIT-0007 amendment preserves the approved Undo policy");
+
+    assert_eq!(response.len(), 1);
+    assert_eq!(
+        response.get(0).and_then(|item| item.unique_batch_item_id()),
+        Some(FIRST_ID)
+    );
 }
 
 #[test]
