@@ -26,7 +26,7 @@ CATALOG = json.loads(CATALOG_PATH.read_bytes())
 ROUTES = json.loads(ROUTES_PATH.read_bytes())
 SCHEMA = json.loads((ROOT / 'interop/shared/schemas/route-execution-evidence.schema.json').read_bytes())
 ELEMENTS = json.loads((ROOT / 'specification/catalog/kmip-2.1.json').read_bytes())['elements']
-EXPECTED_SOURCE_COMMIT = '8281fef2e9ca211fde1e1d8e21525a672287eead'
+EXPECTED_SOURCE_COMMIT = '9a16cc90a12205101d22a38501a5e74c665df4dc'
 PIN_SOURCE_PATTERNS = (
     ('interop/rust-kmip-validator/tools/install_artifact.py', r'^PIN = "([0-9a-f]{40})"$'),
     ('interop/rust-kmip-validator/tools/verify_artifact.py', r'^PIN = "([0-9a-f]{40})"$'),
@@ -40,6 +40,12 @@ class PinnedSourceContract(unittest.TestCase):
     def test_installed_package_and_test_server_use_shared_manifest_commit(self):
         expected = ROUTES['library_commit']
         self.assertEqual(EXPECTED_SOURCE_COMMIT, expected)
+        ancestry = subprocess.run(
+            ['git', 'merge-base', '--is-ancestor', expected, 'origin/release/1.0.0'],
+            cwd=ROOT,
+            check=False,
+        )
+        self.assertEqual(0, ancestry.returncode, 'shared artifact pin must be in release/1.0.0 history')
         for relative_path, pattern in PIN_SOURCE_PATTERNS:
             path = ROOT / relative_path
             with self.subTest(path=relative_path):
