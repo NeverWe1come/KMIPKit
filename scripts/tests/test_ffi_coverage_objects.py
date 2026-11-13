@@ -46,7 +46,11 @@ class FfiCoverageObjectTests(unittest.TestCase):
         for layout in ('classic', 'cargo-1.100'):
             with self.subTest(layout=layout), tempfile.TemporaryDirectory() as directory:
                 root, log, objects = self.fixture(directory, layout)
-                self.assertEqual(MODULE.collect_ffi_objects(root, log, (log.parent / 'cargo-artifacts.jsonl')), objects)
+                actual = MODULE.collect_ffi_objects(
+                    root, log, (log.parent / 'cargo-artifacts.jsonl'))
+                self.assertEqual(len(actual), len(objects))
+                self.assertTrue(all(reported.samefile(expected)
+                                    for reported, expected in zip(actual, objects)))
 
     def test_missing_static_library_cannot_reduce_the_coverage_denominator(self):
         with tempfile.TemporaryDirectory() as directory:

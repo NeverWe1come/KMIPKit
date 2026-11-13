@@ -134,6 +134,13 @@ foreign fixture remains unchanged, and the full collector still succeeds.
 Sonar reported zero new issues and zero hotspots at `a6407e43e`; later heads
 still require their own quality-gate result.
 
+The subsequent exact-head CI run `43419410034` exposed one remaining Windows
+short-path assertion in `test_preserves_both_libraries_and_consumers_in_both_cargo_layouts`
+(job `131866846011`, classic layout: `RUNNER~1` versus `runneradmin`). The
+expectation now compares file identity for every collected artifact, as the
+hardlink case already does. Linux execution and exact-head CI are required to
+verify this follow-up.
+
 ### Register request and response routes
 
 The Red commits `7cafc62a2`, `22fff7a51`, and `b42bdc902` added installed-
