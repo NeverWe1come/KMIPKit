@@ -225,8 +225,12 @@ static int32_t register_payload_identifier_status(
     return status;
 }
 
-static bool register_response_ttlv_matches_identifier(
+typedef int32_t (*client_response_ttlv_accessor_t)(
+    kmipkit_client_batch_item_response_t *, uint8_t *, kmipkit_ttlv_structure_t **);
+
+static bool response_ttlv_matches_identifier(
     kmipkit_client_batch_item_response_t *response_item,
+    client_response_ttlv_accessor_t accessor,
     const kmipkit_unique_identifier_v1_t *expected_identifier,
     int32_t *out_status) {
     if (!out_status) return false;
@@ -239,8 +243,7 @@ static bool register_response_ttlv_matches_identifier(
     uint8_t present = 0;
     kmipkit_ttlv_structure_t *structure = NULL;
     kmipkit_ttlv_structure_view_t *structure_view = NULL;
-    int32_t status = kmipkit_client_batch_item_response_register_ttlv(
-        response_item, &present, &structure);
+    int32_t status = accessor(response_item, &present, &structure);
     if (status == 0 && (!present || !structure)) status = KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = kmipkit_ttlv_structure_view(structure, &structure_view);
     uint64_t item_count = 0;
@@ -503,9 +506,6 @@ static bool request_item_is_valid(kmipkit_client_batch_item_t *item,
     kmipkit_validation_report_release(report);
     return false;
 }
-
-typedef int32_t (*client_response_ttlv_accessor_t)(
-    kmipkit_client_batch_item_response_t *, uint8_t *, kmipkit_ttlv_structure_t **);
 
 static bool response_ttlv_matches_field_count(
     kmipkit_client_batch_item_response_t *response_item,
@@ -784,42 +784,9 @@ static bool get_usage_allocation_response_ttlv_matches_identifier(
     kmipkit_client_batch_item_response_t *response_item,
     const kmipkit_unique_identifier_v1_t *created_identifier,
     int32_t *out_status) {
-    uint8_t present = 0;
-    kmipkit_ttlv_structure_t *structure = NULL;
-    kmipkit_ttlv_structure_view_t *structure_view = NULL;
-    int32_t status = kmipkit_client_batch_item_response_get_usage_allocation_ttlv(
-        response_item, &present, &structure);
-    if (status == 0 && (!present || !structure)) status = KMIPKIT_ERROR_INVALID_INPUT;
-    if (status == 0) status = kmipkit_ttlv_structure_view(structure, &structure_view);
-    uint64_t item_count = 0;
-    if (status == 0) status = kmipkit_ttlv_structure_view_item_count(
-        structure_view, &item_count);
-    bool payload_found = false;
-    for (uint64_t index = 0; status == 0 && index < item_count; ++index) {
-        kmipkit_ttlv_item_view_t *item_view = NULL;
-        kmipkit_ttlv_value_view_t *value_view = NULL;
-        kmipkit_ttlv_structure_view_t *payload_view = NULL;
-        status = kmipkit_ttlv_structure_view_item_at(structure_view, index, &item_view);
-        if (status == 0 && item_view_has_tag(item_view, UINT32_C(0x42007C),
-                                              KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE, &value_view)) {
-            if (payload_found) {
-                status = KMIPKIT_ERROR_INVALID_INPUT;
-            } else {
-                payload_found = true;
-                status = kmipkit_ttlv_value_view_structure(value_view, &payload_view);
-                if (status == 0) status = register_payload_identifier_status(
-                    payload_view, created_identifier);
-            }
-        }
-        if (payload_view) kmipkit_ttlv_structure_view_release(payload_view);
-        if (value_view) kmipkit_ttlv_value_view_release(value_view);
-        if (item_view) kmipkit_ttlv_item_view_release(item_view);
-    }
-    if (status == 0 && !payload_found) status = KMIPKIT_ERROR_INVALID_INPUT;
-    if (structure_view) kmipkit_ttlv_structure_view_release(structure_view);
-    if (structure) kmipkit_ttlv_structure_release(structure);
-    *out_status = status;
-    return status == 0;
+    return response_ttlv_matches_identifier(
+        response_item, kmipkit_client_batch_item_response_get_usage_allocation_ttlv,
+        created_identifier, out_status);
 }
 
 static int32_t create_get_usage_allocation_variant_item(
@@ -3205,8 +3172,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             goto cleanup;
         }
         if ((register_certificate_workflow || register_certificate_request_workflow) &&
-            !register_response_ttlv_matches_identifier(
-                setup_response_item, &created_identifier, &status)) {
+            !response_ttlv_matches_identifier(
+                setup_response_item, kmipkit_client_batch_item_response_register_ttlv,
+                &created_identifier, &status)) {
             outcome.library_failed = true;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
                      "KMIPKit Register response TTLV disagreed with its typed Unique Identifier");
