@@ -10,13 +10,14 @@ use kmipkit_protocol::{
     Attribute, AttributeDefinition, AttributeReference, AttributeSet, AttributeSetError,
     CheckRequest, CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest,
     CryptographicAlgorithm, CryptographicParameters, CurrentAttribute, DecryptRequest,
-    DeleteAttributeRequest, DestroyRequest, DiscoverVersionsRequest, EncryptRequest, GetRequest,
-    HashRequest, LocateRequest, MacRequest, MacVerifyRequest, ManagedObject,
-    ModifyAttributeRequest, NewAttribute, ObjectGroupMember, ObjectType, OpaqueObjectContext,
-    OperationData, PingRequest, ProtocolVersion, QueryFunction, QueryRequest, RecertifyRequest,
-    RecoverRequest, RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason,
-    RevokeRequest, SecretBytes, SetAttributeRequest, SignRequest, SignatureVerifyRequest,
-    SplitKeyMethod, StorageStatusMask, UniqueIdentifier, ValidateKmipRequest,
+    DeleteAttributeRequest, DestroyRequest, DiscoverVersionsRequest, EncryptRequest,
+    GetConstraintsRequest, GetRequest, HashRequest, LocateRequest, MacRequest, MacVerifyRequest,
+    ManagedObject, ModifyAttributeRequest, NewAttribute, ObjectGroupMember, ObjectType,
+    OpaqueObjectContext, OperationData, PingRequest, ProtocolVersion, QueryFunction, QueryRequest,
+    RecertifyRequest, RecoverRequest, RegisterRequest, RekeyKeyPairRequest, RekeyRequest,
+    RevocationReason, RevokeRequest, SecretBytes, SetAttributeRequest, SignRequest,
+    SignatureVerifyRequest, SplitKeyMethod, StorageStatusMask, UniqueIdentifier,
+    ValidateKmipRequest,
 };
 use kmipkit_transport::{RequestDeliveryState, RequestOptions};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
@@ -368,6 +369,12 @@ impl<'a> RequestBuilder<'a> {
     #[must_use]
     pub fn check(self) -> CheckBuilder<'a> {
         CheckBuilder::new(self.client)
+    }
+
+    /// Begins constructing the empty typed Get Constraints request.
+    #[must_use]
+    pub fn get_constraints(self) -> GetConstraintsBuilder<'a> {
+        GetConstraintsBuilder::new(self.client)
     }
 
     /// Begins constructing a typed Destroy request for an explicit identifier.
@@ -3318,6 +3325,93 @@ fn discover_versions_request(
         Some(versions) => DiscoverVersionsRequest::with_versions(versions)
             .map_err(|_| FluentBuildError::InvalidProtocolVersions),
         None => Ok(DiscoverVersionsRequest::new()),
+    }
+}
+
+/// A fluent builder for the empty typed Get Constraints request.
+pub struct GetConstraintsBuilder<'a> {
+    client: &'a mut Client,
+    options: Option<RequestOptions>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl<'a> GetConstraintsBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            client,
+            options: None,
+            asynchronous_indicator: None,
+        }
+    }
+
+    /// Sets exchange-local options without changing client policy.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.options = Some(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.asynchronous_indicator = Some(value);
+        self
+    }
+
+    /// Validates the typed Get Constraints request without sending.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error if protocol validation fails.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        validate_fluent_request(&GetConstraintsRequest::new())
+    }
+
+    /// Builds the existing typed Get Constraints request without sending it.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error if protocol validation fails.
+    pub fn build_request(self) -> Result<GetConstraintsRequest, FluentBuildError> {
+        let request = GetConstraintsRequest::new();
+        validate_fluent_request(&request)?;
+        Ok(request)
+    }
+
+    /// Converts Get Constraints to the existing typed client batch item.
+    ///
+    /// # Errors
+    ///
+    /// Returns a sanitized construction error if protocol validation fails.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        self.build_request()
+            .map(|request| ClientBatchItem::new(ClientRequest::GetConstraints(request)))
+    }
+
+    /// Executes one typed exchange and returns the existing operation result.
+    ///
+    /// # Errors
+    ///
+    /// Returns a not-sent validation error before transport if validation
+    /// fails, or the existing client error for exchange and decoding failures.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let Self {
+            client,
+            options,
+            asynchronous_indicator,
+        } = self;
+        let request = GetConstraintsRequest::new();
+        validate_fluent_request(&request).map_err(fluent_client_validation_error)?;
+        execute_fluent_request(
+            client,
+            ClientRequest::GetConstraints(request),
+            asynchronous_indicator,
+            options,
+            limits,
+        )
     }
 }
 
