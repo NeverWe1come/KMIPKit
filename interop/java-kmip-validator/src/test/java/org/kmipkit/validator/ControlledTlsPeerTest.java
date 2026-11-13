@@ -123,6 +123,10 @@ class ControlledTlsPeerTest {
             "java.generic-ttlv.ttlv_item.create",
             "java.generic-ttlv.function.ttlv_item_view_from_item",
             "java.generic-ttlv.ttlv_codec.decode");
+    private static final List<String> TYPED_ATTRIBUTE_ENUMERATION_ROUTES = List.of(
+            "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+            "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+            "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew");
     private static final String RESPONSE_BATCH_ITEM_CASE_ID =
             "test-norm-message-field-message-field-8-4-batch-item";
     // Exercise KMIP 2.1-assigned values as unknown Enumeration values in KMIP 2.0.
@@ -619,15 +623,10 @@ class ControlledTlsPeerTest {
                 "The PKCS#11 Return Code aggregate must cover every value.");
         List<LocalEnumerationScope> additionalEnumerationScopes = List.of(
                 new LocalEnumerationScope("test-enum-key-format-type", keyFormatTargets,
-                        List.of("2.0", "2.1"), List.of(
-                                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
-                                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
-                                "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew")),
+                        List.of("2.0", "2.1"), TYPED_ATTRIBUTE_ENUMERATION_ROUTES),
                 new LocalEnumerationScope("test-enum-digital-signature-algorithm", digitalSignatureTargets,
-                        List.of("2.0", "2.1"), List.of(
-                                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
-                                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
-                                "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
+                        List.of("2.0", "2.1"), concatRoutes(
+                                TYPED_ATTRIBUTE_ENUMERATION_ROUTES,
                                 CRYPTOGRAPHIC_PARAMETER_BUILDER_ROUTES.get("DIGITAL-SIGNATURE-ALGORITHM"))),
                 new LocalEnumerationScope("test-enum-operation", operationTargets,
                         List.of("2.0", "2.1"), List.of()),
@@ -636,10 +635,7 @@ class ControlledTlsPeerTest {
                 new LocalEnumerationScope("test-enum-recommended-curve", recommendedCurveTargets,
                         List.of("2.0", "2.1"), List.of()),
                 new LocalEnumerationScope("test-enum-nist-key-type", nistKeyTypeTargets,
-                        List.of("2.0", "2.1"), List.of(
-                                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
-                                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
-                                "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew")),
+                        List.of("2.0", "2.1"), TYPED_ATTRIBUTE_ENUMERATION_ROUTES),
                 new LocalEnumerationScope("test-enum-opaque-data-type", List.of(
                         "KMIPKIT-ELEM-ENUM-VALUE-OPAQUE-DATA-TYPE-EXTENSIONS-8XXXXXXX"),
                         List.of("2.0", "2.1"), List.of(
@@ -706,11 +702,9 @@ class ControlledTlsPeerTest {
                         "KMIPKIT-ELEM-ENUM-VALUE-USAGE-LIMITS-UNIT-OBJECT-00000002"),
                         List.of("2.0", "2.1"), List.of()),
                 new LocalEnumerationScope("test-enum-cryptographic-algorithm", cryptographicAlgorithmTargets,
-                        List.of("2.0", "2.1"), List.of(
-                                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
-                                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
-                                "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
-                                "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.cryptographicalgorithm")),
+                        List.of("2.0", "2.1"), concatRoutes(
+                                TYPED_ATTRIBUTE_ENUMERATION_ROUTES,
+                                CRYPTOGRAPHIC_PARAMETER_BUILDER_ROUTES.get("CRYPTOGRAPHIC-ALGORITHM"))),
                 new LocalEnumerationScope("test-enum-pkcs#11-function", pkcs11FunctionTargets,
                         List.of("2.0", "2.1"), List.of()),
                 new LocalEnumerationScope("test-enum-pkcs#11-return-code", pkcs11ReturnCodeTargets,
@@ -3344,6 +3338,12 @@ class ControlledTlsPeerTest {
             if (CREDENTIAL_TYPE_MODEL_ROUTES.containsKey(fixture.targetId())) routesPerVersion++;
         }
         return fixture.protocolVersions().size() * routesPerVersion;
+    }
+
+    private static List<String> concatRoutes(List<String> routes, String additionalRoute) {
+        var combined = new ArrayList<>(routes);
+        combined.add(additionalRoute);
+        return List.copyOf(combined);
     }
 
     private static JsonNode findRouteEvent(JsonNode events, String routeId, String protocolVersion) {
