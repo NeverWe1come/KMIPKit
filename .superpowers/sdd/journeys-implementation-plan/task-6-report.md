@@ -54,3 +54,13 @@ paths, and fails closed when any required file is missing.
   and `git diff --check`: exit 0.
 - Workspace Clippy and real instrumented FFI coverage validation are in
   progress; their final outcomes are recorded below before closeout.
+
+### Self-review: retain parity coverage after removing the dynamic link
+
+The parity test's counters now live in its Cargo-linked executable. Keep all
+four original coverage export objects and additionally export
+`operation_parity_0053`; otherwise its executed C operation routes would stop
+contributing to this focused report. The enhanced resolver regression fails
+before that addition: 4 tests, 3 assertion failures (two layout cases omit the
+parity object; the missing-parity negative case incorrectly succeeds). Output:
+`target/ci-110-parity-objects-red.log`.
