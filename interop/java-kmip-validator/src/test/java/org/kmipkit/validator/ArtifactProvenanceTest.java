@@ -12,8 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ArtifactProvenanceTest {
-    private static final String COMMIT = "489fafc79ef89db2524eafa7a6c6482f5cf75d97";
-
     @Test
     void pinnedLibraryCommitMatchesSharedRouteManifest() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
@@ -31,24 +29,25 @@ class ArtifactProvenanceTest {
         Path directory = Files.createTempDirectory("java-artifact-provenance");
         Path jar = directory.resolve("kmipkit-java.jar");
         Files.write(jar, new byte[] {1, 2, 3, 4});
-        Path manifest = writeManifest(directory, jar, COMMIT);
+        String commit = PinnedLibraryCommit.read();
+        Path manifest = writeManifest(directory, jar, commit);
 
-        var provenance = ArtifactProvenance.load(manifest, COMMIT);
+        var provenance = ArtifactProvenance.load(manifest, commit);
 
-        assertEquals(COMMIT, provenance.libraryCommit());
+        assertEquals(commit, provenance.libraryCommit());
         assertEquals(jar.toAbsolutePath(), provenance.artifactPath());
         assertEquals("org.kmipkit:kmipkit-java:1.0.0:" + ArtifactProvenance.hostClassifier(),
                 provenance.mavenCoordinate());
         assertThrows(IllegalArgumentException.class, () -> ArtifactProvenance.load(manifest, "0".repeat(40)));
 
         Files.write(jar, new byte[] {4, 3, 2, 1});
-        assertThrows(IllegalArgumentException.class, () -> ArtifactProvenance.load(manifest, COMMIT));
+        assertThrows(IllegalArgumentException.class, () -> ArtifactProvenance.load(manifest, commit));
     }
 
     @Test
     void executesPublicApiFromTheInstalledJar() throws Exception {
         Path manifest = Path.of(System.getProperty("kmipkit.artifactManifest"));
-        var provenance = ArtifactProvenance.load(manifest, COMMIT);
+        var provenance = ArtifactProvenance.load(manifest, PinnedLibraryCommit.read());
         Path loadedJar = Path.of(ClientBatchItem.class.getProtectionDomain().getCodeSource().getLocation().toURI())
                 .toAbsolutePath().normalize();
         assertEquals(provenance.artifactPath(), loadedJar);
