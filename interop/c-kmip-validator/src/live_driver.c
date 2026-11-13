@@ -2254,12 +2254,24 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     }
     bool get_constraints_boundary_workflow =
         strcmp(test_case->case_id, "test-v20-reject-get-constraints") == 0;
+    bool get_usage_allocation_uid_variant =
+        strcmp(test_case->case_id,
+               "test-norm-payload-client-get-usage-allocation-request-20-001") == 0 ||
+        strcmp(test_case->case_id,
+               "test-norm-payload-client-get-usage-allocation-request-21-001") == 0;
+    const char *usage_allocation_identifier_form =
+        getenv("KMIPKIT_C_USAGE_ALLOCATION_IDENTIFIER_FORM");
+    bool usage_allocation_identifier_explicit = usage_allocation_identifier_form &&
+        strcmp(usage_allocation_identifier_form, "explicit") == 0;
+    bool usage_allocation_identifier_omitted = usage_allocation_identifier_form &&
+        strcmp(usage_allocation_identifier_form, "omitted") == 0;
     bool set_constraints_workflow =
         strcmp(test_case->case_id, "test-op-set-constraints") == 0;
     bool set_defaults_workflow =
         strcmp(test_case->case_id, "test-op-set-defaults") == 0;
     if (strcmp(test_case->mode, "local_model") == 0) {
-        if (!get_constraints_boundary_workflow) return execute_local_model_case(test_case);
+        if (!get_constraints_boundary_workflow && !get_usage_allocation_uid_variant)
+            return execute_local_model_case(test_case);
         if (strcmp(client->api_level, "typed-protocol") != 0) {
             return outcome_not_run(
                 "the generic C TTLV API cannot invoke a typed request to verify pre-transport version rejection");
@@ -2272,8 +2284,14 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     if (!client->client || !client->limits) {
         return outcome_not_run("live client is not initialized");
     }
-    if (strcmp(test_case->mode, "server_exchange") != 0 && !get_constraints_boundary_workflow) {
+    if (strcmp(test_case->mode, "server_exchange") != 0 &&
+        !get_constraints_boundary_workflow && !get_usage_allocation_uid_variant) {
         return outcome_not_run("catalog mode is not supported by the C validator");
+    }
+    if (get_usage_allocation_uid_variant &&
+        !usage_allocation_identifier_explicit && !usage_allocation_identifier_omitted) {
+        return outcome_not_run(
+            "controlled peer did not select an optional Unique Identifier form");
     }
     if (strcmp(test_case->case_id, "test-op-add-attribute") == 0)
         return execute_attribute_mutation_case(client, ATTRIBUTE_MUTATION_ADD);
@@ -2357,7 +2375,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     bool get_attribute_list_workflow = strcmp(test_case->case_id, "test-op-get-attribute-list") == 0;
     bool get_constraints_workflow = strcmp(test_case->case_id, "test-op-get-constraints") == 0;
     bool get_usage_allocation_workflow =
-        strcmp(test_case->case_id, "test-op-get-usage-allocation") == 0;
+        strcmp(test_case->case_id, "test-op-get-usage-allocation") == 0 ||
+        get_usage_allocation_uid_variant;
     bool get_workflow = strcmp(test_case->case_id, "test-op-get") == 0;
     bool batch_two_read_items_workflow =
         strcmp(test_case->case_id, "test-batch-count-matches-items") == 0 ||
@@ -2650,7 +2669,23 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             } else if (get_constraints_workflow) {
                 status = kmipkit_client_batch_item_get_constraints(&item);
             } else if (get_usage_allocation_workflow) {
-                status = kmipkit_client_batch_item_get_usage_allocation(&placeholder, 1, &item);
+                if (get_usage_allocation_uid_variant) {
+                    static const uint8_t fixture_identifier[] = "fixture-key-1";
+                    const kmipkit_unique_identifier_v1_t identifier = {
+                        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+                        .abi_version = 1,
+                        .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
+                        .text_data = fixture_identifier,
+                        .text_length = sizeof(fixture_identifier) - 1
+                    };
+                    request_construction_step =
+                        "Get Usage Allocation optional Unique Identifier variant";
+                    status = kmipkit_client_batch_item_get_usage_allocation(
+                        usage_allocation_identifier_explicit ? &identifier : NULL, 1, &item);
+                } else {
+                    status = kmipkit_client_batch_item_get_usage_allocation(
+                        &placeholder, 1, &item);
+                }
             } else if (get_workflow) {
                 status = kmipkit_client_batch_item_get(&placeholder, 0, 0, 0, 0, 0, 0, NULL, &item);
             } else if (get_attributes_workflow) {
@@ -2732,6 +2767,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                            revoke_workflow ? "interop-revoke" :
                            destroy_workflow ? "interop-destroy-target" :
                            get_constraints_workflow ? "interop-get-constraints" :
+                           get_usage_allocation_uid_variant
+                               ? (usage_allocation_identifier_explicit
+                                   ? "usage-allocation-explicit" : "usage-allocation-omitted") :
                            get_usage_allocation_workflow ? "interop-get-usage-allocation" :
                            get_workflow ? "interop-get" : "interop-attributes");
                 if (status == 0 && revoke_cleanup_workflow) {

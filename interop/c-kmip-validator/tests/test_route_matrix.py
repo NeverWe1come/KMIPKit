@@ -56,8 +56,36 @@ class RouteMatrixTests(unittest.TestCase):
             with self.subTest(case_id=case_id):
                 self.assertEqual(
                     route_peer.RECIPES.get(case_id),
-                    ((17, 17), 'get_usage_allocation_uid_variants'),
+                    ((1, 17, 19, 20), 'get_usage_allocation_uid_variant'),
                 )
+
+    def test_get_usage_allocation_optional_identifier_forms_execute_in_both_versions(self):
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_ids = {
+            'test-norm-payload-client-get-usage-allocation-request-20-001',
+            'test-norm-payload-client-get-usage-allocation-request-21-001',
+        }
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] in case_ids]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 24)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks))
+        self.assertEqual(
+            {event['protocol_version'] for event in events if event['action'] == 'send'},
+            {'2.0', '2.1'},
+        )
+        self.assertTrue(all(
+            {'kmipkit_client_batch_item_get_usage_allocation',
+             'kmipkit_client_batch_item_response_get_usage_allocation'} <=
+            set(check['public_api_trace_symbols']) for check in checks
+        ))
 
     def test_route_evidence_output_cannot_escape_its_build_directory(self):
         with tempfile.TemporaryDirectory() as directory:

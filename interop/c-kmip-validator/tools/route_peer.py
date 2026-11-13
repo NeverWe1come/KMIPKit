@@ -289,6 +289,10 @@ RECIPES = {
     'test-op-destroy': ((1, 20, 19, 20), 'destroy'),
     'test-op-get-constraints': ((1, 56, 19, 20), 'get_constraints'),
     'test-op-get-usage-allocation': ((1, 17, 19, 20), 'get_usage_allocation'),
+    'test-norm-payload-client-get-usage-allocation-request-20-001':
+        ((1, 17, 19, 20), 'get_usage_allocation_uid_variant'),
+    'test-norm-payload-client-get-usage-allocation-request-21-001':
+        ((1, 17, 19, 20), 'get_usage_allocation_uid_variant'),
     'test-op-locate': ((8,), 'locate'), 'test-op-query': ((24,), 'query'),
     'test-norm-payload-client-query-request-20-001': ((24,), 'query'),
     'test-norm-payload-client-query-request-21-001': ((24,), 'query'),
@@ -306,6 +310,8 @@ RECIPES = {
 
 CONTROLLED_PEER_LOCAL_MODEL_CASES = frozenset({
     'test-batch-single-item-options-omitted',
+    'test-norm-payload-client-get-usage-allocation-request-20-001',
+    'test-norm-payload-client-get-usage-allocation-request-21-001',
     'test-norm-payload-client-query-request-20-001',
     'test-norm-payload-client-query-request-21-001',
     'test-norm-payload-client-query-request-21-002',
@@ -317,7 +323,8 @@ CONTROLLED_PEER_LOCAL_MODEL_CASES = frozenset({
 })
 
 
-def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None):
+def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
+                  constructor_variant=None):
     selected_recipe = recipe or RECIPES[case_id]
     expected, _ = selected_recipe
     if tuple(numbers(node, 0x42005C)) != expected:
@@ -340,7 +347,9 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None):
             raise ValueError('fixture_cleanup_continuation_missing')
         implicit_target = case_id in ('test-op-get-attributes', 'test-op-get-attribute-list',
             'test-batch-create-activate-destroy', 'test-attr-cryptographic-algorithm',
-            'test-attr-cryptographic-length', 'test-op-get-constraints') or attribute_fixture is not None
+            'test-attr-cryptographic-length', 'test-op-get-constraints',
+            'test-norm-payload-client-get-usage-allocation-request-20-001',
+            'test-norm-payload-client-get-usage-allocation-request-21-001') or attribute_fixture is not None
         minimum_unique_identifiers = 0 if case_id == 'test-batch-placeholder-chain-resolves' else (
             len(expected) - 1 - int(implicit_target))
         if len(numbers(node, 0x420094)) < minimum_unique_identifiers:
@@ -355,6 +364,18 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None):
                 raise ValueError('fixture_placeholder_chain_shape_mismatch')
             if numbers(node, 0x42000E) != [1]:
                 raise ValueError('fixture_placeholder_chain_continue_option_missing')
+    if selected_recipe[1] == 'get_usage_allocation_uid_variant':
+        items = [item for item in node[2]
+                 if item[0] == BATCH_ITEM_TAG and numbers(item, 0x42005C) == [17]]
+        identifiers = [text_values(item, UNIQUE_IDENTIFIER_TAG) for item in items]
+        counts = [numbers(item, 0x420096) for item in items]
+        expected_identifier = ['fixture-key-1'] if constructor_variant == 'usage-allocation-explicit' else []
+        expected_id = (b'usage-allocation-explicit'
+                       if constructor_variant == 'usage-allocation-explicit'
+                       else b'usage-allocation-omitted')
+        if (len(items) != 1 or identifiers != [expected_identifier] or counts != [[1]] or
+                [byte_string_values(item, 0x420093) for item in items] != [[expected_id]]):
+            raise ValueError('fixture_get_usage_allocation_optional_identifier_variants_mismatch')
     if expected[0] == 3:
         register_item = next(item for item in node[2]
                              if item[0] == 0x42000F and numbers(item, 0x42005C) == [3])
@@ -922,7 +943,11 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
             for version in case.get('execution', {}).get('protocol_versions', []))
     }
     case_variants = [(case, variant) for case in catalog['test_cases'] for variant in
-        (('direct', 'standalone') if case['case_id'] in {'test-op-get-attributes', 'test-op-get-attribute-list',
+        (('usage-allocation-explicit', 'usage-allocation-omitted')
+         if case['case_id'] in {
+             'test-norm-payload-client-get-usage-allocation-request-20-001',
+             'test-norm-payload-client-get-usage-allocation-request-21-001'} else
+         ('direct', 'standalone') if case['case_id'] in {'test-op-get-attributes', 'test-op-get-attribute-list',
                                                          'test-op-add-attribute', 'test-op-set-attribute',
                                                          'test-op-delete-attribute'}
          or case['case_id'] in attribute_case_ids else ('direct',))]
@@ -1036,10 +1061,12 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 raise ValueError('fixture_attribute_mutation_identifier_mismatch')
                                             response_operations = (attribute_mutation_operation,)
                                         elif recipe[1] in ('set_constraints', 'set_defaults'):
-                                            assert_recipe(request_tree, case_id, version, recipe, attribute_fixture)
+                                            assert_recipe(request_tree, case_id, version, recipe,
+                                                          attribute_fixture, variant)
                                             response_operations = recipe[0]
                                         else:
-                                            assert_recipe(request_tree, case_id, version, recipe, attribute_fixture)
+                                            assert_recipe(request_tree, case_id, version, recipe,
+                                                          attribute_fixture, variant)
                                             response_operations = recipe[0]
                                         selected_tag = {'test-attr-cryptographic-algorithm': 0x420028,
                                                         'test-attr-cryptographic-length': 0x42002A}.get(
@@ -1048,7 +1075,14 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                             if attribute_fixture else 0)
                                         object_type = 4 if case_id == 'test-obj-private-key' else 3 if case_id == 'test-obj-public-key' else 2
                                         response_item_ids = None
-                                        if placeholder_chain_recipe:
+                                        if recipe[1] == 'get_usage_allocation_uid_variant':
+                                            response_item_ids = (
+                                                b'interop-create',
+                                                b'usage-allocation-explicit'
+                                                if variant == 'usage-allocation-explicit' else
+                                                b'usage-allocation-omitted',
+                                                b'interop-revoke', b'interop-destroy')
+                                        elif placeholder_chain_recipe:
                                             response_item_ids = (
                                                 (b'placeholder-revoke-cleanup', b'placeholder-destroy-cleanup')
                                                 if cleanup_exchange else
@@ -1173,12 +1207,20 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                             peer_case = case_for_controlled_exchange(
                                 case, attribute_fixture, register_object_path)
                             catalog_path.write_text(json.dumps({**catalog, 'test_cases': [peer_case]}))
+                            run_environment = {
+                                **os.environ,
+                                'KMIPKIT_C_ROUTE_OBSERVATIONS': str(trace_path),
+                            }
+                            if recipe[1] == 'get_usage_allocation_uid_variant':
+                                run_environment['KMIPKIT_C_USAGE_ALLOCATION_IDENTIFIER_FORM'] = (
+                                    'explicit' if variant == 'usage-allocation-explicit' else 'omitted')
+                            else:
+                                run_environment['KMIPKIT_C_ATTRIBUTE_REQUEST_ROUTE'] = variant
                             run = subprocess.run([str(binary.resolve()), 'run', '--connection', str(connection_path),
                                 '--catalog', str(catalog_path), '--allow-mutations', '--output', str(result_path)],
                                 cwd=ROOT, capture_output=True,
                                 timeout=30 if attribute_mutation_recipe else 10,
-                                env={**os.environ, 'KMIPKIT_C_ROUTE_OBSERVATIONS': str(trace_path),
-                                     'KMIPKIT_C_ATTRIBUTE_REQUEST_ROUTE': variant})
+                                env=run_environment)
                             if thread is not None:
                                 thread.join(20 if attribute_mutation_recipe else 6)
                             result = json.loads(result_path.read_text()) if result_path.exists() else {}
