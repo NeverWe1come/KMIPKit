@@ -124,6 +124,7 @@ class ControlledTlsPeerTest {
             "java.generic-ttlv.ttlv_codec.decode");
     private static final String RESPONSE_BATCH_ITEM_CASE_ID =
             "test-norm-message-field-message-field-8-4-batch-item";
+    private static final String LOCAL_ENUMERATION_SCOPE_CASE_ID = "test-enum-block-cipher-mode";
     private static final String RESPONSE_BATCH_ITEM_TARGET_ID =
             "KMIPKIT-ELEM-MESSAGE-FIELD-8-4-BATCH-ITEM";
     private static final List<NormativeTarget> RESPONSE_MESSAGE_PARSE_TARGETS = List.of(
@@ -312,6 +313,7 @@ class ControlledTlsPeerTest {
         ObjectMapper mapper = new ObjectMapper();
         ArrayNode events = mapper.createArrayNode();
         List<EnumerationFixture> enumerationFixtures = genericEnumerationFixtures();
+        List<EnumerationFixture> localEnumerationFixtures = genericLocalEnumerationFixtures();
         List<BitmaskFixture> bitmaskFixtures = genericBitmaskFixtures();
         List<DataTypeFixture> dataTypeFixtures = genericDataTypeFixtures();
         Map<String, JsonNode> dataTypeVectors = dataTypeBoundaryVectors();
@@ -324,6 +326,7 @@ class ControlledTlsPeerTest {
             appendTagRangeRouteEvents(events, protocolVersion);
             appendActivationDateLocalRouteEvents(events, protocolVersion);
             appendGenericEnumerationRouteEvents(events, enumerationFixtures, protocolVersion);
+            appendGenericLocalEnumerationRouteEvents(events, localEnumerationFixtures, protocolVersion);
             appendGenericBitmaskRouteEvents(events, bitmaskFixtures, protocolVersion);
             appendGenericDataTypeRouteEvents(events, dataTypeFixtures, dataTypeVectors, protocolVersion);
             appendNormativeMessageFieldGenericRouteEvents(events, protocolVersion);
@@ -599,6 +602,8 @@ class ControlledTlsPeerTest {
         }
         int enumerationEventCount = enumerationFixtures.stream()
                 .mapToInt(ControlledTlsPeerTest::expectedEnumerationRouteEvents).sum();
+        int localEnumerationEventCount = localEnumerationFixtures.stream()
+                .mapToInt(ControlledTlsPeerTest::expectedEnumerationRouteEvents).sum();
         int bitmaskEventCount = bitmaskFixtures.stream()
                 .mapToInt(fixture -> fixture.protocolVersions().size() * (4 + (fixture.attribute() == null ? 0 : 3)))
                 .sum();
@@ -629,7 +634,8 @@ class ControlledTlsPeerTest {
             int routes = "reserved".equals(testCase.path("requires").path("allocation").asText()) ? 3 : 5;
             genericTagEventCount += routes * testCase.path("execution").path("protocol_versions").size();
         }
-        assertEquals(68 + enumerationEventCount + bitmaskEventCount + 94 + batchItemAccessorEventCount
+        assertEquals(68 + enumerationEventCount + localEnumerationEventCount + bitmaskEventCount + 94
+                        + batchItemAccessorEventCount
                         + batchItemExtensionCountEventCount + batchItemGenericRouteEventCount
                         + batchItemAdditionalResponseRouteEventCount + credentialGenericRouteEventCount
                         + normativeMessageFieldGenericRouteEventCount + normativeMessageFieldParserRouteEventCount
@@ -655,7 +661,10 @@ class ControlledTlsPeerTest {
                 "Every TTLV data type needs its installed constructor, item view, and decoder routes.");
         long bitmaskCaseCount = bitmaskFixtures.stream().map(BitmaskFixture::caseId).distinct().count();
         long dataTypeCaseCount = dataTypeFixtures.stream().map(DataTypeFixture::caseId).distinct().count();
-        assertEquals(15 + enumerationFixtures.size() + bitmaskCaseCount + dataTypeCaseCount
+        long localEnumerationCaseCount = localEnumerationFixtures.stream()
+                .map(EnumerationFixture::caseId).distinct().count();
+        assertEquals(15 + enumerationFixtures.size() + localEnumerationCaseCount + bitmaskCaseCount
+                        + dataTypeCaseCount
                         + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + genericTagCaseIds.size()
                         + typedTagIdentityCaseIds().size() + referencedEnumCaseCount,
                 report.path("case_ids").size());
@@ -1589,6 +1598,120 @@ class ControlledTlsPeerTest {
                 appendTypedEnumerationRouteEvents(events, fixture, wire, protocolVersion, treeHash);
                 appendCryptographicParameterBuilderRouteEvent(events, fixture, protocolVersion, treeHash);
                 appendCredentialEnumerationRouteEvents(events, fixture, protocolVersion, treeHash);
+                appendBatchErrorContinuationRouteEvent(events, fixture, protocolVersion);
+            }
+        }
+    }
+
+    private static List<EnumerationFixture> genericLocalEnumerationFixtures() throws Exception {
+        JsonNode catalog = readRouteEvidenceCatalog();
+        List<JsonNode> targets = new ArrayList<>();
+        for (JsonNode target : catalog.path("normative_targets")) targets.add(target);
+
+        var fixtures = new ArrayList<EnumerationFixture>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            String enumType = testCase.path("requires").path("enum_type").asText();
+            if (!LOCAL_ENUMERATION_SCOPE_CASE_ID.equals(testCase.path("case_id").asText())
+                    || enumType.isEmpty()
+                    || !"local_model".equals(testCase.path("execution").path("mode").asText())) {
+                continue;
+            }
+            String normalizedEnumType = normalizeTargetName(enumType);
+            JsonNode tagTarget = targets.stream()
+                    .filter(candidate -> "tag".equals(candidate.path("kind").asText()))
+                    .filter(candidate -> normalizedEnumType.equals(
+                            normalizeTargetName(candidate.path("name").asText())))
+                    .findFirst().orElseThrow(() -> new IllegalStateException(
+                            "Local enum has no same-named normative TTLV tag: " + enumType));
+            int rawTag = parseWireTag(tagTarget.path("wire_value").asText());
+            JsonNode attributeTarget = "OBJECTTYPE".equals(normalizedEnumType) ? null : targets.stream()
+                    .filter(candidate -> "attribute".equals(candidate.path("kind").asText()))
+                    .filter(candidate -> normalizedEnumType.equals(
+                            normalizeTargetName(candidate.path("name").asText())))
+                    .findFirst().orElse(null);
+            StandardAttribute attribute = attributeTarget == null ? null : standardAttributeForTag(rawTag);
+            if (attributeTarget != null && attribute == null) {
+                throw new IllegalStateException("Catalog attribute has no installed StandardAttribute route: "
+                        + enumType);
+            }
+            String parentName = enumType.toUpperCase(Locale.ROOT).replaceAll("[^A-Z0-9]+", "-");
+            List<String> caseVersions = new ArrayList<>();
+            for (JsonNode version : testCase.path("execution").path("protocol_versions")) {
+                caseVersions.add(version.asText());
+            }
+
+            for (JsonNode target : targets) {
+                String targetKind = target.path("kind").asText();
+                if (!"enumeration_value".equals(targetKind)) continue;
+                if (!belongsToEnumeration(target, enumType)) continue;
+                String wireValue = target.path("wire_value").asText();
+                long value = parseRepresentativeEnumerationValue(
+                        wireValue, target.path("allocation").asText());
+                List<String> versions = caseVersions.stream()
+                        .filter(version -> target.path("protocol_versions").isEmpty()
+                                || containsText(target.path("protocol_versions"), version))
+                        .toList();
+                if (!versions.isEmpty()) {
+                    fixtures.add(new EnumerationFixture(testCase.path("case_id").asText(),
+                            target.path("target_id").asText(), parentName, rawTag, value,
+                            attribute, versions));
+                }
+            }
+        }
+        return List.copyOf(fixtures);
+    }
+
+    private static boolean belongsToEnumeration(JsonNode target, String enumType) {
+        String normalizedEnumType = normalizeTargetName(enumType);
+        for (JsonNode parent : target.path("parent_element_ids")) {
+            String parentId = parent.asText();
+            String prefix = "KMIPKIT-ELEM-ENUMERATION-";
+            if (parentId.startsWith(prefix)
+                    && normalizedEnumType.equals(normalizeTargetName(parentId.substring(prefix.length())))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static long parseRepresentativeEnumerationValue(String wireValue, String allocation) {
+        if ("extension".equals(allocation) && wireValue.toUpperCase(Locale.ROOT).contains("X")) {
+            return 0x8000_0000L;
+        }
+        // Reserved ranges are represented by their inclusive lower bound for the generic scalar probe.
+        String representative = "reserved".equals(allocation) && wireValue.contains("-")
+                ? wireValue.substring(0, wireValue.indexOf('-')) : wireValue;
+        String digits = representative.replaceFirst("^0[xX]", "");
+        if (!digits.matches("[0-9A-Fa-f]+")) {
+            throw new IllegalStateException("Unsupported catalog enumeration wire value: " + wireValue);
+        }
+        return Long.parseUnsignedLong(digits, 16);
+    }
+
+    private static boolean containsText(JsonNode values, String expected) {
+        for (JsonNode value : values) if (expected.equals(value.asText())) return true;
+        return false;
+    }
+
+    private static void appendGenericLocalEnumerationRouteEvents(ArrayNode events,
+            List<EnumerationFixture> fixtures, String protocolVersion) throws Exception {
+        for (EnumerationFixture fixture : fixtures) {
+            if (!fixture.protocolVersions().contains(protocolVersion)) continue;
+            byte[] wire = item(fixture.rawTag(), 5, intBytes((int) fixture.value()));
+            try (TtlvValue value = TtlvValue.Enumeration(fixture.value())) {
+                appendRouteEvent(events, fixture.caseId(),
+                        "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
+                        fixture.targetId(), "org.kmipkit.ttlv.TtlvValue.Enumeration", null, null,
+                        "construct", protocolVersion, null, normalizedTreeSha256(wire), null);
+                appendLocalTtlvRoundtripEvents(events, fixture.caseId(), fixture.targetId(),
+                        fixture.rawTag(), TtlvItemType.Enumeration, value, wire,
+                        protocolVersion, fixture.value());
+                appendTypedEnumerationRouteEvents(events, fixture, wire, protocolVersion,
+                        normalizedTreeSha256(wire));
+                appendCryptographicParameterBuilderRouteEvent(events, fixture, protocolVersion,
+                        normalizedTreeSha256(wire));
+                appendCredentialEnumerationRouteEvents(events, fixture, protocolVersion,
+                        normalizedTreeSha256(wire));
                 appendBatchErrorContinuationRouteEvent(events, fixture, protocolVersion);
             }
         }
@@ -2728,6 +2851,8 @@ class ControlledTlsPeerTest {
         TAG_RANGE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         caseIds.add("test-attr-activation-date");
         genericEnumerationFixtures().forEach(fixture -> caseIds.add(fixture.caseId()));
+        genericLocalEnumerationFixtures().stream().map(EnumerationFixture::caseId).distinct()
+                .forEach(caseIds::add);
         genericBitmaskFixtures().stream().map(BitmaskFixture::caseId).distinct().forEach(caseIds::add);
         genericDataTypeFixtures().forEach(fixture -> caseIds.add(fixture.caseId()));
         caseIds.add(RESPONSE_BATCH_ITEM_CASE_ID);
