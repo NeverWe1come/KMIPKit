@@ -2410,6 +2410,51 @@ class ControlledTlsPeerTest {
                         attribute, List.copyOf(versions)));
             }
         }
+        fixtures.addAll(genericPerTargetBitmaskFixtures(catalog));
+        return List.copyOf(fixtures);
+    }
+
+    private static List<BitmaskFixture> genericPerTargetBitmaskFixtures(JsonNode catalog) throws Exception {
+        Map<String, JsonNode> targets = new HashMap<>();
+        for (JsonNode target : catalog.path("normative_targets")) {
+            targets.put(target.path("target_id").asText(), target);
+        }
+        var fixtures = new ArrayList<BitmaskFixture>();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            JsonNode requires = testCase.path("requires");
+            if (!"bitmask_value".equals(requires.path("target_kind").asText())
+                    || !"local_model".equals(testCase.path("execution").path("mode").asText())) continue;
+            JsonNode target = targets.get(requires.path("normative_target_id").asText());
+            if (target == null || !target.path("parent_element_ids").isArray()
+                    || target.path("parent_element_ids").isEmpty()) continue;
+            String familyName = target.path("parent_element_ids").get(0).asText()
+                    .replace("KMIPKIT-ELEM-BITMASK-", "");
+            JsonNode tagTarget = targets.values().stream()
+                    .filter(candidate -> "tag".equals(candidate.path("kind").asText()))
+                    .filter(candidate -> normalizeTargetName(candidate.path("name").asText())
+                            .equals(normalizeTargetName(familyName)))
+                    .findFirst().orElse(null);
+            if (tagTarget == null) continue;
+            int rawTag = parseWireTag(tagTarget.path("wire_value").asText());
+            JsonNode attributeTarget = targets.values().stream()
+                    .filter(candidate -> "attribute".equals(candidate.path("kind").asText()))
+                    .filter(candidate -> normalizeTargetName(candidate.path("name").asText())
+                            .equals(normalizeTargetName(familyName)))
+                    .findFirst().orElse(null);
+            StandardAttribute attribute = attributeTarget == null ? null : standardAttributeForTag(rawTag);
+            if (attributeTarget != null && attribute == null) {
+                throw new IllegalStateException("Catalog bitmask attribute has no installed StandardAttribute route: "
+                        + familyName);
+            }
+            var versions = new ArrayList<String>();
+            for (JsonNode version : testCase.path("execution").path("protocol_versions")) {
+                versions.add(version.asText());
+            }
+            fixtures.add(new BitmaskFixture(testCase.path("case_id").asText(),
+                    target.path("target_id").asText(), rawTag,
+                    parseRepresentativeBitmaskValue(target.path("wire_value").asText()),
+                    attribute, List.copyOf(versions)));
+        }
         return List.copyOf(fixtures);
     }
 
