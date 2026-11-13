@@ -225,6 +225,20 @@ class ControlledTlsPeerTest {
                 ENDPOINT_ROLE_SERVER_TARGET_ID, KmipValues.EndpointRole.SERVER, "Server");
     }
 
+    @Test
+    void profileNameReservedRangeHasPerTargetEnumerationFixtures() throws Exception {
+        String caseId = "test-norm-enumeration-value-enum-value-profile-name-reserved-00000001-00000103";
+        List<EnumerationFixture> fixtures = genericEnumerationFixtures().stream()
+                .filter(fixture -> fixture.caseId().equals(caseId))
+                .toList();
+
+        assertEquals(1, fixtures.size(),
+                "The Profile Name reserved-range case must exercise its own generic TTLV routes.");
+        assertEquals(0x103L, fixtures.get(0).value(),
+                "The generic scalar probe must use the catalogued reserved-range lower boundary.");
+        assertEquals(KMIP_2_0_AND_2_1, fixtures.get(0).protocolVersions());
+    }
+
     // OASIS KMIP 2.1 §6.1.16 and §4.1.2: Discover Versions request and response.
     @Test
     void typedDiscoverVersionsUsesInstalledPackageAndVerifiedMutualTls() throws Exception {
