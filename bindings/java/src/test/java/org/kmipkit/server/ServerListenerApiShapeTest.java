@@ -17,6 +17,8 @@ final class ServerListenerApiShapeTest {
         assertNotNull(PutResponse.class);
         assertNotNull(QueryResponse.class);
         assertNotNull(SetEndpointRoleResponse.class);
+        assertNotNull(NotifyResponse.class.getMethod("forRequest", NotifyRequest.class));
+        assertNotNull(PutResponse.class.getMethod("forRequest", PutRequest.class));
     }
 
     @Test
@@ -27,8 +29,8 @@ final class ServerListenerApiShapeTest {
         assertNotNull(ServerListener.class.getMethod(
                 "bindHttps", ServerListenerConfiguration.class));
         assertNotNull(ServerRequestHandler.class.getMethod("handle", ServerRequest.class));
-        assertNotNull(ServerResponse.class.getMethod("success", ServerRequest.class));
-        assertNotNull(ServerResponse.class.getMethod("failure", ServerRequest.class,
+        assertNotNull(ServerReply.class.getMethod("success", ServerResponse.class));
+        assertNotNull(ServerReply.class.getMethod("failure", ServerResultStatus.class,
                 ServerResultReason.class, String.class));
     }
 
@@ -39,7 +41,7 @@ final class ServerListenerApiShapeTest {
         assertNotNull(ServerConnection.class.getMethod("receive",
                 org.kmipkit.ttlv.CodecLimits.class, java.time.Duration.class));
         assertNotNull(ServerConnection.class.getMethod("send",
-                ServerResponse.class, java.time.Duration.class));
+                ServerResponseMessage.class, java.time.Duration.class));
         assertNotNull(ServerRequestBatch.class.getMethod("items"));
         assertNotNull(ServerRequestBatch.class.getMethod("responseBuilder"));
         assertNotNull(ServerResponseBuilder.class.getMethod("addSuccess",
