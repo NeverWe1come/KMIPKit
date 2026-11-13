@@ -580,6 +580,11 @@ class ControlledTlsPeerTest {
                 "java.generic-ttlv.ttlv_item.create",
                 "java.generic-ttlv.function.ttlv_item_view_from_item",
                 "java.generic-ttlv.ttlv_codec.decode");
+        List<String> cryptographicAlgorithmTargets = genericEnumerationFixtures().stream()
+                .filter(fixture -> "CRYPTOGRAPHIC-ALGORITHM".equals(fixture.parentName()))
+                .map(EnumerationFixture::targetId).distinct().sorted().toList();
+        assertEquals(57, cryptographicAlgorithmTargets.size(),
+                "The local Cryptographic Algorithm aggregate must cover every catalogued target value.");
         List<LocalEnumerationScope> additionalEnumerationScopes = List.of(
                 new LocalEnumerationScope("test-enum-opaque-data-type", List.of(
                         "KMIPKIT-ELEM-ENUM-VALUE-OPAQUE-DATA-TYPE-EXTENSIONS-8XXXXXXX"),
@@ -645,7 +650,13 @@ class ControlledTlsPeerTest {
                         "KMIPKIT-ELEM-ENUM-VALUE-USAGE-LIMITS-UNIT-BYTE-00000001",
                         "KMIPKIT-ELEM-ENUM-VALUE-USAGE-LIMITS-UNIT-EXTENSIONS-8XXXXXXX",
                         "KMIPKIT-ELEM-ENUM-VALUE-USAGE-LIMITS-UNIT-OBJECT-00000002"),
-                        List.of("2.0", "2.1"), List.of()));
+                        List.of("2.0", "2.1"), List.of()),
+                new LocalEnumerationScope("test-enum-cryptographic-algorithm", cryptographicAlgorithmTargets,
+                        List.of("2.0", "2.1"), List.of(
+                                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+                                "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew",
+                                "java.typed-protocol.model.org.kmipkit.protocol.cryptographicparameters.builder.cryptographicalgorithm")));
         for (LocalEnumerationScope scope : additionalEnumerationScopes) {
             List<String> routes = new ArrayList<>(genericEnumerationRoutes);
             routes.addAll(scope.additionalRoutes());
