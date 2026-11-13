@@ -336,6 +336,27 @@ class RouteMatrixTests(unittest.TestCase):
             'kmipkit_managed_object_from_item',
         }.issubset(result['invoked_symbols']))
 
+    def test_certificate_object_type_cells_execute_their_typed_constructor(self):
+        from artifact_support import INSTALL, ROOT
+        from c_route_models import ModelCases
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        models = ModelCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog)
+        routes = (
+            ('KMIPKIT-ELEM-OBJECT-TYPE-CERTIFICATE', 'Certificate',
+             'kmipkit_certificate_from_fields'),
+            ('KMIPKIT-ELEM-OBJECT-TYPE-CERTIFICATE-REQUEST', 'Certificate Request',
+             'kmipkit_certificate_request_from_fields'),
+        )
+        for target_id, name, symbol in routes:
+            with self.subTest(name=name):
+                target = next(item for item in catalog['normative_targets']
+                              if item['target_id'] == target_id)
+                result = models.execute(target, '2.0', symbol)
+
+                self.assertIsNotNone(result)
+                self.assertIn(symbol, result['invoked_symbols'])
+
     def test_symmetric_key_model_recipe_invokes_nested_key_block_routes(self):
         from artifact_support import INSTALL, ROOT
         from c_route_models import ModelCases
