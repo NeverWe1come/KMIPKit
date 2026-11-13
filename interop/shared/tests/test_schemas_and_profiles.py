@@ -92,11 +92,15 @@ class InteropSharedTests(unittest.TestCase):
             catalog = json.load(f)
 
         stats = catalog.get("statistics", {})
-        self.assertEqual(56, stats.get("operations_covered"))
+        self.assertEqual(57, stats.get("operations_covered"))
         self.assertEqual(9, stats.get("managed_objects_covered"))
         self.assertEqual(63, stats.get("attributes_covered"))
         self.assertEqual(64, stats.get("enumerations_covered"))
-        self.assertGreaterEqual(stats.get("total_cases", 0), 200)
+        self.assertEqual(17, stats.get("batch_scenarios"))
+        self.assertEqual(17, stats.get("asynchronous_scenarios"))
+        self.assertEqual(3, stats.get("exhaustive_bitmask_families"))
+        self.assertEqual(2560, stats.get("normative_targets"))
+        self.assertEqual(2689, stats.get("total_cases"))
 
         categories = {tc.get("category") for tc in catalog.get("test_cases", [])}
         self.assertIn("protocol_and_session", categories)
@@ -105,6 +109,7 @@ class InteropSharedTests(unittest.TestCase):
         self.assertIn("attributes", categories)
         self.assertIn("cryptography_and_rng", categories)
         self.assertIn("enums_and_bitmasks", categories)
+        self.assertIn("normative_inventory", categories)
         self.assertIn("batch_workflows", categories)
         self.assertIn("multipart_crypto", categories)
         self.assertIn("asynchronous_workflows", categories)
@@ -127,10 +132,10 @@ class InteropSharedTests(unittest.TestCase):
         # Create mock result data
         mock_res1 = {
             "server_identifier": "mock-kms",
-            "server": {"id": "mock-kms", "version": "test-1", "configuration_fingerprint": "a" * 64},
+            "server": {"id": "mock-kms", "product": "mock KMS", "version": "test-1", "configuration_fingerprint": "a" * 64},
             "protocol_version": "2.1",
             "catalog_sha256": "c" * 64,
-            "execution": {"library_commit": "abcdef0", "transport": "raw_tls", "encoding": "TTLV", "api_level": "typed-protocol"},
+            "execution": {"library_commit": "a" * 40, "artifact_sha256": "b" * 64, "transport": "raw_tls", "encoding": "TTLV", "api_level": "typed-protocol"},
             "language": "rust",
             "cases": [
                 {"case_id": "test-op-create", "category": "object_lifecycle", "status": "PASSED"},
@@ -139,10 +144,10 @@ class InteropSharedTests(unittest.TestCase):
         }
         mock_res2 = {
             "server_identifier": "mock-kms",
-            "server": {"id": "mock-kms", "version": "test-1", "configuration_fingerprint": "a" * 64},
+            "server": {"id": "mock-kms", "product": "mock KMS", "version": "test-1", "configuration_fingerprint": "a" * 64},
             "protocol_version": "2.1",
             "catalog_sha256": "c" * 64,
-            "execution": {"library_commit": "abcdef0", "transport": "https", "encoding": "JSON", "api_level": "high-level"},
+            "execution": {"library_commit": "a" * 40, "artifact_sha256": "d" * 64, "transport": "https", "encoding": "JSON", "api_level": "high-level"},
             "language": "python",
             "cases": [
                 {"case_id": "test-op-create", "category": "object_lifecycle", "status": "PASSED"},

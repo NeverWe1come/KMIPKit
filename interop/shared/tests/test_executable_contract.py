@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import tempfile
 import unittest
 from pathlib import Path
@@ -12,6 +13,45 @@ CATALOG = ROOT / "interop/shared/catalog/kmipkit-1.0-test-catalog.json"
 
 
 class ExecutableContractTests(unittest.TestCase):
+    def test_java_consumer_workflow_is_scoped_to_its_stacked_language_pr(self) -> None:
+        workflow = (ROOT / ".github/workflows/interop-java.yml").read_text(encoding="utf-8")
+        match = re.search(r"if grep -Eq '([^']+)' <<< \"\$files\";", workflow)
+
+        self.assertIsNotNone(match)
+        assert match is not None
+        self.assertIn("interop/java-kmip-validator/", match.group(1))
+        self.assertIn("bindings/java/", match.group(1))
+        self.assertNotIn("interop/shared/", match.group(1))
+        self.assertNotIn("crates/", match.group(1))
+
+    def test_log_operation_requires_explicit_mutation_opt_in_for_both_versions(self) -> None:
+        catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
+        case = next(item for item in catalog["test_cases"] if item["case_id"] == "test-op-log")
+
+        self.assertEqual(["2.0", "2.1"], case["execution"]["protocol_versions"])
+        self.assertEqual("mutating", case["execution"]["mutation"])
+        self.assertEqual(
+            [
+                {"document": "OASIS KMIP 2.0 Specification", "section": "6.1.28"},
+                {"document": "OASIS KMIP 2.1 Specification", "section": "6.1.29"},
+            ],
+            case["normative_refs"],
+        )
+
+    def test_negative_modify_attribute_case_exercises_current_value_mismatch(self) -> None:
+        catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
+        case = next(
+            item for item in catalog["test_cases"]
+            if item["case_id"] == "test-neg-modify-attribute-current-mismatch"
+        )
+
+        self.assertIn("Current Attribute value does not match", case["description"])
+        self.assertIn(
+            "Comment='KMIPKit interop test'",
+            case["isolation_recipe"]["setup_steps"][0],
+        )
+        self.assertIn("Current Attribute='old test value'", case["isolation_recipe"]["target_step"])
+
     def test_catalog_declares_versions_and_case_execution_contracts(self) -> None:
         catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
 
@@ -37,11 +77,11 @@ class ExecutableContractTests(unittest.TestCase):
         self.assertEqual(6, sum(case["category"] == "version_boundaries" for case in catalog["test_cases"]))
         source_operations = {
             element["name"] for element in json.loads((ROOT / "specification/catalog/kmip-2.1.json").read_text(encoding="utf-8"))["elements"]
-            if element.get("kind") == "operation" and element.get("direction") == "client_to_server" and element.get("scope_state") == "client_1_0"
+            if element.get("kind") == "operation" and element.get("direction") == "client_to_server" and element.get("scope_state") in {"client_1_0", "client_1_1"}
         }
         catalog_operations = {
             case["operation"] for case in catalog["test_cases"]
-            if case["category"] not in {"version_boundaries", "server_initiated_operations"}
+            if case["category"] not in {"version_boundaries", "server_initiated_operations", "normative_inventory"}
         }
         self.assertEqual(source_operations, catalog_operations)
 
@@ -64,11 +104,15 @@ class ExecutableContractTests(unittest.TestCase):
             "server": {"id": "loopback", "product": "KMIPKit Test Server", "version": "test", "configuration_fingerprint": "a" * 64},
             "protocol_version": "2.1",
             "catalog_sha256": "c" * 64,
-            "execution": {"transport": "raw_tls", "encoding": "TTLV", "api_level": "typed-protocol", "library_commit": "abcdef0", "artifact_sha256": "b" * 64},
+            "execution": {"transport": "raw_tls", "encoding": "TTLV", "api_level": "typed-protocol", "library_commit": "a" * 40, "artifact_sha256": "b" * 64},
             "summary": {"total": 1, "passed": 1, "failed": 0, "unsupported": 0, "policy_restricted": 0, "not_run": 0},
             "cases": [{"case_id": "test-get", "status": "passed", "library_correctness": "passed", "server_compatibility": "supported", "parity": "not_compared", "result_status_code": 0, "result_reason_code": 7}],
         }
         jsonschema.validate(sample, result_schema)
+        short_commit = json.loads(json.dumps(sample))
+        short_commit["execution"]["library_commit"] = "abcdef0"
+        with self.assertRaises(jsonschema.ValidationError):
+            jsonschema.validate(short_commit, result_schema)
         sample["cases"][0]["result_reason_code"] = 4294967296
         with self.assertRaises(jsonschema.ValidationError):
             jsonschema.validate(sample, result_schema)
@@ -102,11 +146,11 @@ class ExecutableContractTests(unittest.TestCase):
         self.assertFalse(set(profile["server"]["kmip_versions"]) & {"2.0", "2.1"})
 
     def test_aggregator_compares_language_specific_artifacts_built_from_same_commit(self) -> None:
-        def result(language: str, artifact: str, commit: str = "abcdef0") -> dict:
+        def result(language: str, artifact: str, commit: str = "a" * 40) -> dict:
             return {
                 "schema_version": "2.0",
                 "language": language,
-                "server": {"id": "test-kms", "version": "test-1", "configuration_fingerprint": "a" * 64},
+                "server": {"id": "test-kms", "product": "test KMS", "version": "test-1", "configuration_fingerprint": "a" * 64},
                 "protocol_version": "2.1",
                 "catalog_sha256": "c" * 64,
                 "execution": {"library_commit": commit, "artifact_sha256": artifact, "transport": "raw_tls", "encoding": "TTLV", "api_level": "typed-protocol"},
@@ -128,10 +172,10 @@ class ExecutableContractTests(unittest.TestCase):
     def test_aggregator_marks_different_library_commits_incomparable(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             paths = []
-            for language, commit in (("rust", "abcdef0"), ("python", "1234567")):
+            for language, commit in (("rust", "a" * 40), ("python", "b" * 40)):
                 payload = {
                     "language": language,
-                    "server": {"id": "test-kms", "version": "test-1", "configuration_fingerprint": "a" * 64},
+                    "server": {"id": "test-kms", "product": "test KMS", "version": "test-1", "configuration_fingerprint": "a" * 64},
                     "protocol_version": "2.1",
                     "catalog_sha256": "c" * 64,
                     "execution": {"library_commit": commit, "artifact_sha256": "b" * 64, "transport": "raw_tls", "encoding": "TTLV", "api_level": "typed-protocol"},
