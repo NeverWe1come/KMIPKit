@@ -141,3 +141,34 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   passed with 4,143 records; and `generate_test_catalog.py --check` passed.
 - This closes the shared recipe-data gap only. Language-level generic TTLV and
   typed-message routes remain open until each validator emits passing evidence.
+
+## Development evidence: regenerated route targets for Boolean TTLV
+
+- Red: exact-head CI runs `43484370343` and `43484597700` failed the route
+  inventory check because the generated Boolean value-constructor routes did
+  not include the newly catalogued `KMIPKIT-ELEM-MESSAGE-FIELD-8-3-EPHEMERAL`
+  target.
+- Green: `python3 interop/shared/tools/route_capabilities.py --write`
+  regenerated the route manifest from pinned public API source metadata,
+  adding Ephemeral to the Rust, C, Java, and Python Boolean constructor routes.
+- Verification: `python3 interop/shared/tools/route_capabilities.py --check`
+  passed and reported 1,491 routes for library commit
+  `489fafc79ef89db2524eafa7a6c6482f5cf75d97`.
+- This updates generated route metadata only. The broader route execution and
+  completeness gates T006, T007, and T009 remain open.
+
+## Development evidence: New Attribute request structure type
+
+- Red commit `5bfdcca01` added a pinned-source inventory regression for the Add
+  Attribute request payloads. It failed for KMIP 2.0 and 2.1 because generated
+  payload targets did not retain the `New Attribute` TTLV Structure type.
+- Green commit `d23965263` records the Structure encoding and adds OASIS KMIP
+  2.0 §5.7/Table 148 and KMIP 2.1 §5.7/Table 163 as source references. It
+  regenerates the test catalog and shared route manifest, adding the six
+  versioned New Attribute targets to generic TTLV Structure routes for all
+  four language validators.
+- Verification: the focused regression passed; all 24 normative inventory
+  tests passed; `generate_test_catalog.py --check` passed; and
+  `route_capabilities.py --check` passed with 1,491 routes pinned to library
+  commit `489fafc79ef89db2524eafa7a6c6482f5cf75d97`.
+- Language-level execution remains required; T006, T007, and T009 stay open.
