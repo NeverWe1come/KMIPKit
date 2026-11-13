@@ -3,7 +3,7 @@
 **Branch**: `feature/KMIPKIT-0087-interop-python-live`  
 **Status**: Approved for implementation by the maintainer's explicit request to complete the interoperability validators  
 **Identifier**: KMIPKIT-0087  
-**Base**: `release/1.0.0` at `52a2be180340e5da3166401a52f652dfd368ad37`
+**Base**: `release/1.0.0` at `9a16cc90a12205101d22a38501a5e74c665df4dc`
 
 ## Scope and normative references
 
