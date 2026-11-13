@@ -8,6 +8,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex, OnceLock};
 use std::{collections::HashMap, collections::HashSet, collections::hash_map::Entry, mem::size_of};
 use std::{fs, io::Read};
+use zeroize::Zeroizing;
 
 #[cfg(test)]
 macro_rules! test_pointer_ffi_call {
@@ -57,9 +58,10 @@ use crate::{
     kmipkit_client_extension_registry_t, kmipkit_client_request_message_extension_t,
     kmipkit_client_t, kmipkit_codec_limits_t, kmipkit_credential_t,
     kmipkit_credential_validation_error_v1_t, kmipkit_credential_value_t,
-    kmipkit_credential_view_t, kmipkit_cryptographic_parameters_fields_v1_t,
-    kmipkit_cryptographic_parameters_t, kmipkit_delete_attribute_request_t,
-    kmipkit_device_credential_t, kmipkit_extension_child_rule_t, kmipkit_extension_compatibility_t,
+    kmipkit_credential_view_t, kmipkit_crypto_operation_builder_t,
+    kmipkit_cryptographic_parameters_fields_v1_t, kmipkit_cryptographic_parameters_t,
+    kmipkit_delete_attribute_request_t, kmipkit_device_credential_t,
+    kmipkit_extension_child_rule_t, kmipkit_extension_compatibility_t,
     kmipkit_extension_definition_t, kmipkit_extension_discriminator_t,
     kmipkit_extension_identity_t, kmipkit_extension_information_t,
     kmipkit_extension_order_constraint_t, kmipkit_extension_recognition_t,
@@ -566,6 +568,62 @@ enum Kind {
     ProcessRequest,
     QueryAsyncRequestsRequest,
     SymmetricKeyBuilder,
+    CryptoOperationBuilder,
+}
+
+#[derive(Clone, Copy, Eq, PartialEq)]
+enum CryptoOperationKind {
+    Encrypt,
+    Decrypt,
+    Sign,
+    SignatureVerify,
+    Mac,
+    MacVerify,
+    Hash,
+}
+
+enum CryptoBuilderData {
+    ByteString(Zeroizing<Vec<u8>>),
+    Enumeration(u32),
+    Integer(i32),
+}
+
+struct CryptoOperationBuilder {
+    operation: CryptoOperationKind,
+    unique_identifier: Option<UniqueIdentifier>,
+    data: Option<CryptoBuilderData>,
+    cryptographic_parameters: Option<Structure>,
+    iv_counter_nonce: Option<Zeroizing<Vec<u8>>>,
+    authenticated_encryption_additional_data: Option<Zeroizing<Vec<u8>>>,
+    authenticated_encryption_tag: Option<Zeroizing<Vec<u8>>>,
+    digested_data: Option<Zeroizing<Vec<u8>>>,
+    signature_data: Option<Zeroizing<Vec<u8>>>,
+    mac_data: Option<Zeroizing<Vec<u8>>>,
+    correlation_value: Option<Zeroizing<Vec<u8>>>,
+    init_indicator: Option<bool>,
+    final_indicator: Option<bool>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl CryptoOperationBuilder {
+    fn new(operation: CryptoOperationKind) -> Self {
+        Self {
+            operation,
+            unique_identifier: None,
+            data: None,
+            cryptographic_parameters: None,
+            iv_counter_nonce: None,
+            authenticated_encryption_additional_data: None,
+            authenticated_encryption_tag: None,
+            digested_data: None,
+            signature_data: None,
+            mac_data: None,
+            correlation_value: None,
+            init_indicator: None,
+            final_indicator: None,
+            asynchronous_indicator: None,
+        }
+    }
 }
 
 enum HandleValue {
@@ -590,6 +648,7 @@ enum HandleValue {
     AttributeSet(Mutex<AttributeSet>),
     BatchItem(Box<ClientBatchItem>),
     SymmetricKeyBuilder(Mutex<Option<kmipkit_client::fluent::CreateSymmetricKeyBuilder<'static>>>),
+    CryptoOperationBuilder(Mutex<CryptoOperationBuilder>),
     BatchItemReadback(ClientBatchItemReadback),
     RegisterRequest(Box<RegisterRequest>),
     AddAttributeRequest(Box<AddAttributeRequest>),
