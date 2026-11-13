@@ -80,34 +80,144 @@ ITEM_VIEW_INPUTS = {
     ('java', 'org.kmipkit.ttlv.TtlvItem.view'): 'bindings/java/src/main/java/org/kmipkit/ttlv/TtlvItem.java',
     ('python', 'kmipkit.ttlv.ttlv_item_view_from_item'): 'bindings/python/src/kmipkit/ttlv.py',
 }
+CERTIFICATE_ATTRIBUTE_TTLV_INPUTS = {
+    ('rust', 'kmipkit_ttlv::Item::new'): 'crates/kmipkit-ttlv/src/item.rs',
+    ('rust', 'kmipkit_ttlv::Item::with_value'): 'crates/kmipkit-ttlv/src/item.rs',
+    ('rust', 'kmipkit_ttlv::codec::decode'): 'crates/kmipkit-ttlv/src/codec/decoder.rs',
+    ('c', 'kmipkit_ttlv_item_create'): 'bindings/c/include/kmipkit.h',
+    ('c', 'kmipkit_ttlv_decode'): 'bindings/c/include/kmipkit.h',
+    ('java', 'org.kmipkit.ttlv.TtlvItem.create'): 'bindings/java/src/main/java/org/kmipkit/ttlv/TtlvItem.java',
+    ('java', 'org.kmipkit.ttlv.TtlvCodec.decode'): 'bindings/java/src/main/java/org/kmipkit/ttlv/TtlvCodec.java',
+    ('python', 'kmipkit.ttlv.ttlv_item_create'): 'bindings/python/src/kmipkit/ttlv.py',
+    ('python', 'kmipkit.ttlv.ttlv_decode'): 'bindings/python/src/kmipkit/ttlv.py',
+}
+_CERTIFICATE_ATTRIBUTES_TARGET = 'KMIPKIT-ELEM-ATTRIBUTE-CERTIFICATE-ATTRIBUTES'
+_CERTIFICATE_CONTENT_SOURCES = [
+    'specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html',
+    'specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html',
+]
+_SECRET_DATA_KEY_PROPERTY_TARGETS = [
+    'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-ALGORITHM',
+    'KMIPKIT-ELEM-STRUCTURE-MEMBER-3-1-KEY-BLOCK-CRYPTOGRAPHIC-LENGTH',
+]
+_SECRET_DATA_FACTORY = ('python', 'kmipkit.managed_objects.ManagedObject.secret_data')
 
 
 def _case_exclusions(root, commit, language, symbol):
+    exclusions = []
     path = CHECKED_TAG_INPUTS.get((language, symbol))
     if path is not None:
         # Checked constructors cannot represent these tags; RawTag routes can.
         source_paths = [path, 'crates/kmipkit-ttlv/src/tag.rs']
         for source_path in source_paths:
             source(root, commit, source_path)
-        return [{
+        exclusions.append({
             'target_kinds': ['tag', 'tag_range'],
             'allocations': ['reserved', 'unused'],
             'reason': 'This constructor takes an allocation-checked Tag; RawTag::try_checked rejects reserved and unused allocations before an Item can be constructed.',
             'source_paths': source_paths,
-        }]
+        })
     path = ITEM_VIEW_INPUTS.get((language, symbol))
-    if path is None:
-        return []
-    # Decoder rejection produces no Item to pass to the Item view accessor.
-    source_paths = [path, 'crates/kmipkit-ttlv/src/codec/decoder.rs', 'crates/kmipkit-ttlv/src/tag.rs']
-    for source_path in source_paths:
-        source(root, commit, source_path)
-    return [{
-        'target_kinds': ['tag', 'tag_range'],
-        'allocations': ['reserved', 'unused'],
-        'reason': 'The TTLV decoder rejects reserved and unused allocations before it can return an Item; this accessor therefore has no valid Item input for the case.',
-        'source_paths': source_paths,
-    }]
+    if path is not None:
+        # Decoder rejection produces no Item to pass to the Item view accessor.
+        source_paths = [path, 'crates/kmipkit-ttlv/src/codec/decoder.rs', 'crates/kmipkit-ttlv/src/tag.rs']
+        for source_path in source_paths:
+            source(root, commit, source_path)
+        exclusions.append({
+            'target_kinds': ['tag', 'tag_range'],
+            'allocations': ['reserved', 'unused'],
+            'reason': 'The TTLV decoder rejects reserved and unused allocations before it can return an Item; this accessor therefore has no valid Item input for the case.',
+            'source_paths': source_paths,
+        })
+    path = CERTIFICATE_ATTRIBUTE_TTLV_INPUTS.get((language, symbol))
+    if path is not None:
+        source_paths = [path, *_CERTIFICATE_CONTENT_SOURCES]
+        for source_path in source_paths:
+            source(root, commit, source_path)
+        exclusions.append({
+            'target_ids': [_CERTIFICATE_ATTRIBUTES_TARGET],
+            'reason': 'OASIS KMIP 2.0/2.1 §4.6 Table 39 describes X.509 certificate contents, while §2.2 represents a Certificate object through Certificate Value; the §4.6 names are not standalone TTLV tags and cannot be Item targets.',
+            'source_paths': source_paths,
+        })
+    if (language, symbol) == _SECRET_DATA_FACTORY:
+        source_paths = ['bindings/python/src/kmipkit/managed_objects.py',
+                        'specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html',
+                        'specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html']
+        for source_path in source_paths:
+            source(root, commit, source_path)
+        exclusions.append({
+            'target_ids': list(_SECRET_DATA_KEY_PROPERTY_TARGETS),
+            'reason': 'OASIS KMIP 2.0/2.1 §2.7 Table 8 defines Secret Data fields as Secret Data Type and Key Block, while §3.1 defines Cryptographic Algorithm and Cryptographic Length as properties of a key. The Secret Data factory therefore has no valid input for these key-only Key Block member cases.',
+            'source_paths': source_paths,
+        })
+    # KMIP 2.x models Attribute Reference as two alternative wire shapes.
+    # Keep each constructor's obligations scoped to the shape it can emit.
+    if language == 'rust' and symbol in {
+        'kmipkit_protocol::AttributeReference::name',
+        'kmipkit_protocol::AttributeReference::tag',
+    }:
+        source_paths = [
+            'crates/kmipkit-protocol/src/attribute_reference.rs',
+            'specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html',
+            'specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html',
+        ]
+        for source_path in source_paths:
+            source(root, commit, source_path)
+        if symbol.endswith('::name'):
+            target_ids = [
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-5-5-ATTRIBUTE-REFERENCE',
+                'KMIPKIT-ELEM-TAG-42013B',
+            ]
+            reason = ('OASIS KMIP 2.0 §5.5 Table 146 and OASIS KMIP 2.1 §5.5 Table 161 define Attribute Reference as Structure OR Enumeration. '
+                      'The name constructor emits only the Structure variant, so it cannot produce the Enumeration target or the generic tag fixture.')
+        else:
+            target_ids = [
+                'KMIPKIT-ELEM-ATTRIBUTE-STRUCTURE-5-5-ATTRIBUTE-REFERENCE',
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-5-5-ATTRIBUTE-NAME',
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-5-5-VENDOR-IDENTIFICATION',
+                'KMIPKIT-ELEM-TAG-42013B',
+            ]
+            reason = ('OASIS KMIP 2.0 §5.5 Table 146 and OASIS KMIP 2.1 §5.5 Table 161 define Attribute Reference as Structure OR Enumeration. '
+                      'The tag constructor emits only the Enumeration variant, so it cannot produce the named Structure fields or the generic tag fixture.')
+        exclusions.append({
+            'target_ids': target_ids,
+            'reason': reason,
+            'source_paths': source_paths,
+        })
+    timestamp_setter_sources = {
+        ('c', 'kmipkit_client_batch_set_request_time_stamp'): 'bindings/c/include/kmipkit.h',
+        ('rust', 'kmipkit_client::ClientBatch::with_request_time_stamp'):
+            'crates/kmipkit-client/src/execute.rs',
+    }
+    if (language, symbol) in timestamp_setter_sources:
+        source_paths = [
+            timestamp_setter_sources[(language, symbol)],
+            'specification/oasis/kmip-2.0/upstream/kmip-spec-v2.0.html',
+            'specification/oasis/kmip-2.1/upstream/kmip-spec-v2.1-os.html',
+        ]
+        for source_path in source_paths:
+            source(root, commit, source_path)
+        exclusions.append({
+            'target_ids': [
+                'KMIPKIT-ELEM-MESSAGE-FIELD-8-5-TIME-STAMP',
+                'KMIPKIT-ELEM-STRUCTURE-MEMBER-9-11-HASHED-PASSWORD-TIMESTAMP',
+            ],
+            'reason': ('OASIS KMIP 2.0/2.1 §§8.2, 8.5, 9.11, and 9.20 distinguish the Request Header Time Stamp '
+                       'Date-Time field from the response-header field and the Date Time Extended hashed-password '
+                       'Timestamp. This request-header setter cannot construct the response header or the distinct '
+                       'extended value; its assigned Time Stamp tag remains covered by the builder route.'),
+            'source_paths': source_paths,
+        })
+    return exclusions
+
+
+def _decode_source(path, content):
+    try:
+        return content.decode('utf-8')
+    except UnicodeDecodeError:
+        if path.startswith('specification/oasis/') and path.endswith('.html'):
+            return content.decode('cp1252')
+        raise
 
 
 def normalized(value):
@@ -132,7 +242,10 @@ def source(root, commit, path):
     """Read immutable release input, never an uncommitted source approximation."""
     commit = validate_git_commit(commit)
     path = validate_git_path(path)
-    return subprocess.check_output(['git', '-C', str(root), 'cat-file', 'blob', f'{commit}:{path}'], text=True)  # NOSONAR: commit and path are restricted to validated Git identifiers
+    content = subprocess.check_output(
+        ['git', '-C', str(root), 'cat-file', 'blob', f'{commit}:{path}']
+    )  # NOSONAR: commit and path are restricted to validated Git identifiers
+    return _decode_source(path, content)
 
 
 @lru_cache(maxsize=4)
@@ -652,6 +765,12 @@ def build_manifest(root=ROOT, commit='9a16cc90a12205101d22a38501a5e74c665df4dc')
             data['unavailable'].append({'language': language, 'capability': 'named-value-symbol',
                 'normative_target_ids': numeric_targets, 'reason': 'The public package does not export assigned named constants for these referenced PKCS#11 functions/return codes. Their exact numeric values are constructible using the declared public generic Enumeration constructor; this is not a missing validator recipe.',
                 'source_paths': ['specification/api/public-api.json']})
+        for source_path in _CERTIFICATE_CONTENT_SOURCES:
+            source(root, commit, source_path)
+        data['unavailable'].append({'language': language, 'capability': 'non-applicable-target',
+            'normative_target_ids': [_CERTIFICATE_ATTRIBUTES_TARGET],
+            'reason': 'OASIS KMIP 2.0/2.1 §4.6 Table 39 describes X.509 certificate contents, while §2.2 represents a Certificate object through Certificate Value; the §4.6 names are not standalone TTLV tags.',
+            'source_paths': list(_CERTIFICATE_CONTENT_SOURCES)})
     for route in data['routes']:
         exclusions = _case_exclusions(root, commit, route['language'], route['public_api_symbol'])
         if exclusions:

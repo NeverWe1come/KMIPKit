@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import tempfile
 import unittest
 from pathlib import Path
@@ -12,6 +13,17 @@ CATALOG = ROOT / "interop/shared/catalog/kmipkit-1.0-test-catalog.json"
 
 
 class ExecutableContractTests(unittest.TestCase):
+    def test_java_consumer_workflow_is_scoped_to_its_stacked_language_pr(self) -> None:
+        workflow = (ROOT / ".github/workflows/interop-java.yml").read_text(encoding="utf-8")
+        match = re.search(r"if grep -Eq '([^']+)' <<< \"\$files\";", workflow)
+
+        self.assertIsNotNone(match)
+        assert match is not None
+        self.assertIn("interop/java-kmip-validator/", match.group(1))
+        self.assertIn("bindings/java/", match.group(1))
+        self.assertNotIn("interop/shared/", match.group(1))
+        self.assertNotIn("crates/", match.group(1))
+
     def test_log_operation_requires_explicit_mutation_opt_in_for_both_versions(self) -> None:
         catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
         case = next(item for item in catalog["test_cases"] if item["case_id"] == "test-op-log")

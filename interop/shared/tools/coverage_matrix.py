@@ -77,9 +77,13 @@ def _route_excludes_target(case: dict, route: dict, target: dict | None) -> bool
     requires = case.get("requires", {})
     target_kind = requires.get("target_kind", (target or {}).get("kind"))
     allocation = requires.get("allocation", (target or {}).get("allocation"))
-    return any(target_kind in exclusion["target_kinds"]
-               and allocation in exclusion["allocations"]
-               for exclusion in route.get("case_exclusions", []))
+    target_id = (target or {}).get("target_id")
+    return any(
+        target_id in exclusion.get("target_ids", [])
+        or target_kind in exclusion.get("target_kinds", [])
+        and allocation in exclusion.get("allocations", [])
+        for exclusion in route.get("case_exclusions", [])
+    )
 
 
 def _is_generic_tag_inventory_case(case: dict) -> bool:
@@ -204,8 +208,10 @@ def _case_obligations(
     for target_id in plain_targets:
         if target_id not in item_targets and target_id not in scenario_step_targets:
             add(target_id)
-    # Cases authored before individual operation target IDs were attached can
-    # still be matched to the normative operation by its exact catalog name.
+    # Cases without an explicit multi-operation scenario can still be matched
+    # to the normative operation by its exact catalog name. Once a scenario
+    # lists its operations, that ordered list is the complete workflow; the
+    # case's legacy primary operation must not add an unrelated obligation.
     operation_id = operation_ids.get(_norm(case.get("operation", "")))
     explicit_operation_names = {
         operation_name for target_id in plain_targets
@@ -213,7 +219,8 @@ def _case_obligations(
     }
     local_value_case = (case.get("execution", {}).get("mode") == "local_model"
                         and any(field in requires for field in ("enum_type", "bitmask_type")))
-    if (not local_value_case
+    if (not operation_names
+            and not local_value_case
             and operation_id and operation_id not in item_targets
             and operation_id not in scenario_step_targets
             and _norm(case.get("operation", "")) not in explicit_operation_names):

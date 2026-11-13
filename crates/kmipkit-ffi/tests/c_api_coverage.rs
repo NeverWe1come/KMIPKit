@@ -1,6 +1,8 @@
 #![allow(unsafe_code)]
 #![cfg(feature = "coverage-c-consumer")]
 
+// Keep the crate linked so C consumer calls resolve through the Rust package's rlib.
+use kmipkit_ffi as _;
 use std::ffi::{CString, c_char};
 use std::fs::{self, OpenOptions};
 use std::io::{self, Read, Write};
@@ -1010,7 +1012,6 @@ fn c_abi_consumer_matches_shared_registry_cleanup_fixture() {
     );
 }
 
-#[link(name = "kmipkit_ffi")]
 unsafe extern "C" {
     fn kmipkit_codec_limits_defaults(out_limits: *mut *mut kmipkit_codec_limits_t) -> i32;
     fn kmipkit_codec_limits_create(
