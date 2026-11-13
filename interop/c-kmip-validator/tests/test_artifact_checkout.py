@@ -147,6 +147,25 @@ class ArtifactCheckoutContractTests(unittest.TestCase):
         )
         self.assertEqual(pin, manifest["library_commit"])
 
+    def test_every_c_artifact_identity_uses_the_shared_source_pin(self):
+        manifest = json.loads(
+            (ROOT / "interop/shared/coverage/route-capabilities.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        pin = manifest["library_commit"]
+        support = (ROOT / "interop/c-kmip-validator/tools/artifact_support.py").read_text(
+            encoding="utf-8"
+        )
+        cmake = (ROOT / "interop/c-kmip-validator/CMakeLists.txt").read_text(
+            encoding="utf-8"
+        )
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+
+        self.assertIn(f'PIN = "{pin}"', support)
+        self.assertIn(f'set(KMIPKIT_LIBRARY_COMMIT "{pin}")', cmake)
+        self.assertIn(f"/install/{pin}", workflow)
+
 
 if __name__ == "__main__":
     unittest.main()
