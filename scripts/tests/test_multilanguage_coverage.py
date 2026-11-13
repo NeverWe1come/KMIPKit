@@ -405,6 +405,7 @@ class MultiLanguageCoverageTests(unittest.TestCase):
     def test_java_null_marked_package_info_files_are_not_coverage_sources(self) -> None:
         self.require_gate()
         metadata_paths = (
+            "bindings/java/src/main/java/org/kmipkit/server/package-info.java",
             "bindings/java/src/main/java/org/kmipkit/package-info.java",
             "bindings/java/src/main/java/org/kmipkit/internal/package-info.java",
             "bindings/java/src/main/java/org/kmipkit/ttlv/package-info.java",
