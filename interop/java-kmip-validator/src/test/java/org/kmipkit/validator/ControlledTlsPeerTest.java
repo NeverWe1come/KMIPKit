@@ -132,6 +132,7 @@ class ControlledTlsPeerTest {
             "test-enum-digital-signature-algorithm", "test-enum-operation",
             "test-enum-result-reason",
             "test-enum-recommended-curve",
+            "test-enum-nist-key-type",
             "test-enum-opaque-data-type",
             "test-enum-processing-stage", "test-enum-ticket-type", "test-enum-mask-generator",
             "test-enum-encoding-option", "test-enum-endpoint-role", "test-enum-key-value-location-type",
@@ -634,6 +635,11 @@ class ControlledTlsPeerTest {
                         List.of("2.0", "2.1"), List.of()),
                 new LocalEnumerationScope("test-enum-recommended-curve", recommendedCurveTargets,
                         List.of("2.0", "2.1"), List.of()),
+                new LocalEnumerationScope("test-enum-nist-key-type", nistKeyTypeTargets,
+                        List.of("2.0", "2.1"), List.of(
+                                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.create",
+                                "java.typed-protocol.model.org.kmipkit.ttlv.typedattribute.fromitem",
+                                "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew")),
                 new LocalEnumerationScope("test-enum-opaque-data-type", List.of(
                         "KMIPKIT-ELEM-ENUM-VALUE-OPAQUE-DATA-TYPE-EXTENSIONS-8XXXXXXX"),
                         List.of("2.0", "2.1"), List.of(
