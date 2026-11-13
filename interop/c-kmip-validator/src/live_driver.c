@@ -2358,12 +2358,18 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     bool get_constraints_workflow = strcmp(test_case->case_id, "test-op-get-constraints") == 0;
     bool get_usage_allocation_workflow =
         strcmp(test_case->case_id, "test-op-get-usage-allocation") == 0;
+    bool get_usage_allocation_identifier_variants_workflow =
+        strcmp(test_case->case_id,
+               "test-norm-payload-client-get-usage-allocation-request-20-001") == 0 ||
+        strcmp(test_case->case_id,
+               "test-norm-payload-client-get-usage-allocation-request-21-001") == 0;
     bool get_workflow = strcmp(test_case->case_id, "test-op-get") == 0;
     bool batch_two_read_items_workflow =
         strcmp(test_case->case_id, "test-batch-count-matches-items") == 0 ||
         strcmp(test_case->case_id, "test-batch-unique-item-id-response-correlation") == 0 ||
         strcmp(test_case->case_id, "test-batch-order-false-correlates-response-items") == 0 ||
-        strcmp(test_case->case_id, "test-batch-continue-after-failure") == 0;
+        strcmp(test_case->case_id, "test-batch-continue-after-failure") == 0 ||
+        get_usage_allocation_identifier_variants_workflow;
     bool continue_after_failure_workflow =
         strcmp(test_case->case_id, "test-batch-continue-after-failure") == 0;
     bool single_item_batch_options_workflow =
@@ -2444,6 +2450,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
 
     kmipkit_client_batch_item_t *item = NULL;
     kmipkit_client_batch_item_t *second_item = NULL;
+    kmipkit_client_batch_item_t *third_item = NULL;
     kmipkit_client_batch_item_t *setup_item = NULL;
     kmipkit_client_batch_item_t *activate_item = NULL;
     kmipkit_client_batch_item_t *revoke_item = NULL;
@@ -2528,6 +2535,33 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         if (status == 0) status = set_batch_item_id(&item, "interop-get");
         if (status == 0 && !request_item_is_valid(
                 item, request_validation_diagnostic, sizeof(request_validation_diagnostic))) {
+            status = KMIPKIT_ERROR_INVALID_INPUT;
+        }
+    } else if (get_usage_allocation_identifier_variants_workflow) {
+        static const uint8_t fixture_identifier[] = "fixture-key-1";
+        const kmipkit_unique_identifier_v1_t explicit_identifier = {
+            .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+            .abi_version = 1,
+            .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
+            .text_data = fixture_identifier,
+            .text_length = sizeof(fixture_identifier) - 1
+        };
+        status = kmipkit_ttlv_structure_create(&request_attributes);
+        if (status == 0) status = kmipkit_client_batch_item_locate(
+            1, 3, 0, 0, 0, 0, 0, 0, request_attributes, &item);
+        if (status == 0) status = kmipkit_client_batch_item_get_usage_allocation(
+            &explicit_identifier, 1, &second_item);
+        if (status == 0) status = kmipkit_client_batch_item_get_usage_allocation(
+            NULL, 1, &third_item);
+        if (status == 0) status = set_batch_item_id(&item, "usage-locate");
+        if (status == 0) status = set_batch_item_id(&second_item, "usage-explicit");
+        if (status == 0) status = set_batch_item_id(&third_item, "usage-placeholder");
+        if (status == 0 && (!request_item_is_valid(
+                item, request_validation_diagnostic, sizeof(request_validation_diagnostic)) ||
+                !request_item_is_valid(
+                second_item, request_validation_diagnostic, sizeof(request_validation_diagnostic)) ||
+                !request_item_is_valid(
+                third_item, request_validation_diagnostic, sizeof(request_validation_diagnostic)))) {
             status = KMIPKIT_ERROR_INVALID_INPUT;
         }
     } else if (batch_two_read_items_workflow) {
@@ -2777,6 +2811,7 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     kmipkit_client_batch_response_t *response = NULL;
     kmipkit_client_batch_item_response_t *response_item = NULL;
     kmipkit_client_batch_item_response_t *second_response_item = NULL;
+    kmipkit_client_batch_item_response_t *third_response_item = NULL;
     kmipkit_client_batch_item_response_t *setup_response_item = NULL;
     kmipkit_client_batch_item_response_t *activate_response_item = NULL;
     kmipkit_client_batch_item_response_t *revoke_response_item = NULL;
@@ -2802,6 +2837,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         }
         if (status == 0) status = kmipkit_client_batch_add_item(batch, &item);
         if (status == 0) status = kmipkit_client_batch_add_item(batch, &second_item);
+        if (status == 0 && get_usage_allocation_identifier_variants_workflow) {
+            status = kmipkit_client_batch_add_item(batch, &third_item);
+        }
     } else if (status == 0 && create_workflow) {
         status = kmipkit_client_batch_set_order_option(batch, 1);
         if (status == 0) status = kmipkit_client_batch_add_error_continuation_value(
@@ -2874,7 +2912,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
 
     uint64_t response_count = 0;
     status = kmipkit_client_batch_response_item_count(response, &response_count);
-    uint64_t expected_response_count = batch_two_read_items_workflow ? 2 : create_workflow ? 2 :
+    uint64_t expected_response_count = get_usage_allocation_identifier_variants_workflow ? 3 :
+        batch_two_read_items_workflow ? 2 : create_workflow ? 2 :
         batch_placeholder_chain_workflow ? 3 :
         (active_destroy_negative_workflow ||
          batch_create_activate_get_attribute_list_revoke_destroy_workflow) ? 5 :
@@ -2888,9 +2927,21 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     if (batch_two_read_items_workflow) {
         bool get_matched = false;
         bool attribute_list_matched = false;
-        for (uint64_t index = 0; status == 0 && index < 2; ++index) {
+        bool usage_placeholder_matched = false;
+        uint64_t expected_read_response_count =
+            get_usage_allocation_identifier_variants_workflow ? 3 : 2;
+        static const uint8_t allocation_identifier[] = "fixture-key-1";
+        const kmipkit_unique_identifier_v1_t expected_allocation_identifier = {
+            .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+            .abi_version = 1,
+            .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
+            .text_data = allocation_identifier,
+            .text_length = sizeof(allocation_identifier) - 1
+        };
+        for (uint64_t index = 0; status == 0 && index < expected_read_response_count; ++index) {
             kmipkit_client_batch_item_response_t **response_slot =
-                index == 0 ? &response_item : &second_response_item;
+                index == 0 ? &response_item : index == 1 ? &second_response_item :
+                    &third_response_item;
             kmipkit_client_batch_item_metadata_v2_t metadata = {
                 .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t),
                 .abi_version = 2
@@ -2903,30 +2954,84 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             if (status == 0) status = kmipkit_client_batch_item_response_unique_batch_item_id(
                 *response_slot, &id_present, &id);
             if (status != 0 || !id_present || !id.data) break;
-            bool expected_get_status = continue_after_failure_workflow &&
-                metadata.operation == KMIPKIT_ENUMERATION_OPERATION_GET &&
-                metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_OPERATION_FAILED &&
-                metadata.has_result_reason != 0 &&
-                metadata.result_reason == KMIPKIT_ENUMERATION_RESULT_REASON_OBJECT_NOT_FOUND;
-            if (id.length == sizeof("item-a") - 1 &&
-                memcmp(id.data, "item-a", sizeof("item-a") - 1) == 0 &&
-                metadata.operation == KMIPKIT_ENUMERATION_OPERATION_GET &&
-                (expected_get_status || (!continue_after_failure_workflow &&
-                 metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS))) {
-                get_matched = true;
-            } else if (id.length == sizeof("item-b") - 1 &&
-                       memcmp(id.data, "item-b", sizeof("item-b") - 1) == 0 &&
-                       metadata.operation == KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTE_LIST &&
-                       metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
-                attribute_list_matched = true;
+            if (get_usage_allocation_identifier_variants_workflow) {
+                const char *expected_item_id = index == 0 ? "usage-locate" :
+                    index == 1 ? "usage-explicit" : "usage-placeholder";
+                size_t expected_item_id_length = strlen(expected_item_id);
+                bool response_item_id_valid = id.length == expected_item_id_length &&
+                    memcmp(id.data, expected_item_id, expected_item_id_length) == 0 &&
+                    metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS;
+                if (index == 0) {
+                    uint8_t present = 0;
+                    uint8_t payload_present = 0;
+                    uint8_t located_items_present = 0;
+                    int32_t located_items = 0;
+                    uint64_t identifier_count = 0;
+                    kmipkit_unique_identifier_v1_t located_identifier = {
+                        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+                        .abi_version = 1
+                    };
+                    status = kmipkit_client_batch_item_response_locate(
+                        *response_slot, &present, &payload_present, &located_items_present,
+                        &located_items, &identifier_count);
+                    if (status == 0 && identifier_count == 1) {
+                        status = kmipkit_client_batch_item_response_locate_unique_identifier_at(
+                            *response_slot, 0, &located_identifier);
+                    } else if (status == 0) {
+                        status = KMIPKIT_ERROR_INVALID_INPUT;
+                    }
+                    get_matched = status == 0 && response_item_id_valid &&
+                        metadata.operation == KMIPKIT_ENUMERATION_OPERATION_LOCATE &&
+                        present && payload_present && located_items_present && located_items == 1 &&
+                        same_text_identifier(&expected_allocation_identifier, &located_identifier);
+                    if (status == 0 && !get_matched) status = KMIPKIT_ERROR_INVALID_INPUT;
+                } else {
+                    bool allocation_response_valid = response_item_id_valid &&
+                        metadata.operation == KMIPKIT_ENUMERATION_OPERATION_GET_USAGE_ALLOCATION &&
+                        get_usage_allocation_response_matches_identifier(
+                            *response_slot, &expected_allocation_identifier, &status);
+                    if (allocation_response_valid && index == 1) {
+                        attribute_list_matched = true;
+                    } else if (allocation_response_valid && index == 2) {
+                        usage_placeholder_matched = true;
+                    } else {
+                        status = KMIPKIT_ERROR_INVALID_INPUT;
+                    }
+                }
+                if (status != 0) {
+                    break;
+                } else {
+                    continue;
+                }
             } else {
-                status = KMIPKIT_ERROR_INVALID_INPUT;
+                bool expected_get_status = continue_after_failure_workflow &&
+                    metadata.operation == KMIPKIT_ENUMERATION_OPERATION_GET &&
+                    metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_OPERATION_FAILED &&
+                    metadata.has_result_reason != 0 &&
+                    metadata.result_reason == KMIPKIT_ENUMERATION_RESULT_REASON_OBJECT_NOT_FOUND;
+                if (id.length == sizeof("item-a") - 1 &&
+                    memcmp(id.data, "item-a", sizeof("item-a") - 1) == 0 &&
+                    metadata.operation == KMIPKIT_ENUMERATION_OPERATION_GET &&
+                    (expected_get_status || (!continue_after_failure_workflow &&
+                     metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS))) {
+                    get_matched = true;
+                } else if (id.length == sizeof("item-b") - 1 &&
+                           memcmp(id.data, "item-b", sizeof("item-b") - 1) == 0 &&
+                           metadata.operation == KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTE_LIST &&
+                           metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+                    attribute_list_matched = true;
+                } else {
+                    status = KMIPKIT_ERROR_INVALID_INPUT;
+                }
             }
         }
-        if (status != 0 || !get_matched || !attribute_list_matched) {
+        if (status != 0 || !get_matched || !attribute_list_matched ||
+            (get_usage_allocation_identifier_variants_workflow && !usage_placeholder_matched)) {
             outcome.library_failed = status != 0;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                     "KMIPKit did not correlate both read responses by Unique Batch Item ID");
+                     get_usage_allocation_identifier_variants_workflow ?
+                         "KMIPKit did not resolve the omitted allocation identifier after Locate" :
+                         "KMIPKit did not correlate both read responses by Unique Batch Item ID");
             goto cleanup;
         }
         outcome.success = true;
@@ -3543,10 +3648,12 @@ cleanup:
     if (cleanup_response_item) kmipkit_client_batch_item_response_release(cleanup_response_item);
     if (response_item) kmipkit_client_batch_item_response_release(response_item);
     if (second_response_item) kmipkit_client_batch_item_response_release(second_response_item);
+    if (third_response_item) kmipkit_client_batch_item_response_release(third_response_item);
     if (response) kmipkit_client_batch_response_release(response);
     if (batch) kmipkit_client_batch_release(batch);
     if (item) kmipkit_client_batch_item_release(item);
     if (second_item) kmipkit_client_batch_item_release(second_item);
+    if (third_item) kmipkit_client_batch_item_release(third_item);
     if (setup_item) kmipkit_client_batch_item_release(setup_item);
     if (activate_item) kmipkit_client_batch_item_release(activate_item);
     if (revoke_item) kmipkit_client_batch_item_release(revoke_item);

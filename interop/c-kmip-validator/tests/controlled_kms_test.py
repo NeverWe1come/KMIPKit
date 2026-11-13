@@ -70,10 +70,14 @@ def response(operations: tuple[int, ...], protocol_minor: int,
             payload_value = b"".join(integer(0x42005C, value, 5) for value in query_operations)
             payload_value += tlv(0x42015F, 1, b"")
         elif operation == 8:
-            payload_value = integer(0x4200D5, 3)
-            payload_value += tlv(0x420094, 7, b"fixture-locate-1")
-            payload_value += enumeration(0x420094, 0xF1234567)
-            payload_value += integer(0x420094, -12345)
+            if operations == (8, 17, 17):
+                payload_value = integer(0x4200D5, 1)
+                payload_value += tlv(0x420094, 7, b"fixture-key-1")
+            else:
+                payload_value = integer(0x4200D5, 3)
+                payload_value += tlv(0x420094, 7, b"fixture-locate-1")
+                payload_value += enumeration(0x420094, 0xF1234567)
+                payload_value += integer(0x420094, -12345)
         elif operation == 10:
             key_material = tlv(0x420043, 8, b"KMIPKIT-SECRET!!")
             key_value = tlv(0x420045, 1, key_material)

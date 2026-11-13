@@ -111,6 +111,42 @@ class RouteMatrixTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'fixture_usage_allocation_identifier_variants_mismatch'):
             assert_recipe(request, 'test-norm-payload-client-get-usage-allocation-request-21-001', '2.1')
 
+    def test_get_usage_allocation_identifier_forms_execute_after_locate_placeholder(self):
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_ids = {
+            'test-norm-payload-client-get-usage-allocation-request-20-001',
+            'test-norm-payload-client-get-usage-allocation-request-21-001',
+        }
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] in case_ids]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks))
+        required_symbols = {
+            'kmipkit_client_batch_item_locate',
+            'kmipkit_client_batch_item_get_usage_allocation',
+            'kmipkit_client_batch_item_response_locate_unique_identifier_at',
+            'kmipkit_client_batch_item_response_get_usage_allocation',
+            'kmipkit_client_execute',
+        }
+        self.assertTrue(all(required_symbols <= set(check['public_api_trace_symbols'])
+                            for check in checks))
+        self.assertTrue(all(check['peer_request_unique_identifier_present_by_batch_item'] ==
+                            [False, True, False] for check in checks))
+        self.assertTrue(all(check['peer_response_unique_identifier_present_by_batch_item'] ==
+                            [True, True, True] for check in checks))
+        send_events = [event for event in events if event['action'] == 'send']
+        self.assertTrue(all(event['batch_operation_sequence'] ==
+                            ['Locate', 'Get Usage Allocation', 'Get Usage Allocation']
+                            for event in send_events))
+
     def test_get_usage_allocation_identifier_variant_response_checks_each_correlated_result(self):
         from controlled_kms_test import response
         from route_peer import parse, verify_usage_allocation_identifier_variants
@@ -146,8 +182,8 @@ class RouteMatrixTests(unittest.TestCase):
 
         evidence = PeerState(existing_object=True, usage_allocation_ready=True).execute(request)
 
-        self.assertEqual(evidence['statuses'], [0, 0])
-        self.assertEqual(evidence['reasons'], [0, 0])
+        self.assertEqual(evidence['statuses'], [0, 0, 0])
+        self.assertEqual(evidence['reasons'], [0, 0, 0])
         self.assertEqual(
             evidence['effects'],
             ['located', 'usage_allocation_returned', 'usage_allocation_returned'],

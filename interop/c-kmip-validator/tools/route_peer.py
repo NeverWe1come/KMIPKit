@@ -289,6 +289,10 @@ RECIPES = {
     'test-op-destroy': ((1, 20, 19, 20), 'destroy'),
     'test-op-get-constraints': ((1, 56, 19, 20), 'get_constraints'),
     'test-op-get-usage-allocation': ((1, 17, 19, 20), 'get_usage_allocation'),
+    'test-norm-payload-client-get-usage-allocation-request-20-001':
+        ((8, 17, 17), 'get_usage_allocation_uid_variants'),
+    'test-norm-payload-client-get-usage-allocation-request-21-001':
+        ((8, 17, 17), 'get_usage_allocation_uid_variants'),
     'test-op-locate': ((8,), 'locate'), 'test-op-query': ((24,), 'query'),
     'test-norm-payload-client-query-request-20-001': ((24,), 'query'),
     'test-norm-payload-client-query-request-21-001': ((24,), 'query'),
@@ -314,6 +318,8 @@ CONTROLLED_PEER_LOCAL_MODEL_CASES = frozenset({
     'test-norm-payload-client-create-request-21-001',
     'test-norm-payload-client-create-request-21-002',
     'test-norm-payload-client-create-request-21-003',
+    'test-norm-payload-client-get-usage-allocation-request-20-001',
+    'test-norm-payload-client-get-usage-allocation-request-21-001',
 })
 
 
@@ -355,6 +361,33 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None):
                 raise ValueError('fixture_placeholder_chain_shape_mismatch')
             if numbers(node, 0x42000E) != [1]:
                 raise ValueError('fixture_placeholder_chain_continue_option_missing')
+    if selected_recipe[1] == 'get_usage_allocation_uid_variants':
+        items = [child for child in node[2]
+                 if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+        identifiers = []
+        item_ids = []
+        counts = []
+        for item in items[1:]:
+            payloads = [child for child in item[2]
+                        if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+            if len(payloads) != 1:
+                raise ValueError('fixture_usage_allocation_identifier_variants_mismatch')
+            identifiers.append([child[2].decode('utf-8') for child in payloads[0][2]
+                                if child[0] == UNIQUE_IDENTIFIER_TAG and child[1] == 7])
+            item_ids.append(byte_string_values(item, 0x420093))
+            counts.append([child for child in payloads[0][2] if child[0] == 0x420096])
+        locate_payloads = [child for child in items[0][2]
+                           if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] if items else []
+        if (len(items) != 3 or [numbers(item, 0x42005C) for item in items] !=
+                [[8], [17], [17]] or
+                [byte_string_values(item, 0x420093) for item in items] !=
+                [[b'usage-locate'], [b'usage-explicit'], [b'usage-placeholder']] or
+                identifiers != [['fixture-key-1'], []] or
+                len(locate_payloads) != 1 or numbers(locate_payloads[0], 0x42004F) != [3] or
+                item_ids != [[b'usage-explicit'], [b'usage-placeholder']] or
+                any(len(count) != 1 or count[0][1] != 3 or len(count[0][2]) != 8 or
+                    int.from_bytes(count[0][2], 'big', signed=True) != 1 for count in counts)):
+            raise ValueError('fixture_usage_allocation_identifier_variants_mismatch')
     if expected[0] == 3:
         register_item = next(item for item in node[2]
                              if item[0] == 0x42000F and numbers(item, 0x42005C) == [3])
@@ -676,9 +709,14 @@ def recipe_for_case(case, attribute_fixture):
 class PeerState:
     """Maintain the public object lifecycle represented by the controlled peer."""
 
-    def __init__(self, *, existing_object=False):
-        self.objects = {'fixture-key-1': 'pre_active'} if existing_object else {}
+    def __init__(self, *, existing_object=False, usage_allocation_ready=False):
+        self.objects = {
+            'fixture-key-1': 'active' if usage_allocation_ready else 'pre_active'
+        } if existing_object else {}
         self.attributes = {'fixture-key-1': set()} if existing_object else {}
+        self.usage_allocation_ready = usage_allocation_ready
+        self.usage_allocation_totals = {'fixture-key-1': 1000} if usage_allocation_ready else {}
+        self.usage_allocation_counts = {'fixture-key-1': 0} if usage_allocation_ready else {}
 
     def digest(self):
         state_value = {'objects': self.objects}
@@ -686,6 +724,8 @@ class PeerState:
             state_value['attributes'] = {
                 key: sorted(value) for key, value in self.attributes.items() if value
             }
+        if self.usage_allocation_counts:
+            state_value['usage_allocation_counts'] = self.usage_allocation_counts
         state = json.dumps(state_value, sort_keys=True, separators=(',', ':'))
         return hashlib.sha256(state.encode()).hexdigest()
 
@@ -716,10 +756,33 @@ class PeerState:
                 self.attributes[identifier] = set()
                 placeholder = identifier
                 effect = 'created'
+            elif operation == 8:
+                matching_identifiers = list(self.objects)
+                if len(matching_identifiers) != 1:
+                    raise ValueError('fixture_usage_allocation_locate_not_unique')
+                identifier = matching_identifiers[0]
+                placeholder = identifier
+                effect = 'located'
             elif operation in (9, 10, 11, 12, 13, 15, 17, 18, 19, 20, 49, 56):
                 state = self.objects.get(identifier)
                 if state is None:
                     status, reason, effect = 1, 55, 'object_not_found'
+                elif operation == 17 and self.usage_allocation_ready:
+                    payloads = [child for child in item[2]
+                                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+                    count_items = [child for payload in payloads for child in payload[2]
+                                   if child[0] == 0x420096 and child[1] == 3]
+                    if (state != 'active' or identifier not in self.usage_allocation_totals or
+                            len(payloads) != 1 or len(count_items) != 1 or
+                            len(count_items[0][2]) != 8):
+                        raise ValueError('fixture_usage_allocation_precondition_mismatch')
+                    requested = int.from_bytes(count_items[0][2], 'big', signed=True)
+                    allocated = self.usage_allocation_counts[identifier]
+                    if (requested <= 0 or
+                            allocated + requested > self.usage_allocation_totals[identifier]):
+                        raise ValueError('fixture_usage_allocation_limit_mismatch')
+                    self.usage_allocation_counts[identifier] = allocated + requested
+                    effect = 'usage_allocation_returned'
                 elif operation == 18:
                     if state != 'pre_active':
                         raise ValueError('fixture_activate_state_mismatch')
@@ -826,6 +889,22 @@ def verify_lifecycle(operations, response_tree):
     if [(numbers(item, 0x42007E) or [0])[0] for item in items] != expected_reasons:
         raise ValueError('fixture_state_result_reason_mismatch')
     return effects
+
+
+def verify_usage_allocation_identifier_variants(response_tree):
+    items = [child for child in response_tree[2]
+             if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    locate_identifiers = text_values(items[0], UNIQUE_IDENTIFIER_TAG) if items else []
+    if (len(items) != 3 or
+            [numbers(item, 0x42005C) for item in items] != [[8], [17], [17]] or
+            [numbers(item, 0x42007F) for item in items] != [[0], [0], [0]] or
+            locate_identifiers != ['fixture-key-1'] or
+            [byte_string_values(item, 0x420093) for item in items] !=
+            [[b'usage-locate'], [b'usage-explicit'], [b'usage-placeholder']] or
+            [text_values(item, UNIQUE_IDENTIFIER_TAG) for item in items[1:]] !=
+            [['fixture-key-1'], ['fixture-key-1']]):
+        raise ValueError('fixture_usage_allocation_identifier_response_mismatch')
+    return ['fixture-key-1', 'fixture-key-1']
 
 
 def read_request(stream, encoding, transport, initial=b''):
@@ -971,7 +1050,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                         if version == '2.0' and case_id in ('test-op-discover-versions', 'test-op-login', 'test-op-get-constraints', 'test-op-ping'):
                             continue
                         observation, errors = [], []
-                        peer_state = PeerState(existing_object=recipe[0][0] not in (1, 3))
+                        peer_state = PeerState(
+                            existing_object=recipe[0][0] not in (1, 3),
+                            usage_allocation_ready=recipe[1] == 'get_usage_allocation_uid_variants')
                         boundary = case_id == 'test-v20-reject-get-constraints'
                         with socket.socket() as server:
                             server.bind(('127.0.0.1', 0))
@@ -1064,6 +1145,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 (b'interop-revoke', b'interop-destroy')
                                                 if cleanup_exchange else
                                                 (b'interop-attributes',))
+                                        elif recipe[1] == 'get_usage_allocation_uid_variants':
+                                            response_item_ids = (
+                                                b'usage-locate', b'usage-explicit',
+                                                b'usage-placeholder')
                                         if recipe[1] in ('batch_count_two_read_items',
                                                          'batch_order_false_two_read_items',
                                                          'batch_continue_after_failure'):
@@ -1096,6 +1181,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         response_tree = parse(response_wire)
                                         if placeholder_chain_recipe:
                                             verify_placeholder_chain_response(response_tree, response_operations)
+                                        elif recipe[1] == 'get_usage_allocation_uid_variants':
+                                            verify_usage_allocation_identifier_variants(response_tree)
                                         elif reject_this_exchange:
                                             response_items = [item for item in response_tree[2]
                                                               if item[0] == BATCH_ITEM_TAG and item[1] == 1]
@@ -1260,7 +1347,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                    'test-batch-count-matches-items',
                                                    'test-batch-unique-item-id-response-correlation',
                                                    'test-batch-order-false-correlates-response-items',
-                                                   'test-batch-continue-after-failure'} else {}),
+                                                   'test-batch-continue-after-failure',
+                                                   'test-norm-payload-client-get-usage-allocation-request-20-001',
+                                                   'test-norm-payload-client-get-usage-allocation-request-21-001'} else {}),
                                            **({'peer_response_result_statuses': [
                                                numbers(item, 0x42007F)[0]
                                                for item in observation[0][1][2]
@@ -1269,7 +1358,20 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                    'test-batch-count-matches-items',
                                                    'test-batch-unique-item-id-response-correlation',
                                                    'test-batch-order-false-correlates-response-items',
-                                                   'test-batch-continue-after-failure'} else {}),
+                                                   'test-batch-continue-after-failure',
+                                                   'test-norm-payload-client-get-usage-allocation-request-20-001',
+                                                   'test-norm-payload-client-get-usage-allocation-request-21-001'} else {}),
+                                           **({'peer_request_unique_identifier_present_by_batch_item': [
+                                               bool(text_values(item, UNIQUE_IDENTIFIER_TAG))
+                                               for item in observation[0][0][2]
+                                               if item[0] == BATCH_ITEM_TAG],
+                                               'peer_response_unique_identifier_present_by_batch_item': [
+                                               bool(text_values(item, UNIQUE_IDENTIFIER_TAG))
+                                               for item in observation[0][1][2]
+                                               if item[0] == BATCH_ITEM_TAG]}
+                                               if observation and case_id in {
+                                                   'test-norm-payload-client-get-usage-allocation-request-20-001',
+                                                   'test-norm-payload-client-get-usage-allocation-request-21-001'} else {}),
                                            **(peer_cleanup_evidence(observation, include_state_hash=True)
                                               if placeholder_chain_recipe and len(observation) == 2 else {}),
                                            **({'peer_request_operations': [
