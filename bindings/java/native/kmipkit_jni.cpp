@@ -13918,6 +13918,8 @@ JNIEXPORT jobject JNICALL Java_org_kmipkit_server_ServerNative_notifyDeletedAttr
     return guarded<jobject>(env, nullptr, [&] {
         if (index < 0) { throw_invalid_input(env); return static_cast<jobject>(nullptr); }
         kmipkit_attribute_reference_v1_t reference{};
+        reference.struct_size = static_cast<uint32_t>(sizeof(reference));
+        reference.abi_version = 1;
         if (!check_status(env, [&] {
                 return kmipkit_server_request_item_notify_deleted_attribute_reference_at(
                         from_java_handle<kmipkit_server_request_item_t>(raw_request),

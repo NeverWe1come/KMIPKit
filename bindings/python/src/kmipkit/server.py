@@ -459,6 +459,8 @@ class NotifyRequest(ServerRequest):
         references = []
         for index in range(int(count[0])):
             output = ffi.new("kmipkit_attribute_reference_v1_t *")
+            output.struct_size = ffi.sizeof("kmipkit_attribute_reference_v1_t")
+            output.abi_version = 1
             with _NATIVE_CALL_LOCK:
                 _status(
                     lib.kmipkit_server_request_item_notify_deleted_attribute_reference_at(
