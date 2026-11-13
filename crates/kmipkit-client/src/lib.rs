@@ -347,6 +347,10 @@ mod fluent_lifecycle_operation_tests;
 mod fluent_cryptographic_operation_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/fluent_attribute_read_tests.rs"]
+mod fluent_attribute_read_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/reprovision_execution_tests.rs"]
 mod reprovision_execution_tests;
 
@@ -380,10 +384,10 @@ pub use execute::{
 pub use fluent::{
     ActivateBuilder, ArchiveBuilder, CreateKeyPairBuilder, CreateSplitKeyBuilder,
     CreateSymmetricKeyBuilder, CryptographicUsageMask, DecryptBuilder, DestroyBuilder,
-    EncryptBuilder, FluentAttributePosition, FluentBuildError, GetBuilder, HashBuilder,
-    LocateBuilder, MacBuilder, MacVerifyBuilder, RecertifyBuilder, RecoverBuilder, RegisterBuilder,
-    RekeyBuilder, RekeyKeyPairBuilder, RequestBuilder, RevokeBuilder, SignBuilder,
-    SignatureVerifyBuilder,
+    EncryptBuilder, FluentAttributePosition, FluentBuildError, GetAttributeListBuilder,
+    GetAttributesBuilder, GetBuilder, HashBuilder, LocateBuilder, MacBuilder, MacVerifyBuilder,
+    RecertifyBuilder, RecoverBuilder, RegisterBuilder, RekeyBuilder, RekeyKeyPairBuilder,
+    RequestBuilder, RevokeBuilder, SignBuilder, SignatureVerifyBuilder,
 };
 pub use kmipkit_protocol::{
     ProfileObjectState, ProfileTransport, ProfileValidationContext, ProfileValidationError,
