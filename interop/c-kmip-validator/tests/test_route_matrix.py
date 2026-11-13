@@ -886,6 +886,7 @@ class RouteMatrixTests(unittest.TestCase):
             'kmipkit_register_request_create',
             'kmipkit_client_batch_item_register',
             'kmipkit_client_batch_item_response_register',
+            'kmipkit_client_batch_item_response_register_ttlv',
             'kmipkit_client_batch_item_destroy',
             'kmipkit_client_execute',
         }
