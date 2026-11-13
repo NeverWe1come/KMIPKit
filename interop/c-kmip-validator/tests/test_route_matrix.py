@@ -928,6 +928,28 @@ class RouteMatrixTests(unittest.TestCase):
                 self.assertTrue(all('kmipkit_client_batch_item_delete_attribute' not in
                                     check['public_api_trace_symbols'] for check in checks))
 
+    def test_locate_response_reads_identifiers_for_both_protocol_versions(self):
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-op-locate'
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest,
+            protocol_versions=('2.0', '2.1'), network_combinations=(('TTLV', 'raw_tls'),))
+
+        self.assertEqual(len(checks), 2)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks))
+        identifier_reads = [event for event in events
+                            if event['case_id'] == case_id and event['action'] == 'decode'
+                            and event['public_api_symbol'] ==
+                            'kmipkit_client_batch_item_response_locate_unique_identifier_at']
+        self.assertEqual({event['protocol_version'] for event in identifier_reads}, {'2.0', '2.1'})
+
 
     def test_read_back_attribute_recipe_calls_get_attributes_with_exact_tag(self):
         from artifact_support import ROOT
