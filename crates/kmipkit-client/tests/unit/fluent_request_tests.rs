@@ -954,6 +954,12 @@ fn get_usage_allocation_builder_requires_count_and_executes_typed_request() {
             .expect_err("Get Usage Allocation requires its requested count"),
         FluentBuildError::MissingGetUsageAllocationCount
     );
+    failed_request_client()
+        .request()
+        .get_usage_allocation()
+        .usage_limits_count(3)
+        .validate()
+        .expect("a supplied Usage Limits Count validates locally");
 
     let identifier = UniqueIdentifier::TextString("limited-key".to_owned());
     let request = failed_request_client()
