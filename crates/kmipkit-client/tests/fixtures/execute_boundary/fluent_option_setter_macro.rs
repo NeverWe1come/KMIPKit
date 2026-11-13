@@ -33,4 +33,5 @@ macro_rules! fluent_option_field_setters {
 
 impl FluentBuilder {
     fluent_option_field_setters!("Sets exchange-local options."; options; asynchronous_indicator; const);
+    fluent_option_field_setters!("Sets batch-local options."; state.options; state.asynchronous_indicator; non_const);
 }

@@ -1136,6 +1136,11 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
 
     fn visit_item_macro(&mut self, item: &'ast syn::ItemMacro) {
         // Declarative/procedural item macros have opaque expansion behavior.
+        // The fluent setter macro is the sole exception and is accepted only
+        // when its complete token body matches the checked-in safe fixture.
+        if is_approved_fluent_option_setter_definition(item) {
+            return;
+        }
         if is_sensitive_log_macro(&item.mac.path)
             && contains_logged_sensitive_value(&item.mac.tokens.to_string())
         {
@@ -1570,9 +1575,12 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
             self.logged_sensitive_value = true;
             self.reject("sensitive request metadata appears in a logger macro");
         }
+        let approved_fluent_option_setters =
+            is_approved_fluent_option_setter_invocation(macro_call);
         if !(macro_call.path.is_ident("write")
             || macro_call.path.is_ident("matches")
-            || macro_call.path.is_ident("vec"))
+            || macro_call.path.is_ident("vec")
+            || approved_fluent_option_setters)
         {
             let path = macro_call
                 .path
@@ -1582,15 +1590,81 @@ impl<'ast> Visit<'ast> for BoundaryAudit {
                 .collect::<Vec<_>>()
                 .join("::");
             self.reject(format!("unsupported macro: {path}"));
-        } else if allowed_macro_contains_forbidden_content(macro_call) {
+        } else if !approved_fluent_option_setters
+            && allowed_macro_contains_forbidden_content(macro_call)
+        {
             self.reject(
                 "nested macro or execute invocation appears in an allowed macro token tree",
             );
         }
-        if contains_protected_macro_tokens(&tokens) {
+        if !approved_fluent_option_setters && contains_protected_macro_tokens(&tokens) {
             self.reject("protected boundary tokens appear in opaque macro input");
         }
     }
+}
+
+fn is_approved_fluent_option_setter_definition(item: &syn::ItemMacro) -> bool {
+    if !item.attrs.is_empty()
+        || item.ident.as_ref().map(ToString::to_string).as_deref()
+            != Some("fluent_option_field_setters")
+        || !item.mac.path.is_ident("macro_rules")
+    {
+        return false;
+    }
+
+    let Ok(approved_file) = syn::parse_file(include_str!(
+        "../../tests/fixtures/execute_boundary/fluent_option_setter_macro.rs"
+    )) else {
+        return false;
+    };
+    approved_file.items.into_iter().any(|approved_item| {
+        let Item::Macro(approved_macro) = approved_item else {
+            return false;
+        };
+        approved_macro
+            .ident
+            .as_ref()
+            .map(ToString::to_string)
+            .as_deref()
+            == Some("fluent_option_field_setters")
+            && approved_macro.mac.path.is_ident("macro_rules")
+            && approved_macro.mac.tokens.to_string() == item.mac.tokens.to_string()
+    })
+}
+
+fn is_approved_fluent_option_setter_invocation(macro_call: &syn::Macro) -> bool {
+    // The matcher accepts only a documentation literal, two fixed field paths,
+    // and the async-method constness selector; it cannot inject executable code.
+    if !macro_call.path.is_ident("fluent_option_field_setters")
+        || !matches!(macro_call.delimiter, syn::MacroDelimiter::Paren(_))
+    {
+        return false;
+    }
+
+    let tokens = macro_call.tokens.to_string();
+    let parts = tokens.split(';').map(str::trim).collect::<Vec<_>>();
+    if parts.len() != 4 || syn::parse_str::<LitStr>(parts[0]).is_err() {
+        return false;
+    }
+    let compact = |path: &str| {
+        path.chars()
+            .filter(|character| !character.is_whitespace())
+            .collect::<String>()
+    };
+    let options_path = compact(parts[1]);
+    let indicator_path = compact(parts[2]);
+    let mode = parts[3];
+
+    matches!(
+        options_path.as_str(),
+        "options" | "execution.options" | "state.options" | "state.execution.options"
+    ) && matches!(
+        indicator_path.as_str(),
+        "asynchronous_indicator"
+            | "execution.asynchronous_indicator"
+            | "state.asynchronous_indicator"
+            | "state.execution.asynchronous_indicator"
+    ) && matches!(mode, "const" | "non_const")
 }
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -4948,14 +5022,31 @@ fn exact_fluent_option_setter_macro_is_audited_as_a_fixed_safe_expansion() {
     let safe = include_str!("../../tests/fixtures/execute_boundary/fluent_option_setter_macro.rs");
     let unsafe_macro =
         include_str!("../../tests/fixtures/execute_boundary/unsafe_fluent_option_setter_macro.rs");
+    let safe_with_exchange = format!("{safe}\n{CANONICAL_EXECUTE_EXCHANGE_FIXTURE}");
+    let unsafe_with_exchange = format!("{unsafe_macro}\n{CANONICAL_EXECUTE_EXCHANGE_FIXTURE}");
+    let unsafe_invocation = safe.replace(
+        "options; asynchronous_indicator; const",
+        "client.execute; asynchronous_indicator; const",
+    );
+    let unsafe_invocation_with_exchange =
+        format!("{unsafe_invocation}\n{CANONICAL_EXECUTE_EXCHANGE_FIXTURE}");
 
+    let parsed_safe = syn::parse_file(&safe_with_exchange).expect("safe macro fixture parses");
+    let mut safe_audit = BoundaryAudit::default();
+    safe_audit.visit_source_file(&parsed_safe, Path::new("fixture.rs"));
+    let safe_result = safe_audit.finish_fixture();
     assert!(
-        audit_source(safe).is_ok(),
-        "the exact common option setter macro should be auditable"
+        safe_result.is_ok(),
+        "the exact common option setter macro should be auditable: {safe_result:?}, reasons={:?}",
+        safe_audit.rejection_reasons
     );
     assert!(
-        audit_source(unsafe_macro).is_err(),
+        audit_source(&unsafe_with_exchange).is_err(),
         "a modified macro that executes a request must remain rejected"
+    );
+    assert!(
+        audit_source(&unsafe_invocation_with_exchange).is_err(),
+        "an invocation with a path outside the fixed setter fields must remain rejected"
     );
 }
 
