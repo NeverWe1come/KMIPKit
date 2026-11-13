@@ -124,6 +124,8 @@ class ControlledTlsPeerTest {
             "java.generic-ttlv.ttlv_codec.decode");
     private static final String RESPONSE_BATCH_ITEM_CASE_ID =
             "test-norm-message-field-message-field-8-4-batch-item";
+    // Exercise KMIP 2.1-assigned values as unknown Enumeration values in KMIP 2.0.
+    private static final Set<String> ENUMS_WITH_KMIP_2_1_ONLY_VALUES = Set.of("Operation", "Result Reason");
     private static final Set<String> LOCAL_ENUMERATION_SCOPE_CASE_IDS = Set.of(
             "test-enum-block-cipher-mode", "test-enum-rotate-name-type", "test-enum-operation",
             "test-enum-result-reason",
@@ -1811,9 +1813,7 @@ class ControlledTlsPeerTest {
 
     private static List<String> localEnumerationVersions(JsonNode target, String enumType,
             List<String> caseVersions) {
-        // KMIP 2.1-only Result Reason and Operation values must remain unknown-value round-trips in KMIP 2.0.
-        boolean preserveUnknownValuesAcrossVersions = "Result Reason".equals(enumType)
-                || "Operation".equals(enumType);
+        boolean preserveUnknownValuesAcrossVersions = ENUMS_WITH_KMIP_2_1_ONLY_VALUES.contains(enumType);
         return caseVersions.stream()
                 .filter(version -> preserveUnknownValuesAcrossVersions || target.path("protocol_versions").isEmpty()
                         || containsText(target.path("protocol_versions"), version))
