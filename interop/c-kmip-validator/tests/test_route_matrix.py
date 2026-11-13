@@ -461,6 +461,29 @@ class RouteMatrixTests(unittest.TestCase):
 
         self.assertEqual(route_peer.recipe_for_case(case, None), ((52, 52, 52), 'interop'))
 
+    def test_interop_peer_checks_ordered_functions_and_one_identifier(self):
+        """OASIS KMIP 2.0 Table 223 and KMIP 2.1 Table 241 require both fields."""
+        from route_peer import assert_interop_request, parse, tlv
+
+        def request(functions, identifier=b'kmipkit-interop-fixture'):
+            items = []
+            for function in functions:
+                payload = tlv(0x420160, 5, function.to_bytes(4, 'big'))
+                payload += tlv(0x420161, 7, identifier)
+                batch_item = tlv(0x42005C, 5, (52).to_bytes(4, 'big'))
+                batch_item += tlv(0x420079, 1, payload)
+                items.append(tlv(0x42000F, 1, batch_item))
+            version = tlv(0x420069, 1,
+                tlv(0x42006A, 2, (2).to_bytes(4, 'big')) +
+                tlv(0x42006B, 2, (1).to_bytes(4, 'big')))
+            header = tlv(0x420077, 1, version +
+                tlv(0x42000D, 2, len(functions).to_bytes(4, 'big')))
+            return parse(tlv(0x420078, 1, header + b''.join(items)))
+
+        assert_interop_request(request((1, 2, 3)), '2.1')
+        with self.assertRaisesRegex(ValueError, 'interop_function_sequence_mismatch'):
+            assert_interop_request(request((1, 3, 2)), '2.1')
+
     def test_logout_peer_requires_the_ticket_returned_by_login(self):
         """OASIS KMIP 2.0 §6.1.30 and 2.1 §6.1.31 require Logout's Ticket."""
         from route_peer import assert_login_logout_exchange, parse, tlv
