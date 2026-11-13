@@ -125,7 +125,8 @@ class ControlledTlsPeerTest {
     private static final String RESPONSE_BATCH_ITEM_CASE_ID =
             "test-norm-message-field-message-field-8-4-batch-item";
     private static final Set<String> LOCAL_ENUMERATION_SCOPE_CASE_IDS = Set.of(
-            "test-enum-block-cipher-mode", "test-enum-rotate-name-type", "test-enum-opaque-data-type",
+            "test-enum-block-cipher-mode", "test-enum-rotate-name-type", "test-enum-recommended-curve",
+            "test-enum-opaque-data-type",
             "test-enum-processing-stage", "test-enum-ticket-type", "test-enum-mask-generator",
             "test-enum-encoding-option", "test-enum-endpoint-role", "test-enum-key-value-location-type",
             "test-enum-key-wrap-type", "test-enum-name-type", "test-enum-object-group-member",
