@@ -764,6 +764,22 @@ static bool get_constraints_response_is_typed(
     return valid;
 }
 
+static bool get_usage_allocation_response_matches_identifier(
+    kmipkit_client_batch_item_response_t *response_item,
+    const kmipkit_unique_identifier_v1_t *created_identifier,
+    int32_t *out_status) {
+    uint8_t present = 0;
+    kmipkit_unique_identifier_v1_t allocation_identifier = {
+        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+        .abi_version = 1
+    };
+    int32_t status = kmipkit_client_batch_item_response_get_usage_allocation(
+        response_item, &present, &allocation_identifier);
+    *out_status = status;
+    return status == 0 && present &&
+        same_text_identifier(created_identifier, &allocation_identifier);
+}
+
 static bool query_response_ttlv_matches_field_count(
     kmipkit_client_batch_item_response_t *response_item,
     uint64_t expected_field_count,
@@ -3413,15 +3429,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
             goto cleanup;
         }
     } else if (get_usage_allocation_workflow) {
-        uint8_t present = 0;
-        kmipkit_unique_identifier_v1_t allocation_identifier = {
-            .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
-            .abi_version = 1
-        };
-        status = kmipkit_client_batch_item_response_get_usage_allocation(
-            response_item, &present, &allocation_identifier);
-        if (status != 0 || !present ||
-            !same_text_identifier(&created_identifier, &allocation_identifier)) {
+        if (!get_usage_allocation_response_matches_identifier(
+                response_item, &created_identifier, &status)) {
             outcome.success = false;
             outcome.library_failed = status != 0;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
