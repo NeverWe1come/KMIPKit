@@ -183,6 +183,13 @@ compares normalized request and response trees across both API levels, both
 protocol versions, and all six encoding/transport combinations; these
 controlled fixtures do not establish deployed vendor interoperability.
 
+For batch route evidence, the consumer records the count and ordered numeric
+Result Status values returned by KMIPKit alongside the controlled peer's
+observations. This verifies partial Stop responses as well as complete Continue
+responses without recording response bodies or secret values. KMIP 2.0 §11.5,
+Table 396 and KMIP 2.1 §11.5, Table 434 define the Stop outcome behavior used by
+the controlled fixture.
+
 Generated `route_calls_generated.rs` is rebuilt by
 `tools/generate_route_calls.py` from installed typed attribute metadata and the
 shared route manifest. Both generated dispatch tables are excluded from raw

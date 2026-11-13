@@ -5456,6 +5456,11 @@ fn run_operation_network(rows: &[Json], connection: &Connection, output: &Path) 
                     bytes: None,
                     ticket: None,
                     response_tree_sha256: batch_response_digest(&responses),
+                    batch_response_count: Some(responses.len()),
+                    batch_result_status_codes: responses
+                        .iter()
+                        .map(|response| response.status)
+                        .collect(),
                 }),
             )
         } else {
@@ -5474,15 +5479,21 @@ fn run_operation_network(rows: &[Json], connection: &Connection, output: &Path) 
                 )
             })
         };
+        let mut client_batch_response_count = None;
+        let mut client_result_status_codes = Vec::new();
         let (mut status, response_tree, delivery_state, transport_count, failure_code) =
             match exchange {
-                Some(Ok(observed)) => (
-                    "passed",
-                    observed.response_tree_sha256,
-                    Some("response_received"),
-                    1,
-                    None,
-                ),
+                Some(Ok(observed)) => {
+                    client_batch_response_count = observed.batch_response_count;
+                    client_result_status_codes = observed.batch_result_status_codes;
+                    (
+                        "passed",
+                        observed.response_tree_sha256,
+                        Some("response_received"),
+                        1,
+                        None,
+                    )
+                }
                 Some(Err(error))
                     if expected_not_sent
                         && error.delivery_state()
@@ -5533,6 +5544,10 @@ fn run_operation_network(rows: &[Json], connection: &Connection, output: &Path) 
         if let Some(operations) = &batch_operations {
             event["batch_operation_sequence"] = json!(operations);
             event["batch_item_count"] = json!(operations.len());
+        }
+        if let Some(response_count) = client_batch_response_count {
+            event["client_observed_batch_response_count"] = json!(response_count);
+            event["client_observed_result_status_codes"] = json!(client_result_status_codes);
         }
         if let Some(response_tree) = response_tree
             && row["action"] == "decode"

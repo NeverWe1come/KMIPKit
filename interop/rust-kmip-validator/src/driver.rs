@@ -158,6 +158,8 @@ pub(crate) struct Observed {
     pub bytes: Option<kmipkit::protocol::SecretBytes>,
     pub ticket: Option<kmipkit::protocol::Ticket>,
     pub response_tree_sha256: Option<String>,
+    pub batch_response_count: Option<usize>,
+    pub batch_result_status_codes: Vec<u32>,
 }
 
 pub(crate) fn observed(response: &ClientBatchItemResponse) -> Observed {
@@ -223,6 +225,8 @@ pub(crate) fn observed(response: &ClientBatchItemResponse) -> Observed {
         bytes,
         ticket,
         response_tree_sha256: crate::matrix::response_digest(response).ok(),
+        batch_response_count: None,
+        batch_result_status_codes: Vec::new(),
     }
 }
 
@@ -706,6 +710,8 @@ pub(crate) fn asynchronous(
         ticket: None,
         correlation: None,
         response_tree_sha256: crate::matrix::operation_outcome_digest(&response).ok(),
+        batch_response_count: None,
+        batch_result_status_codes: Vec::new(),
     })
 }
 
