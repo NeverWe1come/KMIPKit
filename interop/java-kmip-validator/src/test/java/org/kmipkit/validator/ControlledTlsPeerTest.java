@@ -127,7 +127,8 @@ class ControlledTlsPeerTest {
     // Exercise KMIP 2.1-assigned values as unknown Enumeration values in KMIP 2.0.
     private static final Set<String> ENUMS_WITH_KMIP_2_1_ONLY_VALUES = Set.of("Operation", "Result Reason");
     private static final Set<String> LOCAL_ENUMERATION_SCOPE_CASE_IDS = Set.of(
-            "test-enum-block-cipher-mode", "test-enum-rotate-name-type", "test-enum-operation",
+            "test-enum-block-cipher-mode", "test-enum-rotate-name-type",
+            "test-enum-digital-signature-algorithm", "test-enum-operation",
             "test-enum-result-reason",
             "test-enum-recommended-curve",
             "test-enum-opaque-data-type",
