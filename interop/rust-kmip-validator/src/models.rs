@@ -4,11 +4,71 @@ use serde_json::Value;
 use sha2::{Digest, Sha256};
 use std::path::Path;
 
-pub(crate) const PIN: &str = "9692057c9ade474fb0c4e0b7130539da368eb794";
+pub(crate) const PIN: &str = "489fafc79ef89db2524eafa7a6c6482f5cf75d97";
 pub(crate) type Result<T> = std::result::Result<T, &'static str>;
 
 pub(crate) fn hash(bytes: &[u8]) -> String {
     format!("{:x}", Sha256::digest(bytes))
+}
+
+/// Fingerprint the stable peer trust and client identity settings for one KMS.
+/// Endpoint ports, protocol versions, encodings, and transports are excluded so
+/// equivalent fixture runs can be combined into one route-evidence matrix.
+pub(crate) fn configuration_fingerprint(connection: &Connection) -> Result<String> {
+    let tls = connection.tls.as_ref().ok_or("TLS identity required")?;
+    let ca_certificate =
+        std::fs::read(&tls.ca_cert_path).map_err(|_| "CA certificate unavailable")?;
+    let client_certificate =
+        std::fs::read(&tls.client_cert_path).map_err(|_| "client certificate unavailable")?;
+    let endpoint_host = endpoint_host(connection)?;
+    let material = serde_json::json!({
+        "server_id": connection.server_id,
+        "endpoint_host": endpoint_host,
+        "server_name_override": tls.server_name_override,
+        "ca_certificate_sha256": hash(&ca_certificate),
+        "client_certificate_sha256": hash(&client_certificate),
+    });
+    let encoded = serde_json::to_vec(&material).map_err(|_| "configuration fingerprint failed")?;
+    Ok(hash(&encoded))
+}
+
+fn endpoint_host(connection: &Connection) -> Result<&str> {
+    match connection.transport.as_str() {
+        "raw_tls" => connection
+            .endpoints
+            .raw_tls
+            .as_ref()
+            .map(|endpoint| endpoint.host.as_str())
+            .ok_or("raw TLS endpoint required"),
+        "https" => {
+            let url = connection
+                .endpoints
+                .https
+                .as_ref()
+                .ok_or("HTTPS endpoint required")?
+                .url
+                .as_str();
+            let authority = url
+                .strip_prefix("https://")
+                .and_then(|remainder| remainder.split('/').next())
+                .ok_or("invalid HTTPS endpoint")?;
+            let host = if let Some(bracketed) = authority.strip_prefix('[') {
+                bracketed
+                    .split_once(']')
+                    .map(|(host, _)| host)
+                    .ok_or("invalid HTTPS endpoint")?
+            } else {
+                authority
+                    .rsplit_once(':')
+                    .map_or(authority, |(host, _)| host)
+            };
+            if host.is_empty() {
+                return Err("invalid HTTPS endpoint");
+            }
+            Ok(host)
+        }
+        _ => Err("unsupported transport"),
+    }
 }
 
 pub(crate) fn load<T: serde::de::DeserializeOwned>(path: &Path) -> Result<T> {
@@ -243,5 +303,45 @@ impl Catalog {
             }
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn fingerprint_endpoint_host_uses_the_selected_transport() {
+        let connection: Connection = serde_json::from_value(serde_json::json!({
+            "server_id": "test-kms",
+            "protocol_version": "2.1",
+            "transport": "https",
+            "encoding": "TTLV",
+            "api_level": "typed-protocol",
+            "endpoints": {
+                "raw_tls": {"host": "127.0.0.1", "port": 5696},
+                "https": {"url": "https://kms.example.test/kmip"}
+            },
+            "tls": {
+                "ca_cert_path": "ca.pem",
+                "client_cert_path": "client.pem",
+                "client_key_path": "client.key",
+                "server_name_override": "kms.example.test"
+            },
+            "environment": {
+                "kind": "dedicated_test",
+                "dedicated_test_environment_confirmed": true
+            },
+            "execution_policy": {
+                "probe_unsupported": false,
+                "allow_mutations": false
+            }
+        }))
+        .expect("fixture connection is valid");
+
+        assert_eq!(
+            endpoint_host(&connection).expect("HTTPS endpoint exists"),
+            "kms.example.test"
+        );
     }
 }

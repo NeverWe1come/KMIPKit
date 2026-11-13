@@ -8,18 +8,25 @@ import io
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tarfile
 ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT / "interop/rust-kmip-validator/tools"))
+from artifact_paths import test_server_binary, test_server_target_dir
+
 LOCAL = ROOT / "interop/.local/rust-test-server"
 SOURCE = LOCAL / "release-source"
 HARNESS = LOCAL / "harness"
-PIN = "9692057c9ade474fb0c4e0b7130539da368eb794"
+PIN = "489fafc79ef89db2524eafa7a6c6482f5cf75d97"
 LOCAL.mkdir(parents=True, exist_ok=True)
-if not SOURCE.exists():
+pin_marker = SOURCE / "library-commit"
+if not pin_marker.is_file() or pin_marker.read_text().strip() != PIN:
+    shutil.rmtree(SOURCE, ignore_errors=True)
     SOURCE.mkdir()
     archive = subprocess.check_output(["git", "-C", str(ROOT), "archive", PIN])
     with tarfile.open(fileobj=io.BytesIO(archive)) as source:
         source.extractall(SOURCE, filter="data")
+    pin_marker.write_text(PIN + "\n")
 (HARNESS / "src").mkdir(parents=True, exist_ok=True)
 shutil.copyfile(ROOT / "interop/rust-kmip-validator/tools/server_harness.rs", HARNESS / "src/main.rs")
 (HARNESS / "Cargo.toml").write_text('''[package]
@@ -34,5 +41,7 @@ tokio = { version = "=1.53.3", features = ["macros", "rt", "sync"] }
 [patch.crates-io]
 aws-lc-sys = { path = "../release-source/vendor/aws-lc-sys-0.45.0" }
 ''')
-subprocess.run(["cargo", "+1.94", "build", "--manifest-path", str(HARNESS / "Cargo.toml")], check=True)
-print(HARNESS / "target/debug/kmipkit-interop-local-server")
+target = test_server_target_dir(ROOT)
+subprocess.run(["cargo", "+1.94", "build", "--manifest-path", str(HARNESS / "Cargo.toml"),
+                "--target-dir", str(target)], check=True)
+print(test_server_binary(ROOT))

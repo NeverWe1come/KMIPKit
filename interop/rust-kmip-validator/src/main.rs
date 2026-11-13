@@ -4,6 +4,10 @@ mod adapters;
 mod driver;
 mod fixtures;
 mod incoming;
+mod local_credentials;
+mod local_models;
+mod local_wire;
+mod matrix;
 mod models;
 mod recipes;
 mod report;
@@ -23,6 +27,22 @@ struct Cli {
 }
 #[derive(Subcommand)]
 enum Command {
+    /// Execute local public model routes from generated coverage JSONL.
+    MatrixLocal {
+        #[arg(long)]
+        matrix: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Execute typed response accessors against a controlled loopback TLS fixture.
+    MatrixNetwork {
+        #[arg(long)]
+        matrix: PathBuf,
+        #[arg(long)]
+        connection: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+    },
     /// Offline catalog planning; profiles never suppress probes.
     Plan {
         #[arg(long)]
@@ -73,8 +93,21 @@ fn emit(value: &Value) -> Result<()> {
     );
     Ok(())
 }
+fn matrix_network(matrix: &Path, connection: &Path, output: &Path) -> Result<bool> {
+    let configuration = read(connection)?;
+    let connection: Connection =
+        serde_json::from_slice(&configuration).map_err(|_| "invalid connection contract")?;
+    matrix::run_network(matrix, &connection, output)
+}
+#[allow(clippy::too_many_lines)] // Keep the exhaustive CLI dispatch in one auditable match.
 fn dispatch(cli: Cli) -> Result<bool> {
     match cli.command {
+        Command::MatrixLocal { matrix, output } => matrix::run(&matrix, &output),
+        Command::MatrixNetwork {
+            matrix,
+            connection,
+            output,
+        } => matrix_network(&matrix, &connection, &output),
         Command::Plan {
             capabilities,
             connection,

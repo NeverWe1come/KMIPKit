@@ -7,12 +7,20 @@ import shlex
 import subprocess
 import sys
 
+from coverage_exclusions import GENERATED_SOURCE_REGEX, generated_source_files
+from artifact_paths import coverage_target_dir
+
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "interop/rust-kmip-validator/Cargo.toml"
-TARGET = ROOT / "interop/rust-kmip-validator/target/coverage-build"
+TARGET = coverage_target_dir(ROOT)
 OUTPUT = ROOT / "interop/rust-kmip-validator/target/coverage.json"
+
 env = os.environ.copy()
 env["CARGO_TARGET_DIR"] = str(TARGET)
+# Keep fixture artifacts on the workspace volume instead of the shared /tmp tmpfs.
+fixture_temp = TARGET / "fixture-tmp"
+fixture_temp.mkdir(parents=True, exist_ok=True)
+env["TMPDIR"] = str(fixture_temp)
 settings = subprocess.check_output(["cargo", "+1.94", "llvm-cov", "show-env", "--manifest-path", str(MANIFEST), "--sh"], env=env, text=True)
 for line in settings.splitlines():
     if line.startswith("export "):
@@ -26,13 +34,29 @@ commands = [
     ["cargo", "+1.94", "build", "--locked", "--manifest-path", str(MANIFEST)],
     ["cargo", "+1.94", "test", "--locked", "--manifest-path", str(MANIFEST), "--all-features"],
     [sys.executable, "-m", "unittest", "discover", "-s", "interop/rust-kmip-validator/tests", "-p", "test_live.py", "-v"],
-    # This exhaustive generated lookup table is verified by all 67 model cases
-    # and regeneration checks; it is excluded from handwritten-code coverage.
-    ["cargo", "+1.94", "llvm-cov", "report", "--manifest-path", str(MANIFEST), "--ignore-filename-regex", r"local_cases_generated\.rs", "--json", "--output-path", str(OUTPUT)],
+    [sys.executable, "-m", "unittest", "discover", "-s", "interop/rust-kmip-validator/tests", "-p", "test_matrix.py", "-v"],
+    # These exhaustive generated dispatch tables is verified against every local
+    # catalog case, actual matrix calls, and regeneration checks; it is excluded from handwritten-code coverage.
+    [
+        "cargo",
+        "+1.94",
+        "llvm-cov",
+        "report",
+        "--manifest-path",
+        str(MANIFEST),
+        "--ignore-filename-regex",
+        GENERATED_SOURCE_REGEX.pattern,
+        "--json",
+        "--output-path",
+        str(OUTPUT),
+    ],
 ]
 for command in commands:
     subprocess.run(command, cwd=ROOT, env=env, check=True)
 data = json.loads(OUTPUT.read_text())
+generated = generated_source_files(file["filename"] for file in data["data"][0]["files"])
+if generated:
+    raise SystemExit("generated route tables remain in handwritten coverage report")
 lines = data["data"][0]["totals"]["lines"]
 print(f"Handwritten consumer line coverage: {lines['percent']:.2f}% ({lines['covered']}/{lines['count']})")
 if lines["percent"] < 90:

@@ -1,7 +1,7 @@
 # Rust interoperability consumer
 
 The independent Rust 1.94 workspace consumes installed `.crate` packages built
-from release commit `9692057c9ade474fb0c4e0b7130539da368eb794`, targeting KMIP
+from release commit `489fafc79ef89db2524eafa7a6c6482f5cf75d97`, targeting KMIP
 2.0 and 2.1. No deployed vendor KMS or vendor compatibility claim is included.
 
 From the repository root:
@@ -9,6 +9,7 @@ From the repository root:
 ```sh
 python3 interop/rust-kmip-validator/tools/install_artifact.py
 python3 interop/rust-kmip-validator/tools/verify_artifact.py
+eval "$(python3 interop/rust-kmip-validator/tools/configure_artifact_env.py)"
 cargo +1.94 build --locked --manifest-path interop/rust-kmip-validator/Cargo.toml
 ```
 
@@ -21,9 +22,9 @@ inventory and every installed byte. Reports embed the consumed artifact hash.
 Python 3.12 or newer is needed for packaging and build-time verification.
 
 ```sh
-interop/rust-kmip-validator/target/debug/rust-kmip-validator plan --capabilities /path/profile.json
-interop/rust-kmip-validator/target/debug/rust-kmip-validator preflight --connection /path/connection.json
-interop/rust-kmip-validator/target/debug/rust-kmip-validator run --connection /path/connection.json --capabilities /path/profile.json --output /path/results.json --markdown /path/results.md
+"$KMIPKIT_VALIDATOR_BIN" plan --capabilities /path/profile.json
+"$KMIPKIT_VALIDATOR_BIN" preflight --connection /path/connection.json
+"$KMIPKIT_VALIDATOR_BIN" run --connection /path/connection.json --capabilities /path/profile.json --output /path/results.json --markdown /path/results.md
 ```
 
 Planning and preflight are offline. Relative TLS file paths resolve from the
@@ -90,16 +91,17 @@ because the stock CLI joins stdin on a current-thread runtime. No release
 source is modified. Controlled fixtures establish consumer behavior and request
 reachability, not vendor or cryptographic certification.
 
-`KMIPKIT_EVIDENCE_DIR` saves a redacted 218-row report. The controlled 2.1
-scenario has 107 passes, 99 observed unsupported rejections and 12 non-run
-rows: five incoming channels omitted in that scenario, six 2.0-only probes and
-the State rejection.
-Separate tests execute all five incoming operations and both version probes.
-CI uploads only redacted results and package provenance.
+`KMIPKIT_EVIDENCE_DIR` saves a redacted report with one row for every selected
+catalog case. The shared catalog currently contains 2,689 cases: 2,507 local
+model checks and 182 server exchanges. Counts come from the selected catalog
+and protocol version so catalog growth cannot silently reduce coverage.
+Separate tests execute all five incoming operations and every KMIP 2.0 version
+boundary probe. CI uploads only redacted results and package provenance.
 
 The full controlled inventory and all five incoming operations are verified in
 both 2.0 and 2.1. The current package pin includes the KMIP 2.0 session-tag
-correction merged in `3017cfda4dbe1ccdf94c827e318e57688f858165`. Login, Logout
+correction and partial Stop/Undo batch-response handling merged in
+`489fafc79ef89db2524eafa7a6c6482f5cf75d97`. Login, Logout
 and Delegated Login run through the controlled peer in 2.0 as well as 2.1;
 older evidence from the pre-fix pin is superseded by the current controlled
 run. Ping, Process, Query Asynchronous Requests and Set Defaults remain
@@ -133,6 +135,79 @@ python3 interop/rust-kmip-validator/tools/check_coverage.py
 ```
 
 The script isolates compilation/profiles, runs the Rust and controlled subprocess
-suites, and fails below 90 percent. Only `local_cases_generated.rs` is excluded:
-it is a generated data-dispatch table verified by regeneration and all 67 local
-model cases. Fresh measured handwritten coverage is 90.41% (1819/2012 lines).
+suites, and fails below 90 percent. The generated `local_cases_generated.rs`
+data table and `route_calls_generated.rs` route-dispatch table are excluded from
+the raw line count. CI checks that both files regenerate without a diff;
+local-model cases and each implemented route record actual invocation evidence.
+Routes that remain pending are reported separately and are not counted as
+passed coverage. Handwritten-code coverage is measured from the current build
+rather than a fixed catalog count.
+
+## KMIPKIT-0092 public route matrix (WIP)
+
+The `matrix-local` command consumes the shared generator's Rust local JSONL
+rows. At build time the consumer hashes every canonical Rust row; a modified
+case, target, symbol, action, protocol version, encoding, transport, artifact
+commit, or execution route is rejected before a call can be recorded. Duplicate
+rows are rejected too. Artifact identity is compiled from the independently
+installed immutable release packages, whose bytes are checked by `build.rs`.
+
+Implemented model recipes invoke the exact public constructor or accessor
+named by the row. They frame TTLV through the public scoped value views, invoke
+the installed public decoder, re-encode, and compare complete values in memory.
+The package has no public generic encoder; consumer framing is not advertised
+as an additional library encoder route. Byte buffers are zeroizing and reports
+contain only redacted normalized-tree hashes, never raw bodies or values.
+Constructor output must also match its target fixture before it can pass.
+A recipe whose prerequisites cannot be constructed emits no invocation event.
+An unfinished recipe is pending coverage and cannot become an API limitation.
+
+The following command generates canonical local rows, runs the installed Rust
+consumer, validates its event schema, and applies the shared completeness gate:
+
+```sh
+interop/.local/rust-ci-venv/bin/python interop/rust-kmip-validator/tools/run_route_matrix.py
+```
+
+It writes `rust-local-route-evidence.json` and `matrix-summary.json` under
+`interop/rust-kmip-validator/results/routes/`. The gate validates local-model
+evidence and controlled response-accessor evidence as separate scopes because
+they use different fixture identities. Its required counts always come from the
+canonical full matrix, even when a test passes a smaller matrix input. Build
+directories are keyed by the verified package commit, so consumer, coverage,
+and local test-server builds cannot silently reuse Cargo artifacts from a
+different source revision. Use the environment command above to select the
+matching consumer and peer binaries. The Request Message and Response Message
+parser routes execute every inventoried field target for KMIP 2.0 and 2.1 using
+complete structurally valid messages. The separate live catalog fixture suite
+compares normalized request and response trees across both API levels, both
+protocol versions, and all six encoding/transport combinations; these
+controlled fixtures do not establish deployed vendor interoperability.
+
+For batch route evidence, the consumer records the count and ordered numeric
+Result Status values returned by KMIPKit alongside the controlled peer's
+observations. This verifies partial Stop responses as well as complete Continue
+responses without recording response bodies or secret values. KMIP 2.0 §11.5,
+Table 396 and KMIP 2.1 §11.5, Table 434 define the Stop outcome behavior used by
+the controlled fixture.
+
+Generated `route_calls_generated.rs` is rebuilt by
+`tools/generate_route_calls.py` from installed typed attribute metadata and the
+shared route manifest. Both generated dispatch tables are excluded from raw
+handwritten-source coverage; canonical route execution and freshness gates
+remain required for their behavior.
+
+Keep temporary fixture stores on the workspace disk when Rust, Java and C
+validators run concurrently. CI sets `TMPDIR` to the ignored Rust fixture
+folder before installing or testing. For local commands use:
+
+```sh
+mkdir -p interop/rust-kmip-validator/target/fixture-tmp
+TMPDIR="$PWD/interop/rust-kmip-validator/target/fixture-tmp" python3 interop/rust-kmip-validator/tools/check_coverage.py
+```
+
+Local target hashes project only the exact, uniquely extractable target TTLV
+subtree. The whole containing model must first pass encode/decode comparison;
+a missing, ambiguous, or changed target fails the cell. This allows a model
+builder and a generic value constructor to compare the same normative value
+without substituting the parent model's hash for the target's hash.

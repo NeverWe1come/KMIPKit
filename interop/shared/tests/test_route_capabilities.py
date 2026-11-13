@@ -411,6 +411,37 @@ class RouteCapabilitiesTests(unittest.TestCase):
             self.assertEqual(6, len(route['combinations']), key)
             self.assertEqual('construct', route['actions'][0], key)
 
+    def test_rust_batch_item_route_inventory_matches_public_methods(self):
+        inventory = self.module.construction_inventory(
+            ROOT, self.data['library_commit'])
+        rust_network_symbols = {
+            symbol for language, symbol, _, _, mode in inventory
+            if language == 'rust' and mode == 'network'
+        }
+        self.assertIn('kmipkit_client::ClientBatchItem::new', rust_network_symbols)
+        self.assertNotIn('kmipkit_client::ClientBatchItem::revoke', rust_network_symbols)
+
+    def test_rust_generic_batch_item_constructor_is_a_network_route(self):
+        route = next(route for route in self.data['routes']
+                     if route['language'] == 'rust'
+                     and route['public_api_symbol'] == 'kmipkit_client::ClientBatchItem::new')
+        catalog = json.loads((SHARED / 'catalog/kmipkit-1.0-test-catalog.json').read_text())
+        client_operation_ids = {
+            target['target_id'] for target in catalog['normative_targets']
+            if target['kind'] == 'operation'
+            and target['target_id'].startswith('KMIPKIT-ELEM-OP-C2S-')
+        }
+        expected_targets = client_operation_ids | {
+            target['target_id'] for target in catalog['normative_targets']
+            if target.get('operation_id') in client_operation_ids
+            and target.get('role') == 'request'
+        }
+        self.assertEqual('network', route['mode'])
+        self.assertEqual([], route['operation_ids'])
+        self.assertEqual(expected_targets, set(route['normative_target_ids']))
+        self.assertEqual(6, len(route['combinations']))
+        self.assertEqual(['construct'], route['actions'])
+
     def test_batch_response_readers_only_claim_response_batch_fields(self):
         # OASIS KMIP 2.0/2.1 §§8.5-8.6 and §§9.5, 9.7 define response Batch Count and Batch Item.
         expected = {

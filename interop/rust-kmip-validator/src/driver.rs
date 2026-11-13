@@ -100,16 +100,16 @@ pub(crate) fn client(connection: &Connection) -> Result<Client> {
     } else {
         kmipkit::ProtocolVersion::V2_1
     };
-    let configuration = ClientConfiguration::new(registry).with_protocol_version(version);
+    let configuration = ClientConfiguration::new(registry)
+        .with_protocol_version(version)
+        .with_wire_encoding(match connection.encoding.as_str() {
+            "JSON" => kmipkit_transport::WireEncoding::Json,
+            "XML" => kmipkit_transport::WireEncoding::Xml,
+            _ => kmipkit_transport::WireEncoding::Ttlv,
+        });
     Client::new(configuration, transport).map_err(|_| "client configuration rejected")
 }
 
-pub(crate) fn authenticated_batch(
-    connection: &Connection,
-    request: ClientRequest,
-) -> Result<ClientBatch> {
-    authenticate(connection, ClientBatch::new(ClientBatchItem::new(request)))
-}
 fn authenticate(connection: &Connection, mut batch: ClientBatch) -> Result<ClientBatch> {
     if let Some(credentials) = connection
         .authentication
@@ -157,6 +157,9 @@ pub(crate) struct Observed {
     pub correlation: Option<kmipkit::protocol::SecretBytes>,
     pub bytes: Option<kmipkit::protocol::SecretBytes>,
     pub ticket: Option<kmipkit::protocol::Ticket>,
+    pub response_tree_sha256: Option<String>,
+    pub batch_response_count: Option<usize>,
+    pub batch_result_status_codes: Vec<u32>,
 }
 
 pub(crate) fn observed(response: &ClientBatchItemResponse) -> Observed {
@@ -221,6 +224,9 @@ pub(crate) fn observed(response: &ClientBatchItemResponse) -> Observed {
         correlation,
         bytes,
         ticket,
+        response_tree_sha256: crate::matrix::response_digest(response).ok(),
+        batch_response_count: None,
+        batch_result_status_codes: Vec::new(),
     }
 }
 
@@ -501,27 +507,35 @@ pub(crate) fn execute(
                     .get_constraints_with_options(&limits, &options)
                     .map(|response| observed(&response));
             }
-            request => return execute_batch(client, connection, request, &options, &limits),
+            request => return execute_batch(client, connection, request, &limits),
         }
     }
-    execute_batch(client, connection, request, &options, &limits)
+    execute_batch(client, connection, request, &limits)
 }
 
 fn execute_batch(
     client: &mut Client,
     connection: &Connection,
     request: ClientRequest,
-    options: &RequestOptions,
     limits: &kmipkit::ttlv::codec::CodecLimits,
 ) -> std::result::Result<Observed, kmipkit::ClientError> {
-    let batch = authenticated_batch(connection, request).map_err(|_| {
+    execute_batch_item(client, connection, ClientBatchItem::new(request), limits)
+}
+
+fn execute_batch_item(
+    client: &mut Client,
+    connection: &Connection,
+    item: ClientBatchItem,
+    limits: &kmipkit::ttlv::codec::CodecLimits,
+) -> std::result::Result<Observed, kmipkit::ClientError> {
+    let batch = authenticate(connection, ClientBatch::new(item)).map_err(|_| {
         kmipkit::ClientError::validation(
             kmipkit::ClientCauseCategory::InvalidInput,
             kmipkit::RequestDeliveryState::NotSent,
             std::io::Error::other("credential unavailable"),
         )
     })?;
-    let response = client.execute_with_options(batch, limits, options)?;
+    let response = client.execute(batch, limits)?;
     response.get(0).map(observed).ok_or_else(|| {
         kmipkit::ClientError::validation(
             kmipkit::ClientCauseCategory::InvalidInput,
@@ -531,12 +545,68 @@ fn execute_batch(
     })
 }
 
-pub(crate) fn options(connection: &Connection) -> RequestOptions {
-    RequestOptions::default().with_wire_encoding(match connection.encoding.as_str() {
-        "JSON" => kmipkit_transport::WireEncoding::Json,
-        "XML" => kmipkit_transport::WireEncoding::Xml,
-        _ => kmipkit_transport::WireEncoding::Ttlv,
-    })
+pub(crate) fn execute_route(
+    client: &mut Client,
+    connection: &Connection,
+    request: ClientRequest,
+    route_symbol: &str,
+) -> std::result::Result<Observed, kmipkit::ClientError> {
+    if route_symbol == "kmipkit_client::ClientBatchItem::new" {
+        return execute_batch_item(
+            client,
+            connection,
+            ClientBatchItem::new(request),
+            &kmipkit::ttlv::codec::CodecLimits::defaults(),
+        );
+    }
+    if route_symbol == "kmipkit_client::ClientBatchItem::register" {
+        let ClientRequest::Register(request) = request else {
+            return Err(kmipkit::ClientError::validation(
+                kmipkit::ClientCauseCategory::InvalidInput,
+                kmipkit::RequestDeliveryState::NotSent,
+                std::io::Error::other("Register route has a different request variant"),
+            ));
+        };
+        let item = ClientBatchItem::register(request).map_err(|_| {
+            kmipkit::ClientError::validation(
+                kmipkit::ClientCauseCategory::InvalidInput,
+                kmipkit::RequestDeliveryState::NotSent,
+                std::io::Error::other("Register batch item rejected"),
+            )
+        })?;
+        return execute_batch_item(
+            client,
+            connection,
+            item,
+            &kmipkit::ttlv::codec::CodecLimits::defaults(),
+        );
+    }
+    execute(client, connection, request)
+}
+
+pub(crate) fn route_failure_code(
+    category: kmipkit::ClientErrorCategory,
+    cause: Option<kmipkit::ClientCauseCategory>,
+) -> &'static str {
+    match (category, cause) {
+        (kmipkit::ClientErrorCategory::Validation, _) => "route_validation_failed",
+        (
+            kmipkit::ClientErrorCategory::Protocol,
+            Some(kmipkit::ClientCauseCategory::Protocol(
+                kmipkit::protocol::ProtocolCauseCategory::InvalidEncoding,
+            )),
+        ) => "route_protocol_invalid_encoding_failed",
+        (
+            kmipkit::ClientErrorCategory::Protocol,
+            Some(kmipkit::ClientCauseCategory::Protocol(
+                kmipkit::protocol::ProtocolCauseCategory::InvalidValue,
+            )),
+        ) => "route_protocol_invalid_value_failed",
+        (kmipkit::ClientErrorCategory::Protocol, _) => "route_protocol_failed",
+        (kmipkit::ClientErrorCategory::Transport, _) => "route_transport_failed",
+        (kmipkit::ClientErrorCategory::ServerResult, _) => "route_server_result_failed",
+        _ => "route_exchange_failed",
+    }
 }
 
 pub(crate) fn batch(
@@ -545,18 +615,58 @@ pub(crate) fn batch(
     requests: Vec<ClientRequest>,
     asynchronous: bool,
 ) -> std::result::Result<Vec<Observed>, kmipkit::ClientError> {
+    let batch_order_option = (requests.len() > 1).then_some(true);
+    batch_route(
+        client,
+        connection,
+        requests,
+        asynchronous,
+        "",
+        None,
+        batch_order_option,
+    )
+}
+
+pub(crate) fn batch_route(
+    client: &mut Client,
+    connection: &Connection,
+    requests: Vec<ClientRequest>,
+    asynchronous: bool,
+    route_symbol: &str,
+    batch_error_continuation_option: Option<u32>,
+    batch_order_option: Option<bool>,
+) -> std::result::Result<Vec<Observed>, kmipkit::ClientError> {
     let count = requests.len();
-    let mut batch =
-        ClientBatch::from_items(requests.into_iter().enumerate().map(|(index, request)| {
-            let item = ClientBatchItem::new(request);
-            if count > 1 {
-                item.with_unique_batch_item_id(index.to_be_bytes().to_vec())
-            } else {
-                item
+    let mut items = Vec::with_capacity(count);
+    for (index, request) in requests.into_iter().enumerate() {
+        let item = if route_symbol == "kmipkit_client::ClientBatchItem::register" {
+            match request {
+                ClientRequest::Register(register) => {
+                    ClientBatchItem::register(register).map_err(|_| {
+                        kmipkit::ClientError::validation(
+                            kmipkit::ClientCauseCategory::InvalidInput,
+                            kmipkit::RequestDeliveryState::NotSent,
+                            std::io::Error::other("Register batch item rejected"),
+                        )
+                    })?
+                }
+                other => ClientBatchItem::new(other),
             }
-        }));
-    if count > 1 {
-        batch = batch.with_batch_order_option(true);
+        } else {
+            ClientBatchItem::new(request)
+        };
+        items.push(if count > 1 {
+            item.with_unique_batch_item_id(index.to_be_bytes().to_vec())
+        } else {
+            item
+        });
+    }
+    let mut batch = ClientBatch::from_items(items);
+    if let Some(value) = batch_order_option {
+        batch = batch.with_batch_order_option(value);
+    }
+    if let Some(value) = batch_error_continuation_option {
+        batch = batch.with_batch_error_continuation_option(value);
     }
     if asynchronous {
         batch = batch.with_asynchronous_indicator(1);
@@ -568,17 +678,13 @@ pub(crate) fn batch(
             std::io::Error::other("credential unavailable"),
         )
     })?;
-    let response = client.execute_with_options(
-        batch,
-        &kmipkit::ttlv::codec::CodecLimits::defaults(),
-        &options(connection),
-    )?;
+    let response = client.execute(batch, &kmipkit::ttlv::codec::CodecLimits::defaults())?;
     Ok(response.iter().map(observed).collect())
 }
 
 pub(crate) fn asynchronous(
     client: &mut Client,
-    connection: &Connection,
+    _connection: &Connection,
     operation: &str,
     correlation: &[u8],
 ) -> std::result::Result<Observed, kmipkit::ClientError> {
@@ -586,24 +692,13 @@ pub(crate) fn asynchronous(
         CancelRequest, PollRequest, ProcessRequest, QueryAsyncRequestsRequest,
     };
     let limits = kmipkit::ttlv::codec::CodecLimits::defaults();
-    let options = options(connection);
     let response = match operation {
-        "Cancel" => {
-            client.execute_cancel_with_options(CancelRequest::new(correlation), &limits, &options)
+        "Cancel" => client.execute_cancel(CancelRequest::new(correlation), &limits),
+        "Process" => client.execute_process(ProcessRequest::new(correlation), None, &limits),
+        "Query Asynchronous Requests" => {
+            client.execute_query_async_requests(QueryAsyncRequestsRequest::new(), None, &limits)
         }
-        "Process" => client.execute_process_with_options(
-            ProcessRequest::new(correlation),
-            None,
-            &limits,
-            &options,
-        ),
-        "Query Asynchronous Requests" => client.execute_query_async_requests_with_options(
-            QueryAsyncRequestsRequest::new(),
-            None,
-            &limits,
-            &options,
-        ),
-        _ => client.execute_poll_with_options(PollRequest::new(correlation), &limits, &options),
+        _ => client.execute_poll(PollRequest::new(correlation), &limits),
     }?;
     Ok(Observed {
         status: response.result().status().raw(),
@@ -614,5 +709,57 @@ pub(crate) fn asynchronous(
         bytes: None,
         ticket: None,
         correlation: None,
+        response_tree_sha256: crate::matrix::operation_outcome_digest(&response).ok(),
+        batch_response_count: None,
+        batch_result_status_codes: Vec::new(),
     })
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn protocol_failure_codes_distinguish_safe_cause_categories() {
+        use kmipkit::ClientErrorCategory;
+
+        assert_eq!(
+            super::route_failure_code(
+                ClientErrorCategory::Protocol,
+                Some(kmipkit::ClientCauseCategory::Protocol(
+                    kmipkit::protocol::ProtocolCauseCategory::InvalidEncoding,
+                )),
+            ),
+            "route_protocol_invalid_encoding_failed"
+        );
+        assert_eq!(
+            super::route_failure_code(
+                ClientErrorCategory::Protocol,
+                Some(kmipkit::ClientCauseCategory::Protocol(
+                    kmipkit::protocol::ProtocolCauseCategory::InvalidValue,
+                )),
+            ),
+            "route_protocol_invalid_value_failed"
+        );
+    }
+
+    #[test]
+    fn route_failure_codes_distinguish_safe_client_error_categories() {
+        use kmipkit::ClientErrorCategory;
+
+        assert_eq!(
+            super::route_failure_code(ClientErrorCategory::Validation, None),
+            "route_validation_failed"
+        );
+        assert_eq!(
+            super::route_failure_code(ClientErrorCategory::Protocol, None),
+            "route_protocol_failed"
+        );
+        assert_eq!(
+            super::route_failure_code(ClientErrorCategory::Transport, None),
+            "route_transport_failed"
+        );
+        assert_eq!(
+            super::route_failure_code(ClientErrorCategory::ServerResult, None),
+            "route_server_result_failed"
+        );
+    }
 }

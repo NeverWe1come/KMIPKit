@@ -3,8 +3,8 @@ use crate::driver::{item, structure};
 use crate::models::Result;
 use kmipkit::protocol::{
     AttributeSet, Certificate, CertificateRequest, KeyBlock, KeyBlockValue, KeyFormatType,
-    KeyMaterial, KeyValue, ObjectType, OpaqueObject, OpaqueObjectContext, PgpKey, RegisterRequest,
-    SecretData, SymmetricKey,
+    KeyMaterial, KeyValue, ObjectType, OpaqueObject, OpaqueObjectContext, PgpKey, PrivateKey,
+    PublicKey, RegisterRequest, SecretData, SplitKey, SplitKeyMethod, SymmetricKey,
 };
 use kmipkit::ttlv::{Item, Value};
 
@@ -70,12 +70,40 @@ pub(crate) fn object(name: &str) -> Result<(ObjectType, Item, AttributeSet)> {
                 .into_item(),
             crate::adapters::attributes("kmipkit-pgp-fixture", 3, 256)?,
         )),
+        "Private Key" => Ok((
+            ObjectType::from_raw(4),
+            PrivateKey::try_new(key_block(false)?)
+                .map_err(|_| "invalid private-key fixture")?
+                .into_item(),
+            crate::adapters::attributes("kmipkit-private-key-fixture", 3, 256)?,
+        )),
+        "Public Key" => Ok((
+            ObjectType::from_raw(3),
+            PublicKey::try_new(key_block(false)?)
+                .map_err(|_| "invalid public-key fixture")?
+                .into_item(),
+            crate::adapters::attributes("kmipkit-public-key-fixture", 3, 256)?,
+        )),
         "Secret Data" => Ok((
             ObjectType::from_raw(7),
             SecretData::try_new(1, key_block(true)?)
                 .map_err(|_| "invalid secret-data fixture")?
                 .into_item(),
             attrs()?,
+        )),
+        "Split Key" => Ok((
+            ObjectType::from_raw(5),
+            SplitKey::try_new(
+                key_block(false)?,
+                1,
+                SplitKeyMethod::from_raw(1),
+                2,
+                2,
+                None,
+            )
+            .map_err(|_| "invalid split-key fixture")?
+            .into_item(),
+            crate::adapters::attributes("kmipkit-split-key-fixture", 3, 256)?,
         )),
         _ => Ok((
             ObjectType::from_raw(2),

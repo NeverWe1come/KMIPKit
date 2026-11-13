@@ -11,6 +11,7 @@ on:
     branches:
       - release/1.0.0
       - feature/KMIPKIT-0084-interop-rust-live
+      - feature/KMIPKIT-0098-interop-rust-route-matrix
     paths:
       - 'interop/rust-kmip-validator/**'
       - 'interop/shared/**'
@@ -41,7 +42,7 @@ jobs:
             exit 0
           fi
           files="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")"
-          if grep -Eq '^(interop/rust-kmip-validator/|specs/084-interop-rust-live/)' <<< "$files"; then
+          if grep -Eq '^(interop/rust-kmip-validator/|interop/shared/|specs/084-interop-rust-live/|specs/092-interop-api-route-exhaustiveness/|.github/workflows/interop-rust.yml$)' <<< "$files"; then
             echo "affected=true" >> "$GITHUB_OUTPUT"
           else
             echo "affected=false" >> "$GITHUB_OUTPUT"
@@ -53,12 +54,17 @@ jobs:
     name: Rust 1.94 installed-package interoperability consumer
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      TMPDIR: ${{ github.workspace }}/interop/rust-kmip-validator/target/fixture-tmp
     steps:
       - name: Checkout repository and pinned release history
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
+
+      - name: Create isolated fixture temporary directory
+        run: mkdir -p "$TMPDIR"
 
       - name: Install Rust 1.94
         run: rustup toolchain install 1.94 --profile minimal --component rustfmt --component clippy --component llvm-tools
@@ -69,13 +75,20 @@ jobs:
       - name: Verify installed bytes and package provenance
         run: python3 interop/rust-kmip-validator/tools/verify_artifact.py
 
+      - name: Select build caches for the installed release commit
+        run: python3 interop/rust-kmip-validator/tools/configure_artifact_env.py --github-env
+
       - name: Check code formatting
         run: cargo +1.94 fmt --manifest-path interop/rust-kmip-validator/Cargo.toml --check
 
       - name: Check generated consumer dispatch
         run: |
           python3 interop/rust-kmip-validator/tools/generate_local_cases.py
-          git diff --exit-code -- interop/rust-kmip-validator/src/local_cases_generated.rs
+          python3 interop/rust-kmip-validator/tools/generate_route_calls.py
+          git diff --exit-code -- interop/rust-kmip-validator/src/local_cases_generated.rs interop/rust-kmip-validator/src/route_calls_generated.rs
+
+      - name: Verify every local catalog case has generated dispatch
+        run: python3 -m unittest discover -s interop/rust-kmip-validator/tests -p test_local_case_generator.py -v
 
       - name: Lint with Clippy
         run: cargo +1.94 clippy --locked --manifest-path interop/rust-kmip-validator/Cargo.toml --all-targets --all-features -- -D warnings
@@ -98,6 +111,9 @@ jobs:
           KMIPKIT_EVIDENCE_DIR: interop/rust-kmip-validator/results
         run: interop/.local/rust-ci-venv/bin/python -m unittest discover -s interop/rust-kmip-validator/tests -p test_live.py -v
 
+      - name: Reject forged routes, duplicates, false positives and incomplete evidence
+        run: interop/.local/rust-ci-venv/bin/python -m unittest discover -s interop/rust-kmip-validator/tests -p test_matrix.py -v
+
       - name: Install pinned Rust coverage tool
         run: cargo +1.94 install cargo-llvm-cov --version 0.9.1 --locked
 
@@ -107,12 +123,16 @@ jobs:
       - name: Confirm package integrity after consumer checks
         run: python3 interop/rust-kmip-validator/tools/verify_artifact.py
 
+      - name: Enforce the canonical public-route matrix completeness gate
+        run: interop/.local/rust-ci-venv/bin/python interop/rust-kmip-validator/tools/run_route_matrix.py
+
       - name: Upload redacted controlled evidence and provenance
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1
         with:
           name: rust-interop-controlled-evidence
           path: |
+            interop/rust-kmip-validator/results/**/*.json
             interop/rust-kmip-validator/results/*.json
             interop/.local/rust-live/provenance.json
             interop/rust-kmip-validator/target/coverage.json
