@@ -7,6 +7,25 @@
 
 typedef void (*kmipkit_start_test_client_fn)(uint16_t, void *);
 
+/* These declarations deliberately precede the public C role-reversal API. */
+typedef struct kmipkit_server_role_reversed_session kmipkit_server_role_reversed_session_t;
+int32_t kmipkit_server_connection_into_role_reversed_session(
+    kmipkit_server_connection_t *connection,
+    kmipkit_server_role_reversed_session_t **out_session);
+int32_t kmipkit_server_role_reversed_session_recv_batch(
+    kmipkit_server_role_reversed_session_t *session,
+    kmipkit_codec_limits_t *limits,
+    uint64_t timeout_seconds,
+    uint32_t timeout_nanoseconds,
+    kmipkit_server_incoming_batch_t **out_batch);
+int32_t kmipkit_server_role_reversed_session_send_response(
+    kmipkit_server_role_reversed_session_t *session,
+    kmipkit_server_response_t *response,
+    uint64_t timeout_seconds,
+    uint32_t timeout_nanoseconds);
+void kmipkit_server_role_reversed_session_release(
+    kmipkit_server_role_reversed_session_t *session);
+
 static void kmipkit_check_test_secret(const uint8_t *bytes, uint64_t length, void *context) {
     uint32_t *valid = (uint32_t *)context;
     static const uint8_t expected[] = { 0x11u, 0x22u, 0x33u, 0x44u };
@@ -342,6 +361,101 @@ cleanup:
     if (no_attributes_request != NULL) kmipkit_server_request_item_release(no_attributes_request);
     if (batch != NULL) kmipkit_server_incoming_batch_release(batch);
     if (limits != NULL) kmipkit_codec_limits_release(limits);
+    if (connection != NULL) kmipkit_server_connection_release(connection);
+    if (listener != NULL) kmipkit_server_listener_release(listener);
+    if (configuration != NULL) kmipkit_server_listener_config_release(configuration);
+    return status;
+}
+
+/* Proves the accepted TLS connection remains usable after endpoint role reversal. */
+int32_t kmipkit_s2c_consumer_receives_after_role_reversal(
+    const uint8_t *leaf, uint64_t leaf_length,
+    const uint8_t *root, uint64_t root_length,
+    const uint8_t *key, uint64_t key_length,
+    kmipkit_start_test_client_fn start_client, void *context) {
+    static const uint8_t host[] = "127.0.0.1";
+    kmipkit_transport_input_v1_t chain[2] = {
+        { 1u, 2u, { leaf, leaf_length } },
+        { 1u, 2u, { root, root_length } },
+    };
+    kmipkit_transport_input_v1_t authority = { 1u, 2u, { root, root_length } };
+    kmipkit_transport_input_v1_t private_key = { 1u, 2u, { key, key_length } };
+    kmipkit_server_listener_config_v1_t config = {
+        sizeof(config), 1u, 1u, 1u, 0u,
+        { host, sizeof(host) - 1u }, 0u, 0u,
+        chain, 2u, private_key, &authority, 1u, NULL, 0u,
+        { NULL, 0u }, 1048576u,
+    };
+    kmipkit_server_listener_config_t *configuration = NULL;
+    kmipkit_server_listener_t *listener = NULL;
+    kmipkit_server_connection_t *connection = NULL;
+    kmipkit_server_role_reversed_session_t *session = NULL;
+    kmipkit_server_incoming_batch_t *batch = NULL;
+    kmipkit_server_request_item_t *request = NULL;
+    kmipkit_server_response_builder_t *builder = NULL;
+    kmipkit_server_response_item_t *response_item = NULL;
+    kmipkit_server_response_t *response = NULL;
+    kmipkit_codec_limits_t *limits = NULL;
+    uint16_t port = 0u;
+    int32_t status = kmipkit_server_listener_config_create_v1(&config, &configuration);
+    if (status != 0) goto cleanup;
+    status = kmipkit_server_listener_bind_raw_tls(configuration, &listener);
+    if (status != 0) goto cleanup;
+    status = kmipkit_server_listener_port(listener, &port);
+    if (status != 0 || port == 0u) { status = 201; goto cleanup; }
+    start_client(port, context);
+    status = kmipkit_server_listener_accept(listener, 5u, 0u, &connection);
+    if (status != 0) goto cleanup;
+    status = kmipkit_codec_limits_create(16777216u, 64u, 100000u, &limits);
+    if (status != 0) goto cleanup;
+    status = kmipkit_server_connection_recv_batch(connection, limits, 5u, 0u, &batch);
+    if (status != 0) goto cleanup;
+    status = kmipkit_server_incoming_batch_item_at(batch, 0u, &request);
+    if (status != 0) goto cleanup;
+    status = kmipkit_server_response_builder_create(batch, &builder);
+    if (status != 0) goto cleanup;
+    status = kmipkit_server_notify_response_create(request, &response_item);
+    if (status != 0) goto cleanup;
+    status = kmipkit_server_response_builder_add_success(builder, request, response_item);
+    if (status != 0) goto cleanup;
+    status = kmipkit_server_response_builder_build(builder, &response);
+    if (status != 0) goto cleanup;
+    status = kmipkit_server_connection_send_response(connection, response, 5u, 0u);
+    if (status != 0) goto cleanup;
+    kmipkit_server_response_item_release(response_item);
+    response_item = NULL;
+    kmipkit_server_response_release(response);
+    response = NULL;
+    kmipkit_server_response_builder_release(builder);
+    builder = NULL;
+    kmipkit_server_request_item_release(request);
+    request = NULL;
+    kmipkit_server_incoming_batch_release(batch);
+    batch = NULL;
+    status = kmipkit_server_connection_into_role_reversed_session(connection, &session);
+    if (status != 0) goto cleanup;
+    status = kmipkit_server_role_reversed_session_recv_batch(session, limits, 5u, 0u, &batch);
+    if (status != 0) goto cleanup;
+    status = kmipkit_server_incoming_batch_item_at(batch, 0u, &request);
+    if (status != 0) goto cleanup;
+    status = kmipkit_server_response_builder_create(batch, &builder);
+    if (status != 0) goto cleanup;
+    status = kmipkit_server_notify_response_create(request, &response_item);
+    if (status != 0) goto cleanup;
+    status = kmipkit_server_response_builder_add_success(builder, request, response_item);
+    if (status != 0) goto cleanup;
+    status = kmipkit_server_response_builder_build(builder, &response);
+    if (status != 0) goto cleanup;
+    status = kmipkit_server_role_reversed_session_send_response(session, response, 5u, 0u);
+
+cleanup:
+    if (limits != NULL) kmipkit_codec_limits_release(limits);
+    if (response != NULL) kmipkit_server_response_release(response);
+    if (response_item != NULL) kmipkit_server_response_item_release(response_item);
+    if (builder != NULL) kmipkit_server_response_builder_release(builder);
+    if (request != NULL) kmipkit_server_request_item_release(request);
+    if (batch != NULL) kmipkit_server_incoming_batch_release(batch);
+    if (session != NULL) kmipkit_server_role_reversed_session_release(session);
     if (connection != NULL) kmipkit_server_connection_release(connection);
     if (listener != NULL) kmipkit_server_listener_release(listener);
     if (configuration != NULL) kmipkit_server_listener_config_release(configuration);
