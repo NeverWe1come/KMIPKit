@@ -125,7 +125,8 @@ class ControlledTlsPeerTest {
     private static final String RESPONSE_BATCH_ITEM_CASE_ID =
             "test-norm-message-field-message-field-8-4-batch-item";
     private static final Set<String> LOCAL_ENUMERATION_SCOPE_CASE_IDS = Set.of(
-            "test-enum-block-cipher-mode", "test-enum-rotate-name-type", "test-enum-recommended-curve",
+            "test-enum-block-cipher-mode", "test-enum-rotate-name-type", "test-enum-result-reason",
+            "test-enum-recommended-curve",
             "test-enum-opaque-data-type",
             "test-enum-processing-stage", "test-enum-ticket-type", "test-enum-mask-generator",
             "test-enum-encoding-option", "test-enum-endpoint-role", "test-enum-key-value-location-type",
@@ -1785,6 +1786,7 @@ class ControlledTlsPeerTest {
             for (JsonNode version : testCase.path("execution").path("protocol_versions")) {
                 caseVersions.add(version.asText());
             }
+            boolean exerciseUnknownResultReasons = "Result Reason".equals(enumType);
 
             for (JsonNode target : targets) {
                 String targetKind = target.path("kind").asText();
@@ -1794,7 +1796,9 @@ class ControlledTlsPeerTest {
                 long value = parseRepresentativeEnumerationValue(
                         wireValue, target.path("allocation").asText());
                 List<String> versions = caseVersions.stream()
-                        .filter(version -> target.path("protocol_versions").isEmpty()
+                        // Three Result Reason codes are new in KMIP 2.1 and are unknown values to KMIP 2.0.
+                        // KMIPKIT's generic Enumeration path must preserve them in both versions.
+                        .filter(version -> exerciseUnknownResultReasons || target.path("protocol_versions").isEmpty()
                                 || containsText(target.path("protocol_versions"), version))
                         .toList();
                 if (!versions.isEmpty()) {
