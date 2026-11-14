@@ -3864,6 +3864,18 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(expected_targets <= {event['target_id'] for event in events})
         self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_get' and
                             event['action'] == 'send' for event in events))
+        expected_response_accessors = {
+            'kmipkit_client_batch_item_response_get',
+            'kmipkit_client_batch_item_response_header_ttlv',
+            'kmipkit_client_batch_item_response_metadata_v1',
+            'kmipkit_client_batch_item_response_pending_correlation_value',
+            'kmipkit_client_batch_item_response_unique_batch_item_id',
+        }
+        for check in checks:
+            symbols = set(check['public_api_trace_symbols'])
+            self.assertTrue(expected_response_accessors <= symbols,
+                            f"single-item Get response accessors are incomplete: {symbols}")
+            self.assertNotIn('kmipkit_client_batch_item_response_raw_ttlv', symbols)
         self.assertTrue(all('kmipkit_client_execute' in check['public_api_trace_symbols']
                             for check in checks))
 
