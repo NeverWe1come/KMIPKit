@@ -300,6 +300,7 @@ def tree_digest(node):
 RECIPES = {
     'test-async-indicator-mandatory-pending': ((1,), 'async_create_pending'),
     'test-async-indicator-omitted-default': ((1,), 'async_create_sync_default'),
+    'test-async-indicator-optional-completes-or-pends': ((1,), 'async_create_optional_complete'),
     'test-op-cancel': ((25,), 'cancel_async'),
     'test-async-cancel-result-canceled': ((25,), 'cancel_async'),
     'test-async-cancel-result-unable-to-cancel': ((25,), 'cancel_async'),
@@ -1066,14 +1067,21 @@ def assert_async_create_seed_request(node, version):
 
 def assert_sync_default_create_request(node, version):
     """Require a Create request whose omitted indicator defaults to Prohibited."""
+    assert_sync_create_request(node, version, None)
+
+
+def assert_sync_create_request(node, version, expected_indicator):
+    """Require a Create request with the selected optional indicator value."""
     batch_items = [item for item in node[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
     header = next(descendants(node, 0x420077), node)
     if len(batch_items) != 1 or numbers(batch_items[0], 0x42005C) != [1]:
         raise ValueError('fixture_sync_create_operation_mismatch')
     if numbers(node, 0x42006A) != [2] or numbers(node, 0x42006B) != [int(version[-1])]:
         raise ValueError('fixture_sync_create_version_mismatch')
-    if numbers(node, 0x42000D) != [1] or numbers(header, 0x420007):
-        raise ValueError('fixture_sync_create_async_indicator_present')
+    indicators = numbers(header, 0x420007)
+    if (numbers(node, 0x42000D) != [1] or
+            indicators != ([] if expected_indicator is None else [expected_indicator])):
+        raise ValueError('fixture_sync_create_async_indicator_mismatch')
     if (numbers(node, 0x420057) != [2] or numbers(node, 0x420028) != [3] or
             numbers(node, 0x42002A) != [128]):
         raise ValueError('fixture_sync_create_key_attributes_mismatch')
@@ -1687,6 +1695,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             assert_sync_default_create_request(request_tree, version)
                                             response_operations = (1,)
                                             response_item_ids = (None,)
+                                        elif recipe[1] == 'async_create_optional_complete' and exchange_index == 0:
+                                            assert_sync_create_request(request_tree, version, 2)
+                                            response_operations = (1,)
+                                            response_item_ids = (None,)
                                         elif recipe[1] in ('cancel_async', 'cancel_poll_race') and exchange_index == 0:
                                             assert_async_create_seed_request(request_tree, version)
                                             response_operations = (1,)
@@ -1814,6 +1826,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         elif recipe[1] == 'interop':
                                             verify_interop_response(response_tree)
                                         elif recipe[1] == 'async_create_sync_default' and exchange_index == 0:
+                                            verify_sync_default_create_response(response_tree)
+                                        elif recipe[1] == 'async_create_optional_complete' and exchange_index == 0:
                                             verify_sync_default_create_response(response_tree)
                                         elif recipe[1] in ('async_create_pending', 'cancel_async',
                                                            'cancel_poll_race') and exchange_index == 0:
@@ -2030,6 +2044,18 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                'peer_async_correlation_absent':
                                                    not byte_string_values(observation[0][1], 0x420006)}
                                               if recipe[1] == 'async_create_sync_default' else {}),
+                                           **({'peer_async_response_statuses': [
+                                                   numbers(item, 0x42007F)[0]
+                                                   for item in observation[0][1][2]
+                                                   if item[0] == BATCH_ITEM_TAG],
+                                               'peer_async_indicator_optional':
+                                                   numbers(next(descendants(observation[0][0], 0x420077),
+                                                                observation[0][0]), 0x420007) == [2],
+                                               'peer_async_correlation_absent':
+                                                   not byte_string_values(observation[0][1], 0x420006),
+                                               'peer_async_no_poll_after_completion':
+                                                   len(observation) == 1}
+                                              if recipe[1] == 'async_create_optional_complete' else {}),
                                            **({'peer_async_interleaving_operations': [
                                                    numbers(request[0], 0x42005C)[0]
                                                    for request in observation],

@@ -1421,8 +1421,8 @@ static kmip_execution_outcome_t execute_mandatory_async_create_route(
     return outcome;
 }
 
-static kmip_execution_outcome_t execute_sync_default_create_route(
-    kmip_live_client_t *client) {
+static kmip_execution_outcome_t execute_sync_create_route(
+    kmip_live_client_t *client, bool has_async_indicator, uint32_t async_indicator) {
     static const uint8_t expected_identifier[] = "fixture-key-1";
     kmipkit_ttlv_structure_t *attributes = NULL;
     kmipkit_client_batch_item_t *create_item = NULL;
@@ -1445,7 +1445,7 @@ static kmip_execution_outcome_t execute_sync_default_create_route(
     uint32_t object_type = 0;
     const char *failed_stage = "Create request setup";
     int32_t status = create_symmetric_key_batch(
-        client, false, 0, &attributes, &create_item, &batch);
+        client, has_async_indicator, async_indicator, &attributes, &create_item, &batch);
     if (status == 0) {
         failed_stage = "request execution";
         status = kmipkit_client_execute(client->client, &batch, client->limits, &response);
@@ -1502,7 +1502,7 @@ static kmip_execution_outcome_t execute_sync_default_create_route(
         (void)kmipkit_last_error_get(&status, &category, &cause, &delivery);
         outcome.library_failed = true;
         snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                 "KMIPKit omitted-indicator Create did not complete synchronously at %s (category=%u cause=%u delivery=%u)",
+                 "KMIPKit synchronous Create did not complete at %s (category=%u cause=%u delivery=%u)",
                  failed_stage, category, cause, delivery);
     }
     if (response_item) kmipkit_client_batch_item_response_release(response_item);
@@ -3448,7 +3448,12 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         return execute_mandatory_async_create_route(client);
     }
     if (strcmp(test_case->case_id, "test-async-indicator-omitted-default") == 0) {
-        return execute_sync_default_create_route(client);
+        return execute_sync_create_route(client, false, 0);
+    }
+    if (strcmp(test_case->case_id,
+               "test-async-indicator-optional-completes-or-pends") == 0) {
+        return execute_sync_create_route(
+            client, true, KMIPKIT_ENUMERATION_ASYNCHRONOUS_INDICATOR_OPTIONAL);
     }
     if (strcmp(test_case->case_id, "test-async-cancel-vs-poll-race") == 0) {
         return execute_cancel_poll_race_route(client);

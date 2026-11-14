@@ -688,6 +688,7 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all(check.get('peer_async_response_statuses') == [0] and
                             check.get('peer_async_indicator_optional') is True and
                             check.get('peer_async_correlation_absent') is True and
+                            check.get('peer_async_no_poll_after_completion') is True and
                             'kmipkit_client_batch_set_asynchronous_indicator' in
                             check['public_api_success_symbols']
                             for check in checks), checks)
