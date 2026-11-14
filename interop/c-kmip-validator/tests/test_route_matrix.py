@@ -3064,6 +3064,33 @@ class RouteMatrixTests(unittest.TestCase):
                 self.assertIn('kmipkit_client_batch_add_error_continuation_value', symbols)
 
 
+    def test_batch_count_mismatch_is_recomputed_before_transport(self):
+        from artifact_support import ROOT
+        from route_peer import RECIPES, execute_network_cells
+        case_id = 'test-batch-count-mismatch-rejected'
+        self.assertEqual(RECIPES[case_id], ((10, 12), 'batch_count_two_read_items'))
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12,
+                         'the corrected batch must pass both versions on all six wire transports')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(any(event['target_id'] == 'KMIPKIT-ELEM-OP-C2S-GET' and
+                            event['action'] == 'send' for event in events))
+        self.assertTrue(any(event['target_id'] == 'KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST' and
+                            event['action'] == 'send' for event in events))
+        for check in checks:
+            self.assertEqual(check['peer_observed_operation_sequence'], ['Get', 'Get Attribute List'])
+            self.assertEqual(check['peer_response_item_count'], 2)
+            self.assertTrue({'kmipkit_client_batch_item_get',
+                             'kmipkit_client_batch_item_get_attribute_list',
+                             'kmipkit_client_execute'} <= set(check['public_api_trace_symbols']))
+
+
     def test_stop_batch_returns_only_the_failed_item_and_stops_processing(self):
         from artifact_support import ROOT
         from route_peer import RECIPES, execute_network_cells
