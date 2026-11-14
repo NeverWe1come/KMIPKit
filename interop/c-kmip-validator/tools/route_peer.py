@@ -345,6 +345,7 @@ RECIPES = {
     'test-norm-payload-client-modify-attribute-request-21-003': ((1, 13, 14, 19, 20), 'modify_attribute'),
     'test-norm-payload-client-modify-attribute-response-21-001': ((1, 13, 14, 19, 20), 'modify_attribute'),
     'test-op-set-attribute': ((1, 49, 19, 20), 'set_attribute'),
+    'test-op-adjust-attribute': ((1, 48, 19, 20), 'adjust_attribute'),
     'test-op-set-constraints': ((55,), 'set_constraints'),
     'test-op-set-defaults': ((54,), 'set_defaults'),
     'test-op-delete-attribute': ((1, 13, 15, 19, 20), 'delete_attribute'),
@@ -607,6 +608,29 @@ def request_modify_attribute_fields(batch_item):
             modify_attribute_value(new[0]))
 
 
+def request_adjust_attribute_fields(batch_item):
+    payloads = [child for child in batch_item[2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+    if len(payloads) != 1:
+        raise ValueError('fixture_adjust_attribute_payload_missing')
+    references = [child for child in payloads[0][2]
+                  if child[0] == 0x42013B and child[1] == 1]
+    vendors = [child for child in references[0][2]
+               if child[0] == 0x42009D and child[1] == 7] if len(references) == 1 else []
+    names = [child for child in references[0][2]
+             if child[0] == 0x42000A and child[1] == 7] if len(references) == 1 else []
+    types = [child for child in payloads[0][2]
+             if child[0] == 0x420158 and child[1] == 5]
+    values = [child for child in payloads[0][2]
+              if child[0] == 0x420162 and child[1] == 2]
+    if len(vendors) != 1 or len(names) != 1 or len(types) != 1 or len(values) > 1:
+        raise ValueError('fixture_adjust_attribute_field_cardinality_mismatch')
+    adjustment_value = (int.from_bytes(values[0][2], 'big', signed=True)
+                        if values else 1)
+    return (vendors[0][2].decode('utf-8'), names[0][2].decode('utf-8'),
+            int.from_bytes(types[0][2], 'big'), adjustment_value)
+
+
 def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
                   constructor_variant=None):
     selected_recipe = recipe or RECIPES[case_id]
@@ -637,6 +661,14 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
                 new[1] != b'KMIPKit modified interoperability comment' or
                 (current_expected and current != ('Comment', b'KMIPKit interoperability comment'))):
             raise ValueError('fixture_modify_attribute_request_fields_mismatch')
+    if selected_recipe[1] == 'adjust_attribute':
+        adjust_item = next((item for item in node[2]
+                            if item[0] == BATCH_ITEM_TAG and item[1] == 1 and
+                            numbers(item, 0x42005C) == [48]), None)
+        if (adjust_item is None or
+                text_values(adjust_item, UNIQUE_IDENTIFIER_TAG) != ['fixture-key-1'] or
+                request_adjust_attribute_fields(adjust_item) != ('KMIPKit', 'Counter', 1, 5)):
+            raise ValueError('fixture_adjust_attribute_request_fields_mismatch')
     if selected_recipe[1] == 'delegated_login':
         payloads = list(descendants(node, REQUEST_PAYLOAD_TAG))
         if (len(payloads) != 1 or payloads[0][1] != 1 or
@@ -1901,6 +1933,7 @@ class PeerState:
         } if existing_object else {}
         self.attributes = {'fixture-key-1': set()} if existing_object else {}
         self.attribute_values = {'fixture-key-1': {}} if existing_object else {}
+        self.adjustable_attribute_values = {'fixture-key-1': {}} if existing_object else {}
         self.usage_allocation_ready = usage_allocation_ready
         self.usage_allocation_totals = {'fixture-key-1': 1000} if usage_allocation_ready else {}
         self.usage_allocation_counts = {'fixture-key-1': 0} if usage_allocation_ready else {}
@@ -1916,6 +1949,10 @@ class PeerState:
             state_value['attribute_values_sha256'] = {
                 key: {f'{tag:06X}': digest for tag, digest in sorted(values.items())}
                 for key, values in self.attribute_values.items() if values
+            }
+        if any(self.adjustable_attribute_values.values()):
+            state_value['adjustable_attribute_values'] = {
+                key: values for key, values in self.adjustable_attribute_values.items() if values
             }
         if self.usage_allocation_counts:
             state_value['usage_allocation_counts'] = self.usage_allocation_counts
@@ -1933,6 +1970,7 @@ class PeerState:
         labels = {9: 'checked', 10: 'object_retrieved', 11: 'attributes_retrieved',
                   12: 'attribute_list_retrieved', 13: 'attribute_added',
                   15: 'attribute_deleted',
+                  48: 'attribute_adjusted',
                   49: 'attribute_set',
                   17: 'usage_allocation_returned',
                   26: 'async_operation_polled',
@@ -1976,6 +2014,7 @@ class PeerState:
                 self.objects[identifier] = 'pre_active'
                 self.attributes[identifier] = set()
                 self.attribute_values[identifier] = {}
+                self.adjustable_attribute_values[identifier] = {}
                 placeholder = identifier
                 effect = 'created'
             elif operation == 8:
@@ -1985,7 +2024,7 @@ class PeerState:
                 identifier = matching_identifiers[0]
                 placeholder = identifier
                 effect = 'located'
-            elif operation in (9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 20, 31, 32, 49, 56):
+            elif operation in (9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 20, 31, 32, 48, 49, 56):
                 state = self.objects.get(identifier)
                 if state is None:
                     status, reason, effect = 1, 55, 'object_not_found'
@@ -2024,6 +2063,7 @@ class PeerState:
                         del self.objects[identifier]
                         self.attributes.pop(identifier, None)
                         self.attribute_values.pop(identifier, None)
+                        self.adjustable_attribute_values.pop(identifier, None)
                         effect = 'destroyed'
                 elif operation in (13, 49):
                     new_attribute = next((child for child in item[2]
@@ -2053,6 +2093,22 @@ class PeerState:
                         raise ValueError('fixture_modify_attribute_name_mismatch')
                     values[attribute_tag] = hashlib.sha256(new[1]).hexdigest()
                     effect = 'attribute_modified'
+                elif operation == 48:
+                    vendor, name, adjustment_type, adjustment_value = \
+                        request_adjust_attribute_fields(item)
+                    values = self.adjustable_attribute_values.setdefault(identifier, {})
+                    key = f'{vendor}:{name}'
+                    previous = values.get(key, 0)
+                    if adjustment_type == 1:
+                        adjusted = previous + adjustment_value
+                    elif adjustment_type == 2:
+                        adjusted = previous - adjustment_value
+                    elif adjustment_type == 3:
+                        adjusted = -previous
+                    else:
+                        raise ValueError('fixture_adjustment_type_unknown')
+                    values[key] = adjusted
+                    effect = 'attribute_adjusted'
                 elif operation == 15:
                     references = numbers(item, 0x42013B)
                     if references != [0x4200FD]:
@@ -2089,6 +2145,7 @@ def verify_lifecycle(operations, response_tree):
     effects, expected_statuses, expected_reasons = [], [], []
     labels = {9: 'checked', 10: 'object_retrieved', 11: 'attributes_retrieved',
               12: 'attribute_list_retrieved', 13: 'attribute_added',
+              48: 'attribute_adjusted',
               17: 'usage_allocation_returned',
               56: 'constraints_retrieved'}
     for operation in operations:
@@ -2274,7 +2331,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                          'test-norm-payload-client-modify-attribute-request-21-003',
                                                          'test-norm-payload-client-modify-attribute-response-21-001',
                                                          'test-op-modify-attribute', 'test-op-set-attribute',
-                                                         'test-op-delete-attribute'}
+                                                         'test-op-delete-attribute', 'test-op-adjust-attribute'}
          or case['case_id'] in attribute_case_ids else ('direct',))]
     cells_by_case = {}
     for cell in all_cells:
@@ -2317,12 +2374,13 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                             raise ValueError('fixture_cancel_result_unavailable')
                         placeholder_chain_recipe = recipe[1] == 'batch_placeholder_chain'
                         attribute_mutation_recipe = recipe[1] in (
-                            'add_attribute', 'modify_attribute', 'set_attribute', 'delete_attribute')
+                            'add_attribute', 'modify_attribute', 'set_attribute', 'delete_attribute',
+                            'adjust_attribute')
                         delete_attribute_recipe = recipe[1] == 'delete_attribute'
                         modify_attribute_recipe = recipe[1] == 'modify_attribute'
                         attribute_mutation_operation = {
                             'add_attribute': 13, 'modify_attribute': 14,
-                            'set_attribute': 49, 'delete_attribute': 15,
+                            'set_attribute': 49, 'delete_attribute': 15, 'adjust_attribute': 48,
                         }.get(recipe[1])
                         seeded_attribute_recipe = delete_attribute_recipe or modify_attribute_recipe
                         mutation_exchange_index = 2 if seeded_attribute_recipe else 1
@@ -3274,6 +3332,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             'kmipkit_process_request_to_ttlv_payload',
                                             'kmipkit_query_async_requests_request_to_ttlv_payload',
                                             'kmipkit_add_attribute_request_to_ttlv_payload',
+                                            'kmipkit_adjust_attribute_request_to_ttlv_payload',
                                             'kmipkit_set_attribute_request_to_ttlv_payload',
                                             'kmipkit_delete_attribute_request_to_ttlv_payload',
                                             'kmipkit_get_attributes_request_to_ttlv_payload',

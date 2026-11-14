@@ -2730,7 +2730,7 @@ class RouteMatrixTests(unittest.TestCase):
                          'direct and standalone Adjust Attribute must run for both versions and six wire paths')
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
         self.assertEqual({check['constructor_variant'] for check in checks}, {'direct', 'standalone'})
-        self.assertTrue(all(check['peer_setup_operations'] == [1, 13] for check in checks))
+        self.assertTrue(all(check['peer_setup_operations'] == [1] for check in checks))
         self.assertTrue(all(check['peer_request_operations'] == [48] for check in checks))
         self.assertTrue(all(check['peer_observed_effects'] == ['attribute_adjusted'] for check in checks))
         self.assertTrue(all(check['peer_cleanup_operations'] == [19, 20] for check in checks))

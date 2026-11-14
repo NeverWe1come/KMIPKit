@@ -3916,7 +3916,8 @@ typedef enum {
     ATTRIBUTE_MUTATION_ADD,
     ATTRIBUTE_MUTATION_MODIFY,
     ATTRIBUTE_MUTATION_SET,
-    ATTRIBUTE_MUTATION_DELETE
+    ATTRIBUTE_MUTATION_DELETE,
+    ATTRIBUTE_MUTATION_ADJUST
 } attribute_mutation_kind_t;
 
 static int32_t create_named_comment_attribute(
@@ -4075,6 +4076,43 @@ static int32_t build_comment_attribute_mutation_item(
     return status;
 }
 
+static int32_t build_adjust_attribute_item(
+    const kmipkit_unique_identifier_v1_t *identifier,
+    kmipkit_client_batch_item_t **out_item) {
+    static const uint8_t vendor_identification[] = "KMIPKit";
+    static const uint8_t attribute_name[] = "Counter";
+    kmipkit_attribute_reference_v1_t reference = {
+        .struct_size = (uint32_t)sizeof(kmipkit_attribute_reference_v1_t),
+        .abi_version = 1,
+        .kind = KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME,
+        .vendor_identification_data = vendor_identification,
+        .vendor_identification_length = sizeof(vendor_identification) - 1,
+        .attribute_name_data = attribute_name,
+        .attribute_name_length = sizeof(attribute_name) - 1
+    };
+    kmipkit_ttlv_value_t *adjustment_value = NULL;
+    kmipkit_adjust_attribute_request_t *request = NULL;
+    kmipkit_ttlv_structure_t *payload = NULL;
+    int32_t status = kmipkit_ttlv_value_integer(5, &adjustment_value);
+    if (status == 0 && standalone_attribute_route_selected()) {
+        status = kmipkit_adjust_attribute_request_create(
+            identifier, &reference, KMIPKIT_ENUMERATION_ADJUSTMENT_TYPE_INCREMENT,
+            adjustment_value, &request);
+        if (status == 0) status = kmipkit_adjust_attribute_request_to_ttlv_payload(
+            request, &payload);
+        if (status == 0) status = kmipkit_client_batch_item_adjust_attribute_from_request(
+            request, out_item);
+    } else if (status == 0) {
+        status = kmipkit_client_batch_item_adjust_attribute(
+            identifier, &reference, KMIPKIT_ENUMERATION_ADJUSTMENT_TYPE_INCREMENT,
+            adjustment_value, out_item);
+    }
+    if (payload) kmipkit_ttlv_structure_release(payload);
+    if (request) kmipkit_adjust_attribute_request_release(request);
+    if (adjustment_value) kmipkit_ttlv_value_release(adjustment_value);
+    return status;
+}
+
 static bool delete_attribute_payload_matches(
     kmipkit_ttlv_structure_t *payload,
     const kmipkit_unique_identifier_v1_t *identifier) {
@@ -4149,6 +4187,7 @@ static const char *attribute_mutation_name(attribute_mutation_kind_t mutation) {
         case ATTRIBUTE_MUTATION_MODIFY: return "Modify Attribute";
         case ATTRIBUTE_MUTATION_SET: return "Set Attribute";
         case ATTRIBUTE_MUTATION_DELETE: return "Delete Attribute";
+        case ATTRIBUTE_MUTATION_ADJUST: return "Adjust Attribute";
     }
     return "attribute mutation";
 }
@@ -4296,8 +4335,9 @@ static kmip_execution_outcome_t execute_attribute_mutation_case(
     }
 
     status = mutation == ATTRIBUTE_MUTATION_DELETE ? build_delete_comment_attribute_item(
-        &created_identifier, &mutation_item) : build_comment_attribute_mutation_item(
-        client, &created_identifier, mutation, &mutation_item);
+        &created_identifier, &mutation_item) : mutation == ATTRIBUTE_MUTATION_ADJUST ?
+        build_adjust_attribute_item(&created_identifier, &mutation_item) :
+        build_comment_attribute_mutation_item(client, &created_identifier, mutation, &mutation_item);
     if (status == 0) status = set_batch_item_id(
         &mutation_item, mutation == ATTRIBUTE_MUTATION_DELETE ?
             "interop-delete-attribute" : "interop-attributes");
@@ -4346,6 +4386,10 @@ static kmip_execution_outcome_t execute_attribute_mutation_case(
                 break;
             case ATTRIBUTE_MUTATION_DELETE:
                 status = kmipkit_client_batch_item_response_delete_attribute(
+                    mutation_item_response, &mutation_present, &mutation_identifier);
+                break;
+            case ATTRIBUTE_MUTATION_ADJUST:
+                status = kmipkit_client_batch_item_response_adjust_attribute(
                     mutation_item_response, &mutation_present, &mutation_identifier);
                 break;
         }
@@ -5021,6 +5065,8 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         return execute_attribute_mutation_case(client, ATTRIBUTE_MUTATION_MODIFY);
     if (strcmp(test_case->case_id, "test-op-set-attribute") == 0)
         return execute_attribute_mutation_case(client, ATTRIBUTE_MUTATION_SET);
+    if (strcmp(test_case->case_id, "test-op-adjust-attribute") == 0)
+        return execute_attribute_mutation_case(client, ATTRIBUTE_MUTATION_ADJUST);
     if (strcmp(test_case->case_id, "test-op-delete-attribute") == 0)
         return execute_attribute_mutation_case(client, ATTRIBUTE_MUTATION_DELETE);
     if (strcmp(test_case->case_id, "test-batch-register-encrypt-decrypt-destroy") == 0)
