@@ -201769,17 +201769,17 @@
             "request_item_count": 2
           },
           "expected": {
-            "construction": "rejected_or_count_recomputed_before_transport"
+            "construction": "typed_batch_derives_count_from_items"
           },
-          "mode": "local_model",
+          "mode": "server_exchange",
           "mutation": "read_only",
           "steps": [
-            "attempt_inconsistent_batch_construction",
-            "inspect_encoded_count_or_validation",
-            "count_transport_calls"
+            "construct_two_typed_request_items_without_a_count_override",
+            "inspect_encoded_batch_count",
+            "execute_against_controlled_peer"
           ],
           "assertions": [
-            "batch_count_matches_actual_items_or_request_is_rejected",
+            "encoded_batch_count_matches_actual_items",
             "transport_never_sends_inconsistent_count"
           ],
           "normative_refs": [
@@ -202009,19 +202009,19 @@
         }
       ],
       "execution": {
-        "mode": "local_model",
+        "mode": "server_exchange",
         "protocol_versions": [
           "2.0",
           "2.1"
         ],
         "steps": [
           "execute_protocol_scenario",
-          "attempt_inconsistent_batch_construction",
-          "inspect_encoded_count_or_validation",
-          "count_transport_calls"
+          "construct_two_typed_request_items_without_a_count_override",
+          "inspect_encoded_batch_count",
+          "execute_against_controlled_peer"
         ],
         "assertions": [
-          "batch_count_matches_actual_items_or_request_is_rejected",
+          "encoded_batch_count_matches_actual_items",
           "transport_never_sends_inconsistent_count"
         ],
         "mutation": "read_only",

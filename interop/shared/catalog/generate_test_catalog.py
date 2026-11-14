@@ -1082,10 +1082,12 @@ def _protocol_scenario_cases(
         sections=batch_base, mode="local_model", mutation="read_only")
     add("test-batch-count-mismatch-rejected", "batch_workflows", ["Get", "Get Attribute List"],
         [batch_count, request_item, get, get_attribute_list], parameters={"declared_batch_count": 1, "request_item_count": 2},
-        expected={"construction": "rejected_or_count_recomputed_before_transport"},
-        steps=["attempt_inconsistent_batch_construction", "inspect_encoded_count_or_validation", "count_transport_calls"],
-        assertions=["batch_count_matches_actual_items_or_request_is_rejected", "transport_never_sends_inconsistent_count"],
-        sections=batch_base, mode="local_model", mutation="read_only")
+        expected={"construction": "typed_batch_derives_count_from_items"},
+        steps=["construct_two_typed_request_items_without_a_count_override",
+               "inspect_encoded_batch_count", "execute_against_controlled_peer"],
+        assertions=["encoded_batch_count_matches_actual_items",
+                    "transport_never_sends_inconsistent_count"],
+        sections=batch_base, mode="server_exchange", mutation="read_only")
     add("test-batch-single-item-options-omitted", "batch_workflows", ["Get"],
         [batch_count, continuation, order_option, request_item, get],
         parameters={"batch_count": 1, "batch_error_continuation_option": "omitted", "batch_order_option": "omitted"},

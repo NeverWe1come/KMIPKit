@@ -747,8 +747,11 @@ class NormativeInventoryTests(unittest.TestCase):
             if case["category"] == "batch_workflows":
                 self.assertEqual(["2.0", "2.1"], case["execution"]["protocol_versions"], case_id)
                 self.assertTrue({"9.5", "9.7"} & {ref["section"] for ref in case["normative_refs"]}, case_id)
-                if case_id in {"test-batch-count-zero-rejected", "test-batch-count-mismatch-rejected"}:
+                if case_id == "test-batch-count-zero-rejected":
                     self.assertEqual("local_model", case["execution"]["mode"], case_id)
+                elif case_id == "test-batch-count-mismatch-rejected":
+                    self.assertEqual("server_exchange", case["execution"]["mode"], case_id)
+                    self.assertEqual("read_only", case["execution"]["mutation"], case_id)
             elif case_id == "test-async-query-outstanding-filter":
                 self.assertEqual(["2.1"], case["execution"]["protocol_versions"], case_id)
         cancellation_cases = {

@@ -474,6 +474,7 @@ def main() -> int:
     expected_operations += (26,)
     expected_cases += ("test-async-unknown-correlation-rejected",)
     expected_operations += (10, 12, 10, 12, 10, 12, 10, 12)
+    expected_operations += (10, 12)
     expected_operations += registered_key_batch
     if protocol_version == "2.0":
         expected_operations += (45, 45, 46)
@@ -527,6 +528,7 @@ def main() -> int:
     expected_cases += ("test-batch-placeholder-chain-resolves",)
     expected_cases += (
         "test-batch-count-matches-items",
+        "test-batch-count-mismatch-rejected",
         "test-batch-unique-item-id-response-correlation",
         "test-batch-order-false-correlates-response-items",
         "test-batch-continue-after-failure",
