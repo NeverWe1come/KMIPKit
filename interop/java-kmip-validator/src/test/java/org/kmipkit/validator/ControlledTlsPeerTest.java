@@ -177,6 +177,12 @@ class ControlledTlsPeerTest {
                     "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES",
                     0x420125, 0x420057, TtlvItemType.Enumeration, "", 2));
 
+    private static final ScalarOperationStructureFixture SIGNATURE_DATA_FIXTURE =
+            new ScalarOperationStructureFixture(
+                    "test-norm-operation-structure-operation-structure-7-38-signature-data",
+                    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-38-SIGNATURE-DATA",
+                    0x4200c3, TtlvItemType.ByteString, false);
+
     private static final List<ScalarOperationStructureFixture> SCALAR_OPERATION_STRUCTURE_FIXTURES = List.of(
             new ScalarOperationStructureFixture(
                     "test-norm-operation-structure-operation-structure-7-10-data-length",
@@ -209,13 +215,8 @@ class ControlledTlsPeerTest {
             new ScalarOperationStructureFixture(
                     "test-norm-operation-structure-operation-structure-7-8-correlation-value",
                     "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-8-CORRELATION-VALUE",
-                    0x4200d6, TtlvItemType.ByteString, false));
-
-    private static final ScalarOperationStructureFixture SIGNATURE_DATA_FIXTURE =
-            new ScalarOperationStructureFixture(
-                    "test-norm-operation-structure-operation-structure-7-38-signature-data",
-                    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-38-SIGNATURE-DATA",
-                    0x4200c3, TtlvItemType.ByteString, false);
+                    0x4200d6, TtlvItemType.ByteString, false),
+            SIGNATURE_DATA_FIXTURE);
 
     private static final List<StructureMemberStructureFixture> STRUCTURE_MEMBER_STRUCTURE_FIXTURES = List.of(
             new StructureMemberStructureFixture(
