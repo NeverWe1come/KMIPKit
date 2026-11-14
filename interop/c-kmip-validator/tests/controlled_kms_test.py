@@ -42,6 +42,41 @@ def enumeration(tag: int, value: int) -> bytes:
     return tlv(tag, 5, struct.pack(">I", value))
 
 
+def top_level_batch_operations(message: bytes) -> tuple[int, ...]:
+    """Read only the Operation fields directly under each top-level Batch Item."""
+    if len(message) < 8 or message[3] != 1:
+        raise AssertionError("request is not a TTLV Structure")
+    message_length = int.from_bytes(message[4:8], "big")
+    if 8 + message_length > len(message):
+        raise AssertionError("request TTLV Structure is truncated")
+
+    def children(value: bytes):
+        offset = 0
+        while offset + 8 <= len(value):
+            item_tag = int.from_bytes(value[offset:offset + 3], "big")
+            item_type = value[offset + 3]
+            item_length = int.from_bytes(value[offset + 4:offset + 8], "big")
+            end = offset + 8 + item_length
+            padded_end = offset + 8 + ((item_length + 7) // 8) * 8
+            if end > len(value) or padded_end > len(value):
+                raise AssertionError("request contains a truncated TTLV item")
+            yield item_tag, item_type, value[offset + 8:end]
+            offset = padded_end
+        if offset != len(value):
+            raise AssertionError("request contains trailing TTLV bytes")
+
+    operations = []
+    for item_tag, item_type, item_value in children(message[8:8 + message_length]):
+        if item_tag != 0x42000F or item_type != 1:
+            continue
+        for field_tag, field_type, field_value in children(item_value):
+            if field_tag == 0x42005C and field_type == 5:
+                if len(field_value) != 4:
+                    raise AssertionError("Batch Item Operation is not a 32-bit Enumeration")
+                operations.append(int.from_bytes(field_value, "big"))
+    return tuple(operations)
+
+
 def response(operations: tuple[int, ...], protocol_minor: int,
              selected_attribute_tag: int = 0,
              created_object_type: int = 2,
@@ -244,25 +279,53 @@ def query_async_requests_response(protocol_minor: int, correlation: bytes) -> by
     return tlv(0x42007B, 1, header + item)
 
 
-def completed_poll_create_response(protocol_minor: int) -> bytes:
+def completed_poll_create_response(protocol_minor: int,
+                                   identifier: bytes = b"fixture-key-1") -> bytes:
     version = tlv(0x420069, 1,
                   integer(0x42006A, 2) + integer(0x42006B, protocol_minor))
     header = tlv(0x42007A, 1, version + tlv(0x420092, 9, struct.pack(">q", int(time.time())))
                  + integer(0x42000D, 1))
     payload = tlv(0x42007C, 1,
-                  enumeration(0x420057, 2) + tlv(0x420094, 7, b"fixture-key-1"))
+                  enumeration(0x420057, 2) + tlv(0x420094, 7, identifier))
     item = tlv(0x42000F, 1, enumeration(0x42005C, 26) + enumeration(0x42007F, 0) + payload)
     return tlv(0x42007B, 1, header + item)
 
 
-def failed_poll_create_response(protocol_minor: int) -> bytes:
+def failed_poll_create_response(protocol_minor: int,
+                                message: bytes = b"controlled Create failure") -> bytes:
     version = tlv(0x420069, 1,
                   integer(0x42006A, 2) + integer(0x42006B, protocol_minor))
     header = tlv(0x42007A, 1, version + tlv(0x420092, 9, struct.pack(">q", int(time.time())))
                  + integer(0x42000D, 1))
     item = tlv(0x42000F, 1,
                enumeration(0x42005C, 26) + enumeration(0x42007F, 1) +
-               enumeration(0x42007E, 256) + tlv(0x42007D, 7, b"controlled Create failure"))
+               enumeration(0x42007E, 256) + tlv(0x42007D, 7, message))
+    return tlv(0x42007B, 1, header + item)
+
+
+def pending_operation_response(protocol_minor: int, operation: int, correlation: bytes) -> bytes:
+    """Build a Pending Get or Create response with its exact correlation bytes."""
+    version = tlv(0x420069, 1,
+                  integer(0x42006A, 2) + integer(0x42006B, protocol_minor))
+    header = tlv(0x42007A, 1, version + tlv(0x420092, 9, struct.pack(">q", int(time.time())))
+                 + integer(0x42000D, 1))
+    item = tlv(0x42000F, 1, enumeration(0x42005C, operation) + enumeration(0x42007F, 2)
+               + tlv(0x420006, 8, correlation) + tlv(0x42007C, 1, b""))
+    return tlv(0x42007B, 1, header + item)
+
+
+def async_query_outstanding_response(protocol_minor: int, correlation: bytes) -> bytes:
+    """Build one KMIP 2.1 Asynchronous Request selected by the filters."""
+    version = tlv(0x420069, 1,
+                  integer(0x42006A, 2) + integer(0x42006B, protocol_minor))
+    header = tlv(0x42007A, 1, version + tlv(0x420092, 9, struct.pack(">q", int(time.time())))
+                 + integer(0x42000D, 1))
+    request = tlv(0x420173, 1, tlv(0x420006, 8, correlation)
+                  + enumeration(0x42005C, 1)
+                  + tlv(0x420174, 11, struct.pack(">q", int(time.time() * 1_000_000)))
+                  + enumeration(0x420175, 2))
+    payload = tlv(0x42007C, 1, request)
+    item = tlv(0x42000F, 1, enumeration(0x42005C, 57) + enumeration(0x42007F, 0) + payload)
     return tlv(0x42007B, 1, header + item)
 
 
@@ -411,6 +474,8 @@ def main() -> int:
         expected_cases += (ASYNC_CANCEL_POLL_RACE_CASE,)
         expected_operations += (1, 58, 26, 20)
         expected_cases += ("test-async-process-then-poll-state",)
+        expected_operations += (1, 1, 10, 26, 57, 26, 26, 20, 20)
+        expected_cases += ("test-async-query-outstanding-filter",)
     expected_cases += ("test-op-hash", "test-op-rng-retrieve", "test-op-rng-seed")
     expected_cases += (
         "test-crypto-hash-sha_256-0",
@@ -498,6 +563,13 @@ def main() -> int:
             async_poll_mode = "none"
             async_repeated_pending_seen = False
             async_process_completed = False
+            async_process_route_finished = False
+            async_query_route_stage = 0
+            async_query_correlations = (
+                b"fixture-query-create-completed",
+                b"fixture-query-create-pending",
+                b"fixture-query-get-pending",
+            )
             try:
                 while handled < len(expected_operations):
                     accepted, _ = server.accept()
@@ -507,17 +579,9 @@ def main() -> int:
                             request = read_message(stream)
                             if request is None:
                                 break
-                            operation_marker = bytes.fromhex("42005c0500000004")
-                            offsets = []
-                            offset = request.find(operation_marker)
-                            while offset >= 0:
-                                offsets.append(offset)
-                                offset = request.find(operation_marker, offset + len(operation_marker) + 4)
-                            if not offsets:
+                            operations = top_level_batch_operations(request)
+                            if not operations:
                                 raise AssertionError("request has no KMIP Operation field")
-                            operations = tuple(int.from_bytes(
-                                request[offset + len(operation_marker):offset + len(operation_marker) + 4], "big"
-                            ) for offset in offsets)
                             if operations == (1, 9, 20):
                                 raise AssertionError("Check fixture must revoke the created key before destroying it")
                             if any(operation not in expected_operations for operation in operations):
@@ -704,7 +768,73 @@ def main() -> int:
                                     tlv(0x420099, 7, b"interop-user") not in request or
                                     tlv(0x4200A1, 7, b"interop-password") not in request):
                                 raise AssertionError("request is missing configured KMIP credentials")
-                            if operations == (1,) and enumeration(0x420007, 1) in request:
+                            if (async_query_route_stage == 0 and async_process_route_finished and
+                                    operations == (1,) and enumeration(0x420007, 1) in request):
+                                async_query_route_stage = 1
+                                stream.sendall(pending_operation_response(
+                                    protocol_minor, 1, async_query_correlations[0]))
+                            elif async_query_route_stage == 1:
+                                if operations != (1,) or enumeration(0x420007, 1) not in request:
+                                    raise AssertionError("Query filter recipe expected its second pending Create")
+                                async_query_route_stage = 2
+                                stream.sendall(pending_operation_response(
+                                    protocol_minor, 1, async_query_correlations[1]))
+                            elif async_query_route_stage == 2:
+                                if (operations != (10,) or enumeration(0x420007, 1) not in request or
+                                        tlv(0x420094, 7, b"fixture-key-1") not in request):
+                                    raise AssertionError("Query filter recipe expected its pending Get seed")
+                                async_query_route_stage = 3
+                                stream.sendall(pending_operation_response(
+                                    protocol_minor, 10, async_query_correlations[2]))
+                            elif async_query_route_stage == 3:
+                                if (operations != (26,) or tlv(0x420006, 8,
+                                        async_query_correlations[0]) not in request):
+                                    raise AssertionError("Query filter recipe Poll did not target completed Create")
+                                async_query_route_stage = 4
+                                stream.sendall(completed_poll_create_response(
+                                    protocol_minor, b"fixture-key-2"))
+                            elif async_query_route_stage == 4:
+                                required_filters = tlv(
+                                    0x420176, 1,
+                                    b"".join(tlv(0x420006, 8, value)
+                                             for value in async_query_correlations))
+                                operation_filter = tlv(
+                                    0x42014F, 1, enumeration(0x42005C, 1))
+                                if (operations != (57,) or required_filters not in request or
+                                        operation_filter not in request):
+                                    raise AssertionError("Query filter recipe omitted either exact filter")
+                                async_query_route_stage = 5
+                                stream.sendall(async_query_outstanding_response(
+                                    protocol_minor, async_query_correlations[1]))
+                            elif async_query_route_stage == 5:
+                                if (operations != (26,) or tlv(0x420006, 8,
+                                        async_query_correlations[1]) not in request):
+                                    raise AssertionError("Query filter recipe Poll did not target outstanding Create")
+                                async_query_route_stage = 6
+                                stream.sendall(completed_poll_create_response(
+                                    protocol_minor, b"fixture-key-3"))
+                            elif async_query_route_stage == 6:
+                                if (operations != (26,) or tlv(0x420006, 8,
+                                        async_query_correlations[2]) not in request):
+                                    raise AssertionError("Query filter recipe Poll did not target Get")
+                                async_query_route_stage = 7
+                                stream.sendall(failed_poll_create_response(
+                                    protocol_minor, b"controlled Get failure"))
+                            elif async_query_route_stage in (7, 8):
+                                identifier = b"fixture-key-2" if async_query_route_stage == 7 else b"fixture-key-3"
+                                if operations != (20,) or tlv(0x420094, 7, identifier) not in request:
+                                    raise AssertionError("Query filter recipe Destroy missed its Create result")
+                                response_item_ids = (None,)
+                                async_query_route_stage += 1
+                                destroy_response = response(
+                                    (20,), protocol_minor,
+                                    unique_batch_item_ids=response_item_ids).replace(
+                                        tlv(0x420094, 7, b"fixture-key-1"),
+                                        tlv(0x420094, 7, identifier), 1)
+                                stream.sendall(destroy_response)
+                                if async_query_route_stage == 9:
+                                    async_query_route_stage = 0
+                            elif operations == (1,) and enumeration(0x420007, 1) in request:
                                 cancel_correlation = b"fixture-cancel-correlation"
                                 async_request_pending = True
                                 async_pending_poll_count = 0
@@ -763,6 +893,7 @@ def main() -> int:
                                     response_item_ids = (None,)
                                 elif operations == (20,) and async_process_completed:
                                     response_item_ids = (None,)
+                                    async_process_route_finished = True
                                     async_process_completed = False
                                 cancellation_result = 1
                                 if operations == (25,) and async_request_pending:
