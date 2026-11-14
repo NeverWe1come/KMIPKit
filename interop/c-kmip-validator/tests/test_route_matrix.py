@@ -3560,6 +3560,50 @@ class RouteMatrixTests(unittest.TestCase):
                 self.assertIn('kmipkit_client_batch_add_error_continuation_value', symbols)
 
 
+    def test_batch_order_placeholder_variants_execute_two_item_create_activate(self):
+        """OASIS KMIP 2.0/2.1 §§8.2–8.6 and 9.5–9.8 define ordered placeholder batches."""
+        from artifact_support import ROOT
+        from route_peer import RECIPES, execute_network_cells
+
+        case_ids = {
+            'test-batch-order-required-placeholder-resolution',
+            'test-batch-order-omitted-defaults-true',
+        }
+        self.assertEqual(
+            RECIPES['test-batch-order-required-placeholder-resolution'],
+            ((1, 18), 'batch_order_required_create_activate'))
+        self.assertEqual(
+            RECIPES['test-batch-order-omitted-defaults-true'],
+            ((1, 18), 'batch_order_omitted_create_activate'))
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] in case_ids]}
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 24,
+                         'both order-option variants must run over two versions and six wire transports')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        for check in checks:
+            self.assertEqual(check['peer_response_operation_values'], [1, 18])
+            self.assertEqual(check['peer_response_result_statuses'], [0, 0])
+            self.assertTrue({'kmipkit_client_execute', 'kmipkit_client_batch_item_create',
+                             'kmipkit_client_batch_item_activate'} <=
+                            set(check['public_api_trace_symbols']))
+            if check['case_id'] == 'test-batch-order-required-placeholder-resolution':
+                self.assertIn('kmipkit_client_batch_set_order_option', check['public_api_trace_symbols'])
+            else:
+                self.assertNotIn('kmipkit_client_batch_set_order_option', check['public_api_trace_symbols'])
+        self.assertTrue(any(event['case_id'] == 'test-batch-order-required-placeholder-resolution'
+                            and event['action'] == 'send'
+                            and event['peer_observed_operation_sequence'] == ['Create', 'Activate']
+                            for event in events))
+        self.assertTrue(any(event['case_id'] == 'test-batch-order-omitted-defaults-true'
+                            and event['action'] == 'send'
+                            and event['peer_observed_operation_sequence'] == ['Create', 'Activate']
+                            for event in events))
+
     def test_stop_batch_returns_only_the_failed_item_and_stops_processing(self):
         from artifact_support import ROOT
         from route_peer import RECIPES, execute_network_cells
