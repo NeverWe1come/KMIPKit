@@ -387,3 +387,27 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   '^c_validator_route_matrix_contracts$' --output-on-failure` passed all route
   matrix contract tests in 72.58 seconds. The full installed C route matrix
   and exact-head CI remain open; T006, T007, and T009 are not complete.
+
+## Development evidence: C Adjust Attribute routes
+
+- Normative scope: OASIS KMIP 2.0 §6.1.3 Tables 155–156 and KMIP 2.1 §6.1.3
+  Tables 170–171 define the request and response. Sections 8.2–8.6 and 9.5–9.7
+  govern the client batch exchange and decoded result. Increment by five on an
+  absent integer attribute exercises §6.1.3's zero starting value.
+- Red commit `c994fa3b`: the focused installed-consumer test failed because the
+  C route registry produced zero checks instead of the required 24 direct and
+  standalone route checks.
+- Green commit `26d5f047`: build both `kmipkit_client_batch_item_adjust_attribute`
+  and `kmipkit_client_batch_item_adjust_attribute_from_request` requests, encode
+  the standalone payload, decode the typed response, and model the controlled
+  peer's numeric adjustment and cleanup.
+- Refactor/documentation commit: record the normative scope, local evidence,
+  and remaining full-matrix gate here and in FR-003 traceability; extend the
+  general TLS fixture to validate Adjust Attribute and its request fields.
+- Verification: the focused test passed all 24 checks across KMIP 2.0/2.1,
+  TTLV/JSON/XML, and raw TLS/HTTPS, with matching direct and standalone request
+  trees and successful response decoding. `cmake --build
+  interop/c-kmip-validator/build --parallel 2` passed. Full CTest passed 7/7
+  tests in 77.18 seconds, including the route matrix contracts and the
+  KMIP 2.0/2.1 controlled TLS peers. Feature traceability passed 31/31 tests.
+  Exact-head CI and the full C route matrix remain open.

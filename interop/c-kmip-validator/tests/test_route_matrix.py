@@ -2713,7 +2713,7 @@ class RouteMatrixTests(unittest.TestCase):
                     self.assertEqual(direct[0]['request_tree_sha256'], standalone[0]['request_tree_sha256'])
 
     def test_adjust_attribute_operation_runs_from_the_installed_c_consumer(self):
-        """OASIS KMIP 2.0/2.1 §6.1.3 and §§8.2–8.6 define this request and batch exchange."""
+        """OASIS KMIP 2.0/2.1 §6.1.3, §§8.2–8.6, and §§9.5–9.7 define this request and result."""
         from artifact_support import ROOT
         from route_peer import execute_network_cells
 
