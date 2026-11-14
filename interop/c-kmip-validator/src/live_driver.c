@@ -1278,16 +1278,86 @@ static kmip_execution_outcome_t outcome_failed(const char *reason) {
 }
 
 static kmip_execution_outcome_t execute_cancel_route(kmip_live_client_t *client) {
-    static const uint8_t correlation[] = "fixture-cancel-correlation";
+    static const uint8_t expected_correlation[] = "fixture-cancel-correlation";
+    kmipkit_ttlv_structure_t *attributes = NULL;
+    kmipkit_client_batch_item_t *create_item = NULL;
+    kmipkit_client_batch_t *seed_batch = NULL;
+    kmipkit_client_batch_response_t *seed_response = NULL;
+    kmipkit_client_batch_item_response_t *seed_response_item = NULL;
     kmipkit_client_async_operation_outcome_t *async_outcome = NULL;
     kmipkit_client_async_operation_response_v1_t cancel_response = {
         .struct_size = (uint32_t)sizeof(kmipkit_client_async_operation_response_v1_t),
         .abi_version = 1
     };
+    kmipkit_client_batch_item_metadata_v2_t seed_metadata = {
+        .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t),
+        .abi_version = 2
+    };
+    kmipkit_unique_identifier_v1_t seed_identifier = {
+        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+        .abi_version = 1
+    };
+    kmipkit_byte_span_v1_t correlation = {0};
+    uint64_t seed_response_count = 0;
+    uint8_t seed_create_present = 1;
+    uint8_t correlation_present = 0;
+    uint32_t seed_object_type = UINT32_MAX;
     uint8_t response_present = 0;
+    uint32_t expected_cancel_result = 1;
     kmip_execution_outcome_t outcome = { .executed = true };
-    int32_t status = kmipkit_client_execute_cancel(
-        client->client, correlation, sizeof(correlation) - 1, client->limits, &async_outcome);
+    int32_t status = 0;
+    const char *cancel_result_text = getenv("KMIPKIT_C_CANCEL_RESULT");
+    if (cancel_result_text && cancel_result_text[0] != '\0') {
+        char *end = NULL;
+        unsigned long parsed = strtoul(cancel_result_text, &end, 10);
+        if (end == cancel_result_text || *end != '\0' || parsed < 1 || parsed > 5) {
+            status = KMIPKIT_ERROR_INVALID_INPUT;
+        } else {
+            expected_cancel_result = (uint32_t)parsed;
+        }
+    }
+    if (status == 0) status = create_symmetric_key_attributes(client, &attributes) ? 0 : -1;
+    if (status == 0) status = kmipkit_client_batch_item_create(
+        KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY, attributes, NULL, &create_item);
+    if (status == 0) status = kmipkit_client_batch_create(&seed_batch);
+    if (status == 0) status = kmipkit_client_batch_set_asynchronous_indicator(seed_batch, 1);
+    if (status == 0 && client->username_env[0] != '\0') {
+        kmipkit_authentication_t *authentication = NULL;
+        if (!create_authentication(client, &authentication)) {
+            status = KMIPKIT_ERROR_INVALID_INPUT;
+        } else {
+            status = kmipkit_client_batch_set_authentication(seed_batch, authentication);
+            if (status != 0) kmipkit_authentication_release(authentication);
+        }
+    }
+    if (status == 0) status = kmipkit_client_batch_add_item(seed_batch, &create_item);
+    if (status == 0) status = kmipkit_client_execute(
+        client->client, &seed_batch, client->limits, &seed_response);
+    if (status == 0) status = kmipkit_client_batch_response_item_count(
+        seed_response, &seed_response_count);
+    if (status == 0 && seed_response_count == 1) {
+        status = kmipkit_client_batch_response_item_at(seed_response, 0, &seed_response_item);
+    } else if (status == 0) {
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
+        seed_response_item, &seed_metadata);
+    if (status == 0) status = kmipkit_client_batch_item_response_create(
+        seed_response_item, &seed_create_present, &seed_object_type, &seed_identifier);
+    if (status == 0) status = kmipkit_client_batch_item_response_pending_correlation_value(
+        seed_response_item, &correlation_present, &correlation);
+    if (status == 0 && (seed_metadata.operation != KMIPKIT_ENUMERATION_OPERATION_CREATE ||
+                        seed_metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_OPERATION_PENDING ||
+                        seed_create_present != 0 || seed_object_type != 0 ||
+                        seed_identifier.kind != 0 || correlation_present != 1 ||
+                        correlation.data == NULL ||
+                        correlation.length != sizeof(expected_correlation) - 1 ||
+                        memcmp(correlation.data, expected_correlation,
+                               sizeof(expected_correlation) - 1) != 0)) {
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    if (status == 0) status = kmipkit_client_execute_cancel(
+        client->client, correlation.data, correlation.length, client->limits, &async_outcome);
     if (status == 0) {
         status = kmipkit_client_async_operation_outcome_cancel_response_v1(
             async_outcome, &response_present, &cancel_response);
@@ -1298,12 +1368,12 @@ static kmip_execution_outcome_t execute_cancel_route(kmip_live_client_t *client)
             cancel_response.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS &&
             cancel_response.is_pending == 0 &&
             cancel_response.has_cancellation_result == 1 &&
-            cancel_response.cancellation_result == 1 &&
+            cancel_response.cancellation_result == expected_cancel_result &&
             cancel_response.has_asynchronous_correlation_value == 1 &&
             cancel_response.asynchronous_correlation_value.data != NULL &&
-            cancel_response.asynchronous_correlation_value.length == sizeof(correlation) - 1 &&
-            memcmp(cancel_response.asynchronous_correlation_value.data, correlation,
-                   sizeof(correlation) - 1) == 0;
+            cancel_response.asynchronous_correlation_value.length == correlation.length &&
+            memcmp(cancel_response.asynchronous_correlation_value.data, correlation.data,
+                   (size_t)correlation.length) == 0;
         outcome.success = valid;
         outcome.library_validated = valid;
         outcome.library_failed = !valid;
@@ -1317,13 +1387,18 @@ static kmip_execution_outcome_t execute_cancel_route(kmip_live_client_t *client)
         uint32_t category = 0;
         uint32_t cause = 0;
         uint32_t delivery = 0;
+        const char *failure = "KMIPKit asynchronous seed or Cancel response was invalid";
         (void)kmipkit_last_error_get(&status, &category, &cause, &delivery);
         outcome.library_failed = true;
         snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                 "KMIPKit Cancel exchange failed (category=%u cause=%u delivery=%u)",
-                 category, cause, delivery);
+                 "%s (category=%u cause=%u delivery=%u)", failure, category, cause, delivery);
     }
     if (async_outcome) kmipkit_client_async_operation_outcome_release(async_outcome);
+    if (seed_response_item) kmipkit_client_batch_item_response_release(seed_response_item);
+    if (seed_response) kmipkit_client_batch_response_release(seed_response);
+    if (seed_batch) kmipkit_client_batch_release(seed_batch);
+    if (create_item) kmipkit_client_batch_item_release(create_item);
+    if (attributes) kmipkit_ttlv_structure_release(attributes);
     return outcome;
 }
 

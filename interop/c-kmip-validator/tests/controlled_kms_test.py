@@ -198,6 +198,18 @@ def response(operations: tuple[int, ...], protocol_minor: int,
     return tlv(0x42007B, 1, header + b"".join(batch_items))
 
 
+def pending_create_response(protocol_minor: int, correlation: bytes) -> bytes:
+    version = tlv(0x420069, 1,
+                  integer(0x42006A, 2) + integer(0x42006B, protocol_minor))
+    header = tlv(0x42007A, 1,
+                 version + tlv(0x420092, 9, struct.pack(">q", int(time.time()))) +
+                 integer(0x42000D, 1))
+    item = tlv(0x42000F, 1,
+               enumeration(0x42005C, 1) + enumeration(0x42007F, 2) +
+               tlv(0x420006, 8, correlation) + tlv(0x42007C, 1, b""))
+    return tlv(0x42007B, 1, header + item)
+
+
 def include_delegated_login(operations: tuple[int, ...],
                             cases: tuple[str, ...]) -> tuple[tuple[int, ...], tuple[str, ...]]:
     """Add the catalog's first-run Delegated Login to the controlled peer plan."""
@@ -318,7 +330,7 @@ def main() -> int:
     expected_operations += (10, 12, 10, 12, 10, 12, 10, 12)
     expected_operations += registered_key_batch
     expected_operations += stop_on_first_failure_batch
-    expected_operations += (25,)
+    expected_operations += (1, 25)
     expected_cases += ("test-op-cancel",)
     expected_cases += ("test-op-hash", "test-op-rng-retrieve", "test-op-rng-seed")
     expected_cases += (
@@ -591,14 +603,21 @@ def main() -> int:
                                     tlv(0x420099, 7, b"interop-user") not in request or
                                     tlv(0x4200A1, 7, b"interop-password") not in request):
                                 raise AssertionError("request is missing configured KMIP credentials")
-                            stream.sendall(response(
-                                response_operations, protocol_minor, selected_attribute_tag,
-                                4 if private_key_create else 3 if public_key_create else 2,
-                                unique_batch_item_ids=response_item_ids,
-                                result_statuses=response_statuses,
-                                result_reasons=response_reasons,
-                                rng_length=32 if integer(0x4200C4, 32) in request or
-                                tlv(0x4200C2, 8, bytes(range(32))) in request else 16))
+                            if operations == (1,) and enumeration(0x420007, 1) in request:
+                                cancel_correlation = b"fixture-cancel-correlation"
+                                stream.sendall(pending_create_response(protocol_minor, cancel_correlation))
+                            else:
+                                if operations == (25,) and request.count(
+                                        tlv(0x420006, 8, b"fixture-cancel-correlation")) != 1:
+                                    raise AssertionError("Cancel request omitted its exact pending correlation value")
+                                stream.sendall(response(
+                                    response_operations, protocol_minor, selected_attribute_tag,
+                                    4 if private_key_create else 3 if public_key_create else 2,
+                                    unique_batch_item_ids=response_item_ids,
+                                    result_statuses=response_statuses,
+                                    result_reasons=response_reasons,
+                                    rng_length=32 if integer(0x4200C4, 32) in request or
+                                    tlv(0x4200C2, 8, bytes(range(32))) in request else 16))
                             handled += len(operations)
                             handled_operations.extend(operations)
                             handled_batches.append(operations)

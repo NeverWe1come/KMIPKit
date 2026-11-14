@@ -273,7 +273,7 @@ def tree_digest(node):
 
 
 RECIPES = {
-    'test-op-cancel': ((25,), 'cancel'),
+    'test-op-cancel': ((25,), 'cancel_async'),
     'test-op-hash': ((39,), 'hash'),
     'test-crypto-hash-sha_256-0': ((39,), 'hash'),
     'test-op-rng-retrieve': ((37,), 'rng_retrieve'),
@@ -570,7 +570,7 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         raise ValueError('fixture_protocol_version_mismatch')
     if numbers(node, 0x42000D) != [len(expected)]:
         raise ValueError('fixture_batch_count_mismatch')
-    if selected_recipe[1] == 'cancel':
+    if selected_recipe[1] == 'cancel_async':
         assert_cancel_request(node)
     if (case_id in {
             'test-norm-payload-client-add-attribute-request-20-002',
@@ -936,6 +936,21 @@ def cancel_response(correlation: bytes, cancellation_result: int, protocol_minor
     return tlv(0x42007B, 1, header + item)
 
 
+def pending_create_response(correlation: bytes, protocol_minor: int) -> bytes:
+    """Build an asynchronous Create response carrying its server-issued correlation value."""
+    version = tlv(0x420069, 1,
+                  tlv(0x42006A, 2, (2).to_bytes(4, 'big')) +
+                  tlv(0x42006B, 2, protocol_minor.to_bytes(4, 'big')))
+    timestamp = int(dt.datetime.now(dt.timezone.utc).timestamp()).to_bytes(8, 'big', signed=True)
+    header = tlv(0x42007A, 1, version + tlv(0x420092, 9, timestamp) +
+                 tlv(0x42000D, 2, (1).to_bytes(4, 'big')))
+    item = tlv(0x42000F, 1,
+               tlv(0x42005C, 5, (1).to_bytes(4, 'big')) +
+               tlv(0x42007F, 5, (2).to_bytes(4, 'big')) +
+               tlv(0x420006, 8, correlation) + tlv(0x42007C, 1, b''))
+    return tlv(0x42007B, 1, header + item)
+
+
 def assert_cancel_request(node):
     """Require the request's single Cancel payload to preserve the fixture correlation bytes."""
     items = [item for item in node[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
@@ -957,6 +972,23 @@ def verify_cancel_response(response_tree, correlation, cancellation_result):
             byte_string_values(payloads[0], 0x420006) != [correlation] or
             numbers(payloads[0], 0x420012) != [cancellation_result]):
         raise ValueError('fixture_cancel_response_mismatch')
+
+
+def assert_async_cancel_seed_request(node, version):
+    """Require a one-item Create with the asynchronous indicator before Cancel."""
+    batch_items = [item for item in node[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    header = next(descendants(node, 0x420077), node)
+    if len(batch_items) != 1 or numbers(batch_items[0], 0x42005C) != [1]:
+        raise ValueError('fixture_cancel_seed_operation_mismatch')
+    if numbers(node, 0x42006A) != [2] or numbers(node, 0x42006B) != [int(version[-1])]:
+        raise ValueError('fixture_cancel_seed_version_mismatch')
+    if numbers(node, 0x42000D) != [1]:
+        raise ValueError('fixture_cancel_seed_batch_count_mismatch')
+    if numbers(header, 0x420007) != [1]:
+        raise ValueError('fixture_cancel_seed_missing_async_indicator')
+    if (numbers(node, 0x420057) != [2] or numbers(node, 0x420028) != [3] or
+            numbers(node, 0x42002A) != [128]):
+        raise ValueError('fixture_cancel_seed_key_attributes_mismatch')
 
 
 def read_back_attribute_fixture(case, catalog, version, attributes):
@@ -1016,7 +1048,7 @@ def read_back_attribute_fixture(case, catalog, version, attributes):
 
 def target_operation_exchange_index(recipe):
     """Select the request/response that belongs to the catalog operation under test."""
-    return 1 if recipe is not None and recipe[1] == 'login_logout' else 0
+    return 1 if recipe is not None and recipe[1] in ('login_logout', 'cancel_async') else 0
 
 
 def recipe_for_case(case, attribute_fixture):
@@ -1449,6 +1481,13 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                         recipe = recipe_for_case(case, attribute_fixture)
                         if recipe is None:
                             continue
+                        cancel_result_name = case.get('requires', {}).get(
+                            'protocol_scenario', {}).get('parameters', {}).get('cancel_result')
+                        cancel_result = (catalog_enum_value(
+                            catalog, 'Cancellation Result', cancel_result_name, version)
+                            if cancel_result_name else CANCEL_RESULT_CANCELED)
+                        if cancel_result is None:
+                            raise ValueError('fixture_cancel_result_unavailable')
                         placeholder_chain_recipe = recipe[1] == 'batch_placeholder_chain'
                         attribute_mutation_recipe = recipe[1] in (
                             'add_attribute', 'modify_attribute', 'set_attribute', 'delete_attribute')
@@ -1466,7 +1505,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                             continue
                         observation, errors = [], []
                         peer_state = PeerState(
-                            existing_object=recipe[0][0] not in (1, 3),
+                            existing_object=(recipe[1] != 'cancel_async' and
+                                            recipe[0][0] not in (1, 3)),
                             usage_allocation_ready=recipe[1] == 'get_usage_allocation_uid_variants')
                         boundary = case_id in (
                             'test-v20-reject-get-constraints', 'test-v20-reject-ping')
@@ -1479,7 +1519,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                 stream = None
                                 try:
                                     exchange_count = 4 if seeded_attribute_recipe else 3 if attribute_mutation_recipe else (
-                                        2 if placeholder_chain_recipe or recipe[1] == 'login_logout' else 1)
+                                        2 if placeholder_chain_recipe or recipe[1] in ('login_logout', 'cancel_async') else 1)
                                     seed_rejected = False
                                     accepted, _ = server.accept()
                                     stream = context.wrap_socket(accepted, server_side=True)
@@ -1516,6 +1556,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         if logout_recipe:
                                             assert_login_logout_exchange(request_tree, version, exchange_index)
                                             response_operations = ((45,) if exchange_index == 0 else (46,))
+                                        elif recipe[1] == 'cancel_async' and exchange_index == 0:
+                                            assert_async_cancel_seed_request(request_tree, version)
+                                            response_operations = (1,)
                                         elif recipe[1] == 'interop':
                                             assert_interop_request(request_tree, version)
                                             response_operations = recipe[0]
@@ -1610,10 +1653,13 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         if response_operations != recipe[0] and not cleanup_exchange:
                                             response_statuses = tuple(reversed(response_statuses))
                                             response_reasons = tuple(reversed(response_reasons))
-                                        if recipe[1] == 'cancel':
+                                        if recipe[1] == 'cancel_async' and exchange_index == 0:
+                                            response_wire = pending_create_response(
+                                                CANCEL_CORRELATION_VALUE, int(version[-1]))
+                                        elif recipe[1] == 'cancel_async':
                                             response_wire = cancel_response(
                                                 CANCEL_CORRELATION_VALUE,
-                                                CANCEL_RESULT_CANCELED,
+                                                cancel_result,
                                                 int(version[-1]))
                                         else:
                                             response_wire = response(
@@ -1629,9 +1675,18 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             verify_login_logout_response(response_tree, exchange_index)
                                         elif recipe[1] == 'interop':
                                             verify_interop_response(response_tree)
-                                        elif recipe[1] == 'cancel':
+                                        elif recipe[1] == 'cancel_async' and exchange_index == 0:
+                                            pending_items = [item for item in response_tree[2]
+                                                             if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+                                            if (len(pending_items) != 1 or
+                                                    numbers(pending_items[0], 0x42005C) != [1] or
+                                                    numbers(pending_items[0], 0x42007F) != [2] or
+                                                    byte_string_values(pending_items[0], 0x420006) !=
+                                                    [CANCEL_CORRELATION_VALUE]):
+                                                raise ValueError('fixture_cancel_seed_response_mismatch')
+                                        elif recipe[1] == 'cancel_async':
                                             verify_cancel_response(response_tree, CANCEL_CORRELATION_VALUE,
-                                                                   CANCEL_RESULT_CANCELED)
+                                                                   cancel_result)
                                         elif recipe[1] == 'batch_stop_on_first_failure':
                                             response_items = [item for item in response_tree[2]
                                                               if item[0] == BATCH_ITEM_TAG and item[1] == 1]
@@ -1732,6 +1787,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     'explicit' if variant == 'usage-allocation-explicit' else 'omitted')
                             else:
                                 run_environment['KMIPKIT_C_ATTRIBUTE_REQUEST_ROUTE'] = variant
+                            if recipe[1] == 'cancel_async':
+                                run_environment['KMIPKIT_C_CANCEL_RESULT'] = str(cancel_result)
                             if case_id in {
                                     'test-norm-payload-client-get-attribute-list-request-20-001',
                                     'test-norm-payload-client-get-attribute-list-request-21-001'}:
