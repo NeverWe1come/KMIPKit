@@ -11,7 +11,7 @@ network recipes. Library sources are unchanged.
 | KMIPKIT-0092-FR-002, FR-007, FR-009 | Per-cell evidence and explicit pending sidecar; duplicate protection; common schema and validator in CI. Incomplete recipes keep the gate failing. |
 | KMIPKIT-0092-FR-003 | Exact assigned scalar values, reserved-tag rejection, typed attributes, and cryptographic-parameter field/TTLV round trips are checked locally. Broader semantic branch/model recipes remain pending. No absent encoder/send/high-level API is fabricated. |
 | KMIPKIT-0092-FR-004 | Ordered, redacted tree digests are retained per cell. Cross-language digest normalization/parity is pending. |
-| KMIPKIT-0092-FR-005 | Controlled peers parse all six encoding/transport pairs, check recipe fields, numeric ordered results, lifecycle transitions and deletion. Check, Get Attribute List, Log, Revoke, and Interop response TTLV accessors are read and structurally checked. The C peer covers catalogued asynchronous Cancel results, KMIP 2.1 Poll/Cancel and Process/Poll interleavings, and Query filters whose intersection returns only the matching outstanding request; other asynchronous and positive operation recipes remain pending. |
+| KMIPKIT-0092-FR-005 | Controlled peers parse all six encoding/transport pairs, check recipe fields, numeric ordered results, lifecycle transitions and deletion. Check, Get Attribute List, Log, Revoke, Interop, Sign, and Signature Verify response accessors are read and structurally checked. The C peer covers catalogued asynchronous Cancel results, KMIP 2.1 Poll/Cancel and Process/Poll interleavings, and Query filters whose intersection returns only the matching outstanding request; other asynchronous and positive operation recipes remain pending. |
 | KMIPKIT-0092-FR-008 | Reports contain public identities, axes, digests, sanitized failure codes and numeric outcomes. Request bodies and fixture keys/tickets never enter evidence. |
 
 The exact OASIS document and section remain on each case in the generated shared
@@ -1177,3 +1177,31 @@ runs for KMIP 2.0 and 2.1 with TTLV, JSON, and XML over raw TLS and HTTPS.
   scenario test, catalog generation check, and route-capability audit passed.
   Exact-head PR CI remains open and PR #212 stays WIP while the broader C route
   matrix has pending recipes.
+
+## Signature Verify route evidence
+
+- Red: commit `dfe3e69deccde73fc142ac362574fdf812e0668a` added a focused
+  installed-consumer regression for the `test-op-signature-verify` and
+  `test-crypto-signature-verify-rsa-2048-pkcs1_v1_5` cases. It failed because
+  neither case had a controlled C execution recipe.
+- Green: commit `b09c1bb2` adds the typed C workflow and controlled peers for
+  KMIP 2.0 and 2.1, over TTLV, JSON, and XML with raw TLS and HTTPS. The batch
+  creates and activates an RSA public key, verifies the fixture signature with
+  explicit SHA-256 and RSA SHA-256 parameters, then revokes and destroys the
+  key. The C consumer checks the typed response's Unique Identifier and
+  `Validity Indicator = Valid`; the peer checks operation order, ID Placeholder
+  resolution, response IDs, and final deletion. The fixture signature is test
+  data; this route exercises the KMIP operation and typed response, not local
+  cryptographic verification.
+- Normative references: OASIS KMIP 2.0 §6.1.50 and KMIP 2.1 §6.1.56. The
+  request's ordered batch follows §8.3; response fields follow §8.6.
+- Refactor: reviewed the new route against the adjacent Sign workflow and kept
+  its distinct request constructor and typed response checks explicit. Sharing
+  those blocks would hide the operation-specific Validity Indicator and
+  recovered-data rules. No behavior-changing cleanup was needed.
+- Verification: CMake build passed; the focused Signature Verify route test
+  passed all 24 version/encoding/transport cells; CTest passed 7/7; the full
+  `test_route_matrix.py` suite passed 172/172. The total route-completeness
+  gate and exact-head hosted CI are still outstanding; this route does not
+  close the other pending C matrix cells or establish external KMS
+  interoperability.
