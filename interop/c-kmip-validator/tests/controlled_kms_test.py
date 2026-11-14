@@ -409,6 +409,8 @@ def main() -> int:
         expected_cases += (ASYNC_NO_RECURSIVE_POLL_CANCEL_CASE,)
         expected_operations += (1, 26, 25)
         expected_cases += (ASYNC_CANCEL_POLL_RACE_CASE,)
+        expected_operations += (1, 58, 26, 20)
+        expected_cases += ("test-async-process-then-poll-state",)
     expected_cases += ("test-op-hash", "test-op-rng-retrieve", "test-op-rng-seed")
     expected_cases += (
         "test-crypto-hash-sha_256-0",
@@ -495,6 +497,7 @@ def main() -> int:
             async_pending_poll_count = 0
             async_poll_mode = "none"
             async_repeated_pending_seen = False
+            async_process_completed = False
             try:
                 while handled < len(expected_operations):
                     accepted, _ = server.accept()
@@ -697,7 +700,7 @@ def main() -> int:
                                 )
                             # Dedicated asynchronous C executors have no authentication input;
                             # every ordinary batch in this peer still proves configured credentials.
-                            if operations not in ((25,), (26,), (57,)) and (
+                            if operations not in ((25,), (26,), (57,), (58,)) and (
                                     tlv(0x420099, 7, b"interop-user") not in request or
                                     tlv(0x4200A1, 7, b"interop-password") not in request):
                                 raise AssertionError("request is missing configured KMIP credentials")
@@ -715,11 +718,24 @@ def main() -> int:
                                     raise AssertionError("Query Async Requests omitted its exact correlation filter")
                                 async_lifecycle_poll = True
                                 stream.sendall(query_async_requests_response(protocol_minor, cancel_correlation))
+                            elif operations == (58,):
+                                cancel_correlation = b"fixture-cancel-correlation"
+                                if (request.count(tlv(0x420006, 8, cancel_correlation)) != 1 or
+                                        enumeration(0x420007, 3) not in request):
+                                    raise AssertionError(
+                                        "Process must preserve the pending correlation and use the prohibited indicator"
+                                    )
+                                async_process_completed = True
+                                stream.sendall(response((58,), protocol_minor))
                             elif operations == (26,):
                                 cancel_correlation = b"fixture-cancel-correlation"
                                 if request.count(tlv(0x420006, 8, cancel_correlation)) != 1:
                                     raise AssertionError("Poll request omitted its exact pending correlation value")
-                                if async_lifecycle_poll:
+                                if async_process_completed:
+                                    async_request_pending = False
+                                    async_poll_mode = "none"
+                                    stream.sendall(completed_poll_create_response(protocol_minor))
+                                elif async_lifecycle_poll:
                                     stream.sendall(completed_poll_create_response(protocol_minor))
                                 elif async_request_pending:
                                     async_pending_poll_count += 1
@@ -745,6 +761,9 @@ def main() -> int:
                                     async_lifecycle_poll = False
                                 elif operations == (20,) and async_poll_mode == "repeated_pending_success":
                                     response_item_ids = (None,)
+                                elif operations == (20,) and async_process_completed:
+                                    response_item_ids = (None,)
+                                    async_process_completed = False
                                 cancellation_result = 1
                                 if operations == (25,) and async_request_pending:
                                     if cancel_result_index >= len(cancel_result_values):
