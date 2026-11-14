@@ -101,8 +101,8 @@ baseline, regenerate the checked-in ledger with
 rejects generated ledgers that do not record successful invocations.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
-baseline. These recipes execute 22,629 of 71,463 planned Java route cells, with
-no failed cells; the ledger records the other 48,834 as pending and does not imply
+baseline. These recipes execute 22,689 of 71,463 planned Java route cells, with
+no failed cells; the ledger records the other 48,774 as pending and does not imply
 vendor interoperability or full-matrix completion. Local TTLV recipes exercise 51
 enumeration families, all six bitmask aggregate cases, and all 44 individual
 bitmask value cases through the applicable
@@ -113,6 +113,11 @@ define its Text String attribute representation.
 The outer KMIP 2.1 Object Groups and Object Types Structures exercise the six
 generic Structure/Item routes each, with exact repeatable Text String and
 Enumeration members (§§7.23–7.24, Tables 375–376).
+Data Length, Final Indicator, Interop Identifier, Log Message, and MAC Data
+exercise their six applicable local generic routes in KMIP 2.0 and 2.1 with
+their source-defined Integer, Boolean, Text String, or Byte String values
+(KMIP 2.0 §§7.6, 7.10, 7.12, 7.15–7.16; KMIP 2.1 §§7.10, 7.14, 7.16,
+7.19–7.20; tag allocations §§11.54/11.56).
 Four optional/repeatable members in the KMIP 2.1 Constraint and Constraints
 structures also exercise the installed `TtlvValue.structure`, Item creation,
 Item view, and decoder routes (§§7.6–7.7, Tables 357–358).
@@ -137,7 +142,7 @@ one direct Name Item, and the installed direct constructors, request-to-batch
 conversions, TTLV payload conversion, controlled TLS exchange, and typed
 response readers are invoked under the operation-specific §6.1 tables.
 
-The 48,834 pending cells belong to 1,311 case IDs listed in the generated
+The 48,774 pending cells belong to 1,306 case IDs listed in the generated
 ledger; every one has the reason `route_evidence_not_emitted`. The applicability
 rule is the shared catalog and capability matrix after protocol-version,
 public-route, encoding/transport, and source-backed exclusion filters. A cell

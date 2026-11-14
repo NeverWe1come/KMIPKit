@@ -4877,9 +4877,7 @@ class ControlledTlsPeerTest {
         CodecLimits limits = CodecLimits.defaults();
         byte[] scalarBytes = scalarOperationStructureBytes(fixture.valueType());
         byte[] wire = item(fixture.tag(), fixture.valueType().code(), scalarBytes);
-        byte[] structureWire = structure(0x42000f, wire);
         String scalarHash = normalizedTreeSha256(wire);
-        String structureHash = normalizedTreeSha256(structureWire);
 
         TtlvStructure fields = TtlvStructure.create();
         fields = appendTtlvItem(fields, fixture.tag(),
@@ -4898,11 +4896,11 @@ class ControlledTlsPeerTest {
         appendRouteEvent(events, fixture.caseId(),
                 "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.create", fixture.targetId(),
                 "org.kmipkit.ttlv.TtlvStructure.create", null, null,
-                "construct", protocolVersion, null, structureHash, null);
+                "construct", protocolVersion, null, scalarHash, null);
         appendRouteEvent(events, fixture.caseId(),
                 "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem", fixture.targetId(),
                 "org.kmipkit.ttlv.TtlvStructure.withItem", null, null,
-                "construct", protocolVersion, null, structureHash, null);
+                "construct", protocolVersion, null, scalarHash, null);
         appendRouteEvent(events, fixture.caseId(), scalarOperationStructureValueRoute(fixture.valueType()),
                 fixture.targetId(), scalarOperationStructureValueSymbol(fixture.valueType()), null, null,
                 "construct", protocolVersion, null, scalarHash, null);

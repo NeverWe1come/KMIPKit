@@ -1280,3 +1280,53 @@ failures. This slice adds 12 cells; the full ledger has 71,463 planned,
 operation-structure cases are removed from the pending set because their
 planned routes now have invocation evidence. All other pending cells remain
 `route_evidence_not_emitted`; `complete_matrix=false`.
+
+## KMIP 2.0/2.1 scalar operation-structure routes
+
+Sources: Data Length is Integer in KMIP 2.0 §7.6 and KMIP 2.1 §7.10;
+Final Indicator is Boolean in §§7.10/7.14; Interop Identifier is Text String
+in §§7.12/7.16; Log Message is Text String in §§7.15/7.19; and MAC Data is
+Byte String in §§7.16/7.20. The respective field tags are `0x4200C4`,
+`0x4200D8`, `0x420161`, `0x420141`, and `0x4200C6`. Each case has six
+applicable local generic routes for both protocol versions: structure create,
+structure with-item, the matching primitive value constructor, Item create,
+Item view, and decode. KMIP 2.0 §11.54 and KMIP 2.1 §11.56 define the
+corresponding tag allocations.
+
+Red commit `14cf4c020` adds assertions for all six routes and both protocol
+versions; the focused test fails because Data Length lacks its
+`TtlvStructure.create` invocation event in KMIP 2.0. Green commit `4569bcfd9`
+constructs and inspects the scalar field in a generic Structure, separately
+decodes the exact tagged scalar Item, and checks its tag, TTLV type, and exact
+value. The five fixtures add 60 route cells. Refactor regenerates the shared
+ledger and updates the installed-consumer README and FR-003 traceability with
+the new counts and the still-pending matrix state.
+
+Verification used the installed Java artifact pinned to
+`489fafc79ef89db2524eafa7a6c6482f5cf75d97`:
+
+```sh
+TMPDIR="$PWD/build/native-test-tmp" \
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/native-test-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+python3 -m unittest tools.normative_catalog.tests.test_feature_traceability \
+  scripts.tests.test_requirement_traceability
+```
+
+The installed Java suite passes 54 tests with zero failures, errors, or skips;
+all 33 feature and requirement traceability tests pass. The shared validator
+accepts 22,689/22,689 selected cells with zero failed cells. The full ledger
+has 71,463 planned, 22,689 executed, and 48,774 pending cells across 1,306
+case IDs. Each pending cell remains classified as `route_evidence_not_emitted`;
+none was reclassified or removed. The applicability filter is the shared
+catalog and installed-route capability matrix after version, route,
+encoding/transport, and source-backed exclusion checks. Every cell still
+planned is applicable under FR-002/FR-009, so this selected-scope pass does not
+complete the Java matrix and the PR remains WIP.
