@@ -97,6 +97,18 @@ REQUEST_MESSAGE_CONTEXT_TARGETS = (
     'KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM',
     })
 )
+RESPONSE_MESSAGE_CONTEXT_TARGETS = frozenset({
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-4-BATCH-ITEM',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-4-RESPONSE-HEADER',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-5-PROTOCOL-VERSION',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-5-RESPONSE-HEADER',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-5-TIME-STAMP',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-OPERATION',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-RESPONSE-PAYLOAD',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-RESULT-STATUS',
+})
 OUTPUT_ROOT = ROOT / 'interop/c-kmip-validator/build'
 
 
@@ -469,6 +481,9 @@ def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
                           protocol_version: str) -> list[tuple] | None:
     """Build item trees only where the pinned catalog identifies tag and type."""
     if target.get('kind') in {'tag', 'message_field'} and target.get('name') == 'Response Message':
+        fixture = _response_message_fixture(protocol_version, tags, catalog)
+        return [fixture] if fixture is not None else None
+    if target.get('target_id') in RESPONSE_MESSAGE_CONTEXT_TARGETS:
         fixture = _response_message_fixture(protocol_version, tags, catalog)
         return [fixture] if fixture is not None else None
     if target.get('kind') in {'tag', 'message_field'} and target.get('name') == 'Request Message':
