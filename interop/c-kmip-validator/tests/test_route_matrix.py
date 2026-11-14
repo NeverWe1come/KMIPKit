@@ -3792,6 +3792,33 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual((1, 18, 10), operations[:3])
         self.assertEqual('batch_placeholder_chain', workflow)
 
+    def test_forward_placeholder_batch_is_rejected_before_transport(self):
+        """KMIP 2.0/2.1 §§8.3, 9.7 reject a forward ID Placeholder reference."""
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-batch-placeholder-forward-reference-rejected'
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12,
+                         'the local rejection must be checked for both versions and all wire paths')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(all(check['consumer_server_compatibility'] == 'unknown' for check in checks))
+        send_events = [event for event in events if event['action'] == 'send']
+        self.assertEqual(24, len(send_events))
+        self.assertTrue(all(event['request_delivery_state'] == 'not_sent'
+                            and event['transport_invocation_count'] == 0
+                            and event['local_rejection_code'] == 'batch_placeholder_forward_reference'
+                            for event in send_events))
+        self.assertEqual({'Activate', 'Create'},
+                         {event['workflow_operation'] for event in send_events})
+
 
     def test_batch_placeholder_chain_resolves_the_same_object_and_cleans_up(self):
         from artifact_support import ROOT
