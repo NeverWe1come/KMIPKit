@@ -128,7 +128,6 @@ fn create_credential_uses_table_277_order_and_redacts_credential_material() {
     };
     let password = PasswordCredentialObject::try_new(fields).expect("valid credential object");
     let request = CreateCredentialRequest::new(
-        CredentialType::UsernameAndPassword,
         AttributeSet::new(),
         CreateCredentialObject::PasswordCredential(password),
     );
@@ -140,6 +139,11 @@ fn create_credential_uses_table_277_order_and_redacts_credential_material() {
         payload_tags(&payload),
         [CREDENTIAL_TYPE, ATTRIBUTES, PASSWORD_CREDENTIAL]
     );
+    let encoded_credential_type = payload.view().children()[0].with_value(|value| match value {
+        ValueView::Enumeration(value) => *value,
+        _ => panic!("Credential Type is encoded as an Enumeration"),
+    });
+    assert_eq!(encoded_credential_type, CredentialType::UsernameAndPassword.raw());
 }
 
 #[test]
