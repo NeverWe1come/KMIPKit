@@ -114,6 +114,20 @@ is addressed.
 - After the rebase, `python3 -B tools/api_manifest/generate.py --check`,
   `python3 -B tools/normative_catalog/generate_fluent_operation_inventory.py
   --check`, and `git diff --check` all passed.
+- The full manifest suite previously spent over 11 minutes in the Java
+  overload schema test because it revalidated all 22,888 unrelated approved
+  exclusions for each one-row declaration assertion. The test now validates
+  the same valid signature, incompatible declaration kind, and duplicate
+  signature cases directly against `$defs.publicDeclaration`; its focused
+  run passed in 0.316 seconds. The complete suite is being rerun after this
+  test-only performance refactor.
+- The duplicate-record schema test also used the full 16,884-declaration and
+  22,888-exclusion manifest. It now uses the small valid v2 fixture with one
+  duplicated declaration and exclusion, and asserts `uniqueItems` rejects
+  both arrays. The focused test passed in 0.853 seconds.
+- Final manifest verification passed after both focused test refactors:
+  `python3 -B -m unittest tools.api_manifest.tests.test_manifest_v2 -v`
+  completed with 156 tests in 337.105 seconds and exit code 0.
 
 ## Manifest scope ruling
 
