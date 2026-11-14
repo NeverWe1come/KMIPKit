@@ -476,7 +476,12 @@ class RouteMatrixTests(unittest.TestCase):
         case = next(item for item in catalog['test_cases'] if item['case_id'] == 'test-op-cancel')
         correlation = b'fixture-cancel-correlation'
 
-        self.assertEqual(route_peer.recipe_for_case(case, None), ((25,), 'cancel'))
+        self.assertEqual(route_peer.recipe_for_case(case, None), ((25,), 'cancel_async'))
+        pending = route_peer.parse(route_peer.pending_create_response(correlation, 1))
+        pending_item = next(child for child in pending[2] if child[0] == route_peer.BATCH_ITEM_TAG)
+        self.assertEqual(route_peer.numbers(pending_item, 0x42005C), [1])
+        self.assertEqual(route_peer.numbers(pending_item, 0x42007F), [2])
+        self.assertEqual(route_peer.byte_string_values(pending_item, 0x420006), [correlation])
         response = route_peer.parse(route_peer.cancel_response(correlation, 1, 1))
         payload = next(child for child in response[2][1][2] if child[0] == route_peer.RESPONSE_PAYLOAD_TAG)
         self.assertEqual(payload[2], [
