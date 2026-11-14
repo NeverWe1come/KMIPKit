@@ -3064,6 +3064,53 @@ class RouteMatrixTests(unittest.TestCase):
                 self.assertIn('kmipkit_client_batch_add_error_continuation_value', symbols)
 
 
+    def test_batch_count_mismatch_is_recomputed_before_transport(self):
+        from artifact_support import ROOT
+        from route_peer import RECIPES, execute_network_cells
+        case_id = 'test-batch-count-mismatch-rejected'
+        self.assertEqual(RECIPES[case_id], ((10, 12), 'batch_count_two_read_items'))
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 24,
+                         'both Get Attribute List constructors must pass both versions on all six wire transports')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertEqual({check['constructor_variant'] for check in checks}, {'direct', 'standalone'})
+        self.assertTrue(any(event['target_id'] == 'KMIPKIT-ELEM-OP-C2S-GET' and
+                            event['action'] == 'send' for event in events))
+        self.assertTrue(any(event['target_id'] == 'KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST' and
+                            event['action'] == 'send' for event in events))
+        self.assertTrue(any(event['public_api_symbol'] ==
+                            'kmipkit_client_batch_item_get_attribute_list_from_request' and
+                            event['action'] == 'send' for event in events))
+        self.assertTrue(any(event['public_api_symbol'] ==
+                            'kmipkit_get_attribute_list_request_to_ttlv_payload' and
+                            event['action'] == 'encode' for event in events))
+        for variant in ('direct', 'standalone'):
+            variant_checks = [check for check in checks if check['constructor_variant'] == variant]
+            self.assertEqual(len(variant_checks), 12)
+        for check in checks:
+            self.assertEqual(check['peer_response_operation_values'], [10, 12])
+            self.assertEqual(check['peer_response_result_statuses'], [0, 0])
+            self.assertTrue({'kmipkit_client_batch_item_get',
+                             'kmipkit_client_execute'} <= set(check['public_api_trace_symbols']))
+            self.assertTrue({'kmipkit_client_batch_item_response_get',
+                             'kmipkit_client_batch_item_response_get_attribute_list',
+                             'kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv',
+                             'kmipkit_client_batch_item_response_header_ttlv',
+                             'kmipkit_client_batch_item_response_metadata_v1',
+                             'kmipkit_client_batch_item_response_pending_correlation_value'} <=
+                            set(check['public_api_trace_symbols']))
+            attribute_constructor = ('kmipkit_client_batch_item_get_attribute_list'
+                                     if check['constructor_variant'] == 'direct' else
+                                     'kmipkit_client_batch_item_get_attribute_list_from_request')
+            self.assertIn(attribute_constructor, check['public_api_trace_symbols'])
+
+
     def test_stop_batch_returns_only_the_failed_item_and_stops_processing(self):
         from artifact_support import ROOT
         from route_peer import RECIPES, execute_network_cells
@@ -3307,6 +3354,16 @@ class RouteMatrixTests(unittest.TestCase):
                             event['action'] == 'send' for event in events))
         self.assertTrue(all('kmipkit_client_execute' in check['public_api_trace_symbols']
                             for check in checks))
+        response_symbols = {
+            'kmipkit_client_batch_item_response_get',
+            'kmipkit_client_batch_item_response_header_ttlv',
+            'kmipkit_client_batch_item_response_metadata_v1',
+            'kmipkit_client_batch_item_response_pending_correlation_value',
+            'kmipkit_client_batch_item_response_unique_batch_item_id',
+        }
+        self.assertTrue(all(response_symbols <= set(check['public_api_trace_symbols'])
+                            for check in checks),
+                        'the single-item Get route must inspect its typed response and metadata')
 
     def test_hash_and_rng_cases_call_their_public_routes_and_check_responses(self):
         from artifact_support import ROOT

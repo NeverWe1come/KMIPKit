@@ -340,6 +340,7 @@ RECIPES = {
     'test-batch-register-encrypt-decrypt-destroy': (BATCH_CRYPTO_OPERATIONS, 'batch_register_crypto'),
     'test-batch-placeholder-chain-resolves': (PLACEHOLDER_CHAIN_OPERATIONS, 'batch_placeholder_chain'),
     'test-batch-single-item-options-omitted': ((10,), 'batch_single_item_options_omitted'),
+    'test-batch-count-mismatch-rejected': ((10, 12), 'batch_count_two_read_items'),
     'test-batch-count-matches-items': ((10, 12), 'batch_count_two_read_items'),
     'test-batch-unique-item-id-response-correlation': ((10, 12), 'batch_count_two_read_items'),
     'test-batch-order-false-correlates-response-items': ((10, 12), 'batch_order_false_two_read_items'),
@@ -389,6 +390,7 @@ RECIPES = {
 
 CONTROLLED_PEER_LOCAL_MODEL_CASES = frozenset({
     'test-batch-single-item-options-omitted',
+    'test-batch-count-mismatch-rejected',
     'test-norm-payload-client-get-request-20-001',
     'test-norm-payload-client-get-request-21-001',
     'test-norm-payload-client-get-attribute-list-request-20-001',
@@ -1612,7 +1614,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
          if case['case_id'] in {
              'test-norm-payload-client-get-usage-allocation-request-20-001',
              'test-norm-payload-client-get-usage-allocation-request-21-001'} else
-         ('direct', 'standalone') if case['case_id'] in {'test-op-get-attributes', 'test-op-get-attribute-list',
+         ('direct', 'standalone') if case['case_id'] in {
+                                                         'test-batch-count-mismatch-rejected',
+                                                         'test-op-get-attributes', 'test-op-get-attribute-list',
                                                          'test-norm-payload-client-get-attribute-list-request-20-001',
                                                          'test-norm-payload-client-get-attribute-list-request-21-001',
                                                          'test-norm-payload-client-add-attribute-request-20-002',
@@ -2139,6 +2143,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                for item in observation[0][1][2]
                                                if item[0] == 0x42000F]}
                                                if observation and case_id in {
+                                                   'test-batch-count-mismatch-rejected',
                                                    'test-batch-count-matches-items',
                                                    'test-batch-unique-item-id-response-correlation',
                                                    'test-batch-order-false-correlates-response-items',
@@ -2151,6 +2156,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                for item in observation[0][1][2]
                                                if item[0] == 0x42000F]}
                                                if observation and case_id in {
+                                                   'test-batch-count-mismatch-rejected',
                                                    'test-batch-count-matches-items',
                                                    'test-batch-unique-item-id-response-correlation',
                                                    'test-batch-order-false-correlates-response-items',
