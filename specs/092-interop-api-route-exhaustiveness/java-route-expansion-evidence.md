@@ -1740,3 +1740,62 @@ No pending cell is classified as an API unavailability exemption. FR-002 and
 FR-009 require zero pending cells for matrix completion. The selected-scope
 workflow and ledger comparison do not enforce global completion, so the PR
 remains WIP.
+
+## KMIP 2.0/2.1 Usage Limits routes
+
+KMIP 2.0 §7.34 Table 354 and KMIP 2.1 §7.40 Table 392 define Usage Limits as
+a Structure with three required, ordered members: Usage Limits Total and Count
+are Long Integer values, followed by Usage Limits Unit as an Enumeration. The
+installed Java consumer now executes 36 applicable local TTLV cells across
+both versions: all six outer Structure routes, and four constructor/Item/view/
+decoder routes for each of the three member cases in each version. It checks
+the exact tags, order, types, and values (Total 100, Count 73, Unit Object=2).
+These cells are local TTLV routes with no transport axis in the capability
+matrix; this slice does not claim TLS coverage for them.
+
+- Red commit `4bb73ff0`: added per-cell route assertions and case accounting;
+  the focused test named below failed with `Missing invoked Java route evidence`
+  for `TtlvStructure.create` on Usage Limits in KMIP 2.0.
+- Green commit `65fca201`: invokes the installed Structure, Item, value,
+  view, and decoder APIs and checks the required fields and exact values for
+  KMIP 2.0/2.1. The focused controlled-query harness passed.
+- Refactor records this evidence, updates the Java README and FR-003
+  traceability, and refreshes the generated route ledger without removing or
+  exempting any pending cell.
+
+The pinned installed artifact is
+`489fafc79ef89db2524eafa7a6c6482f5cf75d97`, SHA-256
+`830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e`.
+Local verification commands (from `interop/java-kmip-validator` unless noted):
+
+```sh
+env TMPDIR="$PWD/build/tmp" TMP="$PWD/build/tmp" TEMP="$PWD/build/tmp" \
+  JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/tmp" \
+  bash ../../bindings/java/gradlew -PkmipkitMavenRepo="$PWD/build/maven-repository" \
+  test --tests org.kmipkit.validator.ControlledTlsPeerTest.controlledQueryProducesPerRouteEvidenceForBothProtocolVersions
+env TMPDIR="$PWD/build/tmp" TMP="$PWD/build/tmp" TEMP="$PWD/build/tmp" \
+  JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test
+env TMPDIR="$PWD/build/tmp" TMP="$PWD/build/tmp" TEMP="$PWD/build/tmp" \
+  python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+# From the repository root:
+python3 -m unittest tools.normative_catalog.tests.test_feature_traceability \
+  scripts.tests.test_requirement_traceability
+```
+
+The full Java consumer suite passes 54 tests with zero failures, errors, or
+skips. The selected-scope route validator accepts 22,971/22,971 invoked cells
+with zero failed cells, and `compare_route_ledger.py --refresh-reference` plus
+the normal comparison pass. The complete matrix still has 71,463 planned,
+22,971 executed, and 48,492 pending cells across 1,275 case IDs. Every pending
+cell remains `route_evidence_not_emitted`; the shared matrix's version,
+capability, encoding/transport, and source-backed exclusion filters define
+applicability, and these remaining cells are still applicable required work.
+FR-002/FR-009 require zero pending cells for full completion, so the PR remains
+WIP.
