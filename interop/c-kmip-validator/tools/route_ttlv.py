@@ -65,6 +65,9 @@ class TreeAbi(InstalledAbi):
         self.bind('kmipkit_request_message_from_ttlv',
                   [C.c_void_p, C.POINTER(C.c_void_p), C.POINTER(C.c_void_p)])
         self.bind('kmipkit_request_message_ttlv', [C.c_void_p, C.POINTER(C.c_void_p)])
+        self.bind('kmipkit_response_message_from_ttlv',
+                  [C.c_void_p, C.POINTER(C.c_void_p), C.POINTER(C.c_void_p)])
+        self.bind('kmipkit_response_message_ttlv', [C.c_void_p, C.POINTER(C.c_void_p)])
         for kind, name in NAMES.items():
             self.bind(f'kmipkit_ttlv_value_{name}', [CTYPES[kind], C.POINTER(C.c_void_p)])
             self.bind(f'kmipkit_ttlv_value_view_{name}', [C.c_void_p, C.POINTER(CTYPES[kind])])
@@ -221,6 +224,27 @@ class TreeAbi(InstalledAbi):
             self.release('message_validation_error', validation_error)
             self.release('request_message', message)
 
+    def roundtrip_response_message(self, tree, limits):
+        if tree[0] != 0x42007B or tree[1] != 1:
+            return
+        structure = self.construct_structure(tree[2], limits)
+        message, validation_error, returned_structure = (C.c_void_p() for _ in range(3))
+        try:
+            self.called.add('kmipkit_response_message_from_ttlv')
+            status = self.library.kmipkit_response_message_from_ttlv(
+                structure, C.byref(message), C.byref(validation_error))
+            structure = C.c_void_p()
+            if status != 0 or not message.value:
+                raise ValueError('typed_response_message_rejected')
+            self.call('kmipkit_response_message_ttlv', message, C.byref(returned_structure))
+            if self.read_structure(returned_structure) != tree[2]:
+                raise ValueError('typed_response_message_tree_mismatch')
+        finally:
+            self.release('ttlv_structure', structure)
+            self.release('ttlv_structure', returned_structure)
+            self.release('message_validation_error', validation_error)
+            self.release('response_message', message)
+
     def roundtrip(self, wire):
         self.called.clear()
         limits, constructed, decoded = C.c_void_p(), C.c_void_p(), C.c_void_p()
@@ -234,6 +258,7 @@ class TreeAbi(InstalledAbi):
             self.call('kmipkit_ttlv_decode', buffer, len(wire), C.byref(error), C.byref(decoded))
             decoded_tree = self.read_item(decoded)
             self.roundtrip_request_message(expected, limits)
+            self.roundtrip_response_message(expected, limits)
             if constructed_tree != expected or decoded_tree != expected:
                 raise ValueError('installed_abi_tree_mismatch')
             return {'constructed_wire': encode(constructed_tree), 'decoded_wire': encode(decoded_tree),

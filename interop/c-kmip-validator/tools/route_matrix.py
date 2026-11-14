@@ -144,7 +144,12 @@ def uses_scalar_target_fixture(cell: dict, case: dict, target: dict) -> bool:
         and target.get('name') == 'Request Message'
         and cell['public_api_symbol'] == 'kmipkit_request_message_from_ttlv'
     )
-    return scalar_target_case and not request_message_parser
+    response_message_parser = (
+        target['kind'] == 'tag'
+        and target.get('name') == 'Response Message'
+        and cell['public_api_symbol'] == 'kmipkit_response_message_from_ttlv'
+    )
+    return scalar_target_case and not (request_message_parser or response_message_parser)
 
 
 def require_complete(events: list[dict], pending: list[dict]) -> None:
@@ -305,6 +310,33 @@ def _request_message_fixture(protocol_version: str, tags: dict[str, int], catalo
     return (tags['Request Message'], 1, [header, (tags['Batch Item'], 1, batch_fields)])
 
 
+def _response_message_fixture(protocol_version: str, tags: dict[str, int],
+                              catalog: dict) -> tuple | None:
+    """Build a complete Get response for the public Response Message parser."""
+    operation = catalog_enum_value(catalog, 'Operation', 'Get', protocol_version)
+    success = catalog_enum_value(catalog, 'Result Status', 'Success', protocol_version)
+    if operation is None or success is None:
+        return None
+    header = (tags['Response Header'], 1, [
+        (tags['Protocol Version'], 1, [
+            (tags['Protocol Version Major'], 2, (2).to_bytes(4, 'big')),
+            (tags['Protocol Version Minor'], 2,
+             int(protocol_version.split('.')[1]).to_bytes(4, 'big')),
+        ]),
+        (tags['Time Stamp'], 9, (1_760_000_000).to_bytes(8, 'big', signed=True)),
+        (tags['Batch Count'], 2, (1).to_bytes(4, 'big')),
+    ])
+    payload = (tags['Response Payload'], 1, [
+        (tags['Unique Identifier'], 7, b'fixture-response-object'),
+    ])
+    batch_item = (tags['Batch Item'], 1, [
+        (tags['Operation'], 5, operation.to_bytes(4, 'big')),
+        (tags['Result Status'], 5, success.to_bytes(4, 'big')),
+        payload,
+    ])
+    return tags['Response Message'], 1, [header, batch_item]
+
+
 def _with_request_header_field(fixture: tuple, tags: dict[str, int], field: tuple,
                                *, after_tag: str) -> tuple:
     """Insert one optional field at its normative position in Request Header."""
@@ -436,6 +468,9 @@ def _request_header_field_fixture(target: dict, catalog: dict, tags: dict[str, i
 def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
                           protocol_version: str) -> list[tuple] | None:
     """Build item trees only where the pinned catalog identifies tag and type."""
+    if target.get('kind') in {'tag', 'message_field'} and target.get('name') == 'Response Message':
+        fixture = _response_message_fixture(protocol_version, tags, catalog)
+        return [fixture] if fixture is not None else None
     if target.get('kind') in {'tag', 'message_field'} and target.get('name') == 'Request Message':
         fixture = _request_message_fixture(protocol_version, tags, catalog)
         return [fixture] if fixture is not None else None
