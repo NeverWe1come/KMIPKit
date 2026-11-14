@@ -272,3 +272,22 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   pending cells. The exact validator exits unsuccessfully on missing routes,
   now beginning with `test-async-indicator-prohibited-synchronous`; T006, T007,
   and T009 remain open.
+
+## Development evidence: C explicit Prohibited asynchronous Create
+
+- Normative scope: OASIS KMIP 2.0/2.1 §§8.2–8.3, 8.6, 9.1–9.2, and 11.3;
+  Create is §6.1.8 Table 171 (2.0) and Table 186 (2.1). An explicitly
+  Prohibited indicator requires synchronous operation without a correlation
+  value.
+- Red commit `7472db396`: the focused test failed because the C peer had no
+  route recipe for `test-async-indicator-prohibited-synchronous`.
+- Green commit `f204ff0c7`: the installed C ABI sets Prohibited and validates
+  synchronous Success with no correlation over both versions and all six
+  encoding/transport pairs.
+- Refactor commit `161155dbd`: share the synchronous indicator request,
+  response, and peer evidence checks with Optional completion.
+- Verification: four focused async Create route tests, the C build, Python
+  syntax checks, `test_c_validator`, and both controlled TLS CTest peers passed.
+  The full matrix recorded 40,594 invoked, zero failed, and 26,142 pending
+  cells. The exact validator exits unsuccessfully on missing routes, now
+  beginning with `test-async-lifecycle-poll`; T006, T007, and T009 remain open.

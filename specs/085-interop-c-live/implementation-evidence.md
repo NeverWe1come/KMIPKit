@@ -960,3 +960,26 @@ remains separate coverage.
   validator exits unsuccessfully, next reporting
   `test-async-indicator-prohibited-synchronous`. The gate remains open and PR
   #170 remains WIP.
+
+### C explicit Prohibited asynchronous Create
+
+The installed C consumer now sets `Asynchronous Indicator=Prohibited` and
+requires Create to complete synchronously. The controlled peer verifies the
+exact indicator, successful Create response, absence of correlation, and no
+Poll request across KMIP 2.0/2.1 and all six encoding/transport pairs. This
+follows §§8.2–8.3, 8.6, 9.1–9.2, and 11.3; Create is §6.1.8 Table 171 (2.0)
+and Table 186 (2.1).
+
+- Red commit `7472db396` failed because the C controlled peer had no recipe for
+  `test-async-indicator-prohibited-synchronous`.
+- Green commit `f204ff0c7` adds the typed C route and verifies synchronous
+  Success with no correlation for the explicit Prohibited value.
+- Refactor commit `161155dbd` shares synchronous Async Indicator request,
+  response, and peer-evidence checks across the Optional and Prohibited cases.
+- Verification: the four focused async Create routes passed together; the C
+  build, Python syntax checks, `test_c_validator`, and both controlled TLS
+  CTest peers passed.
+- The matching full C route matrix recorded 40,594 invoked cells, zero failed,
+  and 26,142 `validator_recipe_pending` cells. The exact completeness
+  validator exits unsuccessfully, next reporting `test-async-lifecycle-poll`.
+  The gate remains open and PR #170 remains WIP.
