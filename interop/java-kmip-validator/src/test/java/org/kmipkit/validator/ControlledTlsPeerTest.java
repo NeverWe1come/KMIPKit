@@ -126,6 +126,10 @@ class ControlledTlsPeerTest {
             "test-norm-operation-structure-operation-structure-7-32-profile-version";
     private static final String PROFILE_VERSION_TARGET_ID =
             "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-32-PROFILE-VERSION";
+    private static final String OBJECT_TYPE_MEMBER_CASE_ID =
+            "test-norm-structure-member-structure-member-7-24-object-type";
+    private static final String OBJECT_TYPE_MEMBER_TARGET_ID =
+            "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-24-OBJECT-TYPE";
     private static final List<ProfileInformationMemberFixture> PROFILE_INFORMATION_MEMBER_FIXTURES = List.of(
             new ProfileInformationMemberFixture(
                     "test-norm-structure-member-structure-member-7-31-profile-version",
@@ -1054,6 +1058,7 @@ class ControlledTlsPeerTest {
         int extensionInformationRouteEventCount = KMIP_2_0_AND_2_1.size() * 7;
         int profileInformationRouteEventCount = KMIP_2_0_AND_2_1.size()
                 * (2 * GENERIC_STRUCTURE_ROUTE_IDS.size() + 4 * PROFILE_INFORMATION_MEMBER_FIXTURES.size());
+        int objectTypeMemberRouteEventCount = 0;
         int pendingCorrelationAccessorEventCount = KMIP_2_0_AND_2_1.size();
         int structureMemberStructureRouteEventCount = STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size() * 4;
         int structureMemberByteStringRouteEventCount = STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.stream()
@@ -1094,6 +1099,7 @@ class ControlledTlsPeerTest {
                         + scalarOperationStructureRouteEventCount
                         + extensionInformationRouteEventCount
                         + profileInformationRouteEventCount
+                        + objectTypeMemberRouteEventCount
                         + pendingCorrelationAccessorEventCount
                         + structureMemberStructureRouteEventCount + structureMemberByteStringRouteEventCount
                         + structureMemberValueRouteEventCount
@@ -1124,6 +1130,7 @@ class ControlledTlsPeerTest {
                         + enumerationFixtures.size() + localEnumerationCaseCount + bitmaskCaseCount
                         + dataTypeCaseCount
                         + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + genericTagCaseIds.size()
+                        + 1
                         + typedTagIdentityCaseIds().size() + referencedEnumCaseCount
                         + 11 + STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size()
                         + STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.size()
@@ -3429,6 +3436,7 @@ class ControlledTlsPeerTest {
         caseIds.add("test-norm-structure-member-structure-member-7-23-object-group");
         caseIds.add("test-norm-operation-structure-operation-structure-7-2-asynchronous-request");
         caseIds.add("test-norm-operation-structure-operation-structure-7-13-extension-information");
+        caseIds.add(OBJECT_TYPE_MEMBER_CASE_ID);
         PROFILE_INFORMATION_CASE_IDS.forEach(caseIds::add);
         OPERATION_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         SCALAR_OPERATION_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
@@ -4442,6 +4450,17 @@ class ControlledTlsPeerTest {
                     "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-2-ASYNCHRONOUS-REQUEST", protocolVersion);
             for (OperationStructureFixture fixture : OPERATION_STRUCTURE_FIXTURES) {
                 assertGenericStructureRouteEvents(events, fixture.caseId(), fixture.targetId(), protocolVersion);
+            }
+            // OASIS KMIP 2.1 §7.24 Table 376; Object Type is optional and repeatable.
+            for (String route : List.of(
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
+                    "java.generic-ttlv.ttlv_item.create",
+                    "java.generic-ttlv.function.ttlv_item_view_from_item",
+                    "java.generic-ttlv.ttlv_codec.decode")) {
+                String action = route.endsWith("ttlv_codec.decode")
+                        || route.endsWith("ttlv_item_view_from_item") ? "decode" : "construct";
+                assertRouteEventRecorded(events, OBJECT_TYPE_MEMBER_CASE_ID, OBJECT_TYPE_MEMBER_TARGET_ID,
+                        route, action, protocolVersion);
             }
             String objectGroupCase = "test-norm-structure-member-structure-member-7-23-object-group";
             String objectGroupTarget = "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-23-OBJECT-GROUP";
