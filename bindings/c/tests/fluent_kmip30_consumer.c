@@ -196,7 +196,7 @@ int kmipkit_c_kmip30_exchange_probe(kmipkit_client_t *client, kmipkit_codec_limi
     } else {
 #define EXECUTE(name, ...) (use_options ? kmipkit_client_##name##_with_options_v1(client, __VA_ARGS__, limits, &options, &response) : kmipkit_client_##name##_v1(client, __VA_ARGS__, limits, &response))
         switch (operation_index) {
-        case 0: status = EXECUTE(create_credential, 1, attributes, object); break;
+        case 0: status = EXECUTE(create_credential, attributes, object); break;
         case 1: status = EXECUTE(create_group, attributes); break;
         case 2: status = EXECUTE(create_user, attributes); break;
         case 3: status = EXECUTE(deactivate, &id); break;
