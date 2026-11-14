@@ -229,6 +229,22 @@ response behavior; §11.5 defines Object Not Found. Red/Green commits are
 7/7 in 95.87 seconds; exact-head CI and remaining route matrix coverage remain
 open.
 
+### C Create Split Key operation route
+
+KMIPKIT-0092-FR-003, FR-005, and FR-009 are exercised for
+`test-op-create-split-key` through the installed C ABI and controlled peers.
+The request uses an AES-128 Symmetric Key, three parts, threshold two, and XOR;
+the consumer validates the response count and all three typed Unique
+Identifiers, then destroys every returned object. OASIS sources: KMIP 2.0
+§6.1.10 Tables 178–179 and KMIP 2.1 §6.1.10 Tables 193–194.
+
+- Red: `e00665d1e`; the focused test failed with no controlled-peer checks.
+- Green: `420a7c597`; the typed C request/response route and stateful cleanup
+  recipe produced 12 passing version/encoding/transport checks.
+- Full local CTest passed 7/7, including the contract suite and both KMIP 2.0
+  and 2.1 controlled TLS peers. Exact-head hosted CI, full matrix completion,
+  and Rust/Java/Python parity remain outstanding.
+
 ### C forward ID Placeholder rejection
 
 KMIPKIT-0092-FR-002 plans no response decoder when the catalog authorizes a

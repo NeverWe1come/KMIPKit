@@ -58,6 +58,10 @@
 - [x] T020 Execute the catalogued C Encrypt and Decrypt operation cases through
   the installed typed ABI and controlled TLS peers for KMIP 2.0/2.1, TTLV/JSON/XML,
   and raw TLS/HTTPS; validate typed ciphertext/plaintext responses and object cleanup.
+- [x] T021 Execute the catalogued C Create Split Key operation through the
+  installed typed ABI and controlled TLS peers for KMIP 2.0/2.1, TTLV/JSON/XML,
+  and raw TLS/HTTPS; validate every returned part identifier and destroy all
+  created parts.
 
 T006 and T007 remain open until each separate language validator consumes the
 generated matrix, invokes every named public route, exchanges requests and
@@ -765,3 +769,26 @@ fixture.
   42,636/66,692 cells with zero failures and 24,056 pending validator recipes;
   it remains incomplete. Exact-head hosted CI is still pending and the PR stays
   WIP.
+
+## Development evidence: C Create Split Key operation route
+
+For KMIPKIT-0092-FR-003, FR-005, and FR-009, `test-op-create-split-key` now
+uses the installed typed C ABI to request a 3-part, 2-of-3 XOR split for an
+AES-128 symmetric key. The consumer reads the response count and every returned
+Unique Identifier through typed accessors, then sends a separate three-item
+Destroy batch. The controlled peer verifies request parameters, repeated
+response identifiers, cleanup identifiers, and restoration of its initial
+object state. Normative references are OASIS KMIP 2.0 §6.1.10 Tables 178–179
+and KMIP 2.1 §6.1.10 Tables 193–194.
+
+- Red commit `e00665d1e`: the focused test failed because no C Create Split Key
+  route produced controlled-peer evidence.
+- Green commit `420a7c597`: dispatch the operation through the installed
+  `kmipkit_client_batch_item_create_split_key` ABI, validate all three typed
+  identifiers, destroy each part, and add the corresponding stateful peer
+  recipe.
+- Verification: the focused test passed all 12 version/encoding/transport
+  exchanges; the route contract suite passed 179 tests; the CMake build passed,
+  and full CTest passed 7/7.
+  This closes only the C Create Split Key slice; exact-head hosted CI, the full
+  route matrix, and Rust/Java/Python parity remain open.
