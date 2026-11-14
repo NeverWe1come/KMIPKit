@@ -1277,6 +1277,48 @@ static kmip_execution_outcome_t outcome_failed(const char *reason) {
     return outcome;
 }
 
+static int32_t read_pending_create_correlation(
+    kmipkit_client_batch_response_t *response,
+    const uint8_t *expected_correlation,
+    uint64_t expected_correlation_length,
+    kmipkit_client_batch_item_response_t **out_response_item,
+    kmipkit_byte_span_v1_t *out_correlation) {
+    kmipkit_client_batch_item_metadata_v2_t metadata = {
+        .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t),
+        .abi_version = 2
+    };
+    kmipkit_unique_identifier_v1_t identifier = {
+        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+        .abi_version = 1
+    };
+    uint64_t response_count = 0;
+    uint8_t create_present = 1;
+    uint8_t correlation_present = 0;
+    uint32_t object_type = UINT32_MAX;
+    int32_t status = kmipkit_client_batch_response_item_count(response, &response_count);
+    if (status == 0 && response_count == 1) {
+        status = kmipkit_client_batch_response_item_at(response, 0, out_response_item);
+    } else if (status == 0) {
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
+        *out_response_item, &metadata);
+    if (status == 0) status = kmipkit_client_batch_item_response_create(
+        *out_response_item, &create_present, &object_type, &identifier);
+    if (status == 0) status = kmipkit_client_batch_item_response_pending_correlation_value(
+        *out_response_item, &correlation_present, out_correlation);
+    if (status == 0 && (metadata.operation != KMIPKIT_ENUMERATION_OPERATION_CREATE ||
+                        metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_OPERATION_PENDING ||
+                        create_present != 0 || object_type != 0 || identifier.kind != 0 ||
+                        correlation_present != 1 || out_correlation->data == NULL ||
+                        out_correlation->length != expected_correlation_length ||
+                        memcmp(out_correlation->data, expected_correlation,
+                               (size_t)expected_correlation_length) != 0)) {
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    return status;
+}
+
 static kmip_execution_outcome_t execute_cancel_route(kmip_live_client_t *client) {
     static const uint8_t expected_correlation[] = "fixture-cancel-correlation";
     kmipkit_ttlv_structure_t *attributes = NULL;
@@ -1289,19 +1331,7 @@ static kmip_execution_outcome_t execute_cancel_route(kmip_live_client_t *client)
         .struct_size = (uint32_t)sizeof(kmipkit_client_async_operation_response_v1_t),
         .abi_version = 1
     };
-    kmipkit_client_batch_item_metadata_v2_t seed_metadata = {
-        .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t),
-        .abi_version = 2
-    };
-    kmipkit_unique_identifier_v1_t seed_identifier = {
-        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
-        .abi_version = 1
-    };
     kmipkit_byte_span_v1_t correlation = {0};
-    uint64_t seed_response_count = 0;
-    uint8_t seed_create_present = 1;
-    uint8_t correlation_present = 0;
-    uint32_t seed_object_type = UINT32_MAX;
     uint8_t response_present = 0;
     uint32_t expected_cancel_result = 1;
     kmip_execution_outcome_t outcome = { .executed = true };
@@ -1333,29 +1363,9 @@ static kmip_execution_outcome_t execute_cancel_route(kmip_live_client_t *client)
     if (status == 0) status = kmipkit_client_batch_add_item(seed_batch, &create_item);
     if (status == 0) status = kmipkit_client_execute(
         client->client, &seed_batch, client->limits, &seed_response);
-    if (status == 0) status = kmipkit_client_batch_response_item_count(
-        seed_response, &seed_response_count);
-    if (status == 0 && seed_response_count == 1) {
-        status = kmipkit_client_batch_response_item_at(seed_response, 0, &seed_response_item);
-    } else if (status == 0) {
-        status = KMIPKIT_ERROR_INVALID_INPUT;
-    }
-    if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
-        seed_response_item, &seed_metadata);
-    if (status == 0) status = kmipkit_client_batch_item_response_create(
-        seed_response_item, &seed_create_present, &seed_object_type, &seed_identifier);
-    if (status == 0) status = kmipkit_client_batch_item_response_pending_correlation_value(
-        seed_response_item, &correlation_present, &correlation);
-    if (status == 0 && (seed_metadata.operation != KMIPKIT_ENUMERATION_OPERATION_CREATE ||
-                        seed_metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_OPERATION_PENDING ||
-                        seed_create_present != 0 || seed_object_type != 0 ||
-                        seed_identifier.kind != 0 || correlation_present != 1 ||
-                        correlation.data == NULL ||
-                        correlation.length != sizeof(expected_correlation) - 1 ||
-                        memcmp(correlation.data, expected_correlation,
-                               sizeof(expected_correlation) - 1) != 0)) {
-        status = KMIPKIT_ERROR_INVALID_INPUT;
-    }
+    if (status == 0) status = read_pending_create_correlation(
+        seed_response, expected_correlation, sizeof(expected_correlation) - 1,
+        &seed_response_item, &correlation);
     if (status == 0) status = kmipkit_client_execute_cancel(
         client->client, correlation.data, correlation.length, client->limits, &async_outcome);
     if (status == 0) {
