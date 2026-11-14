@@ -101,6 +101,19 @@ class ControlledTlsPeerTest {
     private record StructureMemberStructureFixture(String caseId, String targetId, int rawTag,
             int parentTag, boolean repeatable) { }
 
+    private record OperationStructureFixture(String caseId, String targetId, int structureTag,
+            int memberTag, TtlvItemType memberType, String textValue, long enumerationValue) { }
+
+    private static final List<OperationStructureFixture> OPERATION_STRUCTURE_FIXTURES = List.of(
+            new OperationStructureFixture(
+                    "test-norm-operation-structure-operation-structure-7-23-object-groups",
+                    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-23-OBJECT-GROUPS",
+                    0x420126, 0x420056, TtlvItemType.TextString, "kmipkit-object-group", 0),
+            new OperationStructureFixture(
+                    "test-norm-operation-structure-operation-structure-7-24-object-types",
+                    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES",
+                    0x420125, 0x420057, TtlvItemType.Enumeration, "", 2));
+
     private static final List<StructureMemberStructureFixture> STRUCTURE_MEMBER_STRUCTURE_FIXTURES = List.of(
             new StructureMemberStructureFixture(
                     "test-norm-structure-member-structure-member-7-6-attributes",
@@ -486,6 +499,9 @@ class ControlledTlsPeerTest {
             appendNormativeRequestMessageParseEvents(events, protocolVersion);
             if ("2.1".equals(protocolVersion)) {
                 appendAsynchronousRequestOperationStructureRouteEvents(events);
+                for (OperationStructureFixture fixture : OPERATION_STRUCTURE_FIXTURES) {
+                    appendOperationStructureRouteEvents(events, fixture);
+                }
             }
             LocalCatalogRouteChecks.executeTags(readRouteEvidenceCatalog(), protocolVersion, genericOnlyTagCaseIds(),
                     invocation -> appendLocalCatalogInvocation(events, protocolVersion, invocation));
@@ -929,6 +945,7 @@ class ControlledTlsPeerTest {
         int newAttributePayloadRouteEventCount = KMIP_2_0_AND_2_1.size() * 3 * 20;
         int objectGroupLocalRouteEventCount = 3;
         int asynchronousRequestOperationStructureRouteEventCount = 6;
+        int operationStructureRouteEventCount = OPERATION_STRUCTURE_FIXTURES.size() * 6;
         int structureMemberStructureRouteEventCount = STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size() * 4;
         int structureMemberByteStringRouteEventCount = STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.stream()
                 .mapToInt(fixture -> 4 + (fixture.typedQueryFilter() ? 1 : 0)).sum();
@@ -964,6 +981,7 @@ class ControlledTlsPeerTest {
                         + normativeBatchItemAccessorRouteEventCount + newAttributePayloadRouteEventCount
                         + credentialEnvelopeEventCount + objectGroupLocalRouteEventCount
                         + asynchronousRequestOperationStructureRouteEventCount
+                        + operationStructureRouteEventCount
                         + structureMemberStructureRouteEventCount + structureMemberByteStringRouteEventCount
                         + structureMemberValueRouteEventCount
                         + batchErrorContinuationEventCount + genericTagEventCount + typedTagIdentityEventCount
@@ -989,7 +1007,8 @@ class ControlledTlsPeerTest {
         long dataTypeCaseCount = dataTypeFixtures.stream().map(DataTypeFixture::caseId).distinct().count();
         long localEnumerationCaseCount = localEnumerationFixtures.stream()
                 .map(EnumerationFixture::caseId).distinct().count();
-        assertEquals(16 + enumerationFixtures.size() + localEnumerationCaseCount + bitmaskCaseCount
+        assertEquals(16 + OPERATION_STRUCTURE_FIXTURES.size()
+                        + enumerationFixtures.size() + localEnumerationCaseCount + bitmaskCaseCount
                         + dataTypeCaseCount
                         + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + genericTagCaseIds.size()
                         + typedTagIdentityCaseIds().size() + referencedEnumCaseCount
@@ -3296,6 +3315,7 @@ class ControlledTlsPeerTest {
         caseIds.add("test-norm-message-field-message-field-8-3-ephemeral");
         caseIds.add("test-norm-structure-member-structure-member-7-23-object-group");
         caseIds.add("test-norm-operation-structure-operation-structure-7-2-asynchronous-request");
+        OPERATION_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         STRUCTURE_MEMBER_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         STRUCTURE_MEMBER_VALUE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
@@ -4814,6 +4834,86 @@ class ControlledTlsPeerTest {
             assertEquals(0x420174, submissionDateTag.raw());
             assertEquals(TtlvItemType.DateTimeExtended, submissionDateField.itemType());
             assertEquals(submissionDate, submissionDateValue.dateTimeExtended());
+        }
+    }
+
+    // OASIS KMIP 2.1 §§7.23–7.24, Tables 375–376: required Structures with repeatable members.
+    private static void appendOperationStructureRouteEvents(ArrayNode events,
+            OperationStructureFixture fixture) throws Exception {
+        CodecLimits limits = CodecLimits.defaults();
+        byte[] memberValue = fixture.memberType() == TtlvItemType.TextString
+                ? fixture.textValue().getBytes(StandardCharsets.UTF_8)
+                : intBytes(Math.toIntExact(fixture.enumerationValue()));
+        byte[] memberWire = item(fixture.memberTag(), fixture.memberType().code(), memberValue);
+        byte[] wire = structure(fixture.structureTag(), memberWire);
+        String treeHash = normalizedTreeSha256(wire);
+
+        TtlvStructure fields = TtlvStructure.create();
+        TtlvValue member = fixture.memberType() == TtlvItemType.TextString
+                ? TtlvValue.TextString(memberValue, limits)
+                : TtlvValue.Enumeration(fixture.enumerationValue());
+        fields = appendTtlvItem(fields, fixture.memberTag(), member, limits);
+        TtlvStructure completedFields = fields;
+        try (completedFields;
+                TtlvValue structureValue = TtlvValue.structure(completedFields, limits);
+                RawTag raw = RawTag.fromRaw(fixture.structureTag());
+                Tag tag = raw.checked();
+                TtlvItem created = TtlvItem.create(tag, structureValue, limits);
+                var view = created.view();
+                Tag viewedTag = view.tag();
+                var value = view.value();
+                var structureView = value.structure()) {
+            assertEquals(fixture.structureTag(), viewedTag.raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertOperationStructureMember(structureView, fixture, memberValue);
+        }
+        appendRouteEvent(events, fixture.caseId(),
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.create",
+                fixture.targetId(), "org.kmipkit.ttlv.TtlvStructure.create", null, null,
+                "construct", "2.1", null, treeHash, null);
+        appendRouteEvent(events, fixture.caseId(),
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem",
+                fixture.targetId(), "org.kmipkit.ttlv.TtlvStructure.withItem", null, null,
+                "construct", "2.1", null, treeHash, null);
+        appendRouteEvent(events, fixture.caseId(),
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
+                fixture.targetId(), "org.kmipkit.ttlv.TtlvValue.structure", null, null,
+                "construct", "2.1", null, treeHash, null);
+        appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_item.create",
+                fixture.targetId(), "org.kmipkit.ttlv.TtlvItem.create", null, null,
+                "construct", "2.1", null, treeHash, null);
+        appendRouteEvent(events, fixture.caseId(),
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                fixture.targetId(), "org.kmipkit.ttlv.TtlvItem.view", null, null,
+                "decode", "2.1", null, null, treeHash);
+
+        try (TtlvItem decoded = TtlvCodec.decode(wire);
+                var view = decoded.view();
+                var tag = view.tag();
+                var value = view.value();
+                var structureView = value.structure()) {
+            assertEquals(fixture.structureTag(), tag.raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertOperationStructureMember(structureView, fixture, memberValue);
+        }
+        appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_codec.decode",
+                fixture.targetId(), "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
+                "decode", "2.1", null, null, treeHash);
+    }
+
+    private static void assertOperationStructureMember(TtlvStructureView fields,
+            OperationStructureFixture fixture, byte[] expectedTextValue) throws Exception {
+        assertEquals(1, fields.itemCount());
+        try (TtlvItemView member = fields.itemAt(0);
+                Tag tag = member.tag();
+                var value = member.value()) {
+            assertEquals(fixture.memberTag(), tag.raw());
+            assertEquals(fixture.memberType(), member.itemType());
+            if (fixture.memberType() == TtlvItemType.TextString) {
+                assertArrayEquals(expectedTextValue, value.bytes());
+            } else {
+                assertEquals(fixture.enumerationValue(), value.enumeration());
+            }
         }
     }
 
