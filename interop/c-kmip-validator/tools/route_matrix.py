@@ -281,47 +281,35 @@ def _with_request_header_field(fixture: tuple, tags: dict[str, int], field: tupl
     return fixture[0], fixture[1], message
 
 
-def _request_message_with_two_items(fixture: tuple, tags: dict[str, int]) -> tuple:
-    """Add unique identifiers and a matching count for batch-level options."""
+def _request_message_with_batch_ids(fixture: tuple, tags: dict[str, int],
+                                    identifiers: tuple[bytes, ...]) -> tuple:
+    """Build request Batch Items with the supplied unique identifiers and count."""
     message = list(fixture[2])
     header_index = next(index for index, item in enumerate(message)
                         if item[0] == tags['Request Header'])
     header = message[header_index]
-    header_fields = list(header[2])
-    count_index = next(index for index, item in enumerate(header_fields)
-                       if item[0] == tags['Batch Count'])
-    header_fields[count_index] = (tags['Batch Count'], 2, (2).to_bytes(4, 'big'))
-    message[header_index] = (header[0], header[1], header_fields)
-
-    batch_item = next(item for item in message if item[0] == tags['Batch Item'])
-    payload_index = next(index for index, item in enumerate(batch_item[2])
-                         if item[0] == tags['Request Payload'])
-    first_fields = list(batch_item[2])
-    first_fields.insert(payload_index,
-                        (tags['Unique Batch Item ID'], 8, b'route-batch-item-1'))
-    second_fields = list(first_fields)
-    identifier_index = next(index for index, item in enumerate(second_fields)
-                            if item[0] == tags['Unique Batch Item ID'])
-    second_fields[identifier_index] = (tags['Unique Batch Item ID'], 8, b'route-batch-item-2')
-    first_item = (batch_item[0], batch_item[1], first_fields)
-    second_item = (batch_item[0], batch_item[1], second_fields)
-    message = [item for item in message if item[0] != tags['Batch Item']]
-    message.extend((first_item, second_item))
-    return fixture[0], fixture[1], message
-
-
-def _request_message_with_unique_item_id(fixture: tuple, tags: dict[str, int]) -> tuple:
-    """Add the optional request Batch Item identifier before its payload."""
-    message = list(fixture[2])
     batch_index = next(index for index, item in enumerate(message)
                        if item[0] == tags['Batch Item'])
     batch_item = message[batch_index]
-    fields = list(batch_item[2])
-    payload_index = next(index for index, item in enumerate(fields)
+    payload_index = next(index for index, item in enumerate(batch_item[2])
                          if item[0] == tags['Request Payload'])
-    fields.insert(payload_index,
-                  (tags['Unique Batch Item ID'], 8, b'route-batch-item'))
-    message[batch_index] = (batch_item[0], batch_item[1], fields)
+    items = []
+    for identifier in identifiers:
+        fields = list(batch_item[2])
+        fields.insert(payload_index,
+                      (tags['Unique Batch Item ID'], 8, identifier))
+        items.append((batch_item[0], batch_item[1], fields))
+    if len(items) > 1:
+        header_fields = list(header[2])
+        count_index = next(index for index, item in enumerate(header_fields)
+                           if item[0] == tags['Batch Count'])
+        header_fields[count_index] = (tags['Batch Count'], 2,
+                                      len(items).to_bytes(4, 'big'))
+        message[header_index] = (header[0], header[1], header_fields)
+        message = [item for item in message if item[0] != tags['Batch Item']]
+        message.extend(items)
+    else:
+        message[batch_index] = items[0]
     return fixture[0], fixture[1], message
 
 
@@ -366,7 +354,7 @@ def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
         if fixture is None:
             return None
         if target.get('target_id') == 'KMIPKIT-ELEM-MESSAGE-FIELD-8-3-UNIQUE-BATCH-ITEM-ID':
-            fixture = _request_message_with_unique_item_id(fixture, tags)
+            fixture = _request_message_with_batch_ids(fixture, tags, (b'route-batch-item',))
         return [fixture]
     header_field = _request_header_field_fixture(target, catalog, tags, protocol_version)
     if header_field is not None:
@@ -374,7 +362,8 @@ def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
         if fixture is None:
             return None
         if target.get('target_id') in REQUEST_HEADER_MULTI_ITEM_OPTION_TARGETS:
-            fixture = _request_message_with_two_items(fixture, tags)
+            fixture = _request_message_with_batch_ids(
+                fixture, tags, (b'route-batch-item-1', b'route-batch-item-2'))
         return [_with_request_header_field(fixture, tags, header_field,
                                            after_tag='Protocol Version')]
     if target.get('target_id') == 'KMIPKIT-ELEM-MESSAGE-FIELD-8-3-EPHEMERAL':
