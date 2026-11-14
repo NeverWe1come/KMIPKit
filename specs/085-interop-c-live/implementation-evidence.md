@@ -742,3 +742,27 @@ Request Message parser to the applicable §8.1–§8.3 fields.
   recorded 39,273 invoked, zero failed, and 27,463 pending, all classified as
   `validator_recipe_pending`; it had no `fixture_preparation_failed` cells.
   The route matrix and completeness gate remain open, and PR #170 remains WIP.
+
+### Typed Request Message parser: structural fields
+
+The same installed parser fixture now covers the Request Header and Batch Item
+structures, Protocol Version, Batch Count, Operation, Request Payload, and
+Unique Batch Item ID. For the ID case the complete Get request includes the
+optional byte-string ID in its defined Batch Item position. These cases follow
+OASIS KMIP 2.0/2.1 §§8.1–8.3 and invoke the public parser on the complete tree,
+not an isolated structure or scalar.
+
+- Red commit `ddace71a3` required all nine structural targets to be present in
+  complete request trees and observed the existing generic fixtures fail for
+  both KMIP versions.
+- Green commit `e555569e1` dispatches those targets through the complete Get
+  request fixture and adds the optional ID in the correct position.
+- Refactor commit `8972387ad` shares one builder for single- and multi-item
+  batch identifiers while keeping the matching Batch Count for multi-item
+  options.
+- Verification: the nine-target installed-parser test passed for both
+  versions; the full C route-matrix contract suite passed 134/134; CTest passed
+  7/7. The complete installed-artifact matrix records 39,313/66,736 invoked
+  cells, zero failed, and 27,423 pending. The shared completeness validator
+  still fails on missing routes, starting with async Cancel response payload
+  cells. This recipe slice does not complete the matrix; PR #170 remains WIP.
