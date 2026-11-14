@@ -140,22 +140,19 @@ class ControlledTlsPeerTest {
                     "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-19-LOG-MESSAGE", 0x420141, TtlvItemType.TextString, false),
             new ScalarOperationStructureFixture(
                     "test-norm-operation-structure-operation-structure-7-20-mac-data",
-                    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-20-MAC-DATA", 0x4200c6, TtlvItemType.ByteString, false));
-
-    private static final List<ScalarOperationStructureFixture> ADDITIONAL_SCALAR_OPERATION_STRUCTURE_FIXTURES =
-            List.of(
-                    new ScalarOperationStructureFixture(
-                            "test-norm-operation-structure-operation-structure-7-3-authenticated-encryption-additional-data",
-                            "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-3-AUTHENTICATED-ENCRYPTION-ADDITIONAL-DATA",
-                            0x4200fe, TtlvItemType.ByteString, true),
-                    new ScalarOperationStructureFixture(
-                            "test-norm-operation-structure-operation-structure-7-4-authenticated-encryption-tag",
-                            "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-4-AUTHENTICATED-ENCRYPTION-TAG",
-                            0x4200ff, TtlvItemType.ByteString, true),
-                    new ScalarOperationStructureFixture(
-                            "test-norm-operation-structure-operation-structure-7-17-init-indicator",
-                            "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-17-INIT-INDICATOR",
-                            0x4200d7, TtlvItemType.Boolean, false));
+                    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-20-MAC-DATA", 0x4200c6, TtlvItemType.ByteString, false),
+            new ScalarOperationStructureFixture(
+                    "test-norm-operation-structure-operation-structure-7-3-authenticated-encryption-additional-data",
+                    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-3-AUTHENTICATED-ENCRYPTION-ADDITIONAL-DATA",
+                    0x4200fe, TtlvItemType.ByteString, true),
+            new ScalarOperationStructureFixture(
+                    "test-norm-operation-structure-operation-structure-7-4-authenticated-encryption-tag",
+                    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-4-AUTHENTICATED-ENCRYPTION-TAG",
+                    0x4200ff, TtlvItemType.ByteString, true),
+            new ScalarOperationStructureFixture(
+                    "test-norm-operation-structure-operation-structure-7-17-init-indicator",
+                    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-17-INIT-INDICATOR",
+                    0x4200d7, TtlvItemType.Boolean, false));
 
     private static final List<StructureMemberStructureFixture> STRUCTURE_MEMBER_STRUCTURE_FIXTURES = List.of(
             new StructureMemberStructureFixture(
@@ -547,9 +544,6 @@ class ControlledTlsPeerTest {
                 }
             }
             for (ScalarOperationStructureFixture fixture : SCALAR_OPERATION_STRUCTURE_FIXTURES) {
-                appendScalarOperationStructureRouteEvents(events, fixture, protocolVersion);
-            }
-            for (ScalarOperationStructureFixture fixture : ADDITIONAL_SCALAR_OPERATION_STRUCTURE_FIXTURES) {
                 appendScalarOperationStructureRouteEvents(events, fixture, protocolVersion);
             }
             LocalCatalogRouteChecks.executeTags(readRouteEvidenceCatalog(), protocolVersion, genericOnlyTagCaseIds(),
@@ -995,8 +989,8 @@ class ControlledTlsPeerTest {
         int objectGroupLocalRouteEventCount = 3;
         int asynchronousRequestOperationStructureRouteEventCount = 6;
         int operationStructureRouteEventCount = OPERATION_STRUCTURE_FIXTURES.size() * 6;
-        int scalarOperationStructureRouteEventCount = (SCALAR_OPERATION_STRUCTURE_FIXTURES.size()
-                + ADDITIONAL_SCALAR_OPERATION_STRUCTURE_FIXTURES.size()) * KMIP_2_0_AND_2_1.size() * 6;
+        int scalarOperationStructureRouteEventCount = SCALAR_OPERATION_STRUCTURE_FIXTURES.size()
+                * KMIP_2_0_AND_2_1.size() * 6;
         int structureMemberStructureRouteEventCount = STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size() * 4;
         int structureMemberByteStringRouteEventCount = STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.stream()
                 .mapToInt(fixture -> 4 + (fixture.typedQueryFilter() ? 1 : 0)).sum();
@@ -1060,7 +1054,6 @@ class ControlledTlsPeerTest {
         long localEnumerationCaseCount = localEnumerationFixtures.stream()
                 .map(EnumerationFixture::caseId).distinct().count();
         assertEquals(16 + OPERATION_STRUCTURE_FIXTURES.size() + SCALAR_OPERATION_STRUCTURE_FIXTURES.size()
-                        + ADDITIONAL_SCALAR_OPERATION_STRUCTURE_FIXTURES.size()
                         + enumerationFixtures.size() + localEnumerationCaseCount + bitmaskCaseCount
                         + dataTypeCaseCount
                         + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + genericTagCaseIds.size()
@@ -3370,7 +3363,6 @@ class ControlledTlsPeerTest {
         caseIds.add("test-norm-operation-structure-operation-structure-7-2-asynchronous-request");
         OPERATION_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         SCALAR_OPERATION_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
-        ADDITIONAL_SCALAR_OPERATION_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         STRUCTURE_MEMBER_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         STRUCTURE_MEMBER_VALUE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
@@ -4318,9 +4310,6 @@ class ControlledTlsPeerTest {
         for (ScalarOperationStructureFixture fixture : SCALAR_OPERATION_STRUCTURE_FIXTURES) {
             assertScalarOperationStructureRouteEvents(events, fixture, protocolVersion);
         }
-        for (ScalarOperationStructureFixture fixture : ADDITIONAL_SCALAR_OPERATION_STRUCTURE_FIXTURES) {
-            assertScalarOperationStructureRouteEvents(events, fixture, protocolVersion);
-        }
         if ("2.1".equals(protocolVersion)) {
             assertGenericStructureRouteEvents(events,
                     "test-norm-operation-structure-operation-structure-7-2-asynchronous-request",
@@ -4893,8 +4882,8 @@ class ControlledTlsPeerTest {
         appendGenericStructureRouteEvents(events, fixture.caseId(), fixture.targetId(), treeHash);
     }
 
-    // OASIS KMIP 2.0/2.1 §§7.3–7.4, 7.6, 7.10, 7.12, 7.15–7.17, and 7.16/7.20 define these
-    // operation fields with Integer, Boolean, Text String, or Byte String values.
+    // OASIS KMIP 2.0 §§7.1–7.2, 7.6, 7.10, 7.12–7.13, and 7.15–7.16 plus KMIP 2.1
+    // §§7.3–7.4, 7.10, 7.14, 7.16–7.17, and 7.19–7.20 define these field value types.
     private static void appendScalarOperationStructureRouteEvents(ArrayNode events,
             ScalarOperationStructureFixture fixture, String protocolVersion) throws Exception {
         CodecLimits limits = CodecLimits.defaults();

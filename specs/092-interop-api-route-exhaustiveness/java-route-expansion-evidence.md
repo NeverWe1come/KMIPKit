@@ -1330,3 +1330,49 @@ catalog and installed-route capability matrix after version, route,
 encoding/transport, and source-backed exclusion checks. Every cell still
 planned is applicable under FR-002/FR-009, so this selected-scope pass does not
 complete the Java matrix and the PR remains WIP.
+
+## KMIP 2.0/2.1 authenticated-encryption and Init Indicator routes
+
+Sources: Authenticated Encryption Additional Data is a Byte String in KMIP 2.0
+§7.1 and KMIP 2.1 §7.3; Authenticated Encryption Tag is a Byte String in
+KMIP 2.0 §7.2 and KMIP 2.1 §7.4. Both are marked optional in §7.3/§7.4 of
+KMIP 2.1. Init Indicator is Boolean in KMIP 2.0 §7.13 and KMIP 2.1 §7.17.
+Their field tags are `0x4200FE`, `0x4200FF`, and `0x4200D7`; the assigned tag
+allocations are in KMIP 2.0 §11.54 and KMIP 2.1 §11.56. Each case has six
+applicable local generic routes in both protocol versions.
+
+Red commit `166210d3a` asserts all six routes for the three fields; the focused
+test fails because Authenticated Encryption Additional Data lacks its
+`TtlvStructure.create` invocation event in KMIP 2.0. Green commit `1ae449bfd`
+invokes the generic primitive, structure, Item, view, and decoder routes and
+checks exact tags, TTLV types, and values. It also verifies that each optional
+Authenticated Encryption member can be absent from the Structure and that its
+present form retains the exact Byte String value. The three fixtures add 36
+route cells. Refactor consolidates the scalar fixture table and refreshes the
+generated ledger and route-count documentation.
+
+Verification used the installed Java artifact pinned to
+`489fafc79ef89db2524eafa7a6c6482f5cf75d97`:
+
+```sh
+TMPDIR="$PWD/build/native-test-tmp" \
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/native-test-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+python3 -m unittest tools.normative_catalog.tests.test_feature_traceability \
+  scripts.tests.test_requirement_traceability
+```
+
+The installed Java suite passes 54 tests with zero failures, errors, or skips;
+the shared validator accepts 22,725/22,725 selected cells with zero failures.
+The full ledger has 71,463 planned, 22,725 executed, and 48,738 pending cells
+across 1,303 case IDs. All remaining cells retain `route_evidence_not_emitted`;
+the shared catalog and installed-route capability matrix still determines
+applicability, and the completeness requirement remains open under FR-002 and
+FR-009.
