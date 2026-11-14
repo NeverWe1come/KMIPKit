@@ -39,27 +39,31 @@ REQUEST_HEADER_FIELD_FIXTURES = {
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-SERVER-CORRELATION-VALUE':
         ('Server Correlation Value', 7, b'server-correlation'),
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP': ('Time Stamp', 9, 1_760_000_000),
-    'KMIPKIT-ELEM-MESSAGE-FIELD-9-10-SERVER-CORRELATION-VALUE':
-        ('Server Correlation Value', 7, b'server-correlation'),
-    'KMIPKIT-ELEM-MESSAGE-FIELD-9-12-MAXIMUM-RESPONSE-SIZE': ('Maximum Response Size', 2, 1024),
-    'KMIPKIT-ELEM-MESSAGE-FIELD-9-2-ASYNCHRONOUS-INDICATOR': ('Asynchronous Indicator', 5, None),
-    'KMIPKIT-ELEM-MESSAGE-FIELD-9-3-ATTESTATION-CAPABLE-INDICATOR':
-        ('Attestation Capable Indicator', 6, 0),
-    'KMIPKIT-ELEM-MESSAGE-FIELD-9-20-TIME-STAMP': ('Time Stamp', 9, 1_760_000_000),
-    'KMIPKIT-ELEM-MESSAGE-FIELD-9-9-CLIENT-CORRELATION-VALUE':
-        ('Client Correlation Value', 7, b'client-correlation'),
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION':
         ('Batch Error Continuation Option', 5, None),
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION': ('Batch Order Option', 6, 1),
+}
+REQUEST_HEADER_FIELD_ALIASES = {
+    'KMIPKIT-ELEM-MESSAGE-FIELD-9-10-SERVER-CORRELATION-VALUE':
+        'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-SERVER-CORRELATION-VALUE',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-9-12-MAXIMUM-RESPONSE-SIZE':
+        'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-MAXIMUM-RESPONSE-SIZE',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-9-2-ASYNCHRONOUS-INDICATOR':
+        'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ASYNCHRONOUS-INDICATOR',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-9-3-ATTESTATION-CAPABLE-INDICATOR':
+        'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ATTESTATION-CAPABLE-INDICATOR',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-9-20-TIME-STAMP':
+        'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-9-9-CLIENT-CORRELATION-VALUE':
+        'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-CLIENT-CORRELATION-VALUE',
     'KMIPKIT-ELEM-MESSAGE-FIELD-9-6-BATCH-ERROR-CONTINUATION-OPTION':
-        ('Batch Error Continuation Option', 5, None),
-    'KMIPKIT-ELEM-MESSAGE-FIELD-9-8-BATCH-ORDER-OPTION': ('Batch Order Option', 6, 1),
+        'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-9-8-BATCH-ORDER-OPTION':
+        'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION',
 }
 REQUEST_HEADER_MULTI_ITEM_OPTION_TARGETS = frozenset({
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION',
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION',
-    'KMIPKIT-ELEM-MESSAGE-FIELD-9-6-BATCH-ERROR-CONTINUATION-OPTION',
-    'KMIPKIT-ELEM-MESSAGE-FIELD-9-8-BATCH-ORDER-OPTION',
 })
 REQUEST_MESSAGE_CONTEXT_TARGETS = frozenset({
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-1-BATCH-ITEM',
@@ -353,7 +357,9 @@ def _request_header_field_data(name: str, kind: int, value: object, catalog: dic
 
 def _request_header_field_fixture(target: dict, catalog: dict, tags: dict[str, int],
                                   protocol_version: str) -> tuple | None:
-    specification = REQUEST_HEADER_FIELD_FIXTURES.get(target.get('target_id'))
+    target_id = target.get('target_id')
+    canonical_target_id = REQUEST_HEADER_FIELD_ALIASES.get(target_id, target_id)
+    specification = REQUEST_HEADER_FIELD_FIXTURES.get(canonical_target_id)
     if specification is None:
         return None
     name, kind, value = specification
@@ -385,7 +391,9 @@ def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
         fixture = _request_message_fixture(protocol_version, tags, catalog)
         if fixture is None:
             return None
-        if target.get('target_id') in REQUEST_HEADER_MULTI_ITEM_OPTION_TARGETS:
+        canonical_target_id = REQUEST_HEADER_FIELD_ALIASES.get(
+            target.get('target_id'), target.get('target_id'))
+        if canonical_target_id in REQUEST_HEADER_MULTI_ITEM_OPTION_TARGETS:
             fixture = _request_message_with_batch_ids(
                 fixture, tags, (b'route-batch-item-1', b'route-batch-item-2'))
         return [_with_request_header_field(fixture, tags, header_field,
