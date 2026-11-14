@@ -166,3 +166,29 @@ TTLV remain pending because this is a successful Create/Activate response and
 the repository security invariant allows that accessor only for the narrowly
 specified successful MAC, MAC Verify, Sign, and Signature Verify shape
 failures. The full matrix and Rust/Java/Python evidence remain open.
+
+### C single-item batch response accessors
+
+For KMIPKIT-0092-FR-003 and FR-009, the C installed consumer now sends the
+single-item Get request with Batch Error Continuation Option and Batch Order
+Option omitted, then validates the typed Symmetric Key response, response
+metadata, response-header TTLV, Unique Batch Item ID, and absence of
+asynchronous correlation. OASIS KMIP 2.0/2.1 §§6.1.19, 8.2, 8.5–8.6, and 9.5,
+9.7 define the Get operation and message/batch shapes. The caller-owned Any
+Object result is released through the documented zeroizing release path and
+does not enter diagnostics. Red/Green commits are `5536660b0`/`f697ad925`; the
+focused controlled-peer test passes 12 version/encoding/transport exchanges,
+and full local CTest passes 7/7 in 104.44 seconds.
+
+### C Undo continuation and rollback response
+
+For KMIPKIT-0092-FR-003, FR-005, and FR-009, the installed C consumer sends a
+typed Create/Get batch using Undo continuation. The controlled peer confirms
+that the later Get failure changes the earlier Create result to Operation
+Undone and restores the fixture state. The Operation Undone response retains
+its Create payload because OASIS KMIP 2.0/2.1 §8.6 requires Response Payload
+when Result Status is not Failure. Red commit `382982aff` added the failing
+route requirement; the Green implementation and verification evidence are
+recorded in `tasks.md`. The focused route passed all 12 combinations, CTest
+passed 7/7, and the subsequent full C matrix run records zero failed cells
+with 24,242 pending recipe cells; matrix completeness remains open.

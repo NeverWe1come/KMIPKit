@@ -45,6 +45,11 @@
   response TTLV for ordinary successful responses; the repository security
   invariant limits that accessor to its specified successful shape-failure
   cases.
+- [x] T016 Validate the successful typed Get result and safe response metadata,
+  header, Unique Batch Item ID, and absent asynchronous correlation for the
+  single-item batch with both optional batch header fields omitted.
+- [x] T017 Execute a two-item C batch with Undo continuation, validate the
+  Operation Undone and failed Get results, and confirm fixture state rollback.
 
 T006 and T007 remain open until each separate language validator consumes the
 generated matrix, invokes every named public route, exchanges requests and
@@ -635,3 +640,52 @@ KMIP 2.0 §4.50 / KMIP 2.1 §4.57.
   pending cells are the restricted raw-response-TTLV access described above;
   other matrix gaps remain. Exact-head hosted CI and cross-language parity
   remain open, so the PR stays WIP.
+
+## Development evidence: C single-item batch response accessors
+
+For KMIPKIT-0092-FR-003 and FR-009, the installed C consumer checks the
+single-item Get response for a typed Symmetric Key result with the fixture
+identifier, successful response metadata, nonempty response header, matching
+Unique Batch Item ID, and absent asynchronous correlation. The request also
+verifies that Batch Error Continuation Option and Batch Order Option remain
+omitted. OASIS KMIP 2.0/2.1 §§6.1.19, 8.2, 8.5–8.6, and 9.5, 9.7 define the
+Get operation and single-item message/batch shapes.
+
+- Red commit `5536660b0`: the focused test failed because the consumer trace
+  contained only the typed batch execution and metadata-v2 accessors.
+- Green commit `f697ad925`: call the typed Get response accessor and validate
+  the version-1 metadata, response-header TTLV, Unique Batch Item ID, and
+  absent pending-correlation value. The Any Object copy is released through
+  its zeroizing C release path and is not formatted or reported.
+- Verification: CMake rebuilt both validator executables; the focused
+  single-item route test passed all 12 controlled exchanges across both
+  protocol versions, three encodings, and two transports. Full CTest passed
+  7/7 in 104.44 seconds, including the full route-matrix contract suite and
+  both controlled TLS peers. Updated full-matrix counts remain pending.
+
+## Development evidence: C Undo continuation and rollback response
+
+For KMIPKIT-0092-FR-003, FR-005, and FR-009, the installed C consumer sends a
+Create/Get batch with Batch Error Continuation Option set to Undo. The
+controlled peer executes Create, returns Object Not Found for Get, rolls back
+the created fixture object, and reports Operation Undone for Create. KMIP 2.0
+and 2.1 §8.6 requires Response Payload when Result Status is not Failure, so
+the Operation Undone Create response retains Object Type and Unique Identifier
+even though the peer's state is rolled back.
+
+- Red commit `382982aff`: the focused test failed because the route recipe and
+  installed C workflow were absent.
+- Green commit `e900464af`: add the typed two-item batch, validate both
+  response items and safe metadata, and make the fixture enforce Undo state
+  restoration and the §8.6 Operation Undone payload.
+- Verification: the focused route test passed all 12 version/encoding/
+  transport combinations. Full CTest passed 7/7 in 92.80 seconds; requirement
+  traceability passed 2 tests and normative feature traceability passed 31.
+  The subsequent installed-C matrix run `c-route-d5d7d97a-4121-4962-a588-6a83576e90d6`,
+  using pinned library commit `489fafc79ef89db2524eafa7a6c6482f5cf75d97` and
+  artifact SHA-256
+  `980e85fdf6982b52360895b9c0713fbef42b294d22fbeb7d71136fe32235af65`,
+  records 42,494/66,736 cells invoked, zero failed, and 24,242 pending
+  `validator_recipe_pending` cells. The matrix remains incomplete. Exact-head
+  hosted CI and remaining language/matrix coverage remain open; this PR stays
+  WIP.
