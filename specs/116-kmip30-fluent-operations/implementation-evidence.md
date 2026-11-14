@@ -218,11 +218,41 @@ Verification on this worktree:
   script to direct test temporary files to a volume with space, because `/tmp`
   was full. No build configuration was changed.
 
-The latest published PR head before this repair was `1c990a3a9`; the correction
-is in `8e42b79cc`. The branch was pushed through `6e22d541c`; hosted CI for that
-head is running. The Windows coverage failure from `5d004d2a9` was fixed by
-moving test-only protocol code out of the source file, and `Coverage / windows`
-passed on `1c990a3a9`.
+The Java mapping correction is in `8e42b79cc`. The branch was subsequently
+pushed through `4d21018ba`; hosted checks on that head fixed the earlier Windows
+coverage failure from `5d004d2a9` by moving test-only protocol code out of the
+source file, and `Coverage / windows` passed. The Script contracts workflow on
+`4d21018ba` then exposed a stale T102 non-target declaration fingerprint; the
+failure is recorded below and the corrected fingerprint is in `efb2d466`.
+
+## T102 snapshot correction for the integrated KMIPKIT-0116 inventory
+
+`Script contracts / ubuntu-latest` on `4d21018ba` failed in
+`test_non_target_declarations_and_operation_rows_match_snapshot`: the
+normalised declaration inventory hashed to `ce5106837da7dbf0a32dda5587906ea2bee17158475c121b2507c27c2df49d6e`, while the snapshot still expected
+`4fdaf8d40e251cd7faac14177747e92c2e7eb9f3cb4ce4bfc00c2c18d9cd186d`. The
+failure reproduced on the local tree before the Java mapping correction and
+was traced to the T102 snapshot predating the integrated KMIPKIT-0116 public
+surface inventory. Comparing the approved 0115 base `ddf15476` with this
+integrated manifest found 389 newly inventoried declarations and 323 updated
+declarations; the other T102 snapshot checks, including the operation rows,
+remain unchanged. The test continues to hash the entire normalised non-target
+inventory; only its expected fingerprint and scope comment were refreshed.
+
+The test failed before the change and passed after updating the fingerprint.
+The complete focused T102 CI group passed 31 tests. The binding export suite
+passed 59 tests with `TMPDIR=/home/ramp1953/.codex/tmp/kmipkit-0116`; an initial
+attempt without that override failed because `/tmp` had no free space. Both
+`tools/api_manifest/generate.py --check` and
+`tools/extension_fixtures/generate.py --check` passed, along with
+`git diff --check`.
+
+On `4d21018ba`, the Script contracts macOS and Windows jobs were cancelled
+after the Ubuntu failure. Six independent macOS matrix jobs remain pending at
+the runner queue. The repository's `Audit GitHub Actions workflows` job passed.
+The external Advanced Security CodeQL and zizmor check-runs timed out without
+annotations; the separate CodeQL Analysis and repository zizmor workflows
+passed. Do not request another check-suite rerun with the current token.
 
 ## Development commits
 
@@ -242,11 +272,13 @@ passed on `1c990a3a9`.
 - Refactor: `798afb7df` records the CI failure diagnosis, Java mapping evidence,
   and exact local verification results; exact-head CI remains pending.
 - Refactor: `6e22d541c` records the `798afb7df` evidence commit SHA.
+- Green: `efb2d466` refreshes the T102 non-target declaration fingerprint for
+  the integrated KMIPKIT-0116 inventory without weakening the snapshot check.
 
 ## Draft pull request
 
 Draft PR [#213](https://github.com/NeverWe1come/KMIPKit/pull/213) is open with
-the required `[WIP]` title and is stacked on KMIPKIT-0115. Its last pushed
-head when this evidence was recorded was `6e22d541c`; exact-head hosted CI is
-running. Keep the WIP marker until all required checks on the current PR head
-are green.
+the required `[WIP]` title and is stacked on KMIPKIT-0115. Head `4d21018ba`
+failed one Script contracts snapshot before this correction; commit `efb2d466`
+contains the fix and is pending a new hosted run. Keep the WIP marker until all
+required checks on the current PR head are green.
