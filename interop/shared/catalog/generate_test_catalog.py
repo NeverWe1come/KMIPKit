@@ -1502,8 +1502,8 @@ def generate_catalog(normative_catalog_path: Path) -> dict:
             setup = ["Create unique SymmetricKey"]
             teardown = ["Revoke SymmetricKey", "Destroy SymmetricKey"]
         elif name == "Certify":
-            setup = ["Create unique PublicKey with RSA 2048-bit attributes"]
-            teardown = ["Destroy generated Certificate", "Destroy PublicKey"]
+            setup = ["Create RSA 2048-bit key pair and target its PublicKey"]
+            teardown = ["Destroy generated Certificate", "Destroy PublicKey", "Destroy PrivateKey"]
         elif name in {"Create", "Create Key Pair", "Create Split Key", "Register", "Import"}:
             teardown = ["Destroy object"]
 

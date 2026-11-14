@@ -3945,8 +3945,10 @@ class RouteMatrixTests(unittest.TestCase):
         manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
         case_id = 'test-op-certify'
         case = next(case for case in catalog['test_cases'] if case['case_id'] == case_id)
-        self.assertEqual(['Create unique PublicKey with RSA 2048-bit attributes'],
+        self.assertEqual(['Create RSA 2048-bit key pair and target its PublicKey'],
                          case['isolation_recipe']['setup_steps'])
+        self.assertEqual(['Destroy generated Certificate', 'Destroy PublicKey', 'Destroy PrivateKey'],
+                         case['isolation_recipe']['teardown_steps'])
         selected = {**catalog, 'test_cases': [case]}
 
         events, _, checks = execute_network_cells(

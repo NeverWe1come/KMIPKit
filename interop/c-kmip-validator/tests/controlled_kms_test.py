@@ -526,7 +526,7 @@ def main() -> int:
     expected_cases += ("test-op-delete-attribute",)
     expected_cases += ("test-op-modify-attribute",)
     expected_cases += ("test-op-adjust-attribute",)
-    expected_operations += (1, 6, 20, 20)
+    expected_operations += (2, 6, 20, 20, 20)
     expected_operations += (2, 20, 20)
     expected_cases += ("test-op-certify", "test-op-create-key-pair")
     expected_operations += (1, 18, 33, 19, 20) * 2
@@ -673,11 +673,18 @@ def main() -> int:
                                     raise AssertionError(
                                         "Signature Verify lifecycle must resolve the ID Placeholder and correlate all items"
                                     )
-                            if operations == (1, 6):
+                            if operations == (2,):
                                 response_item_ids = (
-                                    b"interop-certify-create", b"interop-certify-target")
-                            elif operations == (2,):
-                                response_item_ids = (b"interop-create-key-pair",)
+                                    (b"interop-certify-create-key-pair",)
+                                    if tlv(0x420093, 8, b"interop-certify-create-key-pair") in request
+                                    else (b"interop-create-key-pair",))
+                            elif operations == (6,):
+                                if (tlv(0x420094, 7, b"fixture-public-key-1") not in request or
+                                        enumeration(0x42001D, 1) not in request):
+                                    raise AssertionError(
+                                        "Certify must target the Public Key returned by Create Key Pair"
+                                    )
+                                response_item_ids = (b"interop-certify-target",)
                             if operations == (52, 52, 52):
                                 response_item_ids = (b"interop-begin", b"interop-end", b"interop-reset")
                             if operations == registered_key_batch:
@@ -999,6 +1006,21 @@ def main() -> int:
                                         tlv(0x420006, 8, b"fixture-cancel-correlation")) != 1:
                                     raise AssertionError("Cancel request omitted its exact pending correlation value")
                                 response_identifiers = None
+                                if operations == (20, 20, 20):
+                                    expected_destroy_ids = (
+                                        b"interop-destroy-certificate",
+                                        b"interop-destroy-public-key",
+                                        b"interop-destroy-private-key",
+                                    )
+                                    if any(tlv(0x420093, 8, item_id) not in request
+                                           for item_id in expected_destroy_ids):
+                                        raise AssertionError(
+                                            "Certify key-pair teardown omitted a unique batch item ID"
+                                        )
+                                    response_item_ids = expected_destroy_ids
+                                    response_identifiers = (
+                                        b"fixture-certificate-1", b"fixture-public-key-1",
+                                        b"fixture-private-key-1")
                                 if operations == (20, 20):
                                     if tlv(0x420093, 8, b"interop-destroy-certificate") in request:
                                         expected_destroy_ids = (
