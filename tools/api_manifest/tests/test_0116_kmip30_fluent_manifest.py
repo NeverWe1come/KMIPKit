@@ -11,14 +11,14 @@ from tools.api_manifest.kmip30_draft_api import _validate_fluent_routes
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "specification/api/public-api.json"
 KMIP30_DRAFT_API = ROOT / "specification/api/kmip-3.0-draft-api.json"
-OPERATIONS = {
-    "Create Credential",
-    "Create Group",
-    "Create User",
-    "Deactivate",
-    "Decapsulate",
-    "Encapsulate",
-    "Obliterate",
+OPERATIONS_BY_CODE = {
+    60: ("Create Group", "CreateGroup"),
+    61: ("Obliterate", "Obliterate"),
+    62: ("Create User", "CreateUser"),
+    63: ("Create Credential", "CreateCredential"),
+    64: ("Deactivate", "Deactivate"),
+    65: ("Encapsulate", "Encapsulate"),
+    66: ("Decapsulate", "Decapsulate"),
 }
 
 
@@ -82,10 +82,12 @@ class Kmip30FluentManifestTests(unittest.TestCase):
         self.assertEqual(set(language_mappings), {"rust", "c", "java", "python"})
 
         draft = json.loads(KMIP30_DRAFT_API.read_text(encoding="utf-8"))
-        routes = {row["operation"]: row for row in draft.get("operations", [])}
-        self.assertEqual(set(routes), OPERATIONS)
-        for name, route in routes.items():
+        routes = {row["operationCode"]: row for row in draft.get("operations", [])}
+        self.assertEqual(set(routes), set(OPERATIONS_BY_CODE))
+        for code, (name, api_operation_id) in OPERATIONS_BY_CODE.items():
+            route = routes[code]
             with self.subTest(operation=name):
+                self.assertEqual(route["operation"], api_operation_id)
                 mappings = route.get("fluentApi", {})
                 self.assertEqual(set(mappings), {"rust", "c", "java", "python"})
                 for language, mapping in mappings.items():
