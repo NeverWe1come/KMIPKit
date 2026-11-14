@@ -26,7 +26,7 @@ final class ProfileReadinessParityTest {
 
         assertEquals(BASELINE, readiness.profileId());
         assertTrue(readiness.targetSelected());
-        assertFalse(readiness.runtimeValidationAvailable());
+        assertTrue(readiness.runtimeValidationAvailable());
         assertEquals("evidence_incomplete", readiness.effectiveState());
         assertTrue(readiness.requirementRecordsComplete());
         assertFalse(readiness.publishedClaim());

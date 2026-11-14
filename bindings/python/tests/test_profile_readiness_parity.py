@@ -23,7 +23,7 @@ def test_baseline_readiness_uses_rust_evaluator_and_never_claims_support() -> No
     assert result is not None
     assert result.profile_id == BASELINE_ID
     assert result.target_selected is True
-    assert result.runtime_validation_available is False
+    assert result.runtime_validation_available is True
     assert result.effective_state == "evidence_incomplete"
     assert result.requirement_records_complete is True
     assert result.published_claim is False
