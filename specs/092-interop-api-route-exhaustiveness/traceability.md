@@ -18,3 +18,17 @@ artifact availability. It does not claim that any validator has executed the
 full matrix. FR-003, FR-005, and the runtime portion of FR-006 remain open until
 the four independent language branches emit evidence from actual public API
 calls and controlled-peer exchanges.
+
+### C Adjust Attribute slice
+
+For KMIPKIT-0092-FR-003, FR-005, and FR-009, the installed C route test
+`RouteMatrixTests.test_adjust_attribute_operation_runs_from_the_installed_c_consumer`
+checks both
+`kmipkit_client_batch_item_adjust_attribute` and
+`kmipkit_client_batch_item_adjust_attribute_from_request`, followed by
+`kmipkit_client_batch_item_response_adjust_attribute`. Its controlled peer
+validates the operation fields, response Batch Item ID, and isolated object
+state. It covers KMIP 2.0 §6.1.3/Table 155 and §11.1/Table 391, plus KMIP 2.1
+§6.1.3/Table 170 and §11.1/Table 429, over all six encoding/transport pairs.
+This is one operation's evidence only; the four-language and complete-matrix
+requirements above remain open.

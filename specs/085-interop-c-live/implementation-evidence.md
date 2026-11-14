@@ -983,3 +983,29 @@ and Table 186 (2.1).
   and 26,142 `validator_recipe_pending` cells. The exact completeness
   validator exits unsuccessfully, next reporting `test-async-lifecycle-poll`.
   The gate remains open and PR #170 remains WIP.
+
+### C Adjust Attribute operation route
+
+The installed C consumer now executes Adjust Attribute through both the direct
+batch-item constructor and the standalone request-to-batch-item path. It creates
+an isolated AES key, increments `Usage Limits Total` (tag `0x420097`) with an
+omitted Adjustment Value, reads the typed response identifier, then revokes and
+destroys the key. The controlled peer checks the request fields, the expected
+`0` to `1` state transition for this fixture, the operation-specific response
+Batch Item ID, and cleanup. This route covers KMIP 2.0 §6.1.3 Table 155 and
+§11.1 Table 391, and KMIP 2.1 §6.1.3 Table 170 and §11.1 Table 429. It executes
+both constructors over TTLV, JSON, and XML with raw TLS and HTTPS for both
+protocol versions.
+
+- Red commit `23c896d20` failed because the C controlled peer emitted zero
+  Adjust Attribute route checks.
+- Green commit `f9c402cfd` records the installed ABI construction, response
+  accessor, and stateful peer route after the focused matrix passes.
+- Refactor/documentation commit `f31c5cdca` records the evidence and the
+  KMIPKIT-0092 traceability update.
+- Verification on the merged prohibited-async base: `python3
+  interop/c-kmip-validator/tests/test_route_matrix.py` passed all 151 tests;
+  the focused route passed all 24 peer checks, comparing normalized request
+  hashes across both constructors; the CMake build passed; and CTest passed
+  `test_c_validator` plus both controlled TLS peers (3/3). The full C route
+  matrix remains incomplete outside this operation.

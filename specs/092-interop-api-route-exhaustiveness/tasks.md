@@ -29,6 +29,13 @@ generated matrix, invokes every named public route, exchanges requests and
 responses with a controlled peer, and emits validated per-cell evidence. A
 passing shared-contract job does not satisfy those language-level requirements.
 
+### C route slice recorded in `specs/085-interop-c-live`
+
+The `test-op-adjust-attribute` C route now has focused controlled-peer evidence
+for both direct and standalone C request construction across KMIP 2.0/2.1,
+TTLV/JSON/XML, and raw TLS/HTTPS. This operation slice contributes evidence to
+T006, T007, and T009; it does not close any of those cross-language tasks.
+
 ## Development evidence: Secret Data constructor applicability
 
 - Red commit `f7cb47c47`: `python3 -m unittest interop.shared.tests.test_route_capabilities.RouteCapabilitiesTests.test_secret_data_constructor_does_not_claim_inapplicable_key_block_crypto_fields -v` failed because the route included Cryptographic Algorithm and Cryptographic Length.
