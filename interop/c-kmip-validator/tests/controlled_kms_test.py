@@ -458,6 +458,9 @@ def main() -> int:
     expected_cases += ("test-async-unknown-correlation-rejected",)
     expected_operations += (10, 12, 10, 12, 10, 12, 10, 12)
     expected_operations += registered_key_batch
+    if protocol_version == "2.0":
+        expected_operations += (45, 45, 46)
+        expected_cases += ("test-op-login", "test-op-logout")
     expected_operations += stop_on_first_failure_batch
     expected_operations += (1, 25)
     expected_cases += ("test-op-cancel",)
@@ -1081,11 +1084,13 @@ def main() -> int:
                     "KMIP 2.0 Discover Versions must accept an empty common-version response"
                 )
             login = next(case for case in result["cases"] if case["case_id"] == "test-op-login")
-            if login["status"] != "not_run" or "Login builder only supports KMIP 2.1" not in login.get("diagnostic", ""):
-                raise AssertionError("KMIP 2.0 Login must report the documented public C API limitation")
+            if login["status"] != "passed" or login["server_compatibility"] != "supported" or \
+                    login["library_correctness"] != "passed":
+                raise AssertionError(f"KMIP 2.0 Login route did not complete: {login!r}")
             logout = next(case for case in result["cases"] if case["case_id"] == "test-op-logout")
-            if logout["status"] != "not_run" or "cannot obtain a server-issued Ticket" not in logout.get("diagnostic", ""):
-                raise AssertionError("KMIP 2.0 Logout must report the missing Login Ticket prerequisite")
+            if logout["status"] != "passed" or logout["server_compatibility"] != "supported" or \
+                    logout["library_correctness"] != "passed":
+                raise AssertionError(f"KMIP 2.0 Login-to-Logout route did not complete: {logout!r}")
         if run.returncode != 0:
             failed_cases = [
                 (case["case_id"], case["status"])

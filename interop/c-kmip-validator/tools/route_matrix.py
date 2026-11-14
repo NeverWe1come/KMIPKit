@@ -669,6 +669,40 @@ def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
     field_name = target.get('field_name', target['name'])
     normalized_tags = {_name(name): value for name, value in tags.items()}
     tag = normalized_tags.get(_name(field_name))
+    if (target_kind == 'operation_payload_field' and
+            target.get('operation') in {'Login', 'Delegated Login'}):
+        operation_name = target.get('operation')
+        if field_name == 'Rights' and operation_name == 'Delegated Login':
+            return [(tag, 1, [])] if tag is not None else None
+        if field_name == 'Lease Time':
+            return [(tag, 10, (60).to_bytes(4, 'big'))] if tag is not None else None
+        if field_name == 'Request Count':
+            return [(tag, 2, (2).to_bytes(4, 'big', signed=True))] if tag is not None else None
+        if field_name == 'Usage Limits':
+            required = ('Usage Limits Total', 'Usage Limits Count', 'Usage Limits Unit')
+            if tag is None or any(_name(name) not in normalized_tags for name in required):
+                return None
+            unit = catalog_enum_value(catalog, 'Usage Limits Unit', 'Byte', protocol_version)
+            if unit is None:
+                return None
+            return [(tag, 1, [
+                (normalized_tags[_name('Usage Limits Total')], 3, (10).to_bytes(8, 'big', signed=True)),
+                (normalized_tags[_name('Usage Limits Count')], 3, (10).to_bytes(8, 'big', signed=True)),
+                (normalized_tags[_name('Usage Limits Unit')], 5, unit.to_bytes(4, 'big')),
+            ])]
+        if field_name == 'Ticket':
+            if tag is None or 'tickettype' not in normalized_tags or 'ticketvalue' not in normalized_tags:
+                return None
+            ticket_type = catalog_enum_value(catalog, 'Ticket Type', 'Login', protocol_version)
+            if ticket_type is None:
+                return None
+            ticket_value = (b'route-delegated-login-ticket'
+                            if operation_name == 'Delegated Login'
+                            else b'route-login-ticket')
+            return [(tag, 1, [
+                (normalized_tags['tickettype'], 5, ticket_type.to_bytes(4, 'big')),
+                (normalized_tags['ticketvalue'], 8, ticket_value),
+            ])]
     if target_kind == 'credential':
         tag = normalized_tags.get('credential')
         if target['name'] in {'Device', 'Attestation', 'Username and Password'}:

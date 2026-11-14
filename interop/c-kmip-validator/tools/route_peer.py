@@ -423,6 +423,24 @@ CONTROLLED_PEER_LOCAL_MODEL_CASES = frozenset({
     'test-norm-payload-client-query-request-21-002',
     'test-norm-payload-client-query-response-20-001',
     'test-norm-payload-client-query-response-21-001',
+    'test-norm-payload-client-login-request-20-001',
+    'test-norm-payload-client-login-request-20-002',
+    'test-norm-payload-client-login-request-20-003',
+    'test-norm-payload-client-login-request-21-001',
+    'test-norm-payload-client-login-request-21-002',
+    'test-norm-payload-client-login-request-21-003',
+    'test-norm-payload-client-login-response-20-001',
+    'test-norm-payload-client-login-response-21-001',
+    'test-norm-payload-client-delegated-login-request-20-001',
+    'test-norm-payload-client-delegated-login-request-20-002',
+    'test-norm-payload-client-delegated-login-request-20-003',
+    'test-norm-payload-client-delegated-login-request-20-004',
+    'test-norm-payload-client-delegated-login-response-20-001',
+    'test-norm-payload-client-delegated-login-request-21-001',
+    'test-norm-payload-client-delegated-login-request-21-002',
+    'test-norm-payload-client-delegated-login-request-21-003',
+    'test-norm-payload-client-delegated-login-request-21-004',
+    'test-norm-payload-client-delegated-login-response-21-001',
     'test-norm-payload-client-create-request-20-001',
     'test-norm-payload-client-create-request-20-002',
     'test-norm-payload-client-create-request-21-001',
@@ -660,6 +678,57 @@ def assert_discover_versions_offer(node):
         raise ValueError('fixture_discover_versions_offer_mismatch')
 
 
+def assert_login_request_payload(node, case_id):
+    items = [item for item in node[2]
+             if item[0] == BATCH_ITEM_TAG and item[1] == 1 and
+             numbers(item, 0x42005C) == [45]]
+    payloads = ([child for child in items[0][2]
+                 if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+                if len(items) == 1 else [])
+    if len(payloads) != 1:
+        raise ValueError('fixture_login_request_payload_mismatch')
+    fields = payloads[0][2]
+    expected = []
+    if case_id.endswith('-001') and '-request-' in case_id:
+        expected = [(0x420049, 10, (60).to_bytes(4, 'big'))]
+    elif case_id.endswith('-002') and '-request-' in case_id:
+        expected = [(0x42014C, 2, (2).to_bytes(4, 'big', signed=True))]
+    elif case_id.endswith('-003') and '-request-' in case_id:
+        expected = [(0x420095, 1, [
+            (0x420097, 3, (10).to_bytes(8, 'big', signed=True)),
+            (0x420096, 3, (10).to_bytes(8, 'big', signed=True)),
+            (0x420098, 5, (1).to_bytes(4, 'big')),
+        ])]
+    if fields != expected:
+        raise ValueError('fixture_login_request_fields_mismatch')
+
+
+def assert_delegated_login_request_payload(node, case_id):
+    items = [item for item in node[2]
+             if item[0] == BATCH_ITEM_TAG and item[1] == 1 and
+             numbers(item, 0x42005C) == [47]]
+    payloads = ([child for child in items[0][2]
+                 if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+                if len(items) == 1 else [])
+    if len(payloads) != 1:
+        raise ValueError('fixture_delegated_login_request_payload_mismatch')
+    fields = payloads[0][2]
+    expected = []
+    if '-request-' in case_id and case_id.endswith('-001'):
+        expected.append((0x420049, 10, (60).to_bytes(4, 'big')))
+    elif '-request-' in case_id and case_id.endswith('-002'):
+        expected.append((0x42014C, 2, (2).to_bytes(4, 'big', signed=True)))
+    elif '-request-' in case_id and case_id.endswith('-003'):
+        expected.append((0x420095, 1, [
+            (0x420097, 3, (10).to_bytes(8, 'big', signed=True)),
+            (0x420096, 3, (10).to_bytes(8, 'big', signed=True)),
+            (0x420098, 5, (1).to_bytes(4, 'big')),
+        ]))
+    expected.append((0x42014D, 1, []))
+    if fields != expected:
+        raise ValueError('fixture_delegated_login_request_fields_mismatch')
+
+
 def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
                   constructor_variant=None):
     selected_recipe = recipe or RECIPES[case_id]
@@ -677,6 +746,10 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         assert_cancel_request(node)
     if selected_recipe[1] == 'discover_versions':
         assert_discover_versions_offer(node)
+    if selected_recipe[1] == 'login':
+        assert_login_request_payload(node, case_id)
+    if selected_recipe[1] == 'delegated_login':
+        assert_delegated_login_request_payload(node, case_id)
     if (case_id in {
             'test-norm-payload-client-add-attribute-request-20-002',
             'test-norm-payload-client-add-attribute-request-21-002'} and
@@ -700,11 +773,6 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
                 text_values(adjust_item, UNIQUE_IDENTIFIER_TAG) != ['fixture-key-1'] or
                 request_adjust_attribute_fields(adjust_item) != ('KMIPKit', 'Counter', 1, 5)):
             raise ValueError('fixture_adjust_attribute_request_fields_mismatch')
-    if selected_recipe[1] == 'delegated_login':
-        payloads = list(descendants(node, REQUEST_PAYLOAD_TAG))
-        if (len(payloads) != 1 or payloads[0][1] != 1 or
-                payloads[0][2] != [(0x42014D, 1, [])]):
-            raise ValueError('fixture_delegated_login_rights_mismatch')
     if expected[0] == 1:
         object_type = 4 if case_id == 'test-obj-private-key' else 3 if case_id == 'test-obj-public-key' else 2
         if numbers(node, 0x420057) != [object_type]:
@@ -1936,6 +2004,10 @@ def recipe_for_case(case, attribute_fixture):
     recipe = RECIPES.get(case['case_id'])
     if recipe is not None:
         return recipe
+    if case['case_id'].startswith('test-norm-payload-client-login-'):
+        return ((45,), 'login')
+    if case['case_id'].startswith('test-norm-payload-client-delegated-login-'):
+        return ((47,), 'delegated_login')
     if attribute_fixture is not None:
         if attribute_fixture.get('register_certificate'):
             return ((3, 11, 20), 'get_attributes')
@@ -2417,7 +2489,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                         mutation_exchange_index = 2 if seeded_attribute_recipe else 1
                         attribute_cleanup_exchange_index = 3 if seeded_attribute_recipe else 2
                         reject_case = peer_rejection is not None and peer_rejection.get('case_id') == case_id
-                        if version == '2.0' and case_id in ('test-op-login', 'test-op-logout', 'test-op-get-constraints', 'test-op-ping'):
+                        if version == '2.0' and case_id in ('test-op-get-constraints', 'test-op-ping'):
                             continue
                         observation, errors = [], []
                         peer_state = PeerState(
