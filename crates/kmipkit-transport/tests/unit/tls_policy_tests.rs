@@ -572,8 +572,12 @@ fn default_tls_policy_rejects_tls12_only_server_and_opt_in_compat_connects_with_
     let compat_client =
         tls::build_client_config(&compat_cfg).expect("opt-in TLS 1.2 client config builds");
     assert_eq!(
-        handshake(&compat_client, Arc::clone(&tls12_peer))
-            .expect("opt-in TLS 1.2 compatibility connects to trusted mTLS TLS 1.2 peer"),
+        handshake_expecting_version(
+            &compat_client,
+            Arc::clone(&tls12_peer),
+            rustls::ProtocolVersion::TLSv1_2,
+        )
+        .expect("opt-in TLS 1.2 compatibility connects to trusted mTLS TLS 1.2 peer"),
         HandshakeKind::Full
     );
 
@@ -808,13 +812,45 @@ fn handshake(
     client: &TlsClientConfig,
     peer_config: Arc<ServerConfig>,
 ) -> Result<HandshakeKind, HandshakeFailure> {
-    handshake_with_server_name(client, peer_config, client.server_name().clone())
+    handshake_with_server_name_and_version(
+        client,
+        peer_config,
+        client.server_name().clone(),
+        rustls::ProtocolVersion::TLSv1_3,
+    )
+}
+
+fn handshake_expecting_version(
+    client: &TlsClientConfig,
+    peer_config: Arc<ServerConfig>,
+    expected_version: rustls::ProtocolVersion,
+) -> Result<HandshakeKind, HandshakeFailure> {
+    handshake_with_server_name_and_version(
+        client,
+        peer_config,
+        client.server_name().clone(),
+        expected_version,
+    )
 }
 
 fn handshake_with_server_name(
     client: &TlsClientConfig,
     peer_config: Arc<ServerConfig>,
     server_name: ServerName<'static>,
+) -> Result<HandshakeKind, HandshakeFailure> {
+    handshake_with_server_name_and_version(
+        client,
+        peer_config,
+        server_name,
+        rustls::ProtocolVersion::TLSv1_3,
+    )
+}
+
+fn handshake_with_server_name_and_version(
+    client: &TlsClientConfig,
+    peer_config: Arc<ServerConfig>,
+    server_name: ServerName<'static>,
+    expected_version: rustls::ProtocolVersion,
 ) -> Result<HandshakeKind, HandshakeFailure> {
     let mut connection =
         ClientConnection::new(Arc::new(client.rustls_config().clone()), server_name)
@@ -831,7 +867,7 @@ fn handshake_with_server_name(
         .set_write_timeout(Some(Duration::from_secs(2)))
         .map_err(|_| HandshakeFailure::ClientIo)?;
     let peer = thread::spawn(move || run_server_handshake(peer_stream, peer_config));
-    let client_result = run_client_handshake(&mut connection, &mut stream);
+    let client_result = run_client_handshake(&mut connection, &mut stream, expected_version);
     drop(stream);
     let peer_result = peer.join().map_err(|_| HandshakeFailure::Thread)?;
     match client_result {
@@ -848,6 +884,7 @@ fn handshake_with_server_name(
 fn run_client_handshake(
     connection: &mut ClientConnection,
     stream: &mut TcpStream,
+    expected_version: rustls::ProtocolVersion,
 ) -> Result<HandshakeKind, HandshakeFailure> {
     while connection.is_handshaking() {
         if let Err(error) = connection.complete_io(stream) {
@@ -861,7 +898,7 @@ fn run_client_handshake(
     let kind = connection
         .handshake_kind()
         .ok_or(HandshakeFailure::ClientIo)?;
-    if connection.protocol_version() != Some(rustls::ProtocolVersion::TLSv1_3) {
+    if connection.protocol_version() != Some(expected_version) {
         return Err(HandshakeFailure::ClientIo);
     }
     while connection.wants_write() {

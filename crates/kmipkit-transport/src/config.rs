@@ -796,6 +796,17 @@ impl RequestOptions {
     }
 }
 
+/// TLS protocol version policy for KMIP transport connections.
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub enum TlsVersionPolicy {
+    /// Strict TLS 1.3 only (default). Rejects TLS 1.2 handshakes.
+    #[default]
+    Tls13Only,
+    /// Explicit compatibility mode allowing TLS 1.3 and OASIS KMIP Profiles
+    /// v2.0/v2.1 approved TLS 1.2 ECDHE-GCM cipher suites with mutual TLS.
+    Tls12And13Compat,
+}
+
 /// Validated configuration for one endpoint, trust source, client identity, and policy.
 pub struct TransportConfig {
     endpoint: Endpoint,
@@ -808,6 +819,7 @@ pub struct TransportConfig {
     revocation_lists: Vec<CertificateRevocationListDer<'static>>,
     tls_server_name: ServerName<'static>,
     enable_sni: bool,
+    tls_version_policy: TlsVersionPolicy,
     tracked_cert: Option<TrackedFileSource>,
     tracked_key: Option<TrackedFileSource>,
 }
@@ -825,6 +837,7 @@ impl TransportConfig {
             identity: None,
             revocation_lists: Vec::new(),
             tls_server_name: None,
+            tls_version_policy: TlsVersionPolicy::Tls13Only,
         }
     }
 
@@ -850,6 +863,12 @@ impl TransportConfig {
     #[must_use]
     pub const fn timeouts(&self) -> TimeoutPolicy {
         self.timeouts
+    }
+
+    /// Returns the configured TLS protocol version policy.
+    #[must_use]
+    pub const fn tls_version_policy(&self) -> TlsVersionPolicy {
+        self.tls_version_policy
     }
 
     pub(crate) fn tls_roots(&self) -> &Arc<RootCertStore> {
@@ -976,6 +995,7 @@ pub struct TransportConfigBuilder {
     identity: Option<ClientIdentity>,
     revocation_lists: Vec<RevocationListInput>,
     tls_server_name: Option<String>,
+    tls_version_policy: TlsVersionPolicy,
 }
 
 impl TransportConfigBuilder {
@@ -1028,6 +1048,13 @@ impl TransportConfigBuilder {
         self
     }
 
+    /// Selects the TLS protocol version policy (defaults to [`TlsVersionPolicy::Tls13Only`]).
+    #[must_use]
+    pub const fn tls_version_policy(mut self, policy: TlsVersionPolicy) -> Self {
+        self.tls_version_policy = policy;
+        self
+    }
+
     /// Validates the endpoint, target, trust, identity, and positive limits.
     ///
     /// # Errors
@@ -1049,7 +1076,8 @@ impl TransportConfigBuilder {
         let trust_source = self.trust.ok_or(TransportConfigError::MissingTrust)?;
         let (tracked_cert, tracked_key) = identity_input.take_tracked();
         let (tls_server_name, enable_sni) = self.endpoint.server_name(self.tls_server_name)?;
-        let crypto_provider = crate::tls::aws_lc_crypto_provider();
+        let crypto_provider =
+            crate::tls::aws_lc_crypto_provider_for_policy(self.tls_version_policy);
         let identity = Arc::new(identity_input.parse(&crypto_provider)?);
         let trust = Arc::new(trust_source.load()?);
         let mut revocation_lists = Vec::new();
@@ -1067,6 +1095,7 @@ impl TransportConfigBuilder {
             revocation_lists,
             tls_server_name,
             enable_sni,
+            tls_version_policy: self.tls_version_policy,
             tracked_cert,
             tracked_key,
         })

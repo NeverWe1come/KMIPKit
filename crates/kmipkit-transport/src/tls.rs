@@ -23,8 +23,7 @@ use rustls::pki_types::{CertificateDer, UnixTime};
 #[cfg(test)]
 use rustls::{DigitallySignedStruct, Error, SignatureScheme};
 
-use crate::config::TransportConfig;
-use crate::config::TransportConfigError;
+use crate::config::{TlsVersionPolicy, TransportConfig, TransportConfigError};
 
 #[cfg(test)]
 #[path = "../tests/unit/tls_session_store_tests.rs"]
@@ -33,16 +32,34 @@ mod session_store_tests;
 const MAX_TICKETS: usize = 16;
 const MAX_LOCAL_TICKET_AGE: Duration = Duration::from_hours(1);
 
-/// Selects the AWS-LC provider retained by one validated transport configuration.
+/// Selects the AWS-LC provider retained by one validated transport configuration
+/// under the strict TLS 1.3-only default policy.
 pub(crate) fn aws_lc_crypto_provider() -> Arc<rustls::crypto::CryptoProvider> {
+    aws_lc_crypto_provider_for_policy(TlsVersionPolicy::Tls13Only)
+}
+
+/// Selects the AWS-LC provider retained for the requested TLS version policy.
+pub(crate) fn aws_lc_crypto_provider_for_policy(
+    policy: TlsVersionPolicy,
+) -> Arc<rustls::crypto::CryptoProvider> {
     let mut provider = aws_lc_rs::default_provider();
-    // KMIP Profiles v2.1 §3.1.2 excludes TLS 1.3 suites outside its two-suite list.
-    provider.cipher_suites.retain(|suite| {
-        matches!(
+    // KMIP Profiles v2.1 §3.1.2 restricts TLS 1.3 to two suites; TLS 1.2 opt-in
+    // compatibility restricts TLS 1.2 to OASIS KMIP Profiles ECDHE-GCM suites.
+    provider.cipher_suites.retain(|suite| match policy {
+        TlsVersionPolicy::Tls13Only => matches!(
             suite.suite(),
             rustls::CipherSuite::TLS13_AES_256_GCM_SHA384
                 | rustls::CipherSuite::TLS13_CHACHA20_POLY1305_SHA256
-        )
+        ),
+        TlsVersionPolicy::Tls12And13Compat => matches!(
+            suite.suite(),
+            rustls::CipherSuite::TLS13_AES_256_GCM_SHA384
+                | rustls::CipherSuite::TLS13_CHACHA20_POLY1305_SHA256
+                | rustls::CipherSuite::TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+                | rustls::CipherSuite::TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+                | rustls::CipherSuite::TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+                | rustls::CipherSuite::TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        ),
     });
     Arc::new(provider)
 }
@@ -250,7 +267,8 @@ pub(crate) fn build_client_config_with_clock(
 ) -> Result<TlsClientConfig, TransportConfigError> {
     let provider = Arc::clone(configuration.tls_crypto_provider());
     let verifier = build_webpki_verifier(configuration, Arc::clone(&provider))?;
-    let builder = tls13_builder(provider)?.with_webpki_verifier(verifier);
+    let builder = tls_builder(provider, configuration.tls_version_policy())?
+        .with_webpki_verifier(verifier);
     Ok(finish_client_config(configuration, clock, builder))
 }
 
@@ -272,11 +290,16 @@ fn build_webpki_verifier(
         })
 }
 
-fn tls13_builder(
+fn tls_builder(
     provider: Arc<rustls::crypto::CryptoProvider>,
+    policy: TlsVersionPolicy,
 ) -> Result<ConfigBuilder<ClientConfig, WantsVerifier>, TransportConfigError> {
+    let versions: &[&rustls::SupportedProtocolVersion] = match policy {
+        TlsVersionPolicy::Tls13Only => &[&rustls::version::TLS13],
+        TlsVersionPolicy::Tls12And13Compat => &[&rustls::version::TLS13, &rustls::version::TLS12],
+    };
     RustlsClientConfig::builder_with_provider(provider)
-        .with_protocol_versions(&[&rustls::version::TLS13])
+        .with_protocol_versions(versions)
         .map_err(|_| TransportConfigError::InvalidTlsConfiguration)
 }
 
@@ -312,7 +335,7 @@ pub(crate) fn build_client_config_with_test_verifier(
     let provider = Arc::clone(configuration.tls_crypto_provider());
     let inner = build_webpki_verifier(configuration, Arc::clone(&provider))?;
     let verifier = Arc::new(CountingVerifier::new(inner));
-    let builder = tls13_builder(provider)?
+    let builder = tls_builder(provider, configuration.tls_version_policy())?
         .dangerous()
         .with_custom_certificate_verifier(Arc::clone(&verifier) as Arc<dyn ServerCertVerifier>);
     let config = finish_client_config(configuration, clock, builder);
