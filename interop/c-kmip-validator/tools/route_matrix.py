@@ -373,6 +373,21 @@ def _request_message_with_authentication(fixture: tuple, catalog: dict,
                                       after_tag='Protocol Version')
 
 
+def _with_request_batch_item_field(fixture: tuple, tags: dict[str, int], field: tuple,
+                                   *, after_tag: str) -> tuple:
+    """Insert one optional field after its required Request Batch Item anchor."""
+    message = list(fixture[2])
+    batch_index = next(index for index, item in enumerate(message)
+                       if item[0] == tags['Batch Item'])
+    batch_item = message[batch_index]
+    fields = list(batch_item[2])
+    anchor_index = next(index for index, item in enumerate(fields)
+                        if item[0] == tags[after_tag])
+    fields.insert(anchor_index + 1, field)
+    message[batch_index] = (batch_item[0], batch_item[1], fields)
+    return fixture[0], fixture[1], message
+
+
 def _request_message_with_extension(fixture: tuple, tags: dict[str, int]) -> tuple:
     """Add a structurally valid vendor Message Extension to the Get batch item."""
     extension = (tags['Message Extension'], 1, [
@@ -382,12 +397,8 @@ def _request_message_with_extension(fixture: tuple, tags: dict[str, int]) -> tup
             (0x540001, 7, b'fixture-extension'),
         ]),
     ])
-    message = list(fixture[2])
-    batch_index = next(index for index, item in enumerate(message)
-                       if item[0] == tags['Batch Item'])
-    batch_item = message[batch_index]
-    message[batch_index] = (batch_item[0], batch_item[1], [*batch_item[2], extension])
-    return fixture[0], fixture[1], message
+    return _with_request_batch_item_field(fixture, tags, extension,
+                                          after_tag='Request Payload')
 
 
 def _request_header_field_data(name: str, kind: int, value: object, catalog: dict,
