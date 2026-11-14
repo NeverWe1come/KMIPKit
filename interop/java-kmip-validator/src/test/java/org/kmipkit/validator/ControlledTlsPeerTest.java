@@ -38,6 +38,7 @@ import org.kmipkit.ttlv.TtlvDecodeErrorKind;
 import org.kmipkit.ttlv.TtlvDecodeException;
 import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvItemType;
+import org.kmipkit.ttlv.TtlvItemView;
 import org.kmipkit.ttlv.StandardAttribute;
 import org.kmipkit.ttlv.TtlvStructure;
 import org.kmipkit.ttlv.TtlvStructureView;
@@ -4246,38 +4247,12 @@ class ControlledTlsPeerTest {
         byte[] wire = textItem(rawTag, fixture);
         String treeHash = normalizedTreeSha256(wire);
         CodecLimits limits = CodecLimits.defaults();
-        byte[] absentObjectGroupsWire = structure(0x420126);
-        byte[] repeatedObjectGroupsWire = structure(0x420126, wire, textItem(rawTag, "kmipkit-object-group-2"));
-        try (TtlvItem absentGroups = TtlvCodec.decode(absentObjectGroupsWire);
-                var absentGroupsView = absentGroups.view();
-                var absentGroupsValue = absentGroupsView.value();
-                var absentGroupsMembers = absentGroupsValue.structure();
-                TtlvItem repeatedGroups = TtlvCodec.decode(repeatedObjectGroupsWire);
-                var repeatedGroupsView = repeatedGroups.view();
-                var repeatedGroupsValue = repeatedGroupsView.value();
-                var repeatedGroupsMembers = repeatedGroupsValue.structure()) {
-            assertEquals(0x420126, absentGroupsView.tag().raw());
-            assertEquals(0, absentGroupsMembers.itemCount(), "Object Group is optional in Object Groups.");
-            assertEquals(2, repeatedGroupsMembers.itemCount(), "Object Group may be repeated.");
-            for (int index = 0; index < repeatedGroupsMembers.itemCount(); index++) {
-                try (var member = repeatedGroupsMembers.itemAt(index);
-                        var memberTag = member.tag();
-                        var memberValue = member.value()) {
-                    assertEquals(rawTag, memberTag.raw());
-                    assertEquals(TtlvItemType.TextString, member.itemType());
-                    assertTrue(memberValue.bytes().length > 0);
-                }
-            }
-        }
+        assertObjectGroupsOptionalAndRepeatable(rawTag, fixture);
         try (RawTag raw = RawTag.fromRaw(rawTag);
                 Tag tag = raw.checked();
                 TtlvValue value = TtlvValue.TextString(fixtureBytes, limits);
-                TtlvItem created = TtlvItem.create(tag, value, limits);
-                var view = created.view();
-                var viewValue = view.value()) {
-            assertEquals(rawTag, view.tag().raw());
-            assertEquals(TtlvItemType.TextString, view.itemType());
-            assertArrayEquals(fixtureBytes, viewValue.bytes());
+                TtlvItem created = TtlvItem.create(tag, value, limits)) {
+            assertObjectGroupItem(created, rawTag, fixtureBytes);
         }
         appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_item.create", targetId,
                 "org.kmipkit.ttlv.TtlvItem.create", null, null, "construct", "2.1",
@@ -4285,16 +4260,54 @@ class ControlledTlsPeerTest {
         appendRouteEvent(events, caseId, "java.generic-ttlv.function.ttlv_item_view_from_item", targetId,
                 "org.kmipkit.ttlv.TtlvItem.view", null, null, "decode", "2.1",
                 null, null, treeHash);
-        try (TtlvItem decoded = TtlvCodec.decode(wire);
-                var view = decoded.view();
-                var value = view.value()) {
-            assertEquals(rawTag, view.tag().raw());
-            assertEquals(TtlvItemType.TextString, view.itemType());
-            assertArrayEquals(fixtureBytes, value.bytes());
+        try (TtlvItem decoded = TtlvCodec.decode(wire)) {
+            assertObjectGroupItem(decoded, rawTag, fixtureBytes);
         }
         appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_codec.decode", targetId,
                 "org.kmipkit.ttlv.TtlvCodec.decode", null, null, "decode", "2.1",
                 null, null, treeHash);
+    }
+
+    private static void assertObjectGroupsOptionalAndRepeatable(int objectGroupTag,
+            String firstGroupText) throws Exception {
+        byte[] firstGroupValue = firstGroupText.getBytes(StandardCharsets.UTF_8);
+        byte[] secondGroupValue = "kmipkit-object-group-2".getBytes(StandardCharsets.UTF_8);
+        byte[] firstGroup = textItem(objectGroupTag, firstGroupText);
+        byte[] secondGroup = textItem(objectGroupTag, "kmipkit-object-group-2");
+        try (TtlvItem absentGroups = TtlvCodec.decode(structure(0x420126));
+                var absentView = absentGroups.view();
+                var absentValue = absentView.value();
+                var absentMembers = absentValue.structure();
+                TtlvItem repeatedGroups = TtlvCodec.decode(structure(0x420126, firstGroup, secondGroup));
+                var repeatedView = repeatedGroups.view();
+                var repeatedValue = repeatedView.value();
+                var repeatedMembers = repeatedValue.structure()) {
+            try (Tag tag = absentView.tag()) {
+                assertEquals(0x420126, tag.raw());
+            }
+            assertEquals(0, absentMembers.itemCount(), "Object Group is optional in Object Groups.");
+            assertEquals(2, repeatedMembers.itemCount(), "Object Group may be repeated.");
+            try (var first = repeatedMembers.itemAt(0); var second = repeatedMembers.itemAt(1)) {
+                assertObjectGroupMember(first, objectGroupTag, firstGroupValue);
+                assertObjectGroupMember(second, objectGroupTag, secondGroupValue);
+            }
+        }
+    }
+
+    private static void assertObjectGroupItem(TtlvItem item, int rawTag, byte[] expectedValue) {
+        try (var view = item.view(); Tag tag = view.tag(); var value = view.value()) {
+            assertEquals(rawTag, tag.raw());
+            assertEquals(TtlvItemType.TextString, view.itemType());
+            assertArrayEquals(expectedValue, value.bytes());
+        }
+    }
+
+    private static void assertObjectGroupMember(TtlvItemView member, int rawTag, byte[] expectedValue) {
+        try (Tag tag = member.tag(); var value = member.value()) {
+            assertEquals(rawTag, tag.raw());
+            assertEquals(TtlvItemType.TextString, member.itemType());
+            assertArrayEquals(expectedValue, value.bytes());
+        }
     }
 
     private static void assertRouteEventRecorded(ArrayNode events, String caseId, String targetId,
