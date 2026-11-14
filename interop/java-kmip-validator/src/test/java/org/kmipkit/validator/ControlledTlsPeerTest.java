@@ -115,6 +115,46 @@ class ControlledTlsPeerTest {
     private record ScalarOperationStructureFixture(String caseId, String targetId, int tag,
             TtlvItemType valueType, boolean optional) { }
 
+    private record ProfileInformationMemberFixture(String caseId, String targetId, int rawTag,
+            TtlvItemType itemType, int integerValue, String textValue, boolean structure) { }
+
+    private static final String PROFILE_INFORMATION_CASE_ID =
+            "test-norm-operation-structure-operation-structure-7-31-profile-information";
+    private static final String PROFILE_INFORMATION_TARGET_ID =
+            "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-31-PROFILE-INFORMATION";
+    private static final String PROFILE_VERSION_CASE_ID =
+            "test-norm-operation-structure-operation-structure-7-32-profile-version";
+    private static final String PROFILE_VERSION_TARGET_ID =
+            "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-32-PROFILE-VERSION";
+    private static final List<ProfileInformationMemberFixture> PROFILE_INFORMATION_MEMBER_FIXTURES = List.of(
+            new ProfileInformationMemberFixture(
+                    "test-norm-structure-member-structure-member-7-31-profile-version",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-31-PROFILE-VERSION", 0x4200ef,
+                    TtlvItemType.Structure, 0, "", true),
+            new ProfileInformationMemberFixture(
+                    "test-norm-structure-member-structure-member-7-31-server-port",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-31-SERVER-PORT", 0x4200ee,
+                    TtlvItemType.Integer, 5696, "", false),
+            new ProfileInformationMemberFixture(
+                    "test-norm-structure-member-structure-member-7-31-server-uri",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-31-SERVER-URI", 0x4200ed,
+                    TtlvItemType.TextString, 0, "https://kms.example.invalid", false),
+            new ProfileInformationMemberFixture(
+                    "test-norm-structure-member-structure-member-7-32-profile-version-major",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-32-PROFILE-VERSION-MAJOR", 0x4200f0,
+                    TtlvItemType.Integer, 1, "", false),
+            new ProfileInformationMemberFixture(
+                    "test-norm-structure-member-structure-member-7-32-profile-version-minor",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-32-PROFILE-VERSION-MINOR", 0x4200f1,
+                    TtlvItemType.Integer, 0, "", false));
+    private static final List<String> PROFILE_INFORMATION_CASE_IDS = List.of(
+            PROFILE_INFORMATION_CASE_ID, PROFILE_VERSION_CASE_ID,
+            PROFILE_INFORMATION_MEMBER_FIXTURES.get(0).caseId(),
+            PROFILE_INFORMATION_MEMBER_FIXTURES.get(1).caseId(),
+            PROFILE_INFORMATION_MEMBER_FIXTURES.get(2).caseId(),
+            PROFILE_INFORMATION_MEMBER_FIXTURES.get(3).caseId(),
+            PROFILE_INFORMATION_MEMBER_FIXTURES.get(4).caseId());
+
     private static final List<OperationStructureFixture> OPERATION_STRUCTURE_FIXTURES = List.of(
             new OperationStructureFixture(
                     "test-norm-operation-structure-operation-structure-7-23-object-groups",
@@ -1070,7 +1110,7 @@ class ControlledTlsPeerTest {
                         + typedTagIdentityCaseIds().size() + referencedEnumCaseCount
                         + 11 + STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size()
                         + STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.size()
-                        + STRUCTURE_MEMBER_VALUE_FIXTURES.size(),
+                        + STRUCTURE_MEMBER_VALUE_FIXTURES.size() + PROFILE_INFORMATION_CASE_IDS.size(),
                 report.path("case_ids").size());
         List<String> expectedCredentialCaseIds = CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().toList();
         int credentialCaseStart = report.path("case_ids").size() - expectedCredentialCaseIds.size();
@@ -3372,6 +3412,7 @@ class ControlledTlsPeerTest {
         caseIds.add("test-norm-structure-member-structure-member-7-23-object-group");
         caseIds.add("test-norm-operation-structure-operation-structure-7-2-asynchronous-request");
         caseIds.add("test-norm-operation-structure-operation-structure-7-13-extension-information");
+        PROFILE_INFORMATION_CASE_IDS.forEach(caseIds::add);
         OPERATION_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         SCALAR_OPERATION_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         STRUCTURE_MEMBER_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
@@ -4342,6 +4383,27 @@ class ControlledTlsPeerTest {
                 "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-8-CORRELATION-VALUE",
                 "java.typed-protocol.function.client_batch_item_response_pending_correlation_value",
                 "decode", protocolVersion);
+        // OASIS KMIP 2.0 §§7.25–7.26, Tables 345–346; KMIP 2.1 §§7.31–7.32, Tables 383–384.
+        assertGenericStructureRouteEvents(events, PROFILE_INFORMATION_CASE_ID,
+                PROFILE_INFORMATION_TARGET_ID, protocolVersion);
+        assertGenericStructureRouteEvents(events, PROFILE_VERSION_CASE_ID,
+                PROFILE_VERSION_TARGET_ID, protocolVersion);
+        for (ProfileInformationMemberFixture fixture : PROFILE_INFORMATION_MEMBER_FIXTURES) {
+            String valueRoute = fixture.structure()
+                    ? "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure"
+                    : switch (fixture.itemType()) {
+                        case Integer -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer";
+                        case TextString -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring";
+                        default -> throw new IllegalArgumentException("Unsupported Profile Information member type");
+                    };
+            for (String route : List.of(valueRoute, "java.generic-ttlv.ttlv_item.create",
+                    "java.generic-ttlv.function.ttlv_item_view_from_item", "java.generic-ttlv.ttlv_codec.decode")) {
+                String action = route.endsWith("ttlv_item.create") || route.equals(valueRoute)
+                        ? "construct" : "decode";
+                assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(), route,
+                        action, protocolVersion);
+            }
+        }
         if ("2.1".equals(protocolVersion)) {
             assertGenericStructureRouteEvents(events,
                     "test-norm-operation-structure-operation-structure-7-2-asynchronous-request",
