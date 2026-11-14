@@ -130,6 +130,14 @@ class ControlledTlsPeerTest {
             "test-norm-structure-member-structure-member-7-24-object-type";
     private static final String OBJECT_TYPE_MEMBER_TARGET_ID =
             "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-24-OBJECT-TYPE";
+    private static final String CONSTRAINT_CASE_ID =
+            "test-norm-operation-structure-operation-structure-7-6-constraint";
+    private static final String CONSTRAINT_TARGET_ID =
+            "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-6-CONSTRAINT";
+    private static final String CONSTRAINTS_CASE_ID =
+            "test-norm-operation-structure-operation-structure-7-7-constraints";
+    private static final String CONSTRAINTS_TARGET_ID =
+            "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-7-CONSTRAINTS";
     private static final List<ProfileInformationMemberFixture> PROFILE_INFORMATION_MEMBER_FIXTURES = List.of(
             new ProfileInformationMemberFixture(
                     "test-norm-structure-member-structure-member-7-31-profile-version",
@@ -1060,6 +1068,7 @@ class ControlledTlsPeerTest {
         int profileInformationRouteEventCount = KMIP_2_0_AND_2_1.size()
                 * (2 * GENERIC_STRUCTURE_ROUTE_IDS.size() + 4 * PROFILE_INFORMATION_MEMBER_FIXTURES.size());
         int objectTypeMemberRouteEventCount = 4;
+        int constraintStructureRouteEventCount = 2 * GENERIC_STRUCTURE_ROUTE_IDS.size();
         int pendingCorrelationAccessorEventCount = KMIP_2_0_AND_2_1.size();
         int structureMemberStructureRouteEventCount = STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size() * 4;
         int structureMemberByteStringRouteEventCount = STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.stream()
@@ -1101,6 +1110,7 @@ class ControlledTlsPeerTest {
                         + extensionInformationRouteEventCount
                         + profileInformationRouteEventCount
                         + objectTypeMemberRouteEventCount
+                        + constraintStructureRouteEventCount
                         + pendingCorrelationAccessorEventCount
                         + structureMemberStructureRouteEventCount + structureMemberByteStringRouteEventCount
                         + structureMemberValueRouteEventCount
@@ -1131,7 +1141,7 @@ class ControlledTlsPeerTest {
                         + enumerationFixtures.size() + localEnumerationCaseCount + bitmaskCaseCount
                         + dataTypeCaseCount
                         + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + genericTagCaseIds.size()
-                        + 1
+                        + 3
                         + typedTagIdentityCaseIds().size() + referencedEnumCaseCount
                         + 11 + STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size()
                         + STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.size()
@@ -3438,6 +3448,8 @@ class ControlledTlsPeerTest {
         caseIds.add("test-norm-operation-structure-operation-structure-7-2-asynchronous-request");
         caseIds.add("test-norm-operation-structure-operation-structure-7-13-extension-information");
         caseIds.add(OBJECT_TYPE_MEMBER_CASE_ID);
+        caseIds.add(CONSTRAINT_CASE_ID);
+        caseIds.add(CONSTRAINTS_CASE_ID);
         PROFILE_INFORMATION_CASE_IDS.forEach(caseIds::add);
         OPERATION_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         SCALAR_OPERATION_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
@@ -4452,6 +4464,11 @@ class ControlledTlsPeerTest {
             for (OperationStructureFixture fixture : OPERATION_STRUCTURE_FIXTURES) {
                 assertGenericStructureRouteEvents(events, fixture.caseId(), fixture.targetId(), protocolVersion);
             }
+            // OASIS KMIP 2.1 §§7.6–7.7, Tables 357–358.
+            assertGenericStructureRouteEvents(events, CONSTRAINT_CASE_ID,
+                    CONSTRAINT_TARGET_ID, protocolVersion);
+            assertGenericStructureRouteEvents(events, CONSTRAINTS_CASE_ID,
+                    CONSTRAINTS_TARGET_ID, protocolVersion);
             // OASIS KMIP 2.1 §7.24 Table 376; Object Type is optional and repeatable.
             for (String route : List.of(
                     "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
