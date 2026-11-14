@@ -710,3 +710,35 @@ KMIP 2.1 §6.1.21/Table 226.
   cells invoked, zero failed, and 27,999 pending. Both cases have no pending
   matrix cells. External KMS compatibility and remaining matrix recipes remain
   outstanding; PR #170 stays WIP.
+
+### Typed Request Message parser: Request Header fields
+
+The installed `kmipkit_request_message_from_ttlv` parser now executes the
+catalogued Request Message root tag and root field cases using complete valid
+Get requests. The request fixtures also exercise Maximum Response Size,
+Asynchronous Indicator, Attestation Capable Indicator, Attestation Type,
+Client Correlation Value, Server Correlation Value, and Time Stamp in Request
+Header for KMIP 2.0 and 2.1. Batch Error Continuation Option and Batch Order
+Option use two batch items with distinct Unique Batch Item IDs and a matching
+Batch Count, as required by the parser's message-shape validation. These local
+checks follow OASIS KMIP 2.0 and 2.1 §8.2; the shared route matrix maps the
+Request Message parser to the applicable §8.1–§8.3 fields.
+
+- Red commits `1c2b72a7d`, `023facdcf`, and `243ce4f9c` added the missing
+  installed-parser assertions. They failed because the generic fixture was an
+  isolated field item rather than a complete Request Message.
+- Green commits `8d1b6cfbf`, `c2979ff24`, and `c75f9d3fc` construct valid
+  complete request trees, including the two-item batch required for batch
+  options, and compare the parser's read-back TTLV tree with the input.
+- Refactor commits `dbcda97f8`, `43e30cb86`, and `a1a6d6436` share ordered
+  Request Header insertion, isolate exact fixture value encoding, and unify
+  contextual Header-field dispatch.
+- Verification: focused parser tests passed for both KMIP versions; the full
+  C route-matrix contract suite passed 133/133; CTest passed 7/7. The complete
+  installed-artifact route matrix records 39,291/66,736 invoked cells, zero
+  failed, and 27,445 pending. `validate_route_evidence.py` correctly fails on
+  the remaining missing cells, beginning with the async Cancel response
+  payload routes. CI run `43537438013` on head `ec21efe7531d6e74a849fbd72ab6991e9c92113e`
+  recorded 39,273 invoked, zero failed, and 27,463 pending, all classified as
+  `validator_recipe_pending`; it had no `fixture_preparation_failed` cells.
+  The route matrix and completeness gate remain open, and PR #170 remains WIP.
