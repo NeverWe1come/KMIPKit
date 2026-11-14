@@ -592,6 +592,7 @@ class ControlledTlsPeerTest {
                 appendScalarOperationStructureRouteEvents(events, fixture, protocolVersion);
             }
             appendExtensionInformationRouteEvents(events, protocolVersion);
+            appendProfileInformationRouteEvents(events, protocolVersion);
             LocalCatalogRouteChecks.executeTags(readRouteEvidenceCatalog(), protocolVersion, genericOnlyTagCaseIds(),
                     invocation -> appendLocalCatalogInvocation(events, protocolVersion, invocation));
             Set<String> typedTagIdentityCases = missingTypedTagIdentityCaseIds(events, protocolVersion);
@@ -672,11 +673,12 @@ class ControlledTlsPeerTest {
                             assertEquals(0L, result.resultStatus());
                             try (var genericPayload = result.queryResponse().orElseThrow()) {
                                 try (var view = genericPayload.view()) {
-                                    assertEquals(2, view.itemCount());
+                                    assertEquals(3, view.itemCount());
                                 }
                             }
                             try (QueryResponse typed = result.typedQueryResponse().orElseThrow()) {
-                                assertEquals(2, typed.fieldCount());
+                                assertEquals(3, typed.fieldCount());
+                                assertEquals(List.of(0x42005c, 0x4200eb, 0x42015f), typed.rawFieldTags());
                                 QueryResponseField operation = typed.fieldAt(0);
                                 assertEquals(QueryResponseFieldKind.ENUMERATION, operation.kind());
                                 assertEquals(0x3bL, operation.enumeration().orElseThrow());
@@ -684,6 +686,14 @@ class ControlledTlsPeerTest {
                                 List<TtlvItemView> profiles = typed.profileInformation();
                                 assertEquals(1, profiles.size(),
                                         "The typed Query reader must expose the Profile Information structure.");
+                                try (TtlvItemView profile = profiles.get(0);
+                                        Tag profileTag = profile.tag();
+                                        var profileValue = profile.value();
+                                        var profileFields = profileValue.structure()) {
+                                    assertEquals(0x4200eb, profileTag.raw());
+                                    assertEquals(TtlvItemType.Structure, profile.itemType());
+                                    assertProfileInformationFields(profileFields);
+                                }
                             }
                         }
                     }
@@ -1042,6 +1052,8 @@ class ControlledTlsPeerTest {
         int scalarOperationStructureRouteEventCount = SCALAR_OPERATION_STRUCTURE_FIXTURES.size()
                 * KMIP_2_0_AND_2_1.size() * 6;
         int extensionInformationRouteEventCount = KMIP_2_0_AND_2_1.size() * 7;
+        int profileInformationRouteEventCount = KMIP_2_0_AND_2_1.size()
+                * (2 * GENERIC_STRUCTURE_ROUTE_IDS.size() + 4 * PROFILE_INFORMATION_MEMBER_FIXTURES.size());
         int pendingCorrelationAccessorEventCount = KMIP_2_0_AND_2_1.size();
         int structureMemberStructureRouteEventCount = STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size() * 4;
         int structureMemberByteStringRouteEventCount = STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.stream()
@@ -1081,6 +1093,7 @@ class ControlledTlsPeerTest {
                         + operationStructureRouteEventCount
                         + scalarOperationStructureRouteEventCount
                         + extensionInformationRouteEventCount
+                        + profileInformationRouteEventCount
                         + pendingCorrelationAccessorEventCount
                         + structureMemberStructureRouteEventCount + structureMemberByteStringRouteEventCount
                         + structureMemberValueRouteEventCount
@@ -3935,8 +3948,23 @@ class ControlledTlsPeerTest {
                 item(0x42007f, 5, intBytes(0)),
                 structure(0x42007c,
                         item(0x42005c, 5, intBytes(0x3b)),
+                        profileInformationWire(),
                         structure(0x42015f)),
                 messageExtensionWire());
+    }
+
+    private static byte[] profileInformationWire() throws Exception {
+        return structure(0x4200eb,
+                item(0x4200ec, TtlvItemType.Enumeration.code(), intBytes(0x12a)),
+                profileVersionWire(),
+                textItem(0x4200ed, "https://kms.example.invalid"),
+                item(0x4200ee, TtlvItemType.Integer.code(), intBytes(5696)));
+    }
+
+    private static byte[] profileVersionWire() throws Exception {
+        return structure(0x4200ef,
+                item(0x4200f0, TtlvItemType.Integer.code(), intBytes(1)),
+                item(0x4200f1, TtlvItemType.Integer.code(), intBytes(0)));
     }
 
     private static byte[] messageExtensionWire() throws Exception {
@@ -5189,6 +5217,208 @@ class ControlledTlsPeerTest {
         }
     }
 
+    // OASIS KMIP 2.0 §§7.25–7.26, Tables 345–346; KMIP 2.1 §§7.31–7.32, Tables 383–384.
+    private static void appendProfileInformationRouteEvents(ArrayNode events, String protocolVersion)
+            throws Exception {
+        CodecLimits limits = CodecLimits.defaults();
+        byte[] informationWire = profileInformationWire();
+        byte[] versionWire = profileVersionWire();
+        String informationHash = normalizedTreeSha256(informationWire);
+        String versionHash = normalizedTreeSha256(versionWire);
+
+        try (TtlvStructure informationFields = profileInformationFields(limits);
+                TtlvValue informationValue = TtlvValue.structure(informationFields, limits);
+                RawTag informationRawTag = RawTag.fromRaw(0x4200eb);
+                Tag informationTag = informationRawTag.checked();
+                TtlvItem informationItem = TtlvItem.create(informationTag, informationValue, limits);
+                var informationView = informationItem.view();
+                Tag viewedInformationTag = informationView.tag();
+                var viewedInformationValue = informationView.value();
+                var viewedInformationFields = viewedInformationValue.structure()) {
+            assertEquals(0x4200eb, viewedInformationTag.raw());
+            assertEquals(TtlvItemType.Structure, informationView.itemType());
+            assertProfileInformationFields(viewedInformationFields);
+        }
+        try (TtlvItem decodedInformation = TtlvCodec.decode(informationWire);
+                var informationView = decodedInformation.view();
+                Tag viewedInformationTag = informationView.tag();
+                var viewedInformationValue = informationView.value();
+                var viewedInformationFields = viewedInformationValue.structure()) {
+            assertEquals(0x4200eb, viewedInformationTag.raw());
+            assertEquals(TtlvItemType.Structure, informationView.itemType());
+            assertProfileInformationFields(viewedInformationFields);
+        }
+
+        TtlvStructure requiredOnlyFields = appendTtlvItem(TtlvStructure.create(), 0x4200ec,
+                TtlvValue.Enumeration(0x12a), limits);
+        try (TtlvValue requiredOnlyValue = TtlvValue.structure(requiredOnlyFields, limits);
+                RawTag requiredOnlyRawTag = RawTag.fromRaw(0x4200eb);
+                Tag requiredOnlyTag = requiredOnlyRawTag.checked();
+                TtlvItem requiredOnlyItem = TtlvItem.create(requiredOnlyTag, requiredOnlyValue, limits);
+                var requiredOnlyView = requiredOnlyItem.view();
+                Tag requiredOnlyViewedTag = requiredOnlyView.tag();
+                var requiredOnlyStructureValue = requiredOnlyView.value();
+                var requiredOnlyStructure = requiredOnlyStructureValue.structure()) {
+            assertEquals(0x4200eb, requiredOnlyViewedTag.raw());
+            assertEquals(1, requiredOnlyStructure.itemCount(),
+                    "Profile Version, Server URI, and Server Port are optional in Profile Information.");
+        }
+
+        try (TtlvStructure versionFields = profileVersionFields(limits);
+                TtlvValue versionValue = TtlvValue.structure(versionFields, limits);
+                RawTag versionRawTag = RawTag.fromRaw(0x4200ef);
+                Tag versionTag = versionRawTag.checked();
+                TtlvItem versionItem = TtlvItem.create(versionTag, versionValue, limits);
+                var versionView = versionItem.view();
+                Tag viewedVersionTag = versionView.tag();
+                var viewedVersionValue = versionView.value();
+                var viewedVersionFields = viewedVersionValue.structure()) {
+            assertEquals(0x4200ef, viewedVersionTag.raw());
+            assertEquals(TtlvItemType.Structure, versionView.itemType());
+            assertProfileVersionFields(viewedVersionFields);
+        }
+        try (TtlvItem decodedVersion = TtlvCodec.decode(versionWire);
+                var versionView = decodedVersion.view();
+                Tag viewedVersionTag = versionView.tag();
+                var viewedVersionValue = versionView.value();
+                var viewedVersionFields = viewedVersionValue.structure()) {
+            assertEquals(0x4200ef, viewedVersionTag.raw());
+            assertEquals(TtlvItemType.Structure, versionView.itemType());
+            assertProfileVersionFields(viewedVersionFields);
+        }
+
+        for (ProfileInformationMemberFixture fixture : PROFILE_INFORMATION_MEMBER_FIXTURES) {
+            appendProfileInformationMemberRouteEvents(events, fixture, protocolVersion, limits);
+        }
+        appendGenericStructureRouteEvents(events, PROFILE_INFORMATION_CASE_ID,
+                PROFILE_INFORMATION_TARGET_ID, protocolVersion, informationHash);
+        appendGenericStructureRouteEvents(events, PROFILE_VERSION_CASE_ID,
+                PROFILE_VERSION_TARGET_ID, protocolVersion, versionHash);
+    }
+
+    private static TtlvStructure profileInformationFields(CodecLimits limits) {
+        TtlvStructure fields = TtlvStructure.create();
+        fields = appendTtlvItem(fields, 0x4200ec, TtlvValue.Enumeration(0x12a), limits);
+        fields = appendTtlvItem(fields, 0x4200ef,
+                TtlvValue.structure(profileVersionFields(limits), limits), limits);
+        fields = appendTtlvItem(fields, 0x4200ed,
+                TtlvValue.TextString("https://kms.example.invalid".getBytes(StandardCharsets.UTF_8), limits), limits);
+        return appendTtlvItem(fields, 0x4200ee, TtlvValue.Integer(5696), limits);
+    }
+
+    private static TtlvStructure profileVersionFields(CodecLimits limits) {
+        TtlvStructure fields = TtlvStructure.create();
+        fields = appendTtlvItem(fields, 0x4200f0, TtlvValue.Integer(1), limits);
+        return appendTtlvItem(fields, 0x4200f1, TtlvValue.Integer(0), limits);
+    }
+
+    private static void appendProfileInformationMemberRouteEvents(ArrayNode events,
+            ProfileInformationMemberFixture fixture, String protocolVersion, CodecLimits limits)
+            throws Exception {
+        byte[] wire;
+        TtlvValue constructedValue;
+        String constructorRoute;
+        String constructorSymbol;
+        if (fixture.structure()) {
+            wire = profileVersionWire();
+            constructedValue = TtlvValue.structure(profileVersionFields(limits), limits);
+            constructorRoute = "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure";
+            constructorSymbol = "org.kmipkit.ttlv.TtlvValue.structure";
+        } else if (fixture.itemType() == TtlvItemType.Integer) {
+            wire = item(fixture.rawTag(), TtlvItemType.Integer.code(), intBytes(fixture.integerValue()));
+            constructedValue = TtlvValue.Integer(fixture.integerValue());
+            constructorRoute = "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer";
+            constructorSymbol = "org.kmipkit.ttlv.TtlvValue.Integer";
+        } else {
+            byte[] text = fixture.textValue().getBytes(StandardCharsets.UTF_8);
+            wire = item(fixture.rawTag(), TtlvItemType.TextString.code(), text);
+            constructedValue = TtlvValue.TextString(text, limits);
+            constructorRoute = "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring";
+            constructorSymbol = "org.kmipkit.ttlv.TtlvValue.TextString";
+        }
+        String treeHash = normalizedTreeSha256(wire);
+        try (TtlvValue value = constructedValue;
+                RawTag rawTag = RawTag.fromRaw(fixture.rawTag());
+                Tag tag = rawTag.checked();
+                TtlvItem created = TtlvItem.create(tag, value, limits);
+                var view = created.view();
+                Tag viewedTag = view.tag()) {
+            assertEquals(fixture.rawTag(), viewedTag.raw());
+            assertEquals(fixture.itemType(), view.itemType());
+            assertProfileInformationMemberValue(view, fixture);
+        }
+        try (TtlvItem decoded = TtlvCodec.decode(wire);
+                var view = decoded.view();
+                Tag viewedTag = view.tag()) {
+            assertEquals(fixture.rawTag(), viewedTag.raw());
+            assertEquals(fixture.itemType(), view.itemType());
+            assertProfileInformationMemberValue(view, fixture);
+        }
+        appendRouteEvent(events, fixture.caseId(), constructorRoute, fixture.targetId(), constructorSymbol,
+                null, null, "construct", protocolVersion, null, treeHash, null);
+        appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_item.create", fixture.targetId(),
+                "org.kmipkit.ttlv.TtlvItem.create", null, null,
+                "construct", protocolVersion, null, treeHash, null);
+        appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.function.ttlv_item_view_from_item",
+                fixture.targetId(), "org.kmipkit.ttlv.TtlvItem.view", null, null,
+                "decode", protocolVersion, null, null, treeHash);
+        appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_codec.decode", fixture.targetId(),
+                "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
+                "decode", protocolVersion, null, null, treeHash);
+    }
+
+    private static void assertProfileInformationMemberValue(TtlvItemView view,
+            ProfileInformationMemberFixture fixture) throws Exception {
+        try (var value = view.value()) {
+            if (fixture.structure()) {
+                assertProfileVersionFields(value.structure());
+            } else if (fixture.itemType() == TtlvItemType.Integer) {
+                assertEquals(fixture.integerValue(), value.integer());
+            } else {
+                assertArrayEquals(fixture.textValue().getBytes(StandardCharsets.UTF_8), value.bytes());
+            }
+        }
+    }
+
+    private static void assertProfileInformationFields(TtlvStructureView fields) throws Exception {
+        int[] tags = {0x4200ec, 0x4200ef, 0x4200ed, 0x4200ee};
+        TtlvItemType[] types = {TtlvItemType.Enumeration, TtlvItemType.Structure,
+                TtlvItemType.TextString, TtlvItemType.Integer};
+        assertEquals(tags.length, fields.itemCount());
+        for (int index = 0; index < tags.length; index++) {
+            try (TtlvItemView field = fields.itemAt(index);
+                    Tag tag = field.tag()) {
+                assertEquals(tags[index], tag.raw());
+                assertEquals(types[index], field.itemType());
+                try (var value = field.value()) {
+                    switch (index) {
+                        case 0 -> assertEquals(0x12a, value.enumeration());
+                        case 1 -> assertProfileVersionFields(value.structure());
+                        case 2 -> assertArrayEquals("https://kms.example.invalid".getBytes(StandardCharsets.UTF_8),
+                                value.bytes());
+                        case 3 -> assertEquals(5696, value.integer());
+                        default -> throw new AssertionError("Unexpected Profile Information field index.");
+                    }
+                }
+            }
+        }
+    }
+
+    private static void assertProfileVersionFields(TtlvStructureView fields) throws Exception {
+        int[] tags = {0x4200f0, 0x4200f1};
+        int[] values = {1, 0};
+        assertEquals(tags.length, fields.itemCount());
+        for (int index = 0; index < tags.length; index++) {
+            try (TtlvItemView field = fields.itemAt(index);
+                    Tag tag = field.tag();
+                    var value = field.value()) {
+                assertEquals(tags[index], tag.raw());
+                assertEquals(TtlvItemType.Integer, field.itemType());
+                assertEquals(values[index], value.integer());
+            }
+        }
+    }
+
     // OASIS KMIP 2.0 §7.9 / §11.54 and KMIP 2.1 §7.13 / §11.56.
     private static void appendExtensionInformationRouteEvents(ArrayNode events, String protocolVersion)
             throws Exception {
@@ -5512,7 +5742,7 @@ class ControlledTlsPeerTest {
     private static void assertBatchItemResponseRouteEvidence(ArrayNode events,
             ClientBatchItemResult result, String protocolVersion, String responseHash) throws Exception {
         try (TtlvStructure raw = result.raw().orElseThrow(); var view = raw.view()) {
-            assertEquals(2, view.itemCount());
+            assertEquals(3, view.itemCount());
         }
         appendRouteEvent(events, "test-norm-message-field-message-field-8-6-batch-item",
                 "java.typed-protocol.function.client_batch_item_response_raw_ttlv",
