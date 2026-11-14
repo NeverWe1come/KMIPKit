@@ -1068,7 +1068,7 @@ class ControlledTlsPeerTest {
                         + dataTypeCaseCount
                         + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + genericTagCaseIds.size()
                         + typedTagIdentityCaseIds().size() + referencedEnumCaseCount
-                        + 10 + STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size()
+                        + 11 + STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size()
                         + STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.size()
                         + STRUCTURE_MEMBER_VALUE_FIXTURES.size(),
                 report.path("case_ids").size());
@@ -3371,6 +3371,7 @@ class ControlledTlsPeerTest {
         caseIds.add("test-norm-message-field-message-field-8-3-ephemeral");
         caseIds.add("test-norm-structure-member-structure-member-7-23-object-group");
         caseIds.add("test-norm-operation-structure-operation-structure-7-2-asynchronous-request");
+        caseIds.add("test-norm-operation-structure-operation-structure-7-13-extension-information");
         OPERATION_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         SCALAR_OPERATION_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         STRUCTURE_MEMBER_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
