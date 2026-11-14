@@ -219,9 +219,10 @@ Verification on this worktree:
   was full. No build configuration was changed.
 
 The latest published PR head before this repair was `1c990a3a9`; the correction
-is in `8e42b79cc`. Exact-head CI is pending after the push. The Windows coverage
-failure from `5d004d2a9` was already fixed by moving test-only protocol code out
-of the source file, and `Coverage / windows` passed on `1c990a3a9`.
+is in `8e42b79cc`. The branch was pushed through `6e22d541c`; hosted CI for that
+head is running. The Windows coverage failure from `5d004d2a9` was fixed by
+moving test-only protocol code out of the source file, and `Coverage / windows`
+passed on `1c990a3a9`.
 
 ## Development commits
 
@@ -240,11 +241,12 @@ of the source file, and `Coverage / windows` passed on `1c990a3a9`.
   schema tests validate only the records relevant to their assertions.
 - Refactor: `798afb7df` records the CI failure diagnosis, Java mapping evidence,
   and exact local verification results; exact-head CI remains pending.
+- Refactor: `6e22d541c` records the `798afb7df` evidence commit SHA.
 
 ## Draft pull request
 
 Draft PR [#213](https://github.com/NeverWe1come/KMIPKit/pull/213) is open with
 the required `[WIP]` title and is stacked on KMIPKIT-0115. Its last pushed
-head when this evidence was recorded was `1c990a3a9`; the Java mapping repair
-`8e42b79cc` and this evidence update are pending push. Keep the WIP marker
-until all required checks on the current PR head are green.
+head when this evidence was recorded was `6e22d541c`; exact-head hosted CI is
+running. Keep the WIP marker until all required checks on the current PR head
+are green.
