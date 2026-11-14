@@ -26,6 +26,7 @@ EVIDENCE_PATH = "specification/catalog/operation-matrix-evidence.json"
 DRAFT_API_PATH = "specification/api/kmip-3.0-draft-api.json"
 OUTPUT_PATH = "specification/catalog/fluent-operation-inventory.json"
 MAX_SOURCE_BYTES = 64 * 1024 * 1024
+KMIP30_FLUENT_OPERATION_CODES = frozenset(range(0x3C, 0x43))
 V3_OPERATION_SECTIONS = {
     "Create Credential": "6.1.9",
     "Create Group": "6.1.10",
@@ -220,7 +221,6 @@ def _kmip30_fluent_routes(
     if not isinstance(operations, list) or len(operations) != 7:
         raise ValueError("KMIP 3.0 fluent route catalog must contain seven operations")
     expected_languages = {"rust", "c", "java", "python"}
-    assigned_codes = set(range(0x3C, 0x43))
     routes: dict[int, dict[str, str]] = {}
     names: set[str] = set()
     for operation in operations:
@@ -237,7 +237,7 @@ def _kmip30_fluent_routes(
             name in names
             or isinstance(code, bool)
             or not isinstance(code, int)
-            or code not in assigned_codes
+            or code not in KMIP30_FLUENT_OPERATION_CODES
             or code in routes
             or not isinstance(mappings, dict)
             or set(mappings) != expected_languages
@@ -246,7 +246,7 @@ def _kmip30_fluent_routes(
             raise ValueError(f"KMIP 3.0 fluent route mapping is incomplete: {name}")
         names.add(name)
         routes[code] = mappings
-    if set(routes) != assigned_codes:
+    if set(routes) != KMIP30_FLUENT_OPERATION_CODES:
         raise ValueError("KMIP 3.0 fluent routes do not cover all seven assigned operation codes")
     language_mappings = capability.get("mappings")
     if not isinstance(language_mappings, dict) or set(language_mappings) != expected_languages:
