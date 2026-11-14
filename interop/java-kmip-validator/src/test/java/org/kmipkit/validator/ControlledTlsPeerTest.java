@@ -4257,6 +4257,23 @@ class ControlledTlsPeerTest {
                 assertRouteEventRecorded(events, asynchronousRequestCase, asynchronousRequestTarget,
                         route, action, protocolVersion);
             }
+            for (String[] fixture : List.of(
+                    new String[] {"test-norm-operation-structure-operation-structure-7-23-object-groups",
+                            "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-23-OBJECT-GROUPS"},
+                    new String[] {"test-norm-operation-structure-operation-structure-7-24-object-types",
+                            "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES"})) {
+                for (String route : List.of(
+                        "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.create",
+                        "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem",
+                        "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
+                        "java.generic-ttlv.ttlv_item.create",
+                        "java.generic-ttlv.function.ttlv_item_view_from_item",
+                        "java.generic-ttlv.ttlv_codec.decode")) {
+                    String action = route.endsWith("ttlv_codec.decode")
+                            || route.endsWith("ttlv_item_view_from_item") ? "decode" : "construct";
+                    assertRouteEventRecorded(events, fixture[0], fixture[1], route, action, protocolVersion);
+                }
+            }
             String objectGroupCase = "test-norm-structure-member-structure-member-7-23-object-group";
             String objectGroupTarget = "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-23-OBJECT-GROUP";
             assertRouteEventRecorded(events, objectGroupCase, objectGroupTarget,
