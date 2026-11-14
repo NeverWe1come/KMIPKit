@@ -878,3 +878,31 @@ HTTPS. It follows OASIS KMIP 2.1 §§6.1.5, 6.1.38, 8.2–8.3, 8.6, and 9.1–9.
   `validator_recipe_pending`. The matching completeness validator now reaches
   the missing-route check without duplicate-cell errors and exits unsuccessfully
   because the overall matrix remains incomplete. PR #170 remains WIP.
+
+### C mandatory asynchronous Create
+
+The installed C consumer now constructs Create with
+`Asynchronous Indicator=Mandatory` and reads the Pending result and exact
+server-issued correlation through the public response accessors. The peer
+checks all six encoding/transport pairs for KMIP 2.0 and 2.1. The Pending
+Response Batch Item includes its required empty Response Payload structure;
+the no-payload Pending exception is specific to Poll. This follows OASIS KMIP
+2.0/2.1 §§8.2–8.3, 8.6, 9.1–9.2, and 11.3, Create §6.1.8 Table 171 (2.0) and
+Table 186 (2.1), and Response Batch Item §8.6 Table 361 (2.0) and Table 399
+(2.1).
+
+- Red commit `bbab6bb04` failed because no C peer recipe existed for the
+  mandatory asynchronous Create case.
+- Green commit `01a3ea25d` adds the typed installed-ABI route and its controlled
+  peer response check.
+- Refactor commits `4551ce1ec` and `f1eccd192` share the payload-shape predicate
+  and generalize the asynchronous Create seed check.
+- Verification: the Mandatory Create route passed 12/12 network cells. The
+  five Cancel-result route cases, Poll-before-Cancel case, Cancel response
+  payload roundtrip, and both controlled TLS CTest peers passed. `cmake
+  --build interop/c-kmip-validator/build --parallel 2` and Python syntax checks
+  passed.
+- The matching full C route matrix recorded 40,336 invoked cells, zero failed,
+  and 26,400 pending, all `validator_recipe_pending`. The matching completeness
+  validator still fails on missing routes, beginning with
+  `test-async-indicator-omitted-default`; PR #170 remains WIP.

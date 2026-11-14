@@ -200,3 +200,30 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   26,486 pending, all `validator_recipe_pending`. The matching evidence
   validator exits unsuccessfully at the remaining missing-route check because
   the matrix is incomplete; it no longer reports duplicate route cells.
+
+## Development evidence: C mandatory asynchronous Create
+
+- Normative scope: OASIS KMIP 2.0/2.1 §§8.2–8.3, 8.6, 9.1–9.2, and 11.3;
+  Create is §6.1.8 Table 171 (2.0) and Table 186 (2.1). Response Batch Item
+  structure is §8.6 Table 361 (2.0) and Table 399 (2.1). A Mandatory
+  Asynchronous Indicator requires the server to process every batch item
+  asynchronously and return a correlation value; a Pending response includes
+  the required Response Payload structure.
+- Red commit `bbab6bb04` added the accepted-Mandatory route regression. It failed
+  because the C peer recipe did not yet implement the case.
+- Green commit `01a3ea25d` constructs a typed Create request with
+  `Asynchronous Indicator=Mandatory`, accepts only Pending with the exact
+  server-issued correlation, and exercises KMIP 2.0/2.1 over all six supported
+  encoding/transport pairs. The peer checks the Pending result, correlation,
+  and empty Response Payload structure. A no-payload fixture was rejected by
+  the installed client because only Pending Poll has the no-payload exception.
+- Refactor commits `4551ce1ec` and `f1eccd192` share the Pending Create payload
+  shape check and name the asynchronous Create seed assertion by its operation.
+- Verification: the focused Mandatory Create route passed all 12 network
+  cells; the five Cancel-result routes, Poll-before-Cancel route, and Cancel
+  response payload roundtrip also passed. Both controlled TLS CTest peers,
+  Python syntax checks, and the CMake build passed.
+- The matching full route matrix recorded 40,336 invoked cells, zero failed,
+  and 26,400 `validator_recipe_pending` cells. The exact completeness validator
+  still exits unsuccessfully, next reporting `test-async-indicator-omitted-default`.
+  This route advances coverage without closing the matrix gate.
