@@ -2116,6 +2116,8 @@ class BatchItemResult(_BatchItemResultNativeState):
     recover_response: RecoverResponse | None = field(default=None, repr=False)
     delete_attribute_response: DeleteAttributeResponse | None = field(default=None, repr=False)
     modify_attribute_response: ModifyAttributeResponse | None = field(default=None, repr=False)
+    kmip30_identifier: extensions.UniqueIdentifier | None = field(default=None, repr=False)
+    encapsulate_data: bytes | None = field(default=None, repr=False)
     set_attribute_response: SetAttributeResponse | None = field(
         default=None, repr=False
     )
@@ -4402,6 +4404,20 @@ def _batch_result(
                     sign_response,
                     signature_verify_response,
                 ) = cryptographic_responses
+                kmip30_identifier = None
+                encapsulate_data = None
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) in {0x3F, 0x3C, 0x3E, 0x40, 0x42, 0x41}
+                ):
+                    kmip30_identifier = _kmip30_identifier_response(item)
+                if (
+                    outcome == BatchOutcome.COMPLETED
+                    and int(metadata.result_status) == 0
+                    and int(metadata.operation) == 0x41
+                ):
+                    encapsulate_data = _encapsulate_response_data(item)
                 result = BatchItemResult(
                     outcome,
                     int(metadata.result_status),
@@ -4462,6 +4478,8 @@ def _batch_result(
                     recover_response=recover_response,
                     delete_attribute_response=delete_attribute_response,
                     modify_attribute_response=modify_attribute_response,
+                    kmip30_identifier=kmip30_identifier,
+                    encapsulate_data=encapsulate_data,
                 )
                 object.__setattr__(result, "_rng_retrieve_response", rng_retrieve_response)
                 object.__setattr__(result, "_rng_seed_response", rng_seed_response)
@@ -4627,6 +4645,35 @@ def _create_split_key_response(
         )
         identifiers.append(_read_unique_identifier(output))
     return tuple(identifiers)
+
+
+def _kmip30_identifier_response(
+    item: _ClientBatchItemResponse,
+) -> extensions.UniqueIdentifier | None:
+    present = ffi.new("uint8_t *")
+    identifier = _initialize_unique_identifier_output()
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_kmip30_identifier(
+            item._pointer(), present, identifier
+        )
+    )
+    if present[0] == 0:
+        _require_absent_unique_identifier(identifier)
+        return None
+    if present[0] != 1:
+        errors.raise_for_status(4)
+    return _read_unique_identifier(identifier)
+
+
+def _encapsulate_response_data(item: _ClientBatchItemResponse) -> bytes | None:
+    present = ffi.new("uint8_t *")
+    data = ffi.new("kmipkit_byte_span_v1_t *")
+    _raise_abi_status(
+        lib.kmipkit_client_batch_item_response_encapsulate_data(
+            item._pointer(), present, data
+        )
+    )
+    return _optional_output_span(present, data)
 
 
 def _optional_output_span(present: Any, value: Any) -> bytes | None:

@@ -222,9 +222,7 @@ pub enum CreateCredentialObject {
 }
 
 impl CreateCredentialObject {
-    /// Returns the Credential Type selected by this closed object alternative.
-    #[must_use]
-    pub const fn credential_type(&self) -> CredentialType {
+    const fn credential_type(&self) -> CredentialType {
         match self {
             Self::Certificate(_) => CredentialType::Attestation,
             Self::PasswordCredential(_) => CredentialType::UsernameAndPassword,
@@ -269,13 +267,11 @@ pub struct CreateCredentialRequest {
 }
 
 impl CreateCredentialRequest {
-    /// Creates a request with its required type, Attributes, and defined object alternative.
+    /// Creates a request with Attributes and a closed object alternative.
+    /// The required Credential Type is derived from the selected alternative.
     #[must_use]
-    pub const fn new(
-        credential_type: CredentialType,
-        attributes: AttributeSet,
-        object: CreateCredentialObject,
-    ) -> Self {
+    pub const fn new(attributes: AttributeSet, object: CreateCredentialObject) -> Self {
+        let credential_type = object.credential_type();
         Self {
             credential_type,
             attributes,
@@ -289,9 +285,6 @@ impl CreateCredentialRequest {
     ///
     /// Returns a sanitized TTLV model error.
     pub fn into_ttlv_payload(self) -> Result<Structure, String> {
-        if self.object.credential_type() != self.credential_type {
-            return Err("Credential Type does not match Credential Object".to_owned());
-        }
         let mut payload = Structure::new();
         push(
             &mut payload,

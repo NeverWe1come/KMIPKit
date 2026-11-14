@@ -3526,6 +3526,24 @@ public final class ClientBatchItemResult implements AutoCloseable {
         return value == null ? Optional.empty() : Optional.of(value.clone());
     }
 
+    /** Returns the successful KMIP 3.0 operation's identifier, when its typed response defines one. */
+    public Optional<UniqueIdentifier> kmip30Identifier() {
+        if (outcomeKind().isPending() || resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        return parseLifecycleIdentifierResponse(
+                handle.withValue(NativeExtensionRegistry::clientBatchItemResponseKmip30Identifier),
+                "KMIP 3.0");
+    }
+
+    /** Returns only the public Data field from a successful Encapsulate response. */
+    public Optional<byte[]> encapsulateData() {
+        if (outcomeKind().isPending() || resultStatus() != 0) return Optional.empty();
+        NativeExtensionRegistry.ensureLoaded();
+        byte[] value = handle.withValue(
+                NativeExtensionRegistry::clientBatchItemResponseEncapsulateData);
+        return value == null ? Optional.empty() : Optional.of(value.clone());
+    }
+
     /**
      * Returns the ordered Protocol Version list for a successful Discover Versions result.
      * An empty present list is distinct from Pending, failure, or another operation.

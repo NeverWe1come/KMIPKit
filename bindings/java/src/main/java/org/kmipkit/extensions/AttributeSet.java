@@ -113,6 +113,11 @@ public final class AttributeSet implements AutoCloseable {
         return handle.withValue(NativeExtensionRegistry::attributeSetLen);
     }
 
+    /** Internal lifecycle bridge for typed KMIP request builders. */
+    public NativeHandle nativeHandleOwner() {
+        return handle;
+    }
+
     /** Returns whether this collection is empty. */
     public boolean isEmpty() {
         NativeExtensionRegistry.ensureLoaded();

@@ -153,6 +153,7 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
             | "generic_ttlv_model"
             | "hashed_password_timestamp_sequence"
             | "kmip30_draft_routes"
+            | "kmip30_fluent_operations"
             | "kmip_protocol_version_selection"
             | "named_protocol_values"
             | "nonce_ttlv_parity"

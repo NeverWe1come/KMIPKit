@@ -5795,7 +5795,6 @@ impl<'a> Kmip30BuilderParts<'a> for CreateCredentialBuilder<'a> {
         (
             self.execution,
             ClientRequest::create_credential(CreateCredentialRequest::new(
-                self.object.credential_type(),
                 self.attributes,
                 self.object,
             )),
