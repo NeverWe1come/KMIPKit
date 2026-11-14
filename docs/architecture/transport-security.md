@@ -44,7 +44,10 @@ Response Size` retains its TTLV-equivalent meaning.
 
 ## TLS policy
 
-- TLS 1.3 is the minimum and maximum.
+- TLS 1.3 is the default minimum and maximum (`TlsVersionPolicy::Tls13Only`);
+  explicit opt-in `TlsVersionPolicy::Tls12And13Compat` enables TLS 1.2
+  interoperability restricted to OASIS KMIP Profiles v2.0/v2.1 ECDHE-GCM
+  cipher suites with mandatory mutual TLS.
 - rustls with aws-lc-rs.
 - Mutual TLS.
 - Certificate and private key input from PEM or DER files and in-memory
