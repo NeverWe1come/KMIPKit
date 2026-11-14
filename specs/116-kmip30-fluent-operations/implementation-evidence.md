@@ -182,22 +182,68 @@ is wrong, clients that inspect only the main operation list may miss the
 versioned 3.0 routes; the generated inventory will link them through the
 capability and source edition.
 
+## Java mapping correction for script-contract CI
+
+The CI run on `1c990a3a9` passed Windows coverage but failed the script-contract
+job because 37 KMIPKIT-0116 Java mappings lacked `jniSymbol` or named the
+package-private `Kmip30OperationHandle` instead of the public fluent facade.
+The manifest now maps the seven factories to `FluentRequest`, Java-composed
+execution and options to the inherited `Kmip30BuilderBase` methods, setters and
+credential alternatives to their public typed methods, and response fields to
+`ClientBatchItemResult`. Only the C operations with real JNI entrypoints carry
+`jniSymbol`; the operation factory dispatcher is an explicitly checked
+six-route alias. The Java-composed execution mappings have no per-operation JNI
+symbol.
+
+The new test first failed on all seven factory owners and the composed
+execution owners, then passed after the manifest correction. The Java bridge
+export audit still requires exact exclusions for JNI implementation methods
+and handle-kind constants, with KMIPKIT-0116 evidence paths.
+
+Verification on this worktree:
+
+- `python3 -B -m unittest tools.api_manifest.tests.test_parity -v`: 25 tests
+  passed.
+- `python3 -B -m unittest
+  tools.api_manifest.tests.test_0116_kmip30_fluent_manifest -v`: 3 tests
+  passed.
+- `TMPDIR=/home/ramp1953/.codex/tmp/kmipkit-0116 python3 -B -m unittest
+  tools.api_manifest.tests.test_binding_exports -v`: 59 tests passed.
+- The combined parity, KMIPKIT-0116, T102 Java bridge, and binding-export
+  suites passed 94 tests. `tools/api_manifest/generate.py --check`,
+  `tools/extension_fixtures/generate.py --check`, and `git diff --check` also
+  passed; the API generator verified all 12 generated destinations.
+- `bindings/java/gradlew ... test` passed 718 tests (0 failures, 0 errors, 1
+  skipped). This local run used a 4 GiB Gradle heap and a temporary Gradle init
+  script to direct test temporary files to a volume with space, because `/tmp`
+  was full. No build configuration was changed.
+
+The latest published PR head before this repair was `1c990a3a9`; the correction
+is in `8e42b79cc`. Exact-head CI is pending after the push. The Windows coverage
+failure from `5d004d2a9` was already fixed by moving test-only protocol code out
+of the source file, and `Coverage / windows` passed on `1c990a3a9`.
+
 ## Development commits
 
 - Red: `cdf4257cf` and `97eea9e07` add failing API-surface and credential
   alternative tests before implementation.
+- Red: `7295b4f4b` adds failing Java fluent-facade mapping and signature tests
+  for KMIPKIT-0116.
 - Green: `51b23bb2e` implements the Java/JNI and Python/CFFI routes alongside
   the matching typed API integration.
+- Green: `8e42b79cc` corrects the Java mappings, retains exact JNI bridge
+  exclusions, and regenerates the manifest outputs.
 - Refactor: `ddc6fbc09` reconciles manifest exports and generated bindings;
   `c79d98018` regenerates the versioned fluent operation inventory after the
   approved parent rebase.
 - Refactor: `c4f753197` records the final manifest verification and makes two
   schema tests validate only the records relevant to their assertions.
+- Refactor: pending exact-head CI and PR evidence update.
 
 ## Draft pull request
 
 Draft PR [#213](https://github.com/NeverWe1come/KMIPKit/pull/213) is open with
 the required `[WIP]` title and is stacked on KMIPKIT-0115. Its last pushed
-head when this evidence was recorded was `2849e50ba`; the supplemental protocol
-coverage commit is pending. Keep the WIP marker until all required checks on
-the current PR head are green.
+head when this evidence was recorded was `1c990a3a9`; the Java mapping repair
+`8e42b79cc` and this evidence update are pending push. Keep the WIP marker
+until all required checks on the current PR head are green.
