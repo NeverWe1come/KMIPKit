@@ -198,10 +198,13 @@ with 24,242 pending recipe cells; matrix completeness remains open.
 
 For KMIPKIT-0092-FR-003, FR-005, and FR-009, the installed consumer checks the
 failed Get response in a Continue batch through the typed result, metadata,
-response-header, pending-correlation, and restricted raw-TTLV-presence
-accessors. It confirms that the following Get Attribute List still executes.
+response-header, pending-correlation, and raw-TTLV-absence accessors. The
+following successful Get Attribute List response is checked through typed
+identifiers and attribute references and its operation-specific payload TTLV
+accessor.
 OASIS KMIP 2.0/2.1 §§8.2–8.6 and 9.5–9.7 define continuation and batch
 response behavior; §11.5 defines Object Not Found. Red/Green commits are
-`371057393`/`196fad2e4`; the focused route passes 24 constructor, protocol,
-encoding, and transport checks. Full CTest passed 7/7 in 92.92 seconds;
-exact-head CI and remaining route matrix coverage remain open.
+`371057393`/`196fad2e4` and `52757ebb8`/`f0012f2b6`; the focused route passes
+24 constructor, protocol, encoding, and transport checks. Full CTest passed
+7/7 in 95.87 seconds; exact-head CI and remaining route matrix coverage remain
+open.

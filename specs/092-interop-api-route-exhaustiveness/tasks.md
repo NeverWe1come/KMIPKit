@@ -697,9 +697,10 @@ even though the peer's state is rolled back.
 
 For KMIPKIT-0092-FR-003, FR-005, and FR-009, the installed C consumer now
 validates the first failed Get response in a Continue batch: result status and
-reason, absent typed and generic payloads, response header, and absent pending
-correlation. The controlled peer also verifies that the second Get Attribute
-List still executes. OASIS KMIP 2.0/2.1 §§8.2–8.6 and 9.5–9.7 define batch
+reason, absent typed and raw payloads, response header, and absent pending
+correlation. It also validates the following successful Get Attribute List
+response through its typed identifiers and attribute references and the
+operation-specific payload TTLV accessor. OASIS KMIP 2.0/2.1 §§8.2–8.6 and 9.5–9.7 define batch
 continuation and response items; §11.5 defines the Object Not Found reason.
 
 - Red commit `371057393`: the focused test failed because Continue omitted the
