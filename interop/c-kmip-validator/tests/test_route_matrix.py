@@ -467,6 +467,23 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(recipe[0], (1, 17, 19, 20))
         self.assertEqual(recipe[1], 'get_usage_allocation')
 
+    def test_cancel_has_a_typed_peer_recipe_and_echoes_the_exact_correlation(self):
+        """OASIS KMIP 2.1 §6.1.5 Tables 176–177 require Cancel correlation echo and result."""
+        import route_peer
+        from artifact_support import ROOT
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        case = next(item for item in catalog['test_cases'] if item['case_id'] == 'test-op-cancel')
+        correlation = b'fixture-cancel-correlation'
+
+        self.assertEqual(route_peer.recipe_for_case(case, None), ((25,), 'cancel'))
+        response = route_peer.parse(route_peer.cancel_response(correlation, 1, 1))
+        payload = next(child for child in response[2][1][2] if child[0] == route_peer.RESPONSE_PAYLOAD_TAG)
+        self.assertEqual(payload[2], [
+            (route_peer.Codec(catalog).tag('Asynchronous Correlation Value'), 8, correlation),
+            (route_peer.Codec(catalog).tag('Cancellation Result'), 5, (1).to_bytes(4, 'big')),
+        ])
+
     def test_stop_on_first_failure_case_has_a_controlled_peer_recipe(self):
         import route_peer
         from artifact_support import ROOT
