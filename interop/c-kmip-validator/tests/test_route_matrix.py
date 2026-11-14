@@ -3582,6 +3582,8 @@ class RouteMatrixTests(unittest.TestCase):
             'kmipkit_client_batch_item_response_pending_correlation_value',
             'kmipkit_client_batch_item_response_header_ttlv',
             'kmipkit_client_batch_item_response_raw_ttlv',
+            'kmipkit_client_batch_item_response_get_attribute_list',
+            'kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv',
         }
         for check in checks:
             self.assertTrue(accessor_symbols <= set(check['public_api_trace_symbols']))
@@ -3609,6 +3611,10 @@ class RouteMatrixTests(unittest.TestCase):
              'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM', None),
             ('kmipkit_client_batch_item_response_raw_ttlv', 'decode',
              'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM', None),
+            ('kmipkit_client_batch_item_response_get_attribute_list', 'decode',
+             'KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST', None),
+            ('kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv', 'decode',
+             'KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST', None),
         }
         exercised_routes = {
             (event['public_api_symbol'], event['action'], event['target_id'],
