@@ -953,7 +953,7 @@ bash ../../bindings/java/gradlew --no-daemon --max-workers=2 \
   -PkmipkitMavenRepo="$PWD/build/maven-repository" test
 python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
   --report build/route-execution-evidence.json \
-  --artifact-sha256 830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813c \
+  --artifact-sha256 830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e \
   --write-ledger
 python3 tools/compare_route_ledger.py --refresh-reference
 python3 tools/compare_route_ledger.py
@@ -1539,3 +1539,52 @@ or non-applicable. Under FR-002/FR-009, completeness still requires zero
 pending cells. The Java workflow's selected-scope validation and ledger
 comparison do not enforce that global condition, so this passing local slice
 does not complete the full matrix; the PR remains WIP.
+
+## KMIP 2.1 Object Type structure-member routes
+
+KMIP 2.1 §7.24 Table 376 defines Object Type as an Enumeration member of the
+Object Types Structure; the member is optional and may be repeated. The
+fixture uses assigned Symmetric Key (`0x00000002`) and Public Key
+(`0x00000003`) values from §11.34. It decodes an empty Object Types Structure
+to verify absence, then decodes two ordered Object Type members and checks both
+tags, TTLV types, and values. The standalone member also exercises the
+installed Enumeration constructor, Item creation, Item view, and decoder
+routes under its structure-member case ID.
+
+Red commit `4c90412d` adds the case ID and requires all four routes; the
+focused controlled-peer test fails on the missing Enumeration-constructor
+event. Green commit `d02218b8` constructs, views, and decodes the member,
+checks optional and repeated parent shapes, and emits the four route events.
+The Refactor commit updates the generated ledger and traceability evidence;
+no applicability rule or route requirement changes.
+
+Local verification used installed Java artifact
+`489fafc79ef89db2524eafa7a6c6482f5cf75d97` with SHA-256
+`830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e`:
+
+```sh
+TMPDIR="$PWD/build/native-test-tmp" \
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/native-test-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+python3 -m unittest tools.normative_catalog.tests.test_feature_traceability \
+  scripts.tests.test_requirement_traceability
+```
+
+The focused test and full Java consumer suite pass; the suite reports 54 tests
+with zero failures, errors, or skips. The route validator accepts 22,821/22,821
+selected cells with zero failed cells. The full ledger records 71,463 planned,
+22,821 executed, and 48,642 pending cells across 1,293 case IDs. Each pending
+cell remains `route_evidence_not_emitted`, meaning no validated route execution
+evidence was emitted for that planned cell. Applicability continues to follow
+the shared catalog and capability matrix after protocol-version, route,
+encoding/transport, and source-backed exclusion filters; every still-planned
+cell remains required. FR-002/FR-009 completeness still requires zero pending
+cells, while the Java selected-scope job and ledger comparison do not enforce
+global completion. This slice does not complete the matrix; the PR remains WIP.
