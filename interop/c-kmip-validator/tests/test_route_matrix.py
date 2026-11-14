@@ -3912,6 +3912,35 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_response_archive'
                             and event['action'] == 'decode' for event in events))
 
+    def test_archive_payload_fixtures_cover_present_and_omitted_identifiers(self):
+        """Execute KMIP 2.0/2.1 §6.1.4 request and success response field fixtures."""
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_ids = {
+            'test-norm-payload-client-archive-request-20-001',
+            'test-norm-payload-client-archive-response-20-001',
+            'test-norm-payload-client-archive-request-21-001',
+            'test-norm-payload-client-archive-response-21-001',
+        }
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] in case_ids]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 24,
+                         'each Archive payload fixture must run all six applicable network combinations')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(all(check['peer_request_operations'] == [1, 21, 19, 20] for check in checks))
+        self.assertTrue(all(check['peer_cleanup_operations'] == [19, 20] for check in checks))
+        self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_archive'
+                            and event['action'] == 'send' for event in events))
+        self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_response_archive'
+                            and event['action'] == 'decode' for event in events))
+
     def test_create_key_pair_operation_runs_through_installed_c_abi_and_checks_both_identifiers(self):
         """Exercise OASIS KMIP 2.0/2.1 §6.1.9 Create Key Pair request and response payloads."""
         from artifact_support import ROOT
