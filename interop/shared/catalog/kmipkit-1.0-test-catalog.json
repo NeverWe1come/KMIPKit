@@ -56999,12 +56999,12 @@
       "isolation_recipe": {
         "unique_name_prefix": "kmipkit-certify",
         "setup_steps": [
-          "Create unique SymmetricKey"
+          "Create unique PublicKey with RSA 2048-bit attributes"
         ],
         "target_step": "Execute Certify",
         "teardown_steps": [
-          "Revoke SymmetricKey",
-          "Destroy SymmetricKey"
+          "Destroy generated Certificate",
+          "Destroy PublicKey"
         ],
         "normalized_fields": [
           "TimeStamp",

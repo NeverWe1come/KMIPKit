@@ -396,6 +396,7 @@ RECIPES = {
     'test-op-check': ((1, 9, 19, 20), 'check'),
     'test-op-activate': ((1, 18, 19, 20), 'activate'),
     'test-op-archive': ((1, 21, 19, 20), 'archive'),
+    'test-op-certify': ((1, 6), 'certify'),
     'test-op-create-key-pair': ((2,), 'create_key_pair'),
     'test-op-revoke': ((1, 19, 20), 'revoke'),
     'test-op-destroy': ((1, 20, 19, 20), 'destroy'),
@@ -804,7 +805,8 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
                 numbers(archive_items[0], UNIQUE_IDENTIFIER_TAG) != [ID_PLACEHOLDER_ENUMERATION]):
             raise ValueError('fixture_archive_placeholder_identifier_mismatch')
     if expected[0] == 1:
-        object_type = 4 if case_id == 'test-obj-private-key' else 3 if case_id == 'test-obj-public-key' else 2
+        object_type = 4 if case_id == 'test-obj-private-key' else 3 if case_id in (
+            'test-obj-public-key', 'test-op-certify') else 2
         if numbers(node, 0x420057) != [object_type]:
             raise ValueError('fixture_object_type_mismatch')
         if numbers(node, 0x420028) != [4 if object_type in (3, 4) else 3]:
@@ -820,6 +822,7 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
             'test-attr-cryptographic-length', 'test-op-get-constraints',
             'test-norm-payload-client-get-usage-allocation-request-20-001',
             'test-norm-payload-client-get-usage-allocation-request-21-001') or attribute_fixture is not None
+        implicit_target = implicit_target or case_id == 'test-op-certify'
         minimum_unique_identifiers = 0 if case_id == 'test-batch-placeholder-chain-resolves' else (
             len(expected) - 1 - int(implicit_target))
         if len(numbers(node, 0x420094)) < minimum_unique_identifiers:
@@ -2160,6 +2163,19 @@ class PeerState:
                     self.attribute_values[identifier] = {}
                     self.adjustable_attribute_values[identifier] = {}
                 effect = 'created_key_pair'
+            elif operation == 6:
+                if identifier not in self.objects:
+                    status, reason, effect = 1, 55, 'public_key_not_found'
+                else:
+                    certificate_identifier = 'fixture-certificate-1'
+                    if certificate_identifier in self.objects:
+                        raise ValueError('fixture_duplicate_certify')
+                    self.objects[certificate_identifier] = 'pre_active'
+                    self.attributes[certificate_identifier] = set()
+                    self.attribute_values[certificate_identifier] = {}
+                    self.adjustable_attribute_values[certificate_identifier] = {}
+                    placeholder = certificate_identifier
+                    effect = 'certified'
             elif operation == 8:
                 matching_identifiers = list(self.objects)
                 if len(matching_identifiers) != 1:
@@ -2376,6 +2392,46 @@ def assert_create_key_pair_cleanup_request(request_tree, version):
     identifiers = [text_values(item, UNIQUE_IDENTIFIER_TAG) for item in items]
     if identifiers != [['fixture-private-key-1'], ['fixture-public-key-1']]:
         raise ValueError('fixture_create_key_pair_cleanup_identifier_mismatch')
+
+
+def verify_certify_response(response_tree):
+    items = [item for item in response_tree[2]
+             if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    certify_items = [item for item in items if numbers(item, 0x42005C) == [6]]
+    payloads = [child for child in certify_items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] \
+        if len(certify_items) == 1 else []
+    if (len(items) != 2 or [numbers(item, 0x42005C) for item in items] != [[1], [6]] or
+            [numbers(item, 0x42007F) for item in items] != [[0], [0]] or
+            len(payloads) != 1 or text_values(payloads[0], UNIQUE_IDENTIFIER_TAG) !=
+            ['fixture-certificate-1']):
+        raise ValueError('fixture_certify_response_identifier_mismatch')
+
+
+def assert_certify_request(request_tree, version):
+    assert_recipe(request_tree, 'test-op-certify', version, RECIPES['test-op-certify'])
+    items = [item for item in request_tree[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    certify_items = [item for item in items if numbers(item, 0x42005C) == [6]]
+    if len(certify_items) != 1:
+        raise ValueError('fixture_certify_request_item_missing')
+    certify_uid_text = text_values(certify_items[0], UNIQUE_IDENTIFIER_TAG)
+    if len(certify_uid_text) != 1:
+        raise ValueError('fixture_certify_request_identifier_missing')
+    if certify_uid_text != ['fixture-key-1']:
+        raise ValueError('fixture_certify_request_identifier_value_mismatch')
+    certify_uid_types = [item[1] for item in descendants(certify_items[0], UNIQUE_IDENTIFIER_TAG)]
+    if certify_uid_types != [7]:
+        raise ValueError('fixture_certify_request_identifier_type_mismatch')
+    if numbers(certify_items[0], 0x42001D) != [1]:
+        raise ValueError('fixture_certify_request_certificate_type_mismatch')
+
+
+def assert_certify_cleanup_request(request_tree, version):
+    assert_recipe(request_tree, 'test-op-certify', version, ((20, 20), 'certify_cleanup'))
+    items = [item for item in request_tree[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    identifiers = [text_values(item, UNIQUE_IDENTIFIER_TAG) for item in items]
+    if identifiers != [['fixture-certificate-1'], ['fixture-key-1']]:
+        raise ValueError('fixture_certify_cleanup_identifier_mismatch')
 
 
 def verify_usage_allocation_identifier_variants(response_tree):
@@ -2601,7 +2657,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         2 if placeholder_chain_recipe or recipe[1] in (
                                             'login_logout', 'cancel_async',
                                             'async_poll_cancel_no_recursion',
-                                            'create_key_pair') else 1)
+                                            'create_key_pair', 'certify') else 1)
                                     seed_rejected = False
                                     accepted, _ = server.accept()
                                     stream = context.wrap_socket(accepted, server_side=True)
@@ -2630,6 +2686,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         cleanup_exchange = (
                                             placeholder_chain_recipe and exchange_index == 1) or (
                                             recipe[1] == 'create_key_pair' and exchange_index == 1) or (
+                                            recipe[1] == 'certify' and exchange_index == 1) or (
                                             attribute_mutation_recipe and
                                             (exchange_index == attribute_cleanup_exchange_index or
                                              (delete_attribute_recipe and seed_rejected and
@@ -2639,6 +2696,17 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         if logout_recipe:
                                             assert_login_logout_exchange(request_tree, version, exchange_index)
                                             response_operations = ((45,) if exchange_index == 0 else (46,))
+                                        elif recipe[1] == 'certify':
+                                            if exchange_index == 0:
+                                                assert_certify_request(request_tree, version)
+                                                response_operations = (1, 6)
+                                                response_item_ids = (b'interop-certify-create',
+                                                                     b'interop-certify-target')
+                                            else:
+                                                assert_certify_cleanup_request(request_tree, version)
+                                                response_operations = (20, 20)
+                                                response_item_ids = (b'interop-destroy-certificate',
+                                                                     b'interop-destroy-public-key')
                                         elif recipe[1] == 'create_key_pair':
                                             if exchange_index == 0:
                                                 assert_recipe(request_tree, case_id, version, recipe,
@@ -2787,7 +2855,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                             case_id, int(attribute_fixture.get(
                                                                 'attribute_response_tag', '000000'), 16)
                                                             if attribute_fixture else 0)
-                                        object_type = 4 if case_id == 'test-obj-private-key' else 3 if case_id == 'test-obj-public-key' else 2
+                                        object_type = 4 if case_id == 'test-obj-private-key' else 3 if case_id in (
+                                            'test-obj-public-key', 'test-op-certify') else 2
                                         if recipe[1] == 'get_usage_allocation_uid_variant':
                                             response_item_ids = (
                                                 b'interop-create',
@@ -3048,6 +3117,14 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                     if not private_replaced or not public_replaced:
                                                         raise ValueError('fixture_create_key_pair_cleanup_ids_missing')
                                                 response_wire = encode_ttlv_node(response_node)
+                                            elif recipe[1] == 'certify' and exchange_index == 1:
+                                                response_node = parse(response_wire)
+                                                response_node, certificate_replaced = replace_first_text(
+                                                    response_node, UNIQUE_IDENTIFIER_TAG, b'fixture-key-1',
+                                                    b'fixture-certificate-1')
+                                                if not certificate_replaced:
+                                                    raise ValueError('fixture_certify_cleanup_certificate_id_missing')
+                                                response_wire = encode_ttlv_node(response_node)
                                         response_tree = parse(response_wire)
                                         if recipe[1] == 'discover_versions':
                                             response_items = [item for item in response_tree[2]
@@ -3071,6 +3148,18 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                     raise ValueError('fixture_create_key_pair_cleanup_status_mismatch')
                                                 if peer_state.objects:
                                                     raise ValueError('fixture_create_key_pair_cleanup_state_mismatch')
+                                        elif recipe[1] == 'certify':
+                                            if exchange_index == 0:
+                                                verify_certify_response(response_tree)
+                                            else:
+                                                response_items = [item for item in response_tree[2]
+                                                                  if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+                                                if [numbers(item, 0x42005C) for item in response_items] != [[20], [20]]:
+                                                    raise ValueError('fixture_certify_cleanup_operations_mismatch')
+                                                if [numbers(item, 0x42007F) for item in response_items] != [[0], [0]]:
+                                                    raise ValueError('fixture_certify_cleanup_status_mismatch')
+                                                if peer_state.objects:
+                                                    raise ValueError('fixture_certify_cleanup_state_mismatch')
                                         elif logout_recipe:
                                             verify_login_logout_response(response_tree, exchange_index)
                                         elif recipe[1] == 'async_poll_cancel_no_recursion':
@@ -3199,7 +3288,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 'async_poll_final_failure',
                                                 'async_poll_repeated_pending_to_success',
                                                 'async_process_then_poll_state',
-                                                'create_key_pair'):
+                                                'create_key_pair', 'certify'):
                                             verify_lifecycle(recipe[0], response_tree)
                                         encoded_response = codec.encode(response_wire, encoding)
                                         if transport == 'https':
@@ -3512,6 +3601,20 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                    observation[0][2]['peer_observed_state_before_sha256'] ==
                                                    observation[-1][2]['peer_observed_state_after_sha256']}
                                               if observation and recipe[1] == 'create_key_pair' and
+                                              len(observation) == 2 else {}),
+                                           **({'peer_request_operations': [
+                                                   numbers(item, 0x42005C)[0]
+                                                   for item in observation[0][0][2]
+                                                   if item[0] == BATCH_ITEM_TAG],
+                                               'peer_setup_operations': [1],
+                                               'peer_cleanup_operations': [
+                                                   numbers(item, 0x42005C)[0]
+                                                   for item in observation[-1][0][2]
+                                                   if item[0] == BATCH_ITEM_TAG],
+                                               'peer_final_state_matches_setup':
+                                                   observation[0][2]['peer_observed_state_before_sha256'] ==
+                                                   observation[-1][2]['peer_observed_state_after_sha256']}
+                                              if observation and recipe[1] == 'certify' and
                                               len(observation) == 2 else {}),
                                            **({'peer_request_operations': [
                                                    numbers(item, 0x42005C)[0]

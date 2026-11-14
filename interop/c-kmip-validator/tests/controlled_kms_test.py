@@ -6,6 +6,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+from collections import Counter
 from pathlib import Path
 import re
 import socket
@@ -86,7 +87,8 @@ def response(operations: tuple[int, ...], protocol_minor: int,
              result_reasons: tuple[int | None, ...] | None = None,
              rng_length: int = 16,
              cancellation_result: int = 1,
-             discover_versions: tuple[tuple[int, int], ...] | None = None) -> bytes:
+             discover_versions: tuple[tuple[int, int], ...] | None = None,
+             response_identifiers: tuple[bytes, ...] | None = None) -> bytes:
     version = tlv(0x420069, 1,
                   integer(0x42006A, 2) + integer(0x42006B, protocol_minor))
     header = tlv(
@@ -166,8 +168,13 @@ def response(operations: tuple[int, ...], protocol_minor: int,
         elif operation == 1:
             payload_value = enumeration(0x420057, created_object_type) + \
                 tlv(0x420094, 7, b"fixture-key-1")
+        elif operation == 2:
+            payload_value = tlv(0x420066, 7, b"fixture-private-key-1") + \
+                tlv(0x42006F, 7, b"fixture-public-key-1")
         elif operation == 3:
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
+        elif operation == 6:
+            payload_value = tlv(0x420094, 7, b"fixture-certificate-1")
         elif operation == 31:
             payload_value = tlv(0x420094, 7, b"fixture-key-1") + tlv(
                 0x4200C2, 8, bytes.fromhex("69c4e0d86a7b0430d8cdb78070b4c55a"))
@@ -195,7 +202,9 @@ def response(operations: tuple[int, ...], protocol_minor: int,
         elif operation in (9, 18):
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 20:
-            payload_value = tlv(0x420094, 7, b"fixture-key-1")
+            identifier = (response_identifiers[item_index]
+                          if response_identifiers is not None else b"fixture-key-1")
+            payload_value = tlv(0x420094, 7, identifier)
         elif operation == 21:
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 17:
@@ -512,6 +521,9 @@ def main() -> int:
     expected_cases += ("test-op-delete-attribute",)
     expected_cases += ("test-op-modify-attribute",)
     expected_cases += ("test-op-adjust-attribute",)
+    expected_operations += (1, 6, 20, 20)
+    expected_operations += (2, 20, 20)
+    expected_cases += ("test-op-certify", "test-op-create-key-pair")
     expected_cases += ("test-batch-create-activate-destroy",)
     expected_cases += ("test-batch-placeholder-chain-resolves",)
     expected_cases += (
@@ -627,6 +639,11 @@ def main() -> int:
                                 tlv(0x420093, 8, b"placeholder-revoke-cleanup") in request
                             response_operations = operations
                             response_item_ids = None
+                            if operations == (1, 6):
+                                response_item_ids = (
+                                    b"interop-certify-create", b"interop-certify-target")
+                            elif operations == (2,):
+                                response_item_ids = (b"interop-create-key-pair",)
                             if operations == (52, 52, 52):
                                 response_item_ids = (b"interop-begin", b"interop-end", b"interop-reset")
                             if operations == registered_key_batch:
@@ -947,6 +964,32 @@ def main() -> int:
                                 if operations == (25,) and request.count(
                                         tlv(0x420006, 8, b"fixture-cancel-correlation")) != 1:
                                     raise AssertionError("Cancel request omitted its exact pending correlation value")
+                                response_identifiers = None
+                                if operations == (20, 20):
+                                    if tlv(0x420093, 8, b"interop-destroy-certificate") in request:
+                                        expected_destroy_ids = (
+                                            b"interop-destroy-certificate",
+                                            b"interop-destroy-public-key",
+                                        )
+                                        response_identifiers = (
+                                            b"fixture-certificate-1", b"fixture-key-1")
+                                        response_item_ids = expected_destroy_ids
+                                    elif tlv(0x420093, 8, b"interop-destroy-private-key") in request:
+                                        expected_destroy_ids = (
+                                            b"interop-destroy-private-key",
+                                            b"interop-destroy-public-key",
+                                        )
+                                        response_identifiers = (
+                                            b"fixture-private-key-1", b"fixture-public-key-1")
+                                        response_item_ids = expected_destroy_ids
+                                    else:
+                                        expected_destroy_ids = None
+                                    if expected_destroy_ids is not None and any(
+                                            request.count(tlv(0x420093, 8, item_id)) != 1
+                                            for item_id in expected_destroy_ids):
+                                        raise AssertionError(
+                                            "object-pair cleanup omitted or duplicated a batch item ID"
+                                        )
                                 stream.sendall(response(
                                     response_operations, protocol_minor, selected_attribute_tag,
                                     4 if private_key_create else 3 if public_key_create else 2,
@@ -958,7 +1001,8 @@ def main() -> int:
                                     cancellation_result=cancellation_result,
                                     discover_versions=(
                                         () if protocol_minor == 0 else ((2, 1),)
-                                    ) if operations == (30,) else None))
+                                    ) if operations == (30,) else None,
+                                    response_identifiers=response_identifiers))
                                 if operations == (25,):
                                     async_request_pending = False
                                     async_poll_mode = "none"
@@ -1040,9 +1084,18 @@ def main() -> int:
                 or (1, 12, 20) not in handled_batches
                 or (1, 10, 20) not in handled_batches
                 or registered_key_batch not in handled_batches):
+            missing_operations = Counter(expected_operations) - Counter(handled_operations)
+            unexpected_operations = Counter(handled_operations) - Counter(expected_operations)
+            partial_result = json.loads(result_path.read_text(encoding="utf-8")) \
+                if result_path.is_file() else {}
+            failed_cases = [
+                {"case_id": case.get("case_id"), "diagnostic": case.get("diagnostic")}
+                for case in partial_result.get("cases", []) if case.get("status") == "failed"
+            ]
             raise AssertionError(
-                f"controlled peer observed batches {handled_batches!r}, "
-                f"expected {expected_operations!r}"
+                f"controlled peer operation count mismatch; missing={dict(missing_operations)!r}; "
+                f"unexpected={dict(unexpected_operations)!r}; failed_cases={failed_cases!r}; "
+                f"batches={handled_batches!r}"
             )
         result = json.loads(result_path.read_text(encoding="utf-8"))
         try:

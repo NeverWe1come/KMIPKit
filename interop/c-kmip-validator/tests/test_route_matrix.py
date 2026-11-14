@@ -3896,8 +3896,8 @@ class RouteMatrixTests(unittest.TestCase):
                          'Certify must run for both versions and all encoding/transport pairs')
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
         self.assertTrue(all(check['peer_setup_operations'] == [1] for check in checks))
-        self.assertTrue(all(check['peer_request_operations'] == [1, 6, 19, 20] for check in checks))
-        self.assertTrue(all(check['peer_cleanup_operations'] == [19, 20] for check in checks))
+        self.assertTrue(all(check['peer_request_operations'] == [1, 6] for check in checks))
+        self.assertTrue(all(check['peer_cleanup_operations'] == [20, 20] for check in checks))
         self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_certify'
                             and event['action'] == 'send' for event in events))
         self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_response_certify'
