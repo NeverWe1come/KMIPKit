@@ -79,6 +79,26 @@ class RouteMatrixTests(unittest.TestCase):
         result = TreeAbi(INSTALL / 'lib/libkmipkit_ffi.so').roundtrip(encode(request))
         self.assertIn('kmipkit_request_message_from_ttlv', result['invoked_symbols'])
 
+    def test_request_message_field_uses_a_complete_typed_request_fixture(self):
+        """OASIS KMIP 2.0 §8.4; KMIP 2.1 §8.4 (0092-FR-003)."""
+        from artifact_support import INSTALL, ROOT
+        from route_ttlv import TreeAbi, encode
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        target = next(item for item in catalog['normative_targets']
+                      if item['target_id'] == 'KMIPKIT-ELEM-MESSAGE-FIELD-8-1-REQUEST-MESSAGE')
+        tags = self.runner.catalog_tag_values(catalog)
+
+        fixtures = self.runner.generic_tree_fixtures(target, catalog, tags, '2.0')
+
+        self.assertIsNotNone(fixtures)
+        request = fixtures[0]
+        self.assertEqual((request[0], request[1]), (tags['Request Message'], 1))
+        self.assertEqual([item[0] for item in request[2]],
+                         [tags['Request Header'], tags['Batch Item']])
+        result = TreeAbi(INSTALL / 'lib/libkmipkit_ffi.so').roundtrip(encode(request))
+        self.assertIn('kmipkit_request_message_from_ttlv', result['invoked_symbols'])
+
     def test_get_usage_allocation_has_an_executable_controlled_peer_recipe(self):
         import route_peer
         from artifact_support import ROOT
