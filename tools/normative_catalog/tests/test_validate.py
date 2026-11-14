@@ -4316,7 +4316,7 @@ class CatalogValidationTests(unittest.TestCase):
             for profile in profiles
             if profile["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
         )
-        self.assertEqual("evidence_complete", baseline_state)
+        self.assertEqual("evidence_incomplete", baseline_state)
         self.assertTrue(all(
             profile["claim_state"] == "not_claimed"
             for profile in profiles
@@ -4391,7 +4391,7 @@ class CatalogValidationTests(unittest.TestCase):
                 self.assertEqual({test["official_case_id"]}, interop_ids)
             else:
                 self.assertEqual(set(), interop_ids)
-        self.assertEqual("evidence_complete", baseline["claim_state"])
+        self.assertEqual("evidence_incomplete", baseline["claim_state"])
 
     def test_checked_in_catalog_preserves_pinned_source_discrepancies(self) -> None:
         catalog_path = ROOT / "specification" / "catalog" / "kmip-2.1.json"
