@@ -964,3 +964,77 @@ validator accepts 22,440 invoked cells with zero failed cells and
 `selected_scope_complete=true`; 49,015 of 71,455 planned cells remain pending.
 Refactor/documentation updates the ledger, traceability, README, and this
 evidence. The complete Java matrix remains pending.
+
+## Ephemeral and New Attribute Java route repair
+
+Sources: OASIS KMIP 2.0/2.1 §8.3 (Ephemeral); §5.7 Tables 148/163 (New
+Attribute Structure); Add Attribute §6.1.2 Tables 152/167; Modify Attribute
+§6.1.33 Table 247 in 2.0 and §6.1.34 Table 265 in 2.1; Set Attribute §6.1.47
+Table 296 in 2.0 and §6.1.51 Table 322 in 2.1.
+
+The original Java CI run `43498198852`, job `132143734742`, failed in “Validate
+invoked Java routes and write the pending coverage ledger.” Its uploaded
+`java-route-capability-evidence` confirmed the pinned installed Java API
+surface. The failure was route evidence: the merged shared contract added
+eight planned cells that the checked-in ledger did not include. Inspection of
+the pinned Java API confirmed that all six New Attribute request cases are
+supported by installed typed `Structure` routes: each operation request takes
+the direct attribute `TtlvItem`, wraps it as the §5.7 one-item Structure, and
+provides `toTtlvPayload()`, `toBatchItem()`, network execution, and typed
+response readers. They are not unavailable routes.
+
+Red commit `b78b7a23d` adds assertions for the new Ephemeral and New Attribute
+local route obligations. The focused controlled-peer test fails because the
+Ephemeral Boolean constructor evidence is absent. Green commit `649e42da1`
+constructs and inspects the Ephemeral Request Batch Item under both versions,
+then adds fixtures for all six versioned Add/Modify/Set Attribute payload
+cases. Each New Attribute fixture asserts the single direct Name Item shape,
+invokes local Structure construction, Item creation/view and decoding, invokes
+both the direct `ClientBatchItem` constructor and request-model
+`toBatchItem()`/`toTtlvPayload()` routes, sends both items through a mutually
+authenticated controlled TLS peer, and checks the successful typed response
+identifier. No route is marked unavailable or skipped. Refactor commit
+`020115628` centralizes the operation fixture metadata so case IDs, route IDs,
+operation values and assertions use one table.
+
+Verification on the installed Java artifact pinned to
+`489fafc79ef89db2524eafa7a6c6482f5cf75d97`:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test \
+  --tests org.kmipkit.validator.ControlledTlsPeerTest.controlledQueryProducesPerRouteEvidenceForBothProtocolVersions
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test
+```
+
+The focused test and full Java suite pass (54 tests, no failures, errors, or
+skips). The shared validator accepts 22,570/22,570 cells in
+the declared Java selected scope, with zero failed cells and
+`selected_scope_complete=true`. That scope adds 10 Ephemeral cells and 120
+New Attribute cells. The generated full ledger has 71,463 planned, 22,570
+executed, and 48,893 pending cells across 1,324 case IDs. Every pending cell
+is still present in the matrix and has only the generic reason
+`route_evidence_not_emitted`; no source-backed non-applicability or API
+unavailability reason is recorded. Applicability is determined by the
+catalog, installed-route capability manifest, protocol versions, supported
+encoding/transport axes, and source-backed exclusions before cells are
+planned. A planned cell is applicable. Under KMIPKIT-0092-FR-002 and FR-009,
+these 48,893 rows are unfinished required coverage, not an accepted exception.
+
+The current Java CI step validates the report's declared `case_ids` selected
+scope and compares the generated ledger with its checked-in reference. It does
+not require `complete_matrix=true` or zero global pending cells. Therefore a
+green exact-head CI result for this selected scope is not completion of the
+approved KMIPKIT-0092 matrix; the PR must remain WIP until all applicable Java
+routes are evidenced or an approved source-backed exclusion removes them
+from the matrix. No vendor interoperability claim is made by these local
+controlled TLS fixtures.

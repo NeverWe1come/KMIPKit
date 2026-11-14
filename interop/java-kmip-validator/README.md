@@ -101,12 +101,30 @@ baseline, regenerate the checked-in ledger with
 rejects generated ledgers that do not record successful invocations.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
-baseline. These recipes execute 22,440 of 71,455 planned Java route cells, with
-no failed cells; the ledger keeps the other 49,015 pending and does not imply
+baseline. These recipes execute 22,570 of 71,463 planned Java route cells, with
+no failed cells; the ledger records the other 48,893 as pending and does not imply
 vendor interoperability or full-matrix completion. Local TTLV recipes exercise 51
 enumeration families, all six bitmask aggregate cases, and all 44 individual
 bitmask value cases through the applicable
 installed constructors, item views, decoders, and typed attribute wrappers.
+The completed selected scope now includes the Ephemeral Boolean field in KMIP
+2.0/2.1 (§8.3) and all six versioned Add, Modify, and Set Attribute New
+Attribute cases: each New Attribute is checked as a §5.7 Structure containing
+one direct Name Item, and the installed direct constructors, request-to-batch
+conversions, TTLV payload conversion, controlled TLS exchange, and typed
+response readers are invoked under the operation-specific §6.1 tables.
+
+The 48,893 pending cells belong to 1,324 case IDs listed in the generated
+ledger; every one has the reason `route_evidence_not_emitted`. The applicability
+rule is the shared catalog and capability matrix after protocol-version,
+public-route, encoding/transport, and source-backed exclusion filters. A cell
+remaining in that matrix is planned and applicable; the current ledger gives
+none of these cells a non-applicability or API-unavailable reason. KMIPKIT-0092
+FR-002 and FR-009 therefore treat them as unfinished coverage, not accepted
+exceptions. This CI recipe validates only its declared `case_ids` selected
+scope and the ledger comparer checks stable ledger equality; a green selected
+scope does not mean the full-matrix completeness gate is satisfied. The PR
+remains WIP while any required Java route cells are pending.
 All 19 Block Cipher Mode values now complete their five applicable generic and
 Cryptographic Parameters builder routes in both KMIP 2.0 and 2.1 (§§4.16,
 11.6); other enum families remain pending where the ledger says so. The three
