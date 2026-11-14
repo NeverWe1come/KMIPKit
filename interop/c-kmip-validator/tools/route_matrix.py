@@ -242,6 +242,22 @@ def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
     if target.get('kind') in {'tag', 'message_field'} and target.get('name') == 'Request Message':
         fixture = _request_message_fixture(protocol_version, tags, catalog)
         return [fixture] if fixture is not None else None
+    if target.get('target_id') == 'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-MAXIMUM-RESPONSE-SIZE':
+        fixture = _request_message_fixture(protocol_version, tags, catalog)
+        if fixture is None:
+            return None
+        header_index = next(index for index, item in enumerate(fixture[2])
+                            if item[0] == tags['Request Header'])
+        header = fixture[2][header_index]
+        fields = list(header[2])
+        protocol_version_index = next(index for index, item in enumerate(fields)
+                                      if item[0] == tags['Protocol Version'])
+        fields.insert(protocol_version_index + 1,
+                      (tags['Maximum Response Size'], 2, (1024).to_bytes(4, 'big')))
+        updated_header = (header[0], header[1], fields)
+        message = list(fixture[2])
+        message[header_index] = updated_header
+        return [(fixture[0], fixture[1], message)]
     if target.get('target_id') == 'KMIPKIT-ELEM-MESSAGE-FIELD-8-3-EPHEMERAL':
         fixtures = [_request_message_fixture(protocol_version, tags, catalog, ephemeral=value)
                     for value in (0, 1)]
