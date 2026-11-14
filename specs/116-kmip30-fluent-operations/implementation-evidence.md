@@ -345,3 +345,20 @@ worktree-volume temp directory, the complete package command passed. The full
 58 compiled C consumers, and the 56-route parity test. The separate 189-test
 manifest/audit suite passed before this rebase; exact-head hosted CI remains the
 final cross-platform check.
+
+## Windows C consumer portability correction
+
+Exact-head CI run `43616870501` on `d5a0d56c92c31ace8f626770aff2c3a8d4ed98e3`
+failed while MSVC compiled the fluent KMIP 3.0 C consumer. `/WX` promoted
+warning C4127 to an error because two runtime `ASSERT` calls tested fixed
+credential discriminator constants. Replaced those runtime branches with
+C11 `_Static_assert` declarations, preserving the compile-time ABI value check
+without a constant conditional. The repository already uses `_Static_assert`
+for public C ABI contracts.
+
+After the correction, `cargo build --locked -p kmipkit-ffi --features
+coverage-c-consumer` passed, and the focused
+`cargo test --locked -p kmipkit-ffi --features coverage-c-consumer --test
+c_api_coverage public_c_kmip30_builders_copy_semantic_inputs_and_reject_wrong_types`
+passed 1/1. The exact-head Windows rerun is required to confirm the MSVC fix;
+keep PR #213 marked `[WIP]` until all required checks on that new head pass.
