@@ -13,6 +13,19 @@
 | KMIPKIT-0092-FR-009 | Capability manifest and per-language validator route registries | Common matrix fails missing target routes unless the exact public API limitation is source-backed; Secret Data constructor and parser target sets are limited to their own object subtree and omit the two Key Block fields excluded by KMIP 2.0/2.1 §3.1 Table 11. Exact C CI run `43539660499` on head `5adcf0c` had 39,313 invoked cells, 27,423 `validator_recipe_pending`, and zero failed cells; both red steps were caused by pending route recipes. The latest exact C installed-consumer run `43571020018` at head `52561206` has 41,051/66,736 invoked cells, zero failed, and 25,685 pending, all `validator_recipe_pending`; the matching completeness validator now fails on missing routes beginning with `test-async-unknown-correlation-rejected`. The gate remains open. |
 | KMIPKIT-0092-FR-010 | Pinned OASIS inventory, catalog generator, and normative inventory tests | Source-backed inventory tests cover versioned operations, objects, attributes, TTLV types, enum values, flags, field branches, and defined boundary/error classes |
 
+### Certify Public Key fixture correction
+
+For KMIPKIT-0092-FR-003 and FR-005, `test-op-certify` creates an RSA
+Public/Private Key Pair with Create Key Pair (§6.1.9), uses the returned
+Public Key identifier in a separate Certify request (§6.1.6), and destroys
+the generated Certificate and both keys. The generator-owned test catalog
+records this fixture and teardown. Local evidence includes the focused
+12-cell route test, `test_route_matrix.py` 172/172, and both controlled TLS
+peers 2/2. The exact-head CI attempt for the preceding branch head
+`f25f281f7` was run `43606292882`; it failed route-matrix completeness with
+42,074 of 66,736 cells invoked and 24,662 pending `validator_recipe_pending`
+cells. This correction has not yet been pushed or checked by hosted CI.
+
 The common contract establishes planned obligations, schema behavior, and
 artifact availability. It does not claim that any validator has executed the
 full matrix. FR-003, FR-005, and the runtime portion of FR-006 remain open until

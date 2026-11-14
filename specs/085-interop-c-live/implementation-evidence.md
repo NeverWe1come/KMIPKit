@@ -1205,3 +1205,28 @@ runs for KMIP 2.0 and 2.1 with TTLV, JSON, and XML over raw TLS and HTTPS.
   gate and exact-head hosted CI are still outstanding; this route does not
   close the other pending C matrix cells or establish external KMS
   interoperability.
+
+## Certify targets a generated Public Key
+
+- Red commit `1ed146ba6` changed the installed-consumer contract to require
+  Create Key Pair, Certify, and cleanup of the Certificate and both keys. The
+  focused test failed against the prior Create-PublicKey route because its
+  setup operation was Create (`1`) instead of Create Key Pair (`2`).
+- Green: the C consumer now sends Create Key Pair, reads both typed key
+  identifiers, sends Certify with the returned Public Key identifier, then
+  destroys the Certificate, Public Key, and Private Key. The controlled peer
+  validates the RSA 2048-bit key attributes, the explicit Public Key target,
+  response correlation, and the three-object teardown. The catalog generator
+  now describes this setup and teardown and regenerated the catalog.
+- Normative references: OASIS KMIP 2.0 and 2.1 §6.1.6 (Certify), §6.1.9
+  (Create Key Pair), and §§8.2–8.6 (request and response messages).
+- Refactor: Create Key Pair and Certify use separate exchanges. Certify uses
+  the Public Key identifier returned by the typed Create Key Pair response,
+  avoiding assumptions about ID Placeholder resolution for a two-object
+  operation.
+- Verification: the focused route test passed for all 12 version/encoding/
+  transport cells; the complete `test_route_matrix.py` suite passed 172/172;
+  CTest passed 7/7, including both controlled TLS peers; catalog generation
+  check, Python compilation, and CMake build passed. The prior hosted run `43606292882` at
+  `f25f281f` still fails the full-matrix completeness gate with 24,662 pending
+  recipe cells; the corrected commits have not yet run in hosted CI.
