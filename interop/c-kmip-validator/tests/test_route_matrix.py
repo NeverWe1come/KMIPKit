@@ -866,7 +866,7 @@ class RouteMatrixTests(unittest.TestCase):
                              event['action'] == 'send' for event in events), 12)
 
     def test_async_process_changes_state_seen_by_correlated_poll(self):
-        """OASIS KMIP 2.1 §§6.1.38–6.1.39 correlate Process and the next Poll."""
+        """OASIS KMIP 2.1 §6.1.39 Tables 278–279 require correlated Process and Poll."""
         from artifact_support import ROOT
         import route_peer
 

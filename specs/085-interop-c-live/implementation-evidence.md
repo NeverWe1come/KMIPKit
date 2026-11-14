@@ -11,7 +11,7 @@ network recipes. Library sources are unchanged.
 | KMIPKIT-0092-FR-002, FR-007, FR-009 | Per-cell evidence and explicit pending sidecar; duplicate protection; common schema and validator in CI. Incomplete recipes keep the gate failing. |
 | KMIPKIT-0092-FR-003 | Exact assigned scalar values, reserved-tag rejection, typed attributes, and cryptographic-parameter field/TTLV round trips are checked locally. Broader semantic branch/model recipes remain pending. No absent encoder/send/high-level API is fabricated. |
 | KMIPKIT-0092-FR-004 | Ordered, redacted tree digests are retained per cell. Cross-language digest normalization/parity is pending. |
-| KMIPKIT-0092-FR-005 | Controlled peers parse all six encoding/transport pairs, check recipe fields, numeric ordered results, lifecycle transitions and deletion. Check, Get Attribute List, Log, Revoke, and Interop response TTLV accessors are read and structurally checked. The C peer now covers catalogued asynchronous Cancel results and the KMIP 2.1 Poll/Cancel interleaving; other asynchronous and positive operation recipes remain pending. |
+| KMIPKIT-0092-FR-005 | Controlled peers parse all six encoding/transport pairs, check recipe fields, numeric ordered results, lifecycle transitions and deletion. Check, Get Attribute List, Log, Revoke, and Interop response TTLV accessors are read and structurally checked. The C peer covers catalogued asynchronous Cancel results, KMIP 2.1 Poll/Cancel and Process/Poll interleavings; other asynchronous and positive operation recipes remain pending. |
 | KMIPKIT-0092-FR-008 | Reports contain public identities, axes, digests, sanitized failure codes and numeric outcomes. Request bodies and fixture keys/tickets never enter evidence. |
 
 The exact OASIS document and section remain on each case in the generated shared
@@ -1008,3 +1008,34 @@ response shape, and restored fixture state. This follows OASIS KMIP 2.1
   `c93eb8f7daa60d3b6832d297887e99cd2101e4f9baf2d04f55ce4042ba4bb7a2`. The
   completeness validator still fails, next reporting
   `test-async-no-recursive-async-poll-cancel`; PR #170 remains WIP.
+
+### C asynchronous Process then Poll state
+
+OASIS KMIP 2.1 §6.1.39 says Process changes the handling of the correlated
+asynchronous request so the next Poll SHALL NOT return Pending. Tables 278–279
+define the required correlation in the Process request and an empty Process
+response payload. The installed C consumer now sends Create(Pending) →
+Process(correlation, Asynchronous Indicator=Prohibited) → Poll(correlation)
+→ authenticated Destroy. It checks Process Success and its empty payload, then
+checks that Poll returns the original Create Success payload. The controlled
+peer checks the correlation and order, records Process as synchronous, and
+verifies that final fixture state matches setup.
+
+- Red commit `de923f2f`: the focused route test failed because the C driver had
+  no isolated Process case; the consumer reported that Create variations were
+  not mapped and the peer received no request.
+- Green commit `3e0d4a0f`: added the installed-ABI Process/Poll route, TTLV
+  construction checks, response assertions, controlled network recipe across
+  the six KMIP 2.1 encoding/transport pairs, and authenticated cleanup.
+- Green fixture correction `bb4aca1d`: added the route to the broad TLS peer
+  and reset its pending state after Process/Poll so the subsequent independent
+  Poll/Cancel route remains isolated.
+- Refactor/documentation commit: records the normative scope, traceability,
+  and exact verification evidence here and in the KMIPKIT-0092 task record.
+- Verification: the focused route test passed; `ctest --test-dir
+  interop/c-kmip-validator/build --output-on-failure` passed 7/7. The installed
+  C matrix recorded 40,931/66,736 invoked cells, all 40,931 passed, and 25,805
+  `validator_recipe_pending` cells. Its library SHA-256 is
+  `c93eb8f7daa60d3b6832d297887e99cd2101e4f9baf2d04f55ce4042ba4bb7a2`.
+  The completeness validator correctly remains failing at the next missing
+  recipe, `test-async-query-outstanding-filter`; PR #170 remains WIP.

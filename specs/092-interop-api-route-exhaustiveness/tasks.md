@@ -85,6 +85,14 @@ passing shared-contract job does not satisfy those language-level requirements.
 - Refactor/documentation: this record distinguishes the earlier missing fixture recipe from a protocol or installed-library failure and records the verified regression gates.
 - Verification: `ctest --test-dir interop/c-kmip-validator/build --output-on-failure` passed all 7 tests, including both controlled TLS peers; `python3 interop/c-kmip-validator/tests/test_route_matrix.py` passed all 109 contract tests; `git diff --check` passed. This verifies the controlled fixture and matrix contract, not external KMS interoperability.
 
+## Development evidence: C asynchronous Process then Poll route
+
+- Normative scope: OASIS KMIP 2.1 §6.1.39 and Tables 278–279 define Process correlation, the requirement that the next Poll not be Pending, and the empty Process response payload. This implements KMIPKIT-0092-FR-003 and FR-005 for `test-async-process-then-poll-state`.
+- Red commit `de923f2f`: the focused test failed because the C driver did not map the Process case to an isolated route.
+- Green commits `3e0d4a0f` and `bb4aca1d`: the installed C consumer executes Create(Pending) → Process(correlation, Prohibited) → Poll(Success with original Create payload) → authenticated Destroy. The controlled peer checks the exact correlation, response shape, fixture state, and cleanup; the general TLS peer also resets state before the next independent async case.
+- Refactor/documentation commit: records the normative source and per-cell evidence in KMIPKIT-0085 implementation evidence and this traceability record.
+- Verification: the focused Process/Poll test passed; the complete CTest suite passed 7/7. The matching matrix recorded 40,931/66,736 invoked cells, all passed, and 25,805 pending recipes. The installed artifact SHA-256 is `c93eb8f7daa60d3b6832d297887e99cd2101e4f9baf2d04f55ce4042ba4bb7a2`. Completeness remains open at `test-async-query-outstanding-filter`; no pending recipe is classified as an API limitation.
+
 ## Development evidence: release pin refresh after KMIPKIT-0120
 
 - The feature branch conflicted with the updated `release/1.0.0` after PR #204 (`KMIPKIT-0120`) merged as `489fafc79ef89db2524eafa7a6c6482f5cf75d97`. The release merge was preserved as a normal signed merge commit; two FFI coverage script conflicts were resolved by retaining both the isolated `--no-clean` run and the existing package-scoped report checks.
