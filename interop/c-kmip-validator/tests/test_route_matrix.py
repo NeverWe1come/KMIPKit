@@ -3354,6 +3354,16 @@ class RouteMatrixTests(unittest.TestCase):
                             event['action'] == 'send' for event in events))
         self.assertTrue(all('kmipkit_client_execute' in check['public_api_trace_symbols']
                             for check in checks))
+        response_symbols = {
+            'kmipkit_client_batch_item_response_get',
+            'kmipkit_client_batch_item_response_header_ttlv',
+            'kmipkit_client_batch_item_response_metadata_v1',
+            'kmipkit_client_batch_item_response_pending_correlation_value',
+            'kmipkit_client_batch_item_response_unique_batch_item_id',
+        }
+        self.assertTrue(all(response_symbols <= set(check['public_api_trace_symbols'])
+                            for check in checks),
+                        'the single-item Get route must inspect its typed response and metadata')
 
     def test_hash_and_rng_cases_call_their_public_routes_and_check_responses(self):
         from artifact_support import ROOT
