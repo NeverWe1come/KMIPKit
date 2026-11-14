@@ -3203,6 +3203,7 @@ class RouteMatrixTests(unittest.TestCase):
 
 
     def test_two_item_batch_continuation_and_id_correlation(self):
+        """OASIS KMIP 2.0/2.1 §§6.1.19, 6.1.21, 8.2–8.6, and 9.5–9.7 define the ordered Get/Get Attribute List exchange."""
         from artifact_support import ROOT
         from route_peer import execute_network_cells
         catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())

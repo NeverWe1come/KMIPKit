@@ -18,3 +18,13 @@ artifact availability. It does not claim that any validator has executed the
 full matrix. FR-003, FR-005, and the runtime portion of FR-006 remain open until
 the four independent language branches emit evidence from actual public API
 calls and controlled-peer exchanges.
+
+### C batch route follow-up
+
+For KMIPKIT-0092-FR-003 and FR-009, the C `test-batch-continue-after-failure`
+fixture now invokes both direct Get Attribute List construction and conversion
+from `GetAttributeListRequest`, across KMIP 2.0/2.1 and TTLV/JSON/XML over raw
+TLS/HTTPS. Its focused test checks 60 peer exchanges and 36 request-based
+construct/send/decode cells. This closes only that scenario slice: the latest
+exact-head CI on parent commit `3a21e925` still reports 25,723 C validator
+recipe cells pending, so the exhaustive route gate remains open.

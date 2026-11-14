@@ -349,3 +349,23 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   The full matrix recorded 40,594 invoked, zero failed, and 26,142 pending
   cells. The exact validator exits unsuccessfully on missing routes, now
   beginning with `test-async-lifecycle-poll`; T006, T007, and T009 remain open.
+
+## Development evidence: C request-based Get Attribute List batch route
+
+- Normative scope: OASIS KMIP 2.0/2.1 §§6.1.19, 6.1.21, 8.2–8.6, and 9.5–9.7.
+  The `test-batch-continue-after-failure` scenario contains Get followed by Get
+  Attribute List and must retain both item results when the first operation
+  fails under Batch Error Continuation Option Continue.
+- Red commit `3e00fdb7`: extended the controlled-peer test to require the
+  request-based Get Attribute List route across the case's version, encoding,
+  and transport matrix. Before the recipe change, the test failed with 48
+  checks instead of the required 60.
+- Green commit `a9c08eb7`: run the batch case through both direct and
+  `GetAttributeListRequest` constructors; the peer checks the same ordered
+  operations and per-item outcomes for each variant.
+- Refactor/documentation commit: cite the governing OASIS clauses on the
+  conformance test and link this evidence to FR-003 and FR-009.
+- Verification: the focused test passed all 60 peer checks, including 36
+  request-based route events for two versions × three encodings × two
+  transports × construct/send/decode. The full matrix and exact-head CI remain
+  open; T006, T007, and T009 are not complete.
