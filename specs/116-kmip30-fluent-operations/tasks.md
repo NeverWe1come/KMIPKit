@@ -13,7 +13,7 @@
   lifecycle, results, and ownership tests.
 - [x] G003 Implement Java/JNI and Python/CFFI builders, typed response access,
   PEP 561 stubs, and prior-API compatibility tests.
-- [ ] D001 Update manifest, generated exports, operation capability matrix,
+- [x] D001 Update manifest, generated exports, operation capability matrix,
   traceability, and bilingual guides/examples.
 - [ ] V001 Run formatting, lint, focused and full suites, sanitizers, coverage,
   manifest generation/audit, T102, traceability, and exact-head CI.
