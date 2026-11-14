@@ -43,5 +43,8 @@ Count equals its two Batch Items before returning two successful results. It
 covers OASIS KMIP 2.0 and 2.1 §§8.1–8.6, §§9.5–9.8 and §9.21, plus Get
 §6.1.19 and Get Attribute List §6.1.21, over all six encoding/transport pairs.
 This verifies the recomputed-count path without adding an API for callers to
-set Batch Count manually. It does not close the C route matrix or assert a
-rejection path for inconsistent generic TTLV input.
+set Batch Count manually. Both direct and request-based Get Attribute List
+constructors are exercised, and the consumer validates the typed Get and Get
+Attribute List response accessors. The local matrix reports all 142 cells for
+this case invoked; the full C route matrix and rejection path for inconsistent
+generic TTLV input remain open.

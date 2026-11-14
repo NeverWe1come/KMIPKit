@@ -1022,10 +1022,17 @@ introducing a public manual Batch Count setter.
 - Red commit `0320903b` failed because the case had no installed C route recipe.
 - Green commit `ce7b7db1` connects the catalog case to the existing two-read
   batch workflow and peer assertions.
+- Red commit `5be538b5` showed that only the direct Get Attribute List
+  constructor ran. Green commit `aeefc9ba` adds its standalone request variant.
+- Red commit `f54b7af9` showed that the typed Get, Get Attribute List, response
+  header, metadata, and pending-correlation accessors were not executed. Green
+  commit `00a57082` reads and validates those accessors for both successful
+  response items without logging or retaining raw message data.
 - Normative references: OASIS KMIP 2.0 and 2.1 §§8.1–8.6, §§9.5–9.8 and §9.21;
   Get §6.1.19; Get Attribute List §6.1.21.
-- Verification: the focused route passed all 12 version/encoding/transport
-  exchanges; `test_route_matrix.py` passed 152/152; CTest passed 7/7, including
-  both controlled TLS peers; CMake build and Python syntax checks passed. The
-  full route matrix and its completeness gate were not rerun for this slice;
-  the overall C route matrix remains incomplete and the parent PR remains WIP.
+- Verification: the focused route passed all 24 exchanges (12 per constructor);
+  `test_route_matrix.py` passed 152/152; CTest passed 7/7, including both
+  controlled TLS peers; CMake build and Python syntax checks passed. The full
+  local matrix recorded 40,794/66,736 invoked cells, zero failures, and 25,942
+  pending cells. All 142 cells for this case are now invoked; the overall C
+  route matrix remains incomplete and the PR remains WIP.
