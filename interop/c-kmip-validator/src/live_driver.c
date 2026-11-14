@@ -1926,6 +1926,20 @@ static kmip_execution_outcome_t execute_async_poll_cancel_no_recursion_route(
     return outcome;
 }
 
+static bool async_pending_poll_response_matches(
+    const kmipkit_client_async_operation_response_v1_t *response,
+    const kmipkit_byte_span_v1_t *correlation) {
+    return response && correlation && correlation->data &&
+        response->operation == KMIPKIT_ENUMERATION_OPERATION_POLL &&
+        response->result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_OPERATION_PENDING &&
+        response->is_pending != 0 && response->has_asynchronous_correlation_value == 1 &&
+        response->asynchronous_correlation_value.length == correlation->length &&
+        response->asynchronous_correlation_value.data &&
+        memcmp(response->asynchronous_correlation_value.data, correlation->data,
+               (size_t)correlation->length) == 0 &&
+        response->has_response_payload == 0;
+}
+
 static kmip_execution_outcome_t execute_async_poll_final_failure_route(
     kmip_live_client_t *client) {
     static const uint8_t expected_correlation[] = "fixture-cancel-correlation";
@@ -1995,14 +2009,7 @@ static kmip_execution_outcome_t execute_async_poll_final_failure_route(
     if (status == 0) status = kmipkit_client_async_operation_outcome_poll_response_v1(
         pending_poll_outcome, &pending_present, &pending_poll);
     if (status == 0 && (pending_present == 0 ||
-        pending_poll.operation != KMIPKIT_ENUMERATION_OPERATION_POLL ||
-        pending_poll.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_OPERATION_PENDING ||
-        pending_poll.is_pending == 0 || pending_poll.has_asynchronous_correlation_value != 1 ||
-        pending_poll.asynchronous_correlation_value.length != correlation.length ||
-        !pending_poll.asynchronous_correlation_value.data ||
-        memcmp(pending_poll.asynchronous_correlation_value.data,
-               correlation.data, (size_t)correlation.length) != 0 ||
-        pending_poll.has_response_payload != 0)) {
+        !async_pending_poll_response_matches(&pending_poll, &correlation))) {
         status = KMIPKIT_ERROR_INVALID_INPUT;
     }
     if (status == 0) {
@@ -2149,14 +2156,8 @@ static kmip_execution_outcome_t execute_async_poll_repeated_pending_route(
             break;
         }
         if (poll_index < 2) {
-            const kmipkit_client_async_operation_response_v1_t *pending =
-                &poll_responses[poll_index];
-            if (pending->result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_OPERATION_PENDING ||
-                pending->is_pending == 0 || pending->has_asynchronous_correlation_value != 1 ||
-                pending->asynchronous_correlation_value.length != correlation.length ||
-                !pending->asynchronous_correlation_value.data ||
-                memcmp(pending->asynchronous_correlation_value.data, correlation.data,
-                       (size_t)correlation.length) != 0 || pending->has_response_payload != 0) {
+            if (!async_pending_poll_response_matches(
+                    &poll_responses[poll_index], &correlation)) {
                 status = KMIPKIT_ERROR_INVALID_INPUT;
             }
         } else {
