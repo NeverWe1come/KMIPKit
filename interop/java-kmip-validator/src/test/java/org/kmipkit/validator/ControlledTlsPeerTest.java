@@ -4169,6 +4169,17 @@ class ControlledTlsPeerTest {
 
     private static void assertNewlyCataloguedLocalRoutesAreInvoked(ArrayNode events,
             String protocolVersion) {
+        if ("2.1".equals(protocolVersion)) {
+            String objectGroupCase = "test-norm-structure-member-structure-member-7-23-object-group";
+            String objectGroupTarget = "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-23-OBJECT-GROUP";
+            assertRouteEventRecorded(events, objectGroupCase, objectGroupTarget,
+                    "java.generic-ttlv.ttlv_item.create", "construct", protocolVersion);
+            assertRouteEventRecorded(events, objectGroupCase, objectGroupTarget,
+                    "java.generic-ttlv.function.ttlv_item_view_from_item", "decode", protocolVersion);
+            assertRouteEventRecorded(events, objectGroupCase, objectGroupTarget,
+                    "java.generic-ttlv.ttlv_codec.decode", "decode", protocolVersion);
+        }
+
         String ephemeralCase = "test-norm-message-field-message-field-8-3-ephemeral";
         String ephemeralTarget = "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-EPHEMERAL";
         assertRouteEventRecorded(events, ephemeralCase, ephemeralTarget,
