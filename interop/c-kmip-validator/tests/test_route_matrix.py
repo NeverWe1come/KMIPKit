@@ -3398,6 +3398,7 @@ class RouteMatrixTests(unittest.TestCase):
                 self.fail(str(error))
 
     def test_continued_batch_evidence_has_observed_unchanged_fixture_state(self):
+        """KMIP 2.1 §§6.1.19, 6.1.21, 8.2–8.6, and 9.5–9.7 cover these batch routes and results."""
         from artifact_support import ROOT
         from route_peer import execute_network_cells
         from validate_route_evidence import _key, _validate_batch_event
@@ -3410,13 +3411,26 @@ class RouteMatrixTests(unittest.TestCase):
             ROOT / 'interop/c-kmip-validator/build/kmip_validator_c',
             {**catalog, 'test_cases': [case]}, manifest,
             protocol_versions=('2.1',), network_combinations=(('TTLV', 'raw_tls'),))
-        self.assertEqual(len(checks), 1)
-        self.assertEqual(checks[0]['status'], 'passed')
+        self.assertEqual(len(checks), 2)
+        self.assertEqual({check['constructor_variant'] for check in checks},
+                         {'direct', 'standalone'})
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        direct = next(check for check in checks if check['constructor_variant'] == 'direct')
+        standalone = next(check for check in checks if check['constructor_variant'] == 'standalone')
+        self.assertIn('kmipkit_client_batch_item_get_attribute_list',
+                      direct['public_api_trace_symbols'])
+        self.assertIn('kmipkit_client_batch_item_get_attribute_list_from_request',
+                      standalone['public_api_trace_symbols'])
+        self.assertIn('kmipkit_get_attribute_list_request_to_ttlv_payload',
+                      standalone['public_api_trace_symbols'])
         expected_state = hashlib.sha256(json.dumps(
             {'objects': {'fixture-key-1': 'pre_active'}},
             sort_keys=True, separators=(',', ':')).encode()).hexdigest()
         send_events = [event for event in events if event['action'] == 'send']
         self.assertTrue(send_events)
+        send_symbols = {event['public_api_symbol'] for event in send_events}
+        self.assertIn('kmipkit_client_batch_item_get_attribute_list', send_symbols)
+        self.assertIn('kmipkit_client_batch_item_get_attribute_list_from_request', send_symbols)
         for event in send_events:
             self.assertEqual(event.get('peer_observed_effects'),
                              ['first_item_failed', 'second_item_executed'])
