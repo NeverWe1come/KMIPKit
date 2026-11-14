@@ -155,10 +155,16 @@ def _validate_fluent_routes(operations: list[Any], public_manifest: dict[str, An
         "KMIP 3.0 fluent capability language mappings are incomplete",
     )
     for language in _LANGUAGES:
+        declared_mappings = capability_mappings[language]
         _require(
-            isinstance(capability_mappings[language], list)
-            and set(capability_mappings[language]) == route_mappings[language],
-            f"KMIP 3.0 fluent capability mappings differ for {language}",
+            isinstance(declared_mappings, list)
+            and all(
+                isinstance(mapping, str) and mapping.strip() == mapping and bool(mapping)
+                for mapping in declared_mappings
+            )
+            and len(declared_mappings) == len(set(declared_mappings))
+            and route_mappings[language].issubset(declared_mappings),
+            f"KMIP 3.0 fluent capability mappings omit routes for {language}",
         )
     if capability.get("capabilityState") == "verified":
         evidence = capability.get("parityEvidenceIds")
