@@ -10016,7 +10016,7 @@ int kmipkit_client_abi_c_consumer_profile_readiness_contract(void) {
         kmipkit_profile_readiness_view_get_v1(readiness, &readiness_view) != 0 ||
         !profile_span_equals(readiness_view.profile_id, "KMIPKIT-PROFILE-BASELINE-CLIENT") ||
         !profile_span_equals(readiness_view.effective_state, "evidence_incomplete") ||
-        readiness_view.target_selected != 1 || readiness_view.runtime_validation_available != 0 ||
+        readiness_view.target_selected != 1 || readiness_view.runtime_validation_available != 1 ||
         readiness_view.published_claim != 0 || readiness_view.blocker_count == 0 ||
         kmipkit_profile_readiness_blocker_at_v1(
             readiness, readiness_view.blocker_count, &blocker) != T076_ERROR_INVALID_INPUT ||
@@ -10029,7 +10029,7 @@ int kmipkit_client_abi_c_consumer_profile_readiness_contract(void) {
         kmipkit_profile_catalog_row_at_v1(
             KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES, 2, &row) != 0 ||
         !profile_span_equals(row.profile_id, "KMIPKIT-PROFILE-BASELINE-CLIENT") ||
-        !profile_span_equals(row.claim_state, "evidence_incomplete") || row.selected_target != 1 ||
+        !profile_span_equals(row.claim_state, "evidence_complete") || row.selected_target != 1 ||
         kmipkit_profile_catalog_relation_count_v1(
             KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES, 2,
             KMIPKIT_PROFILE_CATALOG_RELATION_REQUIREMENT_IDS, &baseline_requirement_count) != 0 ||
