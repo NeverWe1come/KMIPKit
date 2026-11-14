@@ -1491,6 +1491,12 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 ('JSON', 'raw_tls'), ('JSON', 'https'),
                                                 ('XML', 'raw_tls'), ('XML', 'https')),
                           peer_rejection=None, covered_keys=()):
+    """Execute peer cells, reusing exact-cell receipts from an earlier local pass.
+
+    The returned key set includes both previously covered cells and network
+    cells observed here, allowing the matrix runner to clear pending cells
+    without emitting duplicate receipts.
+    """
     codec = Codec(catalog)
     targets_by_id = {target['target_id']: target for target in catalog['normative_targets']}
     events, keys, checks = [], set(covered_keys), []
