@@ -198,7 +198,7 @@ def _required_structure_items(target: dict, catalog: dict, tags: dict[str, int],
 def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
                           protocol_version: str) -> list[tuple] | None:
     """Build item trees only where the pinned catalog identifies tag and type."""
-    if target.get('kind') == 'tag' and target.get('name') == 'Request Message':
+    if target.get('kind') in {'tag', 'message_field'} and target.get('name') == 'Request Message':
         operation = catalog_enum_value(catalog, 'Operation', 'Get', protocol_version)
         if operation is None:
             return None
