@@ -800,3 +800,49 @@ TTLV tree.
   CI runs `43539660499` and `43539654754` on head `5adcf0c` likewise had only
   pending recipe cells (27,423) and zero failed cells. The complete matrix is
   still open, and PR #170 remains WIP.
+
+### Async Cancel local payload routes
+
+The local C recipe invokes `kmipkit_cancel_request_create` and
+`kmipkit_cancel_request_to_ttlv_payload`, reads the request's borrowed
+Asynchronous Correlation Value back, and compares the encoded payload to the
+same bytes. It covers the Cancel operation target and the versioned KMIP 2.0
+and 2.1 request payload targets under both protocol versions. For each of the
+five catalogued Cancellation Result cases, the generic TTLV route constructs
+and decodes the exact Cancellation Result enum value for both versioned
+response payload targets and both protocol versions. These local routes follow
+OASIS KMIP 2.0 §6.1.5 Tables 161–162 and KMIP 2.1 §6.1.5 Tables 176–177.
+
+- Red commits `6b3a0dd5a` and `c5b091aca` require the typed request constructor,
+  payload encoder, and per-case Cancellation Result roundtrips; the
+  unimplemented routes failed locally.
+- Green commit `3d8f7d4d4` executes those routes through the installed C ABI
+  and catalog-assigned enum values.
+- Refactor commit `37057e327` isolates the case-specific response payload
+  fixture from the generic TTLV fixture dispatcher.
+
+The installed C network recipe now issues an asynchronous Create, reads the
+server-issued correlation value from the Pending response, sends Cancel for
+that exact value, and checks the typed Cancel response against each case's
+catalogued Cancellation Result. The controlled peer returns all five assigned
+results independently for KMIP 2.0 and 2.1. The network matrix exercises the
+five cases across TTLV, JSON, and XML over raw TLS and HTTPS (60 checks), in
+addition to the direct Cancel recipe. This evidence follows OASIS KMIP 2.0
+§§8.2–8.3 and §6.1.5 Tables 161–162, and KMIP 2.1 §§8.2–8.3 and §6.1.5 Tables
+176–177.
+
+- Red commit `49e408a6b` requires the controlled peer to return each
+  catalogued result and exposed failures for Unable to Cancel, Completed,
+  Failed, and Unavailable when the C driver assumed Canceled.
+- Green commit `f27a9e056` loads the scenario's result name from the catalog,
+  compares the typed response with its assigned enum value, and exercises all
+  five responses on the controlled peer.
+- Refactor commit `eb27e57d4` table-drives the named Cancellation Result
+  mapping.
+- Verification: the focused matrix test passed for all 60 network cells;
+  CTest passed 7/7, including the KMIP 2.0 and 2.1 controlled TLS peers. The
+  installed-artifact matrix records 39,989/66,736 invoked cells, zero failed,
+  and 26,747 pending, all `validator_recipe_pending`. The required evidence
+  validator exits unsuccessfully on the remaining Create seed constructor,
+  send, response-decoder, and local Create-response accessor cells. The C
+  completeness gate and PR #170 remain WIP.
