@@ -77,6 +77,12 @@ public final class JavaKmipDriver implements AutoCloseable {
         return client.execute(batch, CODEC_LIMITS);
     }
 
+    AsyncOperationOutcome executeQueryAsyncRequestsForResponsePayloadEvidence(byte[] correlation)
+            throws ClientOperationException {
+        return client.executeQueryAsyncRequests(CODEC_LIMITS, List.of(correlation.clone()),
+                List.of(0x18L), java.util.OptionalLong.of(2));
+    }
+
     /** Executes an asynchronous case with an explicit server-issued correlation fixture. */
     CaseOutcome executeAsynchronousRequest(CatalogLoader.CatalogCase testCase, byte[] correlation) {
         long start = System.nanoTime();

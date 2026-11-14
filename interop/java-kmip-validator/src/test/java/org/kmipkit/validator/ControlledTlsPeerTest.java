@@ -596,6 +596,8 @@ class ControlledTlsPeerTest {
             if ("2.1".equals(protocolVersion)) appendObjectGroupLocalRouteEvents(events);
             if ("2.1".equals(protocolVersion)) appendStructureMemberStructureRouteEvents(events);
             if ("2.1".equals(protocolVersion)) appendStructureMemberByteStringRouteEvents(events);
+            if ("2.1".equals(protocolVersion)) appendStructureMemberValueRouteEvents(events,
+                    serverCertificatePem, serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
             assertNewlyCataloguedLocalRoutesAreInvoked(events, protocolVersion);
         }
 
@@ -4537,6 +4539,136 @@ class ControlledTlsPeerTest {
                         + ".withcorrelationvalues", queryFilterFixture.targetId(),
                 "org.kmipkit.extensions.QueryAsyncRequestsRequest.withCorrelationValues", null, null,
                 "construct", "2.1", null, typedPayloadHash, null);
+    }
+
+    // OASIS KMIP 2.1 §7.2 Table 353: these required Asynchronous Request fields use their §11.56 tags.
+    private void appendStructureMemberValueRouteEvents(ArrayNode events, byte[] serverCertificatePem,
+            byte[] serverPrivateKeyPem, byte[] clientCertificatePem, byte[] clientPrivateKeyPem)
+            throws Exception {
+        for (StructureMemberValueFixture fixture : STRUCTURE_MEMBER_VALUE_FIXTURES) {
+            byte[] memberWire = structureMemberValueWire(fixture);
+            String treeHash = normalizedTreeSha256(memberWire);
+            try (TtlvValue value = structureMemberValue(fixture);
+                    RawTag rawTag = RawTag.fromRaw(fixture.rawTag());
+                    Tag tag = rawTag.checked();
+                    TtlvItem created = TtlvItem.create(tag, value, CodecLimits.defaults());
+                    TtlvItemView view = created.view()) {
+                assertStructureMemberValue(view, fixture);
+            }
+            String valueType = fixture.itemType() == TtlvItemType.DateTimeExtended
+                    ? "datetimextended" : "enumeration";
+            String constructor = fixture.itemType() == TtlvItemType.DateTimeExtended
+                    ? "DateTimeExtended" : "Enumeration";
+            appendRouteEvent(events, fixture.caseId(),
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue." + valueType,
+                    fixture.targetId(), "org.kmipkit.ttlv.TtlvValue." + constructor,
+                    null, null, "construct", "2.1", null, treeHash, null);
+            appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_item.create",
+                    fixture.targetId(), "org.kmipkit.ttlv.TtlvItem.create", null, null,
+                    "construct", "2.1", null, treeHash, null);
+            appendRouteEvent(events, fixture.caseId(),
+                    "java.generic-ttlv.function.ttlv_item_view_from_item", fixture.targetId(),
+                    "org.kmipkit.ttlv.TtlvItem.view", null, null,
+                    "decode", "2.1", null, null, treeHash);
+            try (TtlvItem decoded = TtlvCodec.decode(memberWire);
+                    TtlvItemView decodedView = decoded.view()) {
+                assertStructureMemberValue(decodedView, fixture);
+            }
+            appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_codec.decode",
+                    fixture.targetId(), "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
+                    "decode", "2.1", null, null, treeHash);
+        }
+
+        StructureMemberValueFixture operationFixture = STRUCTURE_MEMBER_VALUE_FIXTURES.stream()
+                .filter(fixture -> fixture.rawTag() == 0x42005c).findFirst().orElseThrow();
+        byte[] correlation = new byte[] {0x41, 0x53, 0x59, 0x4e, 0x43};
+        SSLServerSocket listener = listener(certificate(serverCertificatePem),
+                privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+        byte[] responseBytes = queryAsyncRequestsResponse(correlation, 0x18, 1_800_000_000L, 2);
+        FutureTask<byte[]> peer = new FutureTask<>(() -> serveOneResponse(listener, responseBytes));
+        Thread peerThread = new Thread(peer, "java-validator-query-async-response-payload-peer");
+        peerThread.setDaemon(true);
+        peerThread.start();
+        Path connectionFile = temporaryDirectory.resolve("query-async-response-payload-2.1.json");
+        Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                clientCertificatePem, clientPrivateKeyPem, true, "2.1"));
+        try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile));
+                var outcome = driver.executeQueryAsyncRequestsForResponsePayloadEvidence(correlation);
+                var payload = outcome.responsePayloadTtlv().orElseThrow();
+                TtlvStructureView payloadView = payload.view()) {
+            assertEquals(0x39L, outcome.metadataV1().operation());
+            assertEquals(0L, outcome.metadataV1().resultStatus());
+            assertEquals(1, payloadView.itemCount());
+            try (TtlvItemView asynchronousRequest = payloadView.itemAt(0);
+                    Tag asynchronousRequestTag = asynchronousRequest.tag();
+                    var requestValue = asynchronousRequest.value();
+                    TtlvStructureView requestFields = requestValue.structure()) {
+                assertEquals(0x420173, asynchronousRequestTag.raw());
+                assertEquals(TtlvItemType.Structure, asynchronousRequest.itemType());
+                assertEquals(4, requestFields.itemCount());
+                try (TtlvItemView correlationField = requestFields.itemAt(0);
+                        Tag correlationTag = correlationField.tag();
+                        var correlationValue = correlationField.value()) {
+                    assertEquals(0x420006, correlationTag.raw());
+                    assertEquals(TtlvItemType.ByteString, correlationField.itemType());
+                    assertArrayEquals(correlation, correlationValue.bytes());
+                }
+                assertStructureMemberValue(requestFields.itemAt(1), operationFixture);
+                assertStructureMemberValue(requestFields.itemAt(2), STRUCTURE_MEMBER_VALUE_FIXTURES.get(1));
+                assertStructureMemberValue(requestFields.itemAt(3), STRUCTURE_MEMBER_VALUE_FIXTURES.get(2));
+            }
+            appendRouteEvent(events, operationFixture.caseId(),
+                    "java.typed-protocol.function.client_async_operation_outcome_response_payload_ttlv",
+                    operationFixture.targetId(), "org.kmipkit.extensions.AsyncOperationOutcome.responsePayloadTtlv",
+                    null, null, "decode", "2.1", null, null, normalizedTreeSha256(responseBytes));
+        } finally {
+            listener.close();
+        }
+        byte[] requestBytes = peer.get(15, TimeUnit.SECONDS);
+        assertEquals(0x39L, requestOperation(requestBytes));
+        assertEquals(1, requestProtocolMinorVersion(requestBytes));
+        assertTrue(contains(requestBytes, item(0x42005c, 5, intBytes(0x18))),
+                "The typed Query Asynchronous Requests filter must reach the controlled KMIP 2.1 peer.");
+    }
+
+    private static TtlvValue structureMemberValue(StructureMemberValueFixture fixture) {
+        return fixture.itemType() == TtlvItemType.DateTimeExtended
+                ? TtlvValue.DateTimeExtended(fixture.value()) : TtlvValue.Enumeration(fixture.value());
+    }
+
+    private static byte[] structureMemberValueWire(StructureMemberValueFixture fixture) throws Exception {
+        byte[] value = fixture.itemType() == TtlvItemType.DateTimeExtended
+                ? longBytes(fixture.value()) : intBytes(Math.toIntExact(fixture.value()));
+        return item(fixture.rawTag(), fixture.itemType().code(), value);
+    }
+
+    private static void assertStructureMemberValue(TtlvItemView view, StructureMemberValueFixture fixture)
+            throws Exception {
+        try (Tag tag = view.tag(); var value = view.value()) {
+            assertEquals(fixture.rawTag(), tag.raw());
+            assertEquals(fixture.itemType(), view.itemType());
+            long actual = fixture.itemType() == TtlvItemType.DateTimeExtended
+                    ? value.dateTimeExtended() : value.enumeration();
+            assertEquals(fixture.value(), actual);
+        }
+    }
+
+    private static byte[] queryAsyncRequestsResponse(byte[] correlation, long operation,
+            long submissionDate, long processingStage) throws Exception {
+        byte[] version = structure(0x420069,
+                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(1)));
+        byte[] header = structure(0x42007a, version,
+                item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(1)));
+        byte[] asynchronousRequest = structure(0x420173,
+                item(0x420006, 8, correlation),
+                item(0x42005c, 5, intBytes(Math.toIntExact(operation))),
+                item(0x420175, 5, intBytes(Math.toIntExact(processingStage))),
+                item(0x420174, 11, longBytes(submissionDate)));
+        byte[] payload = structure(0x42007c, asynchronousRequest);
+        byte[] responseItem = structure(0x42000f,
+                item(0x42005c, 5, intBytes(0x39)),
+                item(0x42007f, 5, intBytes(0)), payload);
+        return structure(0x42007b, header, responseItem);
     }
 
     private static void assertByteStringItemView(TtlvItemView view, int rawTag, byte[] expectedValue) {
