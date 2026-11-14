@@ -70,7 +70,15 @@ REQUEST_MESSAGE_AUTHENTICATION_TARGETS = frozenset({
     'KMIPKIT-ELEM-MESSAGE-FIELD-9-4-AUTHENTICATION',
     'KMIPKIT-ELEM-MESSAGE-FIELD-9-4-CREDENTIAL-MAY-BE-REPEATED',
 })
-REQUEST_MESSAGE_CONTEXT_TARGETS = REQUEST_MESSAGE_AUTHENTICATION_TARGETS | frozenset({
+REQUEST_MESSAGE_EXTENSION_TARGETS = frozenset({
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-3-MESSAGE-EXTENSION',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-9-13-CRITICALITY-INDICATOR',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-9-13-VENDOR-EXTENSION',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-9-13-VENDOR-IDENTIFICATION',
+})
+REQUEST_MESSAGE_CONTEXT_TARGETS = (
+    REQUEST_MESSAGE_AUTHENTICATION_TARGETS | REQUEST_MESSAGE_EXTENSION_TARGETS | frozenset({
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-1-BATCH-ITEM',
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-1-REQUEST-HEADER',
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT',
@@ -87,7 +95,8 @@ REQUEST_MESSAGE_CONTEXT_TARGETS = REQUEST_MESSAGE_AUTHENTICATION_TARGETS | froze
     'KMIPKIT-ELEM-MESSAGE-FIELD-9-21-UNIQUE-BATCH-ITEM-ID',
     'KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT',
     'KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM',
-})
+    })
+)
 OUTPUT_ROOT = ROOT / 'interop/c-kmip-validator/build'
 
 
@@ -364,6 +373,23 @@ def _request_message_with_authentication(fixture: tuple, catalog: dict,
                                       after_tag='Protocol Version')
 
 
+def _request_message_with_extension(fixture: tuple, tags: dict[str, int]) -> tuple:
+    """Add a structurally valid vendor Message Extension to the Get batch item."""
+    extension = (tags['Message Extension'], 1, [
+        (tags['Vendor Identification'], 7, b'kmipkit.test'),
+        (tags['Criticality Indicator'], 6, bytes(8)),
+        (tags['Vendor Extension'], 1, [
+            (0x540001, 7, b'fixture-extension'),
+        ]),
+    ])
+    message = list(fixture[2])
+    batch_index = next(index for index, item in enumerate(message)
+                       if item[0] == tags['Batch Item'])
+    batch_item = message[batch_index]
+    message[batch_index] = (batch_item[0], batch_item[1], [*batch_item[2], extension])
+    return fixture[0], fixture[1], message
+
+
 def _request_header_field_data(name: str, kind: int, value: object, catalog: dict,
                                protocol_version: str) -> bytes | None:
     if kind == 5:
@@ -406,6 +432,8 @@ def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
         fixture = _request_message_fixture(protocol_version, tags, catalog)
         if fixture is None:
             return None
+        if target.get('target_id') in REQUEST_MESSAGE_EXTENSION_TARGETS:
+            return [_request_message_with_extension(fixture, tags)]
         if target.get('target_id') in REQUEST_MESSAGE_AUTHENTICATION_TARGETS:
             fixture = _request_message_with_authentication(
                 fixture, catalog, tags, protocol_version)
