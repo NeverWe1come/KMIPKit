@@ -1369,6 +1369,114 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(operations, (47, 1, 45))
         self.assertEqual(cases, ('test-op-delegated-login', 'test-op-login'))
 
+    def test_controlled_peer_routes_each_login_payload_field_variant(self):
+        import route_peer
+        from artifact_support import ROOT
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        case_ids = (
+            'test-norm-payload-client-login-request-20-001',
+            'test-norm-payload-client-login-request-20-002',
+            'test-norm-payload-client-login-request-20-003',
+            'test-norm-payload-client-login-request-21-001',
+            'test-norm-payload-client-login-request-21-002',
+            'test-norm-payload-client-login-request-21-003',
+            'test-norm-payload-client-login-response-20-001',
+            'test-norm-payload-client-login-response-21-001',
+        )
+        cases = {case['case_id']: case for case in catalog['test_cases']}
+        for case_id in case_ids:
+            with self.subTest(case_id=case_id):
+                self.assertEqual(route_peer.recipe_for_case(cases[case_id], None), ((45,), 'login'))
+                peer_case = route_peer.case_for_controlled_exchange(cases[case_id])
+                self.assertEqual(peer_case['execution']['mode'], 'server_exchange')
+
+    def test_login_payload_generic_ttlv_fixtures_use_oasis_field_types(self):
+        import route_matrix
+        from artifact_support import ROOT
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        targets = {target['target_id']: target for target in catalog['normative_targets']}
+        tags = route_matrix.catalog_tag_values(catalog)
+        expected = {
+            'KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-20-001':
+                (tags['Lease Time'], 10, (60).to_bytes(4, 'big')),
+            'KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-20-002':
+                (tags['Request Count'], 2, (2).to_bytes(4, 'big', signed=True)),
+            'KMIPKIT-PAYLOAD-CLIENT-LOGIN-REQUEST-20-003':
+                (tags['Usage Limits'], 1, [
+                    (tags['Usage Limits Total'], 3, (10).to_bytes(8, 'big', signed=True)),
+                    (tags['Usage Limits Count'], 3, (10).to_bytes(8, 'big', signed=True)),
+                    (tags['Usage Limits Unit'], 5, (1).to_bytes(4, 'big')),
+                ]),
+            'KMIPKIT-PAYLOAD-CLIENT-LOGIN-RESPONSE-20-001':
+                (tags['Ticket'], 1, [
+                    (tags['Ticket Type'], 5, (1).to_bytes(4, 'big')),
+                    (tags['Ticket Value'], 8, b'route-login-ticket'),
+                ]),
+        }
+        for target_id, expected_tree in expected.items():
+            with self.subTest(target_id=target_id):
+                self.assertEqual(route_matrix.generic_tree_fixtures(
+                    targets[target_id], catalog, tags, '2.0'), [expected_tree])
+
+    def test_delegated_login_payload_cases_use_controlled_peer_recipes(self):
+        """OASIS KMIP 2.0 §6.1.12 Tables 184–185; KMIP 2.1 §6.1.12 Tables 199–200."""
+        import route_peer
+        from artifact_support import ROOT
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        cases = {case['case_id']: case for case in catalog['test_cases']}
+        case_ids = tuple(
+            f'test-norm-payload-client-delegated-login-{role}-{version}-{field:03d}'
+            for role, version, fields in (
+                ('request', '20', (1, 2, 3, 4)),
+                ('response', '20', (1,)),
+                ('request', '21', (1, 2, 3, 4)),
+                ('response', '21', (1,)),
+            )
+            for field in fields
+        )
+
+        for case_id in case_ids:
+            with self.subTest(case_id=case_id):
+                self.assertEqual(route_peer.recipe_for_case(cases[case_id], None), ((47,), 'delegated_login'))
+                peer_case = route_peer.case_for_controlled_exchange(cases[case_id])
+                self.assertEqual(peer_case['execution']['mode'], 'server_exchange')
+
+    def test_delegated_login_payload_generic_ttlv_fixtures_use_oasis_field_types(self):
+        import route_matrix
+        from artifact_support import ROOT
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        targets = {target['target_id']: target for target in catalog['normative_targets']}
+        tags = route_matrix.catalog_tag_values(catalog)
+        expected = {
+            'KMIPKIT-PAYLOAD-CLIENT-DELEGATED-LOGIN-REQUEST-20-001':
+                (tags['Lease Time'], 10, (60).to_bytes(4, 'big')),
+            'KMIPKIT-PAYLOAD-CLIENT-DELEGATED-LOGIN-REQUEST-20-002':
+                (tags['Request Count'], 2, (2).to_bytes(4, 'big', signed=True)),
+            'KMIPKIT-PAYLOAD-CLIENT-DELEGATED-LOGIN-REQUEST-20-003':
+                (tags['Usage Limits'], 1, [
+                    (tags['Usage Limits Total'], 3, (10).to_bytes(8, 'big', signed=True)),
+                    (tags['Usage Limits Count'], 3, (10).to_bytes(8, 'big', signed=True)),
+                    (tags['Usage Limits Unit'], 5, route_matrix.catalog_enum_value(
+                        catalog, 'Usage Limits Unit', 'Byte', '2.0').to_bytes(4, 'big')),
+                ]),
+            'KMIPKIT-PAYLOAD-CLIENT-DELEGATED-LOGIN-REQUEST-20-004':
+                (tags['Rights'], 1, []),
+            'KMIPKIT-PAYLOAD-CLIENT-DELEGATED-LOGIN-RESPONSE-20-001':
+                (tags['Ticket'], 1, [
+                    (tags['Ticket Type'], 5, route_matrix.catalog_enum_value(
+                        catalog, 'Ticket Type', 'Login', '2.0').to_bytes(4, 'big')),
+                    (tags['Ticket Value'], 8, b'route-delegated-login-ticket'),
+                ]),
+        }
+        for target_id, expected_tree in expected.items():
+            with self.subTest(target_id=target_id):
+                self.assertEqual(route_matrix.generic_tree_fixtures(
+                    targets[target_id], catalog, tags, '2.0'), [expected_tree])
+
     def test_logout_recipe_requires_a_login_ticket_before_logout(self):
         """OASIS KMIP 2.0 §6.1.30 and KMIP 2.1 §6.1.31 require a Logout Ticket."""
         import route_peer
@@ -2661,6 +2769,35 @@ class RouteMatrixTests(unittest.TestCase):
         for check in checks:
             self.assertTrue(symbols <= set(check['public_api_trace_symbols']))
         self.assertNotIn('controlled-delegated-login-ticket', json.dumps([events, checks]))
+
+    def test_delegated_login_payload_field_variants_execute_through_the_installed_c_client(self):
+        """OASIS KMIP 2.0 §6.1.12 Tables 184–185; KMIP 2.1 §6.1.12 Tables 199–200."""
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        field_cases = tuple(
+            f'test-norm-payload-client-delegated-login-{role}-{version}-{field:03d}'
+            for role, version, fields in (
+                ('request', '20', (1, 2, 3, 4)),
+                ('response', '20', (1,)),
+                ('request', '21', (1, 2, 3, 4)),
+                ('response', '21', (1,)),
+            )
+            for field in fields
+        )
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] in field_cases]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest,
+            network_combinations=(('TTLV', 'raw_tls'),))
+
+        self.assertEqual(len(checks), len(field_cases))
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertEqual({check['case_id'] for check in checks}, set(field_cases))
+        self.assertFalse(any(event['status'] == 'failed' for event in events))
 
     def test_delegated_login_response_accessors_reject_changed_ticket_bytes(self):
         """OASIS KMIP v2.0/v2.1 §6.1.12: observe the returned Ticket value."""
