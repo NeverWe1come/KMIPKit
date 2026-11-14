@@ -1239,6 +1239,30 @@ class BindingExportAuditTests(unittest.TestCase):
             }
         )
         native_members.add("registerRequestWithProtectionStorageMasks")
+        # KMIP 3.0 fluent routes map to these bridge methods while the bridge
+        # itself remains excluded from the application-facing Java inventory.
+        native_members.update(
+            {
+                "CREATE_CREDENTIAL_OBJECT",
+                "KMIP30_OPERATION_BUILDER",
+                "clientBatchItemResponseEncapsulateData",
+                "clientBatchItemResponseKmip30Identifier",
+                "createCredentialObjectCertificate",
+                "createCredentialObjectDevice",
+                "createCredentialObjectHashedPassword",
+                "createCredentialObjectOneTimePassword",
+                "createCredentialObjectPassword",
+                "kmip30CreateCredentialBuilderCreate",
+                "kmip30OperationBuilderBuildBatchItem",
+                "kmip30OperationBuilderCreate",
+                "kmip30OperationBuilderSetAsynchronousIndicator",
+                "kmip30OperationBuilderSetAttributes",
+                "kmip30OperationBuilderSetCryptographicParameters",
+                "kmip30OperationBuilderSetDeactivationDate",
+                "kmip30OperationBuilderSetDeactivationReason",
+                "kmip30OperationBuilderValidate",
+            }
+        )
         response_view_bridge_members = {
             "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseTtlvHex",
             "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseJson",
@@ -1296,6 +1320,17 @@ class BindingExportAuditTests(unittest.TestCase):
                     exclusion["evidencePaths"],
                 )
                 self.assertIn("JNI members only dispatch builder operations", evidence)
+                continue
+            if exclusion.get("candidateSpecId") == "KMIPKIT-0116":
+                self.assertEqual(
+                    exclusion["approvalSource"]["path"],
+                    "specs/116-kmip30-fluent-operations/spec.md",
+                )
+                self.assertIn("KMIPKIT-0116-FR-001 through FR-006", evidence)
+                evidence_paths = " ".join(exclusion["evidencePaths"])
+                self.assertIn("NativeExtensionRegistry.java", evidence_paths)
+                self.assertIn("kmipkit_jni.cpp", evidence_paths)
+                self.assertIn("Kmip30FluentExecutionTest.java", evidence_paths)
                 continue
             if exclusion.get("candidateSpecId") == "KMIPKIT-0053":
                 self.assertEqual(

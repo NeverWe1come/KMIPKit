@@ -55667,15 +55667,25 @@
       },
       "java": {
         "package": "org.kmipkit.fluent",
-        "class": "CreateCredentialBuilder",
-        "method": "create",
-        "parameters": [],
+        "class": "FluentRequest",
+        "method": "createCredential",
+        "parameters": [
+          {
+            "name": "attributes",
+            "type": "AttributeSet"
+          },
+          {
+            "name": "object",
+            "type": "CreateCredentialObject"
+          }
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "CreateCredentialBuilder",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_kmip30CreateCredentialBuilderCreate"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -55754,15 +55764,20 @@
       },
       "java": {
         "package": "org.kmipkit.fluent",
-        "class": "CreateCredentialBuilder",
+        "class": "Kmip30BuilderBase",
         "method": "execute",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "ClientBatchResponse"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -55848,15 +55863,20 @@
       },
       "java": {
         "package": "org.kmipkit.fluent",
-        "class": "CreateCredentialBuilder",
-        "method": "execute",
-        "parameters": [],
+        "class": "Kmip30BuilderBase",
+        "method": "withOptions",
+        "parameters": [
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "T"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -55917,15 +55937,21 @@
       },
       "java": {
         "package": "org.kmipkit.fluent",
-        "class": "CreateGroupBuilder",
-        "method": "create",
-        "parameters": [],
+        "class": "FluentRequest",
+        "method": "createGroup",
+        "parameters": [
+          {
+            "name": "attributes",
+            "type": "AttributeSet"
+          }
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "CreateGroupBuilder",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderCreate"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -55998,15 +56024,20 @@
       },
       "java": {
         "package": "org.kmipkit.fluent",
-        "class": "CreateGroupBuilder",
+        "class": "Kmip30BuilderBase",
         "method": "execute",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "ClientBatchResponse"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -56086,15 +56117,20 @@
       },
       "java": {
         "package": "org.kmipkit.fluent",
-        "class": "CreateGroupBuilder",
-        "method": "execute",
-        "parameters": [],
+        "class": "Kmip30BuilderBase",
+        "method": "withOptions",
+        "parameters": [
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "T"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -56155,15 +56191,21 @@
       },
       "java": {
         "package": "org.kmipkit.fluent",
-        "class": "CreateUserBuilder",
-        "method": "create",
-        "parameters": [],
+        "class": "FluentRequest",
+        "method": "createUser",
+        "parameters": [
+          {
+            "name": "attributes",
+            "type": "AttributeSet"
+          }
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "CreateUserBuilder",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderCreate"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -56236,15 +56278,20 @@
       },
       "java": {
         "package": "org.kmipkit.fluent",
-        "class": "CreateUserBuilder",
+        "class": "Kmip30BuilderBase",
         "method": "execute",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "ClientBatchResponse"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -56324,15 +56371,20 @@
       },
       "java": {
         "package": "org.kmipkit.fluent",
-        "class": "CreateUserBuilder",
-        "method": "execute",
-        "parameters": [],
+        "class": "Kmip30BuilderBase",
+        "method": "withOptions",
+        "parameters": [
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "T"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -56394,15 +56446,21 @@
       },
       "java": {
         "package": "org.kmipkit.fluent",
-        "class": "DeactivateBuilder",
-        "method": "create",
-        "parameters": [],
+        "class": "FluentRequest",
+        "method": "deactivate",
+        "parameters": [
+          {
+            "name": "identifier",
+            "type": "UniqueIdentifier"
+          }
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "DeactivateBuilder",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderCreate"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -56476,15 +56534,20 @@
       },
       "java": {
         "package": "org.kmipkit.fluent",
-        "class": "DeactivateBuilder",
+        "class": "Kmip30BuilderBase",
         "method": "execute",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "ClientBatchResponse"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -56565,15 +56628,20 @@
       },
       "java": {
         "package": "org.kmipkit.fluent",
-        "class": "DeactivateBuilder",
-        "method": "execute",
-        "parameters": [],
+        "class": "Kmip30BuilderBase",
+        "method": "withOptions",
+        "parameters": [
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "T"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -56642,15 +56710,25 @@
       },
       "java": {
         "package": "org.kmipkit.fluent",
-        "class": "DecapsulateBuilder",
-        "method": "create",
-        "parameters": [],
+        "class": "FluentRequest",
+        "method": "decapsulate",
+        "parameters": [
+          {
+            "name": "identifier",
+            "type": "UniqueIdentifier"
+          },
+          {
+            "name": "ciphertext",
+            "type": "byte[]"
+          }
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "DecapsulateBuilder",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderCreate"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -56731,15 +56809,20 @@
       },
       "java": {
         "package": "org.kmipkit.fluent",
-        "class": "DecapsulateBuilder",
+        "class": "Kmip30BuilderBase",
         "method": "execute",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "ClientBatchResponse"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -56827,15 +56910,20 @@
       },
       "java": {
         "package": "org.kmipkit.fluent",
-        "class": "DecapsulateBuilder",
-        "method": "execute",
-        "parameters": [],
+        "class": "Kmip30BuilderBase",
+        "method": "withOptions",
+        "parameters": [
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "T"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -56897,15 +56985,21 @@
       },
       "java": {
         "package": "org.kmipkit.fluent",
-        "class": "EncapsulateBuilder",
-        "method": "create",
-        "parameters": [],
+        "class": "FluentRequest",
+        "method": "encapsulate",
+        "parameters": [
+          {
+            "name": "identifier",
+            "type": "UniqueIdentifier"
+          }
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "EncapsulateBuilder",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderCreate"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -56979,15 +57073,20 @@
       },
       "java": {
         "package": "org.kmipkit.fluent",
-        "class": "EncapsulateBuilder",
+        "class": "Kmip30BuilderBase",
         "method": "execute",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "ClientBatchResponse"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -57068,15 +57167,20 @@
       },
       "java": {
         "package": "org.kmipkit.fluent",
-        "class": "EncapsulateBuilder",
-        "method": "execute",
-        "parameters": [],
+        "class": "Kmip30BuilderBase",
+        "method": "withOptions",
+        "parameters": [
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "T"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -57138,15 +57242,21 @@
       },
       "java": {
         "package": "org.kmipkit.fluent",
-        "class": "ObliterateBuilder",
-        "method": "create",
-        "parameters": [],
+        "class": "FluentRequest",
+        "method": "obliterate",
+        "parameters": [
+          {
+            "name": "identifier",
+            "type": "UniqueIdentifier"
+          }
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "ObliterateBuilder",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderCreate"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -57220,15 +57330,20 @@
       },
       "java": {
         "package": "org.kmipkit.fluent",
-        "class": "ObliterateBuilder",
+        "class": "Kmip30BuilderBase",
         "method": "execute",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "ClientBatchResponse"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -57309,15 +57424,20 @@
       },
       "java": {
         "package": "org.kmipkit.fluent",
-        "class": "ObliterateBuilder",
-        "method": "execute",
-        "parameters": [],
+        "class": "Kmip30BuilderBase",
+        "method": "withOptions",
+        "parameters": [
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "T"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -57376,16 +57496,22 @@
         ]
       },
       "java": {
-        "package": "org.kmipkit.extensions",
-        "class": "Kmip30OperationHandle",
-        "method": "setAttributes",
-        "parameters": [],
+        "package": "org.kmipkit.fluent",
+        "class": "DecapsulateBuilder",
+        "method": "attributes",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "AttributeSet"
+          }
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "DecapsulateBuilder",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderSetAttributes"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -57444,16 +57570,22 @@
         ]
       },
       "java": {
-        "package": "org.kmipkit.extensions",
-        "class": "Kmip30OperationHandle",
-        "method": "setCryptographicParameters",
-        "parameters": [],
+        "package": "org.kmipkit.fluent",
+        "class": "DecapsulateBuilder",
+        "method": "cryptographicParameters",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "CryptographicParameters"
+          }
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "DecapsulateBuilder",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderSetCryptographicParameters"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -57512,16 +57644,22 @@
         ]
       },
       "java": {
-        "package": "org.kmipkit.extensions",
-        "class": "Kmip30OperationHandle",
-        "method": "setDeactivationReason",
-        "parameters": [],
+        "package": "org.kmipkit.fluent",
+        "class": "DeactivateBuilder",
+        "method": "deactivationReason",
+        "parameters": [
+          {
+            "name": "reason",
+            "type": "TtlvStructure"
+          }
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "DeactivateBuilder",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderSetDeactivationReason"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -57579,16 +57717,22 @@
         ]
       },
       "java": {
-        "package": "org.kmipkit.extensions",
-        "class": "Kmip30OperationHandle",
-        "method": "setDeactivationDate",
-        "parameters": [],
+        "package": "org.kmipkit.fluent",
+        "class": "DeactivateBuilder",
+        "method": "deactivationDate",
+        "parameters": [
+          {
+            "name": "unixSeconds",
+            "type": "long"
+          }
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "DeactivateBuilder",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderSetDeactivationDate"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -57646,16 +57790,22 @@
         ]
       },
       "java": {
-        "package": "org.kmipkit.extensions",
-        "class": "Kmip30OperationHandle",
-        "method": "setAsynchronousIndicator",
-        "parameters": [],
+        "package": "org.kmipkit.fluent",
+        "class": "Kmip30BuilderBase",
+        "method": "asynchronousIndicator",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "long"
+          }
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "T",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderSetAsynchronousIndicator"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -57708,8 +57858,8 @@
         ]
       },
       "java": {
-        "package": "org.kmipkit.extensions",
-        "class": "Kmip30OperationHandle",
+        "package": "org.kmipkit.fluent",
+        "class": "Kmip30BuilderBase",
         "method": "validate",
         "parameters": [],
         "errorCategories": [
@@ -57717,7 +57867,8 @@
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "void",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderValidate"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -57777,8 +57928,8 @@
         ]
       },
       "java": {
-        "package": "org.kmipkit.extensions",
-        "class": "Kmip30OperationHandle",
+        "package": "org.kmipkit.fluent",
+        "class": "Kmip30BuilderBase",
         "method": "build",
         "parameters": [],
         "errorCategories": [
@@ -57786,7 +57937,8 @@
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "ClientBatchItem",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderBuildBatchItem"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -57858,16 +58010,21 @@
         ]
       },
       "java": {
-        "package": "org.kmipkit.extensions",
-        "class": "Kmip30OperationHandle",
+        "package": "org.kmipkit.fluent",
+        "class": "Kmip30BuilderBase",
         "method": "execute",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "ClientBatchResponse"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -57946,16 +58103,21 @@
         ]
       },
       "java": {
-        "package": "org.kmipkit.extensions",
-        "class": "Kmip30OperationHandle",
-        "method": "execute",
-        "parameters": [],
+        "package": "org.kmipkit.fluent",
+        "class": "Kmip30BuilderBase",
+        "method": "withOptions",
+        "parameters": [
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "T"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -58018,13 +58180,19 @@
         "package": "org.kmipkit.fluent",
         "class": "CreateCredentialObject",
         "method": "certificate",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "certificate",
+            "type": "TtlvItem"
+          }
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "CreateCredentialObject",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_createCredentialObjectCertificate"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -58122,13 +58290,35 @@
         "package": "org.kmipkit.fluent",
         "class": "CreateCredentialObject",
         "method": "password",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "password",
+            "type": "SecretText"
+          },
+          {
+            "name": "passwordSalt",
+            "type": "SecretBytes"
+          },
+          {
+            "name": "saltAlgorithm",
+            "type": "Long"
+          },
+          {
+            "name": "saltedPassword",
+            "type": "SecretBytes"
+          },
+          {
+            "name": "iterationCount",
+            "type": "Integer"
+          }
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "CreateCredentialObject",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_createCredentialObjectPassword"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -58220,13 +58410,35 @@
         "package": "org.kmipkit.fluent",
         "class": "CreateCredentialObject",
         "method": "device",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "serial",
+            "type": "String"
+          },
+          {
+            "name": "identifier",
+            "type": "String"
+          },
+          {
+            "name": "network",
+            "type": "String"
+          },
+          {
+            "name": "machine",
+            "type": "String"
+          },
+          {
+            "name": "media",
+            "type": "String"
+          }
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "CreateCredentialObject",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_createCredentialObjectDevice"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -58306,14 +58518,28 @@
       "java": {
         "package": "org.kmipkit.fluent",
         "class": "CreateCredentialObject",
-        "method": "password",
-        "parameters": [],
+        "method": "hashedPassword",
+        "parameters": [
+          {
+            "name": "hashedUsernamePassword",
+            "type": "SecretBytes"
+          },
+          {
+            "name": "hashedPasswordUsername",
+            "type": "SecretBytes"
+          },
+          {
+            "name": "hashingAlgorithm",
+            "type": "Long"
+          }
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "CreateCredentialObject",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_createCredentialObjectHashedPassword"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -58418,14 +58644,40 @@
       "java": {
         "package": "org.kmipkit.fluent",
         "class": "CreateCredentialObject",
-        "method": "password",
-        "parameters": [],
+        "method": "oneTimePassword",
+        "parameters": [
+          {
+            "name": "algorithm",
+            "type": "long"
+          },
+          {
+            "name": "digest",
+            "type": "Long"
+          },
+          {
+            "name": "serial",
+            "type": "String"
+          },
+          {
+            "name": "seed",
+            "type": "SecretBytes"
+          },
+          {
+            "name": "interval",
+            "type": "Long"
+          },
+          {
+            "name": "digits",
+            "type": "Integer"
+          }
+        ],
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "returnType": "ClientBatchItem"
+        "returnType": "CreateCredentialObject",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_createCredentialObjectOneTimePassword"
       },
       "python": {
         "module": "kmipkit.fluent",
@@ -58498,7 +58750,8 @@
           "resource_limit",
           "internal"
         ],
-        "returnType": "Optional<UniqueIdentifier>"
+        "returnType": "Optional<UniqueIdentifier>",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseKmip30Identifier"
       },
       "python": {
         "module": "kmipkit.client",
@@ -58571,7 +58824,8 @@
           "resource_limit",
           "internal"
         ],
-        "returnType": "Optional<byte[]>"
+        "returnType": "Optional<byte[]>",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseEncapsulateData"
       },
       "python": {
         "module": "kmipkit.client",

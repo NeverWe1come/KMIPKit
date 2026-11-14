@@ -373144,16 +373144,26 @@
       },
       "id": "create_credential_builder_create",
       "java": {
-        "class": "CreateCredentialBuilder",
+        "class": "FluentRequest",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "method": "create",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_kmip30CreateCredentialBuilderCreate",
+        "method": "createCredential",
         "package": "org.kmipkit.fluent",
-        "parameters": [],
-        "returnType": "ClientBatchItem"
+        "parameters": [
+          {
+            "name": "attributes",
+            "type": "AttributeSet"
+          },
+          {
+            "name": "object",
+            "type": "CreateCredentialObject"
+          }
+        ],
+        "returnType": "CreateCredentialBuilder"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -373231,7 +373241,7 @@
       },
       "id": "client_create_credential_v1",
       "java": {
-        "class": "CreateCredentialBuilder",
+        "class": "Kmip30BuilderBase",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
@@ -373239,8 +373249,13 @@
         ],
         "method": "execute",
         "package": "org.kmipkit.fluent",
-        "parameters": [],
-        "returnType": "ClientBatchItem"
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "returnType": "ClientBatchResponse"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -373325,16 +373340,21 @@
       },
       "id": "client_create_credential_with_options_v1",
       "java": {
-        "class": "CreateCredentialBuilder",
+        "class": "Kmip30BuilderBase",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "method": "execute",
+        "method": "withOptions",
         "package": "org.kmipkit.fluent",
-        "parameters": [],
-        "returnType": "ClientBatchItem"
+        "parameters": [
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
+        "returnType": "T"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -373394,16 +373414,22 @@
       },
       "id": "create_group_builder_create",
       "java": {
-        "class": "CreateGroupBuilder",
+        "class": "FluentRequest",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "method": "create",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderCreate",
+        "method": "createGroup",
         "package": "org.kmipkit.fluent",
-        "parameters": [],
-        "returnType": "ClientBatchItem"
+        "parameters": [
+          {
+            "name": "attributes",
+            "type": "AttributeSet"
+          }
+        ],
+        "returnType": "CreateGroupBuilder"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -373475,7 +373501,7 @@
       },
       "id": "client_create_group_v1",
       "java": {
-        "class": "CreateGroupBuilder",
+        "class": "Kmip30BuilderBase",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
@@ -373483,8 +373509,13 @@
         ],
         "method": "execute",
         "package": "org.kmipkit.fluent",
-        "parameters": [],
-        "returnType": "ClientBatchItem"
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "returnType": "ClientBatchResponse"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -373563,16 +373594,21 @@
       },
       "id": "client_create_group_with_options_v1",
       "java": {
-        "class": "CreateGroupBuilder",
+        "class": "Kmip30BuilderBase",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "method": "execute",
+        "method": "withOptions",
         "package": "org.kmipkit.fluent",
-        "parameters": [],
-        "returnType": "ClientBatchItem"
+        "parameters": [
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
+        "returnType": "T"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -373632,16 +373668,22 @@
       },
       "id": "create_user_builder_create",
       "java": {
-        "class": "CreateUserBuilder",
+        "class": "FluentRequest",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "method": "create",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderCreate",
+        "method": "createUser",
         "package": "org.kmipkit.fluent",
-        "parameters": [],
-        "returnType": "ClientBatchItem"
+        "parameters": [
+          {
+            "name": "attributes",
+            "type": "AttributeSet"
+          }
+        ],
+        "returnType": "CreateUserBuilder"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -373713,7 +373755,7 @@
       },
       "id": "client_create_user_v1",
       "java": {
-        "class": "CreateUserBuilder",
+        "class": "Kmip30BuilderBase",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
@@ -373721,8 +373763,13 @@
         ],
         "method": "execute",
         "package": "org.kmipkit.fluent",
-        "parameters": [],
-        "returnType": "ClientBatchItem"
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "returnType": "ClientBatchResponse"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -373801,16 +373848,21 @@
       },
       "id": "client_create_user_with_options_v1",
       "java": {
-        "class": "CreateUserBuilder",
+        "class": "Kmip30BuilderBase",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "method": "execute",
+        "method": "withOptions",
         "package": "org.kmipkit.fluent",
-        "parameters": [],
-        "returnType": "ClientBatchItem"
+        "parameters": [
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
+        "returnType": "T"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -373871,16 +373923,22 @@
       },
       "id": "deactivate_builder_create",
       "java": {
-        "class": "DeactivateBuilder",
+        "class": "FluentRequest",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "method": "create",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderCreate",
+        "method": "deactivate",
         "package": "org.kmipkit.fluent",
-        "parameters": [],
-        "returnType": "ClientBatchItem"
+        "parameters": [
+          {
+            "name": "identifier",
+            "type": "UniqueIdentifier"
+          }
+        ],
+        "returnType": "DeactivateBuilder"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -373953,7 +374011,7 @@
       },
       "id": "client_deactivate_v1",
       "java": {
-        "class": "DeactivateBuilder",
+        "class": "Kmip30BuilderBase",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
@@ -373961,8 +374019,13 @@
         ],
         "method": "execute",
         "package": "org.kmipkit.fluent",
-        "parameters": [],
-        "returnType": "ClientBatchItem"
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "returnType": "ClientBatchResponse"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -374042,16 +374105,21 @@
       },
       "id": "client_deactivate_with_options_v1",
       "java": {
-        "class": "DeactivateBuilder",
+        "class": "Kmip30BuilderBase",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "method": "execute",
+        "method": "withOptions",
         "package": "org.kmipkit.fluent",
-        "parameters": [],
-        "returnType": "ClientBatchItem"
+        "parameters": [
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
+        "returnType": "T"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -374119,16 +374187,26 @@
       },
       "id": "decapsulate_builder_create",
       "java": {
-        "class": "DecapsulateBuilder",
+        "class": "FluentRequest",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "method": "create",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderCreate",
+        "method": "decapsulate",
         "package": "org.kmipkit.fluent",
-        "parameters": [],
-        "returnType": "ClientBatchItem"
+        "parameters": [
+          {
+            "name": "identifier",
+            "type": "UniqueIdentifier"
+          },
+          {
+            "name": "ciphertext",
+            "type": "byte[]"
+          }
+        ],
+        "returnType": "DecapsulateBuilder"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -374208,7 +374286,7 @@
       },
       "id": "client_decapsulate_v1",
       "java": {
-        "class": "DecapsulateBuilder",
+        "class": "Kmip30BuilderBase",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
@@ -374216,8 +374294,13 @@
         ],
         "method": "execute",
         "package": "org.kmipkit.fluent",
-        "parameters": [],
-        "returnType": "ClientBatchItem"
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "returnType": "ClientBatchResponse"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -374304,16 +374387,21 @@
       },
       "id": "client_decapsulate_with_options_v1",
       "java": {
-        "class": "DecapsulateBuilder",
+        "class": "Kmip30BuilderBase",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "method": "execute",
+        "method": "withOptions",
         "package": "org.kmipkit.fluent",
-        "parameters": [],
-        "returnType": "ClientBatchItem"
+        "parameters": [
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
+        "returnType": "T"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -374374,16 +374462,22 @@
       },
       "id": "encapsulate_builder_create",
       "java": {
-        "class": "EncapsulateBuilder",
+        "class": "FluentRequest",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "method": "create",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderCreate",
+        "method": "encapsulate",
         "package": "org.kmipkit.fluent",
-        "parameters": [],
-        "returnType": "ClientBatchItem"
+        "parameters": [
+          {
+            "name": "identifier",
+            "type": "UniqueIdentifier"
+          }
+        ],
+        "returnType": "EncapsulateBuilder"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -374456,7 +374550,7 @@
       },
       "id": "client_encapsulate_v1",
       "java": {
-        "class": "EncapsulateBuilder",
+        "class": "Kmip30BuilderBase",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
@@ -374464,8 +374558,13 @@
         ],
         "method": "execute",
         "package": "org.kmipkit.fluent",
-        "parameters": [],
-        "returnType": "ClientBatchItem"
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "returnType": "ClientBatchResponse"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -374545,16 +374644,21 @@
       },
       "id": "client_encapsulate_with_options_v1",
       "java": {
-        "class": "EncapsulateBuilder",
+        "class": "Kmip30BuilderBase",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "method": "execute",
+        "method": "withOptions",
         "package": "org.kmipkit.fluent",
-        "parameters": [],
-        "returnType": "ClientBatchItem"
+        "parameters": [
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
+        "returnType": "T"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -374615,16 +374719,22 @@
       },
       "id": "obliterate_builder_create",
       "java": {
-        "class": "ObliterateBuilder",
+        "class": "FluentRequest",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "method": "create",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderCreate",
+        "method": "obliterate",
         "package": "org.kmipkit.fluent",
-        "parameters": [],
-        "returnType": "ClientBatchItem"
+        "parameters": [
+          {
+            "name": "identifier",
+            "type": "UniqueIdentifier"
+          }
+        ],
+        "returnType": "ObliterateBuilder"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -374697,7 +374807,7 @@
       },
       "id": "client_obliterate_v1",
       "java": {
-        "class": "ObliterateBuilder",
+        "class": "Kmip30BuilderBase",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
@@ -374705,8 +374815,13 @@
         ],
         "method": "execute",
         "package": "org.kmipkit.fluent",
-        "parameters": [],
-        "returnType": "ClientBatchItem"
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "returnType": "ClientBatchResponse"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -374786,16 +374901,21 @@
       },
       "id": "client_obliterate_with_options_v1",
       "java": {
-        "class": "ObliterateBuilder",
+        "class": "Kmip30BuilderBase",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "method": "execute",
+        "method": "withOptions",
         "package": "org.kmipkit.fluent",
-        "parameters": [],
-        "returnType": "ClientBatchItem"
+        "parameters": [
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
+        "returnType": "T"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -374854,16 +374974,22 @@
       },
       "id": "kmip30_operation_builder_set_attributes",
       "java": {
-        "class": "Kmip30OperationHandle",
+        "class": "DecapsulateBuilder",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "method": "setAttributes",
-        "package": "org.kmipkit.extensions",
-        "parameters": [],
-        "returnType": "ClientBatchItem"
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderSetAttributes",
+        "method": "attributes",
+        "package": "org.kmipkit.fluent",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "AttributeSet"
+          }
+        ],
+        "returnType": "DecapsulateBuilder"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -374922,16 +375048,22 @@
       },
       "id": "kmip30_operation_builder_set_cryptographic_parameters",
       "java": {
-        "class": "Kmip30OperationHandle",
+        "class": "DecapsulateBuilder",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "method": "setCryptographicParameters",
-        "package": "org.kmipkit.extensions",
-        "parameters": [],
-        "returnType": "ClientBatchItem"
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderSetCryptographicParameters",
+        "method": "cryptographicParameters",
+        "package": "org.kmipkit.fluent",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "CryptographicParameters"
+          }
+        ],
+        "returnType": "DecapsulateBuilder"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -374990,16 +375122,22 @@
       },
       "id": "kmip30_operation_builder_set_deactivation_reason",
       "java": {
-        "class": "Kmip30OperationHandle",
+        "class": "DeactivateBuilder",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "method": "setDeactivationReason",
-        "package": "org.kmipkit.extensions",
-        "parameters": [],
-        "returnType": "ClientBatchItem"
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderSetDeactivationReason",
+        "method": "deactivationReason",
+        "package": "org.kmipkit.fluent",
+        "parameters": [
+          {
+            "name": "reason",
+            "type": "TtlvStructure"
+          }
+        ],
+        "returnType": "DeactivateBuilder"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -375057,16 +375195,22 @@
       },
       "id": "kmip30_operation_builder_set_deactivation_date",
       "java": {
-        "class": "Kmip30OperationHandle",
+        "class": "DeactivateBuilder",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "method": "setDeactivationDate",
-        "package": "org.kmipkit.extensions",
-        "parameters": [],
-        "returnType": "ClientBatchItem"
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderSetDeactivationDate",
+        "method": "deactivationDate",
+        "package": "org.kmipkit.fluent",
+        "parameters": [
+          {
+            "name": "unixSeconds",
+            "type": "long"
+          }
+        ],
+        "returnType": "DeactivateBuilder"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -375124,16 +375268,22 @@
       },
       "id": "kmip30_operation_builder_set_asynchronous_indicator",
       "java": {
-        "class": "Kmip30OperationHandle",
+        "class": "Kmip30BuilderBase",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "method": "setAsynchronousIndicator",
-        "package": "org.kmipkit.extensions",
-        "parameters": [],
-        "returnType": "ClientBatchItem"
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderSetAsynchronousIndicator",
+        "method": "asynchronousIndicator",
+        "package": "org.kmipkit.fluent",
+        "parameters": [
+          {
+            "name": "value",
+            "type": "long"
+          }
+        ],
+        "returnType": "T"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -375186,16 +375336,17 @@
       },
       "id": "kmip30_operation_builder_validate",
       "java": {
-        "class": "Kmip30OperationHandle",
+        "class": "Kmip30BuilderBase",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderValidate",
         "method": "validate",
-        "package": "org.kmipkit.extensions",
+        "package": "org.kmipkit.fluent",
         "parameters": [],
-        "returnType": "ClientBatchItem"
+        "returnType": "void"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -375255,14 +375406,15 @@
       },
       "id": "kmip30_operation_builder_build_batch_item",
       "java": {
-        "class": "Kmip30OperationHandle",
+        "class": "Kmip30BuilderBase",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderBuildBatchItem",
         "method": "build",
-        "package": "org.kmipkit.extensions",
+        "package": "org.kmipkit.fluent",
         "parameters": [],
         "returnType": "ClientBatchItem"
       },
@@ -375336,16 +375488,21 @@
       },
       "id": "kmip30_operation_builder_execute_v1",
       "java": {
-        "class": "Kmip30OperationHandle",
+        "class": "Kmip30BuilderBase",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
         "method": "execute",
-        "package": "org.kmipkit.extensions",
-        "parameters": [],
-        "returnType": "ClientBatchItem"
+        "package": "org.kmipkit.fluent",
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "returnType": "ClientBatchResponse"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -375424,16 +375581,21 @@
       },
       "id": "kmip30_operation_builder_execute_with_options_v1",
       "java": {
-        "class": "Kmip30OperationHandle",
+        "class": "Kmip30BuilderBase",
         "errorCategories": [
           "invalid_input",
           "resource_limit",
           "internal"
         ],
-        "method": "execute",
-        "package": "org.kmipkit.extensions",
-        "parameters": [],
-        "returnType": "ClientBatchItem"
+        "method": "withOptions",
+        "package": "org.kmipkit.fluent",
+        "parameters": [
+          {
+            "name": "options",
+            "type": "RequestOptions"
+          }
+        ],
+        "returnType": "T"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -375499,10 +375661,16 @@
           "resource_limit",
           "internal"
         ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_createCredentialObjectCertificate",
         "method": "certificate",
         "package": "org.kmipkit.fluent",
-        "parameters": [],
-        "returnType": "ClientBatchItem"
+        "parameters": [
+          {
+            "name": "certificate",
+            "type": "TtlvItem"
+          }
+        ],
+        "returnType": "CreateCredentialObject"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -375603,10 +375771,32 @@
           "resource_limit",
           "internal"
         ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_createCredentialObjectPassword",
         "method": "password",
         "package": "org.kmipkit.fluent",
-        "parameters": [],
-        "returnType": "ClientBatchItem"
+        "parameters": [
+          {
+            "name": "password",
+            "type": "SecretText"
+          },
+          {
+            "name": "passwordSalt",
+            "type": "SecretBytes"
+          },
+          {
+            "name": "saltAlgorithm",
+            "type": "Long"
+          },
+          {
+            "name": "saltedPassword",
+            "type": "SecretBytes"
+          },
+          {
+            "name": "iterationCount",
+            "type": "Integer"
+          }
+        ],
+        "returnType": "CreateCredentialObject"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -375701,10 +375891,32 @@
           "resource_limit",
           "internal"
         ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_createCredentialObjectDevice",
         "method": "device",
         "package": "org.kmipkit.fluent",
-        "parameters": [],
-        "returnType": "ClientBatchItem"
+        "parameters": [
+          {
+            "name": "serial",
+            "type": "String"
+          },
+          {
+            "name": "identifier",
+            "type": "String"
+          },
+          {
+            "name": "network",
+            "type": "String"
+          },
+          {
+            "name": "machine",
+            "type": "String"
+          },
+          {
+            "name": "media",
+            "type": "String"
+          }
+        ],
+        "returnType": "CreateCredentialObject"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -375788,10 +376000,24 @@
           "resource_limit",
           "internal"
         ],
-        "method": "password",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_createCredentialObjectHashedPassword",
+        "method": "hashedPassword",
         "package": "org.kmipkit.fluent",
-        "parameters": [],
-        "returnType": "ClientBatchItem"
+        "parameters": [
+          {
+            "name": "hashedUsernamePassword",
+            "type": "SecretBytes"
+          },
+          {
+            "name": "hashedPasswordUsername",
+            "type": "SecretBytes"
+          },
+          {
+            "name": "hashingAlgorithm",
+            "type": "Long"
+          }
+        ],
+        "returnType": "CreateCredentialObject"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -375900,10 +376126,36 @@
           "resource_limit",
           "internal"
         ],
-        "method": "password",
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_createCredentialObjectOneTimePassword",
+        "method": "oneTimePassword",
         "package": "org.kmipkit.fluent",
-        "parameters": [],
-        "returnType": "ClientBatchItem"
+        "parameters": [
+          {
+            "name": "algorithm",
+            "type": "long"
+          },
+          {
+            "name": "digest",
+            "type": "Long"
+          },
+          {
+            "name": "serial",
+            "type": "String"
+          },
+          {
+            "name": "seed",
+            "type": "SecretBytes"
+          },
+          {
+            "name": "interval",
+            "type": "Long"
+          },
+          {
+            "name": "digits",
+            "type": "Integer"
+          }
+        ],
+        "returnType": "CreateCredentialObject"
       },
       "legacyRegistry": false,
       "ordering": "not-applicable",
@@ -375976,6 +376228,7 @@
           "resource_limit",
           "internal"
         ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseKmip30Identifier",
         "method": "kmip30Identifier",
         "package": "org.kmipkit.extensions",
         "parameters": [],
@@ -376049,6 +376302,7 @@
           "resource_limit",
           "internal"
         ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseEncapsulateData",
         "method": "encapsulateData",
         "package": "org.kmipkit.extensions",
         "parameters": [],
