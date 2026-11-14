@@ -895,6 +895,69 @@ static bool ordered_batch_response_item_accessors_match(
     return valid;
 }
 
+static bool single_item_get_response_accessors_match(
+    kmipkit_client_batch_item_response_t *response_item,
+    int32_t *out_status) {
+    static const uint8_t expected_identifier[] = "fixture-key-1";
+    static const uint8_t expected_batch_item_id[] = "interop-get";
+    kmipkit_client_batch_item_metadata_v1_t metadata = {
+        .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v1_t),
+        .abi_version = 1
+    };
+    uint8_t header_present = 0;
+    kmipkit_ttlv_structure_t *header = NULL;
+    kmipkit_ttlv_structure_view_t *header_view = NULL;
+    uint64_t header_item_count = 0;
+    uint8_t item_id_present = 0;
+    kmipkit_byte_span_v1_t item_id = {0};
+    uint8_t correlation_present = 1;
+    kmipkit_byte_span_v1_t correlation = {0};
+    uint8_t get_present = 0;
+    uint8_t payload_present = 0;
+    uint32_t object_type = 0;
+    kmipkit_unique_identifier_v1_t identifier = {
+        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+        .abi_version = 1
+    };
+    kmipkit_ttlv_structure_t *any_object = NULL;
+
+    int32_t status = kmipkit_client_batch_item_response_metadata_v1(
+        response_item, &metadata);
+    if (status == 0) status = kmipkit_client_batch_item_response_header_ttlv(
+        response_item, &header_present, &header);
+    if (status == 0 && header_present && header)
+        status = kmipkit_ttlv_structure_view(header, &header_view);
+    if (status == 0 && header_view)
+        status = kmipkit_ttlv_structure_view_item_count(header_view, &header_item_count);
+    if (status == 0) status = kmipkit_client_batch_item_response_unique_batch_item_id(
+        response_item, &item_id_present, &item_id);
+    if (status == 0) status = kmipkit_client_batch_item_response_pending_correlation_value(
+        response_item, &correlation_present, &correlation);
+    if (status == 0) status = kmipkit_client_batch_item_response_get(
+        response_item, &get_present, &payload_present, &object_type,
+        &identifier, &any_object);
+
+    bool valid = status == 0 &&
+        metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS &&
+        metadata.has_result_reason == 0 && header_present != 0 &&
+        header_view != NULL && header_item_count > 0 && item_id_present != 0 &&
+        item_id.data != NULL && item_id.length == sizeof(expected_batch_item_id) - 1 &&
+        memcmp(item_id.data, expected_batch_item_id, sizeof(expected_batch_item_id) - 1) == 0 &&
+        correlation_present == 0 && correlation.data == NULL && correlation.length == 0 &&
+        get_present != 0 && payload_present != 0 &&
+        object_type == KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY && any_object != NULL &&
+        identifier.kind == KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING &&
+        identifier.text_length == sizeof(expected_identifier) - 1 && identifier.text_data != NULL &&
+        memcmp(identifier.text_data, expected_identifier, sizeof(expected_identifier) - 1) == 0;
+    if (status == 0 && !valid) status = KMIPKIT_ERROR_INVALID_INPUT;
+
+    if (any_object) kmipkit_ttlv_structure_release(any_object);
+    if (header_view) kmipkit_ttlv_structure_view_release(header_view);
+    if (header) kmipkit_ttlv_structure_release(header);
+    *out_status = status;
+    return valid;
+}
+
 static bool check_response_matches_created_key(
     kmipkit_client_batch_item_response_t *response_item,
     const kmipkit_unique_identifier_v1_t *created_identifier,
@@ -7188,6 +7251,13 @@ create_key_pair_cleanup:
         outcome.library_failed = true;
         snprintf(outcome.result_reason, sizeof(outcome.result_reason),
                  "KMIPKit could not read the batch result (status %d)", status);
+        goto cleanup;
+    }
+    if (single_item_batch_options_workflow &&
+        !single_item_get_response_accessors_match(response_item, &status)) {
+        outcome.library_failed = status != 0;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit did not preserve the single-item Get response accessors");
         goto cleanup;
     }
     kmipkit_client_batch_item_metadata_v2_t metadata = {
