@@ -141,6 +141,44 @@ class RouteMatrixTests(unittest.TestCase):
         result = TreeAbi(INSTALL / 'lib/libkmipkit_ffi.so').roundtrip(encode(request))
         self.assertIn('kmipkit_request_message_from_ttlv', result['invoked_symbols'])
 
+    def test_optional_request_header_fields_use_typed_request_fixtures(self):
+        """OASIS KMIP 2.0/2.1 §8.2 defines optional Request Header branches (0092-FR-003)."""
+        from artifact_support import INSTALL, ROOT
+        from route_ttlv import TreeAbi, encode
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        tags = self.runner.catalog_tag_values(catalog)
+        values = {
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ASYNCHRONOUS-INDICATOR':
+                ('Asynchronous Indicator', 6, bytes(8)),
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ATTESTATION-CAPABLE-INDICATOR':
+                ('Attestation Capable Indicator', 6, bytes(8)),
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ATTESTATION-TYPE':
+                ('Attestation Type', 5, (1).to_bytes(4, 'big')),
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION':
+                ('Batch Error Continuation Option', 5, (1).to_bytes(4, 'big')),
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-CLIENT-CORRELATION-VALUE':
+                ('Client Correlation Value', 8, b'client-correlation'),
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-SERVER-CORRELATION-VALUE':
+                ('Server Correlation Value', 8, b'server-correlation'),
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP':
+                ('Time Stamp', 9, (1760000000).to_bytes(8, 'big', signed=True)),
+        }
+        abi = TreeAbi(INSTALL / 'lib/libkmipkit_ffi.so')
+        for target_id, (name, kind, value) in values.items():
+            with self.subTest(target_id=target_id):
+                target = next(item for item in catalog['normative_targets']
+                              if item['target_id'] == target_id)
+                fixtures = self.runner.generic_tree_fixtures(target, catalog, tags, '2.0')
+                self.assertIsNotNone(fixtures)
+                request = fixtures[0]
+                self.assertEqual(request[0], tags['Request Message'])
+                header = next(item for item in request[2] if item[0] == tags['Request Header'])
+                field = next(item for item in header[2] if item[0] == tags[name])
+                self.assertEqual((field[1], field[2]), (kind, value))
+                result = abi.roundtrip(encode(request))
+                self.assertIn('kmipkit_request_message_from_ttlv', result['invoked_symbols'])
+
     def test_get_usage_allocation_has_an_executable_controlled_peer_recipe(self):
         import route_peer
         from artifact_support import ROOT
