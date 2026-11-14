@@ -482,6 +482,8 @@ def main() -> int:
     expected_operations += (10, 12, 10, 12, 10, 12, 10, 12)
     expected_operations += (10, 12)
     expected_operations += registered_key_batch
+    expected_operations += registered_key_batch * 2
+    expected_cases += ("test-op-encrypt", "test-op-decrypt")
     if protocol_version == "2.0":
         expected_operations += (45, 45, 46)
         expected_cases += ("test-op-login", "test-op-logout")
