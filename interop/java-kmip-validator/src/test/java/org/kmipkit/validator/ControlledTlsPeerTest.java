@@ -700,6 +700,7 @@ class ControlledTlsPeerTest {
             appendExtensionInformationRouteEvents(events, protocolVersion);
             appendProfileInformationRouteEvents(events, protocolVersion);
             appendServerInformationRouteEvents(events, protocolVersion);
+            appendUsageLimitsRouteEvents(events, protocolVersion);
             LocalCatalogRouteChecks.executeTags(readRouteEvidenceCatalog(), protocolVersion, genericOnlyTagCaseIds(),
                     invocation -> appendLocalCatalogInvocation(events, protocolVersion, invocation));
             Set<String> typedTagIdentityCases = missingTypedTagIdentityCaseIds(events, protocolVersion);
@@ -1176,6 +1177,8 @@ class ControlledTlsPeerTest {
         int serverInformationRouteEventCount = KMIP_2_0_AND_2_1.size()
                 * (GENERIC_STRUCTURE_ROUTE_IDS.size() + SERVER_INFORMATION_MEMBER_FIXTURES.stream()
                         .mapToInt(fixture -> fixture.anyEncoding() ? 3 : 4).sum());
+        int usageLimitsRouteEventCount = KMIP_2_0_AND_2_1.size()
+                * (GENERIC_STRUCTURE_ROUTE_IDS.size() + 4 * USAGE_LIMITS_MEMBER_FIXTURES.size());
         int objectTypeMemberRouteEventCount = 4;
         int constraintStructureRouteEventCount = 2 * GENERIC_STRUCTURE_ROUTE_IDS.size();
         int pendingCorrelationAccessorEventCount = KMIP_2_0_AND_2_1.size();
@@ -1219,6 +1222,7 @@ class ControlledTlsPeerTest {
                         + extensionInformationRouteEventCount
                         + profileInformationRouteEventCount
                         + serverInformationRouteEventCount
+                        + usageLimitsRouteEventCount
                         + objectTypeMemberRouteEventCount
                         + constraintStructureRouteEventCount
                         + pendingCorrelationAccessorEventCount
@@ -5789,6 +5793,133 @@ class ControlledTlsPeerTest {
         }
         appendGenericStructureRouteEvents(events, SERVER_INFORMATION_CASE_ID,
                 SERVER_INFORMATION_TARGET_ID, protocolVersion, treeHash);
+    }
+
+    // OASIS KMIP 2.0 §7.34 Table 354 and KMIP 2.1 §7.40 Table 392.
+    private static void appendUsageLimitsRouteEvents(ArrayNode events, String protocolVersion)
+            throws Exception {
+        CodecLimits limits = CodecLimits.defaults();
+        byte[] wire = usageLimitsWire();
+        String treeHash = normalizedTreeSha256(wire);
+        try (TtlvStructure fields = usageLimitsFields(limits);
+                TtlvValue value = TtlvValue.structure(fields, limits);
+                RawTag rawTag = RawTag.fromRaw(0x420095);
+                Tag tag = rawTag.checked();
+                TtlvItem item = TtlvItem.create(tag, value, limits);
+                var view = item.view();
+                Tag viewedTag = view.tag();
+                var viewedValue = view.value();
+                var viewedFields = viewedValue.structure()) {
+            assertEquals(0x420095, viewedTag.raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertUsageLimitsFields(viewedFields);
+        }
+        try (TtlvItem decoded = TtlvCodec.decode(wire);
+                var view = decoded.view();
+                Tag viewedTag = view.tag();
+                var viewedValue = view.value();
+                var viewedFields = viewedValue.structure()) {
+            assertEquals(0x420095, viewedTag.raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertUsageLimitsFields(viewedFields);
+        }
+        for (UsageLimitsMemberFixture fixture : USAGE_LIMITS_MEMBER_FIXTURES) {
+            appendUsageLimitsMemberRouteEvents(events, fixture, protocolVersion, limits);
+        }
+        appendGenericStructureRouteEvents(events, USAGE_LIMITS_CASE_ID,
+                USAGE_LIMITS_TARGET_ID, protocolVersion, treeHash);
+    }
+
+    private static TtlvStructure usageLimitsFields(CodecLimits limits) {
+        TtlvStructure fields = TtlvStructure.create();
+        for (UsageLimitsMemberFixture fixture : USAGE_LIMITS_MEMBER_FIXTURES) {
+            TtlvValue value = fixture.itemType() == TtlvItemType.LongInteger
+                    ? TtlvValue.LongInteger(fixture.value())
+                    : TtlvValue.Enumeration(fixture.value());
+            fields = appendTtlvItem(fields, fixture.rawTag(), value, limits);
+        }
+        return fields;
+    }
+
+    private static byte[] usageLimitsWire() throws Exception {
+        return structure(0x420095,
+                item(0x420097, TtlvItemType.LongInteger.code(), longBytes(100)),
+                item(0x420096, TtlvItemType.LongInteger.code(), longBytes(73)),
+                item(0x420098, TtlvItemType.Enumeration.code(), intBytes(2)));
+    }
+
+    private static void assertUsageLimitsFields(TtlvStructureView fields) throws Exception {
+        assertEquals(3, fields.itemCount(),
+                "KMIP 2.0/2.1 Usage Limits contains its three required members.");
+        for (int index = 0; index < USAGE_LIMITS_MEMBER_FIXTURES.size(); index++) {
+            UsageLimitsMemberFixture fixture = USAGE_LIMITS_MEMBER_FIXTURES.get(index);
+            try (var member = fields.itemAt(index);
+                    Tag tag = member.tag();
+                    var value = member.value()) {
+                assertEquals(fixture.rawTag(), tag.raw());
+                assertEquals(fixture.itemType(), member.itemType());
+                if (fixture.itemType() == TtlvItemType.LongInteger) {
+                    assertEquals(fixture.value(), value.longInteger());
+                } else {
+                    assertEquals(fixture.value(), value.enumeration());
+                }
+            }
+        }
+    }
+
+    private static void appendUsageLimitsMemberRouteEvents(ArrayNode events,
+            UsageLimitsMemberFixture fixture, String protocolVersion, CodecLimits limits) throws Exception {
+        byte[] value = fixture.itemType() == TtlvItemType.LongInteger
+                ? longBytes(fixture.value()) : intBytes(Math.toIntExact(fixture.value()));
+        byte[] wire = item(fixture.rawTag(), fixture.itemType().code(), value);
+        String treeHash = normalizedTreeSha256(wire);
+        TtlvValue memberValue = fixture.itemType() == TtlvItemType.LongInteger
+                ? TtlvValue.LongInteger(fixture.value()) : TtlvValue.Enumeration(fixture.value());
+        try (memberValue;
+                RawTag rawTag = RawTag.fromRaw(fixture.rawTag());
+                Tag tag = rawTag.checked();
+                TtlvItem created = TtlvItem.create(tag, memberValue, limits);
+                var view = created.view();
+                Tag viewedTag = view.tag();
+                var viewedValue = view.value()) {
+            assertEquals(fixture.rawTag(), viewedTag.raw());
+            assertEquals(fixture.itemType(), view.itemType());
+            assertUsageLimitsMemberValue(viewedValue, fixture);
+        }
+        try (TtlvItem decoded = TtlvCodec.decode(wire);
+                var view = decoded.view();
+                Tag viewedTag = view.tag();
+                var viewedValue = view.value()) {
+            assertEquals(fixture.rawTag(), viewedTag.raw());
+            assertEquals(fixture.itemType(), view.itemType());
+            assertUsageLimitsMemberValue(viewedValue, fixture);
+        }
+        String valueRoute = fixture.itemType() == TtlvItemType.LongInteger
+                ? "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.longinteger"
+                : "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration";
+        appendRouteEvent(events, fixture.caseId(), valueRoute, fixture.targetId(),
+                fixture.itemType() == TtlvItemType.LongInteger
+                        ? "org.kmipkit.ttlv.TtlvValue.LongInteger" : "org.kmipkit.ttlv.TtlvValue.Enumeration",
+                null, null, "construct", protocolVersion, null, treeHash, null);
+        appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_item.create", fixture.targetId(),
+                "org.kmipkit.ttlv.TtlvItem.create", null, null, "construct", protocolVersion,
+                null, treeHash, null);
+        appendRouteEvent(events, fixture.caseId(),
+                "java.generic-ttlv.function.ttlv_item_view_from_item", fixture.targetId(),
+                "org.kmipkit.ttlv.TtlvItem.view", null, null, "decode", protocolVersion,
+                null, null, treeHash);
+        appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_codec.decode", fixture.targetId(),
+                "org.kmipkit.ttlv.TtlvCodec.decode", null, null, "decode", protocolVersion,
+                null, null, treeHash);
+    }
+
+    private static void assertUsageLimitsMemberValue(org.kmipkit.ttlv.TtlvValueView value,
+            UsageLimitsMemberFixture fixture) throws Exception {
+        if (fixture.itemType() == TtlvItemType.LongInteger) {
+            assertEquals(fixture.value(), value.longInteger());
+        } else {
+            assertEquals(fixture.value(), value.enumeration());
+        }
     }
 
     private static TtlvStructure serverInformationFields(CodecLimits limits) {
