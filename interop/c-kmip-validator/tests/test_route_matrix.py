@@ -59,6 +59,22 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(self.runner.pending_reason({'public_api_symbol': 'kmipkit_client_batch_item_sign'}),
                          'validator_recipe_pending')
 
+    def test_request_message_tag_uses_a_complete_typed_request_fixture(self):
+        from artifact_support import ROOT
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        target = next(item for item in catalog['normative_targets']
+                      if item['target_id'] == 'KMIPKIT-ELEM-TAG-420078')
+        tags = self.runner.catalog_tag_values(catalog)
+
+        fixtures = self.runner.generic_tree_fixtures(target, catalog, tags, '2.0')
+
+        self.assertIsNotNone(fixtures)
+        request = fixtures[0]
+        self.assertEqual((request[0], request[1]), (tags['Request Message'], 1))
+        self.assertEqual([item[0] for item in request[2]],
+                         [tags['Request Header'], tags['Batch Item']])
+
     def test_get_usage_allocation_has_an_executable_controlled_peer_recipe(self):
         import route_peer
         from artifact_support import ROOT
