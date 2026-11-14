@@ -47,6 +47,17 @@ REQUEST_HEADER_MULTI_ITEM_OPTION_TARGETS = frozenset({
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION',
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION',
 })
+REQUEST_MESSAGE_CONTEXT_TARGETS = frozenset({
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-1-BATCH-ITEM',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-1-REQUEST-HEADER',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-PROTOCOL-VERSION',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-REQUEST-HEADER',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-3-BATCH-ITEM',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-3-OPERATION',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-3-REQUEST-PAYLOAD',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-3-UNIQUE-BATCH-ITEM-ID',
+})
 OUTPUT_ROOT = ROOT / 'interop/c-kmip-validator/build'
 
 
@@ -299,6 +310,21 @@ def _request_message_with_two_items(fixture: tuple, tags: dict[str, int]) -> tup
     return fixture[0], fixture[1], message
 
 
+def _request_message_with_unique_item_id(fixture: tuple, tags: dict[str, int]) -> tuple:
+    """Add the optional request Batch Item identifier before its payload."""
+    message = list(fixture[2])
+    batch_index = next(index for index, item in enumerate(message)
+                       if item[0] == tags['Batch Item'])
+    batch_item = message[batch_index]
+    fields = list(batch_item[2])
+    payload_index = next(index for index, item in enumerate(fields)
+                         if item[0] == tags['Request Payload'])
+    fields.insert(payload_index,
+                  (tags['Unique Batch Item ID'], 8, b'route-batch-item'))
+    message[batch_index] = (batch_item[0], batch_item[1], fields)
+    return fixture[0], fixture[1], message
+
+
 def _request_header_field_data(name: str, kind: int, value: object, catalog: dict,
                                protocol_version: str) -> bytes | None:
     if kind == 5:
@@ -335,6 +361,13 @@ def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
     if target.get('kind') in {'tag', 'message_field'} and target.get('name') == 'Request Message':
         fixture = _request_message_fixture(protocol_version, tags, catalog)
         return [fixture] if fixture is not None else None
+    if target.get('target_id') in REQUEST_MESSAGE_CONTEXT_TARGETS:
+        fixture = _request_message_fixture(protocol_version, tags, catalog)
+        if fixture is None:
+            return None
+        if target.get('target_id') == 'KMIPKIT-ELEM-MESSAGE-FIELD-8-3-UNIQUE-BATCH-ITEM-ID':
+            fixture = _request_message_with_unique_item_id(fixture, tags)
+        return [fixture]
     header_field = _request_header_field_fixture(target, catalog, tags, protocol_version)
     if header_field is not None:
         fixture = _request_message_fixture(protocol_version, tags, catalog)
