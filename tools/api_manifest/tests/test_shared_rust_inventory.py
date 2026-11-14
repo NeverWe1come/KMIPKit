@@ -80,6 +80,14 @@ class SharedRustInventoryTests(unittest.TestCase):
         self.assertIn("KMIPKIT-0044-FR-001", owner_requirements)
         self.assertIn("KMIPKIT-0044-FR-007", owner_requirements)
 
+    def test_approved_owner_lookup_reads_bold_requirement_ids_without_trailing_colon(self) -> None:
+        owner_requirements = AUDIT._read_approved_owner("KMIPKIT-0095", REPO_ROOT)
+
+        self.assertEqual(
+            {f"KMIPKIT-0095-FR-{index:03}" for index in range(1, 6)},
+            owner_requirements,
+        )
+
     def test_direct_maintainer_approval_record_authorizes_approved_implementation_scope(self) -> None:
         owner_requirements = AUDIT._read_approved_owner(
             "KMIPKIT-0053",
@@ -122,10 +130,10 @@ class SharedRustInventoryTests(unittest.TestCase):
     def test_inventory_accounts_for_exact_approved_rust_exclusions_separately(self) -> None:
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
-        self.assertEqual(inventory["approvedExcludedRustDeclarationCount"], 20717)
+        self.assertEqual(inventory["approvedExcludedRustDeclarationCount"], 21063)
         self.assertEqual(
             sum(record["excludedDeclarationCount"] for record in inventory["crates"]),
-            20717,
+            21063,
         )
         self.assertEqual(
             sum(record["blockedDeclarationCount"] for record in inventory["crates"]),
@@ -146,11 +154,11 @@ class SharedRustInventoryTests(unittest.TestCase):
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
         rust_counts = self.rust_report["counts"]
-        self.assertEqual(inventory["observedRustDeclarationCount"], 29862)
-        self.assertEqual(inventory["mappedRustDeclarationCount"], 4759)
-        self.assertEqual(rust_counts["observed"], 29862)
-        self.assertEqual(rust_counts["matched"], 9145)
-        self.assertEqual(rust_counts["excluded"], 20717)
+        self.assertEqual(inventory["observedRustDeclarationCount"], 30707)
+        self.assertEqual(inventory["mappedRustDeclarationCount"], 5117)
+        self.assertEqual(rust_counts["observed"], 30707)
+        self.assertEqual(rust_counts["matched"], 9644)
+        self.assertEqual(rust_counts["excluded"], 21063)
         self.assertEqual(rust_counts["observed"], rust_counts["matched"] + rust_counts["excluded"])
         self.assertEqual(
             inventory["approvedExcludedRustDeclarationCount"],
@@ -520,6 +528,24 @@ class SharedRustInventoryTests(unittest.TestCase):
 
         with self.assertRaises(AUDIT.InventoryError):
             AUDIT.build_inventory(altered, self.rust_report, REPO_ROOT)
+
+    def test_c_only_declaration_in_shared_capability_does_not_require_rust_mapping(self) -> None:
+        manifest = {
+            "capabilities": [{
+                "capabilityId": "shared_fluent_api",
+                "capabilityState": "draft",
+                "parityScope": "four-language",
+            }],
+            "publicDeclarations": [{
+                "declarationId": "KMIPKIT-0116:c:c_only_builder",
+                "capabilityId": "shared_fluent_api",
+                "declarationState": "declared",
+                "parityScope": "c-only",
+                "languageMappings": {"c": {"packageId": "c-kmipkit", "name": "c_only_builder"}},
+            }],
+        }
+
+        AUDIT._verify_ready_mapping_exports(manifest, {"matched": []})
 
     def test_unapproved_rust_only_owner_is_rejected(self) -> None:
         altered = json.loads(json.dumps(self.manifest))

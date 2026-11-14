@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import json
 import unittest
 from pathlib import Path
@@ -14,6 +15,28 @@ ROOT = Path(__file__).resolve().parents[3]
 
 
 class NamedValueGeneratorTests(unittest.TestCase):
+    def test_manifest_reconciliation_preserves_reviewed_requirement_order(self) -> None:
+        declaration = {
+            "declarationId": "existing",
+            "packageId": "rust-kmipkit",
+            "kind": "constant",
+            "exportName": "example",
+            "capabilityId": "named_protocol_values",
+            "requirementIds": ["KMIPKIT-0047-FR-009", "KMIPKIT-0047-FR-005"],
+            "declarationState": "declared",
+            "parityScope": "four-language",
+            "approvalSource": reconcile_named_value_manifest.APPROVAL_SOURCE,
+            "languageMappings": {"rust": {"packageId": "rust-kmipkit", "name": "example"}},
+        }
+        existing = copy.deepcopy(declaration)
+        existing["requirementIds"] = ["KMIPKIT-0047-FR-005", "KMIPKIT-0047-FR-009"]
+        reconciled = reconcile_named_value_manifest.reconcile(
+            {"requirementIds": [], "capabilities": [], "publicDeclarations": [existing]},
+            [declaration],
+            {"rust": ["example"]},
+        )
+        self.assertEqual(existing["requirementIds"], reconciled["publicDeclarations"][0]["requirementIds"])
+
     def test_version_delta_catalog_maps_exact_kmip_2_1_and_3_0_assignments(self) -> None:
         versioned = generate_named_values.load_versioned_values(ROOT)
         rendered = generate_named_values.render_versioned_outputs(versioned)
@@ -62,6 +85,9 @@ class NamedValueGeneratorTests(unittest.TestCase):
         self.assertIn("KMIPKIT_V3_0_OPERATION_name", rendered["c"])
         self.assertIn("V3_0_OPERATION_CREATE_GROUP", rendered["java"])
         self.assertIn("V3_0_OBJECT_TYPE_PASSWORD_CREDENTIAL", rendered["python"])
+        self.assertIn("V3_0_CREDENTIAL_TYPE_PASSWORD = 0x00000007", rendered["java"])
+        self.assertIn("V3_0_CREDENTIAL_TYPE_CERTIFICATE = 0x00000008", rendered["python"])
+        self.assertIn("KMIPKIT_V3_0_CREDENTIAL_TYPE_name(uint32_t raw)", rendered["c"])
         self.assertNotIn("RE_ENCRYPT", rendered["rust"])
         self.assertNotIn("CREDENTIAL = 0x0000000D", rendered["rust"])
 
@@ -127,6 +153,26 @@ class NamedValueGeneratorTests(unittest.TestCase):
         self.assertEqual(
             "org.kmipkit.protocol.KmipValues.v3_0OperationName",
             lookup["languageMappings"]["java"]["name"],
+        )
+
+        credential_type_name = (
+            "kmipkit::protocol::named_values_generated::values::versions::"
+            "v3_0::enumeration::credential_type::PASSWORD"
+        )
+        credential_type = next(
+            row for row in declarations if row["exportName"] == credential_type_name
+        )
+        self.assertEqual(
+            {
+                "rust": credential_type_name,
+                "c": "KMIPKIT_V3_0_CREDENTIAL_TYPE_PASSWORD",
+                "java": "org.kmipkit.protocol.KmipValues.V3_0_CREDENTIAL_TYPE_PASSWORD",
+                "python": "kmipkit.protocol_values.V3_0_CREDENTIAL_TYPE_PASSWORD",
+            },
+            {
+                language: mapping["name"]
+                for language, mapping in credential_type["languageMappings"].items()
+            },
         )
 
     def test_public_manifest_bound_covers_current_input_with_bounded_headroom(self) -> None:

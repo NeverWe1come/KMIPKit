@@ -7084,7 +7084,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         )
         header_versioned_macros = set(
             re.findall(
-                r"^#define (KMIPKIT_V(?:2_1|3_0)_(?:OPERATION|OBJECT_TYPE|OBJECT_CLASS)_\w+)",
+                r"^#define (KMIPKIT_V(?:2_1|3_0)_(?:OPERATION|OBJECT_TYPE|OBJECT_CLASS|CREDENTIAL_TYPE)_\w+)",
                 header,
                 re.MULTILINE,
             )

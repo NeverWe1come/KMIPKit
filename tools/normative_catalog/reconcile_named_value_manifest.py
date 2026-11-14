@@ -438,6 +438,16 @@ def reconcile(manifest: dict[str, Any], declarations: list[dict[str, Any]], mapp
             and current.get("approvalSource", {}).get("path") != APPROVAL_SOURCE["path"]
         ):
             raise ValueError(f"named-value declaration conflicts with existing {declaration['declarationId']}")
+        if (
+            current is not None
+            and isinstance(current.get("requirementIds"), list)
+            and set(current["requirementIds"]) == set(declaration["requirementIds"])
+        ):
+            # Preserve the reviewed order when only the generated tuple order
+            # differs; otherwise regenerating a new versioned group rewrites
+            # every existing declaration for no semantic change.
+            declaration = dict(declaration)
+            declaration["requirementIds"] = current["requirementIds"]
         by_id[declaration["declarationId"]] = declaration
     existing_ids = {row["declarationId"] for row in existing_declarations}
     reconciled = [by_id[row["declarationId"]] for row in existing_declarations]

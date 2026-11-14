@@ -37,7 +37,8 @@ T102_BLOCKED_CANDIDATES = 0
 # KMIPKIT-0115 adds 62 Java/Python lifecycle facade declarations.
 # KMIPKIT-0116 inventory repair records all 179 previously untracked Rust
 # paths and approves 202 standard-library trait exclusions.
-T102_PUBLIC_DECLARATIONS = 16_884
+# KMIPKIT-0047 adds 27 generated KMIP 3.0 Credential Type declarations.
+T102_PUBLIC_DECLARATIONS = 16_911
 T102_KMIP30_DRAFT_ROUTE_DECLARATIONS = 36
 T102_APPROVED_EXCLUSIONS = 22_888
 T102_RUST_AUDIT_MANIFEST = 3_287

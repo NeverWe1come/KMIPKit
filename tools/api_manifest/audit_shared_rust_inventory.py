@@ -176,7 +176,7 @@ def _read_approved_owner(
     owner_requirements = set(re.findall(rf"\b{re.escape(owner_spec_id)}-FR-\d{{3}}\b", text))
     if not owner_requirements:
         local_requirement_ids = re.findall(
-            r"^\s*-\s+\*\*FR-(\d{3})\*\*:", text, re.MULTILINE
+            r"^\s*-\s+\*\*FR-(\d{3})\*\*", text, re.MULTILINE
         )
         owner_requirements = {
             f"{owner_spec_id}-FR-{requirement_id}"
@@ -278,7 +278,7 @@ def _verify_ready_mapping_exports(
         row
         for row in manifest.get("publicDeclarations", [])
         if row.get("declarationState") in {"declared", "verified"}
-        and capability_scopes.get(row.get("capabilityId")) != "c-only"
+        and row.get("parityScope", capability_scopes.get(row.get("capabilityId"))) != "c-only"
     ]
     shared_capability_ids = {
         row.get("capabilityId") for row in manifest.get("capabilities", [])

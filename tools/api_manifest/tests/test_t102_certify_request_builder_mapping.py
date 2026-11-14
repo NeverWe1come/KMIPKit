@@ -169,10 +169,11 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
 # fluent cryptographic operation builders.
 # Includes the approved KMIPKIT-0093 inventory reconciliation and Rust
 # CreateBuilder surface, the KMIPKIT-0114 C lifecycle helpers, the KMIPKIT-0115
-# Java/Python lifecycle facade, and KMIPKIT-0116 KMIP 3.0 fluent declarations
-# and Rust public-surface inventory. KMIPKIT-0093-FR-008 is traced on typed
+# Java/Python lifecycle facade, and KMIPKIT-0116 KMIP 3.0 fluent declarations,
+# Credential Type discriminator exports, and Rust public-surface inventory.
+# KMIPKIT-0093-FR-008 is traced on typed
 # operation result declarations and their Locate aliases.
-DECLARATIONS_SHA256 = "ce5106837da7dbf0a32dda5587906ea2bee17158475c121b2507c27c2df49d6e"
+DECLARATIONS_SHA256 = "623e1f3bbdadefee605b795a3037a446238de4a0686967326ff01e10b9c44835"
 # The approved KMIPKIT-0114 C lifecycle helpers extend five operation rows.
 OPERATIONS_SHA256 = "574b163b50c24b128219f644956cc21c990879c1a5174486cd5b8b9d609597ff"
 

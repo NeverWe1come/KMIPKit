@@ -282,3 +282,35 @@ the required `[WIP]` title and is stacked on KMIPKIT-0115. Head `4d21018ba`
 failed one Script contracts snapshot before this correction; commit `efb2d466`
 contains the fix and is pending a new hosted run. Keep the WIP marker until all
 required checks on the current PR head are green.
+
+## KMIP 3.0 Credential Type parity and renewed coverage work
+
+The KMIP 3.0 Create Credential review found that KMIP 3.0 Table 551 assigns
+Password the value 7 and Certificate the value 8. The shared credential type
+model now recognizes and round-trips both discriminators, and
+`CreateCredentialObject` derives these exact values for its Password and
+Certificate alternatives. The versioned values catalog, generated Rust/C/Java/
+Python values, public API mappings, traceability, and consumer fixtures were
+updated together. Existing KMIP 2.1 values remain unchanged. Java and Python
+tests also cover the omitted optional Device member and reject mismatched
+credential alternatives and invalid operation inputs.
+
+The earlier exact-head CI run `43557083586` failed only the changed-line
+coverage gate and its dependent CI summary; all remaining reported required
+checks passed on that earlier SHA. Local follow-up coverage was expanded with
+Rust FFI, Java, and Python consumer tests. The complete Python test suite passed
+1,373 tests with 92% coverage for `kmipkit.fluent`; the complete Java Maven
+suite passed; and the C ABI coverage test
+`public_c_kmip30_executes_all_seven_typed_routes_with_explicit_version`
+passed 1/1. `cargo fmt --all --check`, the named-value catalog check, and the
+API manifest generation check passed. The complete focused manifest regression
+command, including shared Rust inventory, KMIP 3.0 route/value mappings, v2
+schema, and the T102 Certify snapshot, passed 189 tests in 364.457 seconds.
+`git diff --check` passed as the final command in that verification sequence.
+
+The credential Red tests are in `ec0e884f7`; the Green implementation and
+cross-language coverage additions are in `c20f2f53f`. The manifest-report
+repairs and this updated evidence are prepared separately as Refactor work.
+Neither commit has been pushed to PR #213 yet. The PR remains a draft with
+`[WIP]`; hosted CI has not yet evaluated these changes. Its title must remain
+WIP until every required check passes on the current remote head.
