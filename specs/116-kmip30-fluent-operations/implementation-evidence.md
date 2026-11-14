@@ -299,7 +299,7 @@ The earlier exact-head CI run `43557083586` failed only the changed-line
 coverage gate and its dependent CI summary; all remaining reported required
 checks passed on that earlier SHA. Local follow-up coverage was expanded with
 Rust FFI, Java, and Python consumer tests. The complete Python test suite passed
-1,373 tests with 92% coverage for `kmipkit.fluent`; the complete Java Maven
+1,375 tests with 94% coverage for `kmipkit.fluent`; the complete Java Maven
 suite passed; and the C ABI coverage test
 `public_c_kmip30_executes_all_seven_typed_routes_with_explicit_version`
 passed 1/1. `cargo fmt --all --check`, the named-value catalog check, and the
@@ -308,9 +308,40 @@ command, including shared Rust inventory, KMIP 3.0 route/value mappings, v2
 schema, and the T102 Certify snapshot, passed 189 tests in 364.457 seconds.
 `git diff --check` passed as the final command in that verification sequence.
 
-The credential Red tests are in `ec0e884f7`; the Green implementation and
-cross-language coverage additions are in `c20f2f53f`. The manifest-report
-repairs and this updated evidence are prepared separately as Refactor work.
-Neither commit has been pushed to PR #213 yet. The PR remains a draft with
+The credential Red tests are in `9bf2c4887`; the Green implementation and
+cross-language coverage additions are in `646e995c9`. The manifest-report
+repairs are in Refactor `b70fa6644`; the final post-rebase evidence update is
+being recorded separately. These commits have not yet been pushed to PR #213.
+The PR remains a draft with
 `[WIP]`; hosted CI has not yet evaluated these changes. Its title must remain
 WIP until every required check passes on the current remote head.
+
+## Rebase and post-rebase validation
+
+The 0115 base advanced to `105d81303` with a new Python lifecycle validation
+test after the earlier 0116 snapshot. Rebased this branch onto that commit; the
+new local sequence preserves separate Red (`9bf2c4887`), Green
+(`646e995c9`), and Refactor (`b70fa6644`) commits. The inherited lifecycle test
+correction is recorded separately in `4372ad6f6`. The local branch still needs
+a lease-checked update to PR #213; hosted CI has not yet run on this rebased
+head.
+
+The new base test initially failed because it constructed `fluent.Request(None)`
+outside an expected-error assertion, despite the public constructor correctly
+rejecting a null client. Corrected the fixture to assert that rejection, then
+use a non-null stand-in for builder-only checks. The isolated regression passed
+1/1. The full Python suite then passed 1,375 tests in 43.03 seconds, with 94%
+coverage for `kmipkit.fluent`. Its first attempt without a temp override failed
+only because `/tmp` filled during native wheel assembly; rerunning with
+`TMPDIR=/home/ramp1953/.codex/tmp/kmipkit-0116` passed.
+
+Post-rebase local verification also passed the full Java Maven test suite,
+`cargo fmt --all --check`, and `cargo test -p kmipkit-protocol --all-features`
+(including all unit, integration, and three doctests). The protocol suite's
+first attempt hit a linker bus error while `/tmp` was full; after clearing only
+the pytest temp directories created by these runs and setting `TMPDIR` to the
+worktree-volume temp directory, the complete package command passed. The full
+`cargo test -p kmipkit-ffi --all-features` command passed: 480 FFI unit tests,
+58 compiled C consumers, and the 56-route parity test. The separate 189-test
+manifest/audit suite passed before this rebase; exact-head hosted CI remains the
+final cross-platform check.
