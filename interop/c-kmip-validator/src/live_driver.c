@@ -4306,7 +4306,47 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                  "KMIPKit returned an unexpected response item count");
         goto cleanup;
     }
-    if (interop_workflow) {
+    if (single_item_batch_options_workflow) {
+        static const uint8_t fixture_identifier[] = "fixture-key-1";
+        static const uint8_t expected_batch_item_id[] = "interop-get";
+        const kmipkit_unique_identifier_v1_t expected_identifier = {
+            .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+            .abi_version = 1,
+            .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
+            .text_data = fixture_identifier,
+            .text_length = sizeof(fixture_identifier) - 1
+        };
+        kmipkit_client_batch_item_metadata_v2_t metadata = {
+            .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t),
+            .abi_version = 2
+        };
+        uint8_t id_present = 0;
+        kmipkit_byte_span_v1_t item_id = {0};
+        status = kmipkit_client_batch_response_item_at(response, 0, &response_item);
+        if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
+            response_item, &metadata);
+        if (status == 0) status = kmipkit_client_batch_item_response_unique_batch_item_id(
+            response_item, &id_present, &item_id);
+        bool response_matches = status == 0 && id_present && item_id.data &&
+            item_id.length == sizeof(expected_batch_item_id) - 1 &&
+            memcmp(item_id.data, expected_batch_item_id, sizeof(expected_batch_item_id) - 1) == 0 &&
+            metadata.operation == KMIPKIT_ENUMERATION_OPERATION_GET &&
+            metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS;
+        if (response_matches) {
+            response_matches = successful_read_batch_response_accessors_match(
+                response_item, &status) &&
+                get_response_matches_created_key(response_item, &expected_identifier, &status);
+        }
+        if (status != 0 || !response_matches) {
+            outcome.library_failed = status != 0;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit did not preserve the single-item Get response and Batch Item ID");
+            goto cleanup;
+        }
+        outcome.success = true;
+        outcome.library_validated = true;
+        goto cleanup;
+    } else if (interop_workflow) {
         for (uint64_t index = 0; status == 0 && index < 3; ++index) {
             kmipkit_client_batch_item_response_t **response_slot =
                 index == 0 ? &response_item : index == 1 ? &second_response_item :
