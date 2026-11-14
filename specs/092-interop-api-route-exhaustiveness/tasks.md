@@ -29,6 +29,10 @@
 - [x] T011 Execute C Sign through the installed public ABI and controlled KMIP
   peers for both protocol versions, all three encodings, and both supported
   transports; verify typed signature response data and object cleanup.
+- [x] T012 Execute the KMIP 2.0/2.1 Archive Unique Identifier request-present,
+  request-omitted, and required success-response fixtures through the installed
+  C ABI and controlled TLS peer across all six encoding/transport combinations
+  for each applicable version.
 
 T006 and T007 remain open until each separate language validator consumes the
 generated matrix, invokes every named public route, exchanges requests and

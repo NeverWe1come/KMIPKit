@@ -97,3 +97,33 @@ Destroy, explicit SHA-256/RSA parameters, the typed response Unique Identifier
 and Signature Data, and restoration of fixture state. The focused test and
 full local CTest suite pass 7/7. The full C route matrix, exact-head CI, and
 Rust/Java/Python parity remain open.
+
+For KMIPKIT-0092-FR-003, FR-005, and FR-009, the C Archive route also executes
+the four KMIP 2.0/2.1 §6.1.4 payload fixtures from Tables 158, 159, 173, and
+174 through the installed public ABI. The request fixtures exercise both
+Unique Identifier presence and omission; the response fixtures decode and
+check the required successful Unique Identifier. The controlled peer runs all
+six TTLV/JSON/XML and raw TLS/HTTPS combinations for each applicable version:
+24 checks passed, with Create setup, Revoke/Destroy cleanup, and final peer
+state restored. The request's omitted identifier passes a null optional
+identifier pointer to `kmipkit_client_batch_item_archive`; no raw TTLV message
+is sent. The full C route matrix, exact-head CI, and Rust/Java/Python parity
+remain open.
+
+### C Archive payload variants development evidence
+
+- Red commit `0e1a24c60`: the new focused test failed with zero checks because
+  the four normative local-model Archive payload cases had no controlled-peer
+  recipes.
+- Green commit `5395be5eb`: the C route now sends optional Unique Identifier
+  both present and omitted through the installed `kmipkit_client_batch_item_archive`
+  ABI, and validates required Archive success identifiers for both protocol
+  versions, all three encodings, and raw TLS/HTTPS.
+- Verification: the focused test passed 24/24 controlled-peer checks; full
+  `ctest --test-dir interop/c-kmip-validator/build --output-on-failure` passed
+  7/7, including the complete route-matrix contract suite. Artifact provenance
+  verification passed for pinned release commit
+  `489fafc79ef89db2524eafa7a6c6482f5cf75d97` with SHA-256
+  `912974f981dba88a89224c923275d8af3f3284cf50a45bfe29d2c3d33dfc4764`.
+- This is a bounded Archive slice. The full C route matrix, exact-head CI, and
+  Rust/Java/Python parity remain open.
