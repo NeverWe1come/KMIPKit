@@ -5038,6 +5038,168 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         strncmp(test_case->case_id, "test-async-cancel-result-", 25) == 0) {
         return execute_cancel_route(client, test_case->cancellation_result);
     }
+    if (strcmp(test_case->case_id, "test-op-create-key-pair") == 0) {
+        static const uint8_t private_identifier_bytes[] = "fixture-private-key-1";
+        static const uint8_t public_identifier_bytes[] = "fixture-public-key-1";
+        const kmipkit_unique_identifier_v1_t expected_private_identifier = {
+            .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+            .abi_version = 1,
+            .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
+            .text_data = private_identifier_bytes,
+            .text_length = sizeof(private_identifier_bytes) - 1
+        };
+        const kmipkit_unique_identifier_v1_t expected_public_identifier = {
+            .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+            .abi_version = 1,
+            .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
+            .text_data = public_identifier_bytes,
+            .text_length = sizeof(public_identifier_bytes) - 1
+        };
+        kmipkit_ttlv_structure_t *private_attributes = NULL;
+        kmipkit_ttlv_structure_t *public_attributes = NULL;
+        kmipkit_client_batch_item_t *create_item = NULL;
+        kmipkit_client_batch_t *create_batch = NULL;
+        kmipkit_client_batch_response_t *create_response = NULL;
+        kmipkit_client_batch_item_response_t *create_response_item = NULL;
+        kmipkit_client_batch_t *cleanup_batch = NULL;
+        kmipkit_client_batch_response_t *cleanup_response = NULL;
+        kmipkit_client_batch_item_t *private_destroy_item = NULL;
+        kmipkit_client_batch_item_t *public_destroy_item = NULL;
+        kmipkit_client_batch_item_response_t *private_destroy_response = NULL;
+        kmipkit_client_batch_item_response_t *public_destroy_response = NULL;
+        kmipkit_client_batch_item_metadata_v2_t metadata = {
+            .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t),
+            .abi_version = 2
+        };
+        kmipkit_unique_identifier_v1_t private_identifier = {
+            .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1
+        };
+        kmipkit_unique_identifier_v1_t public_identifier = {
+            .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t), .abi_version = 1
+        };
+        uint8_t identifiers_present = 0;
+        uint64_t response_count = 0;
+        int32_t status = 0;
+        kmip_execution_outcome_t outcome = { .executed = true };
+
+        if (!create_rsa_key_attributes(client, &private_attributes) ||
+            !create_rsa_key_attributes(client, &public_attributes)) {
+            status = KMIPKIT_ERROR_INVALID_INPUT;
+        }
+        if (status == 0) status = kmipkit_client_batch_item_create_key_pair(
+            NULL, private_attributes, public_attributes, NULL, NULL, NULL, &create_item);
+        if (status == 0) status = set_batch_item_id(&create_item, "interop-create-key-pair");
+        if (status == 0) status = kmipkit_client_batch_create(&create_batch);
+        if (status == 0) status = kmipkit_client_batch_add_item(create_batch, &create_item);
+        if (status == 0 && client->username_env[0] != '\0') {
+            kmipkit_authentication_t *authentication = NULL;
+            if (!create_authentication(client, &authentication)) {
+                status = KMIPKIT_ERROR_INVALID_INPUT;
+            } else {
+                status = kmipkit_client_batch_set_authentication(create_batch, authentication);
+                if (status != 0) kmipkit_authentication_release(authentication);
+            }
+        }
+        if (status == 0) status = kmipkit_client_execute(
+            client->client, &create_batch, client->limits, &create_response);
+        if (status == 0) status = kmipkit_client_batch_response_item_count(
+            create_response, &response_count);
+        if (status == 0 && response_count == 1) status = kmipkit_client_batch_response_item_at(
+            create_response, 0, &create_response_item);
+        else if (status == 0) status = KMIPKIT_ERROR_INVALID_INPUT;
+        if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
+            create_response_item, &metadata);
+        if (status == 0) status = kmipkit_client_batch_item_response_create_key_pair(
+            create_response_item, &identifiers_present, &private_identifier, &public_identifier);
+        if (status != 0 || identifiers_present != 1 ||
+            metadata.operation != KMIPKIT_ENUMERATION_OPERATION_CREATE_KEY_PAIR ||
+            metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
+            outcome.library_failed = status != 0 || identifiers_present == 0;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit Create Key Pair did not return a successful typed response");
+            goto create_key_pair_cleanup;
+        }
+
+        if (status != 0 ||
+            !same_text_identifier(&expected_private_identifier, &private_identifier) ||
+            !same_text_identifier(&expected_public_identifier, &public_identifier)) {
+            outcome.library_failed = status != 0;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit Create Key Pair lost one of the returned object identifiers");
+            goto create_key_pair_cleanup;
+        }
+        kmipkit_client_batch_item_response_release(create_response_item);
+        create_response_item = NULL;
+        kmipkit_client_batch_response_release(create_response);
+        create_response = NULL;
+
+        status = kmipkit_client_batch_create(&cleanup_batch);
+        if (status == 0) status = kmipkit_client_batch_set_order_option(cleanup_batch, 1);
+        if (status == 0) status = kmipkit_client_batch_add_error_continuation_value(
+            cleanup_batch, KMIPKIT_ENUMERATION_BATCH_ERROR_CONTINUATION_OPTION_CONTINUE);
+        if (status == 0) status = kmipkit_client_batch_item_destroy(
+            &expected_private_identifier, &private_destroy_item);
+        if (status == 0) status = kmipkit_client_batch_item_destroy(
+            &expected_public_identifier, &public_destroy_item);
+        if (status == 0) status = set_batch_item_id(&private_destroy_item, "interop-destroy-private-key");
+        if (status == 0) status = set_batch_item_id(&public_destroy_item, "interop-destroy-public-key");
+        if (status == 0) status = kmipkit_client_batch_add_item(cleanup_batch, &private_destroy_item);
+        if (status == 0) status = kmipkit_client_batch_add_item(cleanup_batch, &public_destroy_item);
+        if (status == 0 && client->username_env[0] != '\0') {
+            kmipkit_authentication_t *authentication = NULL;
+            if (!create_authentication(client, &authentication)) {
+                status = KMIPKIT_ERROR_INVALID_INPUT;
+            } else {
+                status = kmipkit_client_batch_set_authentication(cleanup_batch, authentication);
+                if (status != 0) kmipkit_authentication_release(authentication);
+            }
+        }
+        if (status == 0) status = kmipkit_client_execute(
+            client->client, &cleanup_batch, client->limits, &cleanup_response);
+        if (status == 0) status = kmipkit_client_batch_response_item_count(
+            cleanup_response, &response_count);
+        if (status == 0 && response_count == 2) status = kmipkit_client_batch_response_item_at(
+            cleanup_response, 0, &private_destroy_response);
+        else if (status == 0) status = KMIPKIT_ERROR_INVALID_INPUT;
+        if (status == 0) status = kmipkit_client_batch_response_item_at(
+            cleanup_response, 1, &public_destroy_response);
+        for (uint64_t index = 0; status == 0 && index < 2; ++index) {
+            kmipkit_client_batch_item_response_t *destroy_response_item = index == 0 ?
+                private_destroy_response : public_destroy_response;
+            const kmipkit_unique_identifier_v1_t *expected_identifier = index == 0 ?
+                &expected_private_identifier : &expected_public_identifier;
+            status = kmipkit_client_batch_item_response_metadata_v2(
+                destroy_response_item, &metadata);
+            if (status == 0 && (metadata.operation != KMIPKIT_ENUMERATION_OPERATION_DESTROY ||
+                metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS ||
+                !destroy_response_matches_key(destroy_response_item, expected_identifier, &status))) {
+                if (status == 0) status = KMIPKIT_ERROR_INVALID_INPUT;
+            }
+        }
+        if (status == 0) {
+            outcome.success = true;
+            outcome.library_validated = true;
+        } else {
+            outcome.library_failed = true;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit did not destroy both Create Key Pair objects (status %d)", status);
+        }
+
+create_key_pair_cleanup:
+        kmipkit_client_batch_item_response_release(public_destroy_response);
+        kmipkit_client_batch_item_response_release(private_destroy_response);
+        kmipkit_client_batch_response_release(cleanup_response);
+        kmipkit_client_batch_release(cleanup_batch);
+        kmipkit_client_batch_item_release(public_destroy_item);
+        kmipkit_client_batch_item_release(private_destroy_item);
+        kmipkit_client_batch_item_response_release(create_response_item);
+        kmipkit_client_batch_response_release(create_response);
+        kmipkit_client_batch_release(create_batch);
+        kmipkit_client_batch_item_release(create_item);
+        kmipkit_ttlv_structure_release(public_attributes);
+        kmipkit_ttlv_structure_release(private_attributes);
+        return outcome;
+    }
     if (strcmp(test_case->case_id, "test-async-indicator-mandatory-pending") == 0) {
         return execute_mandatory_async_create_route(client);
     }

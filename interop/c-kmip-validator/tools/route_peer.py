@@ -216,6 +216,26 @@ def parse(data):
     return tag, kind, value
 
 
+def encode_ttlv_node(node):
+    tag, kind, value = node
+    body = b''.join(encode_ttlv_node(child) for child in value) if kind == 1 else value
+    return tlv(tag, kind, body)
+
+
+def replace_first_text(node, tag, previous, replacement):
+    if node[0] == tag and node[1] == 7 and node[2] == previous:
+        return (tag, 7, replacement), True
+    if node[1] != 1:
+        return node, False
+    children = []
+    replaced = False
+    for child in node[2]:
+        if not replaced:
+            child, replaced = replace_first_text(child, tag, previous, replacement)
+        children.append(child)
+    return (node[0], node[1], children), replaced
+
+
 def descendants(node, tag):
     if node[0] == tag:
         yield node
@@ -376,6 +396,7 @@ RECIPES = {
     'test-op-check': ((1, 9, 19, 20), 'check'),
     'test-op-activate': ((1, 18, 19, 20), 'activate'),
     'test-op-archive': ((1, 21, 19, 20), 'archive'),
+    'test-op-create-key-pair': ((2,), 'create_key_pair'),
     'test-op-revoke': ((1, 19, 20), 'revoke'),
     'test-op-destroy': ((1, 20, 19, 20), 'destroy'),
     'test-op-get-constraints': ((1, 56, 19, 20), 'get_constraints'),
@@ -2129,6 +2150,16 @@ class PeerState:
                 self.adjustable_attribute_values[identifier] = {}
                 placeholder = identifier
                 effect = 'created'
+            elif operation == 2:
+                identifiers = ('fixture-private-key-1', 'fixture-public-key-1')
+                if any(identifier in self.objects for identifier in identifiers):
+                    raise ValueError('fixture_duplicate_create_key_pair')
+                for identifier in identifiers:
+                    self.objects[identifier] = 'pre_active'
+                    self.attributes[identifier] = set()
+                    self.attribute_values[identifier] = {}
+                    self.adjustable_attribute_values[identifier] = {}
+                effect = 'created_key_pair'
             elif operation == 8:
                 matching_identifiers = list(self.objects)
                 if len(matching_identifiers) != 1:
@@ -2320,6 +2351,31 @@ def verify_archive_response(response_tree):
             len(payloads) != 1 or text_values(payloads[0], UNIQUE_IDENTIFIER_TAG) !=
             ['fixture-key-1']):
         raise ValueError('fixture_archive_response_identifier_mismatch')
+
+
+def verify_create_key_pair_response(response_tree):
+    items = [item for item in response_tree[2]
+             if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    private_ids = [child[2].decode('utf-8') for child in descendants(payloads[0], 0x420066)
+                   if child[1] == 7] if len(payloads) == 1 else []
+    public_ids = [child[2].decode('utf-8') for child in descendants(payloads[0], 0x42006F)
+                  if child[1] == 7] if len(payloads) == 1 else []
+    if (len(items) != 1 or numbers(items[0], 0x42005C) != [2] or
+            numbers(items[0], 0x42007F) != [0] or len(payloads) != 1 or
+            private_ids != ['fixture-private-key-1'] or
+            public_ids != ['fixture-public-key-1']):
+        raise ValueError('fixture_create_key_pair_response_mismatch')
+
+
+def assert_create_key_pair_cleanup_request(request_tree, version):
+    assert_recipe(request_tree, 'test-op-create-key-pair', version,
+                  ((20, 20), 'create_key_pair_cleanup'))
+    items = [item for item in request_tree[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    identifiers = [text_values(item, UNIQUE_IDENTIFIER_TAG) for item in items]
+    if identifiers != [['fixture-private-key-1'], ['fixture-public-key-1']]:
+        raise ValueError('fixture_create_key_pair_cleanup_identifier_mismatch')
 
 
 def verify_usage_allocation_identifier_variants(response_tree):
@@ -2523,8 +2579,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 'async_poll_repeated_pending_to_success',
                                                 'async_process_then_poll_state',
                                                 'async_query_outstanding_filter',
+                                                'create_key_pair',
                                                 'async_unknown_correlation_rejected') and
-                                            recipe[0][0] not in (1, 3))),
+                                            recipe[0][0] not in (1, 2, 3))),
                             usage_allocation_ready=recipe[1] == 'get_usage_allocation_uid_variants')
                         boundary = case_id in (
                             'test-v20-reject-get-constraints', 'test-v20-reject-ping')
@@ -2543,7 +2600,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         4 if recipe[1] == 'async_process_then_poll_state' else
                                         2 if placeholder_chain_recipe or recipe[1] in (
                                             'login_logout', 'cancel_async',
-                                            'async_poll_cancel_no_recursion') else 1)
+                                            'async_poll_cancel_no_recursion',
+                                            'create_key_pair') else 1)
                                     seed_rejected = False
                                     accepted, _ = server.accept()
                                     stream = context.wrap_socket(accepted, server_side=True)
@@ -2571,6 +2629,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             'exchange_index')
                                         cleanup_exchange = (
                                             placeholder_chain_recipe and exchange_index == 1) or (
+                                            recipe[1] == 'create_key_pair' and exchange_index == 1) or (
                                             attribute_mutation_recipe and
                                             (exchange_index == attribute_cleanup_exchange_index or
                                              (delete_attribute_recipe and seed_rejected and
@@ -2580,6 +2639,17 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         if logout_recipe:
                                             assert_login_logout_exchange(request_tree, version, exchange_index)
                                             response_operations = ((45,) if exchange_index == 0 else (46,))
+                                        elif recipe[1] == 'create_key_pair':
+                                            if exchange_index == 0:
+                                                assert_recipe(request_tree, case_id, version, recipe,
+                                                              attribute_fixture, variant)
+                                                response_operations = (2,)
+                                                response_item_ids = (b'interop-create-key-pair',)
+                                            else:
+                                                assert_create_key_pair_cleanup_request(request_tree, version)
+                                                response_operations = (20, 20)
+                                                response_item_ids = (b'interop-destroy-private-key',
+                                                                     b'interop-destroy-public-key')
                                         elif recipe[1] == 'async_create_poll_lifecycle':
                                             response_operations, response_item_ids = \
                                                 assert_async_lifecycle_exchange(
@@ -2950,6 +3020,34 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 len(byte_string_values(request_tree, 0x4200C2)[0])
                                                 if recipe[1] == 'rng_seed' else 16,
                                                 discover_versions=discover_versions_supported)
+                                            if recipe[1] == 'create_key_pair':
+                                                response_node = parse(response_wire)
+                                                if exchange_index == 0:
+                                                    response_item = next(
+                                                        child for child in response_node[2]
+                                                        if child[0] == BATCH_ITEM_TAG)
+                                                    response_payload = (
+                                                        RESPONSE_PAYLOAD_TAG, 1,
+                                                        [(0x420066, 7, b'fixture-private-key-1'),
+                                                         (0x42006F, 7, b'fixture-public-key-1')])
+                                                    response_item = (
+                                                        response_item[0], response_item[1],
+                                                        [response_payload if child[0] == RESPONSE_PAYLOAD_TAG else child
+                                                         for child in response_item[2]])
+                                                    response_node = (
+                                                        response_node[0], response_node[1],
+                                                        [response_item if child[0] == BATCH_ITEM_TAG else child
+                                                         for child in response_node[2]])
+                                                else:
+                                                    response_node, private_replaced = replace_first_text(
+                                                        response_node, UNIQUE_IDENTIFIER_TAG, b'fixture-key-1',
+                                                        b'fixture-private-key-1')
+                                                    response_node, public_replaced = replace_first_text(
+                                                        response_node, UNIQUE_IDENTIFIER_TAG, b'fixture-key-1',
+                                                        b'fixture-public-key-1')
+                                                    if not private_replaced or not public_replaced:
+                                                        raise ValueError('fixture_create_key_pair_cleanup_ids_missing')
+                                                response_wire = encode_ttlv_node(response_node)
                                         response_tree = parse(response_wire)
                                         if recipe[1] == 'discover_versions':
                                             response_items = [item for item in response_tree[2]
@@ -2961,6 +3059,18 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                         if len(response_payloads) == 1 else None)
                                             if observed != list(discover_versions_supported):
                                                 raise ValueError('fixture_discover_versions_response_mismatch')
+                                        elif recipe[1] == 'create_key_pair':
+                                            if exchange_index == 0:
+                                                verify_create_key_pair_response(response_tree)
+                                            else:
+                                                response_items = [item for item in response_tree[2]
+                                                                  if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+                                                if [numbers(item, 0x42005C) for item in response_items] != [[20], [20]]:
+                                                    raise ValueError('fixture_create_key_pair_cleanup_operations_mismatch')
+                                                if [numbers(item, 0x42007F) for item in response_items] != [[0], [0]]:
+                                                    raise ValueError('fixture_create_key_pair_cleanup_status_mismatch')
+                                                if peer_state.objects:
+                                                    raise ValueError('fixture_create_key_pair_cleanup_state_mismatch')
                                         elif logout_recipe:
                                             verify_login_logout_response(response_tree, exchange_index)
                                         elif recipe[1] == 'async_poll_cancel_no_recursion':
@@ -3088,7 +3198,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 'async_poll_cancel_no_recursion',
                                                 'async_poll_final_failure',
                                                 'async_poll_repeated_pending_to_success',
-                                                'async_process_then_poll_state'):
+                                                'async_process_then_poll_state',
+                                                'create_key_pair'):
                                             verify_lifecycle(recipe[0], response_tree)
                                         encoded_response = codec.encode(response_wire, encoding)
                                         if transport == 'https':
@@ -3388,6 +3499,20 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                    observation[0][2]['peer_observed_state_before_sha256'] ==
                                                    observation[0][2]['peer_observed_state_after_sha256']}
                                               if observation and recipe[1] == 'archive' else {}),
+                                           **({'peer_request_operations': [
+                                                   numbers(item, 0x42005C)[0]
+                                                   for item in observation[0][0][2]
+                                                   if item[0] == BATCH_ITEM_TAG],
+                                               'peer_setup_operations': [],
+                                               'peer_cleanup_operations': [
+                                                   numbers(item, 0x42005C)[0]
+                                                   for item in observation[-1][0][2]
+                                                   if item[0] == BATCH_ITEM_TAG],
+                                               'peer_final_state_matches_setup':
+                                                   observation[0][2]['peer_observed_state_before_sha256'] ==
+                                                   observation[-1][2]['peer_observed_state_after_sha256']}
+                                              if observation and recipe[1] == 'create_key_pair' and
+                                              len(observation) == 2 else {}),
                                            **({'peer_request_operations': [
                                                    numbers(item, 0x42005C)[0]
                                                    for item in observation[mutation_index][0][2]
