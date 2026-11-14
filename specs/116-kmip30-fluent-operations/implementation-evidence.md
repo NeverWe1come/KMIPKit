@@ -310,11 +310,10 @@ schema, and the T102 Certify snapshot, passed 189 tests in 364.457 seconds.
 
 The credential Red tests are in `9bf2c4887`; the Green implementation and
 cross-language coverage additions are in `646e995c9`. The manifest-report
-repairs are in Refactor `b70fa6644`; the final post-rebase evidence update is
-being recorded separately. These commits have not yet been pushed to PR #213.
-The PR remains a draft with
-`[WIP]`; hosted CI has not yet evaluated these changes. Its title must remain
-WIP until every required check passes on the current remote head.
+repairs are in Refactor `b70fa6644`. These changes were pushed to PR #213 at
+`911c018ab` after a lease-checked update from the prior remote head. The PR
+remains a draft with `[WIP]`; hosted checks must be verified on the latest
+post-evidence commit before changing its title.
 
 ## Rebase and post-rebase validation
 
@@ -322,9 +321,10 @@ The 0115 base advanced to `105d81303` with a new Python lifecycle validation
 test after the earlier 0116 snapshot. Rebased this branch onto that commit; the
 new local sequence preserves separate Red (`9bf2c4887`), Green
 (`646e995c9`), and Refactor (`b70fa6644`) commits. The inherited lifecycle test
-correction is recorded separately in `4372ad6f6`. The local branch still needs
-a lease-checked update to PR #213; hosted CI has not yet run on this rebased
-head.
+correction is recorded separately in `4372ad6f6`. The rebased branch was pushed
+to PR #213 with an explicit lease for its prior head. This evidence update will
+advance it once more; hosted CI must be confirmed against the resulting exact
+SHA, with the `[WIP]` title retained in the meantime.
 
 The new base test initially failed because it constructed `fluent.Request(None)`
 outside an expected-error assertion, despite the public constructor correctly
