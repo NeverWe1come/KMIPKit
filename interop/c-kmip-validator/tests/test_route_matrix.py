@@ -793,6 +793,19 @@ class RouteMatrixTests(unittest.TestCase):
                              'kmipkit_client_batch_item_response_create' and
                              event['action'] == 'decode' for event in events), 1)
 
+    def test_async_unknown_correlation_is_rejected_with_typed_reason(self):
+        """OASIS KMIP 2.0 §6.1.36 Table 257 and KMIP 2.1 §6.1.38 Table 277."""
+        from artifact_support import ROOT
+        import route_peer
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-async-unknown-correlation-rejected')
+
+        self.assertEqual(
+            route_peer.recipe_for_case(case, None),
+            ((26,), 'async_unknown_correlation_rejected'))
+
     def test_async_poll_and_cancel_responses_do_not_recurse(self):
         """OASIS KMIP 2.1 §§6.1.5 and 6.1.38 keep Poll and Cancel terminal."""
         from artifact_support import ROOT
