@@ -211,6 +211,12 @@ class ControlledTlsPeerTest {
                     "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-8-CORRELATION-VALUE",
                     0x4200d6, TtlvItemType.ByteString, false));
 
+    private static final ScalarOperationStructureFixture SIGNATURE_DATA_FIXTURE =
+            new ScalarOperationStructureFixture(
+                    "test-norm-operation-structure-operation-structure-7-38-signature-data",
+                    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-38-SIGNATURE-DATA",
+                    0x4200c3, TtlvItemType.ByteString, false);
+
     private static final List<StructureMemberStructureFixture> STRUCTURE_MEMBER_STRUCTURE_FIXTURES = List.of(
             new StructureMemberStructureFixture(
                     "test-norm-structure-member-structure-member-7-6-attributes",
@@ -4424,6 +4430,8 @@ class ControlledTlsPeerTest {
         for (ScalarOperationStructureFixture fixture : SCALAR_OPERATION_STRUCTURE_FIXTURES) {
             assertScalarOperationStructureRouteEvents(events, fixture, protocolVersion);
         }
+        // OASIS KMIP 2.0 §7.32 and KMIP 2.1 §7.38: Signature Data is a Byte String.
+        assertScalarOperationStructureRouteEvents(events, SIGNATURE_DATA_FIXTURE, protocolVersion);
         // OASIS KMIP 2.0 §7.9 / §11.54 and KMIP 2.1 §7.13 / §11.56.
         assertGenericStructureRouteEvents(events,
                 "test-norm-operation-structure-operation-structure-7-13-extension-information",
