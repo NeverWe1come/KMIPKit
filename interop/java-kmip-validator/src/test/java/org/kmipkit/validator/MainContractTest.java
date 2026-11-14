@@ -35,10 +35,18 @@ class MainContractTest {
                 "--artifact-manifest", manifest.toString(), "--output-dir", output.toString());
 
         JsonNode report = new ObjectMapper().readTree(output.resolve("results.json").toFile());
-        assertEquals(212, report.path("summary").path("total").asInt());
-        assertEquals(67, report.path("summary").path("passed").asInt());
+        CatalogLoader.Catalog loadedCatalog = CatalogLoader.load(catalog);
+        long applicable = loadedCatalog.cases().stream()
+                .filter(testCase -> testCase.execution().protocolVersions().contains("2.1"))
+                .count();
+        long local = loadedCatalog.cases().stream()
+                .filter(testCase -> "local_model".equals(testCase.execution().mode())
+                        && testCase.execution().protocolVersions().contains("2.1"))
+                .count();
+        assertEquals(applicable, report.path("summary").path("total").asInt());
+        assertEquals(local, report.path("summary").path("passed").asInt());
         assertEquals(0, report.path("summary").path("policy_restricted").asInt());
-        assertEquals(145, report.path("summary").path("not_run").asInt());
+        assertEquals(applicable - local, report.path("summary").path("not_run").asInt());
         for (JsonNode result : report.path("cases")) {
             if ("policy_restricted".equals(result.path("status").asText())) {
                 assertEquals("unknown", result.path("server_compatibility").asText());
@@ -53,12 +61,67 @@ class MainContractTest {
     }
 
     @Test
-    void planDoesNotCountKmip20RoutesBlockedByThePinnedArtifact() throws Exception {
+    void planIncludesKmip20RoutesSupportedByThePinnedArtifact() throws Exception {
         Path connection = connection("2.0", "typed-protocol");
         String plan = assertCommandOutput(0, "plan", "--connection", connection.toString(),
                 "--catalog", "../shared/catalog/kmipkit-1.0-test-catalog.json");
-        assertTrue(plan.contains("Server exchanges executable through selected Java API level: 0"));
-        assertTrue(plan.contains("KMIP 2.0 live routes are blocked by the pinned artifact"));
+        assertTrue(plan.matches("(?s).*Server exchanges executable through selected Java API level: [1-9][0-9]*.*"));
+        assertTrue(!plan.contains("KMIP 2.0 live routes are blocked by the pinned artifact"));
+    }
+
+    // OASIS KMIP 2.0 §6.1.16: the pinned Java response decoder currently offers only KMIP 2.1.
+    @Test
+    void kmip20DiscoverVersionsIsPendingInsteadOfClaimingAClientFailure() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode catalog = (ObjectNode) mapper.readTree(
+                Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json").toFile());
+        JsonNode discoverVersions = catalog.path("test_cases").findParents("case_id").stream()
+                .filter(testCase -> "test-op-discover-versions".equals(testCase.path("case_id").asText()))
+                .findFirst().orElseThrow();
+        catalog.set("test_cases", mapper.createArrayNode().add(discoverVersions.deepCopy()));
+        ((ObjectNode) catalog.path("statistics")).put("total_cases", 1);
+        Path catalogFile = temporaryDirectory.resolve("kmip20-discover-versions-case.json");
+        mapper.writeValue(catalogFile.toFile(), catalog);
+
+        Path connectionFile = connection("2.0", "typed-protocol");
+        ObjectNode connection = (ObjectNode) mapper.readTree(connectionFile.toFile());
+        ((ObjectNode) connection.path("endpoints").path("raw_tls")).put("host", "127.0.0.1").put("port", 1);
+        mapper.writeValue(connectionFile.toFile(), connection);
+        Path output = temporaryDirectory.resolve("kmip20-discover-versions-report");
+
+        assertCommand(0, "run", "--connection", connectionFile.toString(), "--catalog", catalogFile.toString(),
+                "--artifact-manifest", Path.of(System.getProperty("kmipkit.artifactManifest")).toString(),
+                "--output-dir", output.toString());
+
+        JsonNode result = mapper.readTree(output.resolve("results.json").toFile()).path("cases").get(0);
+        assertEquals("not_run", result.path("status").asText());
+        assertEquals("unknown", result.path("server_compatibility").asText());
+        assertTrue(result.path("diagnostic").asText().contains("default KMIP 2.1 offer"));
+    }
+
+    @Test
+    void logRouteRequiresMutationOptInBeforeTheClientIsOpened() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode catalog = (ObjectNode) mapper.readTree(
+                Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json").toFile());
+        var selectedCases = mapper.createArrayNode();
+        for (JsonNode testCase : catalog.path("test_cases")) {
+            if ("test-op-log".equals(testCase.path("case_id").asText())) selectedCases.add(testCase);
+        }
+        assertEquals(1, selectedCases.size());
+        catalog.set("test_cases", selectedCases);
+        ((ObjectNode) catalog.path("statistics")).put("total_cases", selectedCases.size());
+        Path selectedCatalog = temporaryDirectory.resolve("log-mutation-catalog.json");
+        mapper.writeValue(selectedCatalog.toFile(), catalog);
+        Path output = temporaryDirectory.resolve("log-mutation-report");
+
+        assertCommand(0, "run", "--connection", connection("2.1", "typed-protocol").toString(),
+                "--catalog", selectedCatalog.toString(), "--output-dir", output.toString());
+
+        JsonNode result = mapper.readTree(output.resolve("results.json").toFile()).path("cases").get(0);
+        assertEquals("policy_restricted", result.path("status").asText());
+        assertEquals("not_checked", result.path("library_correctness").asText());
+        assertEquals("unknown", result.path("server_compatibility").asText());
     }
 
     @Test
@@ -89,13 +152,12 @@ class MainContractTest {
     }
 
     @Test
-    void planDoesNotCountCasesWithoutCompleteRecipesOrMutationSafetyAsExecutable() throws Exception {
+    void planCountsInstalledTypedRequestFactoriesAsExecutable() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode catalog = (ObjectNode) mapper.readTree(
                 Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json").toFile());
         var selected = mapper.createArrayNode();
-        for (String caseId : new String[] {
-                "test-op-log", "test-op-get-attribute-list", "test-op-get-constraints"}) {
+        for (String caseId : new String[] {"test-op-get-attribute-list", "test-op-get-constraints"}) {
             catalog.path("test_cases").forEach(testCase -> {
                 if (caseId.equals(testCase.path("case_id").asText())) selected.add(testCase.deepCopy());
             });
@@ -107,12 +169,12 @@ class MainContractTest {
 
         String plan = assertCommandOutput(0, "plan", "--connection", connection("2.1", "typed-protocol").toString(),
                 "--catalog", catalogFile.toString());
-        assertTrue(plan.contains("Server exchanges executable through selected Java API level: 0"));
-        assertTrue(plan.contains("Public typed constructors awaiting catalog recipes: 3"));
+        assertTrue(plan.contains("Server exchanges executable through selected Java API level: 2"));
+        assertTrue(plan.contains("Public request routes awaiting required catalog fixtures: 0"));
     }
 
     @Test
-    void pendingMutatingCaseIsReportedAsCoveragePendingBeforeLocalMutationPolicy() throws Exception {
+    void executableMutatingCaseIsPolicyRestrictedBeforeOpeningTheClient() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode catalog = (ObjectNode) mapper.readTree(
                 Path.of("../shared/catalog/kmipkit-1.0-test-catalog.json").toFile());
@@ -121,9 +183,9 @@ class MainContractTest {
                 .findFirst().orElseThrow();
         catalog.set("test_cases", mapper.createArrayNode().add(getAttributeList.deepCopy()));
         ((ObjectNode) catalog.path("statistics")).put("total_cases", 1);
-        Path catalogFile = temporaryDirectory.resolve("pending-mutating-case.json");
+        Path catalogFile = temporaryDirectory.resolve("mutating-case.json");
         mapper.writeValue(catalogFile.toFile(), catalog);
-        Path output = temporaryDirectory.resolve("pending-mutating-report");
+        Path output = temporaryDirectory.resolve("mutating-report");
 
         assertCommand(0, "run", "--connection", connection("2.1", "typed-protocol").toString(),
                 "--catalog", catalogFile.toString(), "--artifact-manifest",
@@ -131,9 +193,9 @@ class MainContractTest {
                 "--output-dir", output.toString());
 
         JsonNode result = mapper.readTree(output.resolve("results.json").toFile()).path("cases").get(0);
-        assertEquals("not_run", result.path("status").asText());
+        assertEquals("policy_restricted", result.path("status").asText());
         assertEquals("unknown", result.path("server_compatibility").asText());
-        assertTrue(result.path("diagnostic").asText().contains("isolated object fixture"));
+        assertTrue(result.path("diagnostic").asText().contains("--enable-mutations"));
     }
 
     @Test

@@ -170,6 +170,10 @@ framing, forbidden redirect/compression behavior, and connection reuse.
 ### FFI and adapters
 
 - Compile and execute a C consumer.
+- The Rust integration targets for compiled C consumers link the ABI through
+  Cargo's `kmipkit_ffi` rlib. Do not add a separate native `kmipkit_ffi` link:
+  it duplicates exported symbols and process-local state, and assumes an
+  artifact location that varies between Cargo versions.
 - Run panic-containment and memory ownership tests.
 - Run sanitizer jobs for the FFI surface.
 - Pull-request CI runs the Linux C consumer through the Rust ABI under

@@ -3,15 +3,21 @@ package org.kmipkit.validator;
 import org.kmipkit.credentials.Authentication;
 import org.kmipkit.credentials.Credential;
 import org.kmipkit.credentials.SecretText;
+import org.kmipkit.ClientOperationException;
 import org.kmipkit.extensions.Client;
 import org.kmipkit.extensions.ClientBatch;
 import org.kmipkit.extensions.ClientBatchItem;
 import org.kmipkit.extensions.ClientBatchItemResult;
 import org.kmipkit.extensions.ClientBatchResponse;
+import org.kmipkit.extensions.AsyncOperationOutcome;
+import org.kmipkit.extensions.CancelRequest;
 import org.kmipkit.extensions.ClientConfiguration;
 import org.kmipkit.extensions.ClientExtensionRegistry;
 import org.kmipkit.extensions.ExtensionRegistryLimits;
+import org.kmipkit.extensions.PollRequest;
+import org.kmipkit.extensions.ProcessRequest;
 import org.kmipkit.extensions.ProtocolVersion;
+import org.kmipkit.extensions.QueryAsyncRequestsRequest;
 import org.kmipkit.extensions.TransportConfiguration;
 import org.kmipkit.extensions.UniqueIdentifier;
 import org.kmipkit.extensions.WireEncoding;
@@ -31,6 +37,7 @@ import java.util.UUID;
 /** Executes the Java public typed client against a KMIP server without logging remote payloads. */
 public final class JavaKmipDriver implements AutoCloseable {
     private static final CodecLimits CODEC_LIMITS = CodecLimits.defaults();
+    private static final int SERVER_RESULT_ERROR_CATEGORY = 4;
     private final Client client;
     private final ConnectionConfig connection;
 
@@ -44,13 +51,13 @@ public final class JavaKmipDriver implements AutoCloseable {
         ClientExtensionRegistry registry = ClientExtensionRegistry.create(
                 List.of(), ExtensionRegistryLimits.defaults());
         ClientConfiguration baseConfiguration = ClientConfiguration.create(registry);
-        ClientConfiguration encodingConfiguration = baseConfiguration.withWireEncoding(
-                WireEncoding.valueOf(connection.encoding()));
-        ClientConfiguration protocolConfiguration = encodingConfiguration.withProtocolVersion(
+        ClientConfiguration protocolConfiguration = baseConfiguration.withProtocolVersion(
                 toProtocolVersion(connection.protocolVersion()));
+        ClientConfiguration encodingConfiguration = protocolConfiguration.withWireEncoding(
+                WireEncoding.valueOf(connection.encoding()));
         TransportConfiguration transport = buildTransport(connection);
-        try (registry; baseConfiguration; encodingConfiguration; protocolConfiguration; transport) {
-            return new JavaKmipDriver(Client.create(protocolConfiguration, transport), connection);
+        try (registry; baseConfiguration; protocolConfiguration; encodingConfiguration; transport) {
+            return new JavaKmipDriver(Client.create(encodingConfiguration, transport), connection);
         }
     }
 
@@ -60,7 +67,163 @@ public final class JavaKmipDriver implements AutoCloseable {
         if ("Create".equals(testCase.operation())) {
             return executeCreateWithCleanup(testCase, start);
         }
-        ClientBatchItem request = TypedRequestFactory.create(testCase.operation());
+        if (requiresSymmetricKeyFixture(testCase)) {
+            return executeWithSymmetricKeyFixture(testCase, start);
+        }
+        return executeTypedRequest(testCase, start, null, null);
+    }
+
+    ClientBatchResponse executeBatchForEvidence(ClientBatch batch) throws ClientOperationException {
+        return client.execute(batch, CODEC_LIMITS);
+    }
+
+    AsyncOperationOutcome executeQueryAsyncRequestsForResponsePayloadEvidence(byte[] correlation)
+            throws ClientOperationException {
+        return client.executeQueryAsyncRequests(CODEC_LIMITS, List.of(correlation.clone()),
+                List.of(0x18L), java.util.OptionalLong.of(2));
+    }
+
+    /** Executes an asynchronous case with an explicit server-issued correlation fixture. */
+    CaseOutcome executeAsynchronousRequest(CatalogLoader.CatalogCase testCase, byte[] correlation) {
+        long start = System.nanoTime();
+        if (testCase == null || correlation == null || correlation.length == 0) {
+            return CaseOutcome.notRun("An asynchronous catalog case and non-empty correlation fixture are required.",
+                    elapsedMillis(start));
+        }
+        String operation = testCase.operation();
+        if (!isAsynchronousOperation(operation)) {
+            return CaseOutcome.notRun("The catalog case does not name a Java asynchronous operation.",
+                    elapsedMillis(start));
+        }
+        if (!testCase.execution().protocolVersions().contains(connection.protocolVersion())) {
+            return CaseOutcome.notRun("The asynchronous operation is not defined for the configured KMIP version.",
+                    elapsedMillis(start));
+        }
+
+        try (AsyncOperationOutcome outcome = executeAsynchronousRoute(operation, correlation.clone())) {
+            var metadata = outcome.metadataV1();
+            long expectedOperation = asynchronousOperationCode(operation);
+            long statusCode = metadata.resultStatus();
+            long reasonCode = metadata.resultReason().orElse(-1);
+            if (metadata.operation() != expectedOperation) {
+                return CaseOutcome.failed("The asynchronous response operation did not match the request.",
+                        elapsedMillis(start), statusCode, optionalCode(reasonCode));
+            }
+            if (statusCode == 0 || statusCode == 2) {
+                if (!verifyAsynchronousResponse(operation, outcome, correlation, statusCode)) {
+                    return CaseOutcome.failed("The asynchronous response shape did not match the request.",
+                            elapsedMillis(start), statusCode, optionalCode(reasonCode));
+                }
+                return CaseOutcome.passed(elapsedMillis(start), statusCode, optionalCode(reasonCode));
+            }
+            return nonSuccessOutcome(testCase, statusCode, reasonCode, start);
+        } catch (Exception exception) {
+            return exchangeFailure(exception, start);
+        }
+    }
+
+    private AsyncOperationOutcome executeAsynchronousRoute(String operation, byte[] correlation) throws Exception {
+        return switch (operation) {
+            case "Cancel" -> {
+                try (CancelRequest request = CancelRequest.create(correlation.clone());
+                        TtlvStructure payload = request.toTtlvPayload()) {
+                    requireNonEmptyPayload(payload, "Cancel");
+                    yield client.executeCancel(correlation, CODEC_LIMITS);
+                }
+            }
+            case "Poll" -> {
+                try (PollRequest request = PollRequest.create(correlation.clone());
+                        TtlvStructure payload = request.toTtlvPayload()) {
+                    requireNonEmptyPayload(payload, "Poll");
+                    yield client.executePoll(correlation, CODEC_LIMITS);
+                }
+            }
+            case "Process" -> {
+                try (ProcessRequest request = ProcessRequest.create(correlation.clone());
+                        TtlvStructure payload = request.toTtlvPayload()) {
+                    requireNonEmptyPayload(payload, "Process");
+                    yield client.executeProcess(correlation, CODEC_LIMITS, java.util.OptionalLong.of(1));
+                }
+            }
+            case "Query Asynchronous Requests" -> {
+                try (QueryAsyncRequestsRequest request = QueryAsyncRequestsRequest.create();
+                        QueryAsyncRequestsRequest withCorrelation = request.withCorrelationValues(
+                                List.of(correlation.clone()));
+                        QueryAsyncRequestsRequest withOperation = withCorrelation.withOperations(List.of(0x18L));
+                        TtlvStructure payload = withOperation.toTtlvPayload()) {
+                    requireNonEmptyPayload(payload, "Query Asynchronous Requests");
+                    yield client.executeQueryAsyncRequests(CODEC_LIMITS, List.of(correlation.clone()),
+                            List.of(0x18L), java.util.OptionalLong.of(2));
+                }
+            }
+            default -> throw new IllegalArgumentException("No Java asynchronous route for the catalog operation");
+        };
+    }
+
+    private static void requireNonEmptyPayload(TtlvStructure payload, String operation) {
+        try (var view = payload.view()) {
+            if (view.itemCount() == 0) throw new IllegalStateException(operation + " request payload is empty");
+        }
+    }
+
+    private static boolean verifyAsynchronousResponse(String operation, AsyncOperationOutcome outcome,
+            byte[] expectedCorrelation, long resultStatus) {
+        if (resultStatus == 2 && !outcome.metadataV1().outcomeKind().isPending()) return false;
+        return switch (operation) {
+            case "Cancel" -> outcome.cancelResponse().filter(response ->
+                    response.result().operation() == 0x19
+                            && hasCorrelation(expectedCorrelation, response::withEchoedCorrelationValue)).isPresent();
+            case "Poll" -> outcome.pollResponse().filter(response ->
+                    response.result().operation() == 0x1a && (resultStatus != 2 || response.isPending())
+                            && hasCorrelation(expectedCorrelation, response::withAsynchronousCorrelationValue)).isPresent();
+            case "Process" -> outcome.processResponse().filter(response ->
+                    response.result().operation() == 0x3a && (resultStatus != 2 || response.isPending())
+                            && hasCorrelation(expectedCorrelation, response::withAsynchronousCorrelationValue)).isPresent();
+            case "Query Asynchronous Requests" -> outcome.queryAsyncRequestsResponse().filter(response ->
+                    response.result().operation() == 0x39 && (resultStatus != 2 || response.isPending())
+                            && hasCorrelation(expectedCorrelation, response::withAsynchronousCorrelationValue)).isPresent();
+            default -> false;
+        };
+    }
+
+    private static boolean hasCorrelation(byte[] expected, CorrelationReader reader) {
+        boolean[] matches = {false};
+        boolean present = reader.read(value -> {
+            if (value.remaining() != expected.length) return;
+            matches[0] = true;
+            for (byte expectedByte : expected) {
+                if (value.get() != expectedByte) {
+                    matches[0] = false;
+                    break;
+                }
+            }
+        });
+        return present && matches[0];
+    }
+
+    private static boolean isAsynchronousOperation(String operation) {
+        return asynchronousOperationCode(operation) >= 0;
+    }
+
+    private static long asynchronousOperationCode(String operation) {
+        return switch (operation) {
+            case "Cancel" -> 0x19;
+            case "Poll" -> 0x1a;
+            case "Process" -> 0x3a;
+            case "Query Asynchronous Requests" -> 0x39;
+            default -> -1;
+        };
+    }
+
+    @FunctionalInterface
+    private interface CorrelationReader {
+        boolean read(java.util.function.Consumer<java.nio.ByteBuffer> callback);
+    }
+
+    private CaseOutcome executeTypedRequest(CatalogLoader.CatalogCase testCase, long start,
+                                           UniqueIdentifier fixtureIdentifier, String fixtureObjectName) {
+        ClientBatchItem request = TypedRequestFactory.create(
+                testCase.operation(), fixtureIdentifier, testCase.attributeTag());
         if (request == null) {
             return CaseOutcome.notRun("No Java typed request route is implemented for this catalog operation.",
                     elapsedMillis(start));
@@ -82,7 +245,7 @@ public final class JavaKmipDriver implements AutoCloseable {
                     long statusCode = result.resultStatus();
                     long reasonCode = result.resultReason().orElse(-1);
                     if (statusCode == 0) {
-                        if (!verifyTypedResponse(testCase.operation(), result)) {
+                        if (!verifyTypedResponse(testCase, result, fixtureIdentifier, fixtureObjectName)) {
                             return CaseOutcome.failed("The typed response shape did not match the request.",
                                     elapsedMillis(start), statusCode, optionalCode(reasonCode));
                         }
@@ -104,9 +267,122 @@ public final class JavaKmipDriver implements AutoCloseable {
                 }
             }
         } catch (Exception exception) {
-            return CaseOutcome.failed("KMIP client exchange failed (" + exception.getClass().getSimpleName()
+            return exchangeFailure(exception, start);
+        }
+    }
+
+    private CaseOutcome executeWithSymmetricKeyFixture(CatalogLoader.CatalogCase testCase, long start) {
+        String objectName = testCase.isolationRecipe().uniqueNamePrefix() + "-" + UUID.randomUUID();
+        FixtureSetup setup = createSymmetricKeyFixture(objectName, start);
+        if (setup.identifier() == null) return setup.failure();
+
+        CaseOutcome target = executeTypedRequest(testCase, start, setup.identifier(), objectName);
+        if ("Destroy".equals(testCase.operation()) && Long.valueOf(0).equals(target.resultStatusCode())) {
+            return target;
+        }
+        if ("Activate".equals(testCase.operation()) && Long.valueOf(0).equals(target.resultStatusCode())) {
+            CaseOutcome revoke = executeFixtureCleanup("Revoke", setup.identifier(), start);
+            if (!"passed".equals(revoke.status())) {
+                return CaseOutcome.failed("The operation completed, but fixture Revoke cleanup failed.",
+                        elapsedMillis(start), target.resultStatusCode(), target.resultReasonCode());
+            }
+        }
+        CaseOutcome cleanup = executeFixtureCleanup("Destroy", setup.identifier(), start);
+        if (!"passed".equals(cleanup.status())) {
+            return CaseOutcome.failed("The catalog operation ran, but its isolated Symmetric Key could not be destroyed.",
+                    elapsedMillis(start), target.resultStatusCode(), target.resultReasonCode());
+        }
+        return target;
+    }
+
+    private FixtureSetup createSymmetricKeyFixture(String objectName, long start) {
+        try (TtlvStructure attributes = createTestKeyAttributes(objectName);
+                ClientBatchItem request = ClientBatchItem.create(2, attributes, null)
+                        .withUniqueBatchItemId("item-0".getBytes(java.nio.charset.StandardCharsets.US_ASCII));
+                ClientBatch batch = ClientBatch.create()) {
+            long requestOperation = request.operation();
+            batch.add(request);
+            if (connection.usernamePassword() != null) {
+                batch.setAuthentication(usernamePasswordAuthentication(connection.usernamePassword()));
+            }
+            try (ClientBatchResponse response = client.execute(batch, CODEC_LIMITS)) {
+                if (response.itemCount() != 1) {
+                    return FixtureSetup.failed(CaseOutcome.failed(
+                            "Fixture Create response batch item count did not match the request.", elapsedMillis(start)));
+                }
+                try (ClientBatchItemResult result = response.itemAt(0)) {
+                    if (result.operation() != requestOperation) {
+                        return FixtureSetup.failed(CaseOutcome.failed(
+                                "Fixture Create response operation did not match the request.", elapsedMillis(start)));
+                    }
+                    long status = result.resultStatus();
+                    long reason = result.resultReason().orElse(-1);
+                    if (status != 0) return FixtureSetup.failed(nonSuccessOutcome(null, status, reason, start));
+                    var payload = result.createResponse();
+                    if (payload.isEmpty()) {
+                        return FixtureSetup.failed(CaseOutcome.failed(
+                                "Fixture Create success response omitted its typed payload.", elapsedMillis(start),
+                                status, optionalCode(reason)));
+                    }
+                    var created = payload.orElseThrow();
+                    if (created.objectType() != 2) {
+                        return FixtureSetup.failed(CaseOutcome.failed(
+                                "Fixture Create returned an object type other than Symmetric Key.", elapsedMillis(start),
+                                status, optionalCode(reason)));
+                    }
+                    return FixtureSetup.created(created.uniqueIdentifier());
+                }
+            }
+        } catch (Exception exception) {
+            return FixtureSetup.failed(exchangeFailure(exception, start));
+        }
+    }
+
+    private CaseOutcome executeFixtureCleanup(String operation, UniqueIdentifier identifier, long start) {
+        ClientBatchItem request = TypedRequestFactory.create(operation, identifier);
+        if (request == null) return CaseOutcome.failed("The installed package lacks fixture cleanup route " + operation + ".", elapsedMillis(start));
+        long requestOperation = request.operation();
+        try (request; ClientBatch batch = ClientBatch.create()) {
+            batch.add(request);
+            if (connection.usernamePassword() != null) {
+                batch.setAuthentication(usernamePasswordAuthentication(connection.usernamePassword()));
+            }
+            try (ClientBatchResponse response = client.execute(batch, CODEC_LIMITS)) {
+                if (response.itemCount() != 1) {
+                    return CaseOutcome.failed("Fixture cleanup response item count was invalid.", elapsedMillis(start));
+                }
+                try (ClientBatchItemResult result = response.itemAt(0)) {
+                    if (result.operation() != requestOperation || result.resultStatus() != 0) {
+                        return CaseOutcome.failed("Fixture cleanup operation returned a non-success KMIP result.",
+                                elapsedMillis(start), optionalCode(result.resultStatus()),
+                                optionalCode(result.resultReason().orElse(-1)));
+                    }
+                    if ("Destroy".equals(operation)) {
+                        var payload = result.destroyResponse();
+                        if (payload.isEmpty()) return CaseOutcome.failed(
+                                "Fixture Destroy success response omitted its typed payload.", elapsedMillis(start));
+                        var destroyed = payload.orElseThrow();
+                        boolean matches = sameIdentifier(identifier, destroyed.uniqueIdentifier());
+                        if (!matches) return CaseOutcome.failed(
+                                "Fixture Destroy response named a different object.", elapsedMillis(start));
+                    } else if (!verifyInstalledTypedResponse(operation, result)) {
+                        return CaseOutcome.failed("Fixture Revoke response shape was invalid.", elapsedMillis(start));
+                    }
+                    return CaseOutcome.passed(elapsedMillis(start), 0L,
+                            optionalCode(result.resultReason().orElse(-1)));
+                }
+            }
+        } catch (Exception exception) {
+            return CaseOutcome.failed("Fixture cleanup exchange failed (" + exception.getClass().getSimpleName()
                     + "); remote diagnostic text was suppressed.", elapsedMillis(start));
         }
+    }
+
+    private static boolean requiresSymmetricKeyFixture(CatalogLoader.CatalogCase testCase) {
+        return testCase.isolationRecipe().setupSteps().stream()
+                .anyMatch(step -> step.startsWith("Create unique SymmetricKey"))
+                || ("Get Attributes".equals(testCase.operation())
+                        && (testCase.attributeTag() == 0x420028L || testCase.attributeTag() == 0x420053L));
     }
 
     private CaseOutcome executeCreateWithCleanup(CatalogLoader.CatalogCase testCase, long start) {
@@ -253,11 +529,24 @@ public final class JavaKmipDriver implements AutoCloseable {
     }
 
     private static CaseOutcome exchangeFailure(Exception exception, long start) {
+        if (exception instanceof ClientOperationException clientFailure
+                && clientFailure.categoryCode() == SERVER_RESULT_ERROR_CATEGORY) {
+            return CaseOutcome.failed("The KMIP server returned a failure, but the installed Java client does not "
+                    + "expose Result Status or Result Reason.", elapsedMillis(start));
+        }
+        if (exception instanceof ClientOperationException clientFailure) {
+            return CaseOutcome.failed("KMIP client exchange failed (sanitized status code "
+                    + clientFailure.statusCode() + ", category code " + clientFailure.categoryCode()
+                    + ", delivery state code " + clientFailure.deliveryStateCode()
+                    + "); remote diagnostic text was suppressed.", elapsedMillis(start));
+        }
         return CaseOutcome.failed("KMIP client exchange failed (" + exception.getClass().getSimpleName()
                 + "); remote diagnostic text was suppressed.", elapsedMillis(start));
     }
 
-    private boolean verifyTypedResponse(String operation, ClientBatchItemResult result) {
+    private boolean verifyTypedResponse(CatalogLoader.CatalogCase testCase, ClientBatchItemResult result,
+                                       UniqueIdentifier fixtureIdentifier, String fixtureObjectName) {
+        String operation = testCase.operation();
         return switch (operation) {
             case "Ping" -> result.pingResponse().orElse(false);
             case "Query" -> {
@@ -286,10 +575,92 @@ public final class JavaKmipDriver implements AutoCloseable {
                 payload.orElseThrow().close();
                 yield true;
             }
+            case "Get Attributes" -> verifyGetAttributesResponse(
+                    testCase, result, fixtureIdentifier, fixtureObjectName);
             case "Discover Versions" -> JavaResponseChecks.advertisesRequestedVersion(
                     result.supportedVersions().orElse(List.of()), toProtocolVersion(connection.protocolVersion()));
-            default -> false;
+            default -> verifyInstalledTypedResponse(operation, result);
         };
+    }
+
+    private static boolean verifyGetAttributesResponse(CatalogLoader.CatalogCase testCase,
+            ClientBatchItemResult result, UniqueIdentifier fixtureIdentifier, String fixtureObjectName) {
+        var payload = result.getAttributesResponse();
+        if (payload.isEmpty()) return false;
+        try (var response = payload.orElseThrow()) {
+            if (fixtureIdentifier != null && fixtureIdentifier.kind() == UniqueIdentifier.Kind.TEXT_STRING
+                    && !fixtureIdentifier.text().equals(response.uniqueIdentifier())) {
+                return false;
+            }
+            if (testCase.attributeTag() == 0) return true;
+            var attributes = response.attributes();
+            if (attributes.isEmpty()) return false;
+            try (var view = attributes.orElseThrow().view()) {
+                org.kmipkit.ttlv.TtlvItemType expectedType = expectedAttributeTtlvType(testCase);
+                for (long index = 0; index < view.itemCount(); index++) {
+                    try (var item = view.itemAt(index); var tag = item.tag()) {
+                        if (Integer.toUnsignedLong(tag.raw()) == testCase.attributeTag()) {
+                            if (expectedType != null && item.itemType() != expectedType) return false;
+                            try (var value = item.value()) {
+                                if (testCase.attributeTag() == 0x420028L) {
+                                    return value.enumeration() == 3;
+                                }
+                                if (testCase.attributeTag() == 0x420053L) {
+                                    return fixtureObjectName != null
+                                            && nameValueMatches(value, fixtureObjectName);
+                                }
+                                return expectedType != null;
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+        }
+    }
+
+    private static boolean nameValueMatches(org.kmipkit.ttlv.TtlvValueView value, String expectedName) {
+        try (var structure = value.structure()) {
+            boolean nameMatches = false;
+            boolean typeMatches = false;
+            for (long index = 0; index < structure.itemCount(); index++) {
+                try (var item = structure.itemAt(index); var tag = item.tag(); var child = item.value()) {
+                    int rawTag = tag.raw();
+                    if (rawTag == 0x420055 && item.itemType() == org.kmipkit.ttlv.TtlvItemType.TextString) {
+                        nameMatches = expectedName.equals(new String(child.bytes(), java.nio.charset.StandardCharsets.UTF_8));
+                    } else if (rawTag == 0x420054
+                            && item.itemType() == org.kmipkit.ttlv.TtlvItemType.Enumeration) {
+                        typeMatches = child.enumeration() == 1;
+                    }
+                }
+            }
+            return nameMatches && typeMatches;
+        }
+    }
+
+    private static org.kmipkit.ttlv.TtlvItemType expectedAttributeTtlvType(
+            CatalogLoader.CatalogCase testCase) {
+        String valueType = testCase.requires().path("attribute_policy").path("value_type").asText("");
+        String normalized = valueType.replaceAll("[^A-Za-z]", "");
+        for (org.kmipkit.ttlv.TtlvItemType type : org.kmipkit.ttlv.TtlvItemType.values()) {
+            if (type.name().equalsIgnoreCase(normalized)) return type;
+        }
+        return null;
+    }
+
+    private static boolean verifyInstalledTypedResponse(String operation, ClientBatchItemResult result) {
+        try {
+            String accessor = TypedRequestFactory.responseAccessor(operation);
+            Object response = ClientBatchItemResult.class.getMethod(accessor).invoke(result);
+            Object payload = response instanceof java.util.Optional<?> optional
+                    ? optional.orElse(null) : response;
+            if (payload == null) return false;
+            if (payload instanceof Boolean value) return value;
+            if (payload instanceof AutoCloseable closeable) closeable.close();
+            return true;
+        } catch (Exception ignored) {
+            return false;
+        }
     }
 
     private static TransportConfiguration buildTransport(ConnectionConfig connection) {
@@ -353,6 +724,7 @@ public final class JavaKmipDriver implements AutoCloseable {
     }
 
     private static boolean expectedReason(CatalogLoader.CatalogCase testCase, long reason) {
+        if (testCase == null) return false;
         var reasons = testCase.requires().get("expected_result_reasons");
         if (reasons == null || !reasons.isArray()) return false;
         for (var expected : reasons) {
@@ -414,6 +786,22 @@ public final class JavaKmipDriver implements AutoCloseable {
         static CaseOutcome notRun(String diagnostic, double elapsed) {
             return new CaseOutcome("not_run", "not_checked", "unknown", "not_compared",
                     elapsed, null, null, diagnostic);
+        }
+    }
+
+    private record FixtureSetup(UniqueIdentifier identifier, CaseOutcome failure) {
+        private FixtureSetup {
+            if ((identifier == null) == (failure == null)) {
+                throw new IllegalArgumentException("A fixture setup must contain exactly one result.");
+            }
+        }
+
+        static FixtureSetup created(UniqueIdentifier identifier) {
+            return new FixtureSetup(identifier, null);
+        }
+
+        static FixtureSetup failed(CaseOutcome failure) {
+            return new FixtureSetup(null, failure);
         }
     }
 }

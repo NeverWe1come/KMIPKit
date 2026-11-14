@@ -9,6 +9,7 @@ from pathlib import Path
 TOOLS = Path(__file__).resolve().parents[1] / "tools"
 sys.path.insert(0, str(TOOLS))
 
+import cli_paths  # noqa: E402
 from cli_paths import resolve_within, validate_git_commit, validate_git_path  # noqa: E402
 
 

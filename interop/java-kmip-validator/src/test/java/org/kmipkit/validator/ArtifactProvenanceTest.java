@@ -12,31 +12,42 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ArtifactProvenanceTest {
-    private static final String COMMIT = "9692057c9ade474fb0c4e0b7130539da368eb794";
+    @Test
+    void pinnedLibraryCommitMatchesSharedRouteManifest() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        String pinnedCommit = mapper.readTree(Files.readString(Path.of("library-pin.json")))
+                .path("commit").asText();
+        String routeManifestCommit = mapper.readTree(
+                Files.readString(Path.of("../shared/coverage/route-capabilities.json")))
+                .path("library_commit").asText();
+
+        assertEquals(routeManifestCommit, pinnedCommit);
+    }
 
     @Test
     void verifiesPinnedCommitAndJarDigest() throws Exception {
         Path directory = Files.createTempDirectory("java-artifact-provenance");
         Path jar = directory.resolve("kmipkit-java.jar");
         Files.write(jar, new byte[] {1, 2, 3, 4});
-        Path manifest = writeManifest(directory, jar, COMMIT);
+        String commit = PinnedLibraryCommit.read();
+        Path manifest = writeManifest(directory, jar, commit);
 
-        var provenance = ArtifactProvenance.load(manifest, COMMIT);
+        var provenance = ArtifactProvenance.load(manifest, commit);
 
-        assertEquals(COMMIT, provenance.libraryCommit());
+        assertEquals(commit, provenance.libraryCommit());
         assertEquals(jar.toAbsolutePath(), provenance.artifactPath());
         assertEquals("org.kmipkit:kmipkit-java:1.0.0:" + ArtifactProvenance.hostClassifier(),
                 provenance.mavenCoordinate());
         assertThrows(IllegalArgumentException.class, () -> ArtifactProvenance.load(manifest, "0".repeat(40)));
 
         Files.write(jar, new byte[] {4, 3, 2, 1});
-        assertThrows(IllegalArgumentException.class, () -> ArtifactProvenance.load(manifest, COMMIT));
+        assertThrows(IllegalArgumentException.class, () -> ArtifactProvenance.load(manifest, commit));
     }
 
     @Test
     void executesPublicApiFromTheInstalledJar() throws Exception {
         Path manifest = Path.of(System.getProperty("kmipkit.artifactManifest"));
-        var provenance = ArtifactProvenance.load(manifest, COMMIT);
+        var provenance = ArtifactProvenance.load(manifest, PinnedLibraryCommit.read());
         Path loadedJar = Path.of(ClientBatchItem.class.getProtectionDomain().getCodeSource().getLocation().toURI())
                 .toAbsolutePath().normalize();
         assertEquals(provenance.artifactPath(), loadedJar);

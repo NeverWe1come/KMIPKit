@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 import re
 import tempfile
+from collections import defaultdict
 
 from cli_paths import resolve_within
 from coverage_matrix import iter_cells
@@ -72,6 +73,8 @@ def _expected_batch_operations(case: dict) -> list[str] | None:
         return None
     parameters = scenario.get("parameters", {})
     items = parameters.get("items", []) if isinstance(parameters, dict) else []
+    if not items and case.get("category") != "batch_workflows":
+        return None
     if items:
         operations = []
         for item in items:
@@ -189,15 +192,34 @@ def _validate_batch_event(event: dict, case: dict, catalog: dict, key: tuple) ->
                 raise ValueError(f"controlled peer state hashes are missing or invalid: {key}")
 
 
+def _selected_case_ids(report: dict, catalog: dict) -> set[str] | None:
+    selected_case_ids = report.get("case_ids")
+    if selected_case_ids is None:
+        return None
+    if not isinstance(selected_case_ids, list) or not selected_case_ids or any(
+            not isinstance(case_id, str) or not case_id for case_id in selected_case_ids):
+        raise ValueError("route evidence case_ids must be a non-empty array of case IDs")
+    if len(set(selected_case_ids)) != len(selected_case_ids):
+        raise ValueError("route evidence case_ids contains duplicates")
+    all_case_ids = {case["case_id"] for case in catalog.get("test_cases", [])}
+    unknown_case_ids = set(selected_case_ids) - all_case_ids
+    if unknown_case_ids:
+        raise ValueError(f"route evidence contains unknown case_ids: {sorted(unknown_case_ids)!r}")
+    return set(selected_case_ids)
+
+
 def _expected_cells(report: dict, catalog: dict, manifest: dict) -> dict[tuple, dict]:
     language = report["language"]
     selected_versions = set(report["protocol_versions"])
+    selected_case_ids = _selected_case_ids(report, catalog)
     network_combinations = {
         (item["encoding"], item["transport"]) for item in report["network_combinations"]
     }
     cells = {}
     for cell in iter_cells(catalog, manifest, languages=(language,)):
         if cell["language"] != language or cell["protocol_version"] not in selected_versions:
+            continue
+        if selected_case_ids is not None and cell["case_id"] not in selected_case_ids:
             continue
         if cell["transport"] is not None and (cell["encoding"], cell["transport"]) not in network_combinations:
             continue
@@ -232,6 +254,9 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
         raise ValueError("route evidence catalog SHA-256 does not match the catalog")
     if report.get("route_manifest_sha256") != route_manifest_sha256:
         raise ValueError("route evidence manifest SHA-256 does not match the route manifest")
+
+    all_case_ids = {case["case_id"] for case in catalog.get("test_cases", [])}
+    selected_case_ids = _selected_case_ids(report, catalog)
 
     selected_versions = report.get("protocol_versions")
     if not isinstance(selected_versions, list) or not selected_versions or not set(selected_versions) <= VERSIONS:
@@ -435,7 +460,8 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
     full_expected = _expected_cells(full_selection, catalog, manifest)
     complete_matrix = (set(selected_versions) == all_versions
                        and seen_combinations == all_network_combinations
-                       and set(expected) == set(full_expected))
+                       and set(expected) == set(full_expected)
+                       and (selected_case_ids is None or selected_case_ids == all_case_ids))
     return {
         "run_id": report["run_id"],
         "language": language,
@@ -446,6 +472,89 @@ def validate_report(report: dict, catalog: dict, manifest: dict, *,
         "complete_matrix": complete_matrix,
         "all_invocations_passed": failed == 0,
     }
+
+
+def build_evidence_ledger(report: dict, catalog: dict, manifest: dict, *, catalog_sha256: str,
+                          route_manifest_sha256: str, expected_artifact_sha256: str) -> dict:
+    """Validate one selected run and summarize all planned cells as executed or pending."""
+    summary = validate_report(
+        report, catalog, manifest, catalog_sha256=catalog_sha256,
+        route_manifest_sha256=route_manifest_sha256,
+        expected_artifact_sha256=expected_artifact_sha256,
+    )
+    language = report["language"]
+    expected = list(iter_cells(catalog, manifest, languages=(language,)))
+    expected_by_key = {_key(cell): cell for cell in expected}
+    observed_by_key = {_key(event): event for event in report["events"]}
+    unexpected = set(observed_by_key) - set(expected_by_key)
+    if unexpected:
+        raise ValueError(f"route evidence ledger contains unplanned cells: {sorted(unexpected)[:10]!r}")
+
+    route_counts: dict[str, dict[str, int]] = defaultdict(lambda: {"required_cells": 0, "executed_cells": 0})
+    shape_counts: dict[tuple, dict[str, int]] = defaultdict(lambda: {"required_cells": 0, "executed_cells": 0})
+    pending_by_case: dict[str, int] = defaultdict(int)
+    for key, cell in expected_by_key.items():
+        route_counts[cell["route_id"]]["required_cells"] += 1
+        shape = (cell["route_id"], cell["action"], cell["protocol_version"],
+                 cell["encoding"], cell["transport"])
+        shape_counts[shape]["required_cells"] += 1
+        if key in observed_by_key:
+            route_counts[cell["route_id"]]["executed_cells"] += 1
+            shape_counts[shape]["executed_cells"] += 1
+        else:
+            pending_by_case[cell["case_id"]] += 1
+
+    route_summary = []
+    for route_id, counts in sorted(route_counts.items()):
+        route_summary.append({**counts, "route_id": route_id,
+                              "pending_cells": counts["required_cells"] - counts["executed_cells"]})
+    shape_summary = []
+    for (route_id, action, version, encoding, transport), counts in sorted(
+            shape_counts.items(), key=lambda item: tuple("" if value is None else str(value)
+                                                         for value in item[0])):
+        shape_summary.append({
+            "route_id": route_id, "action": action, "protocol_version": version,
+            "encoding": encoding, "transport": transport, **counts,
+            "pending_cells": counts["required_cells"] - counts["executed_cells"],
+        })
+
+    pending_case_ids = sorted(pending_by_case)
+    executed = len(observed_by_key)
+    pending = len(expected_by_key) - executed
+    return {
+        "schema_version": "1.0",
+        "language": language,
+        "library_commit": report["library_commit"],
+        "artifact_sha256": report["artifact_sha256"],
+        "catalog_sha256": catalog_sha256,
+        "route_manifest_sha256": route_manifest_sha256,
+        "evidence_case_ids": report.get("case_ids", sorted({event["case_id"] for event in report["events"]})),
+        "selected_scope_cells": summary["expected_cells"],
+        "selected_scope_complete": summary["selected_scope_complete"],
+        "all_invocations_passed": summary["all_invocations_passed"],
+        "planned_cells": len(expected_by_key),
+        "executed_cells": executed,
+        "pending_cells": pending,
+        "complete_matrix": pending == 0 and summary["all_invocations_passed"],
+        "pending_reason_code": "route_evidence_not_emitted",
+        "pending_reason": "No validated per-cell route execution evidence is recorded for this cell.",
+        "pending_case_ids": pending_case_ids,
+        "pending_cases": [{"case_id": case_id, "pending_cells": pending_by_case[case_id]}
+                           for case_id in pending_case_ids],
+        "route_summary": route_summary,
+        "route_action_axis_summary": shape_summary,
+        "controlled_peer_cells": sum(event["action"] == "send" for event in observed_by_key.values()),
+        "vendor_interoperability_claim": False,
+    }
+
+
+def write_java_route_evidence_ledger(ledger: dict) -> Path:
+    """Write the Java route ledger to its fixed, repository-owned build path."""
+    repository = Path(__file__).resolve(strict=True).parents[3]
+    output_path = repository / "interop/java-kmip-validator/build/route-evidence-ledger.json"
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(ledger, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return output_path
 
 
 def validate_collection(reports: list[dict], catalog: dict, manifest: dict, *,
@@ -685,20 +794,44 @@ def main() -> None:
                         help="installed package digest; use language=SHA256 pairs with --parity")
     parser.add_argument("--parity", action="store_true",
                         help="validate all four full language matrices and compare normalized trees")
+    parser.add_argument("--selected-scope", action="store_true",
+                        help="validate one complete report scope and retain global pending cells separately")
+    parser.add_argument("--write-ledger", action="store_true",
+                        help="write the deterministic ledger to the Java validator's fixed build path")
     args = parser.parse_args()
     root = args.root.resolve(strict=True)
+    allowed_file_roots = (root, Path(tempfile.gettempdir()))
     catalog_path = root / "interop/shared/catalog/kmipkit-1.0-test-catalog.json"
     manifest_path = root / "interop/shared/coverage/route-capabilities.json"
     catalog_bytes = catalog_path.read_bytes()
     manifest_bytes = manifest_path.read_bytes()
-    report_paths = [resolve_within(path, (root, Path(tempfile.gettempdir())), must_exist=True)
-                    for path in args.report]
+    report_paths = [resolve_within(path, allowed_file_roots, must_exist=True) for path in args.report]
     reports = [json.loads(path.read_text(encoding="utf-8")) for path in report_paths]  # NOSONAR: report paths are resolved under the repository or system temp directory
     catalog = json.loads(catalog_bytes)
     manifest = json.loads(manifest_bytes)
     catalog_sha = hashlib.sha256(catalog_bytes).hexdigest()
     route_sha = hashlib.sha256(manifest_bytes).hexdigest()
-    if args.parity:
+    if args.selected_scope:
+        if args.parity or len(reports) != 1 or len(args.artifact_sha256) != 1 or "=" in args.artifact_sha256[0]:
+            parser.error("--selected-scope requires one report and one non-parity artifact digest")
+        summary = validate_report(
+            reports[0], catalog, manifest, catalog_sha256=catalog_sha,
+            route_manifest_sha256=route_sha, expected_artifact_sha256=args.artifact_sha256[0],
+        )
+        if args.write_ledger:
+            ledger = build_evidence_ledger(
+                reports[0], catalog, manifest, catalog_sha256=catalog_sha,
+                route_manifest_sha256=route_sha, expected_artifact_sha256=args.artifact_sha256[0],
+            )
+            ledger_path = write_java_route_evidence_ledger(ledger)
+            summary["ledger"] = {
+                "path": str(ledger_path), "planned_cells": ledger["planned_cells"],
+                "executed_cells": ledger["executed_cells"], "pending_cells": ledger["pending_cells"],
+                "complete_matrix": ledger["complete_matrix"],
+            }
+    elif args.write_ledger:
+        parser.error("--write-ledger requires --selected-scope")
+    elif args.parity:
         artifacts = {}
         for value in args.artifact_sha256:
             if "=" not in value:

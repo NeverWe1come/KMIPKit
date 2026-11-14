@@ -23,6 +23,7 @@
     "artifact_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
     "catalog_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
     "route_manifest_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "case_ids": { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 1, "uniqueItems": true },
     "protocol_versions": { "type": "array", "items": { "enum": ["2.0", "2.1"] }, "minItems": 1, "uniqueItems": true },
     "network_combinations": {
       "type": "array",
