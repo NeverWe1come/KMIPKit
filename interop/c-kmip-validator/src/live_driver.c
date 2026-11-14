@@ -6065,7 +6065,9 @@ create_key_pair_cleanup:
         return execute_attribute_mutation_case(client, ATTRIBUTE_MUTATION_ADJUST);
     if (strcmp(test_case->case_id, "test-op-delete-attribute") == 0)
         return execute_attribute_mutation_case(client, ATTRIBUTE_MUTATION_DELETE);
-    if (strcmp(test_case->case_id, "test-batch-register-encrypt-decrypt-destroy") == 0)
+    if (strcmp(test_case->case_id, "test-batch-register-encrypt-decrypt-destroy") == 0 ||
+        strcmp(test_case->case_id, "test-op-encrypt") == 0 ||
+        strcmp(test_case->case_id, "test-op-decrypt") == 0)
         return execute_registered_crypto_batch(client);
     bool cryptographic_algorithm_attribute_workflow =
         strcmp(test_case->case_id, "test-attr-cryptographic-algorithm") == 0;

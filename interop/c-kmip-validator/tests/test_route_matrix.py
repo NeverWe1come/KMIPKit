@@ -3288,9 +3288,12 @@ class RouteMatrixTests(unittest.TestCase):
             self.assertNotIn(fixture, result_text)
 
     def test_encrypt_and_decrypt_operation_cases_use_the_typed_crypto_batch(self):
-        """OASIS KMIP 2.0 §§6.1.11, 6.1.15, 6.1.39–6.1.40; KMIP 2.1 §§6.1.11, 6.1.15, 6.1.43–6.1.44."""
+        """KMIP 2.0/2.1 §§6.1.17 Encrypt, 6.1.11 Decrypt, 6.1.39/6.1.43 Register,
+        6.1.1 Activate, 6.1.40/6.1.44 Revoke, 6.1.15 Destroy, 8.2–8.6, 9.5–9.8."""
+        from coverage_matrix import iter_cells
         from artifact_support import ROOT
         from route_peer import execute_network_cells
+        from validate_route_evidence import _key
 
         catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
         manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
@@ -3298,12 +3301,17 @@ class RouteMatrixTests(unittest.TestCase):
         selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
                                                if case['case_id'] in case_ids]}
 
-        events, _, checks = execute_network_cells(
+        events, keys, checks = execute_network_cells(
             ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+        expected = {_key(cell) for cell in iter_cells(selected, manifest, languages=('c',))
+                    if cell['route_id'].startswith('c.typed-protocol.')}
 
         self.assertEqual(len(checks), 24,
                          'Encrypt and Decrypt must run across both versions and all six wire combinations')
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertEqual(len(expected), 76)
+        self.assertEqual(keys, expected)
+        self.assertEqual(len(events), len(expected))
         self.assertTrue(all(check['peer_request_operations'] == [3, 18, 31, 32, 19, 20]
                             for check in checks))
         self.assertTrue(all(check['peer_setup_operations'] == [3, 18] and

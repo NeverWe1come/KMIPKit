@@ -378,6 +378,8 @@ RECIPES = {
     'test-obj-certificate-request': ((3, 20), 'register_certificate_request'),
     'test-batch-create-activate-destroy': ((1, 18, 12, 19, 20), 'create_activate_attribute_list_revoke_destroy'),
     'test-batch-register-encrypt-decrypt-destroy': (BATCH_CRYPTO_OPERATIONS, 'batch_register_crypto'),
+    'test-op-encrypt': (BATCH_CRYPTO_OPERATIONS, 'batch_register_crypto'),
+    'test-op-decrypt': (BATCH_CRYPTO_OPERATIONS, 'batch_register_crypto'),
     'test-batch-placeholder-chain-resolves': (PLACEHOLDER_CHAIN_OPERATIONS, 'batch_placeholder_chain'),
     'test-batch-placeholder-forward-reference-rejected': ((18, 1), 'batch_placeholder_forward_reference'),
     'test-batch-order-required-placeholder-resolution':
@@ -3751,7 +3753,13 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                               len(observation) == 1 else {}),
                                            **({'peer_final_state_matches_setup':
                                                    observation[0][2]['peer_observed_state_before_sha256'] ==
-                                                   observation[0][2]['peer_observed_state_after_sha256']}
+                                                   observation[0][2]['peer_observed_state_after_sha256'],
+                                               'peer_request_operations': [
+                                                   numbers(item, 0x42005C)[0]
+                                                   for item in observation[0][0][2]
+                                                   if item[0] == BATCH_ITEM_TAG],
+                                               'peer_setup_operations': [3, 18],
+                                               'peer_cleanup_operations': [19, 20]}
                                               if observation and recipe[1] == 'batch_register_crypto' else {}),
                                            **({'peer_seed_operations': [peer_rejection['operation']],
                                                'peer_seed_effects': observation[1][2]['effects'],
