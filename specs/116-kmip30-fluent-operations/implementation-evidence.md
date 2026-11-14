@@ -150,3 +150,12 @@ capability and source edition.
 - Refactor: `ddc6fbc09` reconciles manifest exports and generated bindings;
   `c79d98018` regenerates the versioned fluent operation inventory after the
   approved parent rebase.
+- Refactor: `c4f753197` records the final manifest verification and makes two
+  schema tests validate only the records relevant to their assertions.
+
+## Draft pull request
+
+Draft PR [#213](https://github.com/NeverWe1come/KMIPKit/pull/213) is open with
+the required `[WIP]` title and is stacked on KMIPKIT-0115. Its initial pushed
+head was `c4f753197`; checks were pending when this evidence was recorded. Keep
+the WIP marker until all required checks on the current PR head are green.

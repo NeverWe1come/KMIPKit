@@ -17,6 +17,6 @@
   traceability, and bilingual guides/examples.
 - [ ] V001 Run formatting, lint, focused and full suites, sanitizers, coverage,
   manifest generation/audit, T102, traceability, and exact-head CI.
-- [ ] P001 Commit Red, Green, and Refactor separately and open a `[WIP]`
+- [x] P001 Commit Red, Green, and Refactor separately and open a `[WIP]`
   stacked draft PR. Remove `[WIP]` only after all required exact-head CI is
   green; do not merge.
