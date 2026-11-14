@@ -232,6 +232,27 @@ def pending_poll_response(protocol_minor: int, correlation: bytes) -> bytes:
     return tlv(0x42007B, 1, header + item)
 
 
+def query_async_requests_response(protocol_minor: int, correlation: bytes) -> bytes:
+    version = tlv(0x420069, 1,
+                  integer(0x42006A, 2) + integer(0x42006B, protocol_minor))
+    header = tlv(0x42007A, 1, version + tlv(0x420092, 9, struct.pack(">q", int(time.time())))
+                 + integer(0x42000D, 1))
+    payload = tlv(0x42007C, 1, tlv(0x420176, 1, tlv(0x420006, 8, correlation)))
+    item = tlv(0x42000F, 1, enumeration(0x42005C, 57) + enumeration(0x42007F, 0) + payload)
+    return tlv(0x42007B, 1, header + item)
+
+
+def completed_poll_create_response(protocol_minor: int) -> bytes:
+    version = tlv(0x420069, 1,
+                  integer(0x42006A, 2) + integer(0x42006B, protocol_minor))
+    header = tlv(0x42007A, 1, version + tlv(0x420092, 9, struct.pack(">q", int(time.time())))
+                 + integer(0x42000D, 1))
+    payload = tlv(0x42007C, 1,
+                  enumeration(0x420057, 2) + tlv(0x420094, 7, b"fixture-key-1"))
+    item = tlv(0x42000F, 1, enumeration(0x42005C, 26) + enumeration(0x42007F, 0) + payload)
+    return tlv(0x42007B, 1, header + item)
+
+
 def include_delegated_login(operations: tuple[int, ...],
                             cases: tuple[str, ...]) -> tuple[tuple[int, ...], tuple[str, ...]]:
     """Add the catalog's first-run Delegated Login to the controlled peer plan."""
@@ -365,6 +386,8 @@ def main() -> int:
     expected_operations += (1,)
     expected_cases += ("test-async-indicator-prohibited-synchronous",)
     if protocol_version == "2.1":
+        expected_operations += (1, 57, 26, 20)
+        expected_cases += ("test-async-lifecycle-poll",)
         expected_operations += (1, 26, 25)
         expected_cases += (ASYNC_CANCEL_POLL_RACE_CASE,)
     expected_cases += ("test-op-hash", "test-op-rng-retrieve", "test-op-rng-seed")
@@ -448,6 +471,7 @@ def main() -> int:
         def serve() -> None:
             nonlocal handled
             cancel_result_index = 0
+            async_lifecycle_poll = False
             try:
                 while handled < len(expected_operations):
                     accepted, _ = server.accept()
@@ -648,23 +672,35 @@ def main() -> int:
                                 raise AssertionError(
                                     "request header did not preserve the configured KMIP version"
                                 )
-                            # The dedicated asynchronous C executor has no authentication input;
+                            # Dedicated asynchronous C executors have no authentication input;
                             # every ordinary batch in this peer still proves configured credentials.
-                            if operations not in ((25,), (26,)) and (
+                            if operations not in ((25,), (26,), (57,)) and (
                                     tlv(0x420099, 7, b"interop-user") not in request or
                                     tlv(0x4200A1, 7, b"interop-password") not in request):
                                 raise AssertionError("request is missing configured KMIP credentials")
                             if operations == (1,) and enumeration(0x420007, 1) in request:
                                 cancel_correlation = b"fixture-cancel-correlation"
                                 stream.sendall(pending_create_response(protocol_minor, cancel_correlation))
+                            elif operations == (57,):
+                                cancel_correlation = b"fixture-cancel-correlation"
+                                if request.count(tlv(0x420006, 8, cancel_correlation)) != 1:
+                                    raise AssertionError("Query Async Requests omitted its exact correlation filter")
+                                async_lifecycle_poll = True
+                                stream.sendall(query_async_requests_response(protocol_minor, cancel_correlation))
                             elif operations == (26,):
                                 cancel_correlation = b"fixture-cancel-correlation"
                                 if request.count(tlv(0x420006, 8, cancel_correlation)) != 1:
                                     raise AssertionError("Poll request omitted its exact pending correlation value")
-                                stream.sendall(pending_poll_response(protocol_minor, cancel_correlation))
+                                if async_lifecycle_poll:
+                                    stream.sendall(completed_poll_create_response(protocol_minor))
+                                else:
+                                    stream.sendall(pending_poll_response(protocol_minor, cancel_correlation))
                             else:
                                 if operations == (1,) and tlv(0x420093, 8, b"interop-create") not in request:
                                     response_item_ids = (None,)
+                                if operations == (20,) and async_lifecycle_poll:
+                                    response_item_ids = (None,)
+                                    async_lifecycle_poll = False
                                 cancellation_result = 1
                                 if operations == (25,):
                                     if cancel_result_index >= len(cancel_result_values):

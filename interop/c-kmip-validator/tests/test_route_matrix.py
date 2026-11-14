@@ -752,8 +752,8 @@ class RouteMatrixTests(unittest.TestCase):
         for symbol, action, count in (
                 ('kmipkit_client_execute_query_async_requests', 'send', 6),
                 ('kmipkit_client_execute_poll', 'send', 6),
-                ('kmipkit_client_async_operation_outcome_query_async_requests_response_v1', 'decode', 6),
-                ('kmipkit_client_async_operation_outcome_poll_response_v1', 'decode', 6)):
+                ('kmipkit_client_async_operation_outcome_query_async_requests_response_v1', 'decode', 1),
+                ('kmipkit_client_async_operation_outcome_poll_response_v1', 'decode', 1)):
             with self.subTest(symbol=symbol, action=action):
                 self.assertEqual(sum(event['public_api_symbol'] == symbol and
                                      event['action'] == action for event in events), count)
