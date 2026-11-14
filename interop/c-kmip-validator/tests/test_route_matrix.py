@@ -1870,8 +1870,8 @@ class RouteMatrixTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'fixture_query_function_mismatch'):
             assert_recipe(parse(request), 'test-op-query', '2.1')
 
-    def test_discover_versions_recipe_requires_the_c_offer(self):
-        """OASIS KMIP 2.1 §6.1.16, Table 211; KMIPKIT-0092-FR-005/009."""
+    def test_discover_versions_offer_is_independent_of_the_message_version(self):
+        """OASIS KMIP 2.0/2.1 §6.1.16; KMIPKIT-0092-FR-005/009."""
         from route_peer import assert_recipe, parse, tlv
 
         def integer(tag, value):
@@ -1880,18 +1880,42 @@ class RouteMatrixTests(unittest.TestCase):
         def enumeration(tag, value):
             return tlv(tag, 5, value.to_bytes(4, 'big'))
 
-        wrong_offer = tlv(0x420069, 1, integer(0x42006A, 2) + integer(0x42006B, 0))
-        request = tlv(0x420078, 1,
-                      tlv(0x420077, 1,
-                          tlv(0x420069, 1,
-                              integer(0x42006A, 2) + integer(0x42006B, 1))
-                          + integer(0x42000D, 1))
-                      + tlv(0x42000F, 1,
-                            enumeration(0x42005C, 30)
-                            + tlv(0x420079, 1, wrong_offer)))
+        def request(header_version, offers):
+            offered_versions = b''.join(
+                tlv(0x420069, 1, integer(0x42006A, major) + integer(0x42006B, minor))
+                for major, minor in offers)
+            return tlv(0x420078, 1,
+                       tlv(0x420077, 1,
+                           tlv(0x420069, 1,
+                               integer(0x42006A, header_version[0])
+                               + integer(0x42006B, header_version[1]))
+                           + integer(0x42000D, 1))
+                       + tlv(0x42000F, 1,
+                             enumeration(0x42005C, 30)
+                             + tlv(0x420079, 1, offered_versions)))
 
+        # A 2.1 message may offer only 2.0, and the installed C builder's 2.1
+        # offer remains valid in a 2.0 message header.
+        assert_recipe(parse(request((2, 1), [(2, 0)])), 'test-op-discover-versions', '2.1')
+        assert_recipe(parse(request((2, 0), [(2, 1)])), 'test-op-discover-versions', '2.0')
+
+        # OASIS requires the optional offer list to be in decreasing order.
         with self.assertRaisesRegex(ValueError, 'fixture_discover_versions_offer_mismatch'):
-            assert_recipe(parse(request), 'test-op-discover-versions', '2.1')
+            assert_recipe(parse(request((2, 1), [(2, 0), (2, 1)])),
+                          'test-op-discover-versions', '2.1')
+
+    def test_discover_versions_fixture_response_preserves_the_supported_intersection(self):
+        from route_peer import discover_versions_offer, parse, response
+
+        for protocol_minor, supported_versions in ((0, ()), (1, ((2, 1),))):
+            with self.subTest(protocol_minor=protocol_minor):
+                tree = parse(response((30,), protocol_minor,
+                                      discover_versions=supported_versions))
+                item = next(child for child in tree[2]
+                            if child[0] == 0x42000F and child[1] == 1)
+                payload = next(child for child in item[2]
+                               if child[0] == 0x42007C and child[1] == 1)
+                self.assertEqual(list(supported_versions), discover_versions_offer(payload))
 
     def test_request_payload_target_requires_its_field_inside_the_exact_operation(self):
         from artifact_support import ROOT
@@ -1958,9 +1982,9 @@ class RouteMatrixTests(unittest.TestCase):
 
         events, _, checks = execute_network_cells(
             ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest,
-            protocol_versions=('2.1',))
+            protocol_versions=('2.0', '2.1'))
 
-        self.assertEqual(len(checks), 6, checks)
+        self.assertEqual(len(checks), 12, checks)
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
         self.assertEqual({(check['encoding'], check['transport']) for check in checks}, {
             ('TTLV', 'raw_tls'), ('TTLV', 'https'),
