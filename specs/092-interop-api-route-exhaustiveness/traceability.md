@@ -13,6 +13,26 @@
 | KMIPKIT-0092-FR-009 | Capability manifest and per-language validator route registries | Common matrix fails missing target routes unless the exact public API limitation is source-backed; Secret Data constructor and parser target sets are limited to their own object subtree and omit the two Key Block fields excluded by KMIP 2.0/2.1 §3.1 Table 11. Exact C CI run `43539660499` on head `5adcf0c` had 39,313 invoked cells, 27,423 `validator_recipe_pending`, and zero failed cells; both red steps were caused by pending route recipes. The latest exact C installed-consumer run `43571020018` at head `52561206` has 41,051/66,736 invoked cells, zero failed, and 25,685 pending, all `validator_recipe_pending`; the matching completeness validator now fails on missing routes beginning with `test-async-unknown-correlation-rejected`. The gate remains open. |
 | KMIPKIT-0092-FR-010 | Pinned OASIS inventory, catalog generator, and normative inventory tests | Source-backed inventory tests cover versioned operations, objects, attributes, TTLV types, enum values, flags, field branches, and defined boundary/error classes |
 
+### C Encrypt and Decrypt operation routes
+
+For KMIPKIT-0092-FR-003, FR-005, and FR-009, the catalogued C `test-op-encrypt`
+and `test-op-decrypt` cases invoke their typed constructors and response
+accessors through the installed ABI. The controlled peer verifies the AES
+known-answer data, ordered Register/Activate/Encrypt/Decrypt/Revoke/Destroy
+operations, and restored object state over KMIP 2.0/2.1, TTLV/JSON/XML, and raw
+TLS/HTTPS. Normative references: KMIP 2.0/2.1 §§6.1.17 Encrypt, 6.1.11 Decrypt,
+6.1.39/6.1.43 Register, 6.1.1 Activate, 6.1.40/6.1.44 Revoke, 6.1.15 Destroy,
+8.2–8.6, 9.5–9.8, and 4.50/4.57.
+
+- Red `5d30c6208` failed with zero checks before operation-case dispatch was
+  registered.
+- Green `82019abca` passed the focused test: 24 controlled peer exchanges and
+  76/76 typed C route cells. Integration test commit `d57e11dd2` updates the
+  controlled-peer operation-count contract. Full CTest passed 7/7 in 94.61
+  seconds. The exhaustive local matrix invoked 42,636/66,692 cells, with zero
+  failed and 24,056 pending recipe cells; exact-head hosted CI remains pending.
+  No cross-language parity claim is made.
+
 ### Certify Public Key fixture correction
 
 For KMIPKIT-0092-FR-003 and FR-005, `test-op-certify` creates an RSA

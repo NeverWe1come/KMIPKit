@@ -55,6 +55,9 @@
 - [x] T019 Execute the forward ID Placeholder rejection through the installed C
   ABI, prove that the request was not sent, and omit response-decoding cells
   that cannot exist after local rejection.
+- [x] T020 Execute the catalogued C Encrypt and Decrypt operation cases through
+  the installed typed ABI and controlled TLS peers for KMIP 2.0/2.1, TTLV/JSON/XML,
+  and raw TLS/HTTPS; validate typed ciphertext/plaintext responses and object cleanup.
 
 T006 and T007 remain open until each separate language validator consumes the
 generated matrix, invokes every named public route, exchanges requests and
@@ -735,3 +738,30 @@ validation error, zero transport calls, and no response decoder obligations.
   validation passed 33 tests. The full local C matrix recorded 42,560/66,736
   cells invoked, zero failed, and 24,132 pending validator recipes. Exact-head
   hosted CI and matrix completeness remain open; the PR stays WIP.
+
+## Development evidence: C Encrypt and Decrypt operation routes
+
+For KMIPKIT-0092-FR-003, FR-005, and FR-009, the catalogued `test-op-encrypt`
+and `test-op-decrypt` cases now use the installed C typed request constructors
+and typed response accessors. Their controlled peer drives the AES known
+answer through Register, Activate, Encrypt, Decrypt, Revoke, and Destroy.
+OASIS KMIP 2.0/2.1 §§6.1.17 and 6.1.11 define Encrypt and Decrypt; §§6.1.39/
+6.1.43, 6.1.1, 6.1.40/6.1.44, 6.1.15, 8.2–8.6, 9.5–9.8, and 4.50/4.57
+define the setup, cleanup, batch, and placeholder behavior exercised by this
+fixture.
+
+- Red commit `5d30c6208`: the focused integration test failed with zero
+  controlled-peer checks because neither operation case was routed through the
+  installed C consumer.
+- Green commit `82019abca`: dispatch both cases through the typed crypto batch,
+  validate all six peer-observed operations, and expose setup, cleanup, and
+  final-state evidence in each check.
+- Integration test commit `d57e11dd2`: include both new batches in the
+  controlled-peer operation-count contract.
+- Verification: `cmake --build interop/c-kmip-validator/build -j 2` passed;
+  the focused test passed 24 controlled TLS/HTTPS exchanges and 76/76 typed
+  route cells across both versions and all encoding/transport combinations.
+  Full CTest passed 7/7 in 94.61 seconds. The exhaustive local C matrix invoked
+  42,636/66,692 cells with zero failures and 24,056 pending validator recipes;
+  it remains incomplete. Exact-head hosted CI is still pending and the PR stays
+  WIP.
