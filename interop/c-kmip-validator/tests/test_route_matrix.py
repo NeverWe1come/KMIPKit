@@ -155,6 +155,10 @@ class RouteMatrixTests(unittest.TestCase):
                 ('Attestation Capable Indicator', 6, bytes(8)),
             'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ATTESTATION-TYPE':
                 ('Attestation Type', 5, (1).to_bytes(4, 'big')),
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION':
+                ('Batch Error Continuation Option', 5, (1).to_bytes(4, 'big')),
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION':
+                ('Batch Order Option', 6, (1).to_bytes(8, 'big')),
             'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-CLIENT-CORRELATION-VALUE':
                 ('Client Correlation Value', 7, b'client-correlation'),
             'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-SERVER-CORRELATION-VALUE':
