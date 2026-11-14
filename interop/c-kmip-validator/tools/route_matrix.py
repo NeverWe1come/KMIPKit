@@ -66,6 +66,9 @@ REQUEST_HEADER_MULTI_ITEM_OPTION_TARGETS = frozenset({
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION',
 })
 REQUEST_MESSAGE_CONTEXT_TARGETS = frozenset({
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-AUTHENTICATION',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-9-4-AUTHENTICATION',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-9-4-CREDENTIAL-MAY-BE-REPEATED',
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-1-BATCH-ITEM',
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-1-REQUEST-HEADER',
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT',
@@ -338,6 +341,27 @@ def _request_message_with_batch_ids(fixture: tuple, tags: dict[str, int],
     return fixture[0], fixture[1], message
 
 
+def _request_message_with_authentication(fixture: tuple, catalog: dict,
+                                         tags: dict[str, int],
+                                         protocol_version: str) -> tuple | None:
+    """Add a catalogued Username and Password Credential to the Request Header."""
+    credential_type = catalog_enum_value(catalog, 'Credential Type',
+                                         'Username and Password', protocol_version)
+    if credential_type is None:
+        return None
+    credential_value = (tags['Credential Value'], 1, [
+        (tags['Username'], 7, b'fixture-user'),
+        (tags['Password'], 7, b'fixture-pass'),
+    ])
+    credential = (tags['Credential'], 1, [
+        (tags['Credential Type'], 5, credential_type.to_bytes(4, 'big')),
+        credential_value,
+    ])
+    authentication = (tags['Authentication'], 1, [credential])
+    return _with_request_header_field(fixture, tags, authentication,
+                                      after_tag='Protocol Version')
+
+
 def _request_header_field_data(name: str, kind: int, value: object, catalog: dict,
                                protocol_version: str) -> bytes | None:
     if kind == 5:
@@ -380,6 +404,14 @@ def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
         fixture = _request_message_fixture(protocol_version, tags, catalog)
         if fixture is None:
             return None
+        if target.get('target_id') in {
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-AUTHENTICATION',
+            'KMIPKIT-ELEM-MESSAGE-FIELD-9-4-AUTHENTICATION',
+            'KMIPKIT-ELEM-MESSAGE-FIELD-9-4-CREDENTIAL-MAY-BE-REPEATED',
+        }:
+            fixture = _request_message_with_authentication(
+                fixture, catalog, tags, protocol_version)
+            return [fixture] if fixture is not None else None
         if target.get('target_id') in {
             'KMIPKIT-ELEM-MESSAGE-FIELD-8-3-UNIQUE-BATCH-ITEM-ID',
             'KMIPKIT-ELEM-MESSAGE-FIELD-9-21-UNIQUE-BATCH-ITEM-ID',
