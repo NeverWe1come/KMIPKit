@@ -398,6 +398,8 @@ def main() -> int:
     expected_cases += ("test-async-indicator-optional-completes-or-pends",)
     expected_operations += (1,)
     expected_cases += ("test-async-indicator-prohibited-synchronous",)
+    expected_operations += (1, 26, 26, 26, 20)
+    expected_cases += ("test-async-poll-repeated-pending-to-success",)
     expected_operations += (1, 26, 26)
     expected_cases += (ASYNC_POLL_FINAL_FAILURE_CASE,)
     if protocol_version == "2.1":
@@ -491,6 +493,8 @@ def main() -> int:
             async_lifecycle_poll = False
             async_request_pending = False
             async_pending_poll_count = 0
+            async_poll_mode = "none"
+            async_repeated_pending_seen = False
             try:
                 while handled < len(expected_operations):
                     accepted, _ = server.accept()
@@ -701,6 +705,9 @@ def main() -> int:
                                 cancel_correlation = b"fixture-cancel-correlation"
                                 async_request_pending = True
                                 async_pending_poll_count = 0
+                                async_poll_mode = (
+                                    "repeated_pending_success" if not async_repeated_pending_seen else
+                                    "final_failure")
                                 stream.sendall(pending_create_response(protocol_minor, cancel_correlation))
                             elif operations == (57,):
                                 cancel_correlation = b"fixture-cancel-correlation"
@@ -716,7 +723,14 @@ def main() -> int:
                                     stream.sendall(completed_poll_create_response(protocol_minor))
                                 elif async_request_pending:
                                     async_pending_poll_count += 1
-                                    if async_pending_poll_count == 1:
+                                    if (async_poll_mode == "repeated_pending_success" and
+                                            async_pending_poll_count == 3):
+                                        stream.sendall(completed_poll_create_response(protocol_minor))
+                                        async_request_pending = False
+                                        async_repeated_pending_seen = True
+                                    elif async_pending_poll_count == 1 or (
+                                            async_poll_mode == "repeated_pending_success" and
+                                            async_pending_poll_count == 2):
                                         stream.sendall(pending_poll_response(protocol_minor, cancel_correlation))
                                     else:
                                         stream.sendall(failed_poll_create_response(protocol_minor))
@@ -729,6 +743,8 @@ def main() -> int:
                                 if operations == (20,) and async_lifecycle_poll:
                                     response_item_ids = (None,)
                                     async_lifecycle_poll = False
+                                elif operations == (20,) and async_poll_mode == "repeated_pending_success":
+                                    response_item_ids = (None,)
                                 cancellation_result = 1
                                 if operations == (25,) and async_request_pending:
                                     if cancel_result_index >= len(cancel_result_values):
@@ -749,8 +765,11 @@ def main() -> int:
                                     cancellation_result=cancellation_result))
                                 if operations == (25,):
                                     async_request_pending = False
+                                    async_poll_mode = "none"
                                 elif operations == (20,) and async_lifecycle_poll:
                                     async_request_pending = False
+                                elif operations == (20,) and async_poll_mode == "repeated_pending_success":
+                                    async_poll_mode = "none"
                             handled += len(operations)
                             handled_operations.extend(operations)
                             handled_batches.append(operations)
