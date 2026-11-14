@@ -5,6 +5,11 @@
 #include <string.h>
 #include <stdio.h>
 
+_Static_assert(KMIPKIT_CREDENTIAL_TYPE_PASSWORD == 7,
+               "KMIP 3.0 Password credential discriminator");
+_Static_assert(KMIPKIT_CREDENTIAL_TYPE_CERTIFICATE == 8,
+               "KMIP 3.0 Certificate credential discriminator");
+
 #define CHECK(call) do { int32_t rc_ = (call); if (rc_ != 0) return __LINE__; } while (0)
 #define ASSERT(condition) do { if (!(condition)) return __LINE__; } while (0)
 
@@ -59,8 +64,6 @@ static int32_t create_credential_variant(
 }
 
 int kmipkit_c_kmip30_builders_probe(void) {
-    ASSERT(KMIPKIT_CREDENTIAL_TYPE_PASSWORD == 7);
-    ASSERT(KMIPKIT_CREDENTIAL_TYPE_CERTIFICATE == 8);
     uint8_t caller_bytes[] = "credential";
     kmipkit_byte_span_v1_t bytes = {caller_bytes, sizeof(caller_bytes) - 1};
     kmipkit_unique_identifier_v1_t id = identifier();
