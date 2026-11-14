@@ -48,18 +48,6 @@ PROCESS_DATE_REQUIREMENT_IDS = {
     *(f"KMIPKIT-REQ-SPEC-4.40-001-{ordinal:03}" for ordinal in range(1, 6)),
     *(f"KMIPKIT-REQ-SPEC-4.41-001-{ordinal:03}" for ordinal in range(1, 5)),
 }
-PROCESS_DATE_REQUIREMENT_DIRECTIONS = {
-    "KMIPKIT-REQ-SPEC-4.40-001-001": "client_to_server",
-    "KMIPKIT-REQ-SPEC-4.40-001-002": "unclear",
-    "KMIPKIT-REQ-SPEC-4.40-001-003": "client_to_server",
-    "KMIPKIT-REQ-SPEC-4.40-001-004": "unclear",
-    "KMIPKIT-REQ-SPEC-4.40-001-005": "unclear",
-    "KMIPKIT-REQ-SPEC-4.41-001-001": "unclear",
-    "KMIPKIT-REQ-SPEC-4.41-001-002": "client_to_server",
-    "KMIPKIT-REQ-SPEC-4.41-001-003": "unclear",
-    "KMIPKIT-REQ-SPEC-4.41-001-004": "unclear",
-}
-
 
 def load_catalog() -> dict[str, Any]:
     """Load the checked-in normative catalog used by profile generation."""
@@ -304,10 +292,7 @@ class BaselineServerScopeTests(unittest.TestCase):
         for requirement_id, requirement in requirements.items():
             with self.subTest(requirement_id=requirement_id):
                 self.assertEqual(requirement["role"], "client")
-                self.assertEqual(
-                    requirement["direction"],
-                    PROCESS_DATE_REQUIREMENT_DIRECTIONS[requirement_id],
-                )
+                self.assertEqual(requirement["direction"], "unclear")
                 self.assertEqual(requirement["scope_state"], "client_1_0")
                 self.assertEqual(requirement["profile_ids"], [])
                 self.assertEqual(requirement["status"], "scoped_verified")
