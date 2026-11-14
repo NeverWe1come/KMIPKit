@@ -236,6 +236,21 @@ def _request_message_fixture(protocol_version: str, tags: dict[str, int], catalo
     return (tags['Request Message'], 1, [header, (tags['Batch Item'], 1, batch_fields)])
 
 
+def _with_request_header_field(fixture: tuple, tags: dict[str, int], field: tuple,
+                               *, after_tag: str) -> tuple:
+    """Insert one optional field at its normative position in Request Header."""
+    header_index = next(index for index, item in enumerate(fixture[2])
+                        if item[0] == tags['Request Header'])
+    header = fixture[2][header_index]
+    fields = list(header[2])
+    anchor_index = next(index for index, item in enumerate(fields)
+                        if item[0] == tags[after_tag])
+    fields.insert(anchor_index + 1, field)
+    message = list(fixture[2])
+    message[header_index] = (header[0], header[1], fields)
+    return fixture[0], fixture[1], message
+
+
 def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
                           protocol_version: str) -> list[tuple] | None:
     """Build item trees only where the pinned catalog identifies tag and type."""
@@ -246,18 +261,10 @@ def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
         fixture = _request_message_fixture(protocol_version, tags, catalog)
         if fixture is None:
             return None
-        header_index = next(index for index, item in enumerate(fixture[2])
-                            if item[0] == tags['Request Header'])
-        header = fixture[2][header_index]
-        fields = list(header[2])
-        protocol_version_index = next(index for index, item in enumerate(fields)
-                                      if item[0] == tags['Protocol Version'])
-        fields.insert(protocol_version_index + 1,
-                      (tags['Maximum Response Size'], 2, (1024).to_bytes(4, 'big')))
-        updated_header = (header[0], header[1], fields)
-        message = list(fixture[2])
-        message[header_index] = updated_header
-        return [(fixture[0], fixture[1], message)]
+        with_maximum_response_size = _with_request_header_field(
+            fixture, tags, (tags['Maximum Response Size'], 2, (1024).to_bytes(4, 'big')),
+            after_tag='Protocol Version')
+        return [with_maximum_response_size]
     if target.get('target_id') == 'KMIPKIT-ELEM-MESSAGE-FIELD-8-3-EPHEMERAL':
         fixtures = [_request_message_fixture(protocol_version, tags, catalog, ephemeral=value)
                     for value in (0, 1)]
