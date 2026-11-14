@@ -26,6 +26,7 @@ ASYNC_CANCEL_RESULT_CASES = (
 )
 ASYNC_CANCEL_POLL_RACE_CASE = "test-async-cancel-vs-poll-race"
 ASYNC_NO_RECURSIVE_POLL_CANCEL_CASE = "test-async-no-recursive-async-poll-cancel"
+ASYNC_POLL_FINAL_FAILURE_CASE = "test-async-poll-final-operation-failure"
 
 
 def tlv(tag: int, item_type: int, value: bytes) -> bytes:
@@ -254,6 +255,17 @@ def completed_poll_create_response(protocol_minor: int) -> bytes:
     return tlv(0x42007B, 1, header + item)
 
 
+def failed_poll_create_response(protocol_minor: int) -> bytes:
+    version = tlv(0x420069, 1,
+                  integer(0x42006A, 2) + integer(0x42006B, protocol_minor))
+    header = tlv(0x42007A, 1, version + tlv(0x420092, 9, struct.pack(">q", int(time.time())))
+                 + integer(0x42000D, 1))
+    item = tlv(0x42000F, 1,
+               enumeration(0x42005C, 26) + enumeration(0x42007F, 1) +
+               enumeration(0x42007E, 256) + tlv(0x42007D, 7, b"controlled Create failure"))
+    return tlv(0x42007B, 1, header + item)
+
+
 def include_delegated_login(operations: tuple[int, ...],
                             cases: tuple[str, ...]) -> tuple[tuple[int, ...], tuple[str, ...]]:
     """Add the catalog's first-run Delegated Login to the controlled peer plan."""
@@ -386,6 +398,8 @@ def main() -> int:
     expected_cases += ("test-async-indicator-optional-completes-or-pends",)
     expected_operations += (1,)
     expected_cases += ("test-async-indicator-prohibited-synchronous",)
+    expected_operations += (1, 26, 26)
+    expected_cases += (ASYNC_POLL_FINAL_FAILURE_CASE,)
     if protocol_version == "2.1":
         expected_operations += (1, 57, 26, 20)
         expected_cases += ("test-async-lifecycle-poll",)
@@ -476,6 +490,7 @@ def main() -> int:
             cancel_result_index = 0
             async_lifecycle_poll = False
             async_request_pending = False
+            async_pending_poll_count = 0
             try:
                 while handled < len(expected_operations):
                     accepted, _ = server.accept()
@@ -685,6 +700,7 @@ def main() -> int:
                             if operations == (1,) and enumeration(0x420007, 1) in request:
                                 cancel_correlation = b"fixture-cancel-correlation"
                                 async_request_pending = True
+                                async_pending_poll_count = 0
                                 stream.sendall(pending_create_response(protocol_minor, cancel_correlation))
                             elif operations == (57,):
                                 cancel_correlation = b"fixture-cancel-correlation"
@@ -699,7 +715,12 @@ def main() -> int:
                                 if async_lifecycle_poll:
                                     stream.sendall(completed_poll_create_response(protocol_minor))
                                 elif async_request_pending:
-                                    stream.sendall(pending_poll_response(protocol_minor, cancel_correlation))
+                                    async_pending_poll_count += 1
+                                    if async_pending_poll_count == 1:
+                                        stream.sendall(pending_poll_response(protocol_minor, cancel_correlation))
+                                    else:
+                                        stream.sendall(failed_poll_create_response(protocol_minor))
+                                        async_request_pending = False
                                 else:
                                     stream.sendall(completed_poll_create_response(protocol_minor))
                             else:
