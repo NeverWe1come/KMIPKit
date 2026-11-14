@@ -1137,6 +1137,45 @@ def assert_async_create_cleanup_request(node, version):
         raise ValueError('fixture_async_create_cleanup_mismatch')
 
 
+def assert_async_lifecycle_exchange(node, version, exchange_index):
+    """Validate one ordered request and describe the matching peer response."""
+    if exchange_index == 0:
+        assert_async_create_seed_request(node, version)
+        return (1,), None
+    if exchange_index == 1:
+        assert_query_async_requests_request(node, version)
+        return (57,), None
+    if exchange_index == 2:
+        assert_poll_request(node, version)
+        return (26,), None
+    if exchange_index == 3:
+        assert_async_create_cleanup_request(node, version)
+        return (20,), (None,)
+    raise ValueError('fixture_async_lifecycle_exchange_unexpected')
+
+
+def async_lifecycle_peer_check(observation):
+    """Summarize the controlled Create, Query, Poll, and cleanup sequence."""
+    return {
+        'peer_async_interleaving_operations': [
+            numbers(request[0], 0x42005C)[0] for request in observation],
+        'peer_async_response_statuses': [
+            numbers(item, 0x42007F)[0]
+            for _, response_tree, _ in observation
+            for item in response_tree[2]
+            if item[0] == BATCH_ITEM_TAG],
+        'peer_async_query_correlation_match':
+            byte_string_values(next(descendants(observation[1][1], 0x420176)),
+                               0x420006) == [CANCEL_CORRELATION_VALUE],
+        'peer_async_poll_correlation_match':
+            byte_string_values(observation[2][0], 0x420006) == [CANCEL_CORRELATION_VALUE],
+        'peer_async_poll_completed':
+            numbers(observation[2][1], 0x42007F) == [0] and
+            text_values(observation[2][1], UNIQUE_IDENTIFIER_TAG) == ['fixture-key-1'],
+        **peer_cleanup_evidence(observation),
+    }
+
+
 def assert_async_create_seed_request(node, version):
     """Require a one-item Create with the mandatory asynchronous indicator."""
     batch_items = [item for item in node[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
@@ -1801,19 +1840,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         if logout_recipe:
                                             assert_login_logout_exchange(request_tree, version, exchange_index)
                                             response_operations = ((45,) if exchange_index == 0 else (46,))
-                                        elif recipe[1] == 'async_create_poll_lifecycle' and exchange_index == 0:
-                                            assert_async_create_seed_request(request_tree, version)
-                                            response_operations = (1,)
-                                        elif recipe[1] == 'async_create_poll_lifecycle' and exchange_index == 1:
-                                            assert_query_async_requests_request(request_tree, version)
-                                            response_operations = (57,)
-                                        elif recipe[1] == 'async_create_poll_lifecycle' and exchange_index == 2:
-                                            assert_poll_request(request_tree, version)
-                                            response_operations = (26,)
-                                        elif recipe[1] == 'async_create_poll_lifecycle' and exchange_index == 3:
-                                            assert_async_create_cleanup_request(request_tree, version)
-                                            response_operations = (20,)
-                                            response_item_ids = (None,)
+                                        elif recipe[1] == 'async_create_poll_lifecycle':
+                                            response_operations, response_item_ids = \
+                                                assert_async_lifecycle_exchange(
+                                                    request_tree, version, exchange_index)
                                         elif recipe[1] == 'async_create_pending' and exchange_index == 0:
                                             assert_async_create_seed_request(request_tree, version)
                                             response_operations = (1,)
@@ -1927,14 +1957,16 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         if response_operations != recipe[0] and not cleanup_exchange:
                                             response_statuses = tuple(reversed(response_statuses))
                                             response_reasons = tuple(reversed(response_reasons))
-                                        if recipe[1] == 'async_create_poll_lifecycle' and exchange_index == 0:
-                                            response_wire = pending_create_response(
-                                                CANCEL_CORRELATION_VALUE, int(version[-1]))
-                                        elif recipe[1] == 'async_create_poll_lifecycle' and exchange_index == 1:
-                                            response_wire = query_async_requests_response(
-                                                CANCEL_CORRELATION_VALUE, int(version[-1]))
-                                        elif recipe[1] == 'async_create_poll_lifecycle' and exchange_index == 2:
-                                            response_wire = completed_poll_create_response(int(version[-1]))
+                                        if (recipe[1] == 'async_create_poll_lifecycle' and
+                                                exchange_index < 3):
+                                            response_wire = (
+                                                pending_create_response(CANCEL_CORRELATION_VALUE,
+                                                                        int(version[-1]))
+                                                if exchange_index == 0 else
+                                                query_async_requests_response(CANCEL_CORRELATION_VALUE,
+                                                                              int(version[-1]))
+                                                if exchange_index == 1 else
+                                                completed_poll_create_response(int(version[-1])))
                                         elif recipe[1] in ('async_create_pending', 'cancel_async',
                                                          'cancel_poll_race') and exchange_index == 0:
                                             response_wire = pending_create_response(
@@ -2205,26 +2237,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                    if item[0] == BATCH_ITEM_TAG
                                                    for status in numbers(item, 0x42007F))}
                                               if recipe[1] == 'cancel_poll_race' else {}),
-                                           **({'peer_async_interleaving_operations': [
-                                                   numbers(request[0], 0x42005C)[0]
-                                                   for request in observation],
-                                               'peer_async_response_statuses': [
-                                                   numbers(item, 0x42007F)[0]
-                                                   for _, response_tree, _ in observation
-                                                   for item in response_tree[2]
-                                                   if item[0] == BATCH_ITEM_TAG],
-                                               'peer_async_query_correlation_match':
-                                                   byte_string_values(
-                                                       next(descendants(observation[1][1], 0x420176)),
-                                                       0x420006) == [CANCEL_CORRELATION_VALUE],
-                                               'peer_async_poll_correlation_match':
-                                                   byte_string_values(observation[2][0], 0x420006) ==
-                                                   [CANCEL_CORRELATION_VALUE],
-                                               'peer_async_poll_completed':
-                                                   numbers(observation[2][1], 0x42007F) == [0] and
-                                                   text_values(observation[2][1], UNIQUE_IDENTIFIER_TAG) ==
-                                                   ['fixture-key-1'],
-                                               **peer_cleanup_evidence(observation)}
+                                           **(async_lifecycle_peer_check(observation)
                                               if recipe[1] == 'async_create_poll_lifecycle' and
                                               len(observation) == 4 else {}),
                                            **({'peer_final_state_matches_setup':
