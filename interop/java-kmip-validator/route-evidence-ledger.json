@@ -855,6 +855,10 @@
     "test-norm-tag-tag-420051",
     "test-norm-message-field-message-field-8-3-ephemeral",
     "test-norm-structure-member-structure-member-7-23-object-group",
+    "test-norm-structure-member-structure-member-7-6-attributes",
+    "test-norm-structure-member-structure-member-7-6-object-groups",
+    "test-norm-structure-member-structure-member-7-6-object-types",
+    "test-norm-structure-member-structure-member-7-7-constraint",
     "test-norm-payload-client-add-attribute-request-20-002",
     "test-norm-payload-client-add-attribute-request-21-002",
     "test-norm-payload-client-modify-attribute-request-20-003",
@@ -1380,7 +1384,7 @@
     "test-norm-credential-credential-hashed-password",
     "test-norm-credential-credential-username-and-password"
   ],
-  "executed_cells": 22573,
+  "executed_cells": 22589,
   "language": "java",
   "library_commit": "489fafc79ef89db2524eafa7a6c6482f5cf75d97",
   "pending_case_ids": [
@@ -2553,10 +2557,6 @@
     "test-norm-structure-member-structure-member-7-5-shredding-algorithm",
     "test-norm-structure-member-structure-member-7-5-streaming-capability",
     "test-norm-structure-member-structure-member-7-5-unwrap-mode",
-    "test-norm-structure-member-structure-member-7-6-attributes",
-    "test-norm-structure-member-structure-member-7-6-object-groups",
-    "test-norm-structure-member-structure-member-7-6-object-types",
-    "test-norm-structure-member-structure-member-7-7-constraint",
     "test-norm-structure-member-structure-member-9-11-attestation-attestation-assertion",
     "test-norm-structure-member-structure-member-9-11-attestation-attestation-measurement",
     "test-norm-structure-member-structure-member-9-11-attestation-attestation-type",
@@ -7386,22 +7386,6 @@
       "pending_cells": 8
     },
     {
-      "case_id": "test-norm-structure-member-structure-member-7-6-attributes",
-      "pending_cells": 4
-    },
-    {
-      "case_id": "test-norm-structure-member-structure-member-7-6-object-groups",
-      "pending_cells": 4
-    },
-    {
-      "case_id": "test-norm-structure-member-structure-member-7-6-object-types",
-      "pending_cells": 4
-    },
-    {
-      "case_id": "test-norm-structure-member-structure-member-7-7-constraint",
-      "pending_cells": 4
-    },
-    {
       "case_id": "test-norm-structure-member-structure-member-9-11-attestation-attestation-assertion",
       "pending_cells": 12
     },
@@ -8002,7 +7986,7 @@
       "pending_cells": 15
     }
   ],
-  "pending_cells": 48890,
+  "pending_cells": 48874,
   "pending_reason": "No validated per-cell route execution evidence is recorded for this cell.",
   "pending_reason_code": "route_evidence_not_emitted",
   "planned_cells": 71463,
@@ -8020,8 +8004,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2272,
-      "pending_cells": 1907,
+      "executed_cells": 2276,
+      "pending_cells": 1903,
       "protocol_version": "2.1",
       "required_cells": 4179,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -8300,8 +8284,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 12,
-      "pending_cells": 107,
+      "executed_cells": 16,
+      "pending_cells": 103,
       "protocol_version": "2.1",
       "required_cells": 119,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
@@ -8340,8 +8324,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2296,
-      "pending_cells": 1930,
+      "executed_cells": 2300,
+      "pending_cells": 1926,
       "protocol_version": "2.1",
       "required_cells": 4226,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
@@ -8360,8 +8344,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 2272,
-      "pending_cells": 1906,
+      "executed_cells": 2276,
+      "pending_cells": 1902,
       "protocol_version": "2.1",
       "required_cells": 4178,
       "route_id": "java.generic-ttlv.ttlv_item.create",
@@ -34531,8 +34515,8 @@
   "route_manifest_sha256": "3fe892f7b2804e8c1b03f9dc01c8cc71038829f7ed5aaf38d546fea90ddc980a",
   "route_summary": [
     {
-      "executed_cells": 4520,
-      "pending_cells": 3743,
+      "executed_cells": 4524,
+      "pending_cells": 3739,
       "required_cells": 8263,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item"
     },
@@ -34615,8 +34599,8 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.longinteger"
     },
     {
-      "executed_cells": 24,
-      "pending_cells": 203,
+      "executed_cells": 28,
+      "pending_cells": 199,
       "required_cells": 227,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure"
     },
@@ -34627,14 +34611,14 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring"
     },
     {
-      "executed_cells": 4568,
-      "pending_cells": 3789,
+      "executed_cells": 4572,
+      "pending_cells": 3785,
       "required_cells": 8357,
       "route_id": "java.generic-ttlv.ttlv_codec.decode"
     },
     {
-      "executed_cells": 4520,
-      "pending_cells": 3741,
+      "executed_cells": 4524,
+      "pending_cells": 3737,
       "required_cells": 8261,
       "route_id": "java.generic-ttlv.ttlv_item.create"
     },
@@ -35984,7 +35968,7 @@
     }
   ],
   "schema_version": "1.0",
-  "selected_scope_cells": 22573,
+  "selected_scope_cells": 22589,
   "selected_scope_complete": true,
   "vendor_interoperability_claim": false
 }

@@ -1083,3 +1083,32 @@ pending cells across 1,323 case IDs. All pending cells remain planned and
 carry `route_evidence_not_emitted`; the matrix is not complete. The previously
 exact-head run `43537492866` passed before this slice; CI for the new head must
 be checked separately.
+
+## KMIP 2.1 Constraint Structure member routes
+
+Sources: OASIS KMIP 2.1 Specification §7.6 Table 357 defines optional
+Attributes (`0x420125`), Object Groups (`0x420166`), and Object Types
+(`0x420167`) Structure members of Constraint (`0x420169`). Section 7.7
+Table 358 defines the optional, repeatable Constraint member (`0x420169`) in
+Constraints (`0x420168`). The catalog provides four local Java cases, each
+with four applicable routes: `TtlvValue.structure`, `TtlvItem.create`,
+`TtlvItem.view`, and `TtlvCodec.decode`.
+
+Red commit `dc77279a5` requires the four per-case route sets and fails because
+the installed Structure constructor event is absent. Green commit `db6c9c5e5`
+invokes each installed constructor, Item creation/view, and decoder; it checks
+absence and presence for each §7.6 field and absence plus two repeated
+Constraint members for §7.7. Refactor commit `9784fa06f` reuses one
+source-backed fixture table for execution, assertions, and report selection.
+
+The focused controlled-peer test and shared selected-scope validator pass on
+the installed Java artifact pinned to
+`489fafc79ef89db2524eafa7a6c6482f5cf75d97`. The validator accepts 22,589 of
+22,589 selected cells with zero failures. The four cases add 16 cells; the
+full ledger has 71,463 planned, 22,589 executed, and 48,874 pending cells
+across 1,319 pending case IDs. Every pending cell remains planned and carries
+`route_evidence_not_emitted`; `complete_matrix` remains false.
+
+The full installed Java consumer suite also passes: 54 tests, no failures,
+errors, or skips. The generated route ledger matches its checked-in reference;
+the full-matrix gate remains incomplete.

@@ -101,8 +101,8 @@ baseline, regenerate the checked-in ledger with
 rejects generated ledgers that do not record successful invocations.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
-baseline. These recipes execute 22,573 of 71,463 planned Java route cells, with
-no failed cells; the ledger records the other 48,890 as pending and does not imply
+baseline. These recipes execute 22,589 of 71,463 planned Java route cells, with
+no failed cells; the ledger records the other 48,874 as pending and does not imply
 vendor interoperability or full-matrix completion. Local TTLV recipes exercise 51
 enumeration families, all six bitmask aggregate cases, and all 44 individual
 bitmask value cases through the applicable
@@ -110,6 +110,9 @@ installed constructors, item views, decoders, and typed attribute wrappers.
 They also cover the optional and repeatable Object Group member in KMIP 2.1
 §7.23 with all three applicable generic Item routes; §4.35 Tables 99–100
 define its Text String attribute representation.
+Four optional/repeatable members in the KMIP 2.1 Constraint and Constraints
+structures also exercise the installed `TtlvValue.structure`, Item creation,
+Item view, and decoder routes (§§7.6–7.7, Tables 357–358).
 The completed selected scope now includes the Ephemeral Boolean field in KMIP
 2.0/2.1 (§8.3) and all six versioned Add, Modify, and Set Attribute New
 Attribute cases: each New Attribute is checked as a §5.7 Structure containing
@@ -117,7 +120,7 @@ one direct Name Item, and the installed direct constructors, request-to-batch
 conversions, TTLV payload conversion, controlled TLS exchange, and typed
 response readers are invoked under the operation-specific §6.1 tables.
 
-The 48,890 pending cells belong to 1,323 case IDs listed in the generated
+The 48,874 pending cells belong to 1,319 case IDs listed in the generated
 ledger; every one has the reason `route_evidence_not_emitted`. The applicability
 rule is the shared catalog and capability matrix after protocol-version,
 public-route, encoding/transport, and source-backed exclusion filters. A cell
