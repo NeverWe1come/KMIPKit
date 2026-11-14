@@ -531,6 +531,9 @@ class ControlledTlsPeerTest {
                     appendOperationStructureRouteEvents(events, fixture);
                 }
             }
+            for (ScalarOperationStructureFixture fixture : SCALAR_OPERATION_STRUCTURE_FIXTURES) {
+                appendScalarOperationStructureRouteEvents(events, fixture, protocolVersion);
+            }
             LocalCatalogRouteChecks.executeTags(readRouteEvidenceCatalog(), protocolVersion, genericOnlyTagCaseIds(),
                     invocation -> appendLocalCatalogInvocation(events, protocolVersion, invocation));
             Set<String> typedTagIdentityCases = missingTypedTagIdentityCaseIds(events, protocolVersion);
@@ -974,6 +977,8 @@ class ControlledTlsPeerTest {
         int objectGroupLocalRouteEventCount = 3;
         int asynchronousRequestOperationStructureRouteEventCount = 6;
         int operationStructureRouteEventCount = OPERATION_STRUCTURE_FIXTURES.size() * 6;
+        int scalarOperationStructureRouteEventCount = SCALAR_OPERATION_STRUCTURE_FIXTURES.size()
+                * KMIP_2_0_AND_2_1.size() * 6;
         int structureMemberStructureRouteEventCount = STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size() * 4;
         int structureMemberByteStringRouteEventCount = STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.stream()
                 .mapToInt(fixture -> 4 + (fixture.typedQueryFilter() ? 1 : 0)).sum();
@@ -1010,6 +1015,7 @@ class ControlledTlsPeerTest {
                         + credentialEnvelopeEventCount + objectGroupLocalRouteEventCount
                         + asynchronousRequestOperationStructureRouteEventCount
                         + operationStructureRouteEventCount
+                        + scalarOperationStructureRouteEventCount
                         + structureMemberStructureRouteEventCount + structureMemberByteStringRouteEventCount
                         + structureMemberValueRouteEventCount
                         + batchErrorContinuationEventCount + genericTagEventCount + typedTagIdentityEventCount
@@ -1035,7 +1041,7 @@ class ControlledTlsPeerTest {
         long dataTypeCaseCount = dataTypeFixtures.stream().map(DataTypeFixture::caseId).distinct().count();
         long localEnumerationCaseCount = localEnumerationFixtures.stream()
                 .map(EnumerationFixture::caseId).distinct().count();
-        assertEquals(16 + OPERATION_STRUCTURE_FIXTURES.size()
+        assertEquals(16 + OPERATION_STRUCTURE_FIXTURES.size() + SCALAR_OPERATION_STRUCTURE_FIXTURES.size()
                         + enumerationFixtures.size() + localEnumerationCaseCount + bitmaskCaseCount
                         + dataTypeCaseCount
                         + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + genericTagCaseIds.size()
@@ -3344,6 +3350,7 @@ class ControlledTlsPeerTest {
         caseIds.add("test-norm-structure-member-structure-member-7-23-object-group");
         caseIds.add("test-norm-operation-structure-operation-structure-7-2-asynchronous-request");
         OPERATION_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
+        SCALAR_OPERATION_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         STRUCTURE_MEMBER_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         STRUCTURE_MEMBER_VALUE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
@@ -4861,6 +4868,112 @@ class ControlledTlsPeerTest {
             assertOperationStructureMember(structureView, fixture, memberValue);
         }
         appendGenericStructureRouteEvents(events, fixture.caseId(), fixture.targetId(), treeHash);
+    }
+
+    // OASIS KMIP 2.0/2.1 §§7.6/7.10, 7.10/7.14, 7.12/7.16, 7.15/7.19, and 7.16/7.20
+    // define these operation fields with Integer, Boolean, Text String, or Byte String values.
+    private static void appendScalarOperationStructureRouteEvents(ArrayNode events,
+            ScalarOperationStructureFixture fixture, String protocolVersion) throws Exception {
+        CodecLimits limits = CodecLimits.defaults();
+        byte[] scalarBytes = scalarOperationStructureBytes(fixture.valueType());
+        byte[] wire = item(fixture.tag(), fixture.valueType().code(), scalarBytes);
+        byte[] structureWire = structure(0x42000f, wire);
+        String scalarHash = normalizedTreeSha256(wire);
+        String structureHash = normalizedTreeSha256(structureWire);
+
+        TtlvStructure fields = TtlvStructure.create();
+        fields = appendTtlvItem(fields, fixture.tag(),
+                scalarOperationStructureValue(fixture.valueType(), limits), limits);
+        TtlvStructure completedFields = fields;
+        try (completedFields;
+                var structureView = completedFields.view();
+                TtlvItemView field = structureView.itemAt(0);
+                Tag fieldTag = field.tag();
+                var fieldValue = field.value()) {
+            assertEquals(1, structureView.itemCount());
+            assertEquals(fixture.tag(), fieldTag.raw());
+            assertEquals(fixture.valueType(), field.itemType());
+            assertScalarOperationStructureValue(fieldValue, fixture.valueType(), scalarBytes);
+        }
+        appendRouteEvent(events, fixture.caseId(),
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.create", fixture.targetId(),
+                "org.kmipkit.ttlv.TtlvStructure.create", null, null,
+                "construct", protocolVersion, null, structureHash, null);
+        appendRouteEvent(events, fixture.caseId(),
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem", fixture.targetId(),
+                "org.kmipkit.ttlv.TtlvStructure.withItem", null, null,
+                "construct", protocolVersion, null, structureHash, null);
+        appendRouteEvent(events, fixture.caseId(), scalarOperationStructureValueRoute(fixture.valueType()),
+                fixture.targetId(), scalarOperationStructureValueSymbol(fixture.valueType()), null, null,
+                "construct", protocolVersion, null, scalarHash, null);
+        appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_item.create", fixture.targetId(),
+                "org.kmipkit.ttlv.TtlvItem.create", null, null,
+                "construct", protocolVersion, null, scalarHash, null);
+        try (TtlvItem decoded = TtlvCodec.decode(wire);
+                var view = decoded.view();
+                Tag tag = view.tag();
+                var value = view.value()) {
+            assertEquals(fixture.tag(), tag.raw());
+            assertEquals(fixture.valueType(), view.itemType());
+            assertScalarOperationStructureValue(value, fixture.valueType(), scalarBytes);
+        }
+        appendRouteEvent(events, fixture.caseId(),
+                "java.generic-ttlv.function.ttlv_item_view_from_item", fixture.targetId(),
+                "org.kmipkit.ttlv.TtlvItem.view", null, null,
+                "decode", protocolVersion, null, null, scalarHash);
+        appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_codec.decode", fixture.targetId(),
+                "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
+                "decode", protocolVersion, null, null, scalarHash);
+    }
+
+    private static TtlvValue scalarOperationStructureValue(TtlvItemType valueType, CodecLimits limits) {
+        return switch (valueType) {
+            case Integer -> TtlvValue.Integer(42);
+            case Boolean -> TtlvValue.Boolean(true);
+            case TextString -> TtlvValue.TextString(scalarOperationStructureBytes(valueType), limits);
+            case ByteString -> TtlvValue.ByteString(scalarOperationStructureBytes(valueType), limits);
+            default -> throw new IllegalArgumentException("Unsupported scalar operation structure type");
+        };
+    }
+
+    private static byte[] scalarOperationStructureBytes(TtlvItemType valueType) {
+        return switch (valueType) {
+            case Integer -> intBytes(42);
+            case Boolean -> longBytes(1);
+            case TextString -> "kmipkit-java-fixture".getBytes(StandardCharsets.UTF_8);
+            case ByteString -> new byte[] {0x01, 0x23, 0x45, 0x67};
+            default -> throw new IllegalArgumentException("Unsupported scalar operation structure type");
+        };
+    }
+
+    private static String scalarOperationStructureValueRoute(TtlvItemType valueType) {
+        return switch (valueType) {
+            case Integer -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer";
+            case Boolean -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.boolean";
+            case TextString -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring";
+            case ByteString -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring";
+            default -> throw new IllegalArgumentException("Unsupported scalar operation structure type");
+        };
+    }
+
+    private static String scalarOperationStructureValueSymbol(TtlvItemType valueType) {
+        return switch (valueType) {
+            case Integer -> "org.kmipkit.ttlv.TtlvValue.Integer";
+            case Boolean -> "org.kmipkit.ttlv.TtlvValue.Boolean";
+            case TextString -> "org.kmipkit.ttlv.TtlvValue.TextString";
+            case ByteString -> "org.kmipkit.ttlv.TtlvValue.ByteString";
+            default -> throw new IllegalArgumentException("Unsupported scalar operation structure type");
+        };
+    }
+
+    private static void assertScalarOperationStructureValue(org.kmipkit.ttlv.TtlvValueView value,
+            TtlvItemType valueType, byte[] expectedBytes) throws Exception {
+        switch (valueType) {
+            case Integer -> assertEquals(42, value.integer());
+            case Boolean -> assertTrue(value.booleanValue());
+            case TextString, ByteString -> assertArrayEquals(expectedBytes, value.bytes());
+            default -> throw new IllegalArgumentException("Unsupported scalar operation structure type");
+        }
     }
 
     private static void assertOperationStructureMember(TtlvStructureView fields,
