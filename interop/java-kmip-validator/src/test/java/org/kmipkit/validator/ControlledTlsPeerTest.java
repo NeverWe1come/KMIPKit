@@ -145,6 +145,31 @@ class ControlledTlsPeerTest {
             "test-norm-operation-structure-operation-structure-7-37-server-information";
     private static final String SERVER_INFORMATION_TARGET_ID =
             "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-37-SERVER-INFORMATION";
+    private static final String USAGE_LIMITS_CASE_ID =
+            "test-norm-operation-structure-operation-structure-7-40-usage-limits";
+    private static final String USAGE_LIMITS_TARGET_ID =
+            "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-40-USAGE-LIMITS";
+    private record UsageLimitsMemberFixture(String caseId, String targetId, int rawTag,
+            TtlvItemType itemType, long value) { }
+
+    private static final List<UsageLimitsMemberFixture> USAGE_LIMITS_MEMBER_FIXTURES = List.of(
+            new UsageLimitsMemberFixture(
+                    "test-norm-structure-member-structure-member-7-40-usage-limits-total",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-40-USAGE-LIMITS-TOTAL", 0x420097,
+                    TtlvItemType.LongInteger, 100),
+            new UsageLimitsMemberFixture(
+                    "test-norm-structure-member-structure-member-7-40-usage-limits-count",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-40-USAGE-LIMITS-COUNT", 0x420096,
+                    TtlvItemType.LongInteger, 73),
+            new UsageLimitsMemberFixture(
+                    "test-norm-structure-member-structure-member-7-40-usage-limits-unit",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-40-USAGE-LIMITS-UNIT", 0x420098,
+                    TtlvItemType.Enumeration, KmipValues.UsageLimitsUnit.OBJECT));
+    private static final List<String> USAGE_LIMITS_CASE_IDS = List.of(
+            USAGE_LIMITS_CASE_ID,
+            USAGE_LIMITS_MEMBER_FIXTURES.get(0).caseId(),
+            USAGE_LIMITS_MEMBER_FIXTURES.get(1).caseId(),
+            USAGE_LIMITS_MEMBER_FIXTURES.get(2).caseId());
     private static final List<ProfileInformationMemberFixture> PROFILE_INFORMATION_MEMBER_FIXTURES = List.of(
             new ProfileInformationMemberFixture(
                     "test-norm-structure-member-structure-member-7-31-profile-version",
@@ -1231,7 +1256,7 @@ class ControlledTlsPeerTest {
                         + 11 + STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size()
                         + STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.size()
                         + STRUCTURE_MEMBER_VALUE_FIXTURES.size() + PROFILE_INFORMATION_CASE_IDS.size()
-                        + SERVER_INFORMATION_CASE_IDS.size(),
+                        + SERVER_INFORMATION_CASE_IDS.size() + USAGE_LIMITS_CASE_IDS.size(),
                 report.path("case_ids").size());
         List<String> expectedCredentialCaseIds = CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().toList();
         int credentialCaseStart = report.path("case_ids").size() - expectedCredentialCaseIds.size();
@@ -3538,6 +3563,7 @@ class ControlledTlsPeerTest {
         caseIds.add(CONSTRAINTS_CASE_ID);
         PROFILE_INFORMATION_CASE_IDS.forEach(caseIds::add);
         SERVER_INFORMATION_CASE_IDS.forEach(caseIds::add);
+        USAGE_LIMITS_CASE_IDS.forEach(caseIds::add);
         OPERATION_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         SCALAR_OPERATION_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         STRUCTURE_MEMBER_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
@@ -4578,6 +4604,24 @@ class ControlledTlsPeerTest {
                             "java.generic-ttlv.ttlv_codec.decode");
             for (String route : routes) {
                 String action = route.endsWith("ttlv_item.create") || route.endsWith("textstring")
+                        ? "construct" : "decode";
+                assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(), route,
+                        action, protocolVersion);
+            }
+        }
+        // OASIS KMIP 2.0 §7.34 Table 354 and KMIP 2.1 §7.40 Table 392 require
+        // Usage Limits Total, Count, and Unit in the enclosing Structure.
+        assertGenericStructureRouteEvents(events, USAGE_LIMITS_CASE_ID,
+                USAGE_LIMITS_TARGET_ID, protocolVersion);
+        for (UsageLimitsMemberFixture fixture : USAGE_LIMITS_MEMBER_FIXTURES) {
+            for (String route : List.of(
+                    fixture.itemType() == TtlvItemType.LongInteger
+                            ? "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.longinteger"
+                            : "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
+                    "java.generic-ttlv.ttlv_item.create",
+                    "java.generic-ttlv.function.ttlv_item_view_from_item",
+                    "java.generic-ttlv.ttlv_codec.decode")) {
+                String action = route.endsWith("ttlv_item.create") || route.contains("ttlvvalue.")
                         ? "construct" : "decode";
                 assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(), route,
                         action, protocolVersion);
