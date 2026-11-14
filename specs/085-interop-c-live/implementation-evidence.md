@@ -801,6 +801,35 @@ TTLV tree.
   pending recipe cells (27,423) and zero failed cells. The complete matrix is
   still open, and PR #170 remains WIP.
 
+### Discover Versions offer and installed C route matrix
+
+The controlled peer validates that a Discover Versions request's optional,
+repeated Protocol Version values are well-formed and ordered by decreasing
+preference. It does not require the offered versions to match the Request
+Header version: OASIS KMIP 2.0 §6.1.16 Table 196 and KMIP 2.1 §6.1.16 Table
+211 distinguish the message version from the list of versions supported by
+the client. The installed C constructor currently emits an offer of 2.1; the
+route is still exercised with both 2.0 and 2.1 message headers. The shared
+route manifest retains both versions for the C builder and typed supported-
+versions response accessor. The network test requires both public symbols in
+the invocation evidence for TTLV, JSON, and XML over raw TLS and HTTPS.
+These checks also follow KMIPKIT-0092-FR-001, FR-005, FR-006, and FR-009.
+
+- Review of the original offer assertion found that it incorrectly rejected a
+  2.0 offer solely because the Request Header used 2.1. New Red tests cover a
+  header/offer version mismatch that OASIS allows and reject an ascending offer
+  list as required by the preference-order rule.
+- The peer now checks the offer's structure and order without equating it to
+  the header version. The manifest keeps the request and response routes
+  enabled for both versions. Focused checks and the full installed C route
+  matrix pass: 12 Discover Versions exchanges and 148/148 route-matrix tests.
+  CTest passes 7/7; the shared route capability and coverage-matrix suites pass
+  93/93; and `route_capabilities.py --check` passes. For the controlled KMIP
+  2.0 peer, the offer/header mismatch yields an empty intersection as defined
+  by §6.1.16 and the typed accessor accepts the present empty Supported
+  Versions list. The global C completeness matrix still has pending recipes,
+  so PR #170 and the stacked PR remain WIP.
+
 ### Async Cancel local payload routes
 
 The local C recipe invokes `kmipkit_cancel_request_create` and
