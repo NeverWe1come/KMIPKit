@@ -50,6 +50,8 @@
   single-item batch with both optional batch header fields omitted.
 - [x] T017 Execute a two-item C batch with Undo continuation, validate the
   Operation Undone and failed Get results, and confirm fixture state rollback.
+- [x] T018 Validate failed Get response accessors for a two-item Continue
+  batch while confirming the following Get Attribute List still executes.
 
 T006 and T007 remain open until each separate language validator consumes the
 generated matrix, invokes every named public route, exchanges requests and
@@ -661,7 +663,7 @@ Get operation and single-item message/batch shapes.
   single-item route test passed all 12 controlled exchanges across both
   protocol versions, three encodings, and two transports. Full CTest passed
   7/7 in 104.44 seconds, including the full route-matrix contract suite and
-  both controlled TLS peers. Updated full-matrix counts remain pending.
+  both controlled TLS peers. A later matrix measurement is recorded below.
 
 ## Development evidence: C Undo continuation and rollback response
 
@@ -689,3 +691,22 @@ even though the peer's state is rolled back.
   `validator_recipe_pending` cells. The matrix remains incomplete. Exact-head
   hosted CI and remaining language/matrix coverage remain open; this PR stays
   WIP.
+
+
+## Development evidence: C Continue failed-item response accessors
+
+For KMIPKIT-0092-FR-003, FR-005, and FR-009, the installed C consumer now
+validates the first failed Get response in a Continue batch: result status and
+reason, absent typed and generic payloads, response header, and absent pending
+correlation. The controlled peer also verifies that the second Get Attribute
+List still executes. OASIS KMIP 2.0/2.1 §§8.2–8.6 and 9.5–9.7 define batch
+continuation and response items; §11.5 defines the Object Not Found reason.
+
+- Red commit `371057393`: the focused test failed because Continue omitted the
+  failed-item response accessors and route evidence.
+- Green commit `196fad2e4`: use the existing safe failure accessor checks for
+  Continue and record the continuation enumeration and response routes in the
+  controlled-peer evidence.
+- Verification: the focused route test passed 24 constructor/transport/
+  version checks; full CTest passed 7/7 in 92.92 seconds. Exact-head CI, matrix
+  completeness, other languages, and the overall PR remain open and WIP.
