@@ -538,6 +538,18 @@ class RouteMatrixTests(unittest.TestCase):
 
         self.assertEqual(len(checks), 60)
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        for case in selected_cases:
+            case_events = [event for event in events if event['case_id'] == case['case_id']]
+            for symbol, action, count in (
+                    ('kmipkit_client_batch_item_create', 'construct', 12),
+                    ('kmipkit_client_batch_item_create', 'send', 12),
+                    ('kmipkit_client_batch_item_create', 'decode', 12),
+                    ('kmipkit_client_batch_item_response_create', 'decode', 2)):
+                with self.subTest(case_id=case['case_id'], symbol=symbol, action=action):
+                    self.assertEqual(
+                        sum(event['public_api_symbol'] == symbol and event['action'] == action
+                            for event in case_events),
+                        count)
         self.assertEqual(sum(event['public_api_symbol'] ==
                              'kmipkit_client_async_operation_outcome_cancel_response_v1'
                              for event in events), 30)
