@@ -3084,8 +3084,8 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(any(event['target_id'] == 'KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST' and
                             event['action'] == 'send' for event in events))
         for check in checks:
-            self.assertEqual(check['peer_observed_operation_sequence'], ['Get', 'Get Attribute List'])
-            self.assertEqual(check['peer_response_item_count'], 2)
+            self.assertEqual(check['peer_response_operation_values'], [10, 12])
+            self.assertEqual(check['peer_response_result_statuses'], [0, 0])
             self.assertTrue({'kmipkit_client_batch_item_get',
                              'kmipkit_client_batch_item_get_attribute_list',
                              'kmipkit_client_execute'} <= set(check['public_api_trace_symbols']))
