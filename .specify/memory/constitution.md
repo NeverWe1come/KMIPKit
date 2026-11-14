@@ -49,7 +49,9 @@ acceptance.
 ## Product and Security Constraints
 
 - The 1.0.0 target is a KMIP 2.1 client using TTLV, JSON, and XML over raw TLS
-  and HTTPS/HTTP 1.1 with TLS 1.3 mutual TLS and synchronous APIs. It covers
+  and HTTPS/HTTP 1.1 with TLS 1.3 mutual TLS by default (plus explicit opt-in
+  TLS 1.2 ECDHE-GCM compatibility mode for OASIS KMIP Profiles v2.0/v2.1
+  interoperability) and synchronous APIs. It covers
   all client initiated operations, including KMIP protocol asynchronous
   results. TTLV is the default encoding; JSON and XML use the approved OASIS
   KMIP 2.1 Profile encodings and their approved KMIPKIT specifications.

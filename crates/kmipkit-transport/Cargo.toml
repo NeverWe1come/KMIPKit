@@ -15,7 +15,7 @@ aws-lc-rs.workspace = true
 bytes.workspace = true
 hyper.workspace = true
 kmipkit-protocol.workspace = true
-rustls.workspace = true
+rustls = { workspace = true, features = ["tls12"] }
 rustls-native-certs.workspace = true
 tokio.workspace = true
 tokio-rustls.workspace = true
