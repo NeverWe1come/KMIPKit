@@ -115,15 +115,15 @@ class ControlledTlsPeerTest {
                     "test-norm-structure-member-structure-member-7-7-constraint",
                     "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-7-CONSTRAINT", 0x420169, 0x420168, true));
 
-    private record StructureMemberByteStringFixture(String caseId, String targetId) { }
+    private record StructureMemberByteStringFixture(String caseId, String targetId, boolean typedQueryFilter) { }
 
     private static final List<StructureMemberByteStringFixture> STRUCTURE_MEMBER_BYTE_STRING_FIXTURES = List.of(
             new StructureMemberByteStringFixture(
                     "test-norm-structure-member-structure-member-7-1-asynchronous-correlation-value",
-                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-1-ASYNCHRONOUS-CORRELATION-VALUE"),
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-1-ASYNCHRONOUS-CORRELATION-VALUE", true),
             new StructureMemberByteStringFixture(
                     "test-norm-structure-member-structure-member-7-2-asynchronous-correlation-value",
-                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-2-ASYNCHRONOUS-CORRELATION-VALUE"));
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-2-ASYNCHRONOUS-CORRELATION-VALUE", false));
 
     private record NormativeTarget(String caseId, String targetId) { }
 
@@ -907,7 +907,8 @@ class ControlledTlsPeerTest {
         int newAttributePayloadRouteEventCount = KMIP_2_0_AND_2_1.size() * 3 * 20;
         int objectGroupLocalRouteEventCount = 3;
         int structureMemberStructureRouteEventCount = STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size() * 4;
-        int structureMemberByteStringRouteEventCount = STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.size() * 4 + 1;
+        int structureMemberByteStringRouteEventCount = STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.stream()
+                .mapToInt(fixture -> 4 + (fixture.typedQueryFilter() ? 1 : 0)).sum();
         int credentialGenericRouteEventCount = CREDENTIAL_TYPE_MODEL_CASE_IDS.size()
                 * KMIP_2_0_AND_2_1.size() * 4;
         int credentialEnvelopeEventCount = CREDENTIAL_TYPE_MODEL_CASE_IDS.size()
@@ -4242,7 +4243,7 @@ class ControlledTlsPeerTest {
                     assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(), route,
                             action, protocolVersion);
                 }
-                if (fixture.caseId().endsWith("7-1-asynchronous-correlation-value")) {
+                if (fixture.typedQueryFilter()) {
                     assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(),
                             "java.typed-protocol.model.org.kmipkit.extensions.queryasyncrequestsrequest"
                                     + ".withcorrelationvalues", "construct", protocolVersion);
@@ -4490,7 +4491,8 @@ class ControlledTlsPeerTest {
                 assertByteStringItemView(second, rawTag, secondValue);
             }
         }
-        StructureMemberByteStringFixture queryFilterFixture = STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.get(0);
+        StructureMemberByteStringFixture queryFilterFixture = STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.stream()
+                .filter(StructureMemberByteStringFixture::typedQueryFilter).findFirst().orElseThrow();
         appendRouteEvent(events, queryFilterFixture.caseId(),
                 "java.typed-protocol.model.org.kmipkit.extensions.queryasyncrequestsrequest"
                         + ".withcorrelationvalues", queryFilterFixture.targetId(),
