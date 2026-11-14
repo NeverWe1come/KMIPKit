@@ -758,6 +758,40 @@ class RouteMatrixTests(unittest.TestCase):
                 self.assertEqual(sum(event['public_api_symbol'] == symbol and
                                      event['action'] == action for event in events), count)
 
+    def test_async_poll_and_cancel_responses_do_not_recurse(self):
+        """OASIS KMIP 2.1 §§6.1.5 and 6.1.38 keep Poll and Cancel terminal."""
+        from artifact_support import ROOT
+        import route_peer
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-async-no-recursive-async-poll-cancel')
+
+        self.assertEqual(
+            route_peer.recipe_for_case(case, None),
+            ((25, 26), 'async_poll_cancel_no_recursion'))
+
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case]}
+        events, _, checks = route_peer.execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 6)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(all(check.get('peer_async_interleaving_operations') == [25, 26] and
+                            check.get('peer_async_response_statuses') == [0, 0] and
+                            check.get('peer_async_poll_no_correlation') is True and
+                            check.get('peer_async_cancel_no_correlation') is True
+                            for check in checks), checks)
+        for symbol, action, count in (
+                ('kmipkit_client_execute_cancel', 'send', 6),
+                ('kmipkit_client_execute_poll', 'send', 6),
+                ('kmipkit_client_async_operation_outcome_cancel_response_v1', 'decode', 1),
+                ('kmipkit_client_async_operation_outcome_poll_response_v1', 'decode', 1)):
+            with self.subTest(symbol=symbol, action=action):
+                self.assertEqual(sum(event['public_api_symbol'] == symbol and
+                                     event['action'] == action for event in events), count)
+
     def test_stop_on_first_failure_case_has_a_controlled_peer_recipe(self):
         import route_peer
         from artifact_support import ROOT
