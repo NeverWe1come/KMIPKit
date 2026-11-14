@@ -108,6 +108,10 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                 1,
                 enumeration(0x42014A, 1) + tlv(0x42014B, 8, b"controlled-delegated-login-ticket"),
             )
+        elif operation == 25:
+            payload_value = tlv(
+                0x420006, 8, b"fixture-cancel-correlation"
+            ) + enumeration(0x420012, 1)
         elif operation == 1:
             payload_value = enumeration(0x420057, created_object_type) + \
                 tlv(0x420094, 7, b"fixture-key-1")
@@ -314,6 +318,8 @@ def main() -> int:
     expected_operations += (10, 12, 10, 12, 10, 12, 10, 12)
     expected_operations += registered_key_batch
     expected_operations += stop_on_first_failure_batch
+    expected_operations += (25,)
+    expected_cases += ("test-op-cancel",)
     expected_cases += ("test-op-hash", "test-op-rng-retrieve", "test-op-rng-seed")
     expected_cases += (
         "test-crypto-hash-sha_256-0",
@@ -403,6 +409,9 @@ def main() -> int:
                                 raise AssertionError("Check fixture must revoke the created key before destroying it")
                             if any(operation not in expected_operations for operation in operations):
                                 raise AssertionError(f"unexpected operation batch {operations!r} for {protocol_version}")
+                            if operations == (25,) and request.count(
+                                    tlv(0x420006, 8, b"fixture-cancel-correlation")) != 1:
+                                raise AssertionError("Cancel request omitted its exact fixture correlation value")
                             if operations == (52, 52, 52):
                                 interop_identifier = b"KMIPKit controlled interoperability fixture"
                                 function_offsets = [request.find(enumeration(0x420160, function))
@@ -576,8 +585,11 @@ def main() -> int:
                                 raise AssertionError(
                                     "request header did not preserve the configured KMIP version"
                                 )
-                            if tlv(0x420099, 7, b"interop-user") not in request or \
-                                    tlv(0x4200A1, 7, b"interop-password") not in request:
+                            # The dedicated asynchronous C executor has no authentication input;
+                            # every ordinary batch in this peer still proves configured credentials.
+                            if operations != (25,) and (
+                                    tlv(0x420099, 7, b"interop-user") not in request or
+                                    tlv(0x4200A1, 7, b"interop-password") not in request):
                                 raise AssertionError("request is missing configured KMIP credentials")
                             stream.sendall(response(
                                 response_operations, protocol_minor, selected_attribute_tag,
