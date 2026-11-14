@@ -6007,7 +6007,13 @@ create_key_pair_cleanup:
         KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY;
     bool revoke_workflow = strcmp(test_case->case_id, "test-op-revoke") == 0;
     bool activate_workflow = strcmp(test_case->case_id, "test-op-activate") == 0;
-    bool archive_workflow = strcmp(test_case->case_id, "test-op-archive") == 0;
+    bool archive_request_payload_omitted =
+        strcmp(test_case->case_id, "test-norm-payload-client-archive-request-20-001") == 0 ||
+        strcmp(test_case->case_id, "test-norm-payload-client-archive-request-21-001") == 0;
+    bool archive_workflow = strcmp(test_case->case_id, "test-op-archive") == 0 ||
+        archive_request_payload_omitted ||
+        strcmp(test_case->case_id, "test-norm-payload-client-archive-response-20-001") == 0 ||
+        strcmp(test_case->case_id, "test-norm-payload-client-archive-response-21-001") == 0;
     bool destroy_workflow = strcmp(test_case->case_id, "test-op-destroy") == 0;
     bool active_destroy_negative_workflow =
         strcmp(test_case->case_id, "test-neg-destroy-active-without-revoke") == 0;
@@ -6396,7 +6402,8 @@ create_key_pair_cleanup:
             } else if (activate_workflow) {
                 status = kmipkit_client_batch_item_activate(&placeholder, &item);
             } else if (archive_workflow) {
-                status = kmipkit_client_batch_item_archive(&placeholder, &item);
+                status = kmipkit_client_batch_item_archive(
+                    archive_request_payload_omitted ? NULL : &placeholder, &item);
             } else if (revoke_workflow) {
                 request_construction_step = "Revoke target operation";
                 status = create_revocation_item(&placeholder, &item);

@@ -400,6 +400,10 @@ RECIPES = {
     'test-op-check': ((1, 9, 19, 20), 'check'),
     'test-op-activate': ((1, 18, 19, 20), 'activate'),
     'test-op-archive': ((1, 21, 19, 20), 'archive'),
+    'test-norm-payload-client-archive-request-20-001': ((1, 21, 19, 20), 'archive'),
+    'test-norm-payload-client-archive-response-20-001': ((1, 21, 19, 20), 'archive'),
+    'test-norm-payload-client-archive-request-21-001': ((1, 21, 19, 20), 'archive'),
+    'test-norm-payload-client-archive-response-21-001': ((1, 21, 19, 20), 'archive'),
     'test-op-certify': ((6,), 'certify'),
     'test-op-create-key-pair': ((2,), 'create_key_pair'),
     'test-op-revoke': ((1, 19, 20), 'revoke'),
@@ -432,6 +436,10 @@ RECIPES = {
 
 CONTROLLED_PEER_LOCAL_MODEL_CASES = frozenset({
     'test-batch-single-item-options-omitted',
+    'test-norm-payload-client-archive-request-20-001',
+    'test-norm-payload-client-archive-response-20-001',
+    'test-norm-payload-client-archive-request-21-001',
+    'test-norm-payload-client-archive-response-21-001',
     'test-norm-payload-client-get-request-20-001',
     'test-norm-payload-client-get-request-21-001',
     'test-norm-payload-client-get-attribute-list-request-20-001',
@@ -805,9 +813,13 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         archive_items = [item for item in node[2]
                          if item[0] == BATCH_ITEM_TAG and item[1] == 1 and
                          numbers(item, 0x42005C) == [21]]
+        omitted_identifier = case_id in (
+            'test-norm-payload-client-archive-request-20-001',
+            'test-norm-payload-client-archive-request-21-001')
+        expected_identifier = [] if omitted_identifier else [ID_PLACEHOLDER_ENUMERATION]
         if (len(archive_items) != 1 or
-                numbers(archive_items[0], UNIQUE_IDENTIFIER_TAG) != [ID_PLACEHOLDER_ENUMERATION]):
-            raise ValueError('fixture_archive_placeholder_identifier_mismatch')
+                numbers(archive_items[0], UNIQUE_IDENTIFIER_TAG) != expected_identifier):
+            raise ValueError('fixture_archive_unique_identifier_presence_mismatch')
     if expected[0] == 1:
         object_type = 4 if case_id in ('test-obj-private-key', 'test-op-sign',
                                       'test-crypto-sign-rsa-2048-pkcs1_v1_5') else 3 if case_id in (
@@ -827,7 +839,9 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
             'test-batch-create-activate-destroy', 'test-attr-cryptographic-algorithm',
             'test-attr-cryptographic-length', 'test-op-get-constraints',
             'test-norm-payload-client-get-usage-allocation-request-20-001',
-            'test-norm-payload-client-get-usage-allocation-request-21-001') or attribute_fixture is not None
+            'test-norm-payload-client-get-usage-allocation-request-21-001',
+            'test-norm-payload-client-archive-request-20-001',
+            'test-norm-payload-client-archive-request-21-001') or attribute_fixture is not None
         implicit_target = implicit_target or case_id == 'test-op-certify'
         minimum_unique_identifiers = 0 if case_id == 'test-batch-placeholder-chain-resolves' else (
             len(expected) - 1 - int(implicit_target))
