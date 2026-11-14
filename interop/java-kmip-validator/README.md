@@ -101,8 +101,8 @@ baseline, regenerate the checked-in ledger with
 rejects generated ledgers that do not record successful invocations.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
-baseline. These recipes execute 22,611 of 71,463 planned Java route cells, with
-no failed cells; the ledger records the other 48,852 as pending and does not imply
+baseline. These recipes execute 22,617 of 71,463 planned Java route cells, with
+no failed cells; the ledger records the other 48,846 as pending and does not imply
 vendor interoperability or full-matrix completion. Local TTLV recipes exercise 51
 enumeration families, all six bitmask aggregate cases, and all 44 individual
 bitmask value cases through the applicable
@@ -120,7 +120,10 @@ optional filter, repeated values, order, and exact tags (§§7.1–7.2,
 Tables 352–353; §11.56 Table 487).
 The three required KMIP 2.1 Asynchronous Request fields in §7.2 Table 353
 exercise their installed Enumeration or DateTimeExtended constructors, Item
-creation, Item view, and decoder routes. A mutual-TLS Query Asynchronous
+creation, Item view, and decoder routes. The outer Asynchronous Request
+Structure also exercises `TtlvStructure.create`, `TtlvStructure.withItem`,
+`TtlvValue.structure`, Item creation/view, and decoding with its exact three
+required fields. A mutual-TLS Query Asynchronous
 Requests exchange invokes `AsyncOperationOutcome.responsePayloadTtlv` and
 checks the response's Asynchronous Request Structure, field tags, order, and
 values (§11.56 Table 487).
@@ -131,7 +134,7 @@ one direct Name Item, and the installed direct constructors, request-to-batch
 conversions, TTLV payload conversion, controlled TLS exchange, and typed
 response readers are invoked under the operation-specific §6.1 tables.
 
-The 48,852 pending cells belong to 1,314 case IDs listed in the generated
+The 48,846 pending cells belong to 1,313 case IDs listed in the generated
 ledger; every one has the reason `route_evidence_not_emitted`. The applicability
 rule is the shared catalog and capability matrix after protocol-version,
 public-route, encoding/transport, and source-backed exclusion filters. A cell

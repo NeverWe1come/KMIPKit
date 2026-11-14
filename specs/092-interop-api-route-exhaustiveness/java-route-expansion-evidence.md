@@ -1195,3 +1195,46 @@ Verification against the installed Java artifact built from
 - Full Java ledger: 71,463 planned, 22,611 executed, 48,852 pending across
   1,314 case IDs. Every pending cell remains `route_evidence_not_emitted`;
   `complete_matrix=false` and no pending cell is treated as an exemption.
+
+## KMIP 2.1 Asynchronous Request Structure routes
+
+Source: OASIS KMIP 2.1 Specification §7.2 Table 353 defines the Asynchronous
+Request Structure with required Operation, Processing Stage, and Submission
+Date members; §11.56 Table 487 assigns the Structure and member tags. The
+catalog and capability matrix plan six local cells for this Structure:
+`TtlvStructure.create`, `TtlvStructure.withItem`, `TtlvValue.structure`,
+`TtlvItem.create`, `TtlvItem.view`, and `TtlvCodec.decode`.
+
+Red commit `d720d6118` requires the six events and fails because the installed
+Structure constructor route has no invocation evidence. Green commit
+`eb55eedca` builds the three-member Structure through the installed Java API,
+checks exact tags, order, TTLV types, and values, then validates the same
+structure through the installed decoder. The event report is limited to the
+six planned route cells and the case is included in the selected-scope case
+IDs. Refactor consolidates the KMIP 2.1 local-route assertions and refreshes
+the checked-in ledger and traceability counts. The runtime implementation
+already exposed all six routes; this slice adds invocation and fixture
+evidence.
+
+Verification used the installed artifact pinned to
+`489fafc79ef89db2524eafa7a6c6482f5cf75d97`:
+
+```sh
+TMPDIR="$PWD/build/native-test-tmp" \
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/native-test-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+```
+
+The full Java consumer suite passes 54 tests with no failures, errors, or
+skips. The shared validator accepts 22,617/22,617 selected cells with zero
+failed cells. This slice adds six cells; the full ledger has 71,463 planned,
+22,617 executed, and 48,846 pending cells across 1,313 pending case IDs.
+Every pending cell remains `route_evidence_not_emitted`; `complete_matrix`
+remains false and the pending work remains required.

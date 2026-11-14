@@ -4257,8 +4257,6 @@ class ControlledTlsPeerTest {
                 assertRouteEventRecorded(events, asynchronousRequestCase, asynchronousRequestTarget,
                         route, action, protocolVersion);
             }
-        }
-        if ("2.1".equals(protocolVersion)) {
             String objectGroupCase = "test-norm-structure-member-structure-member-7-23-object-group";
             String objectGroupTarget = "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-23-OBJECT-GROUP";
             assertRouteEventRecorded(events, objectGroupCase, objectGroupTarget,
@@ -4749,7 +4747,8 @@ class ControlledTlsPeerTest {
         appendRouteEvent(events, caseId, "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.create",
                 targetId, "org.kmipkit.ttlv.TtlvStructure.create", null, null,
                 "construct", "2.1", null, treeHash, null);
-        appendRouteEvent(events, caseId, "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem",
+        appendRouteEvent(events, caseId,
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem",
                 targetId, "org.kmipkit.ttlv.TtlvStructure.withItem", null, null,
                 "construct", "2.1", null, treeHash, null);
         appendRouteEvent(events, caseId, "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
@@ -4758,7 +4757,8 @@ class ControlledTlsPeerTest {
         appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_item.create",
                 targetId, "org.kmipkit.ttlv.TtlvItem.create", null, null,
                 "construct", "2.1", null, treeHash, null);
-        appendRouteEvent(events, caseId, "java.generic-ttlv.function.ttlv_item_view_from_item",
+        appendRouteEvent(events, caseId,
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
                 targetId, "org.kmipkit.ttlv.TtlvItem.view", null, null,
                 "decode", "2.1", null, null, treeHash);
 
