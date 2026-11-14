@@ -99,6 +99,26 @@ class RouteMatrixTests(unittest.TestCase):
         result = TreeAbi(INSTALL / 'lib/libkmipkit_ffi.so').roundtrip(encode(request))
         self.assertIn('kmipkit_request_message_from_ttlv', result['invoked_symbols'])
 
+    def test_request_message_parser_uses_the_structure_fixture_dispatch(self):
+        from artifact_support import ROOT
+        from coverage_matrix import iter_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-norm-tag-tag-420078')
+        target = next(item for item in catalog['normative_targets']
+                      if item['target_id'] == 'KMIPKIT-ELEM-TAG-420078')
+        cell = next(item for item in iter_cells(catalog, manifest, languages=('c',))
+                    if item['case_id'] == case['case_id'] and item['target_id'] == target['target_id']
+                    and item['public_api_symbol'] == 'kmipkit_request_message_from_ttlv')
+
+        self.assertTrue(hasattr(self.runner, 'uses_scalar_target_fixture'),
+                        'fixture routing decision must be independently testable')
+        self.assertFalse(self.runner.uses_scalar_target_fixture(cell, case, target))
+        generic_cell = {**cell, 'public_api_symbol': 'kmipkit_ttlv_decode'}
+        self.assertTrue(self.runner.uses_scalar_target_fixture(generic_cell, case, target))
+
     def test_get_usage_allocation_has_an_executable_controlled_peer_recipe(self):
         import route_peer
         from artifact_support import ROOT
