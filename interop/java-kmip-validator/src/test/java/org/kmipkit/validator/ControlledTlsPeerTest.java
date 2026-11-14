@@ -600,6 +600,7 @@ class ControlledTlsPeerTest {
                     appendOperationStructureRouteEvents(events, fixture);
                 }
                 appendObjectTypeMemberRouteEvents(events);
+                appendConstraintStructureRouteEvents(events);
             }
             for (ScalarOperationStructureFixture fixture : SCALAR_OPERATION_STRUCTURE_FIXTURES) {
                 appendScalarOperationStructureRouteEvents(events, fixture, protocolVersion);
@@ -5118,6 +5119,159 @@ class ControlledTlsPeerTest {
                 "java.generic-ttlv.ttlv_codec.decode", OBJECT_TYPE_MEMBER_TARGET_ID,
                 "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
                 "decode", "2.1", null, null, treeHash);
+    }
+
+    // OASIS KMIP 2.1 §§7.6–7.7, Tables 357–358: optional Constraint members and repeated Constraint values.
+    private static void appendConstraintStructureRouteEvents(ArrayNode events) throws Exception {
+        CodecLimits limits = CodecLimits.defaults();
+        byte[] constraintWire = structure(0x420169,
+                structure(0x420167, item(0x420057, TtlvItemType.Enumeration.code(), intBytes(2))),
+                structure(0x420166, textItem(0x420056, "kmipkit-object-group")));
+        byte[] constraintsWire = structure(0x420168, constraintWire, constraintWire);
+        String constraintHash = normalizedTreeSha256(constraintWire);
+        String constraintsHash = normalizedTreeSha256(constraintsWire);
+
+        try (TtlvStructure fields = constraintFields(limits);
+                TtlvValue value = TtlvValue.structure(fields, limits);
+                RawTag rawTag = RawTag.fromRaw(0x420169);
+                Tag tag = rawTag.checked();
+                TtlvItem created = TtlvItem.create(tag, value, limits);
+                TtlvItemView view = created.view();
+                Tag viewedTag = view.tag();
+                var viewedValue = view.value();
+                var viewedFields = viewedValue.structure()) {
+            assertEquals(0x420169, viewedTag.raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertConstraintFields(viewedFields);
+        }
+        try (TtlvItem decoded = TtlvCodec.decode(constraintWire);
+                TtlvItemView view = decoded.view();
+                Tag viewedTag = view.tag();
+                var viewedValue = view.value();
+                var viewedFields = viewedValue.structure()) {
+            assertEquals(0x420169, viewedTag.raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertConstraintFields(viewedFields);
+        }
+
+        try (TtlvItem emptyConstraint = TtlvCodec.decode(structure(0x420169));
+                TtlvItemView view = emptyConstraint.view();
+                var value = view.value();
+                var fields = value.structure()) {
+            assertEquals(0, fields.itemCount(),
+                    "Object Types, Object Groups, and Attributes are optional Constraint members.");
+        }
+        try (TtlvItem emptyConstraints = TtlvCodec.decode(structure(0x420168));
+                TtlvItemView view = emptyConstraints.view();
+                var value = view.value();
+                var fields = value.structure()) {
+            assertEquals(0, fields.itemCount(), "The repeated Constraint member may be absent.");
+        }
+
+        try (TtlvStructure fields = constraintsFields(limits);
+                TtlvValue value = TtlvValue.structure(fields, limits);
+                RawTag rawTag = RawTag.fromRaw(0x420168);
+                Tag tag = rawTag.checked();
+                TtlvItem created = TtlvItem.create(tag, value, limits);
+                TtlvItemView view = created.view();
+                Tag viewedTag = view.tag();
+                var viewedValue = view.value();
+                var viewedFields = viewedValue.structure()) {
+            assertEquals(0x420168, viewedTag.raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertConstraintsFields(viewedFields);
+        }
+        try (TtlvItem decoded = TtlvCodec.decode(constraintsWire);
+                TtlvItemView view = decoded.view();
+                Tag viewedTag = view.tag();
+                var viewedValue = view.value();
+                var viewedFields = viewedValue.structure()) {
+            assertEquals(0x420168, viewedTag.raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertConstraintsFields(viewedFields);
+        }
+
+        appendGenericStructureRouteEvents(events, CONSTRAINT_CASE_ID,
+                CONSTRAINT_TARGET_ID, "2.1", constraintHash);
+        appendGenericStructureRouteEvents(events, CONSTRAINTS_CASE_ID,
+                CONSTRAINTS_TARGET_ID, "2.1", constraintsHash);
+    }
+
+    private static TtlvStructure constraintFields(CodecLimits limits) {
+        TtlvStructure fields = TtlvStructure.create();
+        fields = appendTtlvItem(fields, 0x420167,
+                TtlvValue.structure(objectTypesFields(limits), limits), limits);
+        return appendTtlvItem(fields, 0x420166,
+                TtlvValue.structure(objectGroupsFields(limits), limits), limits);
+    }
+
+    private static TtlvStructure objectTypesFields(CodecLimits limits) {
+        return appendTtlvItem(TtlvStructure.create(), 0x420057,
+                TtlvValue.Enumeration(KmipValues.ObjectType.SYMMETRIC_KEY), limits);
+    }
+
+    private static TtlvStructure objectGroupsFields(CodecLimits limits) {
+        byte[] group = "kmipkit-object-group".getBytes(StandardCharsets.UTF_8);
+        return appendTtlvItem(TtlvStructure.create(), 0x420056,
+                TtlvValue.TextString(group, limits), limits);
+    }
+
+    private static TtlvStructure constraintsFields(CodecLimits limits) {
+        TtlvStructure fields = TtlvStructure.create();
+        fields = appendTtlvItem(fields, 0x420169,
+                TtlvValue.structure(constraintFields(limits), limits), limits);
+        return appendTtlvItem(fields, 0x420169,
+                TtlvValue.structure(constraintFields(limits), limits), limits);
+    }
+
+    private static void assertConstraintFields(TtlvStructureView fields) throws Exception {
+        int[] tags = {0x420167, 0x420166};
+        assertEquals(tags.length, fields.itemCount());
+        try (TtlvItemView objectTypes = fields.itemAt(0);
+                Tag objectTypesTag = objectTypes.tag();
+                var objectTypesValue = objectTypes.value();
+                var objectTypesFields = objectTypesValue.structure()) {
+            assertEquals(tags[0], objectTypesTag.raw());
+            assertEquals(TtlvItemType.Structure, objectTypes.itemType());
+            assertEquals(1, objectTypesFields.itemCount());
+            try (TtlvItemView objectType = objectTypesFields.itemAt(0);
+                    Tag objectTypeTag = objectType.tag();
+                    var objectTypeValue = objectType.value()) {
+                assertEquals(0x420057, objectTypeTag.raw());
+                assertEquals(TtlvItemType.Enumeration, objectType.itemType());
+                assertEquals(KmipValues.ObjectType.SYMMETRIC_KEY, objectTypeValue.enumeration());
+            }
+        }
+        try (TtlvItemView objectGroups = fields.itemAt(1);
+                Tag objectGroupsTag = objectGroups.tag();
+                var objectGroupsValue = objectGroups.value();
+                var objectGroupsFields = objectGroupsValue.structure()) {
+            assertEquals(tags[1], objectGroupsTag.raw());
+            assertEquals(TtlvItemType.Structure, objectGroups.itemType());
+            assertEquals(1, objectGroupsFields.itemCount());
+            try (TtlvItemView objectGroup = objectGroupsFields.itemAt(0);
+                    Tag objectGroupTag = objectGroup.tag();
+                    var objectGroupValue = objectGroup.value()) {
+                assertEquals(0x420056, objectGroupTag.raw());
+                assertEquals(TtlvItemType.TextString, objectGroup.itemType());
+                assertArrayEquals("kmipkit-object-group".getBytes(StandardCharsets.UTF_8),
+                        objectGroupValue.bytes());
+            }
+        }
+    }
+
+    private static void assertConstraintsFields(TtlvStructureView fields) throws Exception {
+        assertEquals(2, fields.itemCount(), "The Constraint Structure member may be repeated.");
+        for (int index = 0; index < fields.itemCount(); index++) {
+            try (TtlvItemView constraint = fields.itemAt(index);
+                    Tag tag = constraint.tag();
+                    var value = constraint.value();
+                    var constraintFields = value.structure()) {
+                assertEquals(0x420169, tag.raw());
+                assertEquals(TtlvItemType.Structure, constraint.itemType());
+                assertConstraintFields(constraintFields);
+            }
+        }
     }
 
     private static void assertOperationStructureMemberValues(TtlvStructureView fields,
