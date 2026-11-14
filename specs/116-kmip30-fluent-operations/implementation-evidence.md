@@ -34,6 +34,12 @@ at the expected missing API assertion:
   compile time because `RequestBuilder` did not yet expose the seven KMIP 3.0
   fluent operation methods. The only diagnostics were those missing methods;
   the focused test source compiled far enough to identify the absent API.
+- Credential alternative contract:
+  `cargo test -p kmipkit-protocol --lib create_credential_uses_table_277_order_and_redacts_credential_material`
+  failed to compile with E0061 because the test used the required two-argument
+  `CreateCredentialRequest::new(attributes, object)` while the implementation
+  still required a separately supplied Credential Type. This Red test guards
+  deriving the type from the closed credential alternative.
 
 No production code was changed before these tests failed.
 
@@ -46,6 +52,54 @@ No production code was changed before these tests failed.
   KMIP 3.0 wire version/operation encoding. `cargo fmt --all --check` passed.
 - `cargo clippy -p kmipkit-client --all-targets --all-features -- -D warnings`
   passed after documenting the validation result contract.
+- Java/JNI/CFFI expose the seven KMIP 3.0 builders with exact version gating,
+  one-exchange execution, typed results, redaction, and owned native handles.
+  `bash ./gradlew --no-daemon --init-script
+  /home/ramp1953/.codex/tmp/kmipkit-0116/java-temp.init.gradle
+  -Dorg.gradle.jvmargs='-Xmx2g -XX:MaxMetaspaceSize=512m'
+  -Dorg.gradle.workers.max=1 test` passed: 718 tests, zero failures, one
+  skipped test. The init script placed test temporary files on the worktree
+  volume because `/tmp` was full.
+- `TMPDIR=/home/ramp1953/.codex/tmp/kmipkit-0116
+  ./.venv/bin/python -m pytest -q` in `bindings/python` passed all 1,370 tests.
+  The KMIP 3.0 execution and shared-parity focused suites passed 46 tests.
+- The two-argument credential constructor is now used throughout the Rust,
+  C, Java, and Python surfaces. The protocol request derives Credential Type
+  from its closed typed alternative, avoiding an inconsistent public numeric
+  selector.
+- `TMPDIR=/home/ramp1953/.codex/tmp/kmipkit-0116 cargo test -p
+  kmipkit-client --all-features` passed: 924 unit tests, all integration and
+  doc tests, with the existing three live Cosmian tests ignored.
+- `TMPDIR=/home/ramp1953/.codex/tmp/kmipkit-0116 cargo test -p kmipkit-ffi
+  --all-features` passed: 480 FFI unit tests, 58 compiled C consumer tests,
+  and the 56-operation parity test. The C consumer includes all seven
+  KMIP 3.0 builders and the inferred credential-type call signature.
+
+## Manifest and inventory repair
+
+The pre-0116 Rust export baseline had 304 `missingFromManifest` paths. The
+current feature head had 381 before reconciliation: the delta was exactly 77
+(63 compiler-generated standard-trait paths, seven builder `build` methods,
+and seven `fluent::RequestBuilder` aliases). The manifest now inventories all
+Rust compiler-observed paths: the 179 non-trait misses are explicit records,
+the 202 standard-library trait paths have exact approved exclusions, and all
+14 new 0116 functional paths carry four-language mappings. The baseline
+non-0116 entries remain blocked under KMIPKIT-0093 until their owning API work
+is addressed.
+
+- `python3 -B tools/api_manifest/generate.py --write` and `--check` passed.
+- `audit_rust_exports.py --check` passed with 30,695 observed paths, 9,632
+  matched declarations, 21,063 exclusions, and zero missing, stale,
+  kind-mismatched, or incomplete paths.
+- `audit_binding_exports.py --check` passed: C 2,063/2,063, Java 2,468/2,468,
+  and Python 2,721/2,721 exports matched with no missing, stale, or kind
+  mismatches.
+- The Rust audit report used by the manifest regression test was regenerated
+  with `audit_rust_exports.py`; the focused Rust inventory, T102 profile, and
+  KMIP 3.0 manifest tests passed 6/6.
+- The T102 snapshot is now 16,884 public declarations and 22,888 approved
+  exclusions. Its pinned Rust audit values remain tied to the historical T102
+  report and are not replaced by the current whole-workspace audit totals.
 
 ## Manifest scope ruling
 

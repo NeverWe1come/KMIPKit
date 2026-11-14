@@ -45,3 +45,39 @@ Implementaciones de los consumidores:
 - Java: `tests/consumers/0093-journeys/java/src/main/java/Consumer.java`
 - Python: `tests/consumers/0093-journeys/python/main.py`
 - Fixture TLS 1.3/mTLS: `tests/consumers/0093-journeys/local_journey_responder.py`
+
+## Operaciones del borrador KMIP 3.0
+
+El cliente fluido también ofrece builders tipados para las siete operaciones
+del borrador KMIP 3.0 asignadas por KMIPKIT-0116: Create Credential, Create
+Group, Create User, Deactivate, Decapsulate, Encapsulate y Obliterate. Selecciona
+explícitamente la versión 3.0 en el cliente o en las opciones de la petición
+antes de ejecutarla; 2.1 continúa siendo la versión predeterminada. Esta
+superficie acotada no implica conformidad general con KMIP 3.0.
+
+| Operación | Entradas del builder |
+| --- | --- |
+| Create Credential | Atributos ordenados y una alternativa de credencial tipada: Certificate, Password, Device, One Time Password o Hashed Password. La alternativa determina Credential Type. |
+| Create Group / Create User | Valores `AttributeSet` ordenados. |
+| Deactivate | Unique Identifier y, opcionalmente, Deactivation Date y Deactivation Reason. |
+| Decapsulate | Unique Identifier, texto cifrado y parámetros criptográficos tipados. La respuesta no devuelve el secreto compartido que gestiona el servidor. |
+| Encapsulate | Unique Identifier y parámetros criptográficos tipados. El resultado puede exponer su Unique Identifier y los datos públicos (`Data`). |
+| Obliterate | Unique Identifier. |
+
+Como ejemplos, Create Group empieza con `client.request().create_group(attributes)`
+en Rust, `new FluentRequest(client).createGroup(attributes)` en Java,
+`Request(client).create_group(attributes)` en Python y
+`kmipkit_client_create_group_v1(...)` en C. Las demás operaciones usan
+snake_case en Rust y Python, y camelCase en Java. C ofrece funciones
+`kmipkit_client_*_v1` con códigos de estado de ancho fijo para las tareas
+directas y el manejador opaco `kmipkit_kmip30_operation_builder_t` para opciones
+y campos avanzados. Cada builder valida localmente, puede crear un elemento de
+batch y se ejecuta mediante un intercambio tipado. No reintenta ni envía Poll
+automáticamente.
+
+Las pruebas ejecutables de rutas están junto a cada binding:
+
+- Rust: `crates/kmipkit-client/tests/unit/fluent_request_tests.rs`
+- C: `bindings/c/tests/fluent_kmip30_consumer.c`
+- Java: `bindings/java/src/test/java/org/kmipkit/Kmip30FluentExecutionTest.java`
+- Python: `bindings/python/tests/test_fluent_kmip30.py`

@@ -22,7 +22,13 @@
       "rust": "kmipkit_client::ClientBatchItem::create_group_draft",
       "c": "client_batch_item_create_group",
       "java": "org.kmipkit.extensions.ClientBatchItem.createGroup",
-      "python": "kmipkit.extensions.client_batch_item_create_group"
+      "python": "kmipkit.extensions.client_batch_item_create_group",
+      "fluentApi": {
+        "rust": "kmipkit_client::ClientRequest::create_group",
+        "c": "kmipkit_create_group_builder_create",
+        "java": "org.kmipkit.fluent.FluentRequest.createGroup",
+        "python": "kmipkit.fluent.Request.create_group"
+      }
     },
     {
       "operation": "Obliterate",
@@ -31,7 +37,13 @@
       "rust": "kmipkit_client::ClientBatchItem::obliterate_draft",
       "c": "client_batch_item_obliterate",
       "java": "org.kmipkit.extensions.ClientBatchItem.obliterate",
-      "python": "kmipkit.extensions.client_batch_item_obliterate"
+      "python": "kmipkit.extensions.client_batch_item_obliterate",
+      "fluentApi": {
+        "rust": "kmipkit_client::ClientRequest::obliterate",
+        "c": "kmipkit_obliterate_builder_create",
+        "java": "org.kmipkit.fluent.FluentRequest.obliterate",
+        "python": "kmipkit.fluent.Request.obliterate"
+      }
     },
     {
       "operation": "CreateUser",
@@ -40,7 +52,13 @@
       "rust": "kmipkit_client::ClientBatchItem::create_user_draft",
       "c": "client_batch_item_create_user",
       "java": "org.kmipkit.extensions.ClientBatchItem.createUser",
-      "python": "kmipkit.extensions.client_batch_item_create_user"
+      "python": "kmipkit.extensions.client_batch_item_create_user",
+      "fluentApi": {
+        "rust": "kmipkit_client::ClientRequest::create_user",
+        "c": "kmipkit_create_user_builder_create",
+        "java": "org.kmipkit.fluent.FluentRequest.createUser",
+        "python": "kmipkit.fluent.Request.create_user"
+      }
     },
     {
       "operation": "CreateCredential",
@@ -49,7 +67,13 @@
       "rust": "kmipkit_client::ClientBatchItem::create_credential_draft",
       "c": "client_batch_item_create_credential",
       "java": "org.kmipkit.extensions.ClientBatchItem.createCredential",
-      "python": "kmipkit.extensions.client_batch_item_create_credential"
+      "python": "kmipkit.extensions.client_batch_item_create_credential",
+      "fluentApi": {
+        "rust": "kmipkit_client::ClientRequest::create_credential",
+        "c": "kmipkit_create_credential_builder_create",
+        "java": "org.kmipkit.fluent.FluentRequest.createCredential",
+        "python": "kmipkit.fluent.Request.create_credential"
+      }
     },
     {
       "operation": "Deactivate",
@@ -58,7 +82,13 @@
       "rust": "kmipkit_client::ClientBatchItem::deactivate_draft",
       "c": "client_batch_item_deactivate",
       "java": "org.kmipkit.extensions.ClientBatchItem.deactivate",
-      "python": "kmipkit.extensions.client_batch_item_deactivate"
+      "python": "kmipkit.extensions.client_batch_item_deactivate",
+      "fluentApi": {
+        "rust": "kmipkit_client::ClientRequest::deactivate",
+        "c": "kmipkit_deactivate_builder_create",
+        "java": "org.kmipkit.fluent.FluentRequest.deactivate",
+        "python": "kmipkit.fluent.Request.deactivate"
+      }
     },
     {
       "operation": "Encapsulate",
@@ -67,7 +97,13 @@
       "rust": "kmipkit_client::ClientBatchItem::encapsulate_draft",
       "c": "client_batch_item_encapsulate",
       "java": "org.kmipkit.extensions.ClientBatchItem.encapsulate",
-      "python": "kmipkit.extensions.client_batch_item_encapsulate"
+      "python": "kmipkit.extensions.client_batch_item_encapsulate",
+      "fluentApi": {
+        "rust": "kmipkit_client::ClientRequest::encapsulate",
+        "c": "kmipkit_encapsulate_builder_create",
+        "java": "org.kmipkit.fluent.FluentRequest.encapsulate",
+        "python": "kmipkit.fluent.Request.encapsulate"
+      }
     },
     {
       "operation": "Decapsulate",
@@ -76,7 +112,13 @@
       "rust": "kmipkit_client::ClientBatchItem::decapsulate_draft",
       "c": "client_batch_item_decapsulate",
       "java": "org.kmipkit.extensions.ClientBatchItem.decapsulate",
-      "python": "kmipkit.extensions.client_batch_item_decapsulate"
+      "python": "kmipkit.extensions.client_batch_item_decapsulate",
+      "fluentApi": {
+        "rust": "kmipkit_client::ClientRequest::decapsulate",
+        "c": "kmipkit_decapsulate_builder_create",
+        "java": "org.kmipkit.fluent.FluentRequest.decapsulate",
+        "python": "kmipkit.fluent.Request.decapsulate"
+      }
     }
   ]
 }
