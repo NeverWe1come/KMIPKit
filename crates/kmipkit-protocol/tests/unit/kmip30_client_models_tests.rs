@@ -298,7 +298,7 @@ fn create_group_rejects_an_attribute_that_exceeds_the_local_structure_depth_limi
     let error = CreateGroupRequest::new(attributes)
         .into_ttlv_payload()
         .expect_err("embedding the deep attribute exceeds the local TTLV depth limit");
-    assert!(!error.is_empty());
+    assert_ne!(error, "");
 }
 
 #[test]

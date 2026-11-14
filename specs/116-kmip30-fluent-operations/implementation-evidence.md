@@ -157,6 +157,9 @@ and response behavior are unchanged.
   and halt-on-error enabled; it exited 0 without diagnostics.
 - `cargo fmt --all --check` and `git diff --check` passed after the tests were
   added.
+- `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D
+  warnings` passed after changing the local depth-limit assertion to
+  `assert_ne!`; its focused test passed as well.
 
 ## Manifest scope ruling
 
