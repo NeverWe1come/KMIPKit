@@ -1,4 +1,7 @@
-//! Payload tests for the KMIP 3.0 client operations in KMIPKIT-0050.
+//! Payload tests for KMIP 3.0 client operations.
+//!
+//! Create Credential type values follow KMIP 3.0 §2.1.3.1 and §11.11,
+//! Table 551, as required by KMIPKIT-0116-FR-003.
 
 use kmipkit_ttlv::{Item, RawTag, Structure, Value, ValueView};
 
@@ -160,7 +163,7 @@ fn depth_limited_extension_attribute() -> Item {
 
 fn assert_credential_alternative_type(
     object: CreateCredentialObject,
-    expected_type: CredentialType,
+    expected_type: u32,
     expected_object_tag: u32,
     expected_debug: &str,
 ) {
@@ -176,7 +179,7 @@ fn assert_credential_alternative_type(
         ValueView::Enumeration(value) => *value,
         _ => panic!("Credential Type is encoded as an Enumeration"),
     });
-    assert_eq!(encoded_type, expected_type.raw());
+    assert_eq!(encoded_type, expected_type);
 }
 
 #[test]
@@ -204,17 +207,17 @@ fn create_credential_uses_table_277_order_and_redacts_credential_material() {
     });
     assert_eq!(
         encoded_credential_type,
-        CredentialType::UsernameAndPassword.raw()
+        7
     );
 }
 
 #[test]
-fn create_credential_derives_all_types_from_its_closed_object_alternative() {
+fn create_credential_serializes_table_551_type_for_each_closed_object_alternative() {
     assert_credential_alternative_type(
         CreateCredentialObject::Certificate(
             Certificate::try_new(1, vec![0x30, 0x00]).expect("valid certificate object"),
         ),
-        CredentialType::Attestation,
+        8,
         CERTIFICATE,
         "Certificate",
     );
@@ -223,7 +226,7 @@ fn create_credential_derives_all_types_from_its_closed_object_alternative() {
             PasswordCredentialObject::try_new(PasswordCredentialObjectFields::default())
                 .expect("valid password credential"),
         ),
-        CredentialType::UsernameAndPassword,
+        7,
         PASSWORD_CREDENTIAL,
         "PasswordCredential",
     );
@@ -235,7 +238,7 @@ fn create_credential_derives_all_types_from_its_closed_object_alternative() {
             })
             .expect("valid device credential"),
         ),
-        CredentialType::Device,
+        2,
         DEVICE_CREDENTIAL,
         "DeviceCredential",
     );
@@ -248,7 +251,7 @@ fn create_credential_derives_all_types_from_its_closed_object_alternative() {
             })
             .expect("valid hashed password credential"),
         ),
-        CredentialType::HashedPassword,
+        5,
         HASHED_PASSWORD_CREDENTIAL,
         "HashedPasswordCredential",
     );
@@ -260,10 +263,18 @@ fn create_credential_derives_all_types_from_its_closed_object_alternative() {
             })
             .expect("valid one-time password credential"),
         ),
-        CredentialType::OneTimePassword,
+        4,
         OTP_CREDENTIAL,
         "OneTimePasswordCredential",
     );
+}
+
+#[test]
+fn credential_type_exposes_kmip_3_0_password_and_certificate_values() {
+    assert_eq!(format!("{:?}", CredentialType::from_raw(7)), "Password");
+    assert_eq!(CredentialType::from_raw(7).raw(), 7);
+    assert_eq!(format!("{:?}", CredentialType::from_raw(8)), "Certificate");
+    assert_eq!(CredentialType::from_raw(8).raw(), 8);
 }
 
 #[test]

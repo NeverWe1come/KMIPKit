@@ -19,6 +19,45 @@ static kmipkit_unique_identifier_v1_t identifier(void) {
     return id;
 }
 
+/* KMIP 3.0 WD §§2.1.3.1 and 11.11 Table 551: exercise each closed object
+ * alternative through the public C constructors; the server fixture checks
+ * the serialized Credential Type and object tag. */
+static int32_t create_credential_variant(
+    uint32_t variant,
+    const kmipkit_byte_span_v1_t *bytes,
+    kmipkit_create_credential_object_t **out_object) {
+    switch (variant) {
+    case 0: {
+        static const uint8_t certificate_ttlv[] = {
+            0x42,0x00,0x13,0x01,0,0,0,32,
+            0x42,0x00,0x1d,0x05,0,0,0,4,0,0,0,1,0,0,0,0,
+            0x42,0x00,0x1e,0x08,0,0,0,4,1,2,3,4,0,0,0,0
+        };
+        kmipkit_ttlv_decode_error_v1_t decode_error = {0};
+        kmipkit_ttlv_item_t *certificate = NULL;
+        decode_error.struct_size = (uint32_t)sizeof(decode_error);
+        decode_error.abi_version = 1;
+        int32_t result = kmipkit_ttlv_decode(
+            certificate_ttlv, sizeof(certificate_ttlv), &decode_error, &certificate);
+        if (result == 0) {
+            result = kmipkit_create_credential_object_certificate(certificate, out_object);
+        }
+        kmipkit_ttlv_item_release(certificate);
+        return result;
+    }
+    case 1:
+        return kmipkit_create_credential_object_password(bytes, NULL, 0, 0, NULL, 0, 0, out_object);
+    case 2:
+        return kmipkit_create_credential_object_device(bytes, NULL, NULL, NULL, NULL, out_object);
+    case 3:
+        return kmipkit_create_credential_object_hashed_password(0, 0, bytes, bytes, out_object);
+    case 4:
+        return kmipkit_create_credential_object_one_time_password(1, 0, 0, NULL, bytes, 1, 30, 1, 6, out_object);
+    default:
+        return KMIPKIT_ERROR_INVALID_INPUT;
+    }
+}
+
 int kmipkit_c_kmip30_builders_probe(void) {
     uint8_t caller_bytes[] = "credential";
     kmipkit_byte_span_v1_t bytes = {caller_bytes, sizeof(caller_bytes) - 1};
@@ -137,6 +176,7 @@ int kmipkit_c_kmip30_builders_probe(void) {
 int kmipkit_c_kmip30_exchange_probe(kmipkit_client_t *client, kmipkit_codec_limits_t *limits,
                                   uint32_t operation_index, uint8_t builder_path,
                                   uint8_t use_options,
+                                  uint32_t credential_variant,
                                   uint32_t expected_status) {
     uint8_t caller_bytes[] = "credential";
     kmipkit_byte_span_v1_t bytes = {caller_bytes, sizeof(caller_bytes) - 1};
@@ -159,7 +199,7 @@ int kmipkit_c_kmip30_exchange_probe(kmipkit_client_t *client, kmipkit_codec_limi
     CHECK(kmipkit_ttlv_structure_create(&empty_attributes));
     CHECK(kmipkit_attribute_set_create(empty_attributes, &attributes));
     kmipkit_ttlv_structure_release(empty_attributes);
-    CHECK(kmipkit_create_credential_object_password(&bytes, NULL, 0, 0, NULL, 0, 0, &object));
+    CHECK(create_credential_variant(credential_variant, &bytes, &object));
     if (builder_path) {
         switch (operation_index) {
         case 0: CHECK(kmipkit_create_credential_builder_create(attributes, object, &builder)); break;
@@ -325,13 +365,13 @@ int kmipkit_c_kmip30_tls_probe(
     /* The 2.1 default must reject every 3.0 route before opening a socket. */
     for (uint32_t op = 0; op < 7; ++op) {
         REQUIRE_KMIP30_C_API(kmipkit_c_kmip30_exchange_probe(
-            client, limits, op, 0, 0, UINT32_MAX), 20);
+            client, limits, op, 0, 0, 0, UINT32_MAX), 20);
         REQUIRE_KMIP30_C_API(kmipkit_c_kmip30_exchange_probe(
-            client, limits, op, 0, 1, UINT32_MAX), 20);
+            client, limits, op, 0, 1, 0, UINT32_MAX), 20);
         REQUIRE_KMIP30_C_API(kmipkit_c_kmip30_exchange_probe(
-            client, limits, op, 1, 1, UINT32_MAX), 21);
+            client, limits, op, 1, 1, 0, UINT32_MAX), 21);
         REQUIRE_KMIP30_C_API(kmipkit_c_kmip30_exchange_probe(
-            client, limits, op, 1, 0, UINT32_MAX), 21);
+            client, limits, op, 1, 0, 0, UINT32_MAX), 21);
     }
     *out_version_rejection_verified = 1;
     kmipkit_client_release(client); client = NULL;
@@ -340,10 +380,15 @@ int kmipkit_c_kmip30_tls_probe(
     REQUIRE_KMIP30_C_API(kmipkit_client_create_mtls_v1(
         unsupported_configuration, &tls, &client), 23);
     for (uint32_t path = 0; path < 2; ++path) {
-        for (uint32_t op = 0; op < 7; ++op) {
+        for (uint32_t credential_variant = 0; credential_variant < 5; ++credential_variant) {
+            result = kmipkit_c_kmip30_exchange_probe(client, limits, 0,
+                (uint8_t)path, (uint8_t)(path % 2), credential_variant, 0);
+            if (result != 0) goto kmip30_cleanup;
+        }
+        for (uint32_t op = 1; op < 7; ++op) {
             uint32_t status = op == 1 && path == 1 ? 2 : (op == 2 ? 1 : 0);
             result = kmipkit_c_kmip30_exchange_probe(client, limits, op,
-                (uint8_t)path, (uint8_t)(op % 2), status);
+                (uint8_t)path, (uint8_t)(op % 2), 0, status);
             if (result != 0) goto kmip30_cleanup;
         }
     }

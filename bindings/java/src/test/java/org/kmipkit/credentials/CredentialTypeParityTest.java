@@ -32,8 +32,9 @@ final class CredentialTypeParityTest {
             {4L, "OneTimePassword"},
             {5L, "HashedPassword"},
             {6L, "Ticket"},
+            {7L, "Password"},
+            {8L, "Certificate"},
             {0x8000_0009L, "Extensions"},
-            {7L, "Unknown"},
             {0xFFFF_FFFFL, "Unknown"}
         };
         for (Object[] testCase : cases) {

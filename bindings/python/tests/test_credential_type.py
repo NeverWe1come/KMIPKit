@@ -28,8 +28,9 @@ class CredentialTypeTests(unittest.TestCase):
             (4, "OneTimePassword"),
             (5, "HashedPassword"),
             (6, "Ticket"),
+            (7, "Password"),
+            (8, "Certificate"),
             (0x8000_0009, "Extensions"),
-            (7, "Unknown"),
             (0xFFFF_FFFF, "Unknown"),
         )
         for raw, expected_kind in cases:

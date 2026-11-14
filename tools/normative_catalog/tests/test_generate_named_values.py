@@ -50,6 +50,7 @@ class NamedValueGeneratorTests(unittest.TestCase):
                     ("One Time Password Credential", 0x0F),
                     ("Hashed Password Credential", 0x10),
                 ],
+                ("v3_0", "Credential Type"): [("Password", 7), ("Certificate", 8)],
             },
             actual,
         )

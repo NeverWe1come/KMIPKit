@@ -6079,7 +6079,13 @@ fn public_c_kmip30_builders_copy_semantic_inputs_and_reject_wrong_types() {
 
 #[test]
 fn public_c_kmip30_executes_all_seven_typed_routes_with_explicit_version() {
-    const OPERATIONS: [u32; 14] = [63, 60, 62, 64, 66, 65, 61, 63, 60, 62, 64, 66, 65, 61];
+    // The first and second halves exercise direct and builder APIs. Create Credential
+    // cycles through every KMIP 3.0 §11.11 Table 551 object alternative.
+    const OPERATIONS: [u32; 22] = [
+        63, 63, 63, 63, 63, 60, 62, 64, 66, 65, 61,
+        63, 63, 63, 63, 63, 60, 62, 64, 66, 65, 61,
+    ];
+    const CREDENTIAL_TYPES: [u32; 5] = [8, 7, 2, 5, 4];
     let pki = EphemeralPki::generate().expect("ephemeral test PKI is generated");
     let identity = pki.client_identity();
     let certificates = identity.certificate_chain_der();
@@ -6104,7 +6110,7 @@ fn public_c_kmip30_executes_all_seven_typed_routes_with_explicit_version() {
                         if Instant::now() >= deadline {
                             return Err(io::Error::new(
                                 io::ErrorKind::TimedOut,
-                                "the fluent C crypto client did not send all seven requests",
+                                "the fluent C crypto client did not send all KMIP 3.0 requests",
                             ));
                         }
                         thread::sleep(Duration::from_millis(5));
@@ -6119,8 +6125,18 @@ fn public_c_kmip30_executes_all_seven_typed_routes_with_explicit_version() {
                 .expect("the mutual-TLS server configuration is valid");
             let mut tls = StreamOwned::new(connection, stream);
             let request = read_ttlv_frame(&mut tls)?;
-            assert_c_kmip30_request(&request, expected_operation, stage >= 7);
-            tls.write_all(&c_kmip30_response(expected_operation, stage >= 7))?;
+            let expected_credential_type = match stage {
+                0..=4 => Some(CREDENTIAL_TYPES[stage]),
+                11..=15 => Some(CREDENTIAL_TYPES[stage - 11]),
+                _ => None,
+            };
+            assert_c_kmip30_request(
+                &request,
+                expected_operation,
+                stage >= 11,
+                expected_credential_type,
+            );
+            tls.write_all(&c_kmip30_response(expected_operation, stage >= 11))?;
             tls.flush()?;
             let _ = tls.get_ref().shutdown(Shutdown::Both);
         }
@@ -6157,8 +6173,14 @@ fn public_c_kmip30_executes_all_seven_typed_routes_with_explicit_version() {
     );
 }
 
-fn assert_c_kmip30_request(encoded: &[u8], operation: u32, builder_path: bool) {
-    // KMIPKIT-0116 FR-002; KMIP 3.0 WD section 11.37, Table 584.
+fn assert_c_kmip30_request(
+    encoded: &[u8],
+    operation: u32,
+    builder_path: bool,
+    expected_credential_type: Option<u32>,
+) {
+    // KMIPKIT-0116 FR-002/FR-005; KMIP 3.0 WD §§2.1.3.1, 11.11 Table 551,
+    // and 11.37 Table 584.
     let root = decode_test_request(encoded).expect("valid encoded request");
     let tree = root.with_value(|value| match value {
         ValueView::Structure(tree) => tree.try_clone().expect("copied test request"),
@@ -6184,7 +6206,17 @@ fn assert_c_kmip30_request(encoded: &[u8], operation: u32, builder_path: bool) {
                 .map(|item| item.tag().raw())
                 .collect::<Vec<_>>();
             let expected = match operation {
-                63 => vec![0x0042_0024, 0x0042_0125, 0x0042_01A1],
+                63 => {
+                    let object_tag = match expected_credential_type {
+                        Some(8) => 0x0042_0013,
+                        Some(7) => 0x0042_01A1,
+                        Some(2) => 0x0042_01A6,
+                        Some(5) => 0x0042_01AF,
+                        Some(4) => 0x0042_01A7,
+                        other => panic!("unexpected C credential type {other:?}"),
+                    };
+                    vec![0x0042_0024, 0x0042_0125, object_tag]
+                }
                 60 | 62 => vec![0x0042_0125],
                 64 if builder_path => vec![0x0042_0094, 0x0042_002F],
                 65 if builder_path => vec![0x0042_0094, 0x0042_002B, 0x0042_0125],
@@ -6194,6 +6226,15 @@ fn assert_c_kmip30_request(encoded: &[u8], operation: u32, builder_path: bool) {
             };
             assert_eq!(tags, expected, "typed fields retain pinned Table order");
             for field in payload.children() {
+                if field.tag().raw() == 0x0042_0024 {
+                    field.with_value(|value| {
+                        assert!(matches!(
+                            value,
+                            ValueView::Enumeration(raw)
+                                if Some(*raw) == expected_credential_type
+                        ));
+                    });
+                }
                 if field.tag().raw() == 0x0042_01A1 {
                     field.with_value(|value| {
                         let ValueView::Structure(object) = value else {
