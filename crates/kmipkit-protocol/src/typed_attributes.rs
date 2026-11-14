@@ -124,6 +124,14 @@ define_attribute_value_encoding!(
 define_attribute_value_encoding!(IntegerEncoding, i32, i32, integer, Integer, copy);
 define_attribute_value_encoding!(IntervalEncoding, u32, u32, interval, Interval, copy);
 define_attribute_value_encoding!(
+    LongIntegerEncoding,
+    i64,
+    i64,
+    long_integer,
+    LongInteger,
+    copy
+);
+define_attribute_value_encoding!(
     StructureEncoding,
     Structure,
     StructureView<'a>,

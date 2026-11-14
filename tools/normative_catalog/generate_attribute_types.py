@@ -20,6 +20,7 @@ else:
 
 
 CATALOG_PATH = "specification/catalog/kmip-2.1.json"
+VERSIONED_TAGS_PATH = "specification/catalog/kmip-versioned-tags.json"
 OUTPUT_PATH = "crates/kmipkit-protocol/src/attribute_types_generated.rs"
 TYPED_OUTPUT_PATH = "crates/kmipkit-protocol/src/typed_attributes_generated.rs"
 TYPED_FFI_OUTPUT_PATH = "crates/kmipkit-ffi/src/extension_registry/typed_attributes_catalog_generated.rs"
@@ -33,6 +34,7 @@ _VENDOR_ATTRIBUTE_TAG = 0x0042_0008
 _WIRE_VALUE = re.compile(r"(?:0x)?[0-9A-Fa-f]{6}\Z")
 _TYPE_NAMES = {
     "Big Integer": "BigInteger",
+    "Big-Integer": "BigInteger",
     "Boolean": "Boolean",
     "Byte String": "ByteString",
     "Date Time": "DateTime",
@@ -41,6 +43,7 @@ _TYPE_NAMES = {
     "Enumeration": "Enumeration",
     "Integer": "Integer",
     "Interval": "Interval",
+    "Long Integer": "LongInteger",
     "RNG Parameters": "Structure",
     "Structure": "Structure",
     "Text String": "TextString",
@@ -56,6 +59,7 @@ _ENCODING_NAMES = {
         "Enumeration",
         "Integer",
         "Interval",
+        "LongInteger",
         "Structure",
         "TextString",
         "UniqueIdentifier",
@@ -75,7 +79,23 @@ class TypedAttributeDefinition:
     source_multiplicity: str | None
 
 
-def _attribute_encodings(catalog: dict[str, Any]) -> list[tuple[int, list[str]]]:
+def _versioned_tag_attributes(versioned_tags: dict[str, Any] | None) -> list[dict[str, Any]]:
+    if versioned_tags is None:
+        return []
+    entries: list[dict[str, Any]] = []
+    for entry in versioned_tags.get("tagEnumeration", {}).get("assignments", []):
+        if isinstance(entry, dict) and entry.get("is_object_attribute") is True:
+            entries.append(entry)
+    for entry in versioned_tags.get("v3_0_promoted_attributes", []):
+        if isinstance(entry, dict):
+            entries.append(entry)
+    return entries
+
+
+def _attribute_encodings(
+    catalog: dict[str, Any],
+    versioned_tags: dict[str, Any] | None = None,
+) -> list[tuple[int, list[str]]]:
     elements = catalog.get("elements")
     if not isinstance(elements, list):
         raise ValueError("catalog has no element list")
@@ -130,6 +150,20 @@ def _attribute_encodings(catalog: dict[str, Any]) -> list[tuple[int, list[str]]]
         types = _item_types_for_encoding(source_encoding)
         attributes.append((raw_tag, types))
 
+    for entry in _versioned_tag_attributes(versioned_tags):
+        wire_value = entry.get("wire_value")
+        source_encoding = entry.get("source_encoding")
+        if not _WIRE_VALUE.fullmatch(str(wire_value)):
+            raise ValueError("versioned attribute tag has an invalid wire value")
+        if not isinstance(source_encoding, str) or not source_encoding.strip():
+            raise ValueError("versioned attribute has an invalid source encoding")
+        raw_tag = int(str(wire_value).removeprefix("0x").removeprefix("0X"), 16)
+        if raw_tag in seen_attribute_tags:
+            raise ValueError("versioned attributes share a duplicate TTLV tag")
+        seen_attribute_tags.add(raw_tag)
+        types = _item_types_for_encoding(source_encoding)
+        attributes.append((raw_tag, types))
+
     if not attributes:
         raise ValueError("catalog has no typed attribute encodings")
     return sorted(attributes)
@@ -140,17 +174,15 @@ def _rust_number(value: int) -> str:
 
 
 def _item_types_for_encoding(source_encoding: str) -> list[str]:
+    if source_encoding.strip() == "Unique Identifier":
+        return ["TextString", "Enumeration", "Integer"]
     names = [part.strip() for part in re.split(r",|\s+or\s+", source_encoding) if part.strip()]
     if not names or any(name not in _TYPE_NAMES for name in names):
         raise ValueError("catalog attribute has an unsupported source encoding")
     return list(dict.fromkeys(_TYPE_NAMES[name] for name in names))
 
 
-def _marker_identifier(element_id: str) -> str:
-    prefix = "KMIPKIT-ELEM-ATTRIBUTE-"
-    if not element_id.startswith(prefix):
-        raise ValueError("catalog attribute has an invalid element identity")
-    words = re.findall(r"[A-Za-z]+|[0-9]+", element_id[len(prefix) :])
+def _marker_from_words(words: list[str]) -> str:
     if not words:
         raise ValueError("catalog attribute has an invalid element identity")
     marker = "".join(
@@ -162,6 +194,14 @@ def _marker_identifier(element_id: str) -> str:
     return marker
 
 
+def _marker_identifier(element_id: str) -> str:
+    prefix = "KMIPKIT-ELEM-ATTRIBUTE-"
+    if not element_id.startswith(prefix):
+        raise ValueError("catalog attribute has an invalid element identity")
+    words = re.findall(r"[A-Za-z]+|[0-9]+", element_id[len(prefix) :])
+    return _marker_from_words(words)
+
+
 def _source_multiplicity(element: dict[str, Any]) -> str | None:
     value = element.get("source_multiple_instances_permitted")
     if value is None:
@@ -171,7 +211,10 @@ def _source_multiplicity(element: dict[str, Any]) -> str | None:
     return value
 
 
-def collect_typed_attributes(catalog: dict[str, Any]) -> list[TypedAttributeDefinition]:
+def collect_typed_attributes(
+    catalog: dict[str, Any],
+    versioned_tags: dict[str, Any] | None = None,
+) -> list[TypedAttributeDefinition]:
     """Collect direct, typed object attributes from the validated catalog."""
     elements = catalog.get("elements")
     if not isinstance(elements, list):
@@ -179,7 +222,7 @@ def collect_typed_attributes(catalog: dict[str, Any]) -> list[TypedAttributeDefi
 
     # Reuse the existing allocation, parent, duplicate-tag, and encoding checks
     # so the new typed surface cannot develop separate catalog semantics.
-    encodings = dict(_attribute_encodings(catalog))
+    encodings = dict(_attribute_encodings(catalog, versioned_tags))
     tag_records: dict[str, tuple[int, bool]] = {}
     for element in elements:
         if not isinstance(element, dict) or element.get("kind") != "tag":
@@ -268,6 +311,45 @@ def collect_typed_attributes(catalog: dict[str, Any]) -> list[TypedAttributeDefi
             )
         )
 
+    for entry in _versioned_tag_attributes(versioned_tags):
+        source_name = entry.get("name")
+        wire_value = entry.get("wire_value")
+        source_encoding = entry.get("source_encoding")
+        if not isinstance(source_name, str) or not source_name.strip():
+            raise ValueError("versioned attribute has an invalid source name")
+        if not _WIRE_VALUE.fullmatch(str(wire_value)):
+            raise ValueError("versioned attribute has an invalid wire value")
+        if not isinstance(source_encoding, str) or not source_encoding.strip():
+            raise ValueError("versioned attribute has an invalid source encoding")
+        raw_tag = int(str(wire_value).removeprefix("0x").removeprefix("0X"), 16)
+        if raw_tag not in encodings:
+            raise ValueError("versioned attribute tag has no validated TTLV encoding")
+        marker_name = _marker_from_words(re.findall(r"[A-Za-z]+|[0-9]+", source_name))
+        if marker_name in markers:
+            raise ValueError("versioned attributes have duplicate typed marker names")
+        markers.add(marker_name)
+        types = _item_types_for_encoding(source_encoding)
+        if types == ["TextString", "Enumeration", "Integer"]:
+            value_kind = "UniqueIdentifier"
+        elif len(types) == 1:
+            value_kind = types[0]
+        else:
+            raise ValueError("versioned attribute has an unsupported typed value union")
+        multiplicity = entry.get("source_multiplicity")
+        if multiplicity is not None and (not isinstance(multiplicity, str) or not multiplicity.strip()):
+            raise ValueError("versioned attribute has invalid multiplicity metadata")
+        element_id = f"KMIPKIT-ELEM-ATTRIBUTE-V30-{_constant_name(marker_name).replace('_', '-')}"
+        definitions.append(
+            TypedAttributeDefinition(
+                element_id=element_id,
+                source_name=source_name,
+                marker_name=marker_name,
+                tag=raw_tag,
+                value_kind=value_kind,
+                source_multiplicity=multiplicity,
+            )
+        )
+
     if not definitions:
         raise ValueError("catalog has no direct typed attributes")
     tags = [definition.tag for definition in definitions]
@@ -276,9 +358,12 @@ def collect_typed_attributes(catalog: dict[str, Any]) -> list[TypedAttributeDefi
     return sorted(definitions, key=lambda definition: definition.tag)
 
 
-def render_rust(catalog: dict[str, Any]) -> str:
+def render_rust(
+    catalog: dict[str, Any],
+    versioned_tags: dict[str, Any] | None = None,
+) -> str:
     """Render a deterministic lookup table from catalog attribute encodings."""
-    encodings = _attribute_encodings(catalog)
+    encodings = _attribute_encodings(catalog, versioned_tags)
     lines = [
         "// @generated by tools/normative_catalog/generate_attribute_types.py; do not edit.",
         "use kmipkit_ttlv::ItemType;",
@@ -313,9 +398,12 @@ def render_rust(catalog: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def render_client_attribute_tags_rust(catalog: dict[str, Any]) -> str:
+def render_client_attribute_tags_rust(
+    catalog: dict[str, Any],
+    versioned_tags: dict[str, Any] | None = None,
+) -> str:
     """Render the source-backed direct-attribute tag allowlist for fluent builders."""
-    definitions = collect_typed_attributes(catalog)
+    definitions = collect_typed_attributes(catalog, versioned_tags)
     tags = " |\n        ".join(_rust_number(definition.tag) for definition in definitions)
     rendered = "\n".join([
         "// @generated by tools/normative_catalog/generate_attribute_types.py; do not edit.",
@@ -368,6 +456,7 @@ def _owned_type(value_kind: str) -> str:
         "Enumeration": "u32",
         "Integer": "i32",
         "Interval": "u32",
+        "LongInteger": "i64",
         "Structure": "kmipkit_ttlv::Structure",
         "TextString": "String",
         "UniqueIdentifier": "super::super::UniqueIdentifierValue",
@@ -384,15 +473,19 @@ def _view_type(value_kind: str) -> str:
         "Enumeration": "u32",
         "Integer": "i32",
         "Interval": "u32",
+        "LongInteger": "i64",
         "Structure": "kmipkit_ttlv::StructureView<'a>",
         "TextString": "&'a str",
         "UniqueIdentifier": "super::super::UniqueIdentifierView<'a>",
     }[value_kind]
 
 
-def render_typed_rust(catalog: dict[str, Any]) -> str:
+def render_typed_rust(
+    catalog: dict[str, Any],
+    versioned_tags: dict[str, Any] | None = None,
+) -> str:
     """Render typed markers and source metadata for direct KMIP attributes."""
-    definitions = collect_typed_attributes(catalog)
+    definitions = collect_typed_attributes(catalog, versioned_tags)
     lines = [
         "// @generated by tools/normative_catalog/generate_attribute_types.py; do not edit.",
         "use super::AttributeDefinition;",
@@ -494,9 +587,12 @@ def render_typed_rust(catalog: dict[str, Any]) -> str:
     return formatted.stdout
 
 
-def render_typed_ffi_rust(catalog: dict[str, Any]) -> str:
+def render_typed_ffi_rust(
+    catalog: dict[str, Any],
+    versioned_tags: dict[str, Any] | None = None,
+) -> str:
     """Render the direct-attribute tag and value-kind catalog for the C ABI."""
-    definitions = collect_typed_attributes(catalog)
+    definitions = collect_typed_attributes(catalog, versioned_tags)
     tags = " |\n        ".join(_rust_number(definition.tag) for definition in definitions)
     entries = "\n".join(
         f'    ({_rust_number(definition.tag)}, "{definition.value_kind}"),'
@@ -530,9 +626,12 @@ def render_typed_ffi_rust(catalog: dict[str, Any]) -> str:
     return formatted.stdout
 
 
-def render_typed_c_header(catalog: dict[str, Any]) -> str:
+def render_typed_c_header(
+    catalog: dict[str, Any],
+    versioned_tags: dict[str, Any] | None = None,
+) -> str:
     """Render named C tag constants for directly typed KMIP attributes."""
-    definitions = collect_typed_attributes(catalog)
+    definitions = collect_typed_attributes(catalog, versioned_tags)
     lines = [
         "/* @generated by tools/normative_catalog/generate_attribute_types.py; do not edit. */",
         "#ifndef KMIPKIT_STANDARD_ATTRIBUTES_GENERATED_H",
@@ -556,9 +655,12 @@ def _constant_name(marker_name: str) -> str:
     return re.sub(r"(?<!^)(?=[A-Z])", "_", marker_name).upper()
 
 
-def render_typed_java(catalog: dict[str, Any]) -> str:
+def render_typed_java(
+    catalog: dict[str, Any],
+    versioned_tags: dict[str, Any] | None = None,
+) -> str:
     """Render the Java catalog enum for typed direct attributes."""
-    definitions = collect_typed_attributes(catalog)
+    definitions = collect_typed_attributes(catalog, versioned_tags)
     lines = [
         "// @generated by tools/normative_catalog/generate_attribute_types.py; do not edit.",
         "package org.kmipkit.ttlv;",
@@ -605,9 +707,12 @@ def render_typed_java(catalog: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def render_typed_python(catalog: dict[str, Any]) -> str:
+def render_typed_python(
+    catalog: dict[str, Any],
+    versioned_tags: dict[str, Any] | None = None,
+) -> str:
     """Render the Python catalog enum for typed direct attributes."""
-    definitions = collect_typed_attributes(catalog)
+    definitions = collect_typed_attributes(catalog, versioned_tags)
     lines = [
         '"""Generated catalog of OASIS KMIP 2.1 direct object attributes."""',
         "",
@@ -659,14 +764,20 @@ def main(argv: list[str] | None = None) -> int:
         root = arguments.repo_root.resolve(strict=True)
         raw_catalog = safe_read_bytes(root, CATALOG_PATH, max_bytes=MAX_BYTES)
         catalog = load_validated_catalog(raw_catalog, root)
+        versioned_tags: dict[str, Any] | None = None
+        if (root / VERSIONED_TAGS_PATH).is_file():
+            raw_versioned_tags = safe_read_bytes(root, VERSIONED_TAGS_PATH, max_bytes=MAX_BYTES)
+            versioned_tags = json.loads(raw_versioned_tags.decode("utf-8"))
         generated = {
-            OUTPUT_PATH: render_rust(catalog).encode("utf-8"),
-            TYPED_OUTPUT_PATH: render_typed_rust(catalog).encode("utf-8"),
-            TYPED_FFI_OUTPUT_PATH: render_typed_ffi_rust(catalog).encode("utf-8"),
-            TYPED_C_HEADER_OUTPUT_PATH: render_typed_c_header(catalog).encode("utf-8"),
-            TYPED_JAVA_OUTPUT_PATH: render_typed_java(catalog).encode("utf-8"),
-            TYPED_PYTHON_OUTPUT_PATH: render_typed_python(catalog).encode("utf-8"),
-            CLIENT_ATTRIBUTE_TAG_OUTPUT_PATH: render_client_attribute_tags_rust(catalog).encode("utf-8"),
+            OUTPUT_PATH: render_rust(catalog, versioned_tags).encode("utf-8"),
+            TYPED_OUTPUT_PATH: render_typed_rust(catalog, versioned_tags).encode("utf-8"),
+            TYPED_FFI_OUTPUT_PATH: render_typed_ffi_rust(catalog, versioned_tags).encode("utf-8"),
+            TYPED_C_HEADER_OUTPUT_PATH: render_typed_c_header(catalog, versioned_tags).encode("utf-8"),
+            TYPED_JAVA_OUTPUT_PATH: render_typed_java(catalog, versioned_tags).encode("utf-8"),
+            TYPED_PYTHON_OUTPUT_PATH: render_typed_python(catalog, versioned_tags).encode("utf-8"),
+            CLIENT_ATTRIBUTE_TAG_OUTPUT_PATH: render_client_attribute_tags_rust(
+                catalog, versioned_tags
+            ).encode("utf-8"),
         }
         if arguments.write:
             for path, contents in generated.items():
