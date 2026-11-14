@@ -635,6 +635,38 @@ class RouteMatrixTests(unittest.TestCase):
                             and check.get('peer_async_empty_response_payload') is True
                             for check in checks), checks)
 
+    def test_async_indicator_omitted_defaults_to_prohibited_and_completes(self):
+        """OASIS KMIP 2.0/2.1 §§8.2–8.3, 8.6, 9.1–9.2, 11.3; Create §6.1.8 Tables 171/186."""
+        from artifact_support import ROOT
+        import route_peer
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-async-indicator-omitted-default')
+
+        self.assertEqual(route_peer.recipe_for_case(case, None), ((1,), 'async_create_sync_default'))
+
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case]}
+        events, _, checks = route_peer.execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        for symbol, action, target_id, count in (
+                ('kmipkit_client_batch_item_create', 'construct', 'KMIPKIT-ELEM-OP-C2S-CREATE', 12),
+                ('kmipkit_client_batch_item_create', 'send', 'KMIPKIT-ELEM-OP-C2S-CREATE', 12),
+                ('kmipkit_client_batch_item_create', 'decode', 'KMIPKIT-ELEM-OP-C2S-CREATE', 12),
+                ('kmipkit_client_batch_item_response_create', 'decode', 'KMIPKIT-ELEM-OP-C2S-CREATE', 2)):
+            with self.subTest(symbol=symbol, action=action):
+                self.assertEqual(sum(event['public_api_symbol'] == symbol and
+                                     event['action'] == action and
+                                     event['target_id'] == target_id for event in events), count)
+        self.assertTrue(all(check.get('peer_async_response_statuses') == [0] and
+                            check.get('peer_async_indicator_omitted') is True and
+                            check.get('peer_async_correlation_absent') is True
+                            for check in checks), checks)
+
     def test_stop_on_first_failure_case_has_a_controlled_peer_recipe(self):
         import route_peer
         from artifact_support import ROOT
