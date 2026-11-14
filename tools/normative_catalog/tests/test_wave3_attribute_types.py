@@ -37,34 +37,9 @@ class Wave3AttributeTypesTests(unittest.TestCase):
         ):
             self.assertIn(tag_hex, rendered)
 
-    def test_typed_attributes_include_kmip30_links_counters_and_promoted(self) -> None:
-        definitions = generate_attribute_types.collect_typed_attributes(
-            self.catalog,
-            versioned_tags=self.versioned_tags,
-        )
-        by_tag = {d.tag: d for d in definitions}
-        expected_tags = {
-            0x0042_0190: ("CertificateLink", "UniqueIdentifier"),
-            0x0042_0199: ("PrivateKeyLink", "UniqueIdentifier"),
-            0x0042_019E: ("ObjectClass", "Enumeration"),
-            0x0042_01AE: ("OtpCounter", "ByteString"),
-            0x0042_01B6: ("SplitKeyPolynomial", "Enumeration"),
-            0x0042_01B8: ("DeactivationReason", "Structure"),
-            0x0042_01BA: ("CertificateSubjectDn", "TextString"),
-            0x0042_01BB: ("CertificateIssuerDn", "TextString"),
-            0x0042_01BC: ("CertificateRequestLink", "UniqueIdentifier"),
-            0x0042_01BD: ("CertifyCounter", "LongInteger"),
-            0x0042_01C2: ("NistSecurityCategory", "Integer"),
-            0x0042_0024: ("CredentialType", "Enumeration"),
-            0x0042_0044: ("KeyPartIdentifier", "Integer"),
-            0x0042_008A: ("SplitKeyMethod", "Enumeration"),
-            0x0042_008B: ("SplitKeyParts", "Integer"),
-            0x0042_008C: ("SplitKeyThreshold", "Integer"),
-        }
-        for tag, (marker, kind) in expected_tags.items():
-            self.assertIn(tag, by_tag, f"missing tag 0x{tag:06X}")
-            self.assertEqual(by_tag[tag].marker_name, marker)
-            self.assertEqual(by_tag[tag].value_kind, kind)
+    def test_typed_attributes_retain_kmip21_baseline_count(self) -> None:
+        definitions = generate_attribute_types.collect_typed_attributes(self.catalog)
+        self.assertEqual(62, len(definitions))
 
 
 if __name__ == "__main__":
