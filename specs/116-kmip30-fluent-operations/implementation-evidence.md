@@ -238,7 +238,8 @@ of the source file, and `Coverage / windows` passed on `1c990a3a9`.
   approved parent rebase.
 - Refactor: `c4f753197` records the final manifest verification and makes two
   schema tests validate only the records relevant to their assertions.
-- Refactor: pending exact-head CI and PR evidence update.
+- Refactor: `798afb7df` records the CI failure diagnosis, Java mapping evidence,
+  and exact local verification results; exact-head CI remains pending.
 
 ## Draft pull request
 
