@@ -45,12 +45,13 @@ version/encoding/transport combinations. The focused Archive test and full
 local CTest suite pass. This closes only the Archive C route slice; the full C
 route matrix, exact-head CI, and Rust/Java/Python parity remain open.
 
-The local C matrix run `c-route-d957888d-c869-4519-8543-7e95081282b3` invoked
-41,844/66,736 cells with zero failures and 24,892 pending validator recipes;
-all 42 Archive route events passed. This run uses installed release artifact
-`489fafc79ef89db2524eafa7a6c6482f5cf75d97` (SHA-256
-`980e85fdf6982b52360895b9c0713fbef42b294d22fbeb7d71136fe32235af65`) and is
-local evidence, not exact-head CI or a complete matrix.
+The latest local C matrix run `c-route-08336150-bcb0-4ee3-9ce9-e9c5ed058a9c`
+invoked 41,922/66,736 cells with zero failed events and 24,814 validator
+recipes still pending. It records 44 passed Certify events, 42 passed Create
+Key Pair events, and all 42 Archive route events passed. This run uses
+installed release artifact `489fafc79ef89db2524eafa7a6c6482f5cf75d97`
+(SHA-256 `980e85fdf6982b52360895b9c0713fbef42b294d22fbeb7d71136fe32235af65`)
+and is local evidence, not exact-head CI or a complete matrix.
 
 The Archive continuation also fixes stale catalog provenance after a rebase:
 the CMake validator now reconfigures when the shared catalog changes, keeping
