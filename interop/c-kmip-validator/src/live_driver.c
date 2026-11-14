@@ -790,8 +790,9 @@ static bool get_response_matches_created_key(
 
 static bool failed_get_response_accessors_match(
     kmipkit_client_batch_item_response_t *response_item, int32_t *out_status) {
-    /* OASIS KMIP v2.0/v2.1 §§9.6, 11.5, and §6.1.19: STOP returns the failed
-     * Get result, omits its Response Payload, and does not process later items. */
+    /* OASIS KMIP v2.0/v2.1 §§8.4–8.6, 9.5–9.7, and 11.5: a failed Get
+     * response omits its Response Payload under CONTINUE and STOP; STOP also
+     * prevents processing later items. */
     kmipkit_client_batch_item_metadata_v1_t metadata = {
         .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v1_t),
         .abi_version = 1
@@ -7030,7 +7031,8 @@ create_key_pair_cleanup:
                 *response_slot, &metadata);
             if (status == 0) status = kmipkit_client_batch_item_response_unique_batch_item_id(
                 *response_slot, &id_present, &id);
-            if (status == 0 && stop_on_first_failure_workflow && index == 0) {
+            if (status == 0 && (continue_after_failure_workflow ||
+                                stop_on_first_failure_workflow) && index == 0) {
                 bool response_accessors_valid = failed_get_response_accessors_match(
                     *response_slot, &status);
                 if (!response_accessors_valid && status == 0) {
