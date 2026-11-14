@@ -493,3 +493,45 @@ peer validates Batch Count 2 against the two Batch Items. This demonstrates
 that the typed send path derives the count from its items and exposes no count
 override. Its 12 focused checks pass; this does not complete T006/T007/T009 or
 the cross-language matrix.
+
+## Development evidence: C Create Key Pair route
+
+For KMIPKIT-0092-FR-003 and FR-005, the installed C ABI now sends a typed
+Create Key Pair request with explicit RSA algorithm and key length, decodes
+both returned identifiers, and destroys each object in a follow-up request.
+The controlled peer checks the two response fields, the two cleanup targets,
+and that fixture state returns to its initial value. The route is exercised for
+KMIP 2.0 and 2.1, TTLV/JSON/XML, and raw TLS/HTTPS.
+
+- Normative source: OASIS KMIP v2.0 and v2.1 §6.1.9.
+- Red commit `da27e5dd`: the focused test failed because no Create Key Pair
+  network cells executed.
+- Green commit `1b1f6189`: the installed consumer invokes the public typed constructor,
+  typed response accessor, and Destroy accessors; the controlled peer supplies
+  both key identifiers and verifies complete teardown.
+- Verification: the C validator rebuilt; the focused route test passed 12/12
+  version/encoding/transport cells, with peer state restored in all 12. This
+  closes only the C Create Key Pair route slice. The full C matrix and
+  cross-language routes remain open.
+
+## Development evidence: C Certify route
+
+For KMIPKIT-0092-FR-003, FR-005, and FR-009, the installed C ABI now sends a
+typed Create Public Key followed by Certify with the required X.509 Certificate
+Type attribute, decodes the generated Certificate Unique Identifier and
+complete response TTLV, then destroys both the Certificate and Public Key.
+The fixture creates an RSA-2048 Public Key, as Certify applies to public keys.
+
+- Normative source: OASIS KMIP v2.0 and v2.1 §6.1.6, Tables 179 and 180.
+- Red commit `91a7bfc2`: the focused test failed because no Certify route cells
+  executed.
+- Green commit `8c73a2d0`: add the typed request/response route, controlled peer
+  behavior, and a generated catalog fixture with a Public Key setup and
+  Certificate/Public Key teardown.
+- Refactor/documentation commit: this evidence entry and the traceability
+  record capture the route boundary and remaining matrix work.
+- Verification: the focused Certify and Create Key Pair tests passed; each
+  covered 12 version/encoding/transport combinations. `ctest --test-dir
+  interop/c-kmip-validator/build --output-on-failure` passed all 7 tests in
+  82.26 seconds, including both controlled TLS protocol versions. The complete
+  C matrix, exact-head CI, and Rust/Java/Python parity remain open.

@@ -56,3 +56,21 @@ The Archive continuation also fixes stale catalog provenance after a rebase:
 the CMake validator now reconfigures when the shared catalog changes, keeping
 the compiled report hash aligned with the inputs used by the route runner.
 The provenance regression and both controlled TLS peer suites pass.
+
+For KMIPKIT-0092-FR-003, FR-005, and FR-009, the C `test-op-create-key-pair`
+route now exercises the installed `kmipkit_client_batch_item_create_key_pair`
+constructor and `kmipkit_client_batch_item_response_create_key_pair` accessor
+under OASIS KMIP v2.0/v2.1 §6.1.9. The controlled peer validates both returned
+identifiers and the separate two-item Destroy cleanup request across 12
+version/encoding/transport combinations. All 12 focused checks pass and the
+peer's object-state digest returns to its initial value. The full matrix,
+exact-head CI, and equivalent Rust/Java/Python routes remain open.
+
+For KMIPKIT-0092-FR-003, FR-005, and FR-009, C now executes Certify through the
+installed typed ABI under OASIS KMIP v2.0/v2.1 §6.1.6, Tables 179 and 180. The
+controlled route creates an RSA-2048 Public Key, supplies X.509 Certificate
+Type, checks the generated Certificate Unique Identifier and complete response
+TTLV, then destroys both objects. All 12 version/encoding/transport checks
+pass and the fixture returns to its initial state. The generated catalog now
+uses the required Public Key fixture for Certify. Full matrix and
+Rust/Java/Python parity remain open.
