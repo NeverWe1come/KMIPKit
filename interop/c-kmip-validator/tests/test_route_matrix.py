@@ -554,6 +554,29 @@ class RouteMatrixTests(unittest.TestCase):
                              'kmipkit_client_async_operation_outcome_cancel_response_v1'
                              for event in events), 30)
 
+    def test_async_cancel_poll_race_interleaves_poll_before_cancel(self):
+        """OASIS KMIP 2.1 §§6.1.5, 6.1.38 define the interleaved requests and responses."""
+        from artifact_support import ROOT
+        import route_peer
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-async-cancel-vs-poll-race')
+
+        self.assertEqual(route_peer.recipe_for_case(case, None), ((25,), 'cancel_poll_race'))
+
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case]}
+        events, _, checks = route_peer.execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 6)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertEqual(sum(event['public_api_symbol'] == 'kmipkit_client_execute_poll'
+                             for event in events), 12)
+        self.assertEqual(sum(event['public_api_symbol'] == 'kmipkit_client_execute_cancel'
+                             for event in events), 12)
+
     def test_stop_on_first_failure_case_has_a_controlled_peer_recipe(self):
         import route_peer
         from artifact_support import ROOT
