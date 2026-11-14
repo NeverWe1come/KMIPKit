@@ -356,6 +356,8 @@ def main() -> int:
     expected_cases += ("test-op-cancel",)
     expected_operations += (1, 25) * len(ASYNC_CANCEL_RESULT_CASES)
     expected_cases += ASYNC_CANCEL_RESULT_CASES
+    expected_operations += (1,)
+    expected_cases += ("test-async-indicator-mandatory-pending",)
     if protocol_version == "2.1":
         expected_operations += (1, 26, 25)
         expected_cases += (ASYNC_CANCEL_POLL_RACE_CASE,)

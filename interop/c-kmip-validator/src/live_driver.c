@@ -1358,6 +1358,50 @@ static int32_t set_async_seed_authentication(kmip_live_client_t *client,
     return status;
 }
 
+static kmip_execution_outcome_t execute_mandatory_async_create_route(
+    kmip_live_client_t *client) {
+    static const uint8_t expected_correlation[] = "fixture-cancel-correlation";
+    kmipkit_ttlv_structure_t *attributes = NULL;
+    kmipkit_client_batch_item_t *create_item = NULL;
+    kmipkit_client_batch_t *batch = NULL;
+    kmipkit_client_batch_response_t *response = NULL;
+    kmipkit_client_batch_item_response_t *response_item = NULL;
+    kmipkit_byte_span_v1_t correlation = {0};
+    kmip_execution_outcome_t outcome = { .executed = true };
+    int32_t status = create_symmetric_key_attributes(client, &attributes) ? 0 : -1;
+    if (status == 0) status = kmipkit_client_batch_item_create(
+        KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY, attributes, NULL, &create_item);
+    if (status == 0) status = kmipkit_client_batch_create(&batch);
+    if (status == 0) status = kmipkit_client_batch_set_asynchronous_indicator(batch, 1);
+    if (status == 0) status = set_async_seed_authentication(client, batch);
+    if (status == 0) status = kmipkit_client_batch_add_item(batch, &create_item);
+    if (status == 0) status = kmipkit_client_execute(client->client, &batch, client->limits, &response);
+    if (status == 0) status = read_pending_create_correlation(
+        response, expected_correlation, sizeof(expected_correlation) - 1,
+        &response_item, &correlation);
+    if (status == 0) {
+        outcome.success = true;
+        outcome.library_validated = true;
+        outcome.has_result_status_code = true;
+        outcome.result_status_code = KMIPKIT_ENUMERATION_RESULT_STATUS_OPERATION_PENDING;
+    } else {
+        uint32_t category = 0;
+        uint32_t cause = 0;
+        uint32_t delivery = 0;
+        (void)kmipkit_last_error_get(&status, &category, &cause, &delivery);
+        outcome.library_failed = true;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit mandatory asynchronous Create did not return Pending with correlation (category=%u cause=%u delivery=%u)",
+                 category, cause, delivery);
+    }
+    if (response_item) kmipkit_client_batch_item_response_release(response_item);
+    if (response) kmipkit_client_batch_response_release(response);
+    if (batch) kmipkit_client_batch_release(batch);
+    if (create_item) kmipkit_client_batch_item_release(create_item);
+    if (attributes) kmipkit_ttlv_structure_release(attributes);
+    return outcome;
+}
+
 static kmip_execution_outcome_t execute_cancel_route(kmip_live_client_t *client,
                                                      const char *cancellation_result) {
     static const uint8_t expected_correlation[] = "fixture-cancel-correlation";
@@ -3288,6 +3332,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     if (strcmp(test_case->case_id, "test-op-cancel") == 0 ||
         strncmp(test_case->case_id, "test-async-cancel-result-", 25) == 0) {
         return execute_cancel_route(client, test_case->cancellation_result);
+    }
+    if (strcmp(test_case->case_id, "test-async-indicator-mandatory-pending") == 0) {
+        return execute_mandatory_async_create_route(client);
     }
     if (strcmp(test_case->case_id, "test-async-cancel-vs-poll-race") == 0) {
         return execute_cancel_poll_race_route(client);

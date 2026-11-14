@@ -286,6 +286,7 @@ def tree_digest(node):
 
 
 RECIPES = {
+    'test-async-indicator-mandatory-pending': ((1,), 'async_create_pending'),
     'test-op-cancel': ((25,), 'cancel_async'),
     'test-async-cancel-result-canceled': ((25,), 'cancel_async'),
     'test-async-cancel-result-unable-to-cancel': ((25,), 'cancel_async'),
@@ -956,7 +957,7 @@ def cancel_response(correlation: bytes, cancellation_result: int, protocol_minor
 
 
 def pending_create_response(correlation: bytes, protocol_minor: int) -> bytes:
-    """Build an asynchronous Create response carrying its server-issued correlation value."""
+    """Build a Pending Create response with its required empty payload and correlation value."""
     version = tlv(0x420069, 1,
                   tlv(0x42006A, 2, (2).to_bytes(4, 'big')) +
                   tlv(0x42006B, 2, protocol_minor.to_bytes(4, 'big')))
@@ -1638,6 +1639,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         if logout_recipe:
                                             assert_login_logout_exchange(request_tree, version, exchange_index)
                                             response_operations = ((45,) if exchange_index == 0 else (46,))
+                                        elif recipe[1] == 'async_create_pending' and exchange_index == 0:
+                                            assert_async_cancel_seed_request(request_tree, version)
+                                            response_operations = (1,)
                                         elif recipe[1] in ('cancel_async', 'cancel_poll_race') and exchange_index == 0:
                                             assert_async_cancel_seed_request(request_tree, version)
                                             response_operations = (1,)
@@ -1738,7 +1742,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         if response_operations != recipe[0] and not cleanup_exchange:
                                             response_statuses = tuple(reversed(response_statuses))
                                             response_reasons = tuple(reversed(response_reasons))
-                                        if recipe[1] in ('cancel_async', 'cancel_poll_race') and exchange_index == 0:
+                                        if recipe[1] in ('async_create_pending', 'cancel_async',
+                                                         'cancel_poll_race') and exchange_index == 0:
                                             response_wire = pending_create_response(
                                                 CANCEL_CORRELATION_VALUE, int(version[-1]))
                                         elif recipe[1] == 'cancel_poll_race' and exchange_index == 1:
@@ -1763,14 +1768,19 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             verify_login_logout_response(response_tree, exchange_index)
                                         elif recipe[1] == 'interop':
                                             verify_interop_response(response_tree)
-                                        elif recipe[1] in ('cancel_async', 'cancel_poll_race') and exchange_index == 0:
+                                        elif recipe[1] in ('async_create_pending', 'cancel_async',
+                                                           'cancel_poll_race') and exchange_index == 0:
                                             pending_items = [item for item in response_tree[2]
                                                              if item[0] == BATCH_ITEM_TAG and item[1] == 1]
                                             if (len(pending_items) != 1 or
                                                     numbers(pending_items[0], 0x42005C) != [1] or
                                                     numbers(pending_items[0], 0x42007F) != [2] or
                                                     byte_string_values(pending_items[0], 0x420006) !=
-                                                    [CANCEL_CORRELATION_VALUE]):
+                                                    [CANCEL_CORRELATION_VALUE] or
+                                                    len([child for child in pending_items[0][2]
+                                                         if child[0] == RESPONSE_PAYLOAD_TAG]) != 1 or
+                                                    [child for child in pending_items[0][2]
+                                                     if child[0] == RESPONSE_PAYLOAD_TAG][0][2]):
                                                 raise ValueError('fixture_cancel_seed_response_mismatch')
                                         elif recipe[1] == 'cancel_poll_race' and exchange_index == 1:
                                             verify_pending_poll_response(response_tree, CANCEL_CORRELATION_VALUE)
@@ -1956,6 +1966,23 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                            'consumer_diagnostic': (result.get('cases') or [{}])[0].get('diagnostic', ''),
                                            'public_api_trace_symbols': sorted(invoked_symbols),
                                            'public_api_success_symbols': sorted(called_symbols),
+                                           **({'peer_async_response_statuses': [
+                                                   numbers(item, 0x42007F)[0]
+                                                   for item in observation[0][1][2]
+                                                   if item[0] == BATCH_ITEM_TAG],
+                                               'peer_async_correlation_match':
+                                                   byte_string_values(observation[0][1], 0x420006) ==
+                                                   [CANCEL_CORRELATION_VALUE],
+                                               'peer_async_empty_response_payload':
+                                                   len([child for item in observation[0][1][2]
+                                                        if item[0] == BATCH_ITEM_TAG
+                                                        for child in item[2]
+                                                        if child[0] == RESPONSE_PAYLOAD_TAG]) == 1 and
+                                                   not [child for item in observation[0][1][2]
+                                                        if item[0] == BATCH_ITEM_TAG
+                                                        for child in item[2]
+                                                        if child[0] == RESPONSE_PAYLOAD_TAG][0][2]}
+                                              if recipe[1] == 'async_create_pending' else {}),
                                            **({'peer_async_interleaving_operations': [
                                                    numbers(request[0], 0x42005C)[0]
                                                    for request in observation],

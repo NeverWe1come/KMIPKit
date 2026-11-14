@@ -604,7 +604,7 @@ class RouteMatrixTests(unittest.TestCase):
                             for check in checks), checks)
 
     def test_async_mandatory_create_returns_pending_with_correlation(self):
-        """OASIS KMIP 2.0/2.1 §6.1.8 Tables 171 and 186 define mandatory async Create."""
+        """OASIS KMIP 2.0 §6.1.8 Table 171 and 2.1 §6.1.8 Table 186 define Create."""
         from artifact_support import ROOT
         import route_peer
 
@@ -621,17 +621,18 @@ class RouteMatrixTests(unittest.TestCase):
 
         self.assertEqual(len(checks), 12)
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
-        for symbol, action, count in (
-                ('kmipkit_client_batch_item_create', 'construct', 12),
-                ('kmipkit_client_batch_item_create', 'send', 12),
-                ('kmipkit_client_batch_item_create', 'decode', 12),
-                ('kmipkit_client_batch_item_response_create', 'decode', 2),
-                ('kmipkit_client_batch_item_response_pending_correlation_value', 'decode', 2)):
+        for symbol, action, target_id, count in (
+                ('kmipkit_client_batch_item_create', 'construct', 'KMIPKIT-ELEM-OP-C2S-CREATE', 12),
+                ('kmipkit_client_batch_item_create', 'send', 'KMIPKIT-ELEM-OP-C2S-CREATE', 12),
+                ('kmipkit_client_batch_item_create', 'decode', 'KMIPKIT-ELEM-OP-C2S-CREATE', 12),
+                ('kmipkit_client_batch_item_response_create', 'decode', 'KMIPKIT-ELEM-OP-C2S-CREATE', 2)):
             with self.subTest(symbol=symbol, action=action):
                 self.assertEqual(sum(event['public_api_symbol'] == symbol and
-                                     event['action'] == action for event in events), count)
+                                     event['action'] == action and
+                                     event['target_id'] == target_id for event in events), count)
         self.assertTrue(all(check.get('peer_async_response_statuses') == [2] and
                             check.get('peer_async_correlation_match') is True
+                            and check.get('peer_async_empty_response_payload') is True
                             for check in checks), checks)
 
     def test_stop_on_first_failure_case_has_a_controlled_peer_recipe(self):
