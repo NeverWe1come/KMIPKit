@@ -23,6 +23,7 @@ BASE_PATH = "specification/catalog/kmip-2.1.json"
 VERSIONED_PATH = "specification/catalog/kmip-versioned-values.json"
 MANIFEST_PATH = "specification/api/public-api.json"
 EVIDENCE_PATH = "specification/catalog/operation-matrix-evidence.json"
+DRAFT_API_PATH = "specification/api/kmip-3.0-draft-api.json"
 OUTPUT_PATH = "specification/catalog/fluent-operation-inventory.json"
 MAX_SOURCE_BYTES = 64 * 1024 * 1024
 V3_OPERATION_SECTIONS = {
@@ -64,6 +65,7 @@ def build_inventory(
     versioned_catalog: dict[str, Any],
     manifest: dict[str, Any],
     evidence_catalog: dict[str, Any] | None = None,
+    draft_api_catalog: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Join assigned operations with direction, owner clause and API scope."""
     base_rows = [
@@ -151,6 +153,9 @@ def build_inventory(
         })
 
     evidence = _evidence_by_route(evidence_catalog, rows)
+    kmip30_fluent_routes, kmip30_fluent_capability = _kmip30_fluent_routes(
+        manifest, draft_api_catalog
+    )
     for row in rows:
         detail = evidence[(row["name"], row["direction"])]
         row["versionSourceRefs"] = detail["versionSourceRefs"]
@@ -160,9 +165,17 @@ def build_inventory(
         row["testEvidence"] = {"focused": detail["testRefs"], "parity": []}
         row["serverCapabilityClaim"] = False
         public = public_by_name.get(row["name"]) if row["direction"] == "client_to_server" else None
-        row["publicApiScope"] = public.get("scope") if public else None
-        row["publicApiState"] = public.get("apiState") if public else None
-        row["testEvidence"]["parity"] = public.get("parityEvidenceIds", []) if public else []
+        if row["version"] == "3.0" and kmip30_fluent_capability is not None:
+            row["publicApiScope"] = "client_3_0_draft"
+            row["publicApiState"] = kmip30_fluent_capability["capabilityState"]
+            row["publicApiMappings"] = kmip30_fluent_routes[int(row["wireValue"], 16)]
+            row["testEvidence"]["parity"] = kmip30_fluent_capability.get(
+                "parityEvidenceIds", []
+            )
+        else:
+            row["publicApiScope"] = public.get("scope") if public else None
+            row["publicApiState"] = public.get("apiState") if public else None
+            row["testEvidence"]["parity"] = public.get("parityEvidenceIds", []) if public else []
         implemented = row["route"]["state"] == "implemented"
         row["clientSend"] = row["route"]["kind"] == "client" and implemented
         row["listenerRoute"] = row["route"]["kind"] == "listener" and implemented
@@ -170,10 +183,10 @@ def build_inventory(
     rows.sort(key=lambda row: (row["version"], int(row["wireValue"], 16)))
     return {
         "formatVersion": 2,
-        "sources": [BASE_PATH, VERSIONED_PATH, MANIFEST_PATH, EVIDENCE_PATH],
+        "sources": [BASE_PATH, VERSIONED_PATH, MANIFEST_PATH, EVIDENCE_PATH, DRAFT_API_PATH],
         "versionMeaning": (
             "Earliest directional availability in supported pinned source editions; "
-            "route-version execution is not established by assignment or static evidence."
+            "local client route verification is recorded separately from server capability."
         ),
         "evidenceMeaning": (
             "Existing executable test references, not recorded passing results "
@@ -181,6 +194,76 @@ def build_inventory(
         ),
         "operations": rows,
     }
+
+
+def _kmip30_fluent_routes(
+    manifest: dict[str, Any], draft_api_catalog: dict[str, Any] | None
+) -> tuple[dict[str, dict[str, str]], dict[str, Any] | None]:
+    """Resolve the separate, explicitly approved KMIP 3.0 fluent capability."""
+    capabilities = manifest.get("capabilities", [])
+    matches = [
+        capability
+        for capability in capabilities
+        if isinstance(capability, dict)
+        and capability.get("capabilityId") == "kmip30_fluent_operations"
+    ]
+    if not matches:
+        return {}, None
+    if len(matches) != 1:
+        raise ValueError("KMIP 3.0 fluent capability is duplicated")
+    capability = matches[0]
+    if capability.get("capabilityState") not in {"declared", "verified"}:
+        raise ValueError("KMIP 3.0 fluent capability has an invalid state")
+    if not isinstance(draft_api_catalog, dict):
+        raise ValueError("KMIP 3.0 fluent capability has no operation route catalog")
+    operations = draft_api_catalog.get("operations")
+    if not isinstance(operations, list) or len(operations) != 7:
+        raise ValueError("KMIP 3.0 fluent route catalog must contain seven operations")
+    expected_languages = {"rust", "c", "java", "python"}
+    assigned_codes = set(range(0x3C, 0x43))
+    routes: dict[int, dict[str, str]] = {}
+    names: set[str] = set()
+    for operation in operations:
+        if (
+            not isinstance(operation, dict)
+            or not isinstance(operation.get("operation"), str)
+            or not operation["operation"]
+        ):
+            raise ValueError("KMIP 3.0 fluent operation mapping is malformed")
+        name = operation["operation"]
+        code = operation.get("operationCode")
+        mappings = operation.get("fluentApi")
+        if (
+            name in names
+            or isinstance(code, bool)
+            or not isinstance(code, int)
+            or code not in assigned_codes
+            or code in routes
+            or not isinstance(mappings, dict)
+            or set(mappings) != expected_languages
+            or any(not isinstance(value, str) or not value for value in mappings.values())
+        ):
+            raise ValueError(f"KMIP 3.0 fluent route mapping is incomplete: {name}")
+        names.add(name)
+        routes[code] = mappings
+    if set(routes) != assigned_codes:
+        raise ValueError("KMIP 3.0 fluent routes do not cover all seven assigned operation codes")
+    language_mappings = capability.get("mappings")
+    if not isinstance(language_mappings, dict) or set(language_mappings) != expected_languages:
+        raise ValueError("KMIP 3.0 fluent capability language mappings are incomplete")
+    for language in expected_languages:
+        expected = {route[language] for route in routes.values()}
+        declared = language_mappings[language]
+        if (
+            not isinstance(declared, list)
+            or any(not isinstance(mapping, str) or not mapping.strip() for mapping in declared)
+            or len(declared) != len(set(declared))
+            or not expected.issubset(declared)
+        ):
+            raise ValueError(f"KMIP 3.0 fluent capability mapping omits a route for {language}")
+    if capability["capabilityState"] == "verified" and not capability.get("parityEvidenceIds"):
+        raise ValueError("verified KMIP 3.0 fluent capability lacks parity evidence")
+    return routes, capability
 
 
 def _evidence_by_route(
@@ -331,6 +414,7 @@ def render(root: Path) -> bytes:
         _read_json(root, VERSIONED_PATH, max_bytes=MAX_SOURCE_BYTES),
         _read_json(root, MANIFEST_PATH, max_bytes=MAX_SOURCE_BYTES),
         _read_json(root, EVIDENCE_PATH),
+        _read_json(root, DRAFT_API_PATH),
     )
     _validate_evidence_files(root, inventory)
     return (json.dumps(inventory, indent=2, ensure_ascii=False) + "\n").encode()
