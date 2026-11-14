@@ -37,6 +37,14 @@
   Get Attribute List batch items in the Create/Activate/Get Attribute List/
   Revoke/Destroy workflow across both protocol versions and all six
   encoding/transport combinations.
+- [x] T014 Exercise required and omitted-default `Batch Order Option` C
+  Create/Activate placeholder batches through the installed ABI and controlled
+  peers across KMIP 2.0/2.1, TTLV/JSON/XML, and raw TLS/HTTPS.
+- [x] T015 Validate the ordered-batch response header, metadata, response item,
+  Unique Batch Item ID, and pending-correlation accessors. Do not read raw
+  response TTLV for ordinary successful responses; the repository security
+  invariant limits that accessor to its specified successful shape-failure
+  cases.
 
 T006 and T007 remain open until each separate language validator consumes the
 generated matrix, invokes every named public route, exchanges requests and
@@ -588,3 +596,42 @@ and confirms the peer's object state returns to baseline.
   records 42,190 of 66,736 cells invoked, zero failed, and 24,546 pending
   `validator_recipe_pending` cells. The 38-cell reduction covers this batch
   variant; matrix completeness and exact-head CI remain open.
+
+## Development evidence: C ordered placeholder batch options and response accessors
+
+KMIPKIT-0092-FR-003, FR-005, and FR-009 now include two installed-C routes for
+the ordered Create/Activate batch: one explicitly sets `Batch Order Option`
+to `true`, and one omits the field to exercise its specified default. Both use
+the ID Placeholder only after Create and perform Revoke/Destroy cleanup in a
+later request. OASIS KMIP 2.0/2.1 §§6.1.1, 6.1.8, 8.2–8.6, and 9.5–9.8 define
+the operations, ordered processing, and batch header/item fields; the ID
+Placeholder is defined in §6.1 and uses the Unique Identifier value defined in
+KMIP 2.0 §4.50 / KMIP 2.1 §4.57.
+
+- Red commit `14c14b9ac`: the focused contract failed because neither ordered
+  placeholder route had a C recipe.
+- Green commit `5e7a48981`: add both request variants, typed Create/Activate
+  constructors and response checks, controlled-peer checks, and cleanup.
+- Red commit `feb6d2ac5`: the response-accessor contract failed because the
+  response header, metadata, response item, and Unique Batch Item ID accessors
+  were not observed on these routes.
+- Green commit `66c2b39f4`: inspect response header TTLV and metadata v1/v2,
+  retrieve each ordered response item, validate its Unique Batch Item ID, and
+  confirm no asynchronous correlation value is present.
+- Security boundary: the public raw response-TTLV accessor is intentionally not
+  called for these successful Create/Activate responses. Its allowed use is
+  restricted by the repository security invariant to the exact specified
+  successful MAC, MAC Verify, Sign, and Signature Verify shape failures.
+  Consequently the local matrix retains four such raw-TTLV cells as pending
+  rather than weakening the invariant.
+- Verification: both controlled peer scenarios pass across 24
+  version/encoding/transport combinations; the installed C matrix records 240
+  passing events for these routes. Full local CTest passed 7/7 in 91.51
+  seconds. Local matrix run `c-route-b31736b5-d66d-41da-bd15-009c3f016e78`,
+  using pinned library commit `489fafc79ef89db2524eafa7a6c6482f5cf75d97`
+  and artifact SHA-256
+  `980e85fdf6982b52360895b9c0713fbef42b294d22fbeb7d71136fe32235af65`,
+  records 42,386/66,736 cells invoked, zero failed, and 24,350 pending. Four
+  pending cells are the restricted raw-response-TTLV access described above;
+  other matrix gaps remain. Exact-head hosted CI and cross-language parity
+  remain open, so the PR stays WIP.

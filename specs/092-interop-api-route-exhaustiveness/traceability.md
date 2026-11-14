@@ -146,3 +146,23 @@ with artifact SHA-256
 `980e85fdf6982b52360895b9c0713fbef42b294d22fbeb7d71136fe32235af65`. This
 route slice is covered; the exhaustive matrix, exact-head CI, and parity for
 the other languages remain open.
+
+### C ordered placeholder batch options and response accessors
+
+For KMIPKIT-0092-FR-003, FR-005, and FR-009, the C installed consumer now
+executes ordered Create/Activate batches with `Batch Order Option` explicitly
+set to `true` and omitted, across KMIP 2.0/2.1, TTLV/JSON/XML, and raw TLS/HTTPS.
+The fixtures validate ID Placeholder resolution after Create, response item
+order and identifiers, response-header TTLV, response metadata v1/v2, typed
+Create/Activate response accessors, and absence of asynchronous correlation.
+They then use separate Revoke/Destroy cleanup requests. The normative scope is
+OASIS KMIP 2.0/2.1 §§6.1.1, 6.1.8, 8.2–8.6, and 9.5–9.8; ID Placeholder is
+defined in §6.1 and uses the Unique Identifier value in KMIP 2.0 §4.50 / KMIP
+2.1 §4.57. Red/Green commits are `14c14b9ac`/`5e7a48981` for route
+construction and `feb6d2ac5`/`66c2b39f4` for response accessors. Both cases
+pass 24 controlled version/encoding/transport combinations and account for
+240 passing local matrix events. The four matrix cells for generic raw response
+TTLV remain pending because this is a successful Create/Activate response and
+the repository security invariant allows that accessor only for the narrowly
+specified successful MAC, MAC Verify, Sign, and Signature Verify shape
+failures. The full matrix and Rust/Java/Python evidence remain open.
