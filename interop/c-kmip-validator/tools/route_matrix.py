@@ -263,31 +263,36 @@ def _with_request_header_field(fixture: tuple, tags: dict[str, int], field: tupl
     return fixture[0], fixture[1], message
 
 
+def _request_header_field_data(name: str, kind: int, value: object, catalog: dict,
+                               protocol_version: str) -> bytes | None:
+    if kind == 5:
+        values = catalog_enum_values(catalog, name, protocol_version)
+        if not values:
+            return None
+        value = values[0]
+        return value.to_bytes(4, 'big')
+    if kind in (2, 6, 9):
+        width = 8 if kind == 9 else 4
+        data = int(value).to_bytes(width, 'big', signed=kind == 9)
+        if kind == 6:
+            data += bytes(4)
+        return data
+    if kind in (7, 8):
+        return value
+    raise ValueError('unsupported_request_header_fixture_type')
+
+
 def _request_header_field_fixture(target: dict, catalog: dict, tags: dict[str, int],
                                   protocol_version: str) -> tuple | None:
     specification = REQUEST_HEADER_FIELD_FIXTURES.get(target.get('target_id'))
     if specification is None:
         return None
     name, kind, value = specification
-    if kind == 5:
-        values = catalog_enum_values(catalog, name, protocol_version)
-        if not values:
-            return None
-        value = values[0]
-        data = value.to_bytes(4, 'big')
-    elif kind in (2, 6, 9):
-        width = 8 if kind == 9 else 4
-        data = int(value).to_bytes(width, 'big', signed=kind == 9)
-        if kind == 6:
-            data += bytes(4)
-    elif kind in (7, 8):
-        data = value
-    else:
-        raise ValueError('unsupported_request_header_fixture_type')
     tag = tags.get(name)
     if tag is None:
         return None
-    return tag, kind, data
+    data = _request_header_field_data(name, kind, value, catalog, protocol_version)
+    return (tag, kind, data) if data is not None else None
 
 
 def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
