@@ -3076,19 +3076,24 @@ class RouteMatrixTests(unittest.TestCase):
         events, _, checks = execute_network_cells(
             ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
 
-        self.assertEqual(len(checks), 12,
-                         'the corrected batch must pass both versions on all six wire transports')
+        self.assertEqual(len(checks), 24,
+                         'both Get Attribute List constructors must pass both versions on all six wire transports')
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertEqual({check['constructor_variant'] for check in checks}, {'direct', 'standalone'})
         self.assertTrue(any(event['target_id'] == 'KMIPKIT-ELEM-OP-C2S-GET' and
                             event['action'] == 'send' for event in events))
         self.assertTrue(any(event['target_id'] == 'KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST' and
                             event['action'] == 'send' for event in events))
         for check in checks:
+            self.assertEqual(check['constructor_variant'] in {'direct', 'standalone'}, True)
             self.assertEqual(check['peer_response_operation_values'], [10, 12])
             self.assertEqual(check['peer_response_result_statuses'], [0, 0])
             self.assertTrue({'kmipkit_client_batch_item_get',
-                             'kmipkit_client_batch_item_get_attribute_list',
                              'kmipkit_client_execute'} <= set(check['public_api_trace_symbols']))
+            attribute_constructor = ('kmipkit_client_batch_item_get_attribute_list'
+                                     if check['constructor_variant'] == 'direct' else
+                                     'kmipkit_client_batch_item_get_attribute_list_from_request')
+            self.assertIn(attribute_constructor, check['public_api_trace_symbols'])
 
 
     def test_stop_batch_returns_only_the_failed_item_and_stops_processing(self):
