@@ -1112,3 +1112,52 @@ across 1,319 pending case IDs. Every pending cell remains planned and carries
 The full installed Java consumer suite also passes: 54 tests, no failures,
 errors, or skips. The generated route ledger matches its checked-in reference;
 the full-matrix gate remains incomplete.
+
+## KMIP 2.1 Asynchronous Correlation Value member routes
+
+Sources: OASIS KMIP 2.1 Specification §7.1 Table 352 defines the optional
+Asynchronous Correlation Value Byte String member of the Asynchronous
+Correlation Values list; §7.2 Table 353 defines the required Byte String
+member of an Asynchronous Request. Section 11.56 Table 487 assigns the
+Asynchronous Correlation Values container and Byte String member tags. The
+catalog and capability matrix plan
+five cells for §7.1: the generic `TtlvValue.ByteString`, `TtlvItem.create`,
+`TtlvItem.view`, and `TtlvCodec.decode` routes plus the typed
+`QueryAsyncRequestsRequest.withCorrelationValues` route. Section 7.2 plans
+the four generic routes. Both cases apply to KMIP 2.1 only.
+
+Red commit `d3222f268` requires all nine per-case route events; the focused
+test fails because the §7.1 ByteString constructor invocation is missing.
+Green commit `07f0a1099` invokes all four generic routes for both members and
+checks the exact tag and binary value through the installed decoder. For
+§7.1, it also invokes the typed filter with two ordered values, verifies their
+exact ByteString members, and checks that an unfiltered request omits the
+optional filter. The fixture distinguishes the `Asynchronous Correlation
+Values` container tag `0x420176` from the singular ByteString member tag
+`0x420006`, as specified by the pinned tag inventory. Refactor commit
+`ccffad7b9` uses fixture metadata to select the typed route and calculate the
+expected route-event count.
+
+Verification uses the installed Java artifact pinned to
+`489fafc79ef89db2524eafa7a6c6482f5cf75d97`:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon --max-workers=2 \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test \
+  --tests org.kmipkit.validator.ControlledTlsPeerTest.controlledQueryProducesPerRouteEvidenceForBothProtocolVersions
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+```
+
+The focused Java test and full installed Java consumer suite pass (54 tests,
+no failures, errors, or skips). The shared validator accepts all 22,598 of
+22,598 selected cells with zero failed cells. This slice adds nine cells; the
+full ledger has 71,463 planned, 22,598 executed, and 48,865 pending cells
+across 1,317 pending case IDs. Each pending cell remains planned with reason
+`route_evidence_not_emitted`; this selected-scope result does not set
+`complete_matrix=true` and does not make the pending work an exclusion.

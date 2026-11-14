@@ -859,6 +859,8 @@
     "test-norm-structure-member-structure-member-7-6-object-groups",
     "test-norm-structure-member-structure-member-7-6-object-types",
     "test-norm-structure-member-structure-member-7-7-constraint",
+    "test-norm-structure-member-structure-member-7-1-asynchronous-correlation-value",
+    "test-norm-structure-member-structure-member-7-2-asynchronous-correlation-value",
     "test-norm-payload-client-add-attribute-request-20-002",
     "test-norm-payload-client-add-attribute-request-21-002",
     "test-norm-payload-client-modify-attribute-request-20-003",
@@ -1384,7 +1386,7 @@
     "test-norm-credential-credential-hashed-password",
     "test-norm-credential-credential-username-and-password"
   ],
-  "executed_cells": 22589,
+  "executed_cells": 22598,
   "language": "java",
   "library_commit": "489fafc79ef89db2524eafa7a6c6482f5cf75d97",
   "pending_case_ids": [
@@ -2468,7 +2470,6 @@
     "test-norm-structure-member-structure-member-5-5-vendor-identification",
     "test-norm-structure-member-structure-member-5-6-any-attribute-in-4-object-attributes",
     "test-norm-structure-member-structure-member-5-7-any-attribute-in-4-object-attributes",
-    "test-norm-structure-member-structure-member-7-1-asynchronous-correlation-value",
     "test-norm-structure-member-structure-member-7-11-object-defaults",
     "test-norm-structure-member-structure-member-7-12-cryptographic-parameters",
     "test-norm-structure-member-structure-member-7-12-derivation-data",
@@ -2487,7 +2488,6 @@
     "test-norm-structure-member-structure-member-7-18-encryption-key-information",
     "test-norm-structure-member-structure-member-7-18-mac-signature-key-information",
     "test-norm-structure-member-structure-member-7-18-wrapping-method",
-    "test-norm-structure-member-structure-member-7-2-asynchronous-correlation-value",
     "test-norm-structure-member-structure-member-7-2-operation",
     "test-norm-structure-member-structure-member-7-2-processing-stage",
     "test-norm-structure-member-structure-member-7-2-submission-date",
@@ -7030,10 +7030,6 @@
       "pending_cells": 6
     },
     {
-      "case_id": "test-norm-structure-member-structure-member-7-1-asynchronous-correlation-value",
-      "pending_cells": 5
-    },
-    {
       "case_id": "test-norm-structure-member-structure-member-7-11-object-defaults",
       "pending_cells": 8
     },
@@ -7104,10 +7100,6 @@
     {
       "case_id": "test-norm-structure-member-structure-member-7-18-wrapping-method",
       "pending_cells": 8
-    },
-    {
-      "case_id": "test-norm-structure-member-structure-member-7-2-asynchronous-correlation-value",
-      "pending_cells": 4
     },
     {
       "case_id": "test-norm-structure-member-structure-member-7-2-operation",
@@ -7986,7 +7978,7 @@
       "pending_cells": 15
     }
   ],
-  "pending_cells": 48874,
+  "pending_cells": 48865,
   "pending_reason": "No validated per-cell route execution evidence is recorded for this cell.",
   "pending_reason_code": "route_evidence_not_emitted",
   "planned_cells": 71463,
@@ -8004,8 +7996,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2276,
-      "pending_cells": 1903,
+      "executed_cells": 2278,
+      "pending_cells": 1901,
       "protocol_version": "2.1",
       "required_cells": 4179,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item",
@@ -8144,8 +8136,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 1,
-      "pending_cells": 37,
+      "executed_cells": 3,
+      "pending_cells": 35,
       "protocol_version": "2.1",
       "required_cells": 38,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring",
@@ -8324,8 +8316,8 @@
     {
       "action": "decode",
       "encoding": "TTLV",
-      "executed_cells": 2300,
-      "pending_cells": 1926,
+      "executed_cells": 2302,
+      "pending_cells": 1924,
       "protocol_version": "2.1",
       "required_cells": 4226,
       "route_id": "java.generic-ttlv.ttlv_codec.decode",
@@ -8344,8 +8336,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 2276,
-      "pending_cells": 1902,
+      "executed_cells": 2278,
+      "pending_cells": 1900,
       "protocol_version": "2.1",
       "required_cells": 4178,
       "route_id": "java.generic-ttlv.ttlv_item.create",
@@ -32824,8 +32816,8 @@
     {
       "action": "construct",
       "encoding": "TTLV",
-      "executed_cells": 0,
-      "pending_cells": 4,
+      "executed_cells": 1,
+      "pending_cells": 3,
       "protocol_version": "2.1",
       "required_cells": 4,
       "route_id": "java.typed-protocol.model.org.kmipkit.extensions.queryasyncrequestsrequest.withcorrelationvalues",
@@ -34515,8 +34507,8 @@
   "route_manifest_sha256": "3fe892f7b2804e8c1b03f9dc01c8cc71038829f7ed5aaf38d546fea90ddc980a",
   "route_summary": [
     {
-      "executed_cells": 4524,
-      "pending_cells": 3739,
+      "executed_cells": 4526,
+      "pending_cells": 3737,
       "required_cells": 8263,
       "route_id": "java.generic-ttlv.function.ttlv_item_view_from_item"
     },
@@ -34557,8 +34549,8 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.boolean"
     },
     {
-      "executed_cells": 2,
-      "pending_cells": 72,
+      "executed_cells": 4,
+      "pending_cells": 70,
       "required_cells": 74,
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring"
     },
@@ -34611,14 +34603,14 @@
       "route_id": "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring"
     },
     {
-      "executed_cells": 4572,
-      "pending_cells": 3785,
+      "executed_cells": 4574,
+      "pending_cells": 3783,
       "required_cells": 8357,
       "route_id": "java.generic-ttlv.ttlv_codec.decode"
     },
     {
-      "executed_cells": 4524,
-      "pending_cells": 3737,
+      "executed_cells": 4526,
+      "pending_cells": 3735,
       "required_cells": 8261,
       "route_id": "java.generic-ttlv.ttlv_item.create"
     },
@@ -35661,8 +35653,8 @@
       "route_id": "java.typed-protocol.model.org.kmipkit.extensions.attributeset.trynew"
     },
     {
-      "executed_cells": 0,
-      "pending_cells": 5,
+      "executed_cells": 1,
+      "pending_cells": 4,
       "required_cells": 5,
       "route_id": "java.typed-protocol.model.org.kmipkit.extensions.queryasyncrequestsrequest.withcorrelationvalues"
     },
@@ -35968,7 +35960,7 @@
     }
   ],
   "schema_version": "1.0",
-  "selected_scope_cells": 22589,
+  "selected_scope_cells": 22598,
   "selected_scope_complete": true,
   "vendor_interoperability_claim": false
 }

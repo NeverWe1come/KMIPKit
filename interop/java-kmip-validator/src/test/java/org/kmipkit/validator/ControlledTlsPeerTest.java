@@ -4424,7 +4424,7 @@ class ControlledTlsPeerTest {
     }
 
     // OASIS KMIP 2.1 §§7.1–7.2, Tables 352–353: correlation values are Byte Strings;
-    // §7.1 is optional within its list and §7.2 requires the value.
+    // §7.1 is optional within its list and §7.2 requires the value. §11.56 Table 487 assigns their tags.
     private static void appendStructureMemberByteStringRouteEvents(ArrayNode events) throws Exception {
         int rawTag = 0x420006;
         int correlationValuesTag = 0x420176;
@@ -4438,8 +4438,8 @@ class ControlledTlsPeerTest {
             try (RawTag raw = RawTag.fromRaw(rawTag);
                     Tag tag = raw.checked();
                     TtlvValue value = TtlvValue.ByteString(firstValue, limits);
-                    TtlvItem ignored = TtlvItem.create(tag, value, limits)) {
-                assertTrue(ignored != null, "The installed Item constructor must return an owned Item.");
+                    TtlvItem created = TtlvItem.create(tag, value, limits)) {
+                assertTrue(created != null, "The installed Item constructor must return an owned Item.");
             }
             appendRouteEvent(events, fixture.caseId(),
                     "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring", fixture.targetId(),
