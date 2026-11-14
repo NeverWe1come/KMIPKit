@@ -1000,6 +1000,7 @@ class ControlledTlsPeerTest {
         int operationStructureRouteEventCount = OPERATION_STRUCTURE_FIXTURES.size() * 6;
         int scalarOperationStructureRouteEventCount = (SCALAR_OPERATION_STRUCTURE_FIXTURES.size()
                 + NEXT_SCALAR_OPERATION_STRUCTURE_FIXTURES.size()) * KMIP_2_0_AND_2_1.size() * 6;
+        int pendingCorrelationAccessorEventCount = KMIP_2_0_AND_2_1.size();
         int structureMemberStructureRouteEventCount = STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size() * 4;
         int structureMemberByteStringRouteEventCount = STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.stream()
                 .mapToInt(fixture -> 4 + (fixture.typedQueryFilter() ? 1 : 0)).sum();
@@ -1037,6 +1038,7 @@ class ControlledTlsPeerTest {
                         + asynchronousRequestOperationStructureRouteEventCount
                         + operationStructureRouteEventCount
                         + scalarOperationStructureRouteEventCount
+                        + pendingCorrelationAccessorEventCount
                         + structureMemberStructureRouteEventCount + structureMemberByteStringRouteEventCount
                         + structureMemberValueRouteEventCount
                         + batchErrorContinuationEventCount + genericTagEventCount + typedTagIdentityEventCount
@@ -3928,6 +3930,14 @@ class ControlledTlsPeerTest {
                 appendRouteEvent(events, RESPONSE_BATCH_ITEM_CASE_ID,
                         "java.typed-protocol.function.client_batch_item_response_pending_correlation_value",
                         RESPONSE_BATCH_ITEM_TARGET_ID,
+                        "org.kmipkit.extensions.ClientBatchItemResult.pendingCorrelationValue",
+                        null, null, "decode", protocolVersion, null, null,
+                        normalizedTreeSha256(responseBytes));
+                assertArrayEquals(correlation, result.pendingCorrelationValue().orElseThrow());
+                appendRouteEvent(events,
+                        "test-norm-operation-structure-operation-structure-7-8-correlation-value",
+                        "java.typed-protocol.function.client_batch_item_response_pending_correlation_value",
+                        "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-8-CORRELATION-VALUE",
                         "org.kmipkit.extensions.ClientBatchItemResult.pendingCorrelationValue",
                         null, null, "decode", protocolVersion, null, null,
                         normalizedTreeSha256(responseBytes));
