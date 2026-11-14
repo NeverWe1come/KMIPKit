@@ -3287,6 +3287,39 @@ class RouteMatrixTests(unittest.TestCase):
                         '69c4e0d86a7b0430d8cdb78070b4c55a'):
             self.assertNotIn(fixture, result_text)
 
+    def test_encrypt_and_decrypt_operation_cases_use_the_typed_crypto_batch(self):
+        """OASIS KMIP 2.0 §§6.1.11, 6.1.15, 6.1.39–6.1.40; KMIP 2.1 §§6.1.11, 6.1.15, 6.1.43–6.1.44."""
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_ids = {'test-op-encrypt', 'test-op-decrypt'}
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] in case_ids]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 24,
+                         'Encrypt and Decrypt must run across both versions and all six wire combinations')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(all(check['peer_request_operations'] == [3, 18, 31, 32, 19, 20]
+                            for check in checks))
+        self.assertTrue(all(check['peer_setup_operations'] == [3, 18] and
+                            check['peer_cleanup_operations'] == [19, 20] and
+                            check['peer_final_state_matches_setup'] for check in checks))
+        for case_id, operation, response in (
+                ('test-op-encrypt', 'kmipkit_client_batch_item_encrypt',
+                 'kmipkit_client_batch_item_response_encrypt'),
+                ('test-op-decrypt', 'kmipkit_client_batch_item_decrypt',
+                 'kmipkit_client_batch_item_response_decrypt')):
+            for symbol, action in ((operation, 'send'), (response, 'decode')):
+                self.assertTrue(any(event['case_id'] == case_id and
+                                    event['public_api_symbol'] == symbol and
+                                    event['action'] == action for event in events),
+                                f'{case_id} must invoke {symbol} for {action}')
+
     def test_batch_register_crypto_rejects_changed_ciphertext_after_cleanup(self):
         """OASIS KMIP 2.0/2.1 §6.1.17: compare returned Data, not only its presence."""
         from unittest.mock import patch
