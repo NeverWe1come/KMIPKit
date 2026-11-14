@@ -591,6 +591,26 @@ only and is never recorded in diagnostics, fixture reports, or matrix evidence.
 This recipe verifies KMIPKit against a controlled peer only. External KMS
 compatibility and the remaining C route recipes are still unverified.
 
+### Login and Ticket-backed Logout under KMIP 2.0
+
+The C consumer now executes the Login request and the Login→Logout ticket
+handoff under KMIP 2.0 as well as 2.1. The fixture verifies the KMIP 2.0
+Login Request Payload (OASIS §6.1.29, Table 235) and Response Payload (Table
+236), checks both the typed Ticket reader and generic TTLV Ticket reader, and
+uses the returned Ticket in Logout. KMIP 2.1 uses §6.1.30, Tables 253–254.
+This removes the earlier validator-side skip; the installed C constructor and
+response readers already support the common payload shape.
+
+- Red: the updated KMIP 2.0 controlled-peer assertion failed because the C
+  driver returned before sending Login. After removing the version guard, the
+  first rerun exposed a missing expected direct Login exchange in the test
+  ledger; the exchange accounting was corrected.
+- Green: the focused `c_validator_controlled_tls_peer_kmip20` test passes, and
+  its observed TLS exchanges include direct Login plus the Login and Logout
+  pair used by the Logout case. The controlled fixture confirms both operation
+  responses and does not persist Ticket bytes.
+- The full route matrix and exact-head CI remain required for this update.
+
 ### Normative Item Type values
 
 The C local matrix now routes normative `Item Type` enumeration cases through
