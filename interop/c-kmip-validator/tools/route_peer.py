@@ -1226,6 +1226,17 @@ def verify_pending_poll_response(response_tree, correlation):
         raise ValueError('fixture_poll_pending_response_mismatch')
 
 
+def verify_pending_create_response(response_tree):
+    """Require one Pending Create result with a correlation and empty payload."""
+    items = [item for item in response_tree[2]
+             if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    if (len(items) != 1 or numbers(items[0], 0x42005C) != [1] or
+            numbers(items[0], 0x42007F) != [2] or
+            byte_string_values(items[0], 0x420006) != [CANCEL_CORRELATION_VALUE] or
+            not has_single_empty_response_payload(items[0])):
+        raise ValueError('fixture_pending_create_response_mismatch')
+
+
 def assert_query_async_requests_request(node, version):
     """Require a KMIP 2.1 Query Async Requests filtered by the Create correlation."""
     items = [item for item in node[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
@@ -2198,15 +2209,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 verify_terminal_cancel_response_with_correlation(response_tree)
                                         elif recipe[1] == 'async_poll_final_failure':
                                             if exchange_index == 0:
-                                                pending_items = [item for item in response_tree[2]
-                                                                 if item[0] == BATCH_ITEM_TAG and item[1] == 1]
-                                                if (len(pending_items) != 1 or
-                                                        numbers(pending_items[0], 0x42005C) != [1] or
-                                                        numbers(pending_items[0], 0x42007F) != [2] or
-                                                        byte_string_values(pending_items[0], 0x420006) !=
-                                                        [CANCEL_CORRELATION_VALUE] or
-                                                        not has_single_empty_response_payload(pending_items[0])):
-                                                    raise ValueError('fixture_async_failure_seed_response_mismatch')
+                                                verify_pending_create_response(response_tree)
                                             elif exchange_index == 1:
                                                 verify_pending_poll_response(
                                                     response_tree, CANCEL_CORRELATION_VALUE)
@@ -2225,15 +2228,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             verify_sync_create_response(response_tree)
                                         elif recipe[1] in ('async_create_pending', 'cancel_async',
                                                            'cancel_poll_race') and exchange_index == 0:
-                                            pending_items = [item for item in response_tree[2]
-                                                             if item[0] == BATCH_ITEM_TAG and item[1] == 1]
-                                            if (len(pending_items) != 1 or
-                                                    numbers(pending_items[0], 0x42005C) != [1] or
-                                                    numbers(pending_items[0], 0x42007F) != [2] or
-                                                    byte_string_values(pending_items[0], 0x420006) !=
-                                                    [CANCEL_CORRELATION_VALUE] or
-                                                    not has_single_empty_response_payload(pending_items[0])):
-                                                raise ValueError('fixture_cancel_seed_response_mismatch')
+                                            verify_pending_create_response(response_tree)
                                         elif recipe[1] == 'cancel_poll_race' and exchange_index == 1:
                                             verify_pending_poll_response(response_tree, CANCEL_CORRELATION_VALUE)
                                         elif recipe[1] in ('cancel_async', 'cancel_poll_race'):
