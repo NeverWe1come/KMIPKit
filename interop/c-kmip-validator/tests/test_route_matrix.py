@@ -3619,6 +3619,7 @@ class RouteMatrixTests(unittest.TestCase):
         manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
         case_ids = {
             'test-batch-count-matches-items',
+            'test-batch-count-mismatch-rejected',
             'test-batch-unique-item-id-response-correlation',
             'test-batch-order-false-correlates-response-items',
             'test-batch-continue-after-failure',
@@ -3627,9 +3628,15 @@ class RouteMatrixTests(unittest.TestCase):
                                                if case['case_id'] in case_ids]}
         events, _, checks = execute_network_cells(
             ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
-        self.assertEqual(len(checks), 60,
+        self.assertEqual(len(checks), 72,
                          'Get Attribute List must run through direct and request-based constructors')
         self.assertTrue(all(check['status'] == 'passed' for check in checks))
+        mismatch_checks = [check for check in checks
+                           if check['case_id'] == 'test-batch-count-mismatch-rejected']
+        self.assertEqual(len(mismatch_checks), 12)
+        self.assertTrue(all(check['status'] == 'passed' for check in mismatch_checks))
+        self.assertTrue(all(check['peer_response_operation_values'] == [10, 12]
+                            for check in mismatch_checks))
         expected_operations = {
             'KMIPKIT-ELEM-OP-C2S-GET', 'KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST',
         }
