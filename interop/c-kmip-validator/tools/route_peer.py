@@ -48,6 +48,8 @@ BATCH_CRYPTO_ITEM_IDS = (b'crypto-register', b'crypto-activate', b'crypto-encryp
 BATCH_CRYPTO_KEY = bytes(range(16))
 BATCH_CRYPTO_PLAINTEXT = bytes.fromhex('00112233445566778899aabbccddeeff')
 BATCH_CRYPTO_CIPHERTEXT = bytes.fromhex('69c4e0d86a7b0430d8cdb78070b4c55a')
+CANCEL_CORRELATION_VALUE = b'fixture-cancel-correlation'
+CANCEL_RESULT_CANCELED = 1
 
 CERTIFICATE_ATTRIBUTE_FIELDS = (
     'Certificate Subject CN', 'Certificate Subject O', 'Certificate Subject OU',
@@ -569,13 +571,7 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
     if numbers(node, 0x42000D) != [len(expected)]:
         raise ValueError('fixture_batch_count_mismatch')
     if selected_recipe[1] == 'cancel':
-        items = [item for item in node[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
-        payloads = [child for child in items[0][2]
-                    if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
-        correlation = [child for child in payloads[0][2]
-                       if child[0] == 0x420006 and child[1] == 8] if len(payloads) == 1 else []
-        if len(correlation) != 1 or correlation[0][2] != b'fixture-cancel-correlation':
-            raise ValueError('fixture_cancel_correlation_mismatch')
+        assert_cancel_request(node)
     if (case_id in {
             'test-norm-payload-client-add-attribute-request-20-002',
             'test-norm-payload-client-add-attribute-request-21-002'} and
@@ -928,8 +924,8 @@ def cancel_response(correlation: bytes, cancellation_result: int, protocol_minor
     version = tlv(0x420069, 1,
                   tlv(0x42006A, 2, (2).to_bytes(4, 'big')) +
                   tlv(0x42006B, 2, protocol_minor.to_bytes(4, 'big')))
-    header = tlv(0x42007A, 1,
-                 version + tlv(0x420092, 9, int(dt.datetime.now(dt.timezone.utc).timestamp()).to_bytes(8, 'big', signed=True)) +
+    timestamp = int(dt.datetime.now(dt.timezone.utc).timestamp()).to_bytes(8, 'big', signed=True)
+    header = tlv(0x42007A, 1, version + tlv(0x420092, 9, timestamp) +
                  tlv(0x42000D, 2, (1).to_bytes(4, 'big')))
     payload = tlv(0x42007C, 1,
                   tlv(0x420006, 8, correlation) +
@@ -938,6 +934,29 @@ def cancel_response(correlation: bytes, cancellation_result: int, protocol_minor
                tlv(0x42005C, 5, (25).to_bytes(4, 'big')) +
                tlv(0x42007F, 5, (0).to_bytes(4, 'big')) + payload)
     return tlv(0x42007B, 1, header + item)
+
+
+def assert_cancel_request(node):
+    """Require the request's single Cancel payload to preserve the fixture correlation bytes."""
+    items = [item for item in node[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    correlations = [child for child in payloads[0][2]
+                    if child[0] == 0x420006 and child[1] == 8] if len(payloads) == 1 else []
+    if len(correlations) != 1 or correlations[0][2] != CANCEL_CORRELATION_VALUE:
+        raise ValueError('fixture_cancel_correlation_mismatch')
+
+
+def verify_cancel_response(response_tree, correlation, cancellation_result):
+    """Require one successful synchronous Cancel response with its payload echo."""
+    items = [item for item in response_tree[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    if (len(items) != 1 or numbers(items[0], 0x42005C) != [25] or
+            numbers(items[0], 0x42007F) != [0] or len(payloads) != 1 or
+            byte_string_values(payloads[0], 0x420006) != [correlation] or
+            numbers(payloads[0], 0x420012) != [cancellation_result]):
+        raise ValueError('fixture_cancel_response_mismatch')
 
 
 def read_back_attribute_fixture(case, catalog, version, attributes):
@@ -1591,36 +1610,28 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         if response_operations != recipe[0] and not cleanup_exchange:
                                             response_statuses = tuple(reversed(response_statuses))
                                             response_reasons = tuple(reversed(response_reasons))
-                                        response_wire = response(
-                                            response_operations, int(version[-1]), selected_tag, object_type,
-                                            attribute_fixture['attribute_response_wire'] if attribute_fixture else None,
-                                            response_item_ids, response_statuses, response_reasons,
-                                            rng_length=(numbers(request_tree, 0x4200C4) or [16])[0]
-                                            if recipe[1] == 'rng_retrieve' else
-                                            len(byte_string_values(request_tree, 0x4200C2)[0])
-                                            if recipe[1] == 'rng_seed' else 16)
                                         if recipe[1] == 'cancel':
                                             response_wire = cancel_response(
-                                                b'fixture-cancel-correlation', 1, int(version[-1]))
+                                                CANCEL_CORRELATION_VALUE,
+                                                CANCEL_RESULT_CANCELED,
+                                                int(version[-1]))
+                                        else:
+                                            response_wire = response(
+                                                response_operations, int(version[-1]), selected_tag, object_type,
+                                                attribute_fixture['attribute_response_wire'] if attribute_fixture else None,
+                                                response_item_ids, response_statuses, response_reasons,
+                                                rng_length=(numbers(request_tree, 0x4200C4) or [16])[0]
+                                                if recipe[1] == 'rng_retrieve' else
+                                                len(byte_string_values(request_tree, 0x4200C2)[0])
+                                                if recipe[1] == 'rng_seed' else 16)
                                         response_tree = parse(response_wire)
                                         if logout_recipe:
                                             verify_login_logout_response(response_tree, exchange_index)
                                         elif recipe[1] == 'interop':
                                             verify_interop_response(response_tree)
                                         elif recipe[1] == 'cancel':
-                                            response_items = [item for item in response_tree[2]
-                                                              if item[0] == BATCH_ITEM_TAG and item[1] == 1]
-                                            payloads = [child for child in response_items[0][2]
-                                                        if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] \
-                                                if len(response_items) == 1 else []
-                                            if (len(response_items) != 1 or
-                                                    numbers(response_items[0], 0x42005C) != [25] or
-                                                    numbers(response_items[0], 0x42007F) != [0] or
-                                                    len(payloads) != 1 or
-                                                    byte_string_values(payloads[0], 0x420006) !=
-                                                    [b'fixture-cancel-correlation'] or
-                                                    numbers(payloads[0], 0x420012) != [1]):
-                                                raise ValueError('fixture_cancel_response_mismatch')
+                                            verify_cancel_response(response_tree, CANCEL_CORRELATION_VALUE,
+                                                                   CANCEL_RESULT_CANCELED)
                                         elif recipe[1] == 'batch_stop_on_first_failure':
                                             response_items = [item for item in response_tree[2]
                                                               if item[0] == BATCH_ITEM_TAG and item[1] == 1]
