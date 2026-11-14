@@ -19,6 +19,15 @@ KEY_FORMAT_TYPE_TAG = 0x420042
 SYMMETRIC_KEY_OBJECT_TYPE = 2
 KEY_BLOCK_STRUCTURE = 'KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-BLOCK'
 KEY_VALUE_STRUCTURE = 'KMIPKIT-ELEM-OBJECT-STRUCTURE-KEY-VALUE'
+_CANCEL_REQUEST_TARGETS = {
+    'KMIPKIT-ELEM-OP-C2S-CANCEL',
+    'KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-20-001',
+    'KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-21-001',
+}
+_CANCEL_REQUEST_SYMBOLS = {
+    'kmipkit_cancel_request_create',
+    'kmipkit_cancel_request_to_ttlv_payload',
+}
 _TRANSPARENT_KEY_MATERIAL_FORMATS = {
     4: ('Transparent Symmetric Key', [('Key', 8, b'\xa1')]),
     5: ('Transparent DSA Private Key', [('P', 4, b'\x01'), ('Q', 4, b'\x01'),
@@ -105,6 +114,10 @@ class _UniqueIdentifierV1(C.Structure):
     ]
 
 
+class _ByteSpanV1(C.Structure):
+    _fields_ = [('data', C.POINTER(C.c_uint8)), ('length', C.c_uint64)]
+
+
 class ModelCases:
     """Execute catalog-backed typed object constructors and item conversions."""
 
@@ -183,6 +196,46 @@ class ModelCases:
             return None
         return {'sample_count': len(payload_trees), 'normalized_trees': payload_trees,
                 'tree_sha256': digest(payload_trees), 'invoked_symbols': set(self.abi.called)}
+
+    def _execute_cancel_request(self, target: dict, public_api_symbol: str) -> dict | None:
+        if (target.get('target_id') not in _CANCEL_REQUEST_TARGETS
+                or public_api_symbol not in _CANCEL_REQUEST_SYMBOLS):
+            return None
+
+        correlation = b'fixture-cancel-request'
+        buffer = C.create_string_buffer(correlation)
+        self.abi.bind('kmipkit_cancel_request_create', [
+            C.c_void_p, C.c_uint64, C.POINTER(C.c_void_p)])
+        self.abi.bind('kmipkit_cancel_request_asynchronous_correlation_value', [
+            C.c_void_p, C.POINTER(_ByteSpanV1)])
+        self.abi.bind('kmipkit_cancel_request_to_ttlv_payload', [
+            C.c_void_p, C.POINTER(C.c_void_p)])
+        self.abi.library.kmipkit_cancel_request_release.argtypes = [C.c_void_p]
+        self.abi.library.kmipkit_cancel_request_release.restype = None
+
+        self.abi.called.clear()
+        request, payload = C.c_void_p(), C.c_void_p()
+        try:
+            self.abi.call('kmipkit_cancel_request_create', C.cast(buffer, C.c_void_p),
+                          len(correlation), C.byref(request))
+            span = _ByteSpanV1()
+            self.abi.call('kmipkit_cancel_request_asynchronous_correlation_value',
+                          request, C.byref(span))
+            actual_correlation = C.string_at(span.data, span.length) if span.length else b''
+            if actual_correlation != correlation:
+                raise ValueError('cancel_request_correlation_mismatch')
+            self.abi.call('kmipkit_cancel_request_to_ttlv_payload', request, C.byref(payload))
+            payload_items = self.abi.read_structure(payload)
+            normalized_tree = [normalized(item) for item in payload_items]
+            expected = [[self._tag('Asynchronous Correlation Value'), 8, correlation.hex()]]
+            if normalized_tree != expected:
+                raise ValueError('cancel_request_payload_mismatch')
+            return {'sample_count': 1, 'normalized_tree': normalized_tree,
+                    'tree_sha256': digest(normalized_tree), 'invoked_symbols': set(self.abi.called)}
+        finally:
+            self.abi.release('ttlv_structure', payload)
+            if request.value:
+                self.abi.library.kmipkit_cancel_request_release(request)
 
     def _execute_secret_ttlv_value(self, target: dict, symbol: str) -> dict | None:
         route = _SECRET_TTLV_ROUTE_FIXTURES.get(symbol)
@@ -908,6 +961,8 @@ class ModelCases:
                 public_api_symbol: str | None = None) -> dict | None:
         if public_api_symbol == 'kmipkit_modify_attribute_request_to_ttlv_payload':
             return self._execute_modify_attribute_payload(target)
+        if public_api_symbol in _CANCEL_REQUEST_SYMBOLS:
+            return self._execute_cancel_request(target, public_api_symbol)
         if (target.get('kind') == 'object_type'
                 and _NAMED_OBJECT_CONSTRUCTORS.get(target.get('name')) == public_api_symbol):
             root = next((item for item in self.catalog['normative_targets']

@@ -126,6 +126,10 @@ RESPONSE_BATCH_FIELD_FIXTURES = {
         ('Result Message', 7, b'fixture-result-message'),
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION': ('Message Extension', 1, None),
 }
+ASYNC_CANCEL_RESPONSE_TARGETS = {
+    'KMIPKIT-PAYLOAD-CLIENT-CANCEL-RESPONSE-20-002',
+    'KMIPKIT-PAYLOAD-CLIENT-CANCEL-RESPONSE-21-002',
+}
 OUTPUT_ROOT = ROOT / 'interop/c-kmip-validator/build'
 
 
@@ -555,8 +559,16 @@ def _request_header_field_fixture(target: dict, catalog: dict, tags: dict[str, i
 
 
 def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
-                          protocol_version: str) -> list[tuple] | None:
+                          protocol_version: str, *, case: dict | None = None) -> list[tuple] | None:
     """Build item trees only where the pinned catalog identifies tag and type."""
+    if target.get('target_id') in ASYNC_CANCEL_RESPONSE_TARGETS:
+        scenario = (case or {}).get('requires', {}).get('protocol_scenario', {})
+        value_name = scenario.get('parameters', {}).get('cancel_result')
+        value = catalog_enum_value(catalog, 'Cancellation Result', value_name, protocol_version)
+        tag = tags.get('Cancellation Result')
+        if value_name is None or value is None or tag is None:
+            return None
+        return [(tag, 5, value.to_bytes(4, 'big'))]
     response_message_target = (
         (target.get('kind') in {'tag', 'message_field'} and target.get('name') == 'Response Message')
         or target.get('target_id') in RESPONSE_MESSAGE_CONTEXT_TARGETS
@@ -1070,7 +1082,8 @@ def run(output: Path, binary: Path | None = None) -> int:
                 and target['kind'] != 'data_type'):
             generic_key = (cell['case_id'], cell['target_id'], cell['protocol_version'])
             if generic_key not in generic_cache:
-                trees = generic_tree_fixtures(target, catalog, tags, cell['protocol_version'])
+                trees = generic_tree_fixtures(target, catalog, tags, cell['protocol_version'],
+                                              case=case)
                 if trees:
                     try:
                         generic_cache[generic_key] = [tree_abi.roundtrip(encode(tree)) for tree in trees]
