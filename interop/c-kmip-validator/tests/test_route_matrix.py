@@ -805,6 +805,36 @@ class RouteMatrixTests(unittest.TestCase):
                              event['action'] == 'construct' and event['transport'] is None
                              for event in events), 1)
 
+    def test_async_poll_final_failure_preserves_the_original_create_failure(self):
+        """OASIS KMIP 2.0/2.1 §§6.1.8 and 6.1.38 preserve a final Create failure."""
+        from artifact_support import ROOT
+        import route_peer
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-async-poll-final-operation-failure')
+
+        self.assertEqual(
+            route_peer.recipe_for_case(case, None),
+            ((1, 26), 'async_poll_final_failure'))
+
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case]}
+        events, _, checks = route_peer.execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(all(check.get('peer_async_interleaving_operations') == [1, 26, 26] and
+                            check.get('peer_async_response_statuses') == [2, 2, 1] and
+                            check.get('peer_async_create_indicator_mandatory') is True and
+                            check.get('peer_async_poll_correlations_match') is True and
+                            check.get('peer_async_final_failure_shape') is True and
+                            check.get('peer_final_state_matches_setup') is True
+                            for check in checks), checks)
+        self.assertEqual(sum(event['public_api_symbol'] == 'kmipkit_client_execute_poll' and
+                             event['action'] == 'send' for event in events), 24)
+
     def test_stop_on_first_failure_case_has_a_controlled_peer_recipe(self):
         import route_peer
         from artifact_support import ROOT
