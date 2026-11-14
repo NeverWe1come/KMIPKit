@@ -112,7 +112,7 @@ class ControlledTlsPeerTest {
             int memberTag, TtlvItemType memberType, String textValue, long enumerationValue) { }
 
     private record ScalarOperationStructureFixture(String caseId, String targetId, int tag,
-            TtlvItemType valueType) { }
+            TtlvItemType valueType, boolean optional) { }
 
     private static final List<OperationStructureFixture> OPERATION_STRUCTURE_FIXTURES = List.of(
             new OperationStructureFixture(
@@ -127,20 +127,35 @@ class ControlledTlsPeerTest {
     private static final List<ScalarOperationStructureFixture> SCALAR_OPERATION_STRUCTURE_FIXTURES = List.of(
             new ScalarOperationStructureFixture(
                     "test-norm-operation-structure-operation-structure-7-10-data-length",
-                    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-10-DATA-LENGTH", 0x4200c4, TtlvItemType.Integer),
+                    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-10-DATA-LENGTH", 0x4200c4, TtlvItemType.Integer, false),
             new ScalarOperationStructureFixture(
                     "test-norm-operation-structure-operation-structure-7-14-final-indicator",
-                    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-14-FINAL-INDICATOR", 0x4200d8, TtlvItemType.Boolean),
+                    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-14-FINAL-INDICATOR", 0x4200d8, TtlvItemType.Boolean, false),
             new ScalarOperationStructureFixture(
                     "test-norm-operation-structure-operation-structure-7-16-interop-identifier",
                     "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-16-INTEROP-IDENTIFIER", 0x420161,
-                    TtlvItemType.TextString),
+                    TtlvItemType.TextString, false),
             new ScalarOperationStructureFixture(
                     "test-norm-operation-structure-operation-structure-7-19-log-message",
-                    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-19-LOG-MESSAGE", 0x420141, TtlvItemType.TextString),
+                    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-19-LOG-MESSAGE", 0x420141, TtlvItemType.TextString, false),
             new ScalarOperationStructureFixture(
                     "test-norm-operation-structure-operation-structure-7-20-mac-data",
-                    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-20-MAC-DATA", 0x4200c6, TtlvItemType.ByteString));
+                    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-20-MAC-DATA", 0x4200c6, TtlvItemType.ByteString, false));
+
+    private static final List<ScalarOperationStructureFixture> ADDITIONAL_SCALAR_OPERATION_STRUCTURE_FIXTURES =
+            List.of(
+                    new ScalarOperationStructureFixture(
+                            "test-norm-operation-structure-operation-structure-7-3-authenticated-encryption-additional-data",
+                            "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-3-AUTHENTICATED-ENCRYPTION-ADDITIONAL-DATA",
+                            0x4200fe, TtlvItemType.ByteString, true),
+                    new ScalarOperationStructureFixture(
+                            "test-norm-operation-structure-operation-structure-7-4-authenticated-encryption-tag",
+                            "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-4-AUTHENTICATED-ENCRYPTION-TAG",
+                            0x4200ff, TtlvItemType.ByteString, true),
+                    new ScalarOperationStructureFixture(
+                            "test-norm-operation-structure-operation-structure-7-17-init-indicator",
+                            "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-17-INIT-INDICATOR",
+                            0x4200d7, TtlvItemType.Boolean, false));
 
     private static final List<StructureMemberStructureFixture> STRUCTURE_MEMBER_STRUCTURE_FIXTURES = List.of(
             new StructureMemberStructureFixture(
@@ -4296,6 +4311,9 @@ class ControlledTlsPeerTest {
     private static void assertNewlyCataloguedLocalRoutesAreInvoked(ArrayNode events,
             String protocolVersion) {
         for (ScalarOperationStructureFixture fixture : SCALAR_OPERATION_STRUCTURE_FIXTURES) {
+            assertScalarOperationStructureRouteEvents(events, fixture, protocolVersion);
+        }
+        for (ScalarOperationStructureFixture fixture : ADDITIONAL_SCALAR_OPERATION_STRUCTURE_FIXTURES) {
             assertScalarOperationStructureRouteEvents(events, fixture, protocolVersion);
         }
         if ("2.1".equals(protocolVersion)) {
