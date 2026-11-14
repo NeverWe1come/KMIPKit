@@ -1732,6 +1732,38 @@ class RouteMatrixTests(unittest.TestCase):
                             tags['Asynchronous Correlation Value'], 8,
                             b'fixture-cancel-request'.hex()]])
 
+    def test_async_cancel_response_payload_roundtrips_each_catalogued_result(self):
+        """OASIS KMIP 2.0 §6.1.5 Table 162 and 2.1 §6.1.5 Table 177 define Cancellation Result."""
+        from artifact_support import INSTALL, ROOT
+        from route_ttlv import TreeAbi, encode
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        targets = {target['target_id']: target for target in catalog['normative_targets']}
+        cases = {case['case_id']: case for case in catalog['test_cases']
+                 if case['case_id'].startswith('test-async-cancel-result-')}
+        tags = self.runner.catalog_tag_values(catalog)
+        abi = TreeAbi(INSTALL / 'lib/libkmipkit_ffi.so')
+        response_targets = (
+            'KMIPKIT-PAYLOAD-CLIENT-CANCEL-RESPONSE-20-002',
+            'KMIPKIT-PAYLOAD-CLIENT-CANCEL-RESPONSE-21-002',
+        )
+        for case in cases.values():
+            value_name = case['requires']['protocol_scenario']['parameters']['cancel_result']
+            for target_id in response_targets:
+                for version in ('2.0', '2.1'):
+                    with self.subTest(case_id=case['case_id'], target_id=target_id,
+                                      protocol_version=version):
+                        value = self.runner.catalog_enum_value(
+                            catalog, 'Cancellation Result', value_name, version)
+                        fixture = self.runner.generic_tree_fixtures(
+                            targets[target_id], catalog, tags, version, case=case)
+                        self.assertEqual(fixture, [(tags['Cancellation Result'], 5,
+                                                    value.to_bytes(4, 'big'))])
+                        result = abi.roundtrip(encode(fixture[0]))
+                        self.assertEqual(result['normalized_tree'], [
+                            tags['Cancellation Result'], 5, value.to_bytes(4, 'big').hex()])
+                        self.assertIn('kmipkit_ttlv_decode', result['invoked_symbols'])
+
     def test_query_peer_driver_checks_typed_response_ttlv_accessor(self):
         root = Path(__file__).resolve().parents[3]
         source = (root / 'interop/c-kmip-validator/src/live_driver.c').read_text()
