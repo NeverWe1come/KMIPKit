@@ -316,6 +316,7 @@ RECIPES = {
     'test-async-poll-repeated-pending-to-success': ((1, 26), 'async_poll_repeated_pending_to_success'),
     'test-async-process-then-poll-state': ((1, 58, 26), 'async_process_then_poll_state'),
     'test-async-query-outstanding-filter': ((1, 57), 'async_query_outstanding_filter'),
+    'test-async-unknown-correlation-rejected': ((26,), 'async_unknown_correlation_rejected'),
     'test-op-cancel': ((25,), 'cancel_async'),
     'test-async-cancel-result-canceled': ((25,), 'cancel_async'),
     'test-async-cancel-result-unable-to-cancel': ((25,), 'cancel_async'),
@@ -1055,6 +1056,22 @@ def failed_poll_response(protocol_minor: int, message: str = 'controlled Create 
     return tlv(0x42007B, 1, header + item)
 
 
+def invalid_async_correlation_poll_response(protocol_minor: int) -> bytes:
+    """Build Operation Failed for an unissued asynchronous correlation value."""
+    version = tlv(0x420069, 1,
+                  tlv(0x42006A, 2, (2).to_bytes(4, 'big')) +
+                  tlv(0x42006B, 2, protocol_minor.to_bytes(4, 'big')))
+    timestamp = int(dt.datetime.now(dt.timezone.utc).timestamp()).to_bytes(
+        8, 'big', signed=True)
+    header = tlv(0x42007A, 1, version + tlv(0x420092, 9, timestamp) +
+                 tlv(0x42000D, 2, (1).to_bytes(4, 'big')))
+    item = tlv(0x42000F, 1,
+               tlv(0x42005C, 5, (26).to_bytes(4, 'big')) +
+               tlv(0x42007F, 5, (1).to_bytes(4, 'big')) +
+               tlv(0x42007E, 5, (43).to_bytes(4, 'big')))
+    return tlv(0x42007B, 1, header + item)
+
+
 def query_async_requests_response(correlation: bytes, protocol_minor: int) -> bytes:
     """Build one successful Query Async Requests response with its correlation filter result."""
     version = tlv(0x420069, 1,
@@ -1146,6 +1163,52 @@ def assert_async_failure_poll_request(node, version):
             len(payloads[0][2]) != 1 or len(correlations) != 1 or
             correlations[0][2] != CANCEL_CORRELATION_VALUE):
         raise ValueError('fixture_async_failure_poll_correlation_mismatch')
+
+
+def assert_async_unknown_correlation_poll_request(node, version):
+    """Require the catalog's literal, unissued correlation on a standalone Poll."""
+    header = next(descendants(node, 0x420077), node)
+    items = [item for item in node[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    if (numbers(header, 0x42006A) != [2] or
+            numbers(header, 0x42006B) != [int(version[-1])] or
+            numbers(node, 0x42000D) != [1] or len(items) != 1 or
+            numbers(items[0], 0x42005C) != [26] or
+            byte_string_values(items[0], 0x420006) != [b'unknown-unissued-value'] or
+            numbers(header, 0x420007)):
+        raise ValueError('fixture_async_unknown_correlation_poll_mismatch')
+
+
+def verify_invalid_async_correlation_poll_response(response_tree):
+    """Require the normative terminal error without a correlation or payload."""
+    items = [item for item in response_tree[2]
+             if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    if (len(items) != 1 or numbers(items[0], 0x42005C) != [26] or
+            numbers(items[0], 0x42007F) != [1] or
+            numbers(items[0], 0x42007E) != [43] or
+            byte_string_values(items[0], 0x420006) or
+            any(child[0] == RESPONSE_PAYLOAD_TAG for child in items[0][2])):
+        raise ValueError('fixture_async_unknown_correlation_response_mismatch')
+
+
+def async_unknown_correlation_peer_check(observation):
+    """Report the exact unissued request and unchanged state without exposing its value."""
+    request, response_tree, state = observation[0]
+    return {
+        'peer_async_unknown_correlation_request':
+            numbers(request, 0x42005C) == [26] and
+            byte_string_values(request, 0x420006) == [b'unknown-unissued-value'],
+        'peer_async_unknown_correlation_failure':
+            numbers(response_tree, 0x42007F) == [1] and
+            numbers(response_tree, 0x42007E) == [43],
+        'peer_async_unknown_correlation_not_remapped':
+            not byte_string_values(response_tree, 0x420006) and
+            not any(child[0] == RESPONSE_PAYLOAD_TAG
+                    for item in response_tree[2] if item[0] == BATCH_ITEM_TAG
+                    for child in item[2]),
+        'peer_final_state_matches_setup':
+            state['peer_observed_state_before_sha256'] ==
+            state['peer_observed_state_after_sha256'],
+    }
 
 
 def assert_async_process_request(node, version):
@@ -2275,7 +2338,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 'async_poll_final_failure',
                                                 'async_poll_repeated_pending_to_success',
                                                 'async_process_then_poll_state',
-                                                'async_query_outstanding_filter') and
+                                                'async_query_outstanding_filter',
+                                                'async_unknown_correlation_rejected') and
                                             recipe[0][0] not in (1, 3))),
                             usage_allocation_ready=recipe[1] == 'get_usage_allocation_uid_variants')
                         boundary = case_id in (
@@ -2385,6 +2449,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             else:
                                                 assert_async_failure_poll_request(request_tree, version)
                                                 response_operations = (26,)
+                                        elif recipe[1] == 'async_unknown_correlation_rejected':
+                                            assert_async_unknown_correlation_poll_request(request_tree, version)
+                                            response_operations = (26,)
                                         elif recipe[1] == 'async_poll_repeated_pending_to_success':
                                             if exchange_index == 0:
                                                 assert_async_create_seed_request(request_tree, version)
@@ -2541,6 +2608,15 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 'peer_observed_state_before_sha256': state_digest,
                                                 'peer_observed_state_after_sha256': state_digest,
                                             }
+                                        elif recipe[1] == 'async_unknown_correlation_rejected':
+                                            state_digest = peer_state.digest()
+                                            state_evidence = {
+                                                'effects': [],
+                                                'statuses': [1],
+                                                'reasons': [43],
+                                                'peer_observed_state_before_sha256': state_digest,
+                                                'peer_observed_state_after_sha256': state_digest,
+                                            }
                                         else:
                                             if (recipe[1] == 'async_process_then_poll_state' and
                                                     exchange_index == 1):
@@ -2612,6 +2688,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                                       int(version[-1]))
                                                 if exchange_index == 1 else
                                                 failed_poll_response(int(version[-1])))
+                                        elif recipe[1] == 'async_unknown_correlation_rejected':
+                                            response_wire = invalid_async_correlation_poll_response(
+                                                int(version[-1]))
                                         elif recipe[1] == 'async_poll_repeated_pending_to_success':
                                             if exchange_index == 4:
                                                 response_item_ids = (None,)
@@ -2688,6 +2767,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                     response_tree, CANCEL_CORRELATION_VALUE)
                                             else:
                                                 verify_failed_poll_response(response_tree)
+                                        elif recipe[1] == 'async_unknown_correlation_rejected':
+                                            verify_invalid_async_correlation_poll_response(response_tree)
                                         elif recipe[1] == 'async_poll_repeated_pending_to_success':
                                             if exchange_index == 0:
                                                 verify_pending_create_response(response_tree)
@@ -2994,6 +3075,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                            **(async_query_outstanding_peer_check(observation)
                                               if recipe[1] == 'async_query_outstanding_filter' and
                                               len(observation) == 9 else {}),
+                                           **(async_unknown_correlation_peer_check(observation)
+                                              if recipe[1] == 'async_unknown_correlation_rejected' and
+                                              len(observation) == 1 else {}),
                                            **({'peer_final_state_matches_setup':
                                                    observation[0][2]['peer_observed_state_before_sha256'] ==
                                                    observation[0][2]['peer_observed_state_after_sha256']}

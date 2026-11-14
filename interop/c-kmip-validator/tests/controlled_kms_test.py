@@ -446,6 +446,8 @@ def main() -> int:
     expected_operations += (1, 18, 12, 19, 20)
     expected_operations += (1, 18, 10, 19, 20)
     expected_operations += (52, 52, 52)
+    expected_operations += (26,)
+    expected_cases += ("test-async-unknown-correlation-rejected",)
     expected_operations += (10, 12, 10, 12, 10, 12, 10, 12)
     expected_operations += registered_key_batch
     expected_operations += stop_on_first_failure_batch
@@ -858,6 +860,19 @@ def main() -> int:
                                 async_process_completed = True
                                 stream.sendall(response((58,), protocol_minor))
                             elif operations == (26,):
+                                unknown_correlation = b"unknown-unissued-value"
+                                if tlv(0x420006, 8, unknown_correlation) in request:
+                                    if request.count(tlv(0x420006, 8, unknown_correlation)) != 1:
+                                        raise AssertionError(
+                                            "unknown-correlation Poll must carry one exact correlation value"
+                                        )
+                                    stream.sendall(response(
+                                        (26,), protocol_minor,
+                                        result_statuses=(1,), result_reasons=(43,)))
+                                    handled += len(operations)
+                                    handled_operations.extend(operations)
+                                    handled_batches.append(operations)
+                                    continue
                                 cancel_correlation = b"fixture-cancel-correlation"
                                 if request.count(tlv(0x420006, 8, cancel_correlation)) != 1:
                                     raise AssertionError("Poll request omitted its exact pending correlation value")

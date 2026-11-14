@@ -806,6 +806,32 @@ class RouteMatrixTests(unittest.TestCase):
             route_peer.recipe_for_case(case, None),
             ((26,), 'async_unknown_correlation_rejected'))
 
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case]}
+        events, _, checks = route_peer.execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(all(check.get('peer_async_unknown_correlation_request') is True and
+                            check.get('peer_async_unknown_correlation_failure') is True and
+                            check.get('peer_async_unknown_correlation_not_remapped') is True and
+                            check.get('peer_final_state_matches_setup') is True and
+                            check.get('consumer_result_status_code') == 1 and
+                            check.get('consumer_result_reason_code') == 43 and
+                            check.get('consumer_library_correctness') == 'passed'
+                            for check in checks), checks)
+        for symbol, action, count in (
+                ('kmipkit_client_execute_poll', 'send', 12),
+                ('kmipkit_client_execute_poll', 'decode', 12),
+                ('kmipkit_client_async_operation_outcome_poll_response_v1', 'decode', 2)):
+            with self.subTest(symbol=symbol, action=action):
+                self.assertEqual(sum(event['public_api_symbol'] == symbol and
+                                     event['action'] == action for event in events), count)
+        self.assertEqual(sum(event['public_api_symbol'] ==
+                             'kmipkit_poll_request_to_ttlv_payload' and
+                             event['action'] == 'encode' for event in events), 2)
+
     def test_async_poll_and_cancel_responses_do_not_recurse(self):
         """OASIS KMIP 2.1 §§6.1.5 and 6.1.38 keep Poll and Cancel terminal."""
         from artifact_support import ROOT

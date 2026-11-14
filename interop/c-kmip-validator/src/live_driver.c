@@ -2415,6 +2415,96 @@ static kmip_execution_outcome_t execute_async_poll_final_failure_route(
     return outcome;
 }
 
+static kmip_execution_outcome_t execute_async_unknown_correlation_route(
+    kmip_live_client_t *client) {
+    static const uint8_t unknown_correlation[] = "unknown-unissued-value";
+    kmipkit_poll_request_t *poll_request = NULL;
+    kmipkit_ttlv_structure_t *poll_payload = NULL;
+    kmipkit_client_async_operation_outcome_t *poll_outcome = NULL;
+    kmipkit_client_async_operation_response_v1_t poll_response = {
+        .struct_size = (uint32_t)sizeof(kmipkit_client_async_operation_response_v1_t),
+        .abi_version = 1
+    };
+    kmipkit_client_async_operation_metadata_v1_t metadata = {
+        .struct_size = (uint32_t)sizeof(kmipkit_client_async_operation_metadata_v1_t),
+        .abi_version = 1
+    };
+    kmipkit_byte_span_v1_t request_correlation = {0};
+    uint8_t response_present = 0;
+    kmip_execution_outcome_t outcome = { .executed = true };
+    const char *failed_stage = "Poll request construction";
+    int32_t status = kmipkit_poll_request_create(
+        unknown_correlation, sizeof(unknown_correlation) - 1, &poll_request);
+    if (status == 0) status = kmipkit_poll_request_asynchronous_correlation_value(
+        poll_request, &request_correlation);
+    if (status == 0 && (request_correlation.length != sizeof(unknown_correlation) - 1 ||
+        !request_correlation.data ||
+        memcmp(request_correlation.data, unknown_correlation,
+               sizeof(unknown_correlation) - 1) != 0)) {
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    if (status == 0) status = kmipkit_poll_request_to_ttlv_payload(
+        poll_request, &poll_payload);
+    kmipkit_byte_span_v1_t expected_correlation = {
+        .data = unknown_correlation,
+        .length = sizeof(unknown_correlation) - 1
+    };
+    if (status == 0 &&
+        !async_request_payload_preserves_correlation(poll_payload, &expected_correlation)) {
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    if (status == 0) {
+        failed_stage = "Poll execution";
+        status = kmipkit_client_execute_poll(
+            client->client, unknown_correlation, sizeof(unknown_correlation) - 1,
+            client->limits, &poll_outcome);
+    }
+    if (status == 0) status = kmipkit_client_async_operation_outcome_poll_response_v1(
+        poll_outcome, &response_present, &poll_response);
+    if (status == 0) status = kmipkit_client_async_operation_outcome_metadata_v1(
+        poll_outcome, &metadata);
+    if (status == 0) {
+        bool valid = response_present != 0 &&
+            poll_response.operation == KMIPKIT_ENUMERATION_OPERATION_POLL &&
+            poll_response.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_OPERATION_FAILED &&
+            poll_response.is_pending == 0 &&
+            poll_response.has_asynchronous_correlation_value == 0 &&
+            poll_response.has_response_payload == 0 &&
+            metadata.operation == KMIPKIT_ENUMERATION_OPERATION_POLL &&
+            metadata.outcome_kind == 1 &&
+            metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_OPERATION_FAILED &&
+            metadata.has_result_reason == 1 &&
+            metadata.result_reason ==
+                KMIPKIT_ENUMERATION_RESULT_REASON_INVALID_ASYNCHRONOUS_CORRELATION_VALUE &&
+            metadata.has_result_message == 0;
+        outcome.success = valid;
+        outcome.library_validated = valid;
+        outcome.library_failed = !valid;
+        outcome.has_result_status_code = true;
+        outcome.result_status_code = poll_response.result_status;
+        outcome.has_result_reason_code = metadata.has_result_reason != 0;
+        outcome.result_reason_code = metadata.result_reason;
+        if (!valid) {
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit did not preserve the terminal invalid asynchronous correlation result");
+        }
+    }
+    if (status != 0) {
+        uint32_t category = 0;
+        uint32_t cause = 0;
+        uint32_t delivery = 0;
+        (void)kmipkit_last_error_get(&status, &category, &cause, &delivery);
+        outcome.library_failed = true;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit unknown-correlation Poll failed at %s (category=%u cause=%u delivery=%u)",
+                 failed_stage, category, cause, delivery);
+    }
+    if (poll_outcome) kmipkit_client_async_operation_outcome_release(poll_outcome);
+    if (poll_payload) kmipkit_ttlv_structure_release(poll_payload);
+    if (poll_request) kmipkit_poll_request_release(poll_request);
+    return outcome;
+}
+
 static kmip_execution_outcome_t execute_async_poll_repeated_pending_route(
     kmip_live_client_t *client) {
     static const uint8_t expected_correlation[] = "fixture-cancel-correlation";
@@ -4874,6 +4964,10 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     }
     if (strcmp(test_case->case_id, "test-async-query-outstanding-filter") == 0) {
         return execute_async_query_outstanding_filter_route(client);
+    }
+    if (strcmp(test_case->case_id,
+               "test-async-unknown-correlation-rejected") == 0) {
+        return execute_async_unknown_correlation_route(client);
     }
     if (strcmp(test_case->case_id,
                "test-async-no-recursive-async-poll-cancel") == 0) {
