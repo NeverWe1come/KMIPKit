@@ -4182,6 +4182,28 @@ class ControlledTlsPeerTest {
                     "java.generic-ttlv.function.ttlv_item_view_from_item", "decode", protocolVersion);
             assertRouteEventRecorded(events, objectGroupCase, objectGroupTarget,
                     "java.generic-ttlv.ttlv_codec.decode", "decode", protocolVersion);
+
+            for (String[] structureMember : List.of(
+                    new String[] {"test-norm-structure-member-structure-member-7-6-attributes",
+                            "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-6-ATTRIBUTES"},
+                    new String[] {"test-norm-structure-member-structure-member-7-6-object-groups",
+                            "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-6-OBJECT-GROUPS"},
+                    new String[] {"test-norm-structure-member-structure-member-7-6-object-types",
+                            "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-6-OBJECT-TYPES"},
+                    new String[] {"test-norm-structure-member-structure-member-7-7-constraint",
+                            "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-7-CONSTRAINT"})) {
+                String caseId = structureMember[0];
+                String targetId = structureMember[1];
+                assertRouteEventRecorded(events, caseId, targetId,
+                        "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
+                        "construct", protocolVersion);
+                assertRouteEventRecorded(events, caseId, targetId,
+                        "java.generic-ttlv.ttlv_item.create", "construct", protocolVersion);
+                assertRouteEventRecorded(events, caseId, targetId,
+                        "java.generic-ttlv.function.ttlv_item_view_from_item", "decode", protocolVersion);
+                assertRouteEventRecorded(events, caseId, targetId,
+                        "java.generic-ttlv.ttlv_codec.decode", "decode", protocolVersion);
+            }
         }
 
         String ephemeralCase = "test-norm-message-field-message-field-8-3-ephemeral";
