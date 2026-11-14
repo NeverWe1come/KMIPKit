@@ -480,10 +480,11 @@ def _request_header_field_fixture(target: dict, catalog: dict, tags: dict[str, i
 def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
                           protocol_version: str) -> list[tuple] | None:
     """Build item trees only where the pinned catalog identifies tag and type."""
-    if target.get('kind') in {'tag', 'message_field'} and target.get('name') == 'Response Message':
-        fixture = _response_message_fixture(protocol_version, tags, catalog)
-        return [fixture] if fixture is not None else None
-    if target.get('target_id') in RESPONSE_MESSAGE_CONTEXT_TARGETS:
+    response_message_target = (
+        (target.get('kind') in {'tag', 'message_field'} and target.get('name') == 'Response Message')
+        or target.get('target_id') in RESPONSE_MESSAGE_CONTEXT_TARGETS
+    )
+    if response_message_target:
         fixture = _response_message_fixture(protocol_version, tags, catalog)
         return [fixture] if fixture is not None else None
     if target.get('kind') in {'tag', 'message_field'} and target.get('name') == 'Request Message':
