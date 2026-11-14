@@ -323,6 +323,31 @@ class RouteMatrixTests(unittest.TestCase):
                     result = abi.roundtrip(encode(fixture))
                     self.assertIn('kmipkit_request_message_from_ttlv', result['invoked_symbols'])
 
+    def test_response_message_root_uses_a_complete_typed_response_fixture(self):
+        """OASIS KMIP 2.0/2.1 §8.4 defines Response Message shape (0092-FR-003)."""
+        from artifact_support import INSTALL, ROOT
+        from route_ttlv import TreeAbi, encode
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        tags = self.runner.catalog_tag_values(catalog)
+        target_ids = {
+            'KMIPKIT-ELEM-TAG-42007B',
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-4-RESPONSE-MESSAGE',
+        }
+        targets = {target['target_id']: target for target in catalog['normative_targets']
+                   if target['target_id'] in target_ids}
+        self.assertEqual(set(targets), target_ids)
+        abi = TreeAbi(INSTALL / 'lib/libkmipkit_ffi.so')
+        for target_id, target in targets.items():
+            for version in ('2.0', '2.1'):
+                with self.subTest(target_id=target_id, protocol_version=version):
+                    fixtures = self.runner.generic_tree_fixtures(target, catalog, tags, version)
+                    self.assertIsNotNone(fixtures)
+                    response = fixtures[0]
+                    self.assertEqual((response[0], response[1]), (tags['Response Message'], 1))
+                    result = abi.roundtrip(encode(response))
+                    self.assertIn('kmipkit_response_message_from_ttlv', result['invoked_symbols'])
+
     def test_get_usage_allocation_has_an_executable_controlled_peer_recipe(self):
         import route_peer
         from artifact_support import ROOT
