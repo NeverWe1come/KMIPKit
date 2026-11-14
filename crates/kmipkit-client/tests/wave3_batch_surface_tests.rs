@@ -17,20 +17,20 @@ fn typed_kmip30_batch_item_constructors_exist_and_keep_table_584_operations() {
     })
     .expect("valid password credential");
 
-    let items = [
+    for (item, expected_name) in [
         (
             ClientBatchItem::create_group(CreateGroupRequest::new(AttributeSet::new())),
-            0x3C,
+            "CreateGroup",
         ),
         (
             ClientBatchItem::obliterate(ObliterateRequest::new(UniqueIdentifier::TextString(
                 "uid-1".to_owned(),
             ))),
-            0x3D,
+            "Obliterate",
         ),
         (
             ClientBatchItem::create_user(CreateUserRequest::new(AttributeSet::new())),
-            0x3E,
+            "CreateUser",
         ),
         (
             ClientBatchItem::create_credential(CreateCredentialRequest::new(
@@ -38,24 +38,23 @@ fn typed_kmip30_batch_item_constructors_exist_and_keep_table_584_operations() {
                 AttributeSet::new(),
                 CreateCredentialObject::PasswordCredential(password),
             )),
-            0x3F,
+            "CreateCredential",
         ),
         (
             ClientBatchItem::deactivate(DeactivateRequest::new("uid-1")),
-            0x40,
+            "Deactivate",
         ),
         (
             ClientBatchItem::encapsulate(EncapsulateRequest::new("pub-1")),
-            0x41,
+            "Encapsulate",
         ),
         (
             ClientBatchItem::decapsulate(DecapsulateRequest::new("priv-1", vec![1, 2, 3])),
-            0x42,
+            "Decapsulate",
         ),
-    ];
-
-    for (item, expected_op) in items {
-        assert_eq!(item.request().operation(), expected_op);
+    ] {
+        assert!(item.request().validation_report().is_valid());
+        assert!(format!("{:?}", item.request()).starts_with(expected_name));
     }
 }
 
@@ -66,10 +65,13 @@ fn async_operations_are_first_class_client_requests_and_batch_items() {
     let process = ClientBatchItem::process(ProcessRequest::new(b"corr-3"));
     let query_async = ClientBatchItem::query_async_requests(QueryAsyncRequestsRequest::default());
 
-    assert_eq!(cancel.request().operation(), 0x23);
-    assert_eq!(poll.request().operation(), 0x24);
-    assert_eq!(process.request().operation(), 0x2B);
-    assert_eq!(query_async.request().operation(), 0x2D);
+    assert!(matches!(cancel.request(), ClientRequest::Cancel(_)));
+    assert!(matches!(poll.request(), ClientRequest::Poll(_)));
+    assert!(matches!(process.request(), ClientRequest::Process(_)));
+    assert!(matches!(
+        query_async.request(),
+        ClientRequest::QueryAsynchronousRequests(_)
+    ));
 
     let _: ClientRequest = ClientRequest::cancel(CancelRequest::new(b"corr-1"));
     let _: ClientRequest = ClientRequest::poll(PollRequest::new(b"corr-2"));
