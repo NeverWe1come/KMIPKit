@@ -54175,6 +54175,7 @@
         "crates/kmipkit-protocol/tests/message_accessors.rs",
         "crates/kmipkit-protocol/tests/message_conversion.rs"
       ],
+      "source_encoding": "Boolean",
       "source_requiredness": "No",
       "source_comment": "Indicates that the Data output of the operation should not be returned to the client. Boolean."
     },
