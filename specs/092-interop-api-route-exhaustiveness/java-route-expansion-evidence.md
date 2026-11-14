@@ -1689,3 +1689,54 @@ is applicable. No pending cells are API unavailability exemptions. FR-002 and
 FR-009 require zero pending cells for matrix completion. The Java selected
 scope and ledger comparison do not enforce global completion, so this slice
 does not complete the matrix and the PR remains WIP.
+
+## KMIP 2.0/2.1 Server Information routes
+
+KMIP 2.0 §7.31 and KMIP 2.1 §7.37 Table 389 define Server Information as a
+Structure with optional members. The Java consumer now exercises the outer
+Structure's six generic routes and 39 member routes per version: nine
+Text String structure-member cases each use the `TtlvValue.TextString`
+constructor, Item creation, Item view, and decoder, while the repeatable
+Vendor-Specific Any member uses its three applicable Item routes. The complete
+fixture checks all eight singleton values, two ordered Alternative Failover
+Endpoints, and two heterogeneous vendor values; an empty Server Information
+structure verifies that all members are optional. The controlled mutual-TLS
+Query response invokes `QueryResponse.serverInformations()` and checks its
+12 child tags, types, order, and values. That convenience getter has no
+separate route ID in the matrix.
+
+Red commit `3c2693c9c452ee3b6e6e607696c675e056d9df74` adds the case IDs,
+per-route assertions, and 90-cell event expectation; the focused test fails on
+the missing `TtlvStructure.create` event for KMIP 2.0. Green commit
+`1ab98ffd88a366878c208c60be92602ef9ab434a` adds the installed constructor,
+Item/view/decoder invocations, typed Query accessor assertion, and controlled
+response fixture. Refactor updates the evidence ledger, traceability, and
+consumer documentation; no route cell is removed or deemed inapplicable.
+
+Local verification used installed Java artifact
+`489fafc79ef89db2524eafa7a6c6482f5cf75d97`, SHA-256
+`830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e`:
+
+```sh
+env TMPDIR="$PWD/build/tmp" TMP="$PWD/build/tmp" TEMP="$PWD/build/tmp" \
+  JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/tmp" \
+  bash ../../bindings/java/gradlew -PkmipkitMavenRepo="$PWD/build/maven-repository" test
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+```
+
+The focused test and all 54 installed-consumer tests pass with zero failures,
+errors, or skips. The selected-scope validator accepts 22,935/22,935 invoked
+cells with zero failures. The full ledger records 71,463 planned, 22,935
+executed, and 48,528 pending cells across 1,279 case IDs. Every remaining cell
+is still marked `route_evidence_not_emitted`. The shared catalog and capability
+matrix first apply protocol-version, public-route, encoding/transport, and
+source-backed exclusion rules; a cell remaining in the matrix is applicable.
+No pending cell is classified as an API unavailability exemption. FR-002 and
+FR-009 require zero pending cells for matrix completion. The selected-scope
+workflow and ledger comparison do not enforce global completion, so the PR
+remains WIP.

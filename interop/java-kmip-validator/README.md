@@ -101,8 +101,8 @@ baseline, regenerate the checked-in ledger with
 rejects generated ledgers that do not record successful invocations.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
-baseline. These recipes execute 22,845 of 71,463 planned Java route cells, with
-no failed cells; the ledger records the other 48,618 as pending and does not imply
+baseline. These recipes execute 22,935 of 71,463 planned Java route cells, with
+no failed cells; the ledger records the other 48,528 as pending and does not imply
 vendor interoperability or full-matrix completion. Local TTLV recipes exercise 51
 enumeration families, all six bitmask aggregate cases, and all 44 individual
 bitmask value cases through the applicable
@@ -137,7 +137,16 @@ view, and decode routes in both versions (64 cells total; KMIP 2.0 §§7.25–7.
 Tables 345–346; KMIP 2.1 §§7.31–7.32, Tables 383–384). The controlled mTLS
 Query response also invokes `QueryResponse.profileInformation()` and checks the
 returned Profile Name, version, URI, and port; the route manifest has no
-separate route ID for this convenience getter.
+separate route ID for this convenience getter. Server Information adds 90 local
+cells across KMIP 2.0 §7.31 and KMIP 2.1 §7.37 Table 389: the outer Structure
+uses all six generic routes; its nine Text String member cases use the TextString
+constructor, Item creation/view, and decode routes; Vendor-Specific Any uses
+its three applicable Item routes. Fixtures check the optional empty structure,
+all eight singleton Text String values, two ordered Alternative Failover
+Endpoints, and two heterogeneous Vendor-Specific values. The controlled mTLS
+Query response invokes `QueryResponse.serverInformations()` and checks the
+12-field tag order, types, and values; this convenience getter has no separate
+route ID in the manifest.
 Four optional/repeatable members in the KMIP 2.1 Constraint and Constraints
 structures also exercise the installed `TtlvValue.structure`, Item creation,
 Item view, and decoder routes (§§7.6–7.7, Tables 357–358).
@@ -162,7 +171,7 @@ one direct Name Item, and the installed direct constructors, request-to-batch
 conversions, TTLV payload conversion, controlled TLS exchange, and typed
 response readers are invoked under the operation-specific §6.1 tables.
 
-The 48,618 pending cells belong to 1,290 case IDs listed in the generated
+The 48,528 pending cells belong to 1,279 case IDs listed in the generated
 ledger; every one has the reason `route_evidence_not_emitted`. The applicability
 rule is the shared catalog and capability matrix after protocol-version,
 public-route, encoding/transport, and source-backed exclusion filters. A cell
