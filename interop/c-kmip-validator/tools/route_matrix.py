@@ -195,55 +195,42 @@ def _required_structure_items(target: dict, catalog: dict, tags: dict[str, int],
     return items
 
 
+def _request_message_fixture(protocol_version: str, tags: dict[str, int], catalog: dict,
+                             *, ephemeral: int | None = None) -> tuple | None:
+    """Build a complete Get request for the public Request Message parser."""
+    operation = catalog_enum_value(catalog, 'Operation', 'Get', protocol_version)
+    if operation is None:
+        return None
+    header = (tags['Request Header'], 1, [
+        (tags['Protocol Version'], 1, [
+            (tags['Protocol Version Major'], 2, (2).to_bytes(4, 'big')),
+            (tags['Protocol Version Minor'], 2,
+             int(protocol_version.split('.')[1]).to_bytes(4, 'big')),
+        ]),
+        (tags['Batch Count'], 2, (1).to_bytes(4, 'big')),
+    ])
+    identifier = (b'kmipkit-ephemeral-fixture' if ephemeral is not None
+                  else b'kmipkit-request-message-fixture')
+    payload = (tags['Request Payload'], 1, [
+        (tags['Unique Identifier'], 7, identifier),
+    ])
+    batch_fields = [(tags['Operation'], 5, operation.to_bytes(4, 'big'))]
+    if ephemeral is not None:
+        batch_fields.append((tags['Ephemeral'], 6, ephemeral.to_bytes(8, 'big')))
+    batch_fields.append(payload)
+    return (tags['Request Message'], 1, [header, (tags['Batch Item'], 1, batch_fields)])
+
+
 def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
                           protocol_version: str) -> list[tuple] | None:
     """Build item trees only where the pinned catalog identifies tag and type."""
     if target.get('kind') in {'tag', 'message_field'} and target.get('name') == 'Request Message':
-        operation = catalog_enum_value(catalog, 'Operation', 'Get', protocol_version)
-        if operation is None:
-            return None
-        header = (tags['Request Header'], 1, [
-            (tags['Protocol Version'], 1, [
-                (tags['Protocol Version Major'], 2, (2).to_bytes(4, 'big')),
-                (tags['Protocol Version Minor'], 2,
-                 int(protocol_version.split('.')[1]).to_bytes(4, 'big')),
-            ]),
-            (tags['Batch Count'], 2, (1).to_bytes(4, 'big')),
-        ])
-        payload = (tags['Request Payload'], 1, [
-            (tags['Unique Identifier'], 7, b'kmipkit-request-message-fixture'),
-        ])
-        batch_item = (tags['Batch Item'], 1, [
-            (tags['Operation'], 5, operation.to_bytes(4, 'big')),
-            payload,
-        ])
-        return [(tags['Request Message'], 1, [header, batch_item])]
+        fixture = _request_message_fixture(protocol_version, tags, catalog)
+        return [fixture] if fixture is not None else None
     if target.get('target_id') == 'KMIPKIT-ELEM-MESSAGE-FIELD-8-3-EPHEMERAL':
-        operation = catalog_enum_value(catalog, 'Operation', 'Get', protocol_version)
-        if operation is None:
-            return None
-        header = (tags['Request Header'], 1, [
-            (tags['Protocol Version'], 1, [
-                (tags['Protocol Version Major'], 2, (2).to_bytes(4, 'big')),
-                (tags['Protocol Version Minor'], 2,
-                 int(protocol_version.split('.')[1]).to_bytes(4, 'big')),
-            ]),
-            (tags['Batch Count'], 2, (1).to_bytes(4, 'big')),
-        ])
-        request_payload = (tags['Request Payload'], 1, [
-            (tags['Unique Identifier'], 7, b'kmipkit-ephemeral-fixture'),
-        ])
-        return [
-            (tags['Request Message'], 1, [
-                header,
-                (tags['Batch Item'], 1, [
-                    (tags['Operation'], 5, operation.to_bytes(4, 'big')),
-                    (tags['Ephemeral'], 6, value.to_bytes(8, 'big')),
-                    request_payload,
-                ]),
-            ])
-            for value in (0, 1)
-        ]
+        fixtures = [_request_message_fixture(protocol_version, tags, catalog, ephemeral=value)
+                    for value in (0, 1)]
+        return fixtures if all(fixture is not None for fixture in fixtures) else None
     if target['kind'] == 'tag' and target.get('allocation') in {'reserved', 'unused'}:
         return None
     if target['kind'] == 'tag_range' and target.get('allocation') == 'extension':
