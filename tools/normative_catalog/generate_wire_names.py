@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import sys
 from pathlib import Path
@@ -17,6 +18,8 @@ else:
 
 
 CATALOG_PATH = "specification/catalog/kmip-2.1.json"
+VERSIONED_TAGS_PATH = "specification/catalog/kmip-versioned-tags.json"
+VERSIONED_VALUES_PATH = "specification/catalog/kmip-versioned-values.json"
 OUTPUT_PATH = "crates/kmipkit-client/src/wire_names_generated.rs"
 _TAG_VALUE = re.compile(r"(?:0[xX])?[0-9A-Fa-f]{6}\Z")
 _TSV_DELIMITER = re.compile(r"[\t\r\n]")
@@ -267,25 +270,115 @@ def _tag_bitmask_families(catalog: dict[str, Any]) -> list[tuple[int, str]]:
     return sorted(family_by_tag)
 
 
-def render_tsv(catalog: dict[str, Any]) -> str:
+def _merge_versioned_wire_data(
+    tag_names: list[tuple[int, str]],
+    enum_families: list[tuple[int, str]],
+    enum_values: list[tuple[str, int, str]],
+    mask_families: list[tuple[int, str]],
+    mask_values: list[tuple[str, int, str]],
+    versioned_tags: dict[str, Any] | None,
+    versioned_values: dict[str, Any] | None,
+) -> tuple[
+    list[tuple[int, str]],
+    list[tuple[int, str]],
+    list[tuple[str, int, str]],
+    list[tuple[int, str]],
+    list[tuple[str, int, str]],
+]:
+    tag_map = dict(tag_names)
+    tag_name_set = set(tag_map.values())
+    enum_fam_map = dict(enum_families)
+    mask_fam_map = dict(mask_families)
+
+    if versioned_tags is not None:
+        assignments = versioned_tags.get("tagEnumeration", {}).get("assignments", [])
+        for a in assignments:
+            raw = a["wire_value"]
+            val = int(raw.removeprefix("0x").removeprefix("0X"), 16)
+            name = a["name"]
+            if val not in tag_map and name not in tag_name_set:
+                tag_map[val] = name
+                tag_name_set.add(name)
+            if "enumeration_family" in a and val not in enum_fam_map:
+                enum_fam_map[val] = a["enumeration_family"]
+            if "bitmask_family" in a and val not in mask_fam_map:
+                mask_fam_map[val] = a["bitmask_family"]
+
+    enum_val_seen = {(f, v) for f, v, _ in enum_values}
+    enum_name_seen = {(f, n) for f, _, n in enum_values}
+    mask_val_seen = {(f, v) for f, v, _ in mask_values}
+    mask_name_seen = {(f, n) for f, _, n in mask_values}
+    merged_enum_vals = list(enum_values)
+    merged_mask_vals = list(mask_values)
+
+    if versioned_values is not None:
+        for _ver, groups in versioned_values.get("versions", {}).items():
+            for group in groups:
+                kind = group.get("kind")
+                family = group.get("name")
+                for entry in group.get("values", []):
+                    val = int(entry["wire_value"].removeprefix("0x").removeprefix("0X"), 16)
+                    vname = entry["name"]
+                    if kind == "enumeration":
+                        if (family, val) not in enum_val_seen and (family, vname) not in enum_name_seen:
+                            enum_val_seen.add((family, val))
+                            enum_name_seen.add((family, vname))
+                            merged_enum_vals.append((family, val, vname))
+                    elif kind == "bitmask":
+                        if (family, val) not in mask_val_seen and (family, vname) not in mask_name_seen:
+                            mask_val_seen.add((family, val))
+                            mask_name_seen.add((family, vname))
+                            merged_mask_vals.append((family, val, vname))
+
+    return (
+        sorted(tag_map.items()),
+        sorted(enum_fam_map.items()),
+        sorted(merged_enum_vals),
+        sorted(mask_fam_map.items()),
+        sorted(merged_mask_vals),
+    )
+
+
+def render_tsv(
+    catalog: dict[str, Any],
+    *,
+    versioned_tags: dict[str, Any] | None = None,
+    versioned_values: dict[str, Any] | None = None,
+) -> str:
     """Render deterministic assigned tag, Enumeration, and Bit Mask records."""
+    tag_names, enum_families, enum_values, mask_families, mask_values = _merge_versioned_wire_data(
+        _assigned_tag_names(catalog),
+        _tag_enumeration_families(catalog),
+        _assigned_enumeration_names(catalog),
+        _tag_bitmask_families(catalog),
+        _assigned_bitmask_names(catalog),
+        versioned_tags,
+        versioned_values,
+    )
     records: list[str] = []
-    for value, name in _assigned_tag_names(catalog):
+    for value, name in tag_names:
         records.append(f"T\t{value:06X}\t{_tsv_field(name)}")
-    for tag, family in _tag_enumeration_families(catalog):
+    for tag, family in enum_families:
         records.append(f"F\t{tag:06X}\t{_tsv_field(family)}")
-    for family, value, name in _assigned_enumeration_names(catalog):
+    for family, value, name in enum_values:
         records.append(f"E\t{_tsv_field(family)}\t{value:08X}\t{_tsv_field(name)}")
-    for tag, family in _tag_bitmask_families(catalog):
+    for tag, family in mask_families:
         records.append(f"M\t{tag:06X}\t{_tsv_field(family)}")
-    for family, value, name in _assigned_bitmask_names(catalog):
+    for family, value, name in mask_values:
         records.append(f"B\t{_tsv_field(family)}\t{value:08X}\t{_tsv_field(name)}")
     return "\n".join(records) + "\n"
 
 
-def render_rust(catalog: dict[str, Any]) -> str:
+def render_rust(
+    catalog: dict[str, Any],
+    *,
+    versioned_tags: dict[str, Any] | None = None,
+    versioned_values: dict[str, Any] | None = None,
+) -> str:
     """Embed deterministic TSV metadata in one generated Rust string literal."""
-    metadata = render_tsv(catalog)
+    metadata = render_tsv(
+        catalog, versioned_tags=versioned_tags, versioned_values=versioned_values
+    )
     hashes = ""
     while f'"{hashes}' in metadata:
         hashes += "#"
@@ -315,7 +408,15 @@ def main(argv: list[str] | None = None) -> int:
         root = arguments.repo_root.resolve(strict=True)
         catalog_bytes = safe_read_bytes(root, CATALOG_PATH, max_bytes=MAX_BYTES)
         catalog = load_validated_catalog(catalog_bytes, root)
-        generated_source = render_rust(catalog).encode("utf-8")
+        versioned_tags = json.loads(
+            safe_read_bytes(root, VERSIONED_TAGS_PATH, max_bytes=MAX_BYTES)
+        )
+        versioned_values = json.loads(
+            safe_read_bytes(root, VERSIONED_VALUES_PATH, max_bytes=MAX_BYTES)
+        )
+        generated_source = render_rust(
+            catalog, versioned_tags=versioned_tags, versioned_values=versioned_values
+        ).encode("utf-8")
         if arguments.write:
             atomic_write_bytes(root, OUTPUT_PATH, generated_source)
             print(f"generated wire-name metadata: {root / OUTPUT_PATH}")

@@ -44,12 +44,12 @@ class VersionedCatalogsWave1Tests(unittest.TestCase):
             (REPO_ROOT / "specification/catalog/kmip-versioned-tags.json").read_text("utf-8")
         )
         rust = generate_attribute_policy.render_rust(catalog, versioned_tags=versioned_tags)
-        self.assertIn("0x0042_0190", rust)  # Certificate Link
-        self.assertIn("0x0042_01BD", rust)  # Certify Counter
-        self.assertIn("0x0042_019E", rust)  # Object Class
-        self.assertIn("0x0042_01B8", rust)  # Deactivation Reason
-        self.assertIn("0x0042_01C2", rust)  # NIST Security Category
-        self.assertIn("0x0042_01B6", rust)  # Split Key Polynomial
+        self.assertIn("0x42_01_90", rust)  # Certificate Link
+        self.assertIn("0x42_01_BD", rust)  # Certify Counter
+        self.assertIn("0x42_01_9E", rust)  # Object Class
+        self.assertIn("0x42_01_B8", rust)  # Deactivation Reason
+        self.assertIn("0x42_01_C2", rust)  # NIST Security Category
+        self.assertIn("0x42_01_B6", rust)  # Split Key Polynomial
         self.assertIn("min_version", rust)
         self.assertIn("max_version", rust)
 

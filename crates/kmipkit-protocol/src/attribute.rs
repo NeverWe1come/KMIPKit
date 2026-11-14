@@ -98,6 +98,7 @@ pub(crate) fn client_attribute_mutation_source_section(
         .source_refs
         .iter()
         .find(|reference| reference.source_id == "KMIPKIT-SRC-spec")
+        .or_else(|| policy.source_refs.first())
         .map(|reference| reference.section)
 }
 
@@ -127,6 +128,7 @@ pub(crate) fn client_vendor_attribute_mutation_source_section(
         .source_refs
         .iter()
         .find(|reference| reference.source_id == "KMIPKIT-SRC-spec")
+        .or_else(|| policy.source_refs.first())
         .map(|reference| reference.section)
 }
 
