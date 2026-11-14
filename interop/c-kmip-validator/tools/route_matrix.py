@@ -526,6 +526,18 @@ def _request_message_with_extension(fixture: tuple, tags: dict[str, int]) -> tup
                                           after_tag='Request Payload')
 
 
+def _async_cancel_response_fixture(target: dict, catalog: dict, tags: dict[str, int],
+                                   protocol_version: str, case: dict | None) -> list[tuple] | None:
+    """Construct the Cancellation Result assigned by the current async case."""
+    scenario = (case or {}).get('requires', {}).get('protocol_scenario', {})
+    value_name = scenario.get('parameters', {}).get('cancel_result')
+    value = catalog_enum_value(catalog, 'Cancellation Result', value_name, protocol_version)
+    tag = tags.get(target.get('name', 'Cancellation Result'))
+    if value_name is None or value is None or tag is None:
+        return None
+    return [(tag, 5, value.to_bytes(4, 'big'))]
+
+
 def _request_header_field_data(name: str, kind: int, value: object, catalog: dict,
                                protocol_version: str) -> bytes | None:
     if kind == 5:
@@ -562,13 +574,7 @@ def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
                           protocol_version: str, *, case: dict | None = None) -> list[tuple] | None:
     """Build item trees only where the pinned catalog identifies tag and type."""
     if target.get('target_id') in ASYNC_CANCEL_RESPONSE_TARGETS:
-        scenario = (case or {}).get('requires', {}).get('protocol_scenario', {})
-        value_name = scenario.get('parameters', {}).get('cancel_result')
-        value = catalog_enum_value(catalog, 'Cancellation Result', value_name, protocol_version)
-        tag = tags.get('Cancellation Result')
-        if value_name is None or value is None or tag is None:
-            return None
-        return [(tag, 5, value.to_bytes(4, 'big'))]
+        return _async_cancel_response_fixture(target, catalog, tags, protocol_version, case)
     response_message_target = (
         (target.get('kind') in {'tag', 'message_field'} and target.get('name') == 'Response Message')
         or target.get('target_id') in RESPONSE_MESSAGE_CONTEXT_TARGETS
