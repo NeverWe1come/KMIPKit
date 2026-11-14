@@ -2834,8 +2834,8 @@ static kmip_execution_outcome_t execute_async_query_outstanding_filter_route(
             create_batches[index], &create_items[index]);
         if (status == 0) status = kmipkit_client_execute(
             client->client, &create_batches[index], client->limits, &create_responses[index]);
-        if (status == 0) status = read_pending_operation_correlation(
-            create_responses[index], KMIPKIT_ENUMERATION_OPERATION_CREATE,
+        if (status == 0) status = read_pending_create_correlation(
+            create_responses[index],
             expected_correlations[index], expected_correlation_lengths[index],
             &create_response_items[index], &correlations[index]);
     }
