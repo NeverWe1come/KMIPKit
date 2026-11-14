@@ -100,6 +100,20 @@ is addressed.
 - The T102 snapshot is now 16,884 public declarations and 22,888 approved
   exclusions. Its pinned Rust audit values remain tied to the historical T102
   report and are not replaced by the current whole-workspace audit totals.
+- The branch was rebased onto the approved KMIPKIT-0116 operations parent at
+  `51a9a5e1c`; the C consumer now uses the object-derived Create Credential
+  signature. `python3 -B tools/normative_catalog/generate_fluent_operation_inventory.py`
+  and `--check` passed, and
+  `python3 -B -m unittest
+  tools.normative_catalog.tests.test_fluent_operation_inventory -v` passed all
+  18 tests. The generated versioned inventory records seven routes while the
+  56-entry KMIP 2.1 client inventory remains unchanged.
+- `uv build --wheel bindings/python --out-dir
+  /home/ramp1953/.codex/tmp/kmipkit-0116/wheels` passed. The resulting wheel
+  contains both `kmipkit/fluent.pyi` and `kmipkit/py.typed`.
+- After the rebase, `python3 -B tools/api_manifest/generate.py --check`,
+  `python3 -B tools/normative_catalog/generate_fluent_operation_inventory.py
+  --check`, and `git diff --check` all passed.
 
 ## Manifest scope ruling
 
@@ -112,3 +126,13 @@ the separate capability preserves explicit opt-in and draft status. If this
 is wrong, clients that inspect only the main operation list may miss the
 versioned 3.0 routes; the generated inventory will link them through the
 capability and source edition.
+
+## Development commits
+
+- Red: `cdf4257cf` and `97eea9e07` add failing API-surface and credential
+  alternative tests before implementation.
+- Green: `51b23bb2e` implements the Java/JNI and Python/CFFI routes alongside
+  the matching typed API integration.
+- Refactor: `ddc6fbc09` reconciles manifest exports and generated bindings;
+  `c79d98018` regenerates the versioned fluent operation inventory after the
+  approved parent rebase.
