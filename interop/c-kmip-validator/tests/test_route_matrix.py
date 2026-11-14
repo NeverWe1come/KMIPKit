@@ -393,6 +393,56 @@ class RouteMatrixTests(unittest.TestCase):
                     result = abi.roundtrip(encode(response))
                     self.assertIn('kmipkit_response_message_from_ttlv', result['invoked_symbols'])
 
+    def test_response_message_optional_fields_use_complete_parser_fixtures(self):
+        """OASIS KMIP 2.0/2.1 §§8.5–8.6 define optional response fields (0092-FR-003)."""
+        from artifact_support import INSTALL, ROOT
+        from route_ttlv import TreeAbi, encode
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        tags = self.runner.catalog_tag_values(catalog)
+        values = {
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-5-ATTESTATION-TYPE': ('Attestation Type', 5, (1).to_bytes(4, 'big')),
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-5-CLIENT-CORRELATION-VALUE':
+                ('Client Correlation Value', 7, b'client-correlation'),
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-5-NONCE': ('Nonce', 1, None),
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-5-SERVER-CORRELATION-VALUE':
+                ('Server Correlation Value', 7, b'server-correlation'),
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-5-SERVER-HASHED-PASSWORD':
+                ('Server Hashed Password', 8, b'fixture-hashed-password'),
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-UNIQUE-BATCH-ITEM-ID':
+                ('Unique Batch Item ID', 8, b'route-response-batch-item'),
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-RESULT-MESSAGE':
+                ('Result Message', 7, b'fixture-result-message'),
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION': ('Message Extension', 1, None),
+        }
+        targets = {target['target_id']: target for target in catalog['normative_targets']
+                   if target['target_id'] in values}
+        self.assertEqual(set(targets), set(values))
+        abi = TreeAbi(INSTALL / 'lib/libkmipkit_ffi.so')
+        for target_id, (name, kind, expected_value) in values.items():
+            target = targets[target_id]
+            for version in ('2.0', '2.1'):
+                with self.subTest(target_id=target_id, protocol_version=version):
+                    fixtures = self.runner.generic_tree_fixtures(target, catalog, tags, version)
+                    self.assertIsNotNone(fixtures)
+                    response = fixtures[0]
+                    self.assertEqual((response[0], response[1]), (tags['Response Message'], 1))
+                    pending = list(response[2])
+                    actual = None
+                    while pending:
+                        tag, item_kind, value = pending.pop()
+                        if tag == tags[name]:
+                            actual = (item_kind, value)
+                            break
+                        if item_kind == 1:
+                            pending.extend(value)
+                    self.assertIsNotNone(actual, f'{target_id} is absent from the response tree')
+                    self.assertEqual(actual[0], kind)
+                    if expected_value is not None:
+                        self.assertEqual(actual[1], expected_value)
+                    result = abi.roundtrip(encode(response))
+                    self.assertIn('kmipkit_response_message_from_ttlv', result['invoked_symbols'])
+
     def test_get_usage_allocation_has_an_executable_controlled_peer_recipe(self):
         import route_peer
         from artifact_support import ROOT
