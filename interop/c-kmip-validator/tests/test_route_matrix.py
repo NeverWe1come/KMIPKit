@@ -604,7 +604,7 @@ class RouteMatrixTests(unittest.TestCase):
                             for check in checks), checks)
 
     def test_async_mandatory_create_returns_pending_with_correlation(self):
-        """OASIS KMIP 2.0 §6.1.8 Table 171 and 2.1 §6.1.8 Table 186 define Create."""
+        """OASIS KMIP 2.0/2.1 §§8.2–8.3, 8.6, 9.1–9.2, 11.3; Create is §6.1.8 Tables 171 (2.0) and 186 (2.1)."""
         from artifact_support import ROOT
         import route_peer
 

@@ -1046,8 +1046,8 @@ def verify_pending_poll_response(response_tree, correlation):
         raise ValueError('fixture_poll_pending_response_mismatch')
 
 
-def assert_async_cancel_seed_request(node, version):
-    """Require a one-item Create with the asynchronous indicator before Cancel."""
+def assert_async_create_seed_request(node, version):
+    """Require a one-item Create with the mandatory asynchronous indicator."""
     batch_items = [item for item in node[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
     header = next(descendants(node, 0x420077), node)
     if len(batch_items) != 1 or numbers(batch_items[0], 0x42005C) != [1]:
@@ -1652,10 +1652,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             assert_login_logout_exchange(request_tree, version, exchange_index)
                                             response_operations = ((45,) if exchange_index == 0 else (46,))
                                         elif recipe[1] == 'async_create_pending' and exchange_index == 0:
-                                            assert_async_cancel_seed_request(request_tree, version)
+                                            assert_async_create_seed_request(request_tree, version)
                                             response_operations = (1,)
                                         elif recipe[1] in ('cancel_async', 'cancel_poll_race') and exchange_index == 0:
-                                            assert_async_cancel_seed_request(request_tree, version)
+                                            assert_async_create_seed_request(request_tree, version)
                                             response_operations = (1,)
                                         elif recipe[1] == 'cancel_poll_race' and exchange_index == 1:
                                             assert_poll_request(request_tree, version)
