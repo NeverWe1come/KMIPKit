@@ -1319,21 +1319,32 @@ static int32_t read_pending_create_correlation(
     return status;
 }
 
+typedef struct {
+    const char *name;
+    uint32_t value;
+} cancellation_result_entry_t;
+
+static const cancellation_result_entry_t cancellation_result_values[] = {
+    {"Canceled", KMIPKIT_ENUMERATION_CANCELLATION_RESULT_CANCELED},
+    {"Unable to Cancel", KMIPKIT_ENUMERATION_CANCELLATION_RESULT_UNABLE_TO_CANCEL},
+    {"Completed", KMIPKIT_ENUMERATION_CANCELLATION_RESULT_COMPLETED},
+    {"Failed", KMIPKIT_ENUMERATION_CANCELLATION_RESULT_FAILED},
+    {"Unavailable", KMIPKIT_ENUMERATION_CANCELLATION_RESULT_UNAVAILABLE},
+};
+
 static bool cancellation_result_from_name(const char *name, uint32_t *result) {
-    if (!name || name[0] == '\0' || strcmp(name, "Canceled") == 0) {
-        *result = KMIPKIT_ENUMERATION_CANCELLATION_RESULT_CANCELED;
-    } else if (strcmp(name, "Unable to Cancel") == 0) {
-        *result = KMIPKIT_ENUMERATION_CANCELLATION_RESULT_UNABLE_TO_CANCEL;
-    } else if (strcmp(name, "Completed") == 0) {
-        *result = KMIPKIT_ENUMERATION_CANCELLATION_RESULT_COMPLETED;
-    } else if (strcmp(name, "Failed") == 0) {
-        *result = KMIPKIT_ENUMERATION_CANCELLATION_RESULT_FAILED;
-    } else if (strcmp(name, "Unavailable") == 0) {
-        *result = KMIPKIT_ENUMERATION_CANCELLATION_RESULT_UNAVAILABLE;
-    } else {
-        return false;
+    if (!name || name[0] == '\0') {
+        name = "Canceled";
     }
-    return true;
+    for (size_t index = 0;
+         index < sizeof(cancellation_result_values) / sizeof(cancellation_result_values[0]);
+         ++index) {
+        if (strcmp(name, cancellation_result_values[index].name) == 0) {
+            *result = cancellation_result_values[index].value;
+            return true;
+        }
+    }
+    return false;
 }
 
 static kmip_execution_outcome_t execute_cancel_route(kmip_live_client_t *client,
