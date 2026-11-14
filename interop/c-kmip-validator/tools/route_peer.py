@@ -356,6 +356,7 @@ RECIPES = {
     'test-batch-placeholder-chain-resolves': (PLACEHOLDER_CHAIN_OPERATIONS, 'batch_placeholder_chain'),
     'test-batch-single-item-options-omitted': ((10,), 'batch_single_item_options_omitted'),
     'test-batch-count-matches-items': ((10, 12), 'batch_count_two_read_items'),
+    'test-batch-count-mismatch-rejected': ((10, 12), 'batch_count_two_read_items'),
     'test-batch-unique-item-id-response-correlation': ((10, 12), 'batch_count_two_read_items'),
     'test-batch-order-false-correlates-response-items': ((10, 12), 'batch_order_false_two_read_items'),
     'test-batch-continue-after-failure': ((10, 12), 'batch_continue_after_failure'),
@@ -3285,6 +3286,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                if item[0] == 0x42000F]}
                                                if observation and case_id in {
                                                    'test-batch-count-matches-items',
+                                                   'test-batch-count-mismatch-rejected',
                                                    'test-batch-unique-item-id-response-correlation',
                                                    'test-batch-order-false-correlates-response-items',
                                                    'test-batch-continue-after-failure',
@@ -3297,6 +3299,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                if item[0] == 0x42000F]}
                                                if observation and case_id in {
                                                    'test-batch-count-matches-items',
+                                                   'test-batch-count-mismatch-rejected',
                                                    'test-batch-unique-item-id-response-correlation',
                                                    'test-batch-order-false-correlates-response-items',
                                                    'test-batch-continue-after-failure',
