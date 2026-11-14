@@ -26,6 +26,9 @@
 - [x] T010 Execute the C Archive operation through the installed public ABI
   and controlled KMIP peers for both protocol versions, all three encodings,
   and both supported transports; verify the response identifier and cleanup.
+- [x] T011 Execute C Sign through the installed public ABI and controlled KMIP
+  peers for both protocol versions, all three encodings, and both supported
+  transports; verify typed signature response data and object cleanup.
 
 T006 and T007 remain open until each separate language validator consumes the
 generated matrix, invokes every named public route, exchanges requests and
@@ -535,3 +538,24 @@ The fixture creates an RSA-2048 Public Key, as Certify applies to public keys.
   interop/c-kmip-validator/build --output-on-failure` passed all 7 tests in
   82.26 seconds, including both controlled TLS protocol versions. The complete
   C matrix, exact-head CI, and Rust/Java/Python parity remain open.
+
+## Development evidence: C Sign route
+
+For KMIPKIT-0092-FR-003, FR-005, and FR-009, the installed C ABI sends Create
+Private Key → Activate → Sign → Revoke → Destroy in one ordered batch. It
+selects RSA-2048, SHA-256, and SHA-256-with-RSA explicitly, signs the fixture
+input `abc`, checks the typed response Unique Identifier and Signature Data,
+and confirms the peer's object state returns to baseline.
+
+- Normative source: OASIS KMIP v2.0 §6.1.49, Tables 302–304; KMIP v2.1
+  §6.1.55, Tables 334–336.
+- Red commit `960ceb61`: the focused test failed because Sign had no C route
+  recipe or installed-consumer path.
+- Green commit `5a146dd6`: add the installed typed Sign request/response route
+  and the controlled peer's signature response and lifecycle checks.
+- Refactor/documentation commit: this evidence entry and the traceability
+  record capture the verified route slice and outstanding matrix work.
+- Verification: the focused test passed 24 version/encoding/transport checks
+  across the operation and RSA-2048 catalog cases. Full CTest passed 7/7 in
+  83.62 seconds, including both controlled TLS versions. Full C matrix,
+  exact-head CI, and Rust/Java/Python parity remain open.

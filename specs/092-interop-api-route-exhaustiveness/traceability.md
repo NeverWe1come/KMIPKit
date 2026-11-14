@@ -75,3 +75,12 @@ TTLV, then destroys both objects. All 12 version/encoding/transport checks
 pass and the fixture returns to its initial state. The generated catalog now
 uses the required Public Key fixture for Certify. Full matrix and
 Rust/Java/Python parity remain open.
+
+For KMIPKIT-0092-FR-003, FR-005, and FR-009, C now executes Sign through the
+installed typed ABI under OASIS KMIP v2.0 §6.1.49, Tables 302–304, and KMIP
+v2.1 §6.1.55, Tables 334–336. Across 24 version/encoding/transport checks,
+the controlled peer validates Create Private Key → Activate → Sign → Revoke →
+Destroy, explicit SHA-256/RSA parameters, the typed response Unique Identifier
+and Signature Data, and restoration of fixture state. The focused test and
+full local CTest suite pass 7/7. The full C route matrix, exact-head CI, and
+Rust/Java/Python parity remain open.
