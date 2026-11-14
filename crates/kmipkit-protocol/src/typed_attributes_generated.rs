@@ -79,14 +79,6 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         source_multiplicity: Some("No"),
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CREDENTIAL-TYPE",
-        source_name: "Credential Type",
-        marker_name: "CredentialType",
-        tag: 0x42_00_24,
-        value_kind: "Enumeration",
-        source_multiplicity: Some("No"),
-    },
-    AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-CRYPTOGRAPHIC-ALGORITHM",
         source_name: "Cryptographic Algorithm",
         marker_name: "CryptographicAlgorithm",
@@ -167,14 +159,6 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         source_multiplicity: Some("No"),
     },
     AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-KEY-PART-IDENTIFIER",
-        source_name: "Key Part Identifier",
-        marker_name: "KeyPartIdentifier",
-        tag: 0x42_00_44,
-        value_kind: "Integer",
-        source_multiplicity: Some("No"),
-    },
-    AttributeMetadata {
         element_id: "KMIPKIT-ELEM-ATTRIBUTE-LAST-CHANGE-DATE",
         source_name: "Last Change Date",
         marker_name: "LastChangeDate",
@@ -252,30 +236,6 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         marker_name: "RevocationReason",
         tag: 0x42_00_81,
         value_kind: "Structure",
-        source_multiplicity: Some("No"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SPLIT-KEY-METHOD",
-        source_name: "Split Key Method",
-        marker_name: "SplitKeyMethod",
-        tag: 0x42_00_8A,
-        value_kind: "Enumeration",
-        source_multiplicity: Some("No"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SPLIT-KEY-PARTS",
-        source_name: "Split Key Parts",
-        marker_name: "SplitKeyParts",
-        tag: 0x42_00_8B,
-        value_kind: "Integer",
-        source_multiplicity: Some("No"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SPLIT-KEY-THRESHOLD",
-        source_name: "Split Key Threshold",
-        marker_name: "SplitKeyThreshold",
-        tag: 0x42_00_8C,
-        value_kind: "Integer",
         source_multiplicity: Some("No"),
     },
     AttributeMetadata {
@@ -550,262 +510,6 @@ pub(crate) const ATTRIBUTE_DEFINITIONS: &[AttributeMetadata] = &[
         value_kind: "Boolean",
         source_multiplicity: Some("No"),
     },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CERTIFICATE-LINK",
-        source_name: "Certificate Link",
-        marker_name: "CertificateLink",
-        tag: 0x42_01_90,
-        value_kind: "UniqueIdentifier",
-        source_multiplicity: Some("Yes"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CHILD-LINK",
-        source_name: "Child Link",
-        marker_name: "ChildLink",
-        tag: 0x42_01_91,
-        value_kind: "UniqueIdentifier",
-        source_multiplicity: Some("No"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-DERIVATION-BASE-OBJECT-LINK",
-        source_name: "Derivation Base Object Link",
-        marker_name: "DerivationBaseObjectLink",
-        tag: 0x42_01_92,
-        value_kind: "UniqueIdentifier",
-        source_multiplicity: Some("Yes"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-DERIVED-OBJECT-LINK",
-        source_name: "Derived Object Link",
-        marker_name: "DerivedObjectLink",
-        tag: 0x42_01_93,
-        value_kind: "UniqueIdentifier",
-        source_multiplicity: Some("Yes"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-NEXT-LINK",
-        source_name: "Next Link",
-        marker_name: "NextLink",
-        tag: 0x42_01_94,
-        value_kind: "UniqueIdentifier",
-        source_multiplicity: Some("No"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PARENT-LINK",
-        source_name: "Parent Link",
-        marker_name: "ParentLink",
-        tag: 0x42_01_95,
-        value_kind: "UniqueIdentifier",
-        source_multiplicity: Some("Yes"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PKCS12-CERTIFICATE-LINK",
-        source_name: "PKCS#12 Certificate Link",
-        marker_name: "Pkcs12CertificateLink",
-        tag: 0x42_01_96,
-        value_kind: "UniqueIdentifier",
-        source_multiplicity: Some("No"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PKCS12-PASSWORD-LINK",
-        source_name: "PKCS#12 Password Link",
-        marker_name: "Pkcs12PasswordLink",
-        tag: 0x42_01_97,
-        value_kind: "UniqueIdentifier",
-        source_multiplicity: Some("No"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PREVIOUS-LINK",
-        source_name: "Previous Link",
-        marker_name: "PreviousLink",
-        tag: 0x42_01_98,
-        value_kind: "UniqueIdentifier",
-        source_multiplicity: Some("No"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PRIVATE-KEY-LINK",
-        source_name: "Private Key Link",
-        marker_name: "PrivateKeyLink",
-        tag: 0x42_01_99,
-        value_kind: "UniqueIdentifier",
-        source_multiplicity: Some("No"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PUBLIC-KEY-LINK",
-        source_name: "Public Key Link",
-        marker_name: "PublicKeyLink",
-        tag: 0x42_01_9A,
-        value_kind: "UniqueIdentifier",
-        source_multiplicity: Some("No"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-REPLACED-OBJECT-LINK",
-        source_name: "Replaced Object Link",
-        marker_name: "ReplacedObjectLink",
-        tag: 0x42_01_9B,
-        value_kind: "UniqueIdentifier",
-        source_multiplicity: Some("No"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-REPLACEMENT-OBJECT-LINK",
-        source_name: "Replacement Object Link",
-        marker_name: "ReplacementObjectLink",
-        tag: 0x42_01_9C,
-        value_kind: "UniqueIdentifier",
-        source_multiplicity: Some("No"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-WRAPPING-KEY-LINK",
-        source_name: "Wrapping Key Link",
-        marker_name: "WrappingKeyLink",
-        tag: 0x42_01_9D,
-        value_kind: "UniqueIdentifier",
-        source_multiplicity: Some("No"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-OBJECT-CLASS",
-        source_name: "Object Class",
-        marker_name: "ObjectClass",
-        tag: 0x42_01_9E,
-        value_kind: "Enumeration",
-        source_multiplicity: Some("No"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CREDENTIAL-LINK",
-        source_name: "Credential Link",
-        marker_name: "CredentialLink",
-        tag: 0x42_01_A0,
-        value_kind: "UniqueIdentifier",
-        source_multiplicity: Some("Yes"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-PASSWORD-LINK",
-        source_name: "Password Link",
-        marker_name: "PasswordLink",
-        tag: 0x42_01_A5,
-        value_kind: "UniqueIdentifier",
-        source_multiplicity: Some("Yes"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-OTP-COUNTER",
-        source_name: "OTP Counter",
-        marker_name: "OtpCounter",
-        tag: 0x42_01_AE,
-        value_kind: "ByteString",
-        source_multiplicity: Some("No"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-GROUP-LINK",
-        source_name: "Group Link",
-        marker_name: "GroupLink",
-        tag: 0x42_01_B3,
-        value_kind: "UniqueIdentifier",
-        source_multiplicity: Some("Yes"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SPLIT-KEY-BASE-LINK",
-        source_name: "Split Key Base Link",
-        marker_name: "SplitKeyBaseLink",
-        tag: 0x42_01_B4,
-        value_kind: "UniqueIdentifier",
-        source_multiplicity: Some("Yes"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-JOINED-SPLIT-KEY-PARTS-LINK",
-        source_name: "Joined Split Key Parts Link",
-        marker_name: "JoinedSplitKeyPartsLink",
-        tag: 0x42_01_B5,
-        value_kind: "UniqueIdentifier",
-        source_multiplicity: Some("Yes"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SPLIT-KEY-POLYNOMIAL",
-        source_name: "Split Key Polynomial",
-        marker_name: "SplitKeyPolynomial",
-        tag: 0x42_01_B6,
-        value_kind: "Enumeration",
-        source_multiplicity: Some("No"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-DEACTIVATION-REASON",
-        source_name: "Deactivation Reason",
-        marker_name: "DeactivationReason",
-        tag: 0x42_01_B8,
-        value_kind: "Structure",
-        source_multiplicity: Some("No"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CERTIFICATE-SUBJECT-DN",
-        source_name: "Certificate Subject DN",
-        marker_name: "CertificateSubjectDn",
-        tag: 0x42_01_BA,
-        value_kind: "TextString",
-        source_multiplicity: Some("No"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CERTIFICATE-ISSUER-DN",
-        source_name: "Certificate Issuer DN",
-        marker_name: "CertificateIssuerDn",
-        tag: 0x42_01_BB,
-        value_kind: "TextString",
-        source_multiplicity: Some("No"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CERTIFICATE-REQUEST-LINK",
-        source_name: "Certificate Request Link",
-        marker_name: "CertificateRequestLink",
-        tag: 0x42_01_BC,
-        value_kind: "UniqueIdentifier",
-        source_multiplicity: Some("Yes"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-CERTIFY-COUNTER",
-        source_name: "Certify Counter",
-        marker_name: "CertifyCounter",
-        tag: 0x42_01_BD,
-        value_kind: "LongInteger",
-        source_multiplicity: Some("No"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-DECRYPT-COUNTER",
-        source_name: "Decrypt Counter",
-        marker_name: "DecryptCounter",
-        tag: 0x42_01_BE,
-        value_kind: "LongInteger",
-        source_multiplicity: Some("No"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-ENCRYPT-COUNTER",
-        source_name: "Encrypt Counter",
-        marker_name: "EncryptCounter",
-        tag: 0x42_01_BF,
-        value_kind: "LongInteger",
-        source_multiplicity: Some("No"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SIGN-COUNTER",
-        source_name: "Sign Counter",
-        marker_name: "SignCounter",
-        tag: 0x42_01_C0,
-        value_kind: "LongInteger",
-        source_multiplicity: Some("No"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-SIGNATURE-VERIFY-COUNTER",
-        source_name: "Signature Verify Counter",
-        marker_name: "SignatureVerifyCounter",
-        tag: 0x42_01_C1,
-        value_kind: "LongInteger",
-        source_multiplicity: Some("No"),
-    },
-    AttributeMetadata {
-        element_id: "KMIPKIT-ELEM-ATTRIBUTE-V30-NIST-SECURITY-CATEGORY",
-        source_name: "NIST Security Category",
-        marker_name: "NistSecurityCategory",
-        tag: 0x42_01_C2,
-        value_kind: "Integer",
-        source_multiplicity: Some("No"),
-    },
 ];
 
 pub mod typed {
@@ -906,14 +610,6 @@ pub mod typed {
         &'a str
     );
     define_typed_attribute!(
-        CredentialType,
-        "Credential Type",
-        0x42_00_24,
-        super::super::EnumerationEncoding,
-        u32,
-        u32
-    );
-    define_typed_attribute!(
         CryptographicAlgorithm,
         "Cryptographic Algorithm",
         0x42_00_28,
@@ -994,14 +690,6 @@ pub mod typed {
         u32
     );
     define_typed_attribute!(
-        KeyPartIdentifier,
-        "Key Part Identifier",
-        0x42_00_44,
-        super::super::IntegerEncoding,
-        i32,
-        i32
-    );
-    define_typed_attribute!(
         LastChangeDate,
         "Last Change Date",
         0x42_00_48,
@@ -1080,30 +768,6 @@ pub mod typed {
         super::super::StructureEncoding,
         kmipkit_ttlv::Structure,
         kmipkit_ttlv::StructureView<'a>
-    );
-    define_typed_attribute!(
-        SplitKeyMethod,
-        "Split Key Method",
-        0x42_00_8A,
-        super::super::EnumerationEncoding,
-        u32,
-        u32
-    );
-    define_typed_attribute!(
-        SplitKeyParts,
-        "Split Key Parts",
-        0x42_00_8B,
-        super::super::IntegerEncoding,
-        i32,
-        i32
-    );
-    define_typed_attribute!(
-        SplitKeyThreshold,
-        "Split Key Threshold",
-        0x42_00_8C,
-        super::super::IntegerEncoding,
-        i32,
-        i32
     );
     define_typed_attribute!(
         State,
@@ -1377,262 +1041,6 @@ pub mod typed {
         bool,
         bool
     );
-    define_typed_attribute!(
-        CertificateLink,
-        "Certificate Link",
-        0x42_01_90,
-        super::super::UniqueIdentifierEncoding,
-        super::super::UniqueIdentifierValue,
-        super::super::UniqueIdentifierView<'a>
-    );
-    define_typed_attribute!(
-        ChildLink,
-        "Child Link",
-        0x42_01_91,
-        super::super::UniqueIdentifierEncoding,
-        super::super::UniqueIdentifierValue,
-        super::super::UniqueIdentifierView<'a>
-    );
-    define_typed_attribute!(
-        DerivationBaseObjectLink,
-        "Derivation Base Object Link",
-        0x42_01_92,
-        super::super::UniqueIdentifierEncoding,
-        super::super::UniqueIdentifierValue,
-        super::super::UniqueIdentifierView<'a>
-    );
-    define_typed_attribute!(
-        DerivedObjectLink,
-        "Derived Object Link",
-        0x42_01_93,
-        super::super::UniqueIdentifierEncoding,
-        super::super::UniqueIdentifierValue,
-        super::super::UniqueIdentifierView<'a>
-    );
-    define_typed_attribute!(
-        NextLink,
-        "Next Link",
-        0x42_01_94,
-        super::super::UniqueIdentifierEncoding,
-        super::super::UniqueIdentifierValue,
-        super::super::UniqueIdentifierView<'a>
-    );
-    define_typed_attribute!(
-        ParentLink,
-        "Parent Link",
-        0x42_01_95,
-        super::super::UniqueIdentifierEncoding,
-        super::super::UniqueIdentifierValue,
-        super::super::UniqueIdentifierView<'a>
-    );
-    define_typed_attribute!(
-        Pkcs12CertificateLink,
-        "PKCS#12 Certificate Link",
-        0x42_01_96,
-        super::super::UniqueIdentifierEncoding,
-        super::super::UniqueIdentifierValue,
-        super::super::UniqueIdentifierView<'a>
-    );
-    define_typed_attribute!(
-        Pkcs12PasswordLink,
-        "PKCS#12 Password Link",
-        0x42_01_97,
-        super::super::UniqueIdentifierEncoding,
-        super::super::UniqueIdentifierValue,
-        super::super::UniqueIdentifierView<'a>
-    );
-    define_typed_attribute!(
-        PreviousLink,
-        "Previous Link",
-        0x42_01_98,
-        super::super::UniqueIdentifierEncoding,
-        super::super::UniqueIdentifierValue,
-        super::super::UniqueIdentifierView<'a>
-    );
-    define_typed_attribute!(
-        PrivateKeyLink,
-        "Private Key Link",
-        0x42_01_99,
-        super::super::UniqueIdentifierEncoding,
-        super::super::UniqueIdentifierValue,
-        super::super::UniqueIdentifierView<'a>
-    );
-    define_typed_attribute!(
-        PublicKeyLink,
-        "Public Key Link",
-        0x42_01_9A,
-        super::super::UniqueIdentifierEncoding,
-        super::super::UniqueIdentifierValue,
-        super::super::UniqueIdentifierView<'a>
-    );
-    define_typed_attribute!(
-        ReplacedObjectLink,
-        "Replaced Object Link",
-        0x42_01_9B,
-        super::super::UniqueIdentifierEncoding,
-        super::super::UniqueIdentifierValue,
-        super::super::UniqueIdentifierView<'a>
-    );
-    define_typed_attribute!(
-        ReplacementObjectLink,
-        "Replacement Object Link",
-        0x42_01_9C,
-        super::super::UniqueIdentifierEncoding,
-        super::super::UniqueIdentifierValue,
-        super::super::UniqueIdentifierView<'a>
-    );
-    define_typed_attribute!(
-        WrappingKeyLink,
-        "Wrapping Key Link",
-        0x42_01_9D,
-        super::super::UniqueIdentifierEncoding,
-        super::super::UniqueIdentifierValue,
-        super::super::UniqueIdentifierView<'a>
-    );
-    define_typed_attribute!(
-        ObjectClass,
-        "Object Class",
-        0x42_01_9E,
-        super::super::EnumerationEncoding,
-        u32,
-        u32
-    );
-    define_typed_attribute!(
-        CredentialLink,
-        "Credential Link",
-        0x42_01_A0,
-        super::super::UniqueIdentifierEncoding,
-        super::super::UniqueIdentifierValue,
-        super::super::UniqueIdentifierView<'a>
-    );
-    define_typed_attribute!(
-        PasswordLink,
-        "Password Link",
-        0x42_01_A5,
-        super::super::UniqueIdentifierEncoding,
-        super::super::UniqueIdentifierValue,
-        super::super::UniqueIdentifierView<'a>
-    );
-    define_typed_attribute!(
-        OtpCounter,
-        "OTP Counter",
-        0x42_01_AE,
-        super::super::ByteStringEncoding,
-        Vec<u8>,
-        &'a [u8]
-    );
-    define_typed_attribute!(
-        GroupLink,
-        "Group Link",
-        0x42_01_B3,
-        super::super::UniqueIdentifierEncoding,
-        super::super::UniqueIdentifierValue,
-        super::super::UniqueIdentifierView<'a>
-    );
-    define_typed_attribute!(
-        SplitKeyBaseLink,
-        "Split Key Base Link",
-        0x42_01_B4,
-        super::super::UniqueIdentifierEncoding,
-        super::super::UniqueIdentifierValue,
-        super::super::UniqueIdentifierView<'a>
-    );
-    define_typed_attribute!(
-        JoinedSplitKeyPartsLink,
-        "Joined Split Key Parts Link",
-        0x42_01_B5,
-        super::super::UniqueIdentifierEncoding,
-        super::super::UniqueIdentifierValue,
-        super::super::UniqueIdentifierView<'a>
-    );
-    define_typed_attribute!(
-        SplitKeyPolynomial,
-        "Split Key Polynomial",
-        0x42_01_B6,
-        super::super::EnumerationEncoding,
-        u32,
-        u32
-    );
-    define_typed_attribute!(
-        DeactivationReason,
-        "Deactivation Reason",
-        0x42_01_B8,
-        super::super::StructureEncoding,
-        kmipkit_ttlv::Structure,
-        kmipkit_ttlv::StructureView<'a>
-    );
-    define_typed_attribute!(
-        CertificateSubjectDn,
-        "Certificate Subject DN",
-        0x42_01_BA,
-        super::super::TextStringEncoding,
-        String,
-        &'a str
-    );
-    define_typed_attribute!(
-        CertificateIssuerDn,
-        "Certificate Issuer DN",
-        0x42_01_BB,
-        super::super::TextStringEncoding,
-        String,
-        &'a str
-    );
-    define_typed_attribute!(
-        CertificateRequestLink,
-        "Certificate Request Link",
-        0x42_01_BC,
-        super::super::UniqueIdentifierEncoding,
-        super::super::UniqueIdentifierValue,
-        super::super::UniqueIdentifierView<'a>
-    );
-    define_typed_attribute!(
-        CertifyCounter,
-        "Certify Counter",
-        0x42_01_BD,
-        super::super::LongIntegerEncoding,
-        i64,
-        i64
-    );
-    define_typed_attribute!(
-        DecryptCounter,
-        "Decrypt Counter",
-        0x42_01_BE,
-        super::super::LongIntegerEncoding,
-        i64,
-        i64
-    );
-    define_typed_attribute!(
-        EncryptCounter,
-        "Encrypt Counter",
-        0x42_01_BF,
-        super::super::LongIntegerEncoding,
-        i64,
-        i64
-    );
-    define_typed_attribute!(
-        SignCounter,
-        "Sign Counter",
-        0x42_01_C0,
-        super::super::LongIntegerEncoding,
-        i64,
-        i64
-    );
-    define_typed_attribute!(
-        SignatureVerifyCounter,
-        "Signature Verify Counter",
-        0x42_01_C1,
-        super::super::LongIntegerEncoding,
-        i64,
-        i64
-    );
-    define_typed_attribute!(
-        NistSecurityCategory,
-        "NIST Security Category",
-        0x42_01_C2,
-        super::super::IntegerEncoding,
-        i32,
-        i32
-    );
 }
 
 #[cfg(test)]
@@ -1645,7 +1053,6 @@ pub(crate) const ATTRIBUTE_TAGS: &[u32] = &[
     typed::CompromiseDate::TAG,
     typed::CompromiseOccurrenceDate::TAG,
     typed::ContactInformation::TAG,
-    typed::CredentialType::TAG,
     typed::CryptographicAlgorithm::TAG,
     typed::CryptographicDomainParameters::TAG,
     typed::CryptographicLength::TAG,
@@ -1656,7 +1063,6 @@ pub(crate) const ATTRIBUTE_TAGS: &[u32] = &[
     typed::Digest::TAG,
     typed::InitialDate::TAG,
     typed::KeyFormatType::TAG,
-    typed::KeyPartIdentifier::TAG,
     typed::LastChangeDate::TAG,
     typed::LeaseTime::TAG,
     typed::Link::TAG,
@@ -1667,9 +1073,6 @@ pub(crate) const ATTRIBUTE_TAGS: &[u32] = &[
     typed::ProcessStartDate::TAG,
     typed::ProtectStopDate::TAG,
     typed::RevocationReason::TAG,
-    typed::SplitKeyMethod::TAG,
-    typed::SplitKeyParts::TAG,
-    typed::SplitKeyThreshold::TAG,
     typed::State::TAG,
     typed::UniqueIdentifier::TAG,
     typed::UsageLimits::TAG,
@@ -1704,36 +1107,4 @@ pub(crate) const ATTRIBUTE_TAGS: &[u32] = &[
     typed::RotateGeneration::TAG,
     typed::RotateName::TAG,
     typed::RotateLatest::TAG,
-    typed::CertificateLink::TAG,
-    typed::ChildLink::TAG,
-    typed::DerivationBaseObjectLink::TAG,
-    typed::DerivedObjectLink::TAG,
-    typed::NextLink::TAG,
-    typed::ParentLink::TAG,
-    typed::Pkcs12CertificateLink::TAG,
-    typed::Pkcs12PasswordLink::TAG,
-    typed::PreviousLink::TAG,
-    typed::PrivateKeyLink::TAG,
-    typed::PublicKeyLink::TAG,
-    typed::ReplacedObjectLink::TAG,
-    typed::ReplacementObjectLink::TAG,
-    typed::WrappingKeyLink::TAG,
-    typed::ObjectClass::TAG,
-    typed::CredentialLink::TAG,
-    typed::PasswordLink::TAG,
-    typed::OtpCounter::TAG,
-    typed::GroupLink::TAG,
-    typed::SplitKeyBaseLink::TAG,
-    typed::JoinedSplitKeyPartsLink::TAG,
-    typed::SplitKeyPolynomial::TAG,
-    typed::DeactivationReason::TAG,
-    typed::CertificateSubjectDn::TAG,
-    typed::CertificateIssuerDn::TAG,
-    typed::CertificateRequestLink::TAG,
-    typed::CertifyCounter::TAG,
-    typed::DecryptCounter::TAG,
-    typed::EncryptCounter::TAG,
-    typed::SignCounter::TAG,
-    typed::SignatureVerifyCounter::TAG,
-    typed::NistSecurityCategory::TAG,
 ];

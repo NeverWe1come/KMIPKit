@@ -21,7 +21,7 @@ fn generated_typed_attribute_registry_covers_every_direct_definition() {
     let definitions = crate::typed_attributes::ATTRIBUTE_DEFINITIONS;
     let generated_tags = crate::typed_attributes::ATTRIBUTE_TAGS;
 
-    assert_eq!(definitions.len(), 99);
+    assert_eq!(definitions.len(), 62);
     assert_eq!(generated_tags.len(), definitions.len());
     assert!(
         definitions

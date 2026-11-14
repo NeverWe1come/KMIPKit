@@ -132,7 +132,6 @@ fn catalog_value(tag: u32, kind: &str) -> Value {
         "Enumeration" => Value::enumeration(u32::MAX),
         "Integer" => Value::integer(7),
         "Interval" => Value::interval(7),
-        "LongInteger" => Value::long_integer(7),
         "Structure" if tag == 0x0042_0008 => {
             let mut structure = Structure::new();
             for (child_tag, value) in [
@@ -214,7 +213,7 @@ fn values_match(actual: ValueView<'_>, expected: ValueView<'_>) -> bool {
 fn compiled_c_consumer_accepts_all_sixty_two_catalogued_attribute_types() {
     assert_eq!(
         typed_attributes_catalog_generated::ATTRIBUTE_DEFINITIONS.len(),
-        99
+        62
     );
     for (tag, kind) in typed_attributes_catalog_generated::ATTRIBUTE_DEFINITIONS {
         let source_item = Item::new(
@@ -272,7 +271,7 @@ fn c_named_standard_attribute_tag_constructs_a_typed_item() {
 #[test]
 fn c_named_standard_attribute_catalog_covers_all_sixty_two_tags() {
     let definitions = typed_attributes_catalog_generated::ATTRIBUTE_DEFINITIONS;
-    assert_eq!(definitions.len(), 99);
+    assert_eq!(definitions.len(), 62);
     assert_eq!(
         compiled_c_standard_attribute_tag_count(),
         u32::try_from(definitions.len()).expect("catalog size fits the C ABI index")
@@ -407,7 +406,7 @@ fn typed_attribute_from_item_preflights_null_output_without_consuming_input() {
 fn typed_attribute_value_construction_roundtrips_all_sixty_two_definitions() {
     assert_eq!(
         typed_attributes_catalog_generated::ATTRIBUTE_DEFINITIONS.len(),
-        99
+        62
     );
     for (tag, kind) in typed_attributes_catalog_generated::ATTRIBUTE_DEFINITIONS {
         let source = make_handle(Kind::Value, HandleValue::Value(catalog_value(*tag, kind)));

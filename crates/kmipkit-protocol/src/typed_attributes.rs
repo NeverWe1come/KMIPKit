@@ -123,7 +123,9 @@ define_attribute_value_encoding!(
 );
 define_attribute_value_encoding!(IntegerEncoding, i32, i32, integer, Integer, copy);
 define_attribute_value_encoding!(IntervalEncoding, u32, u32, interval, Interval, copy);
+// This encoding is accepted by the generator for KMIP 3.0 counters.
 define_attribute_value_encoding!(
+    #[allow(dead_code)]
     LongIntegerEncoding,
     i64,
     i64,
