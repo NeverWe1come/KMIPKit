@@ -60,7 +60,9 @@ class RouteMatrixTests(unittest.TestCase):
                          'validator_recipe_pending')
 
     def test_request_message_tag_uses_a_complete_typed_request_fixture(self):
-        from artifact_support import ROOT
+        """OASIS KMIP 2.0 §§8.4, 11.54; KMIP 2.1 §§8.4, 11.56 (0092-FR-003)."""
+        from artifact_support import INSTALL, ROOT
+        from route_ttlv import TreeAbi, encode
 
         catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
         target = next(item for item in catalog['normative_targets']
@@ -74,6 +76,8 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual((request[0], request[1]), (tags['Request Message'], 1))
         self.assertEqual([item[0] for item in request[2]],
                          [tags['Request Header'], tags['Batch Item']])
+        result = TreeAbi(INSTALL / 'lib/libkmipkit_ffi.so').roundtrip(encode(request))
+        self.assertIn('kmipkit_request_message_from_ttlv', result['invoked_symbols'])
 
     def test_get_usage_allocation_has_an_executable_controlled_peer_recipe(self):
         import route_peer

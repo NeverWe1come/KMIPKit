@@ -198,6 +198,26 @@ def _required_structure_items(target: dict, catalog: dict, tags: dict[str, int],
 def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
                           protocol_version: str) -> list[tuple] | None:
     """Build item trees only where the pinned catalog identifies tag and type."""
+    if target.get('kind') == 'tag' and target.get('name') == 'Request Message':
+        operation = catalog_enum_value(catalog, 'Operation', 'Get', protocol_version)
+        if operation is None:
+            return None
+        header = (tags['Request Header'], 1, [
+            (tags['Protocol Version'], 1, [
+                (tags['Protocol Version Major'], 2, (2).to_bytes(4, 'big')),
+                (tags['Protocol Version Minor'], 2,
+                 int(protocol_version.split('.')[1]).to_bytes(4, 'big')),
+            ]),
+            (tags['Batch Count'], 2, (1).to_bytes(4, 'big')),
+        ])
+        payload = (tags['Request Payload'], 1, [
+            (tags['Unique Identifier'], 7, b'kmipkit-request-message-fixture'),
+        ])
+        batch_item = (tags['Batch Item'], 1, [
+            (tags['Operation'], 5, operation.to_bytes(4, 'big')),
+            payload,
+        ])
+        return [(tags['Request Message'], 1, [header, batch_item])]
     if target.get('target_id') == 'KMIPKIT-ELEM-MESSAGE-FIELD-8-3-EPHEMERAL':
         operation = catalog_enum_value(catalog, 'Operation', 'Get', protocol_version)
         if operation is None:

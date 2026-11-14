@@ -203,8 +203,6 @@ class TreeAbi(InstalledAbi):
     def roundtrip_request_message(self, tree, limits):
         if tree[0] != 0x420078 or tree[1] != 1:
             return
-        if not self._contains_ttlv(tree, 0x420094, 7, b'kmipkit-ephemeral-fixture'):
-            return
         structure = self.construct_structure(tree[2], limits)
         message, validation_error, returned_structure = (C.c_void_p() for _ in range(3))
         try:
@@ -222,12 +220,6 @@ class TreeAbi(InstalledAbi):
             self.release('ttlv_structure', returned_structure)
             self.release('message_validation_error', validation_error)
             self.release('request_message', message)
-
-    @staticmethod
-    def _contains_ttlv(tree, tag, kind, value):
-        return (tree[0] == tag and tree[1] == kind and tree[2] == value) or (
-            tree[1] == 1 and any(TreeAbi._contains_ttlv(child, tag, kind, value)
-                                 for child in tree[2]))
 
     def roundtrip(self, wire):
         self.called.clear()
