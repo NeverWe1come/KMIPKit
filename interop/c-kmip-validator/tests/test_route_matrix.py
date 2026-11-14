@@ -3560,6 +3560,59 @@ class RouteMatrixTests(unittest.TestCase):
                 self.assertIn('kmipkit_client_batch_add_error_continuation_value', symbols)
 
 
+    def test_continue_after_failure_reads_failed_item_safe_accessors(self):
+        """OASIS KMIP 2.0/2.1 §§8.2–8.6 and 9.5–9.7 define continued failed-item responses."""
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case = next(case for case in catalog['test_cases']
+                    if case['case_id'] == 'test-batch-continue-after-failure')
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c',
+            {**catalog, 'test_cases': [case]}, manifest)
+
+        self.assertEqual(len(checks), 24)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        accessor_symbols = {
+            'kmipkit_client_batch_add_error_continuation_value',
+            'kmipkit_client_batch_item_response_get',
+            'kmipkit_client_batch_item_response_metadata_v1',
+            'kmipkit_client_batch_item_response_pending_correlation_value',
+            'kmipkit_client_batch_item_response_header_ttlv',
+            'kmipkit_client_batch_item_response_raw_ttlv',
+        }
+        for check in checks:
+            self.assertTrue(accessor_symbols <= set(check['public_api_trace_symbols']))
+            self.assertTrue(accessor_symbols <= set(check['public_api_success_symbols']))
+            self.assertEqual(check['peer_response_operation_values'], [10, 12])
+            self.assertEqual(check['peer_response_result_statuses'], [1, 0])
+
+        expected_routes = {
+            ('kmipkit_client_batch_add_error_continuation_value', 'construct',
+             'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION', None),
+            ('kmipkit_client_batch_add_error_continuation_value', 'construct',
+             'KMIPKIT-ELEM-ENUM-VALUE-BATCH-ERROR-CONTINUATION-OPTION-CONTINUE-00000001', None),
+            ('kmipkit_client_batch_item_response_get', 'decode', 'KMIPKIT-ELEM-OP-C2S-GET', 0),
+            ('kmipkit_client_batch_item_response_metadata_v1', 'decode',
+             'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM', None),
+            ('kmipkit_client_batch_item_response_pending_correlation_value', 'decode',
+             'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM', None),
+            ('kmipkit_client_batch_item_response_header_ttlv', 'decode',
+             'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM', None),
+            ('kmipkit_client_batch_item_response_raw_ttlv', 'decode',
+             'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM', None),
+        }
+        exercised_routes = {
+            (event['public_api_symbol'], event['action'], event['target_id'],
+             event.get('workflow_item_index'))
+            for event in events if event['case_id'] == 'test-batch-continue-after-failure' and
+            event['public_api_symbol'] in accessor_symbols
+        }
+        self.assertEqual(exercised_routes, expected_routes)
+
+
     def test_batch_order_placeholder_variants_execute_two_item_create_activate(self):
         """OASIS KMIP 2.0/2.1 §§8.2–8.6 and 9.5–9.8 define ordered placeholder batches."""
         from artifact_support import ROOT
