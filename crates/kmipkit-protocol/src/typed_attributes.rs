@@ -37,7 +37,7 @@ mod sealed {
     pub trait Sealed {}
 }
 
-trait AttributeValueEncoding {
+pub(crate) trait AttributeValueEncoding {
     type Owned;
     type View<'a>;
 
@@ -57,7 +57,7 @@ macro_rules! project_attribute_view {
 macro_rules! define_attribute_value_encoding {
     ($(#[$attribute:meta])* $name:ident, $owned:ty, $view:ty, $constructor:ident, $variant:ident, $projection:ident) => {
         $(#[$attribute])*
-        struct $name;
+        pub(crate) struct $name;
 
         impl AttributeValueEncoding for $name {
             type Owned = $owned;

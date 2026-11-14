@@ -99,6 +99,10 @@ mod key_transfer_operations_execution_tests;
 mod kmip30_operation_surface_tests;
 
 #[cfg(test)]
+#[path = "../tests/unit/wave3_batch_surface_unit_tests.rs"]
+mod wave3_batch_surface_unit_tests;
+
+#[cfg(test)]
 #[path = "../tests/unit/execute_id_placeholder_tests.rs"]
 mod id_placeholder_tests;
 
