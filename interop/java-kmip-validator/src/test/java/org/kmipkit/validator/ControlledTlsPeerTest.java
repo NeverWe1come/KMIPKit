@@ -114,6 +114,16 @@ class ControlledTlsPeerTest {
                     "test-norm-structure-member-structure-member-7-7-constraint",
                     "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-7-CONSTRAINT", 0x420169, 0x420168, true));
 
+    private record StructureMemberByteStringFixture(String caseId, String targetId, boolean required) { }
+
+    private static final List<StructureMemberByteStringFixture> STRUCTURE_MEMBER_BYTE_STRING_FIXTURES = List.of(
+            new StructureMemberByteStringFixture(
+                    "test-norm-structure-member-structure-member-7-1-asynchronous-correlation-value",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-1-ASYNCHRONOUS-CORRELATION-VALUE", false),
+            new StructureMemberByteStringFixture(
+                    "test-norm-structure-member-structure-member-7-2-asynchronous-correlation-value",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-2-ASYNCHRONOUS-CORRELATION-VALUE", true));
+
     private record NormativeTarget(String caseId, String targetId) { }
 
     private static final String LOG_MESSAGE = "KMIPKit interoperability diagnostic";
@@ -895,6 +905,7 @@ class ControlledTlsPeerTest {
         int newAttributePayloadRouteEventCount = KMIP_2_0_AND_2_1.size() * 3 * 20;
         int objectGroupLocalRouteEventCount = 3;
         int structureMemberStructureRouteEventCount = STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size() * 4;
+        int structureMemberByteStringRouteEventCount = STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.size() * 4 + 1;
         int credentialGenericRouteEventCount = CREDENTIAL_TYPE_MODEL_CASE_IDS.size()
                 * KMIP_2_0_AND_2_1.size() * 4;
         int credentialEnvelopeEventCount = CREDENTIAL_TYPE_MODEL_CASE_IDS.size()
@@ -925,7 +936,7 @@ class ControlledTlsPeerTest {
                         + normativeMessageFieldGenericRouteEventCount + normativeMessageFieldParserRouteEventCount
                         + normativeBatchItemAccessorRouteEventCount + newAttributePayloadRouteEventCount
                         + credentialEnvelopeEventCount + objectGroupLocalRouteEventCount
-                        + structureMemberStructureRouteEventCount
+                        + structureMemberStructureRouteEventCount + structureMemberByteStringRouteEventCount
                         + batchErrorContinuationEventCount + genericTagEventCount + typedTagIdentityEventCount
                         + referencedEnumEventCount + referencedEnumAggregateEventCount,
                 report.path("events").size());
@@ -953,7 +964,8 @@ class ControlledTlsPeerTest {
                         + dataTypeCaseCount
                         + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + genericTagCaseIds.size()
                         + typedTagIdentityCaseIds().size() + referencedEnumCaseCount
-                        + 10 + STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size(),
+                        + 10 + STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size()
+                        + STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.size(),
                 report.path("case_ids").size());
         List<String> expectedCredentialCaseIds = CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().toList();
         int credentialCaseStart = report.path("case_ids").size() - expectedCredentialCaseIds.size();
@@ -3254,6 +3266,7 @@ class ControlledTlsPeerTest {
         caseIds.add("test-norm-message-field-message-field-8-3-ephemeral");
         caseIds.add("test-norm-structure-member-structure-member-7-23-object-group");
         STRUCTURE_MEMBER_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
+        STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         caseIds.add("test-norm-payload-client-add-attribute-request-20-002");
         caseIds.add("test-norm-payload-client-add-attribute-request-21-002");
         caseIds.add("test-norm-payload-client-modify-attribute-request-20-003");
@@ -4215,6 +4228,23 @@ class ControlledTlsPeerTest {
                         "java.generic-ttlv.function.ttlv_item_view_from_item", "decode", protocolVersion);
                 assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(),
                         "java.generic-ttlv.ttlv_codec.decode", "decode", protocolVersion);
+            }
+            for (StructureMemberByteStringFixture fixture : STRUCTURE_MEMBER_BYTE_STRING_FIXTURES) {
+                for (String route : List.of(
+                        "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring",
+                        "java.generic-ttlv.ttlv_item.create",
+                        "java.generic-ttlv.function.ttlv_item_view_from_item",
+                        "java.generic-ttlv.ttlv_codec.decode")) {
+                    String action = route.endsWith("ttlv_item.create") || route.endsWith("ttlvvalue.bytestring")
+                            ? "construct" : "decode";
+                    assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(), route,
+                            action, protocolVersion);
+                }
+                if (fixture.caseId().endsWith("7-1-asynchronous-correlation-value")) {
+                    assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(),
+                            "java.typed-protocol.model.org.kmipkit.extensions.queryasyncrequestsrequest"
+                                    + ".withcorrelationvalues", "construct", protocolVersion);
+                }
             }
         }
 
