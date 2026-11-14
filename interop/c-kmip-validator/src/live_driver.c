@@ -1358,6 +1358,29 @@ static int32_t set_async_seed_authentication(kmip_live_client_t *client,
     return status;
 }
 
+static int32_t create_symmetric_key_batch(
+    kmip_live_client_t *client, bool has_async_indicator, uint32_t async_indicator,
+    kmipkit_ttlv_structure_t **out_attributes,
+    kmipkit_client_batch_item_t **out_create_item,
+    kmipkit_client_batch_t **out_batch) {
+    if (!client || !out_attributes || !out_create_item || !out_batch) {
+        return KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    *out_attributes = NULL;
+    *out_create_item = NULL;
+    *out_batch = NULL;
+    int32_t status = create_symmetric_key_attributes(client, out_attributes) ? 0 : -1;
+    if (status == 0) status = kmipkit_client_batch_item_create(
+        KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY, *out_attributes, NULL, out_create_item);
+    if (status == 0) status = kmipkit_client_batch_create(out_batch);
+    if (status == 0 && has_async_indicator) {
+        status = kmipkit_client_batch_set_asynchronous_indicator(*out_batch, async_indicator);
+    }
+    if (status == 0) status = set_async_seed_authentication(client, *out_batch);
+    if (status == 0) status = kmipkit_client_batch_add_item(*out_batch, out_create_item);
+    return status;
+}
+
 static kmip_execution_outcome_t execute_mandatory_async_create_route(
     kmip_live_client_t *client) {
     static const uint8_t expected_correlation[] = "fixture-cancel-correlation";
@@ -1368,13 +1391,9 @@ static kmip_execution_outcome_t execute_mandatory_async_create_route(
     kmipkit_client_batch_item_response_t *response_item = NULL;
     kmipkit_byte_span_v1_t correlation = {0};
     kmip_execution_outcome_t outcome = { .executed = true };
-    int32_t status = create_symmetric_key_attributes(client, &attributes) ? 0 : -1;
-    if (status == 0) status = kmipkit_client_batch_item_create(
-        KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY, attributes, NULL, &create_item);
-    if (status == 0) status = kmipkit_client_batch_create(&batch);
-    if (status == 0) status = kmipkit_client_batch_set_asynchronous_indicator(batch, 1);
-    if (status == 0) status = set_async_seed_authentication(client, batch);
-    if (status == 0) status = kmipkit_client_batch_add_item(batch, &create_item);
+    int32_t status = create_symmetric_key_batch(
+        client, true, KMIPKIT_ENUMERATION_ASYNCHRONOUS_INDICATOR_MANDATORY,
+        &attributes, &create_item, &batch);
     if (status == 0) status = kmipkit_client_execute(client->client, &batch, client->limits, &response);
     if (status == 0) status = read_pending_create_correlation(
         response, expected_correlation, sizeof(expected_correlation) - 1,
@@ -1424,25 +1443,9 @@ static kmip_execution_outcome_t execute_sync_default_create_route(
     uint8_t identifier_present = 0;
     uint8_t correlation_present = 1;
     uint32_t object_type = 0;
-    const char *failed_stage = "Create attributes";
-    int32_t status = create_symmetric_key_attributes(client, &attributes) ? 0 : -1;
-    if (status == 0) {
-        failed_stage = "Create batch item";
-        status = kmipkit_client_batch_item_create(
-            KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY, attributes, NULL, &create_item);
-    }
-    if (status == 0) {
-        failed_stage = "batch creation";
-        status = kmipkit_client_batch_create(&batch);
-    }
-    if (status == 0) {
-        failed_stage = "authentication";
-        status = set_async_seed_authentication(client, batch);
-    }
-    if (status == 0) {
-        failed_stage = "batch item addition";
-        status = kmipkit_client_batch_add_item(batch, &create_item);
-    }
+    const char *failed_stage = "Create request setup";
+    int32_t status = create_symmetric_key_batch(
+        client, false, 0, &attributes, &create_item, &batch);
     if (status == 0) {
         failed_stage = "request execution";
         status = kmipkit_client_execute(client->client, &batch, client->limits, &response);
