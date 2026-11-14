@@ -3217,7 +3217,8 @@ class RouteMatrixTests(unittest.TestCase):
                                                if case['case_id'] in case_ids]}
         events, _, checks = execute_network_cells(
             ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
-        self.assertEqual(len(checks), 48, 'all four two-item batch cases must pass on every version/transport cell')
+        self.assertEqual(len(checks), 60,
+                         'Get Attribute List must run through direct and request-based constructors')
         self.assertTrue(all(check['status'] == 'passed' for check in checks))
         expected_operations = {
             'KMIPKIT-ELEM-OP-C2S-GET', 'KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST',
@@ -3226,6 +3227,21 @@ class RouteMatrixTests(unittest.TestCase):
         for symbol in ('kmipkit_client_batch_item_get', 'kmipkit_client_batch_item_get_attribute_list'):
             self.assertTrue(any(event['public_api_symbol'] == symbol and event['action'] == 'send'
                                 for event in events), symbol)
+        standalone_get_attribute_list = [event for event in events
+                                         if event['case_id'] == 'test-batch-continue-after-failure'
+                                         and event['public_api_symbol'] ==
+                                         'kmipkit_client_batch_item_get_attribute_list_from_request'
+                                         and event['target_id'] == 'KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST'
+                                         and event.get('workflow_item_index') == 1]
+        self.assertEqual(len(standalone_get_attribute_list), 36)
+        self.assertEqual({event['action'] for event in standalone_get_attribute_list},
+                         {'construct', 'send', 'decode'})
+        self.assertEqual({(event['protocol_version'], event['encoding'], event['transport'])
+                          for event in standalone_get_attribute_list},
+                         {(version, encoding, transport)
+                          for version in ('2.0', '2.1')
+                          for encoding in ('TTLV', 'JSON', 'XML')
+                          for transport in ('raw_tls', 'https')})
         for check in checks:
             symbols = check['public_api_trace_symbols']
             self.assertTrue({'kmipkit_client_execute', 'kmipkit_client_batch_response_item_count',
