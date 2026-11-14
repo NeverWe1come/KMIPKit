@@ -4274,7 +4274,7 @@ class ControlledTlsPeerTest {
             }
             for (StructureMemberValueFixture fixture : STRUCTURE_MEMBER_VALUE_FIXTURES) {
                 String constructorRoute = fixture.itemType() == TtlvItemType.DateTimeExtended
-                        ? "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.datetimextended"
+                        ? "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.datetimeextended"
                         : "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration";
                 assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(),
                         constructorRoute, "construct", protocolVersion);
@@ -4555,7 +4555,7 @@ class ControlledTlsPeerTest {
                 assertStructureMemberValue(view, fixture);
             }
             String valueType = fixture.itemType() == TtlvItemType.DateTimeExtended
-                    ? "datetimextended" : "enumeration";
+                    ? "datetimeextended" : "enumeration";
             String constructor = fixture.itemType() == TtlvItemType.DateTimeExtended
                     ? "DateTimeExtended" : "Enumeration";
             appendRouteEvent(events, fixture.caseId(),
