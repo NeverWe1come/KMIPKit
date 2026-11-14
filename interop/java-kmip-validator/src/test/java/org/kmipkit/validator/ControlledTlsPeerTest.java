@@ -591,6 +591,7 @@ class ControlledTlsPeerTest {
                 for (OperationStructureFixture fixture : OPERATION_STRUCTURE_FIXTURES) {
                     appendOperationStructureRouteEvents(events, fixture);
                 }
+                appendObjectTypeMemberRouteEvents(events);
             }
             for (ScalarOperationStructureFixture fixture : SCALAR_OPERATION_STRUCTURE_FIXTURES) {
                 appendScalarOperationStructureRouteEvents(events, fixture, protocolVersion);
@@ -1058,7 +1059,7 @@ class ControlledTlsPeerTest {
         int extensionInformationRouteEventCount = KMIP_2_0_AND_2_1.size() * 7;
         int profileInformationRouteEventCount = KMIP_2_0_AND_2_1.size()
                 * (2 * GENERIC_STRUCTURE_ROUTE_IDS.size() + 4 * PROFILE_INFORMATION_MEMBER_FIXTURES.size());
-        int objectTypeMemberRouteEventCount = 0;
+        int objectTypeMemberRouteEventCount = 4;
         int pendingCorrelationAccessorEventCount = KMIP_2_0_AND_2_1.size();
         int structureMemberStructureRouteEventCount = STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size() * 4;
         int structureMemberByteStringRouteEventCount = STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.stream()
@@ -5025,6 +5026,95 @@ class ControlledTlsPeerTest {
             assertOperationStructureMember(structureView, fixture, memberValue);
         }
         appendGenericStructureRouteEvents(events, fixture.caseId(), fixture.targetId(), treeHash);
+    }
+
+    // OASIS KMIP 2.1 §7.24 Table 376: Object Type is optional and may be repeated.
+    private static void appendObjectTypeMemberRouteEvents(ArrayNode events) throws Exception {
+        int objectTypesTag = 0x420125;
+        int objectTypeTag = 0x420057;
+        long firstObjectType = KmipValues.ObjectType.SYMMETRIC_KEY;
+        long secondObjectType = KmipValues.ObjectType.PUBLIC_KEY;
+        byte[] memberWire = item(objectTypeTag, TtlvItemType.Enumeration.code(),
+                intBytes(Math.toIntExact(firstObjectType)));
+        String treeHash = normalizedTreeSha256(memberWire);
+        CodecLimits limits = CodecLimits.defaults();
+
+        try (TtlvValue value = TtlvValue.Enumeration(firstObjectType);
+                RawTag rawTag = RawTag.fromRaw(objectTypeTag);
+                Tag tag = rawTag.checked();
+                TtlvItem created = TtlvItem.create(tag, value, limits);
+                TtlvItemView view = created.view();
+                Tag viewedTag = view.tag();
+                var viewedValue = view.value()) {
+            assertEquals(objectTypeTag, viewedTag.raw());
+            assertEquals(TtlvItemType.Enumeration, view.itemType());
+            assertEquals(firstObjectType, viewedValue.enumeration());
+        }
+        try (TtlvItem decoded = TtlvCodec.decode(memberWire);
+                TtlvItemView view = decoded.view();
+                Tag viewedTag = view.tag();
+                var viewedValue = view.value()) {
+            assertEquals(objectTypeTag, viewedTag.raw());
+            assertEquals(TtlvItemType.Enumeration, view.itemType());
+            assertEquals(firstObjectType, viewedValue.enumeration());
+        }
+
+        byte[] absentWire = structure(objectTypesTag);
+        try (TtlvItem absent = TtlvCodec.decode(absentWire);
+                TtlvItemView absentView = absent.view();
+                Tag absentTag = absentView.tag();
+                var absentValue = absentView.value();
+                var absentFields = absentValue.structure()) {
+            assertEquals(objectTypesTag, absentTag.raw());
+            assertEquals(0, absentFields.itemCount(),
+                    "The optional Object Type member may be absent from Object Types.");
+        }
+
+        byte[] repeatedWire = structure(objectTypesTag,
+                item(objectTypeTag, TtlvItemType.Enumeration.code(),
+                        intBytes(Math.toIntExact(firstObjectType))),
+                item(objectTypeTag, TtlvItemType.Enumeration.code(),
+                        intBytes(Math.toIntExact(secondObjectType))));
+        try (TtlvItem repeated = TtlvCodec.decode(repeatedWire);
+                TtlvItemView repeatedView = repeated.view();
+                Tag repeatedTag = repeatedView.tag();
+                var repeatedValue = repeatedView.value();
+                var repeatedFields = repeatedValue.structure()) {
+            assertEquals(objectTypesTag, repeatedTag.raw());
+            assertOperationStructureMemberValues(repeatedFields,
+                    firstObjectType, secondObjectType);
+        }
+
+        appendRouteEvent(events, OBJECT_TYPE_MEMBER_CASE_ID,
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.enumeration",
+                OBJECT_TYPE_MEMBER_TARGET_ID, "org.kmipkit.ttlv.TtlvValue.Enumeration",
+                null, null, "construct", "2.1", null, treeHash, null);
+        appendRouteEvent(events, OBJECT_TYPE_MEMBER_CASE_ID,
+                "java.generic-ttlv.ttlv_item.create", OBJECT_TYPE_MEMBER_TARGET_ID,
+                "org.kmipkit.ttlv.TtlvItem.create", null, null,
+                "construct", "2.1", null, treeHash, null);
+        appendRouteEvent(events, OBJECT_TYPE_MEMBER_CASE_ID,
+                "java.generic-ttlv.function.ttlv_item_view_from_item", OBJECT_TYPE_MEMBER_TARGET_ID,
+                "org.kmipkit.ttlv.TtlvItem.view", null, null,
+                "decode", "2.1", null, null, treeHash);
+        appendRouteEvent(events, OBJECT_TYPE_MEMBER_CASE_ID,
+                "java.generic-ttlv.ttlv_codec.decode", OBJECT_TYPE_MEMBER_TARGET_ID,
+                "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
+                "decode", "2.1", null, null, treeHash);
+    }
+
+    private static void assertOperationStructureMemberValues(TtlvStructureView fields,
+            long... expectedValues) throws Exception {
+        assertEquals(expectedValues.length, fields.itemCount());
+        for (int index = 0; index < expectedValues.length; index++) {
+            try (TtlvItemView field = fields.itemAt(index);
+                    Tag tag = field.tag();
+                    var value = field.value()) {
+                assertEquals(0x420057, tag.raw());
+                assertEquals(TtlvItemType.Enumeration, field.itemType());
+                assertEquals(expectedValues[index], value.enumeration());
+            }
+        }
     }
 
     // OASIS KMIP 2.0 §§7.1–7.2, 7.4, 7.6, 7.10, 7.12–7.13, and 7.15–7.16 plus KMIP 2.1
