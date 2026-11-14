@@ -28,6 +28,18 @@ ATTRIBUTE_ROUTE_TARGET_KINDS = frozenset({'attribute', 'tag', 'enumeration_value
 ATTRIBUTE_ROUTE_CASE_CATEGORIES = frozenset(
     {'attributes', 'managed_objects', 'enums_and_bitmasks', 'normative_inventory'}
 )
+REQUEST_HEADER_FIELD_FIXTURES = {
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-MAXIMUM-RESPONSE-SIZE': ('Maximum Response Size', 2, 1024),
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ASYNCHRONOUS-INDICATOR': ('Asynchronous Indicator', 5, None),
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ATTESTATION-CAPABLE-INDICATOR':
+        ('Attestation Capable Indicator', 6, 0),
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-ATTESTATION-TYPE': ('Attestation Type', 5, None),
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-CLIENT-CORRELATION-VALUE':
+        ('Client Correlation Value', 7, b'client-correlation'),
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-SERVER-CORRELATION-VALUE':
+        ('Server Correlation Value', 7, b'server-correlation'),
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP': ('Time Stamp', 9, 1_760_000_000),
+}
 OUTPUT_ROOT = ROOT / 'interop/c-kmip-validator/build'
 
 
@@ -251,20 +263,46 @@ def _with_request_header_field(fixture: tuple, tags: dict[str, int], field: tupl
     return fixture[0], fixture[1], message
 
 
+def _request_header_field_fixture(target: dict, catalog: dict, tags: dict[str, int],
+                                  protocol_version: str) -> tuple | None:
+    specification = REQUEST_HEADER_FIELD_FIXTURES.get(target.get('target_id'))
+    if specification is None:
+        return None
+    name, kind, value = specification
+    if kind == 5:
+        values = catalog_enum_values(catalog, name, protocol_version)
+        if not values:
+            return None
+        value = values[0]
+        data = value.to_bytes(4, 'big')
+    elif kind in (2, 6, 9):
+        width = 8 if kind == 9 else 4
+        data = int(value).to_bytes(width, 'big', signed=kind == 9)
+        if kind == 6:
+            data += bytes(4)
+    elif kind in (7, 8):
+        data = value
+    else:
+        raise ValueError('unsupported_request_header_fixture_type')
+    tag = tags.get(name)
+    if tag is None:
+        return None
+    return tag, kind, data
+
+
 def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
                           protocol_version: str) -> list[tuple] | None:
     """Build item trees only where the pinned catalog identifies tag and type."""
     if target.get('kind') in {'tag', 'message_field'} and target.get('name') == 'Request Message':
         fixture = _request_message_fixture(protocol_version, tags, catalog)
         return [fixture] if fixture is not None else None
-    if target.get('target_id') == 'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-MAXIMUM-RESPONSE-SIZE':
+    header_field = _request_header_field_fixture(target, catalog, tags, protocol_version)
+    if header_field is not None:
         fixture = _request_message_fixture(protocol_version, tags, catalog)
         if fixture is None:
             return None
-        with_maximum_response_size = _with_request_header_field(
-            fixture, tags, (tags['Maximum Response Size'], 2, (1024).to_bytes(4, 'big')),
-            after_tag='Protocol Version')
-        return [with_maximum_response_size]
+        return [_with_request_header_field(fixture, tags, header_field,
+                                           after_tag='Protocol Version')]
     if target.get('target_id') == 'KMIPKIT-ELEM-MESSAGE-FIELD-8-3-EPHEMERAL':
         fixtures = [_request_message_fixture(protocol_version, tags, catalog, ephemeral=value)
                     for value in (0, 1)]
