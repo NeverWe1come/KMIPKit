@@ -121,9 +121,9 @@ export audit remains an open manifest gate; see KMIPKIT-0050's report README.
 
 | Package | Scanner complete | Observed | Manifest declarations | Exact matches | Exact exclusions | Missing | Stale | Kind mismatches | Issues | `matchesManifest` |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| C | yes | 1,810 | 1,749 | 1,749 | 61 | 0 | 0 | 0 | 0 | yes |
-| Java | yes | 2,551 | 1,928 | 1,928 | 623 | 0 | 0 | 0 | 0 | yes |
-| Python | yes | 2,980 | 2,047 | 2,047 | 933 | 0 | 0 | 0 | 0 | yes |
+| C | yes | 2,045 | 1,985 | 1,985 | 60 | 0 | 0 | 0 | 0 | yes |
+| Java | yes | 2,966 | 2,284 | 2,284 | 682 | 0 | 0 | 0 | 0 | yes |
+| Python | yes | 3,481 | 2,473 | 2,473 | 1,008 | 0 | 0 | 0 | 0 | yes |
 
 The Java scanner records public inherited members from package-private helper
 bases under each concrete public facade, while members inherited from an

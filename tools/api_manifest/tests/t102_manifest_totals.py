@@ -13,7 +13,7 @@ def without_0047_versioned_values(rows: list[dict[str, Any]]) -> list[dict[str, 
 
 # KMIPKIT-0053 adds 144 explicitly-owned blocked candidates for follow-up.
 T102_BLOCKED_CANDIDATES = 0
-T102_PUBLIC_DECLARATIONS = 13_719
+T102_PUBLIC_DECLARATIONS = 14_051
 T102_KMIP30_DRAFT_ROUTE_DECLARATIONS = 36
 T102_APPROVED_EXCLUSIONS = 18_896
 T102_RUST_AUDIT_MANIFEST = 3_287
