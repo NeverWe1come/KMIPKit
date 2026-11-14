@@ -293,8 +293,7 @@
               "generic-send",
               "constructor",
               "named-value-symbol",
-              "non-applicable-target",
-              "protocol-version-limit"
+              "non-applicable-target"
             ]
           },
           "public_api_symbol": {
