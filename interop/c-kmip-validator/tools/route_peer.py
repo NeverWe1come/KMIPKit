@@ -378,6 +378,10 @@ RECIPES = {
     'test-batch-create-activate-destroy': ((1, 18, 12, 19, 20), 'create_activate_attribute_list_revoke_destroy'),
     'test-batch-register-encrypt-decrypt-destroy': (BATCH_CRYPTO_OPERATIONS, 'batch_register_crypto'),
     'test-batch-placeholder-chain-resolves': (PLACEHOLDER_CHAIN_OPERATIONS, 'batch_placeholder_chain'),
+    'test-batch-order-required-placeholder-resolution':
+        ((1, 18), 'batch_order_required_create_activate'),
+    'test-batch-order-omitted-defaults-true':
+        ((1, 18), 'batch_order_omitted_create_activate'),
     'test-batch-single-item-options-omitted': ((10,), 'batch_single_item_options_omitted'),
     'test-batch-count-matches-items': ((10, 12), 'batch_count_two_read_items'),
     'test-batch-count-mismatch-rejected': ((10, 12), 'batch_count_two_read_items'),
@@ -842,6 +846,9 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
             'test-norm-payload-client-get-usage-allocation-request-21-001',
             'test-norm-payload-client-archive-request-20-001',
             'test-norm-payload-client-archive-request-21-001') or attribute_fixture is not None
+        implicit_target = implicit_target or case_id in (
+            'test-batch-order-required-placeholder-resolution',
+            'test-batch-order-omitted-defaults-true')
         implicit_target = implicit_target or case_id == 'test-op-certify'
         minimum_unique_identifiers = 0 if case_id == 'test-batch-placeholder-chain-resolves' else (
             len(expected) - 1 - int(implicit_target))
@@ -866,6 +873,17 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
                 raise ValueError('fixture_placeholder_chain_shape_mismatch')
             if numbers(node, 0x42000E) != [1]:
                 raise ValueError('fixture_placeholder_chain_continue_option_missing')
+        if selected_recipe[1] in ('batch_order_required_create_activate',
+                                  'batch_order_omitted_create_activate'):
+            items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+            if ([numbers(item, 0x42005C) for item in items] != [[1], [18]] or
+                    [byte_string_values(item, 0x420093) for item in items] !=
+                    [[b'placeholder-create'], [b'placeholder-activate']] or
+                    numbers(node, 0x42000E) != [1]):
+                raise ValueError('fixture_ordered_placeholder_batch_shape_mismatch')
+            required_order = selected_recipe[1] == 'batch_order_required_create_activate'
+            if numbers(node, 0x420010) != ([1] if required_order else []):
+                raise ValueError('fixture_batch_order_option_presence_mismatch')
     if selected_recipe[1] == 'get_usage_allocation_uid_variants':
         items = [child for child in node[2]
                  if child[0] == BATCH_ITEM_TAG and child[1] == 1]
@@ -1122,7 +1140,9 @@ def assert_placeholder_usage(node, case_id):
     """Accept omitted or explicit ID Placeholder identifiers after Create."""
     if case_id not in ('test-batch-create-activate-destroy',
                        'test-batch-register-encrypt-decrypt-destroy',
-                       'test-batch-placeholder-chain-resolves'):
+                       'test-batch-placeholder-chain-resolves',
+                       'test-batch-order-required-placeholder-resolution',
+                       'test-batch-order-omitted-defaults-true'):
         return
     batch_items = [child for child in node[2]
                    if child[0] == BATCH_ITEM_TAG and child[1] == 1]
@@ -2714,6 +2734,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                         if cancel_result is None:
                             raise ValueError('fixture_cancel_result_unavailable')
                         placeholder_chain_recipe = recipe[1] == 'batch_placeholder_chain'
+                        batch_order_placeholder_recipe = recipe[1] in (
+                            'batch_order_required_create_activate',
+                            'batch_order_omitted_create_activate')
+                        placeholder_cleanup_recipe = placeholder_chain_recipe or batch_order_placeholder_recipe
                         attribute_mutation_recipe = recipe[1] in (
                             'add_attribute', 'modify_attribute', 'set_attribute', 'delete_attribute',
                             'adjust_attribute')
@@ -2759,7 +2783,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         3 if recipe[1] == 'async_poll_final_failure' else
                                         5 if recipe[1] == 'async_poll_repeated_pending_to_success' else
                                         4 if recipe[1] == 'async_process_then_poll_state' else
-                                        2 if placeholder_chain_recipe or recipe[1] in (
+                                        2 if placeholder_cleanup_recipe or recipe[1] in (
                                             'login_logout', 'cancel_async',
                                             'async_poll_cancel_no_recursion',
                                             'create_key_pair') else 1)
@@ -2789,7 +2813,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         reject_this_exchange = reject_case and exchange_index == peer_rejection.get(
                                             'exchange_index')
                                         cleanup_exchange = (
-                                            placeholder_chain_recipe and exchange_index == 1) or (
+                                            placeholder_cleanup_recipe and exchange_index == 1) or (
                                             recipe[1] == 'create_key_pair' and exchange_index == 1) or (
                                             recipe[1] == 'certify' and exchange_index == 2) or (
                                             attribute_mutation_recipe and
@@ -2943,7 +2967,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             response_item_ids = (b'interop-begin', b'interop-end',
                                                                  b'interop-reset')
                                         elif cleanup_exchange:
-                                            if placeholder_chain_recipe:
+                                            if placeholder_cleanup_recipe:
                                                 assert_placeholder_cleanup_request(request_tree, version)
                                             else:
                                                 assert_add_attribute_cleanup_request(request_tree, version)
@@ -2994,6 +3018,11 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 (b'placeholder-revoke-cleanup', b'placeholder-destroy-cleanup')
                                                 if cleanup_exchange else
                                                 (b'placeholder-create', b'placeholder-activate', b'placeholder-get'))
+                                        elif batch_order_placeholder_recipe:
+                                            response_item_ids = (
+                                                (b'placeholder-revoke-cleanup', b'placeholder-destroy-cleanup')
+                                                if cleanup_exchange else
+                                                (b'placeholder-create', b'placeholder-activate'))
                                         elif attribute_mutation_recipe:
                                             response_item_ids = (
                                                 (b'interop-create',)
@@ -3398,6 +3427,17 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 raise ValueError('fixture_stop_partial_response_mismatch')
                                         elif placeholder_chain_recipe:
                                             verify_placeholder_chain_response(response_tree, response_operations)
+                                        elif batch_order_placeholder_recipe:
+                                            if exchange_index == 0:
+                                                verify_placeholder_chain_response(response_tree, (1, 18))
+                                            else:
+                                                response_items = [item for item in response_tree[2]
+                                                                  if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+                                                if ([numbers(item, 0x42005C) for item in response_items] !=
+                                                        [[19], [20]] or
+                                                        [numbers(item, 0x42007F) for item in response_items] !=
+                                                        [[0], [0]] or peer_state.objects):
+                                                    raise ValueError('fixture_ordered_placeholder_cleanup_mismatch')
                                         elif recipe[1] == 'get_usage_allocation_uid_variants':
                                             verify_usage_allocation_identifier_variants(response_tree)
                                         elif reject_this_exchange:
@@ -3656,6 +3696,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                    'test-batch-count-mismatch-rejected',
                                                    'test-batch-unique-item-id-response-correlation',
                                                    'test-batch-order-false-correlates-response-items',
+                                                   'test-batch-order-required-placeholder-resolution',
+                                                   'test-batch-order-omitted-defaults-true',
                                                    'test-batch-continue-after-failure',
                                                    'test-batch-stop-on-first-failure',
                                                    'test-norm-payload-client-get-usage-allocation-request-20-001',
@@ -3669,6 +3711,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                    'test-batch-count-mismatch-rejected',
                                                    'test-batch-unique-item-id-response-correlation',
                                                    'test-batch-order-false-correlates-response-items',
+                                                   'test-batch-order-required-placeholder-resolution',
+                                                   'test-batch-order-omitted-defaults-true',
                                                    'test-batch-continue-after-failure',
                                                    'test-batch-stop-on-first-failure',
                                                    'test-norm-payload-client-get-usage-allocation-request-20-001',

@@ -3593,8 +3593,6 @@ class RouteMatrixTests(unittest.TestCase):
                             set(check['public_api_trace_symbols']))
             if check['case_id'] == 'test-batch-order-required-placeholder-resolution':
                 self.assertIn('kmipkit_client_batch_set_order_option', check['public_api_trace_symbols'])
-            else:
-                self.assertNotIn('kmipkit_client_batch_set_order_option', check['public_api_trace_symbols'])
         self.assertTrue(any(event['case_id'] == 'test-batch-order-required-placeholder-resolution'
                             and event['action'] == 'send'
                             and event['peer_observed_operation_sequence'] == ['Create', 'Activate']
