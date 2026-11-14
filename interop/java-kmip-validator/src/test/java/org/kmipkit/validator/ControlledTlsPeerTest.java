@@ -549,6 +549,9 @@ class ControlledTlsPeerTest {
             for (ScalarOperationStructureFixture fixture : SCALAR_OPERATION_STRUCTURE_FIXTURES) {
                 appendScalarOperationStructureRouteEvents(events, fixture, protocolVersion);
             }
+            for (ScalarOperationStructureFixture fixture : ADDITIONAL_SCALAR_OPERATION_STRUCTURE_FIXTURES) {
+                appendScalarOperationStructureRouteEvents(events, fixture, protocolVersion);
+            }
             LocalCatalogRouteChecks.executeTags(readRouteEvidenceCatalog(), protocolVersion, genericOnlyTagCaseIds(),
                     invocation -> appendLocalCatalogInvocation(events, protocolVersion, invocation));
             Set<String> typedTagIdentityCases = missingTypedTagIdentityCaseIds(events, protocolVersion);
@@ -992,8 +995,8 @@ class ControlledTlsPeerTest {
         int objectGroupLocalRouteEventCount = 3;
         int asynchronousRequestOperationStructureRouteEventCount = 6;
         int operationStructureRouteEventCount = OPERATION_STRUCTURE_FIXTURES.size() * 6;
-        int scalarOperationStructureRouteEventCount = SCALAR_OPERATION_STRUCTURE_FIXTURES.size()
-                * KMIP_2_0_AND_2_1.size() * 6;
+        int scalarOperationStructureRouteEventCount = (SCALAR_OPERATION_STRUCTURE_FIXTURES.size()
+                + ADDITIONAL_SCALAR_OPERATION_STRUCTURE_FIXTURES.size()) * KMIP_2_0_AND_2_1.size() * 6;
         int structureMemberStructureRouteEventCount = STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size() * 4;
         int structureMemberByteStringRouteEventCount = STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.stream()
                 .mapToInt(fixture -> 4 + (fixture.typedQueryFilter() ? 1 : 0)).sum();
@@ -1057,6 +1060,7 @@ class ControlledTlsPeerTest {
         long localEnumerationCaseCount = localEnumerationFixtures.stream()
                 .map(EnumerationFixture::caseId).distinct().count();
         assertEquals(16 + OPERATION_STRUCTURE_FIXTURES.size() + SCALAR_OPERATION_STRUCTURE_FIXTURES.size()
+                        + ADDITIONAL_SCALAR_OPERATION_STRUCTURE_FIXTURES.size()
                         + enumerationFixtures.size() + localEnumerationCaseCount + bitmaskCaseCount
                         + dataTypeCaseCount
                         + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + genericTagCaseIds.size()
@@ -3366,6 +3370,7 @@ class ControlledTlsPeerTest {
         caseIds.add("test-norm-operation-structure-operation-structure-7-2-asynchronous-request");
         OPERATION_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         SCALAR_OPERATION_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
+        ADDITIONAL_SCALAR_OPERATION_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         STRUCTURE_MEMBER_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         STRUCTURE_MEMBER_VALUE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
@@ -4888,8 +4893,8 @@ class ControlledTlsPeerTest {
         appendGenericStructureRouteEvents(events, fixture.caseId(), fixture.targetId(), treeHash);
     }
 
-    // OASIS KMIP 2.0/2.1 §§7.6/7.10, 7.10/7.14, 7.12/7.16, 7.15/7.19, and 7.16/7.20
-    // define these operation fields with Integer, Boolean, Text String, or Byte String values.
+    // OASIS KMIP 2.0/2.1 §§7.3–7.4, 7.6, 7.10, 7.12, 7.15–7.17, and 7.16/7.20 define these
+    // operation fields with Integer, Boolean, Text String, or Byte String values.
     private static void appendScalarOperationStructureRouteEvents(ArrayNode events,
             ScalarOperationStructureFixture fixture, String protocolVersion) throws Exception {
         CodecLimits limits = CodecLimits.defaults();
@@ -4897,6 +4902,13 @@ class ControlledTlsPeerTest {
         byte[] wire = item(fixture.tag(), fixture.valueType().code(), scalarBytes);
         String scalarHash = normalizedTreeSha256(wire);
 
+        if (fixture.optional()) {
+            try (TtlvStructure absentFields = TtlvStructure.create();
+                    var absentView = absentFields.view()) {
+                assertEquals(0, absentView.itemCount(),
+                        "An optional operation field must be representable as absent.");
+            }
+        }
         TtlvStructure fields = TtlvStructure.create();
         fields = appendTtlvItem(fields, fixture.tag(),
                 scalarOperationStructureValue(fixture.valueType(), limits), limits);
