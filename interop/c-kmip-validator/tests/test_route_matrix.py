@@ -636,7 +636,7 @@ class RouteMatrixTests(unittest.TestCase):
                             for check in checks), checks)
 
     def test_async_indicator_omitted_defaults_to_prohibited_and_completes(self):
-        """OASIS KMIP 2.0/2.1 §§8.2–8.3, 8.6, 9.1–9.2, 11.3; Create §6.1.8 Tables 171/186."""
+        """OASIS KMIP 2.0/2.1 §§8.2–8.3, 8.6, 9.1–9.2, 11.3; Create: 2.0 §6.1.8 Table 171; 2.1 §6.1.8 Table 186."""
         from artifact_support import ROOT
         import route_peer
 

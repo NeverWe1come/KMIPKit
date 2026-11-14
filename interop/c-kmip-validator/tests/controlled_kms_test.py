@@ -358,6 +358,8 @@ def main() -> int:
     expected_cases += ASYNC_CANCEL_RESULT_CASES
     expected_operations += (1,)
     expected_cases += ("test-async-indicator-mandatory-pending",)
+    expected_operations += (1,)
+    expected_cases += ("test-async-indicator-omitted-default",)
     if protocol_version == "2.1":
         expected_operations += (1, 26, 25)
         expected_cases += (ASYNC_CANCEL_POLL_RACE_CASE,)
@@ -657,6 +659,8 @@ def main() -> int:
                                     raise AssertionError("Poll request omitted its exact pending correlation value")
                                 stream.sendall(pending_poll_response(protocol_minor, cancel_correlation))
                             else:
+                                if operations == (1,) and tlv(0x420093, 8, b"interop-create") not in request:
+                                    response_item_ids = (None,)
                                 cancellation_result = 1
                                 if operations == (25,):
                                     if cancel_result_index >= len(cancel_result_values):
