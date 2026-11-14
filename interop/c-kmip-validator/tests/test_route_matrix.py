@@ -1870,6 +1870,29 @@ class RouteMatrixTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'fixture_query_function_mismatch'):
             assert_recipe(parse(request), 'test-op-query', '2.1')
 
+    def test_discover_versions_recipe_requires_the_c_offer(self):
+        """OASIS KMIP 2.1 §6.1.16, Table 211; KMIPKIT-0092-FR-005/009."""
+        from route_peer import assert_recipe, parse, tlv
+
+        def integer(tag, value):
+            return tlv(tag, 2, value.to_bytes(4, 'big'))
+
+        def enumeration(tag, value):
+            return tlv(tag, 5, value.to_bytes(4, 'big'))
+
+        wrong_offer = tlv(0x420069, 1, integer(0x42006A, 2) + integer(0x42006B, 0))
+        request = tlv(0x420078, 1,
+                      tlv(0x420077, 1,
+                          tlv(0x420069, 1,
+                              integer(0x42006A, 2) + integer(0x42006B, 1))
+                          + integer(0x42000D, 1))
+                      + tlv(0x42000F, 1,
+                            enumeration(0x42005C, 30)
+                            + tlv(0x420079, 1, wrong_offer)))
+
+        with self.assertRaisesRegex(ValueError, 'fixture_discover_versions_offer_mismatch'):
+            assert_recipe(parse(request), 'test-op-discover-versions', '2.1')
+
     def test_request_payload_target_requires_its_field_inside_the_exact_operation(self):
         from artifact_support import ROOT
         from route_peer import Codec, parse, request_payload_field_present, tlv
