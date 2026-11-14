@@ -438,6 +438,7 @@ class ControlledTlsPeerTest {
                     invocation -> appendLocalCatalogInvocation(events, protocolVersion, invocation));
             LocalCatalogRouteChecks.executeReferencedEnums(readRouteEvidenceCatalog(), protocolVersion,
                     invocation -> appendLocalCatalogInvocation(events, protocolVersion, invocation));
+            assertNewlyCataloguedLocalRoutesAreInvoked(events, protocolVersion);
 
             byte[] serverCertificatePem = fixture("server-cert.pem");
             byte[] serverPrivateKeyPem = fixture("server-key.pem");
@@ -3835,6 +3836,62 @@ class ControlledTlsPeerTest {
         appendMessageFieldStructureRoutes(events, "test-norm-tag-tag-420051",
                 "KMIPKIT-ELEM-TAG-420051", 0x420051,
                 messageExtensionWire(), messageExtensionStructure(), protocolVersion, false, true);
+    }
+
+    private static void assertNewlyCataloguedLocalRoutesAreInvoked(ArrayNode events,
+            String protocolVersion) {
+        String ephemeralCase = "test-norm-message-field-message-field-8-3-ephemeral";
+        String ephemeralTarget = "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-EPHEMERAL";
+        assertRouteEventRecorded(events, ephemeralCase, ephemeralTarget,
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.boolean", "construct", protocolVersion);
+        assertRouteEventRecorded(events, ephemeralCase, ephemeralTarget,
+                "java.generic-ttlv.ttlv_item.create", "construct", protocolVersion);
+        assertRouteEventRecorded(events, ephemeralCase, ephemeralTarget,
+                "java.generic-ttlv.function.ttlv_item_view_from_item", "decode", protocolVersion);
+        assertRouteEventRecorded(events, ephemeralCase, ephemeralTarget,
+                "java.generic-ttlv.ttlv_codec.decode", "decode", protocolVersion);
+        assertRouteEventRecorded(events, ephemeralCase, ephemeralTarget,
+                "java.typed-protocol.model.org.kmipkit.message.requestmessage.fromttlv",
+                "construct", protocolVersion);
+
+        if ("2.0".equals(protocolVersion)) {
+            assertRouteEventRecorded(events, "test-norm-payload-client-add-attribute-request-20-002",
+                    "KMIPKIT-PAYLOAD-CLIENT-ADD-ATTRIBUTE-REQUEST-20-002",
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure", "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-norm-payload-client-modify-attribute-request-20-003",
+                    "KMIPKIT-PAYLOAD-CLIENT-MODIFY-ATTRIBUTE-REQUEST-20-003",
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure", "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-norm-payload-client-set-attribute-request-20-002",
+                    "KMIPKIT-PAYLOAD-CLIENT-SET-ATTRIBUTE-REQUEST-20-002",
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure", "construct", protocolVersion);
+        } else {
+            assertRouteEventRecorded(events, "test-norm-payload-client-add-attribute-request-21-002",
+                    "KMIPKIT-PAYLOAD-CLIENT-ADD-ATTRIBUTE-REQUEST-21-002",
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure", "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-norm-payload-client-modify-attribute-request-21-003",
+                    "KMIPKIT-PAYLOAD-CLIENT-MODIFY-ATTRIBUTE-REQUEST-21-003",
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure", "construct", protocolVersion);
+            assertRouteEventRecorded(events, "test-norm-payload-client-set-attribute-request-21-002",
+                    "KMIPKIT-PAYLOAD-CLIENT-SET-ATTRIBUTE-REQUEST-21-002",
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure", "construct", protocolVersion);
+        }
+    }
+
+    private static void assertRouteEventRecorded(ArrayNode events, String caseId, String targetId,
+            String routeId, String action, String protocolVersion) {
+        boolean recorded = false;
+        for (JsonNode event : events) {
+            if (caseId.equals(event.path("case_id").asText())
+                    && targetId.equals(event.path("target_id").asText())
+                    && routeId.equals(event.path("route_id").asText())
+                    && action.equals(event.path("action").asText())
+                    && protocolVersion.equals(event.path("protocol_version").asText())) {
+                recorded = true;
+                break;
+            }
+        }
+        assertTrue(recorded, "Missing invoked Java route evidence for " + caseId + " / " + routeId
+                + " / KMIP " + protocolVersion);
     }
 
     private static void appendMessageFieldIntegerRoutes(ArrayNode events, String caseId, String targetId,
