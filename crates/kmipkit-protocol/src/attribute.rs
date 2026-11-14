@@ -97,7 +97,9 @@ pub(crate) fn client_attribute_mutation_source_section(
     policy
         .source_refs
         .iter()
-        .find(|reference| reference.source_id == "KMIPKIT-SRC-spec")
+        .find(|reference| {
+            reference.source_id == "KMIPKIT-SRC-spec" || reference.source_id == "kmip-3.0"
+        })
         .map(|reference| reference.section)
 }
 
@@ -126,7 +128,9 @@ pub(crate) fn client_vendor_attribute_mutation_source_section(
     policy
         .source_refs
         .iter()
-        .find(|reference| reference.source_id == "KMIPKIT-SRC-spec")
+        .find(|reference| {
+            reference.source_id == "KMIPKIT-SRC-spec" || reference.source_id == "kmip-3.0"
+        })
         .map(|reference| reference.section)
 }
 
