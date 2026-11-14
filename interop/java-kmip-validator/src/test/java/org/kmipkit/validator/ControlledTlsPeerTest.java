@@ -705,6 +705,7 @@ class ControlledTlsPeerTest {
             appendProfileInformationRouteEvents(events, protocolVersion);
             appendServerInformationRouteEvents(events, protocolVersion);
             appendUsageLimitsRouteEvents(events, protocolVersion);
+            appendRightUsageLimitsRouteEvents(events, protocolVersion);
             LocalCatalogRouteChecks.executeTags(readRouteEvidenceCatalog(), protocolVersion, genericOnlyTagCaseIds(),
                     invocation -> appendLocalCatalogInvocation(events, protocolVersion, invocation));
             Set<String> typedTagIdentityCases = missingTypedTagIdentityCaseIds(events, protocolVersion);
@@ -5847,6 +5848,68 @@ class ControlledTlsPeerTest {
         }
         appendGenericStructureRouteEvents(events, USAGE_LIMITS_CASE_ID,
                 USAGE_LIMITS_TARGET_ID, protocolVersion, treeHash);
+    }
+
+    // OASIS KMIP 2.0 §7.28 Table 348 and KMIP 2.1 §7.34 Table 386.
+    private static void appendRightUsageLimitsRouteEvents(ArrayNode events, String protocolVersion)
+            throws Exception {
+        CodecLimits limits = CodecLimits.defaults();
+        byte[] wire = usageLimitsWire();
+        String treeHash = normalizedTreeSha256(wire);
+        try (TtlvStructure absentRight = TtlvStructure.create();
+                TtlvStructureView absentFields = absentRight.view()) {
+            assertEquals(0, absentFields.itemCount(),
+                    "The Right Usage Limits member is optional in KMIP 2.0 and 2.1.");
+        }
+        try (TtlvStructure fields = usageLimitsFields(limits);
+                TtlvValue value = TtlvValue.structure(fields, limits);
+                RawTag rawTag = RawTag.fromRaw(0x420095);
+                Tag tag = rawTag.checked();
+                TtlvItem created = TtlvItem.create(tag, value, limits);
+                var view = created.view();
+                Tag viewedTag = view.tag();
+                var viewedValue = view.value();
+                var nestedFields = viewedValue.structure()) {
+            assertEquals(0x420095, viewedTag.raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertUsageLimitsFields(nestedFields);
+        }
+        try (TtlvStructure emptyRight = TtlvStructure.create();
+                TtlvStructure right = appendTtlvItem(emptyRight, 0x420095,
+                        TtlvValue.structure(usageLimitsFields(limits), limits), limits);
+                TtlvStructureView rightFields = right.view();
+                TtlvItemView member = rightFields.itemAt(0);
+                Tag memberTag = member.tag();
+                var memberValue = member.value();
+                var nestedFields = memberValue.structure()) {
+            assertEquals(1, rightFields.itemCount());
+            assertEquals(0x420095, memberTag.raw());
+            assertEquals(TtlvItemType.Structure, member.itemType());
+            assertUsageLimitsFields(nestedFields);
+        }
+        try (TtlvItem decoded = TtlvCodec.decode(wire);
+                var view = decoded.view();
+                Tag tag = view.tag();
+                var value = view.value();
+                var nestedFields = value.structure()) {
+            assertEquals(0x420095, tag.raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertUsageLimitsFields(nestedFields);
+        }
+        appendRouteEvent(events, RIGHT_USAGE_LIMITS_CASE_ID,
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
+                RIGHT_USAGE_LIMITS_TARGET_ID, "org.kmipkit.ttlv.TtlvValue.structure", null, null,
+                "construct", protocolVersion, null, treeHash, null);
+        appendRouteEvent(events, RIGHT_USAGE_LIMITS_CASE_ID, "java.generic-ttlv.ttlv_item.create",
+                RIGHT_USAGE_LIMITS_TARGET_ID, "org.kmipkit.ttlv.TtlvItem.create", null, null,
+                "construct", protocolVersion, null, treeHash, null);
+        appendRouteEvent(events, RIGHT_USAGE_LIMITS_CASE_ID,
+                "java.generic-ttlv.function.ttlv_item_view_from_item", RIGHT_USAGE_LIMITS_TARGET_ID,
+                "org.kmipkit.ttlv.TtlvItem.view", null, null, "decode", protocolVersion,
+                null, null, treeHash);
+        appendRouteEvent(events, RIGHT_USAGE_LIMITS_CASE_ID, "java.generic-ttlv.ttlv_codec.decode",
+                RIGHT_USAGE_LIMITS_TARGET_ID, "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
+                "decode", protocolVersion, null, null, treeHash);
     }
 
     private static TtlvStructure usageLimitsFields(CodecLimits limits) {
