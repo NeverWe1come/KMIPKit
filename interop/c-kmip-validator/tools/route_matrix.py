@@ -65,10 +65,12 @@ REQUEST_HEADER_MULTI_ITEM_OPTION_TARGETS = frozenset({
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION',
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION',
 })
-REQUEST_MESSAGE_CONTEXT_TARGETS = frozenset({
+REQUEST_MESSAGE_AUTHENTICATION_TARGETS = frozenset({
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-AUTHENTICATION',
     'KMIPKIT-ELEM-MESSAGE-FIELD-9-4-AUTHENTICATION',
     'KMIPKIT-ELEM-MESSAGE-FIELD-9-4-CREDENTIAL-MAY-BE-REPEATED',
+})
+REQUEST_MESSAGE_CONTEXT_TARGETS = REQUEST_MESSAGE_AUTHENTICATION_TARGETS | frozenset({
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-1-BATCH-ITEM',
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-1-REQUEST-HEADER',
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-COUNT',
@@ -404,11 +406,7 @@ def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
         fixture = _request_message_fixture(protocol_version, tags, catalog)
         if fixture is None:
             return None
-        if target.get('target_id') in {
-            'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-AUTHENTICATION',
-            'KMIPKIT-ELEM-MESSAGE-FIELD-9-4-AUTHENTICATION',
-            'KMIPKIT-ELEM-MESSAGE-FIELD-9-4-CREDENTIAL-MAY-BE-REPEATED',
-        }:
+        if target.get('target_id') in REQUEST_MESSAGE_AUTHENTICATION_TARGETS:
             fixture = _request_message_with_authentication(
                 fixture, catalog, tags, protocol_version)
             return [fixture] if fixture is not None else None
