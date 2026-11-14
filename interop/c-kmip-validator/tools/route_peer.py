@@ -234,6 +234,18 @@ def byte_string_values(node, tag):
     return [item[2] for item in descendants(node, tag) if item[1] == 8]
 
 
+def has_single_empty_response_payload(batch_item):
+    """Check the generic response shape for a Pending Create result."""
+    payloads = [child for child in batch_item[2] if child[0] == RESPONSE_PAYLOAD_TAG]
+    return len(payloads) == 1 and payloads[0][1] == 1 and not payloads[0][2]
+
+
+def response_has_single_empty_payload(response_tree):
+    """Check that one response batch item carries exactly one empty payload."""
+    items = [item for item in response_tree[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    return len(items) == 1 and has_single_empty_response_payload(items[0])
+
+
 def payload_field_present(target, batch_item, targets, codec, *, role, payload_tag):
     """Check a payload field under the exact operation and message direction."""
     if (target.get('kind') != 'operation_payload_field'
@@ -1777,10 +1789,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                     numbers(pending_items[0], 0x42007F) != [2] or
                                                     byte_string_values(pending_items[0], 0x420006) !=
                                                     [CANCEL_CORRELATION_VALUE] or
-                                                    len([child for child in pending_items[0][2]
-                                                         if child[0] == RESPONSE_PAYLOAD_TAG]) != 1 or
-                                                    [child for child in pending_items[0][2]
-                                                     if child[0] == RESPONSE_PAYLOAD_TAG][0][2]):
+                                                    not has_single_empty_response_payload(pending_items[0])):
                                                 raise ValueError('fixture_cancel_seed_response_mismatch')
                                         elif recipe[1] == 'cancel_poll_race' and exchange_index == 1:
                                             verify_pending_poll_response(response_tree, CANCEL_CORRELATION_VALUE)
@@ -1974,14 +1983,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                    byte_string_values(observation[0][1], 0x420006) ==
                                                    [CANCEL_CORRELATION_VALUE],
                                                'peer_async_empty_response_payload':
-                                                   len([child for item in observation[0][1][2]
-                                                        if item[0] == BATCH_ITEM_TAG
-                                                        for child in item[2]
-                                                        if child[0] == RESPONSE_PAYLOAD_TAG]) == 1 and
-                                                   not [child for item in observation[0][1][2]
-                                                        if item[0] == BATCH_ITEM_TAG
-                                                        for child in item[2]
-                                                        if child[0] == RESPONSE_PAYLOAD_TAG][0][2]}
+                                                   response_has_single_empty_payload(observation[0][1])}
                                               if recipe[1] == 'async_create_pending' else {}),
                                            **({'peer_async_interleaving_operations': [
                                                    numbers(request[0], 0x42005C)[0]
