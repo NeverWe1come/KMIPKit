@@ -631,6 +631,35 @@ def request_adjust_attribute_fields(batch_item):
             int.from_bytes(types[0][2], 'big'), adjustment_value)
 
 
+def discover_versions_offer(node):
+    """Return direct Protocol Version offers from one request payload."""
+    offers = []
+    for version in node[2]:
+        if version[0] != 0x420069:
+            continue
+        if version[1] != 1:
+            return None
+        major = [child[2] for child in version[2]
+                 if child[0] == 0x42006A and child[1] == 2]
+        minor = [child[2] for child in version[2]
+                 if child[0] == 0x42006B and child[1] == 2]
+        if len(major) != 1 or len(minor) != 1:
+            return None
+        offers.append((int.from_bytes(major[0], 'big', signed=True),
+                       int.from_bytes(minor[0], 'big', signed=True)))
+    return offers
+
+
+def assert_discover_versions_offer(node, version):
+    """Check the installed C constructor's fixed KMIP 2.1 offer."""
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    if (version != '2.1' or len(payloads) != 1 or
+            discover_versions_offer(payloads[0]) != [(2, 1)]):
+        raise ValueError('fixture_discover_versions_offer_mismatch')
+
+
 def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
                   constructor_variant=None):
     selected_recipe = recipe or RECIPES[case_id]
@@ -646,6 +675,8 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         raise ValueError('fixture_batch_count_mismatch')
     if selected_recipe[1] in ('cancel_async', 'cancel_poll_race'):
         assert_cancel_request(node)
+    if selected_recipe[1] == 'discover_versions':
+        assert_discover_versions_offer(node, version)
     if (case_id in {
             'test-norm-payload-client-add-attribute-request-20-002',
             'test-norm-payload-client-add-attribute-request-21-002'} and
