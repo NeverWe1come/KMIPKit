@@ -46,6 +46,148 @@ def test_fluent_lifecycle_builds_typed_batch_items() -> None:
                     item.close()
 
 
+def test_lifecycle_builders_validate_and_reject_invalid_arguments() -> None:
+    request = fluent.Request(None)
+    identifier = extensions.UniqueIdentifier.text_string("lifecycle-target")
+    with pytest.raises(errors.KmipKitError):
+        request.locate(None)
+
+    with ttlv.ttlv_structure_create() as structure:
+        with attribute_operations.AttributeSet.try_new(structure) as attributes:
+            locate = request.locate(attributes)
+            locate.storage_status_mask(1).object_group_member(1)
+            locate.with_options(client.RequestOptions()).asynchronous_indicator(0)
+            locate.validate()
+            item = locate.to_batch_item()
+            item.close()
+            with pytest.raises(errors.KmipKitError):
+                locate.with_options(object())  # type: ignore[arg-type]
+            with pytest.raises(errors.KmipKitError):
+                locate.asynchronous_indicator(-1)
+            with pytest.raises(errors.KmipKitError):
+                locate.asynchronous_indicator(1 << 32)
+            with ttlv.codec_limits_defaults() as limits:
+                with pytest.raises(errors.KmipKitError):
+                    locate.execute(limits)
+
+            with extensions.RevocationReason.create(1, "scheduled rotation") as reason:
+                revoke = request.revoke(identifier, reason)
+                revoke.with_options(client.RequestOptions()).asynchronous_indicator(0)
+                revoke.validate()
+                item = revoke.to_batch_item()
+                item.close()
+                with pytest.raises(errors.KmipKitError):
+                    request.revoke(identifier, None)  # type: ignore[arg-type]
+                with pytest.raises(errors.KmipKitError):
+                    revoke.with_options(object())  # type: ignore[arg-type]
+                with pytest.raises(errors.KmipKitError):
+                    revoke.asynchronous_indicator(-1)
+                with pytest.raises(errors.KmipKitError):
+                    revoke.asynchronous_indicator(1 << 32)
+                with ttlv.codec_limits_defaults() as limits:
+                    with pytest.raises(errors.KmipKitError):
+                        revoke.execute(limits)
+
+    operation = fluent.Operation(None, "unassigned", identifier)
+    with pytest.raises(errors.KmipKitError):
+        operation.build()
+    operation = fluent.Operation(None, "activate", identifier)
+    operation.with_options(client.RequestOptions()).asynchronous_indicator(0)
+    operation.validate()
+    item = operation.to_batch_item()
+    item.close()
+
+
+def test_direct_lifecycle_helpers_forward_optional_arguments(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class Builder:
+        def __init__(self) -> None:
+            self.calls: list[tuple[str, object]] = []
+
+        def with_options(self, value: object) -> Builder:
+            self.calls.append(("options", value))
+            return self
+
+        def maximum_items(self, value: int) -> Builder:
+            self.calls.append(("maximum_items", value))
+            return self
+
+        def offset_items(self, value: int) -> Builder:
+            self.calls.append(("offset_items", value))
+            return self
+
+        def storage_status_mask(self, value: int) -> Builder:
+            self.calls.append(("storage_status_mask", value))
+            return self
+
+        def object_group_member(self, value: int) -> Builder:
+            self.calls.append(("object_group_member", value))
+            return self
+
+        def compromise_occurrence_date(self, value: int) -> Builder:
+            self.calls.append(("compromise_occurrence_date", value))
+            return self
+
+        def execute(self, limits: object) -> object:
+            self.calls.append(("execute", limits))
+            return self
+
+    class Request:
+        def __init__(self) -> None:
+            self.builders: list[Builder] = []
+
+        def _builder(self, *_args: object) -> Builder:
+            builder = Builder()
+            self.builders.append(builder)
+            return builder
+
+        activate = _builder
+        archive = _builder
+        locate = _builder
+        recover = _builder
+        revoke = _builder
+
+    request = Request()
+    monkeypatch.setattr(client.Client, "request", lambda _self: request)
+    fake_client = object.__new__(client.Client)
+    identifier = extensions.UniqueIdentifier.text_string("lifecycle-target")
+    options = client.RequestOptions()
+    with ttlv.codec_limits_defaults() as limits:
+        assert (
+            client.Client.activate_by_id(fake_client, identifier, limits, options=options)
+            is request.builders[-1]
+        )
+        assert (
+            client.Client.archive_by_id(fake_client, identifier, limits, options=options)
+            is request.builders[-1]
+        )
+        assert (
+            client.Client.recover_by_id(fake_client, identifier, limits, options=options)
+            is request.builders[-1]
+        )
+        with ttlv.ttlv_structure_create() as structure:
+            with attribute_operations.AttributeSet.try_new(structure) as attributes:
+                assert client.Client.locate(
+                    fake_client, attributes, limits, maximum_items=4, offset_items=1,
+                    storage_status_mask=1, object_group_member=1, options=options,
+                ) is request.builders[-1]
+        with extensions.RevocationReason.create(1, "scheduled rotation") as reason:
+            assert client.Client.revoke_by_id(
+                fake_client, identifier, reason, limits,
+                compromise_occurrence_date=1_800_000_000, options=options,
+            ) is request.builders[-1]
+    assert len(request.builders) == 5
+    assert all(builder.calls[-1][0] == "execute" for builder in request.builders)
+    assert all(
+        any(name == "options" for name, _ in builder.calls)
+        for builder in request.builders
+    )
+    assert any(name == "storage_status_mask" for name, _ in request.builders[3].calls)
+    assert any(name == "object_group_member" for name, _ in request.builders[3].calls)
+    assert any(name == "compromise_occurrence_date" for name, _ in request.builders[4].calls)
+
+
 def test_fluent_and_direct_lifecycle_helpers_roundtrip_over_mtls() -> None:
     operations = (0x12, 0x15, 0x08, 0x16, 0x13) * 2
     port, observations, peer_failures, peer = _start_lifecycle_peer(operations)
@@ -78,8 +220,7 @@ def test_fluent_and_direct_lifecycle_helpers_roundtrip_over_mtls() -> None:
                             kmip_client.activate_by_id(identifier, limits),
                             kmip_client.archive_by_id(identifier, limits),
                             kmip_client.locate(
-                                attributes, limits, maximum_items=4, offset_items=1,
-                                options=client.RequestOptions(),
+                                attributes, limits, maximum_items=4, offset_items=1
                             ),
                             kmip_client.recover_by_id(identifier, limits),
                         ]
@@ -92,8 +233,6 @@ def test_fluent_and_direct_lifecycle_helpers_roundtrip_over_mtls() -> None:
                                 identifier,
                                 reason,
                                 limits,
-                                compromise_occurrence_date=1_800_000_000,
-                                options=client.RequestOptions(),
                             )
                         )
         peer.join(timeout=12)

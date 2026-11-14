@@ -18,6 +18,7 @@ import org.kmipkit.client.KmipClient;
 import org.kmipkit.fluent.LocateBuilder;
 import org.kmipkit.fluent.RevokeBuilder;
 import org.kmipkit.extensions.AttributeSet;
+import org.kmipkit.extensions.ClientBatchItem;
 import org.kmipkit.extensions.ClientBatchItemResult;
 import org.kmipkit.extensions.ClientBatchResponse;
 import org.kmipkit.extensions.ClientConfiguration;
@@ -81,6 +82,7 @@ final class FluentLifecycleNativeIntegrationTest {
             CodecLimits limits = CodecLimits.defaults();
             UniqueIdentifier identifier = UniqueIdentifier.textString("lifecycle-target");
             assertThrows(InvalidInputException.class, () -> client.request().revoke(null, reason));
+            assertThrows(InvalidInputException.class, () -> client.request().locate(null));
             Class<?>[] byId = {UniqueIdentifier.class, CodecLimits.class};
             int index = 0;
             for (String method : List.of("activateById", "archiveById")) {
@@ -96,14 +98,43 @@ final class FluentLifecycleNativeIntegrationTest {
                     identifier, reason, 1_800_000_000L, limits), operations[index]);
             index++;
 
-            assertResult(client.request().activate(identifier).execute(limits), operations[index++]);
+            var activate = client.request().activate(identifier);
+            activate.validate();
+            assertResult(activate.execute(limits), operations[index++]);
             assertResult(client.request().archive(identifier).execute(limits), operations[index++]);
             LocateBuilder locate = client.request().locate(attributes)
                     .maximumItems(4).offsetItems(1).withOptions(RequestOptions.defaults());
+            LocateBuilder coverageLocate = client.request().locate(attributes)
+                    .storageStatusMask(1).objectGroupMember(1)
+                    .withOptions(RequestOptions.defaults()).asynchronousIndicator(0);
+            assertThrows(InvalidInputException.class, () -> locate.withOptions(null));
+            assertThrows(InvalidInputException.class,
+                    () -> coverageLocate.withOptions(null));
+            assertThrows(InvalidInputException.class,
+                    () -> coverageLocate.asynchronousIndicator(-1));
+            assertThrows(InvalidInputException.class,
+                    () -> coverageLocate.asynchronousIndicator(0x1_0000_0000L));
+            assertThrows(InvalidInputException.class, () -> locate.execute(null));
+            assertThrows(InvalidInputException.class, () -> coverageLocate.execute(null));
+            try (ClientBatchItem ignored = coverageLocate.toBatchItem()) { }
+            coverageLocate.validate();
             assertResult(locate.execute(limits), operations[index++]);
             assertResult(client.request().recover(identifier).execute(limits), operations[index++]);
             try (RevocationReason builderReason = RevocationReason.create(1, "builder audit secret")) {
                 RevokeBuilder revoke = client.request().revoke(identifier, builderReason);
+                RevokeBuilder coverageRevoke = client.request().revoke(identifier, builderReason);
+                coverageRevoke.withOptions(RequestOptions.defaults()).asynchronousIndicator(0);
+                assertThrows(InvalidInputException.class, () -> revoke.withOptions(null));
+                assertThrows(InvalidInputException.class,
+                        () -> coverageRevoke.withOptions(null));
+                assertThrows(InvalidInputException.class,
+                        () -> coverageRevoke.asynchronousIndicator(-1));
+                assertThrows(InvalidInputException.class,
+                        () -> coverageRevoke.asynchronousIndicator(0x1_0000_0000L));
+                assertThrows(InvalidInputException.class, () -> revoke.execute(null));
+                assertThrows(InvalidInputException.class, () -> coverageRevoke.execute(null));
+                try (ClientBatchItem ignored = coverageRevoke.toBatchItem()) { }
+                coverageRevoke.validate();
                 assertTrue(!revoke.toString().contains("builder audit secret"));
                 builderReason.close();
                 assertResult(revoke.execute(limits), operations[index]);
