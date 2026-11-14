@@ -758,6 +758,38 @@ class RouteMatrixTests(unittest.TestCase):
                 self.assertEqual(sum(event['public_api_symbol'] == symbol and
                                      event['action'] == action for event in events), count)
 
+    def test_async_query_filters_intersect_only_outstanding_requests(self):
+        """OASIS KMIP 2.1 §6.1.41 Tables 285–287 and §7.2 Table 353."""
+        from artifact_support import ROOT
+        import route_peer
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-async-query-outstanding-filter')
+
+        self.assertEqual(
+            route_peer.recipe_for_case(case, None),
+            ((1, 57), 'async_query_outstanding_filter'))
+
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case]}
+        events, _, checks = route_peer.execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 6)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(all(check.get('peer_async_query_operation_filter') is True and
+                            check.get('peer_async_query_correlation_filter') is True and
+                            check.get('peer_async_query_filters_intersect') is True and
+                            check.get('peer_async_query_excludes_completed') is True and
+                            check.get('peer_async_query_excludes_other_operation') is True and
+                            check.get('peer_async_query_result_is_exact') is True and
+                            check.get('peer_final_state_matches_setup') is True
+                            for check in checks), checks)
+        self.assertEqual(sum(event['public_api_symbol'] ==
+                             'kmipkit_client_execute_query_async_requests' and
+                             event['action'] == 'send' for event in events), 6)
+
     def test_async_poll_and_cancel_responses_do_not_recurse(self):
         """OASIS KMIP 2.1 §§6.1.5 and 6.1.38 keep Poll and Cancel terminal."""
         from artifact_support import ROOT
