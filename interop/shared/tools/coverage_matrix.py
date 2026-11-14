@@ -292,7 +292,14 @@ def _network_response_actions(case: dict, target_id: str, normative_targets: dic
     """Do not attach response decoding to a request-field-only obligation."""
     expected_status = str(case.get("requires", {}).get("expected_status", "")).casefold()
     request_target = normative_targets.get(target_id, {}).get("role") == "request"
-    if expected_status.replace("_", "") == "notsent" or request_target:
+    scenario = case.get("requires", {}).get("protocol_scenario", {})
+    scenario_expected = scenario.get("expected", {}) if isinstance(scenario, dict) else {}
+    rejected_before_transport = (
+        case.get("category") == "batch_workflows"
+        and isinstance(scenario_expected, dict)
+        and scenario_expected.get("construction") == "rejected_or_server_reports_protocol_error"
+    )
+    if expected_status.replace("_", "") == "notsent" or request_target or rejected_before_transport:
         return ("send",)
     return ("send", "decode")
 
@@ -357,6 +364,15 @@ def iter_cells(catalog: dict, manifest: dict, *, languages: tuple[str, ...] = LA
                             }
                             if route["mode"] == "local":
                                 for action in route["actions"]:
+                                    scenario = case.get("requires", {}).get("protocol_scenario", {})
+                                    scenario_expected = (scenario.get("expected", {})
+                                                         if isinstance(scenario, dict) else {})
+                                    if (action == "decode"
+                                            and case.get("category") == "batch_workflows"
+                                            and isinstance(scenario_expected, dict)
+                                            and scenario_expected.get("construction") ==
+                                            "rejected_or_server_reports_protocol_error"):
+                                        continue
                                     yield {**base, "action": action, "execution_route_id": None,
                                            "execution_api_symbol": None}
                                 continue

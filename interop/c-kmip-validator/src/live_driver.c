@@ -6091,6 +6091,8 @@ create_key_pair_cleanup:
         strcmp(test_case->case_id, "test-batch-create-activate-destroy") == 0;
     bool batch_placeholder_chain_workflow =
         strcmp(test_case->case_id, "test-batch-placeholder-chain-resolves") == 0;
+    bool batch_forward_placeholder_rejection_workflow =
+        strcmp(test_case->case_id, "test-batch-placeholder-forward-reference-rejected") == 0;
     bool batch_order_placeholder_workflow =
         strcmp(test_case->case_id, "test-batch-order-required-placeholder-resolution") == 0 ||
         strcmp(test_case->case_id, "test-batch-order-omitted-defaults-true") == 0;
@@ -6225,7 +6227,8 @@ create_key_pair_cleanup:
         batch_create_activate_get_attribute_list_revoke_destroy_workflow;
     bool object_lifecycle_workflow = create_workflow ||
         batch_create_activate_get_attribute_list_revoke_destroy_workflow ||
-        batch_placeholder_chain_workflow || batch_order_placeholder_workflow || revoke_workflow ||
+        batch_placeholder_chain_workflow || batch_forward_placeholder_rejection_workflow ||
+        batch_order_placeholder_workflow || revoke_workflow ||
         revoke_cleanup_workflow || get_workflow ||
         get_attributes_workflow || get_attribute_list_workflow || get_constraints_workflow ||
         get_usage_allocation_workflow || add_attribute_workflow;
@@ -6242,7 +6245,8 @@ create_key_pair_cleanup:
     if (strcmp(test_case->operation, "Archive") == 0 && !archive_workflow) {
         return outcome_not_run("Archive variations are not yet mapped to isolated C fixtures");
     }
-    if (strcmp(test_case->operation, "Activate") == 0 && !activate_workflow) {
+    if (strcmp(test_case->operation, "Activate") == 0 && !activate_workflow &&
+        !batch_forward_placeholder_rejection_workflow) {
         return outcome_not_run("Activate variations are not yet mapped to isolated C fixtures");
     }
     if (strcmp(test_case->operation, "Revoke") == 0 && !revoke_workflow) {
@@ -6592,7 +6596,9 @@ create_key_pair_cleanup:
         }
         if (status == 0 && !create_workflow) {
             request_construction_step = "operation using ID Placeholder";
-            if (batch_order_placeholder_workflow ||
+            if (batch_forward_placeholder_rejection_workflow) {
+                status = kmipkit_client_batch_item_activate(&placeholder, &activate_item);
+            } else if (batch_order_placeholder_workflow ||
                 batch_create_activate_get_attribute_list_revoke_destroy_workflow) {
                 status = kmipkit_client_batch_item_activate(&placeholder, &activate_item);
                 if (status == 0 && !request_item_is_valid(
@@ -6695,7 +6701,8 @@ create_key_pair_cleanup:
                         &get_attribute_list_identifier : NULL;
                 status = build_get_attribute_list_item(identifier, &item);
             }
-            if (status == 0 && !batch_order_placeholder_workflow && !request_item_is_valid(
+            if (status == 0 && !batch_order_placeholder_workflow &&
+                !batch_forward_placeholder_rejection_workflow && !request_item_is_valid(
                     item, request_validation_diagnostic, sizeof(request_validation_diagnostic))) {
                 status = KMIPKIT_ERROR_INVALID_INPUT;
             }
@@ -6709,6 +6716,7 @@ create_key_pair_cleanup:
             }
         }
         if (status == 0 && !batch_placeholder_chain_workflow &&
+            !batch_forward_placeholder_rejection_workflow &&
             !batch_order_placeholder_workflow) {
             request_construction_step = "Destroy using ID Placeholder";
             status = kmipkit_client_batch_item_destroy(&placeholder, &cleanup_item);
@@ -6729,14 +6737,18 @@ create_key_pair_cleanup:
                         "placeholder-create" : "interop-create");
                 if (status == 0 && (active_destroy_negative_workflow ||
                                     batch_placeholder_chain_workflow ||
+                                    batch_forward_placeholder_rejection_workflow ||
                                     batch_order_placeholder_workflow ||
                                     batch_create_activate_get_attribute_list_revoke_destroy_workflow)) {
                     status = set_batch_item_id(&activate_item,
                         active_destroy_negative_workflow ? "interop-activate-before-destroy" :
-                        (batch_placeholder_chain_workflow || batch_order_placeholder_workflow) ?
+                        (batch_placeholder_chain_workflow ||
+                         batch_forward_placeholder_rejection_workflow ||
+                         batch_order_placeholder_workflow) ?
                             "placeholder-activate" : "interop-activate");
                 }
-                if (status == 0 && !batch_order_placeholder_workflow) status = set_batch_item_id(
+                if (status == 0 && !batch_order_placeholder_workflow &&
+                    !batch_forward_placeholder_rejection_workflow) status = set_batch_item_id(
                     &item, batch_placeholder_chain_workflow ? "placeholder-get" :
                            active_destroy_negative_workflow ? "interop-destroy-active-target" :
                            check_workflow ? "interop-check" :
@@ -6757,6 +6769,7 @@ create_key_pair_cleanup:
                 }
             }
             if (status == 0 && !batch_placeholder_chain_workflow &&
+                !batch_forward_placeholder_rejection_workflow &&
                 !batch_order_placeholder_workflow) status = set_batch_item_id(&cleanup_item,
                 (destroy_workflow || active_destroy_negative_workflow) ?
                     "interop-destroy-cleanup" : "interop-destroy");
@@ -6855,6 +6868,9 @@ create_key_pair_cleanup:
             batch, KMIPKIT_ENUMERATION_BATCH_ERROR_CONTINUATION_OPTION_CONTINUE);
         if (status == 0) status = kmipkit_client_batch_add_item(batch, &item);
         if (status == 0) status = kmipkit_client_batch_add_item(batch, &cleanup_item);
+    } else if (status == 0 && batch_forward_placeholder_rejection_workflow) {
+        status = kmipkit_client_batch_add_item(batch, &activate_item);
+        if (status == 0) status = kmipkit_client_batch_add_item(batch, &setup_item);
     } else if (status == 0 && object_lifecycle_workflow) {
         status = kmipkit_client_batch_set_order_option(batch, 1);
         if (status == 0) status = kmipkit_client_batch_add_error_continuation_value(
@@ -6910,6 +6926,14 @@ create_key_pair_cleanup:
             outcome.library_validated = true;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
                      "KMIPKit rejected the operation before sending under KMIP 2.0");
+            goto cleanup;
+        }
+        if (batch_forward_placeholder_rejection_workflow &&
+            category == 1 && cause == 1 && delivery == 1) {
+            outcome.success = true;
+            outcome.library_validated = true;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit rejected the forward ID Placeholder reference before sending");
             goto cleanup;
         }
         snprintf(outcome.result_reason, sizeof(outcome.result_reason),

@@ -379,6 +379,7 @@ RECIPES = {
     'test-batch-create-activate-destroy': ((1, 18, 12, 19, 20), 'create_activate_attribute_list_revoke_destroy'),
     'test-batch-register-encrypt-decrypt-destroy': (BATCH_CRYPTO_OPERATIONS, 'batch_register_crypto'),
     'test-batch-placeholder-chain-resolves': (PLACEHOLDER_CHAIN_OPERATIONS, 'batch_placeholder_chain'),
+    'test-batch-placeholder-forward-reference-rejected': ((18, 1), 'batch_placeholder_forward_reference'),
     'test-batch-order-required-placeholder-resolution':
         ((1, 18), 'batch_order_required_create_activate'),
     'test-batch-order-omitted-defaults-true':
@@ -442,6 +443,7 @@ RECIPES = {
 
 CONTROLLED_PEER_LOCAL_MODEL_CASES = frozenset({
     'test-batch-single-item-options-omitted',
+    'test-batch-placeholder-forward-reference-rejected',
     'test-norm-payload-client-archive-request-20-001',
     'test-norm-payload-client-archive-response-20-001',
     'test-norm-payload-client-archive-request-21-001',
@@ -2798,6 +2800,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                             usage_allocation_ready=recipe[1] == 'get_usage_allocation_uid_variants')
                         boundary = case_id in (
                             'test-v20-reject-get-constraints', 'test-v20-reject-ping')
+                        local_batch_rejection = recipe[1] == 'batch_placeholder_forward_reference'
+                        preflight_rejection = boundary or local_batch_rejection
                         with socket.socket() as server:
                             server.bind(('127.0.0.1', 0))
                             server.listen(1)
@@ -3553,7 +3557,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     if stream is not None:
                                         stream.close()
                             thread = None
-                            if not boundary:
+                            if not preflight_rejection:
                                 thread = threading.Thread(target=serve, daemon=True)
                                 thread.start()
                             config = {'server_id': 'controlled-c-peer', 'server_vendor': '',
@@ -3613,20 +3617,39 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                             trace = [line.split('\t') for line in trace_path.read_text().splitlines()] if trace_path.exists() else []
                             called_symbols = {symbol for symbol, status in trace if status == '0'}
                             invoked_symbols = {symbol for symbol, _ in trace}
-                            if boundary:
+                            if preflight_rejection:
                                 if select.select([server], [], [], 0)[0]:
                                     errors.append('fixture_unexpected_transport_connection')
                                 if not result.get('cases') or result['cases'][0].get('server_compatibility') != 'unknown':
                                     errors.append('fixture_not_sent_outcome_missing')
-                                # The unsupported typed request has no payload fields.
-                                # Its recipe supplies the operation code; the configured
-                                # public client rejects it before transport, so no response exists.
-                                operation_code = recipe[0][0]
                                 version_node = (0x420069, 1, [(0x42006A, 2, bytes.fromhex('00000002')),
-                                    (0x42006B, 2, bytes(4))])
-                                attempted = (0x420078, 1, [(0x420077, 1, [version_node]),
-                                    (0x42000F, 1, [(0x42005C, 5, operation_code.to_bytes(4, 'big')),
-                                                   (0x420079, 1, [])])])
+                                    (0x42006B, 2, (1 if version == '2.1' else 0).to_bytes(4, 'big'))])
+                                if local_batch_rejection:
+                                    activate_item = (0x42000F, 1, [
+                                        (0x42005C, 5, (18).to_bytes(4, 'big')),
+                                        (0x420079, 1, [(UNIQUE_IDENTIFIER_TAG, 5, (1).to_bytes(4, 'big'))]),
+                                    ])
+                                    create_item = (0x42000F, 1, [
+                                        (0x42005C, 5, (1).to_bytes(4, 'big')),
+                                        (0x420079, 1, [
+                                            (0x420057, 5, (2).to_bytes(4, 'big')),
+                                            (0x420125, 1, [
+                                                (0x420028, 5, (3).to_bytes(4, 'big')),
+                                                (0x42002A, 2, (128).to_bytes(4, 'big', signed=True)),
+                                            ]),
+                                        ]),
+                                    ])
+                                    attempted = (0x420078, 1, [
+                                        (0x420077, 1, [version_node]), activate_item, create_item,
+                                    ])
+                                else:
+                                    # The unsupported typed request has no payload fields.
+                                    # Its recipe supplies the operation code; the configured
+                                    # public client rejects it before transport, so no response exists.
+                                    operation_code = recipe[0][0]
+                                    attempted = (0x420078, 1, [(0x420077, 1, [version_node]),
+                                        (0x42000F, 1, [(0x42005C, 5, operation_code.to_bytes(4, 'big')),
+                                                       (0x420079, 1, [])])])
                                 observation.append((attempted, None, {}))
                             code = errors[0] if errors else 'consumer_check_failed' if not case_passed else 'public_api_trace_missing' if not called_symbols else None
                             mutation_index = mutation_exchange_index if attribute_mutation_recipe else \
@@ -4088,12 +4111,20 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                     if child[0] == 0x420079 and child[1] == 1), None)
                                     digest_tree = payload or target_item
                                 event['response_tree_sha256' if cell['action'] == 'decode' else 'request_tree_sha256'] = tree_digest(digest_tree)
-                                if boundary and cell['action'] == 'send':
+                                if preflight_rejection and cell['action'] == 'send':
                                     event.update(request_delivery_state='not_sent', transport_invocation_count=0)
                                 elif cell['action'] == 'send':
                                     event.update(request_delivery_state='response_received', transport_invocation_count=1)
-                                if (cell['action'] == 'send' and len(recipe[0]) > 1 and
-                                        not attribute_mutation_recipe):
+                                if cell['action'] == 'send' and local_batch_rejection:
+                                    event.update(
+                                        batch_operation_sequence=['Activate', 'Create'],
+                                        batch_item_count=2,
+                                        local_rejection_code='batch_placeholder_forward_reference',
+                                        client_error_category='validation',
+                                        client_error_cause='invalid_input',
+                                    )
+                                elif (cell['action'] == 'send' and response_tree is not None and
+                                      len(recipe[0]) > 1 and not attribute_mutation_recipe):
                                     operations = [next(t['name'] for t in catalog['normative_targets'] if t['kind'] == 'enumeration_value' and t.get('wire_value') == f'{op:08X}' and any(p.endswith('ENUMERATION-OPERATION') for p in t.get('parent_element_ids', []))) for op in recipe[0]]
                                     response_item_count = len([item for item in response_tree[2]
                                                                if item[0] == BATCH_ITEM_TAG and item[1] == 1])
