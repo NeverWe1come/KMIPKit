@@ -1033,6 +1033,26 @@ introducing a public manual Batch Count setter.
 - Verification: the focused route passed all 24 exchanges (12 per constructor);
   `test_route_matrix.py` passed 152/152; CTest passed 7/7, including both
   controlled TLS peers; CMake build and Python syntax checks passed. The full
-  local matrix recorded 40,794/66,736 invoked cells, zero failures, and 25,942
+  local matrix recorded 40,804/66,736 invoked cells, zero failures, and 25,932
   pending cells. All 142 cells for this case are now invoked; the overall C
   route matrix remains incomplete and the PR remains WIP.
+
+### C single-item batch options omitted route
+
+The installed C consumer sends a one-item typed Get batch without optional
+batch options and checks the successful typed Get result, response header TTLV,
+response metadata, Unique Batch Item ID, and absent pending-correlation value.
+The controlled peer verifies the Get response and the expected item ID without
+retaining or logging raw message data. This exercises the response accessors
+through the installed ABI across the applicable KMIP 2.0/2.1 encoding and
+transport combinations.
+
+- Red commit `ea853302` failed because the case did not execute the required
+  response accessors.
+- Green commit `38b53721` reads and validates the single response item and its
+  typed result and metadata.
+- Verification: `RouteMatrixTests.test_single_item_batch_omits_optional_batch_options`
+  passed; the CMake build and CTest passed, with 7/7 CTest cases. The full
+  local matrix added 10 invoked cells with zero failures; this case now has no
+  pending cells. The overall C route matrix remains incomplete and the PR
+  remains WIP.
