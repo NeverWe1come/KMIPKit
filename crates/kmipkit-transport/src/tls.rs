@@ -290,6 +290,12 @@ fn build_webpki_verifier(
         })
 }
 
+fn tls13_builder(
+    provider: Arc<rustls::crypto::CryptoProvider>,
+) -> Result<ConfigBuilder<ClientConfig, WantsVerifier>, TransportConfigError> {
+    tls_builder(provider, TlsVersionPolicy::Tls13Only)
+}
+
 fn tls_builder(
     provider: Arc<rustls::crypto::CryptoProvider>,
     policy: TlsVersionPolicy,
