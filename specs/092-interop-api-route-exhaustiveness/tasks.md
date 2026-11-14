@@ -62,6 +62,10 @@
   installed typed ABI and controlled TLS peers for KMIP 2.0/2.1, TTLV/JSON/XML,
   and raw TLS/HTTPS; validate every returned part identifier and destroy all
   created parts.
+- [x] T022 Execute the catalogued C Derive Key operation through the installed
+  typed ABI and controlled TLS peers for KMIP 2.0/2.1, TTLV/JSON/XML, and raw
+  TLS/HTTPS; validate the derived identifier and clean up both source and
+  derived keys.
 
 T006 and T007 remain open until each separate language validator consumes the
 generated matrix, invokes every named public route, exchanges requests and
@@ -792,3 +796,26 @@ and KMIP 2.1 §6.1.10 Tables 193–194.
   and full CTest passed 7/7.
   This closes only the C Create Split Key slice; exact-head hosted CI, the full
   route matrix, and Rust/Java/Python parity remain open.
+
+## Development evidence: C Derive Key operation route
+
+For KMIPKIT-0092-FR-003, FR-005, and FR-009, `test-op-derive-key` now uses the
+installed typed C ABI to create and activate an AES-128 source key with the
+Derive Key usage bit, then sends a caller-selected HASH derivation using
+SHA-256 and AES-128 output attributes. The consumer reads the derived
+Unique Identifier through the typed accessor, inspects the successful generic
+response item through the operation-specific TTLV accessor, then revokes and
+destroys the source and destroys the derived key. The controlled peer checks
+each request, the response identifier, cleanup, and restored initial state.
+Normative references are OASIS KMIP 2.0 and 2.1 §6.1.14 Tables 205–207 and
+§7.12 Table 364.
+
+- Red commit `3fdc0acc1`: the focused test failed because the installed C
+  consumer did not send a Derive Key request.
+- Green commit `b5dbff1b9`: execute the four-exchange lifecycle through the
+  public C ABI, preserve response identifier lifetimes, and assert all setup,
+  request, response, cleanup, and final-state evidence.
+- Verification: the focused test passed all 12 KMIP version/encoding/transport
+  exchanges; the controlled TLS peer passed for KMIP 2.0 and 2.1; full CTest
+  passed 7/7 in 101.27 seconds. The broader C execution matrix and exact-head
+  hosted CI remain incomplete; T006, T007, and T009 remain open.
