@@ -3854,6 +3854,33 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_response_archive'
                             and event['action'] == 'decode' for event in events))
 
+    def test_certify_operation_runs_through_installed_c_abi_and_checks_identifier(self):
+        """Exercise OASIS KMIP 2.0/2.1 §6.1.6 Certify request and response payloads."""
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-op-certify'
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12,
+                         'Certify must run for both versions and all encoding/transport pairs')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(all(check['peer_setup_operations'] == [1] for check in checks))
+        self.assertTrue(all(check['peer_request_operations'] == [1, 6, 19, 20] for check in checks))
+        self.assertTrue(all(check['peer_cleanup_operations'] == [19, 20] for check in checks))
+        self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_certify'
+                            and event['action'] == 'send' for event in events))
+        self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_response_certify'
+                            and event['action'] == 'decode' for event in events))
+        self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_response_certify_ttlv'
+                            and event['action'] == 'decode' for event in events))
+
 
     def attribute_executor(self):
         self.assertIsNotNone(importlib.util.find_spec('route_attributes'), 'typed attribute route executor is missing')
