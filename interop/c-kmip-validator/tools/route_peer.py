@@ -304,6 +304,7 @@ RECIPES = {
     'test-async-indicator-prohibited-synchronous': ((1,), 'async_create_prohibited_sync'),
     'test-async-lifecycle-poll': ((1, 57, 26, 20), 'async_create_poll_lifecycle'),
     'test-async-no-recursive-async-poll-cancel': ((26, 25), 'async_poll_cancel_no_recursion'),
+    'test-async-poll-final-operation-failure': ((1, 26), 'async_poll_final_failure'),
     'test-op-cancel': ((25,), 'cancel_async'),
     'test-async-cancel-result-canceled': ((25,), 'cancel_async'),
     'test-async-cancel-result-unable-to-cancel': ((25,), 'cancel_async'),
@@ -1026,6 +1027,23 @@ def pending_poll_response(correlation: bytes, protocol_minor: int) -> bytes:
     return tlv(0x42007B, 1, header + item)
 
 
+def failed_poll_response(protocol_minor: int) -> bytes:
+    """Build a terminal Poll carrying the failed original operation result."""
+    version = tlv(0x420069, 1,
+                  tlv(0x42006A, 2, (2).to_bytes(4, 'big')) +
+                  tlv(0x42006B, 2, protocol_minor.to_bytes(4, 'big')))
+    timestamp = int(dt.datetime.now(dt.timezone.utc).timestamp()).to_bytes(
+        8, 'big', signed=True)
+    header = tlv(0x42007A, 1, version + tlv(0x420092, 9, timestamp) +
+                 tlv(0x42000D, 2, (1).to_bytes(4, 'big')))
+    item = tlv(0x42000F, 1,
+               tlv(0x42005C, 5, (26).to_bytes(4, 'big')) +
+               tlv(0x42007F, 5, (1).to_bytes(4, 'big')) +
+               tlv(0x42007E, 5, (256).to_bytes(4, 'big')) +
+               tlv(0x42007D, 7, b'controlled Create failure'))
+    return tlv(0x42007B, 1, header + item)
+
+
 def query_async_requests_response(correlation: bytes, protocol_minor: int) -> bytes:
     """Build one successful Query Async Requests response with its correlation filter result."""
     version = tlv(0x420069, 1,
@@ -1072,6 +1090,57 @@ def assert_poll_request(node, version):
             len(payloads[0][2]) != 1 or len(correlations) != 1 or
             correlations[0][2] != CANCEL_CORRELATION_VALUE):
         raise ValueError('fixture_poll_correlation_mismatch')
+
+
+def assert_async_failure_poll_request(node, version):
+    """Require Poll with the exact pending Create correlation under KMIP 2.0 or 2.1."""
+    items = [item for item in node[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    correlations = [child for child in payloads[0][2]
+                    if child[0] == 0x420006 and child[1] == 8] if len(payloads) == 1 else []
+    if (numbers(node, 0x42006A) != [2] or numbers(node, 0x42006B) != [int(version[-1])] or
+            numbers(node, 0x42000D) != [1] or len(items) != 1 or
+            numbers(items[0], 0x42005C) != [26] or len(payloads) != 1 or
+            len(payloads[0][2]) != 1 or len(correlations) != 1 or
+            correlations[0][2] != CANCEL_CORRELATION_VALUE):
+        raise ValueError('fixture_async_failure_poll_correlation_mismatch')
+
+
+def verify_failed_poll_response(response_tree):
+    """Require the terminal Poll to preserve the original failed Create result."""
+    items = [item for item in response_tree[2]
+             if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    if (len(items) != 1 or numbers(items[0], 0x42005C) != [26] or
+            numbers(items[0], 0x42007F) != [1] or
+            numbers(items[0], 0x42007E) != [256] or
+            text_values(items[0], 0x42007D) != ['controlled Create failure'] or
+            byte_string_values(items[0], 0x420006) or
+            any(child[0] == RESPONSE_PAYLOAD_TAG for child in items[0][2])):
+        raise ValueError('fixture_async_final_operation_failure_mismatch')
+
+
+def async_failure_poll_peer_check(observation):
+    """Report complete request correlation, terminal failure, and unchanged key state."""
+    return {
+        **async_interleaving_peer_evidence(observation),
+        'peer_async_create_indicator_mandatory':
+            numbers(next(descendants(observation[0][0], 0x420077), observation[0][0]),
+                    0x420007) == [1],
+        'peer_async_poll_correlations_match': all(
+            byte_string_values(request, 0x420006) == [CANCEL_CORRELATION_VALUE]
+            for request, _, _ in observation[1:]),
+        'peer_async_final_failure_shape':
+            numbers(observation[2][1], 0x42007E) == [256] and
+            text_values(observation[2][1], 0x42007D) == ['controlled Create failure'] and
+            not byte_string_values(observation[2][1], 0x420006) and
+            not any(child[0] == RESPONSE_PAYLOAD_TAG
+                    for item in observation[2][1][2] if item[0] == BATCH_ITEM_TAG
+                    for child in item[2]),
+        'peer_final_state_matches_setup':
+            observation[0][2]['peer_observed_state_before_sha256'] ==
+            observation[-1][2]['peer_observed_state_after_sha256'],
+    }
 
 
 def assert_cancel_request(node):
@@ -1376,6 +1445,8 @@ def target_operation_exchange_index(recipe):
         return 1
     if recipe is not None and recipe[1] == 'async_create_poll_lifecycle':
         return 0
+    if recipe is not None and recipe[1] == 'async_poll_final_failure':
+        return 2
     return 1 if recipe is not None and recipe[1] in ('login_logout', 'cancel_async') else 0
 
 
@@ -1393,6 +1464,8 @@ def observation_for_cell(observations, cell, recipe, fallback_index):
             cell.get('workflow_operation'), fallback_index)
     elif recipe[1] == 'async_poll_cancel_no_recursion':
         index = {'Poll': 0, 'Cancel': 1}.get(cell.get('workflow_operation'), fallback_index)
+    elif recipe[1] == 'async_poll_final_failure':
+        index = {'Create': 0, 'Poll': 2}.get(cell.get('workflow_operation'), fallback_index)
     if index < 0 or index >= len(observations):
         return None
     return observations[index]
@@ -1862,7 +1935,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                         peer_state = PeerState(
                             existing_object=(recipe[1] not in (
                                                 'cancel_async', 'cancel_poll_race',
-                                                'async_poll_cancel_no_recursion') and
+                                                'async_poll_cancel_no_recursion',
+                                                'async_poll_final_failure') and
                                             recipe[0][0] not in (1, 3)),
                             usage_allocation_ready=recipe[1] == 'get_usage_allocation_uid_variants')
                         boundary = case_id in (
@@ -1877,6 +1951,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                 try:
                                     exchange_count = 4 if seeded_attribute_recipe or recipe[1] == 'async_create_poll_lifecycle' else 3 if attribute_mutation_recipe else (
                                         3 if recipe[1] == 'cancel_poll_race' else
+                                        3 if recipe[1] == 'async_poll_final_failure' else
                                         2 if placeholder_chain_recipe or recipe[1] in (
                                             'login_logout', 'cancel_async',
                                             'async_poll_cancel_no_recursion') else 1)
@@ -1938,6 +2013,13 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             header = next(descendants(request_tree, 0x420077), request_tree)
                                             if numbers(header, 0x420007):
                                                 raise ValueError('fixture_nonrecursive_async_indicator_present')
+                                        elif recipe[1] == 'async_poll_final_failure':
+                                            if exchange_index == 0:
+                                                assert_async_create_seed_request(request_tree, version)
+                                                response_operations = (1,)
+                                            else:
+                                                assert_async_failure_poll_request(request_tree, version)
+                                                response_operations = (26,)
                                         elif recipe[1] == 'async_create_pending' and exchange_index == 0:
                                             assert_async_create_seed_request(request_tree, version)
                                             response_operations = (1,)
@@ -2036,16 +2118,26 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         elif recipe[1] == 'batch_stop_on_first_failure':
                                             response_operations = (10,)
                                             response_item_ids = (b'item-a',)
-                                        state_evidence = peer_state.execute(
-                                            request_tree,
-                                            continued_batch=recipe[1] == 'batch_continue_after_failure',
-                                            stop_after_failure=recipe[1] == 'batch_stop_on_first_failure',
-                                            rejected_operation=peer_rejection.get('operation')
-                                            if reject_this_exchange else None,
-                                            rejection_status=peer_rejection.get('result_status', 1)
-                                            if reject_this_exchange else 1,
-                                            rejection_reason=peer_rejection.get('result_reason', 5)
-                                            if reject_this_exchange else 5)
+                                        if recipe[1] == 'async_poll_final_failure':
+                                            state_digest = peer_state.digest()
+                                            state_evidence = {
+                                                'effects': [],
+                                                'statuses': [2 if exchange_index < 2 else 1],
+                                                'reasons': [0 if exchange_index < 2 else 256],
+                                                'peer_observed_state_before_sha256': state_digest,
+                                                'peer_observed_state_after_sha256': state_digest,
+                                            }
+                                        else:
+                                            state_evidence = peer_state.execute(
+                                                request_tree,
+                                                continued_batch=recipe[1] == 'batch_continue_after_failure',
+                                                stop_after_failure=recipe[1] == 'batch_stop_on_first_failure',
+                                                rejected_operation=peer_rejection.get('operation')
+                                                if reject_this_exchange else None,
+                                                rejection_status=peer_rejection.get('result_status', 1)
+                                                if reject_this_exchange else 1,
+                                                rejection_reason=peer_rejection.get('result_reason', 5)
+                                                if reject_this_exchange else 5)
                                         response_statuses = tuple(state_evidence['statuses'])
                                         response_reasons = tuple(reason or None for reason in state_evidence['reasons'])
                                         if response_operations != recipe[0] and not cleanup_exchange:
@@ -2056,6 +2148,15 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 terminal_poll_response_without_correlation(int(version[-1]))
                                                 if exchange_index == 0 else
                                                 terminal_cancel_response_with_correlation(int(version[-1])))
+                                        elif recipe[1] == 'async_poll_final_failure':
+                                            response_wire = (
+                                                pending_create_response(CANCEL_CORRELATION_VALUE,
+                                                                        int(version[-1]))
+                                                if exchange_index == 0 else
+                                                pending_poll_response(CANCEL_CORRELATION_VALUE,
+                                                                      int(version[-1]))
+                                                if exchange_index == 1 else
+                                                failed_poll_response(int(version[-1])))
                                         elif (recipe[1] == 'async_create_poll_lifecycle' and
                                                 exchange_index < 3):
                                             response_wire = (
@@ -2095,6 +2196,22 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 verify_terminal_poll_response_without_correlation(response_tree)
                                             else:
                                                 verify_terminal_cancel_response_with_correlation(response_tree)
+                                        elif recipe[1] == 'async_poll_final_failure':
+                                            if exchange_index == 0:
+                                                pending_items = [item for item in response_tree[2]
+                                                                 if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+                                                if (len(pending_items) != 1 or
+                                                        numbers(pending_items[0], 0x42005C) != [1] or
+                                                        numbers(pending_items[0], 0x42007F) != [2] or
+                                                        byte_string_values(pending_items[0], 0x420006) !=
+                                                        [CANCEL_CORRELATION_VALUE] or
+                                                        not has_single_empty_response_payload(pending_items[0])):
+                                                    raise ValueError('fixture_async_failure_seed_response_mismatch')
+                                            elif exchange_index == 1:
+                                                verify_pending_poll_response(
+                                                    response_tree, CANCEL_CORRELATION_VALUE)
+                                            else:
+                                                verify_failed_poll_response(response_tree)
                                         elif recipe[1] == 'async_create_poll_lifecycle' and exchange_index == 1:
                                             verify_query_async_requests_response(response_tree)
                                         elif recipe[1] == 'async_create_poll_lifecycle' and exchange_index == 2:
@@ -2162,7 +2279,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 raise ValueError('fixture_global_operation_response_mismatch')
                                         elif not logout_recipe and recipe[1] not in (
                                                 'async_create_poll_lifecycle',
-                                                'async_poll_cancel_no_recursion'):
+                                                'async_poll_cancel_no_recursion',
+                                                'async_poll_final_failure'):
                                             verify_lifecycle(recipe[0], response_tree)
                                         encoded_response = codec.encode(response_wire, encoding)
                                         if transport == 'https':
@@ -2349,6 +2467,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                            **(nonrecursive_poll_cancel_peer_check(observation)
                                               if recipe[1] == 'async_poll_cancel_no_recursion' and
                                               len(observation) == 2 else {}),
+                                           **(async_failure_poll_peer_check(observation)
+                                              if recipe[1] == 'async_poll_final_failure' and
+                                              len(observation) == 3 else {}),
                                            **({'peer_final_state_matches_setup':
                                                    observation[0][2]['peer_observed_state_before_sha256'] ==
                                                    observation[0][2]['peer_observed_state_after_sha256']}
@@ -2497,7 +2618,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     async_request_constructor = (
                                         recipe[1] in (
                                             'cancel_poll_race',
-                                            'async_poll_cancel_no_recursion') and
+                                            'async_poll_cancel_no_recursion',
+                                            'async_poll_final_failure') and
                                         cell['action'] == 'construct' and
                                         cell['public_api_symbol'] in {
                                             'kmipkit_poll_request_create',

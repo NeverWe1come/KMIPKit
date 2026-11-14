@@ -833,7 +833,7 @@ class RouteMatrixTests(unittest.TestCase):
                             check.get('peer_final_state_matches_setup') is True
                             for check in checks), checks)
         self.assertEqual(sum(event['public_api_symbol'] == 'kmipkit_client_execute_poll' and
-                             event['action'] == 'send' for event in events), 24)
+                             event['action'] == 'send' for event in events), 12)
 
     def test_stop_on_first_failure_case_has_a_controlled_peer_recipe(self):
         import route_peer
