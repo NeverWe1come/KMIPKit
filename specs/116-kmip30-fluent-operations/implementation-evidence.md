@@ -133,20 +133,27 @@ is addressed.
 
 The KMIP 3.0 typed protocol models gained tests for credential-alternative
 inference, result parsing and redaction, operation-specific accessors, and
-malformed KEM response shapes. These are test-only additions; the constructors
-and response behavior are unchanged.
+malformed KEM response shapes. The private parser/error tests are in
+`crates/kmipkit-protocol/tests/support/kmip30_operations_unit.rs` and included
+through a test-only path so the production source coverage preflight can
+distinguish test code from executable code.
 
 - `cargo test -p kmipkit-protocol --all-features` passed the complete protocol
   package suite, including 1,460 unit tests and all integration and doc tests.
 - `CARGO_TARGET_DIR=/home/ramp1953/.codex/tmp/kmipkit-0116/coverage-target
   TMPDIR=/home/ramp1953/.codex/tmp/kmipkit-0116 cargo llvm-cov --workspace
-  --all-features --locked --summary-only` passed with 91.13% line, 92.54%
-  branch, and 93.42% function coverage. The protocol package is at 90.11%
-  line coverage; `kmip30_operations.rs` is at 93.38% and `kem.rs` at 91.26%.
+  --all-features --locked --summary-only` passed with 91.12% line, 92.54%
+  branch, and 93.42% function coverage. `kmip30_operations.rs` is at 91.59%
+  line coverage and `kem.rs` at 91.26%.
 - `CARGO_TARGET_DIR=/home/ramp1953/.codex/tmp/kmipkit-0116/coverage-target
   TMPDIR=/home/ramp1953/.codex/tmp/kmipkit-0116 cargo llvm-cov
   -p kmipkit-protocol --all-features --locked --summary-only` independently
-  confirmed 90.11% protocol-package line coverage.
+  confirmed 90.08% protocol-package line coverage.
+- `python3 scripts/coverage_gate.py preflight --workspace . --github-output
+  /home/ramp1953/.codex/tmp/kmipkit-0116/coverage-github-output.txt` returned
+  `eligible=true` after relocating tests. This resolves the
+  exact failure from the first Windows coverage job, which rejected an inline
+  `#[cfg(test)]` module in the production source before collecting coverage.
 - The C sanitizer workflow commands were reproduced using the isolated
   worktree-volume target. `cargo +nightly rustc --locked -p kmipkit-ffi
   --lib -- -Zsanitizer=address`, followed by compiling and running
@@ -159,7 +166,9 @@ and response behavior are unchanged.
   added.
 - `cargo clippy -p kmipkit-protocol --all-targets --all-features -- -D
   warnings` passed after changing the local depth-limit assertion to
-  `assert_ne!`; its focused test passed as well.
+  `assert_ne!`; its focused test passed as well. The complete protocol suite
+  and Clippy were rerun after moving the private tests to the excluded test
+  path.
 
 ## Manifest scope ruling
 
