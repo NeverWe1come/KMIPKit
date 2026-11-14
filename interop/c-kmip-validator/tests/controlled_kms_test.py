@@ -175,6 +175,13 @@ def response(operations: tuple[int, ...], protocol_minor: int,
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 6:
             payload_value = tlv(0x420094, 7, b"fixture-certificate-1")
+        elif operation == 40:
+            payload_value = b"".join(
+                tlv(0x420094, 7, identifier)
+                for identifier in (b"fixture-split-part-one",
+                                   b"fixture-split-part-two",
+                                   b"fixture-split-part-three")
+            )
         elif operation == 31:
             payload_value = tlv(0x420094, 7, b"fixture-key-1") + tlv(
                 0x4200C2, 8, bytes.fromhex("69c4e0d86a7b0430d8cdb78070b4c55a"))
@@ -229,6 +236,7 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                                     54: b"interop-set-defaults",
                                     55: b"interop-set-constraints",
                                     1: b"interop-create",
+                                    40: b"interop-create-split-key",
                                     11: b"interop-attributes",
                                     12: b"interop-attributes",
                                     20: b"interop-destroy",
@@ -536,7 +544,8 @@ def main() -> int:
     expected_cases += ("test-op-adjust-attribute",)
     expected_operations += (2, 6, 20, 20, 20)
     expected_operations += (2, 20, 20)
-    expected_cases += ("test-op-certify", "test-op-create-key-pair")
+    expected_operations += (40, 20, 20, 20)
+    expected_cases += ("test-op-certify", "test-op-create-key-pair", "test-op-create-split-key")
     expected_operations += (1, 18, 33, 19, 20) * 2
     expected_cases += ("test-op-sign", "test-crypto-sign-rsa-2048-pkcs1_v1_5")
     expected_operations += (1, 18, 34, 19, 20) * 2
@@ -1049,22 +1058,41 @@ def main() -> int:
                                 if operations == (25,) and request.count(
                                         tlv(0x420006, 8, b"fixture-cancel-correlation")) != 1:
                                     raise AssertionError("Cancel request omitted its exact pending correlation value")
+                                if operations == (40,):
+                                    response_item_ids = (b"interop-create-split-key",)
                                 response_identifiers = None
                                 if operations == (20, 20, 20):
-                                    expected_destroy_ids = (
-                                        b"interop-destroy-certificate",
-                                        b"interop-destroy-public-key",
-                                        b"interop-destroy-private-key",
+                                    split_key_destroy_ids = (
+                                        b"interop-destroy-split-one",
+                                        b"interop-destroy-split-two",
+                                        b"interop-destroy-split-three",
                                     )
-                                    if any(tlv(0x420093, 8, item_id) not in request
-                                           for item_id in expected_destroy_ids):
-                                        raise AssertionError(
-                                            "Certify key-pair teardown omitted a unique batch item ID"
+                                    if any(tlv(0x420093, 8, item_id) in request
+                                           for item_id in split_key_destroy_ids):
+                                        if any(request.count(tlv(0x420093, 8, item_id)) != 1
+                                               for item_id in split_key_destroy_ids):
+                                            raise AssertionError(
+                                                "Create Split Key teardown omitted or duplicated a unique batch item ID"
+                                            )
+                                        response_item_ids = split_key_destroy_ids
+                                        response_identifiers = (
+                                            b"fixture-split-part-one", b"fixture-split-part-two",
+                                            b"fixture-split-part-three")
+                                    else:
+                                        expected_destroy_ids = (
+                                            b"interop-destroy-certificate",
+                                            b"interop-destroy-public-key",
+                                            b"interop-destroy-private-key",
                                         )
-                                    response_item_ids = expected_destroy_ids
-                                    response_identifiers = (
-                                        b"fixture-certificate-1", b"fixture-public-key-1",
-                                        b"fixture-private-key-1")
+                                        if any(tlv(0x420093, 8, item_id) not in request
+                                               for item_id in expected_destroy_ids):
+                                            raise AssertionError(
+                                                "Certify key-pair teardown omitted a unique batch item ID"
+                                            )
+                                        response_item_ids = expected_destroy_ids
+                                        response_identifiers = (
+                                            b"fixture-certificate-1", b"fixture-public-key-1",
+                                            b"fixture-private-key-1")
                                 if operations == (20, 20):
                                     if tlv(0x420093, 8, b"interop-destroy-certificate") in request:
                                         expected_destroy_ids = (
