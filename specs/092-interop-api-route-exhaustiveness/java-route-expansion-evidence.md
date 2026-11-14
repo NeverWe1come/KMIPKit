@@ -1799,3 +1799,58 @@ capability, encoding/transport, and source-backed exclusion filters define
 applicability, and these remaining cells are still applicable required work.
 FR-002/FR-009 require zero pending cells for full completion, so the PR remains
 WIP.
+
+## KMIP 2.0/2.1 Right Usage Limits member routes
+
+KMIP 2.0 §7.28 Table 348 and KMIP 2.1 §7.34 Table 386 define Usage Limits as
+an optional Structure member of Right. The Java consumer exercises its four
+applicable generic routes in each version (eight cells): the `TtlvValue`
+Structure constructor, Item creation, Item view, and decoder. The fixture
+checks both an absent Usage Limits member and a present member whose nested
+Usage Limits has its required Total, Count, and Unit values. It verifies the
+member tag `0x420095`, Structure type, and nested field tags, order, types, and
+values. These are local TTLV cells without a transport axis.
+
+- Red commit `e909b35a5123a84fb77f1eccaafa9bb12b6f7245` adds case accounting
+  and per-cell assertions. The focused controlled-query test failed on the
+  missing `TtlvValue.structure` event for Right Usage Limits in KMIP 2.0.
+- Green commit `40a3e6d48b3f1683d21b79e5901ad5f9d01410de` executes all four
+  routes in both versions and verifies the optional absent/present shapes and
+  nested values.
+- Refactor records this evidence, updates the Java README and FR-003
+  traceability, and refreshes the generated ledger; no pending cell is removed
+  or classified as unavailable.
+
+The pinned installed artifact is
+`489fafc79ef89db2524eafa7a6c6482f5cf75d97`, SHA-256
+`830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e`.
+Commands run from `interop/java-kmip-validator` unless noted:
+
+```sh
+env TMPDIR="$PWD/build/tmp" TMP="$PWD/build/tmp" TEMP="$PWD/build/tmp" \
+  JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/tmp" \
+  bash ../../bindings/java/gradlew -PkmipkitMavenRepo="$PWD/build/maven-repository" \
+  test --tests org.kmipkit.validator.ControlledTlsPeerTest.controlledQueryProducesPerRouteEvidenceForBothProtocolVersions
+env TMPDIR="$PWD/build/tmp" TMP="$PWD/build/tmp" TEMP="$PWD/build/tmp" \
+  JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test
+env TMPDIR="$PWD/build/tmp" TMP="$PWD/build/tmp" TEMP="$PWD/build/tmp" \
+  python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+# From the repository root:
+python3 -m unittest tools.normative_catalog.tests.test_feature_traceability \
+  scripts.tests.test_requirement_traceability
+```
+
+The full Java consumer suite passes 54 tests with zero failures, errors, or
+skips. The selected-scope validator accepts 22,979/22,979 invoked cells with
+zero failed cells; ledger refresh and comparison pass. The complete Java matrix
+still has 71,463 planned, 22,979 executed, and 48,484 pending cells across
+1,274 case IDs. All pending cells remain `route_evidence_not_emitted` and are
+required under FR-002/FR-009; `complete_matrix` remains false and the PR stays
+WIP.
