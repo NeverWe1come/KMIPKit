@@ -1490,10 +1490,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                           network_combinations=(('TTLV', 'raw_tls'), ('TTLV', 'https'),
                                                 ('JSON', 'raw_tls'), ('JSON', 'https'),
                                                 ('XML', 'raw_tls'), ('XML', 'https')),
-                          peer_rejection=None):
+                          peer_rejection=None, covered_keys=()):
     codec = Codec(catalog)
     targets_by_id = {target['target_id']: target for target in catalog['normative_targets']}
-    events, keys, checks = [], set(), []
+    events, keys, checks = [], set(covered_keys), []
     all_cells = list(iter_cells(catalog, manifest, languages=('c',)))
     artifact_sha256 = sha256(INSTALL / 'lib/libkmipkit_ffi.so')
     catalog_sha256 = sha256(ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json')

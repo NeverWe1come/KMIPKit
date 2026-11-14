@@ -1115,7 +1115,9 @@ def run(output: Path, binary: Path | None = None) -> int:
     output.with_suffix('.branches.json').write_text(json.dumps(branch_evidence, indent=2) + '\n')
     if binary is not None:
         from route_peer import execute_network_cells
-        network_events, invoked_keys, peer_checks = execute_network_cells(binary, catalog, manifest)
+        already_covered = {_key(event) for event in events}
+        network_events, invoked_keys, peer_checks = execute_network_cells(
+            binary, catalog, manifest, covered_keys=already_covered)
         output.parent.mkdir(parents=True, exist_ok=True)
         output.with_suffix(".peer-checks.json").write_text(json.dumps(peer_checks, indent=2) + "\n")
         events.extend(network_events)
