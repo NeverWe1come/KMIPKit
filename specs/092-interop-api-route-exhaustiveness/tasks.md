@@ -52,6 +52,9 @@
   Operation Undone and failed Get results, and confirm fixture state rollback.
 - [x] T018 Validate failed Get response accessors for a two-item Continue
   batch while confirming the following Get Attribute List still executes.
+- [x] T019 Execute the forward ID Placeholder rejection through the installed C
+  ABI, prove that the request was not sent, and omit response-decoding cells
+  that cannot exist after local rejection.
 
 T006 and T007 remain open until each separate language validator consumes the
 generated matrix, invokes every named public route, exchanges requests and
@@ -711,3 +714,24 @@ continuation and response items; §11.5 defines the Object Not Found reason.
 - Verification: the focused route test passed 24 constructor/transport/
   version checks; full CTest passed 7/7 in 92.92 seconds. Exact-head CI, matrix
   completeness, other languages, and the overall PR remain open and WIP.
+
+## Development evidence: C forward ID Placeholder rejection
+
+For KMIPKIT-0092-FR-002, FR-003, and FR-009, the C matrix executes the catalogued
+`Activate(ID Placeholder from item 2)`, `Create` scenario. OASIS KMIP 2.0/2.1
+§§8.3 and 9.7 are the catalogued references. The test requires a local
+validation error, zero transport calls, and no response decoder obligations.
+
+- Red commit `120855254`: focused tests failed because the matrix still planned
+  response-decoding cells for the locally rejected batch and the C validator
+  had no execution recipe.
+- Green commit `800798706`: classify the expected construction rejection as
+  send-only, run the C batch through client validation without a listening
+  peer, check Validation/Invalid Input/Not Sent, and record the two ordered
+  operation routes for every version, encoding, and transport.
+- Verification: the focused C route test passed 12 version/encoding/transport
+  checks and produced 24 not-sent item events. Full CTest passed 7/7 in 93.18
+  seconds; the shared coverage matrix passed 177 tests and route evidence
+  validation passed 33 tests. The full local C matrix recorded 42,560/66,736
+  cells invoked, zero failed, and 24,132 pending validator recipes. Exact-head
+  hosted CI and matrix completeness remain open; the PR stays WIP.

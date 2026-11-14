@@ -208,3 +208,18 @@ response behavior; §11.5 defines Object Not Found. Red/Green commits are
 24 constructor, protocol, encoding, and transport checks. Full CTest passed
 7/7 in 95.87 seconds; exact-head CI and remaining route matrix coverage remain
 open.
+
+### C forward ID Placeholder rejection
+
+KMIPKIT-0092-FR-002 plans no response decoder when the catalog authorizes a
+local batch-construction rejection; KMIPKIT-0092-FR-003 and FR-009 map the C
+installed route and zero-transport evidence. The C consumer constructs
+`Activate(ID Placeholder from item 2)` followed by Create, requires the
+Validation/Invalid Input/Not Sent outcome, and confirms the peer receives no
+connection. OASIS KMIP 2.0/2.1 §§8.3 and 9.7 are the catalogued references.
+Red `120855254` and Green `800798706` pass the focused matrix and C route tests;
+the local route test records 24 not-sent item events over both versions and all
+six wire paths. Full CTest passed 7/7; shared coverage matrix passed 177 tests
+and route evidence validation passed 33 tests. The full local C matrix records
+42,560/66,736 cells invoked, zero failed, and 24,132 pending validator recipes.
+The complete C route matrix and exact-head CI remain open.
