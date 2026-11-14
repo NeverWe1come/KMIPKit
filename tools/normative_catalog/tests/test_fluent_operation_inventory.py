@@ -13,7 +13,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 BASE_CATALOG = ROOT / "specification/catalog/kmip-2.1.json"
 VERSIONED_VALUES = ROOT / "specification/catalog/kmip-versioned-values.json"
+DRAFT_API = ROOT / "specification/api/kmip-3.0-draft-api.json"
 from tools.normative_catalog.generate_fluent_operation_inventory import (
+    _kmip30_fluent_routes,
     _validate_evidence_files,
     main,
     build_inventory,
@@ -24,6 +26,41 @@ OUTPUT = ROOT / "specification/catalog/fluent-operation-inventory.json"
 
 
 class FluentOperationInventoryTests(unittest.TestCase):
+    def test_kmip30_capability_may_include_additional_public_method_mappings(self) -> None:
+        languages = {"rust", "c", "java", "python"}
+        operation_names = (
+            "CreateGroup", "Obliterate", "CreateUser", "CreateCredential",
+            "Deactivate", "Encapsulate", "Decapsulate",
+        )
+        operations = [
+            {
+                "operation": name,
+                "operationCode": code,
+                "fluentApi": {language: f"{language}.{name}" for language in languages},
+            }
+            for code, name in zip(range(0x3C, 0x43), operation_names, strict=True)
+        ]
+        route_mappings = {
+            language: [operation["fluentApi"][language] for operation in operations]
+            for language in languages
+        }
+        capability = {
+            "capabilityId": "kmip30_fluent_operations",
+            "capabilityState": "verified",
+            "parityEvidenceIds": ["bindings/parity-test"],
+            "mappings": {
+                language: [*route_mappings[language], f"{language}.Builder.execute"]
+                for language in languages
+            },
+        }
+
+        resolved, resolved_capability = _kmip30_fluent_routes(
+            {"capabilities": [capability]}, {"operations": operations}
+        )
+
+        self.assertEqual(resolved, {row["operationCode"]: row["fluentApi"] for row in operations})
+        self.assertIs(resolved_capability, capability)
+
     def test_inventory_covers_exact_assigned_operation_values_and_directions(self) -> None:
         base = json.loads(BASE_CATALOG.read_text(encoding="utf-8"))
         versioned = json.loads(VERSIONED_VALUES.read_text(encoding="utf-8"))
@@ -141,7 +178,8 @@ class FluentOperationInventoryTests(unittest.TestCase):
                 element["wire_value"] = "00000043"
         with self.assertRaisesRegex(ValueError, "assignment"):
             build_inventory(base, json.loads(VERSIONED_VALUES.read_text(encoding="utf-8")),
-                            json.loads((ROOT / "specification/api/public-api.json").read_text(encoding="utf-8")))
+                            json.loads((ROOT / "specification/api/public-api.json").read_text(encoding="utf-8")),
+                            draft_api_catalog=json.loads(DRAFT_API.read_text(encoding="utf-8")))
 
     def test_invalid_direction_is_rejected(self) -> None:
         base = json.loads(BASE_CATALOG.read_text(encoding="utf-8"))
@@ -149,7 +187,8 @@ class FluentOperationInventoryTests(unittest.TestCase):
              if element.get("kind") == "operation")["direction"] = "both"
         with self.assertRaisesRegex(ValueError, "direction"):
             build_inventory(base, json.loads(VERSIONED_VALUES.read_text(encoding="utf-8")),
-                            json.loads((ROOT / "specification/api/public-api.json").read_text(encoding="utf-8")))
+                            json.loads((ROOT / "specification/api/public-api.json").read_text(encoding="utf-8")),
+                            draft_api_catalog=json.loads(DRAFT_API.read_text(encoding="utf-8")))
 
     def test_generated_inventory_is_deterministic_and_current(self) -> None:
         first = render(ROOT)
@@ -161,7 +200,8 @@ class FluentOperationInventoryTests(unittest.TestCase):
         return build_inventory(json.loads(BASE_CATALOG.read_text(encoding="utf-8")),
                                json.loads(VERSIONED_VALUES.read_text(encoding="utf-8")),
                                json.loads((ROOT / "specification/api/public-api.json").read_text(encoding="utf-8")),
-                               evidence)
+                               evidence,
+                               json.loads(DRAFT_API.read_text(encoding="utf-8")))
 
     def test_missing_owner_cannot_claim_implemented_route(self) -> None:
         evidence = json.loads((ROOT / "specification/catalog/operation-matrix-evidence.json").read_text(encoding="utf-8"))
@@ -214,7 +254,8 @@ class FluentOperationInventoryTests(unittest.TestCase):
              if group["name"] == "Operation")["values"][0]["wire_value"] = "0x00000043"
         with self.assertRaisesRegex(ValueError, "assignment"):
             build_inventory(json.loads(BASE_CATALOG.read_text(encoding="utf-8")), versioned,
-                            json.loads((ROOT / "specification/api/public-api.json").read_text(encoding="utf-8")))
+                            json.loads((ROOT / "specification/api/public-api.json").read_text(encoding="utf-8")),
+                            draft_api_catalog=json.loads(DRAFT_API.read_text(encoding="utf-8")))
 
     def test_incomplete_catalogs_and_duplicate_routes_are_rejected(self) -> None:
         base = json.loads(BASE_CATALOG.read_text(encoding="utf-8"))
@@ -247,7 +288,7 @@ class FluentOperationInventoryTests(unittest.TestCase):
                     v["versions"]["v3_0"][0]["values"].append(
                         copy.deepcopy(v["versions"]["v3_0"][0]["values"][0]))
                 with self.assertRaises(ValueError):
-                    build_inventory(b, v, m)
+                    build_inventory(b, v, m, draft_api_catalog=json.loads(DRAFT_API.read_text(encoding="utf-8")))
 
     def test_incomplete_or_overclaimed_review_evidence_is_rejected(self) -> None:
         original = json.loads((ROOT / "specification/catalog/operation-matrix-evidence.json").read_text(encoding="utf-8"))
