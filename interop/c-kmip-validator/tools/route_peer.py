@@ -306,6 +306,7 @@ RECIPES = {
     'test-async-no-recursive-async-poll-cancel': ((26, 25), 'async_poll_cancel_no_recursion'),
     'test-async-poll-final-operation-failure': ((1, 26), 'async_poll_final_failure'),
     'test-async-poll-repeated-pending-to-success': ((1, 26), 'async_poll_repeated_pending_to_success'),
+    'test-async-process-then-poll-state': ((1, 58, 26), 'async_process_then_poll_state'),
     'test-op-cancel': ((25,), 'cancel_async'),
     'test-async-cancel-result-canceled': ((25,), 'cancel_async'),
     'test-async-cancel-result-unable-to-cancel': ((25,), 'cancel_async'),
@@ -1108,6 +1109,36 @@ def assert_async_failure_poll_request(node, version):
         raise ValueError('fixture_async_failure_poll_correlation_mismatch')
 
 
+def assert_async_process_request(node, version):
+    """Require Process with the exact pending correlation and a synchronous indicator."""
+    items = [item for item in node[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    correlations = [child for child in payloads[0][2]
+                    if child[0] == 0x420006 and child[1] == 8] if len(payloads) == 1 else []
+    header = next(descendants(node, 0x420077), node)
+    if (version != '2.1' or numbers(node, 0x42006A) != [2] or
+            numbers(node, 0x42006B) != [1] or numbers(node, 0x42000D) != [1] or
+            numbers(header, 0x420007) != [3] or len(items) != 1 or
+            numbers(items[0], 0x42005C) != [58] or len(payloads) != 1 or
+            len(payloads[0][2]) != 1 or len(correlations) != 1 or
+            correlations[0][2] != CANCEL_CORRELATION_VALUE):
+        raise ValueError('fixture_async_process_request_mismatch')
+
+
+def verify_process_success_response(response_tree):
+    """Require synchronous Process Success and the defined empty response payload."""
+    items = [item for item in response_tree[2]
+             if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    if (len(items) != 1 or numbers(items[0], 0x42005C) != [58] or
+            numbers(items[0], 0x42007F) != [0] or
+            byte_string_values(items[0], 0x420006) or len(payloads) != 1 or
+            payloads[0][2]):
+        raise ValueError('fixture_async_process_response_mismatch')
+
+
 def verify_failed_poll_response(response_tree):
     """Require the terminal Poll to preserve the original failed Create result."""
     items = [item for item in response_tree[2]
@@ -1161,6 +1192,31 @@ def async_repeated_pending_poll_peer_check(observation):
             len([child for item in observation[3][1][2]
                  if item[0] == BATCH_ITEM_TAG and item[1] == 1
                  for child in item[2] if child[0] == RESPONSE_PAYLOAD_TAG]) == 1,
+        'peer_final_state_matches_setup':
+            observation[0][2]['peer_observed_state_before_sha256'] ==
+            observation[-1][2]['peer_observed_state_after_sha256'],
+    }
+
+
+def async_process_then_poll_peer_check(observation):
+    """Report shared Process/Poll correlation, synchronous Process, and cleanup."""
+    return {
+        **async_interleaving_peer_evidence(observation),
+        'peer_async_process_correlation_match':
+            byte_string_values(observation[1][0], 0x420006) == [CANCEL_CORRELATION_VALUE],
+        'peer_async_poll_correlation_match':
+            byte_string_values(observation[2][0], 0x420006) == [CANCEL_CORRELATION_VALUE],
+        'peer_async_process_is_synchronous':
+            numbers(observation[1][1], 0x42007F) == [0] and
+            not byte_string_values(observation[1][1], 0x420006) and
+            response_has_single_empty_payload(observation[1][1]),
+        'peer_async_final_poll_create_shape':
+            numbers(observation[2][1], 0x42005C) == [26] and
+            numbers(observation[2][1], 0x42007F) == [0] and
+            not byte_string_values(observation[2][1], 0x420006) and
+            any(child[0] == RESPONSE_PAYLOAD_TAG
+                for item in observation[2][1][2] if item[0] == BATCH_ITEM_TAG
+                for child in item[2]),
         'peer_final_state_matches_setup':
             observation[0][2]['peer_observed_state_before_sha256'] ==
             observation[-1][2]['peer_observed_state_after_sha256'],
@@ -1484,6 +1540,8 @@ def target_operation_exchange_index(recipe):
         return 2
     if recipe is not None and recipe[1] == 'async_poll_repeated_pending_to_success':
         return 3
+    if recipe is not None and recipe[1] == 'async_process_then_poll_state':
+        return 0
     return 1 if recipe is not None and recipe[1] in ('login_logout', 'cancel_async') else 0
 
 
@@ -1505,6 +1563,9 @@ def observation_for_cell(observations, cell, recipe, fallback_index):
         index = {'Create': 0, 'Poll': 2}.get(cell.get('workflow_operation'), fallback_index)
     elif recipe[1] == 'async_poll_repeated_pending_to_success':
         index = {'Create': 0, 'Poll': 3}.get(cell.get('workflow_operation'), fallback_index)
+    elif recipe[1] == 'async_process_then_poll_state':
+        index = {'Create': 0, 'Process': 1, 'Poll': 2}.get(
+            cell.get('workflow_operation'), fallback_index)
     if index < 0 or index >= len(observations):
         return None
     return observations[index]
@@ -1976,7 +2037,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 'cancel_async', 'cancel_poll_race',
                                                 'async_poll_cancel_no_recursion',
                                                 'async_poll_final_failure',
-                                                'async_poll_repeated_pending_to_success') and
+                                                'async_poll_repeated_pending_to_success',
+                                                'async_process_then_poll_state') and
                                             recipe[0][0] not in (1, 3)),
                             usage_allocation_ready=recipe[1] == 'get_usage_allocation_uid_variants')
                         boundary = case_id in (
@@ -1993,6 +2055,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         3 if recipe[1] == 'cancel_poll_race' else
                                         3 if recipe[1] == 'async_poll_final_failure' else
                                         5 if recipe[1] == 'async_poll_repeated_pending_to_success' else
+                                        4 if recipe[1] == 'async_process_then_poll_state' else
                                         2 if placeholder_chain_recipe or recipe[1] in (
                                             'login_logout', 'cancel_async',
                                             'async_poll_cancel_no_recursion') else 1)
@@ -2066,6 +2129,19 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 assert_async_create_seed_request(request_tree, version)
                                                 response_operations = (1,)
                                             elif exchange_index < 4:
+                                                assert_async_failure_poll_request(request_tree, version)
+                                                response_operations = (26,)
+                                            else:
+                                                assert_async_create_cleanup_request(request_tree, version)
+                                                response_operations = (20,)
+                                        elif recipe[1] == 'async_process_then_poll_state':
+                                            if exchange_index == 0:
+                                                assert_async_create_seed_request(request_tree, version)
+                                                response_operations = (1,)
+                                            elif exchange_index == 1:
+                                                assert_async_process_request(request_tree, version)
+                                                response_operations = (58,)
+                                            elif exchange_index == 2:
                                                 assert_async_failure_poll_request(request_tree, version)
                                                 response_operations = (26,)
                                             else:
@@ -2180,6 +2256,11 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 'peer_observed_state_after_sha256': state_digest,
                                             }
                                         else:
+                                            if (recipe[1] == 'async_process_then_poll_state' and
+                                                    exchange_index == 1):
+                                                peer_state.objects['fixture-key-1'] = 'pre_active'
+                                                peer_state.attributes['fixture-key-1'] = set()
+                                                peer_state.attribute_values['fixture-key-1'] = {}
                                             if (recipe[1] == 'async_poll_repeated_pending_to_success' and
                                                     exchange_index == 3):
                                                 peer_state.objects['fixture-key-1'] = 'pre_active'
@@ -2226,6 +2307,20 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 if exchange_index < 3 else
                                                 completed_poll_create_response(int(version[-1]))
                                                 if exchange_index == 3 else
+                                                response((20,), int(version[-1]),
+                                                         created_object_type=2,
+                                                         unique_batch_item_ids=response_item_ids))
+                                        elif recipe[1] == 'async_process_then_poll_state':
+                                            if exchange_index == 3:
+                                                response_item_ids = (None,)
+                                            response_wire = (
+                                                pending_create_response(CANCEL_CORRELATION_VALUE,
+                                                                        int(version[-1]))
+                                                if exchange_index == 0 else
+                                                response((58,), int(version[-1]))
+                                                if exchange_index == 1 else
+                                                completed_poll_create_response(int(version[-1]))
+                                                if exchange_index == 2 else
                                                 response((20,), int(version[-1]),
                                                          created_object_type=2,
                                                          unique_batch_item_ids=response_item_ids))
@@ -2283,6 +2378,15 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 verify_pending_poll_response(
                                                     response_tree, CANCEL_CORRELATION_VALUE)
                                             elif exchange_index == 3:
+                                                verify_completed_poll_create_response(response_tree)
+                                            else:
+                                                verify_lifecycle((20,), response_tree)
+                                        elif recipe[1] == 'async_process_then_poll_state':
+                                            if exchange_index == 0:
+                                                verify_pending_create_response(response_tree)
+                                            elif exchange_index == 1:
+                                                verify_process_success_response(response_tree)
+                                            elif exchange_index == 2:
                                                 verify_completed_poll_create_response(response_tree)
                                             else:
                                                 verify_lifecycle((20,), response_tree)
@@ -2347,7 +2451,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 'async_create_poll_lifecycle',
                                                 'async_poll_cancel_no_recursion',
                                                 'async_poll_final_failure',
-                                                'async_poll_repeated_pending_to_success'):
+                                                'async_poll_repeated_pending_to_success',
+                                                'async_process_then_poll_state'):
                                             verify_lifecycle(recipe[0], response_tree)
                                         encoded_response = codec.encode(response_wire, encoding)
                                         if transport == 'https':
@@ -2540,6 +2645,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                            **(async_repeated_pending_poll_peer_check(observation)
                                               if recipe[1] == 'async_poll_repeated_pending_to_success' and
                                               len(observation) == 5 else {}),
+                                           **(async_process_then_poll_peer_check(observation)
+                                              if recipe[1] == 'async_process_then_poll_state' and
+                                              len(observation) == 4 else {}),
                                            **({'peer_final_state_matches_setup':
                                                    observation[0][2]['peer_observed_state_before_sha256'] ==
                                                    observation[0][2]['peer_observed_state_after_sha256']}
@@ -2690,11 +2798,17 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             'cancel_poll_race',
                                             'async_poll_cancel_no_recursion',
                                                 'async_poll_final_failure',
-                                                'async_poll_repeated_pending_to_success') and
+                                                'async_poll_repeated_pending_to_success',
+                                                'async_process_then_poll_state') and
                                         cell['action'] == 'construct' and
                                         cell['public_api_symbol'] in {
                                             'kmipkit_poll_request_create',
                                             'kmipkit_cancel_request_create'})
+                                    async_process_constructor = (
+                                        recipe[1] == 'async_process_then_poll_state' and
+                                        cell['action'] == 'construct' and
+                                        cell['public_api_symbol'] ==
+                                        'kmipkit_process_request_create')
                                     async_lifecycle_constructor = (
                                         recipe[1] == 'async_create_poll_lifecycle' and
                                         cell['action'] == 'construct' and
@@ -2706,6 +2820,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             (cell['action'] not in ('decode', 'encode') and
                                              not stop_continuation_constructor and
                                              not async_request_constructor and
+                                             not async_process_constructor and
                                              not async_lifecycle_constructor)):
                                         continue
                                     if (cell['action'] == 'decode' and
@@ -2715,11 +2830,14 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             cell['public_api_symbol'] !=
                                             'kmipkit_client_async_operation_outcome_poll_response_v1' and
                                             cell['public_api_symbol'] !=
+                                            'kmipkit_client_async_operation_outcome_process_response_v1' and
+                                            cell['public_api_symbol'] !=
                                             'kmipkit_client_async_operation_outcome_query_async_requests_response_v1'):
                                         continue
                                     if cell['action'] == 'encode' and cell['public_api_symbol'] not in {
                                             'kmipkit_cancel_request_to_ttlv_payload',
                                             'kmipkit_poll_request_to_ttlv_payload',
+                                            'kmipkit_process_request_to_ttlv_payload',
                                             'kmipkit_query_async_requests_request_to_ttlv_payload',
                                             'kmipkit_add_attribute_request_to_ttlv_payload',
                                             'kmipkit_set_attribute_request_to_ttlv_payload',
@@ -2734,7 +2852,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     cell['public_api_symbol'] ==
                                     'kmipkit_client_async_operation_outcome_cancel_response_v1' or
                                     cell['public_api_symbol'] ==
-                                    'kmipkit_client_async_operation_outcome_poll_response_v1')
+                                    'kmipkit_client_async_operation_outcome_poll_response_v1' or
+                                    cell['public_api_symbol'] ==
+                                    'kmipkit_client_async_operation_outcome_process_response_v1')
                                 if response_accessor_route:
                                     source_sections = {reference.get('section')
                                                       for reference in target.get('source_refs', [])}
