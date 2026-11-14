@@ -4110,7 +4110,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     payload = next((child for child in target_item[2]
                                                     if child[0] == 0x420079 and child[1] == 1), None)
                                     digest_tree = payload or target_item
-                                event['response_tree_sha256' if cell['action'] == 'decode' else 'request_tree_sha256'] = tree_digest(digest_tree)
+                                if not (local_batch_rejection and cell['action'] == 'send'):
+                                    event['response_tree_sha256' if cell['action'] == 'decode' else 'request_tree_sha256'] = tree_digest(digest_tree)
                                 if preflight_rejection and cell['action'] == 'send':
                                     event.update(request_delivery_state='not_sent', transport_invocation_count=0)
                                 elif cell['action'] == 'send':
