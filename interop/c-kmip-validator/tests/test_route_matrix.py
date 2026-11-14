@@ -865,6 +865,39 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(sum(event['public_api_symbol'] == 'kmipkit_client_execute_poll' and
                              event['action'] == 'send' for event in events), 12)
 
+    def test_async_process_changes_state_seen_by_correlated_poll(self):
+        """OASIS KMIP 2.1 §§6.1.38–6.1.39 correlate Process and the next Poll."""
+        from artifact_support import ROOT
+        import route_peer
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-async-process-then-poll-state')
+
+        self.assertEqual(
+            route_peer.recipe_for_case(case, None),
+            ((1, 58, 26), 'async_process_then_poll_state'))
+
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case]}
+        events, _, checks = route_peer.execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 6)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(all(check.get('peer_async_interleaving_operations') == [1, 58, 26, 20] and
+                            check.get('peer_async_response_statuses') == [2, 0, 0, 0] and
+                            check.get('peer_async_process_correlation_match') is True and
+                            check.get('peer_async_poll_correlation_match') is True and
+                            check.get('peer_async_process_is_synchronous') is True and
+                            check.get('peer_async_final_poll_create_shape') is True and
+                            check.get('peer_final_state_matches_setup') is True
+                            for check in checks), checks)
+        self.assertEqual(sum(event['public_api_symbol'] == 'kmipkit_client_execute_process' and
+                             event['action'] == 'send' for event in events), 6)
+        self.assertEqual(sum(event['public_api_symbol'] == 'kmipkit_client_execute_poll' and
+                             event['action'] == 'send' for event in events), 6)
+
     def test_stop_on_first_failure_case_has_a_controlled_peer_recipe(self):
         import route_peer
         from artifact_support import ROOT
