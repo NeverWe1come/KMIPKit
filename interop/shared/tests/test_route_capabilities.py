@@ -726,6 +726,25 @@ class RouteCapabilitiesTests(unittest.TestCase):
                             self.assertIn(expected_action, routes[(language, symbol)]['actions'],
                                           f"{function['id']} must be a {expected_action} route")
 
+    def test_c_discover_versions_routes_are_scoped_to_the_supported_offer(self):
+        # The public C constructor fixes the Discover Versions offer to KMIP 2.1.
+        request = next(route for route in self.data['routes'] if route['language'] == 'c'
+                       and route['public_api_symbol'] == 'kmipkit_client_batch_item_discover_versions')
+        self.assertEqual(['2.1'], request['protocol_versions'])
+        response = next(route for route in self.data['routes'] if route['language'] == 'c'
+                        and route['public_api_symbol'] ==
+                        'kmipkit_client_batch_item_response_discover_versions_supported_versions')
+        self.assertEqual(['2.0', '2.1'], response['protocol_versions'])
+        unavailable = [item for item in self.data['unavailable'] if item['language'] == 'c'
+                       and item.get('capability') == 'protocol-version-limit'
+                       and 'KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS' in item.get('operation_ids', [])]
+        self.assertEqual(1, len(unavailable))
+        self.assertEqual(['2.0'], unavailable[0]['protocol_versions'])
+        self.assertIn('KMIPKIT-PAYLOAD-CLIENT-DISCOVER-VERSIONS-REQUEST-20-001',
+                      unavailable[0]['normative_target_ids'])
+        self.assertNotIn('KMIPKIT-PAYLOAD-CLIENT-DISCOVER-VERSIONS-RESPONSE-20-001',
+                         unavailable[0]['normative_target_ids'])
+
     def test_known_but_false_api_level_cannot_relabel_a_constructor(self):
         self.data['routes'][0]['api_level'] = 'high-level'
         self.reject(self.data, 'api_level')
