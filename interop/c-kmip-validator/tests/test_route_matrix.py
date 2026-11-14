@@ -3856,6 +3856,37 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_response_sign' and
                             event['action'] == 'decode' for event in events))
 
+    def test_signature_verify_cases_call_their_public_routes_and_check_validity(self):
+        """Exercise OASIS KMIP 2.0 §6.1.50 and KMIP 2.1 §6.1.56 through the C ABI."""
+        from artifact_support import ROOT
+        from route_peer import RECIPES, execute_network_cells
+
+        case_ids = {'test-op-signature-verify',
+                    'test-crypto-signature-verify-rsa-2048-pkcs1_v1_5'}
+        self.assertTrue(case_ids <= RECIPES.keys(),
+                        'Signature Verify case-specific peer recipes are missing')
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] in case_ids]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 24,
+                         'Signature Verify must cover both versions and all encoding/transport pairs')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(all(check['peer_request_operations'] == [1, 18, 34, 19, 20]
+                            for check in checks))
+        self.assertTrue(all(check['peer_setup_operations'] == [1] for check in checks))
+        self.assertTrue(all(check['peer_cleanup_operations'] == [19, 20] for check in checks))
+        self.assertTrue(any(event['public_api_symbol'] ==
+                            'kmipkit_client_batch_item_signature_verify' and
+                            event['action'] == 'send' for event in events))
+        self.assertTrue(any(event['public_api_symbol'] ==
+                            'kmipkit_client_batch_item_response_signature_verify' and
+                            event['action'] == 'decode' for event in events))
+
     def test_archive_operation_runs_through_installed_c_abi_and_checks_identifier(self):
         """Exercise OASIS KMIP 2.0/2.1 §6.1.4 Archive request and response payloads."""
         from artifact_support import ROOT
