@@ -154,6 +154,12 @@ class ControlledTlsPeerTest {
                     "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-17-INIT-INDICATOR",
                     0x4200d7, TtlvItemType.Boolean, false));
 
+    private static final List<ScalarOperationStructureFixture> NEXT_SCALAR_OPERATION_STRUCTURE_FIXTURES =
+            List.of(new ScalarOperationStructureFixture(
+                    "test-norm-operation-structure-operation-structure-7-8-correlation-value",
+                    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-8-CORRELATION-VALUE",
+                    0x4200d6, TtlvItemType.ByteString, false));
+
     private static final List<StructureMemberStructureFixture> STRUCTURE_MEMBER_STRUCTURE_FIXTURES = List.of(
             new StructureMemberStructureFixture(
                     "test-norm-structure-member-structure-member-7-6-attributes",
@@ -4308,6 +4314,9 @@ class ControlledTlsPeerTest {
     private static void assertNewlyCataloguedLocalRoutesAreInvoked(ArrayNode events,
             String protocolVersion) {
         for (ScalarOperationStructureFixture fixture : SCALAR_OPERATION_STRUCTURE_FIXTURES) {
+            assertScalarOperationStructureRouteEvents(events, fixture, protocolVersion);
+        }
+        for (ScalarOperationStructureFixture fixture : NEXT_SCALAR_OPERATION_STRUCTURE_FIXTURES) {
             assertScalarOperationStructureRouteEvents(events, fixture, protocolVersion);
         }
         if ("2.1".equals(protocolVersion)) {
