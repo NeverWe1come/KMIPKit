@@ -111,6 +111,9 @@ class ControlledTlsPeerTest {
     private record OperationStructureFixture(String caseId, String targetId, int structureTag,
             int memberTag, TtlvItemType memberType, String textValue, long enumerationValue) { }
 
+    private record ScalarOperationStructureFixture(String caseId, String targetId, int tag,
+            TtlvItemType valueType) { }
+
     private static final List<OperationStructureFixture> OPERATION_STRUCTURE_FIXTURES = List.of(
             new OperationStructureFixture(
                     "test-norm-operation-structure-operation-structure-7-23-object-groups",
@@ -120,6 +123,24 @@ class ControlledTlsPeerTest {
                     "test-norm-operation-structure-operation-structure-7-24-object-types",
                     "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES",
                     0x420125, 0x420057, TtlvItemType.Enumeration, "", 2));
+
+    private static final List<ScalarOperationStructureFixture> SCALAR_OPERATION_STRUCTURE_FIXTURES = List.of(
+            new ScalarOperationStructureFixture(
+                    "test-norm-operation-structure-operation-structure-7-10-data-length",
+                    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-10-DATA-LENGTH", 0x4200c4, TtlvItemType.Integer),
+            new ScalarOperationStructureFixture(
+                    "test-norm-operation-structure-operation-structure-7-14-final-indicator",
+                    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-14-FINAL-INDICATOR", 0x4200d8, TtlvItemType.Boolean),
+            new ScalarOperationStructureFixture(
+                    "test-norm-operation-structure-operation-structure-7-16-interop-identifier",
+                    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-16-INTEROP-IDENTIFIER", 0x420161,
+                    TtlvItemType.TextString),
+            new ScalarOperationStructureFixture(
+                    "test-norm-operation-structure-operation-structure-7-19-log-message",
+                    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-19-LOG-MESSAGE", 0x420141, TtlvItemType.TextString),
+            new ScalarOperationStructureFixture(
+                    "test-norm-operation-structure-operation-structure-7-20-mac-data",
+                    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-20-MAC-DATA", 0x4200c6, TtlvItemType.ByteString));
 
     private static final List<StructureMemberStructureFixture> STRUCTURE_MEMBER_STRUCTURE_FIXTURES = List.of(
             new StructureMemberStructureFixture(
@@ -4267,6 +4288,9 @@ class ControlledTlsPeerTest {
 
     private static void assertNewlyCataloguedLocalRoutesAreInvoked(ArrayNode events,
             String protocolVersion) {
+        for (ScalarOperationStructureFixture fixture : SCALAR_OPERATION_STRUCTURE_FIXTURES) {
+            assertScalarOperationStructureRouteEvents(events, fixture, protocolVersion);
+        }
         if ("2.1".equals(protocolVersion)) {
             assertGenericStructureRouteEvents(events,
                     "test-norm-operation-structure-operation-structure-7-2-asynchronous-request",
@@ -4911,6 +4935,29 @@ class ControlledTlsPeerTest {
             String action = route.endsWith("ttlv_codec.decode")
                     || route.endsWith("ttlv_item_view_from_item") ? "decode" : "construct";
             assertRouteEventRecorded(events, caseId, targetId, route, action, protocolVersion);
+        }
+    }
+
+    private static void assertScalarOperationStructureRouteEvents(ArrayNode events,
+            ScalarOperationStructureFixture fixture, String protocolVersion) {
+        String valueRoute = switch (fixture.valueType()) {
+            case Integer -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.integer";
+            case Boolean -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.boolean";
+            case TextString -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring";
+            case ByteString -> "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring";
+            default -> throw new IllegalArgumentException("Unsupported scalar operation structure type");
+        };
+        for (String route : List.of(
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.create",
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem",
+                valueRoute,
+                "java.generic-ttlv.ttlv_item.create",
+                "java.generic-ttlv.function.ttlv_item_view_from_item",
+                "java.generic-ttlv.ttlv_codec.decode")) {
+            String action = route.endsWith("ttlv_codec.decode")
+                    || route.endsWith("ttlv_item_view_from_item") ? "decode" : "construct";
+            assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(), route,
+                    action, protocolVersion);
         }
     }
 
