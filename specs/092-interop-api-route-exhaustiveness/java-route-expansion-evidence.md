@@ -1038,3 +1038,48 @@ approved KMIPKIT-0092 matrix; the PR must remain WIP until all applicable Java
 routes are evidenced or an approved source-backed exclusion removes them
 from the matrix. No vendor interoperability claim is made by these local
 controlled TLS fixtures.
+
+## KMIP 2.1 Object Group member routes
+
+Sources: OASIS KMIP 2.1 Specification §4.35 Tables 99–100 defines Object
+Group as a Text String attribute, and §7.23 Table 375 marks the Object Group
+member in Object Groups as optional and repeatable. The catalog target is
+`KMIPKIT-ELEM-STRUCTURE-MEMBER-7-23-OBJECT-GROUP`, with tag `0x420056` and
+three applicable local Java routes: `TtlvItem.create`, `TtlvItem.view`, and
+`TtlvCodec.decode`.
+
+Red commit `f80c82c39` requires all three route events for the source-backed
+case and the focused test fails because the Item creation event is missing.
+Green commit `5aba6f55f` constructs and checks an Object Group Text String,
+decodes it through the installed generic API, and verifies the containing
+Object Groups structure with the member both absent and repeated twice.
+Refactor commit `79f32d323` extracts the optional/repeated shape and Item
+assertions while preserving the evidence rows.
+
+Verification uses the installed Java artifact pinned to
+`489fafc79ef89db2524eafa7a6c6482f5cf75d97`:
+
+```sh
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test \
+  --tests org.kmipkit.validator.ControlledTlsPeerTest.controlledQueryProducesPerRouteEvidenceForBothProtocolVersions
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/java-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test
+```
+
+The focused Java test and full Java suite pass (54 tests, no failures, errors,
+or skips). The shared validator accepts 22,573/22,573 cells in the declared
+selected scope, with zero failed cells. This slice adds three cells; the
+generated full ledger now has 71,463 planned, 22,573 executed, and 48,890
+pending cells across 1,323 case IDs. All pending cells remain planned and
+carry `route_evidence_not_emitted`; the matrix is not complete. The previously
+exact-head run `43537492866` passed before this slice; CI for the new head must
+be checked separately.
