@@ -766,3 +766,37 @@ not an isolated structure or scalar.
   cells, zero failed, and 27,423 pending. The shared completeness validator
   still fails on missing routes, starting with async Cancel response payload
   cells. This recipe slice does not complete the matrix; PR #170 remains WIP.
+
+### Typed Response Message parser: complete and optional fields
+
+The installed `kmipkit_response_message_from_ttlv` parser now receives a full
+Get Response for the Response Message root and its structural fields. Complete
+response fixtures also exercise Attestation Type, Client and Server
+Correlation Value, Nonce with Nonce ID and Nonce Value, Server Hashed
+Password, Unique Batch Item ID, Result Message, and Message Extension for KMIP
+2.0 and 2.1. The Result Message case uses `Operation Failed` with `General
+Failure` and omits Response Payload: OASIS KMIP 2.0/2.1 §8.6 Table 399 allows
+the Failure shape without a Response Payload, and §9.17 defines Result
+Message. Response Header fields follow §8.5 Table 398; §9.14 defines the
+Nonce structure. Message Extension is in §8.6 Table 399 and §9.13; Result
+Message is in §8.6 Table 399 and §9.17. The typed parser reads back each full
+TTLV tree.
+
+- Red commits `8991e2de0`, `c1a868f96`, and `502a8c2d6` required the complete
+  parser routes, response context fields, and optional response fields. The
+  Result Message test exposed a fixture that incorrectly combined the field
+  with `Success` and Response Payload.
+- Green commits `e73b38bf6`, `f311827ec`, and `dac861e51` use the installed
+  response parser for those routes and construct a valid Failure/Reason/Message
+  shape for Result Message.
+- Refactor commits `57664357a`, `e5e5c5132`, and `6db3a4f12` share the typed
+  request/response roundtrip, response fixture dispatch, and Response Header
+  builder.
+- Verification: the C route-matrix unit suite passed 139/139; CTest passed
+  7/7. The complete installed-artifact matrix records 39,373/66,736 invoked
+  cells, zero failed, and 27,363 pending, all `validator_recipe_pending`.
+  `validate_route_evidence.py` exits unsuccessfully on those missing cells,
+  beginning with async Cancel response payload routes, as required by FR-009.
+  CI runs `43539660499` and `43539654754` on head `5adcf0c` likewise had only
+  pending recipe cells (27,423) and zero failed cells. The complete matrix is
+  still open, and PR #170 remains WIP.
