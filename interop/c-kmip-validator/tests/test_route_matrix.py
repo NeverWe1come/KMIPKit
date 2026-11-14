@@ -119,6 +119,28 @@ class RouteMatrixTests(unittest.TestCase):
         generic_cell = {**cell, 'public_api_symbol': 'kmipkit_ttlv_decode'}
         self.assertTrue(self.runner.uses_scalar_target_fixture(generic_cell, case, target))
 
+    def test_request_header_field_uses_the_complete_typed_request_fixture(self):
+        """OASIS KMIP 2.0/2.1 §8.2 defines Maximum Response Size in Request Header (0092-FR-003)."""
+        from artifact_support import INSTALL, ROOT
+        from route_ttlv import TreeAbi, encode
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        target = next(item for item in catalog['normative_targets']
+                      if item['target_id'] == 'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-MAXIMUM-RESPONSE-SIZE')
+        tags = self.runner.catalog_tag_values(catalog)
+
+        fixtures = self.runner.generic_tree_fixtures(target, catalog, tags, '2.0')
+
+        self.assertIsNotNone(fixtures)
+        request = fixtures[0]
+        self.assertEqual(request[0], tags['Request Message'])
+        header = next(item for item in request[2] if item[0] == tags['Request Header'])
+        maximum_response_size = next(item for item in header[2]
+                                     if item[0] == tags['Maximum Response Size'])
+        self.assertEqual((maximum_response_size[1], maximum_response_size[2]), (2, (1024).to_bytes(4, 'big')))
+        result = TreeAbi(INSTALL / 'lib/libkmipkit_ffi.so').roundtrip(encode(request))
+        self.assertIn('kmipkit_request_message_from_ttlv', result['invoked_symbols'])
+
     def test_get_usage_allocation_has_an_executable_controlled_peer_recipe(self):
         import route_peer
         from artifact_support import ROOT
