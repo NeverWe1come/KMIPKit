@@ -1238,3 +1238,45 @@ failed cells. This slice adds six cells; the full ledger has 71,463 planned,
 22,617 executed, and 48,846 pending cells across 1,313 pending case IDs.
 Every pending cell remains `route_evidence_not_emitted`; `complete_matrix`
 remains false and the pending work remains required.
+
+## KMIP 2.1 Object Groups and Object Types Structure routes
+
+Sources: OASIS KMIP 2.1 Specification §7.23 Table 375 defines Object Groups
+as a Structure with repeatable Object Group Text String members; §7.24 Table
+376 defines Object Types as a Structure with repeatable Object Type
+Enumeration members. The six generic Structure/Item routes apply to each
+case.
+
+Red commit `1cab944a6` adds assertions for both six-cell cases and fails on the
+missing Object Groups `TtlvStructure.create` event. Green commit `1b2717dfa`
+constructs and decodes a valid member for each Structure using the installed
+Java artifact, then checks the exact outer/member tags, TTLV types, value,
+and order. Refactor consolidates the shared six-route evidence writer and
+assertion table, and refreshes the checked-in ledger, README, and FR-003
+traceability row.
+
+Verification used the installed artifact pinned to
+`489fafc79ef89db2524eafa7a6c6482f5cf75d97`:
+
+```sh
+TMPDIR="$PWD/build/native-test-tmp" \
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/native-test-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test \
+  --tests org.kmipkit.validator.ControlledTlsPeerTest.controlledQueryProducesPerRouteEvidenceForBothProtocolVersions
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+```
+
+The focused test and full Java consumer suite pass; the suite has 54 tests,
+with no failures, errors, or skips. All 33 feature/compliance traceability tests
+pass. The shared validator accepts 22,629/22,629 selected cells with zero
+failures. This slice adds 12 cells; the full ledger has 71,463 planned,
+22,629 executed, and 48,834 pending cells across 1,311 pending case IDs. Both
+operation-structure cases are removed from the pending set because their
+planned routes now have invocation evidence. All other pending cells remain
+`route_evidence_not_emitted`; `complete_matrix=false`.

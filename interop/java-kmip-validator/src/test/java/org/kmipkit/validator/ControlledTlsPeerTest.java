@@ -89,6 +89,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ControlledTlsPeerTest {
     private static final List<String> KMIP_2_0_AND_2_1 = List.of("2.0", "2.1");
+    private static final List<String> GENERIC_STRUCTURE_ROUTE_IDS = List.of(
+            "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.create",
+            "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem",
+            "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
+            "java.generic-ttlv.ttlv_item.create",
+            "java.generic-ttlv.function.ttlv_item_view_from_item",
+            "java.generic-ttlv.ttlv_codec.decode");
 
     private record NewAttributeMutationFixture(String methodName, String title, String ordinal,
             int operationValue) { }
@@ -4261,38 +4268,11 @@ class ControlledTlsPeerTest {
     private static void assertNewlyCataloguedLocalRoutesAreInvoked(ArrayNode events,
             String protocolVersion) {
         if ("2.1".equals(protocolVersion)) {
-            String asynchronousRequestCase =
-                    "test-norm-operation-structure-operation-structure-7-2-asynchronous-request";
-            String asynchronousRequestTarget =
-                    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-2-ASYNCHRONOUS-REQUEST";
-            for (String route : List.of(
-                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.create",
-                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem",
-                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
-                    "java.generic-ttlv.ttlv_item.create",
-                    "java.generic-ttlv.function.ttlv_item_view_from_item",
-                    "java.generic-ttlv.ttlv_codec.decode")) {
-                String action = route.endsWith("ttlv_codec.decode")
-                        || route.endsWith("ttlv_item_view_from_item") ? "decode" : "construct";
-                assertRouteEventRecorded(events, asynchronousRequestCase, asynchronousRequestTarget,
-                        route, action, protocolVersion);
-            }
-            for (String[] fixture : List.of(
-                    new String[] {"test-norm-operation-structure-operation-structure-7-23-object-groups",
-                            "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-23-OBJECT-GROUPS"},
-                    new String[] {"test-norm-operation-structure-operation-structure-7-24-object-types",
-                            "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-24-OBJECT-TYPES"})) {
-                for (String route : List.of(
-                        "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.create",
-                        "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem",
-                        "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
-                        "java.generic-ttlv.ttlv_item.create",
-                        "java.generic-ttlv.function.ttlv_item_view_from_item",
-                        "java.generic-ttlv.ttlv_codec.decode")) {
-                    String action = route.endsWith("ttlv_codec.decode")
-                            || route.endsWith("ttlv_item_view_from_item") ? "decode" : "construct";
-                    assertRouteEventRecorded(events, fixture[0], fixture[1], route, action, protocolVersion);
-                }
+            assertGenericStructureRouteEvents(events,
+                    "test-norm-operation-structure-operation-structure-7-2-asynchronous-request",
+                    "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-2-ASYNCHRONOUS-REQUEST", protocolVersion);
+            for (OperationStructureFixture fixture : OPERATION_STRUCTURE_FIXTURES) {
+                assertGenericStructureRouteEvents(events, fixture.caseId(), fixture.targetId(), protocolVersion);
             }
             String objectGroupCase = "test-norm-structure-member-structure-member-7-23-object-group";
             String objectGroupTarget = "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-23-OBJECT-GROUP";
@@ -4781,24 +4761,6 @@ class ControlledTlsPeerTest {
             assertEquals(TtlvItemType.Structure, view.itemType());
             assertAsynchronousRequestFields(structureView, operation, processingStage, submissionDate);
         }
-        appendRouteEvent(events, caseId, "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.create",
-                targetId, "org.kmipkit.ttlv.TtlvStructure.create", null, null,
-                "construct", "2.1", null, treeHash, null);
-        appendRouteEvent(events, caseId,
-                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem",
-                targetId, "org.kmipkit.ttlv.TtlvStructure.withItem", null, null,
-                "construct", "2.1", null, treeHash, null);
-        appendRouteEvent(events, caseId, "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
-                targetId, "org.kmipkit.ttlv.TtlvValue.structure", null, null,
-                "construct", "2.1", null, treeHash, null);
-        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_item.create",
-                targetId, "org.kmipkit.ttlv.TtlvItem.create", null, null,
-                "construct", "2.1", null, treeHash, null);
-        appendRouteEvent(events, caseId,
-                "java.generic-ttlv.function.ttlv_item_view_from_item",
-                targetId, "org.kmipkit.ttlv.TtlvItem.view", null, null,
-                "decode", "2.1", null, null, treeHash);
-
         try (TtlvItem decoded = TtlvCodec.decode(wire);
                 var view = decoded.view();
                 var decodedTag = view.tag();
@@ -4808,9 +4770,7 @@ class ControlledTlsPeerTest {
             assertEquals(TtlvItemType.Structure, view.itemType());
             assertAsynchronousRequestFields(structureView, operation, processingStage, submissionDate);
         }
-        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_codec.decode",
-                targetId, "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
-                "decode", "2.1", null, null, treeHash);
+        appendGenericStructureRouteEvents(events, caseId, targetId, treeHash);
     }
 
     private static void assertAsynchronousRequestFields(TtlvStructureView fields, long operation,
@@ -4867,26 +4827,6 @@ class ControlledTlsPeerTest {
             assertEquals(TtlvItemType.Structure, view.itemType());
             assertOperationStructureMember(structureView, fixture, memberValue);
         }
-        appendRouteEvent(events, fixture.caseId(),
-                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.create",
-                fixture.targetId(), "org.kmipkit.ttlv.TtlvStructure.create", null, null,
-                "construct", "2.1", null, treeHash, null);
-        appendRouteEvent(events, fixture.caseId(),
-                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem",
-                fixture.targetId(), "org.kmipkit.ttlv.TtlvStructure.withItem", null, null,
-                "construct", "2.1", null, treeHash, null);
-        appendRouteEvent(events, fixture.caseId(),
-                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
-                fixture.targetId(), "org.kmipkit.ttlv.TtlvValue.structure", null, null,
-                "construct", "2.1", null, treeHash, null);
-        appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_item.create",
-                fixture.targetId(), "org.kmipkit.ttlv.TtlvItem.create", null, null,
-                "construct", "2.1", null, treeHash, null);
-        appendRouteEvent(events, fixture.caseId(),
-                "java.generic-ttlv.function.ttlv_item_view_from_item",
-                fixture.targetId(), "org.kmipkit.ttlv.TtlvItem.view", null, null,
-                "decode", "2.1", null, null, treeHash);
-
         try (TtlvItem decoded = TtlvCodec.decode(wire);
                 var view = decoded.view();
                 var tag = view.tag();
@@ -4896,9 +4836,7 @@ class ControlledTlsPeerTest {
             assertEquals(TtlvItemType.Structure, view.itemType());
             assertOperationStructureMember(structureView, fixture, memberValue);
         }
-        appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_codec.decode",
-                fixture.targetId(), "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
-                "decode", "2.1", null, null, treeHash);
+        appendGenericStructureRouteEvents(events, fixture.caseId(), fixture.targetId(), treeHash);
     }
 
     private static void assertOperationStructureMember(TtlvStructureView fields,
@@ -4965,6 +4903,37 @@ class ControlledTlsPeerTest {
         }
         assertTrue(recorded, "Missing invoked Java route evidence for " + caseId + " / " + routeId
                 + " / KMIP " + protocolVersion);
+    }
+
+    private static void assertGenericStructureRouteEvents(ArrayNode events, String caseId, String targetId,
+            String protocolVersion) {
+        for (String route : GENERIC_STRUCTURE_ROUTE_IDS) {
+            String action = route.endsWith("ttlv_codec.decode")
+                    || route.endsWith("ttlv_item_view_from_item") ? "decode" : "construct";
+            assertRouteEventRecorded(events, caseId, targetId, route, action, protocolVersion);
+        }
+    }
+
+    private static void appendGenericStructureRouteEvents(ArrayNode events, String caseId,
+            String targetId, String treeHash) {
+        appendRouteEvent(events, caseId, GENERIC_STRUCTURE_ROUTE_IDS.get(0), targetId,
+                "org.kmipkit.ttlv.TtlvStructure.create", null, null,
+                "construct", "2.1", null, treeHash, null);
+        appendRouteEvent(events, caseId, GENERIC_STRUCTURE_ROUTE_IDS.get(1), targetId,
+                "org.kmipkit.ttlv.TtlvStructure.withItem", null, null,
+                "construct", "2.1", null, treeHash, null);
+        appendRouteEvent(events, caseId, GENERIC_STRUCTURE_ROUTE_IDS.get(2), targetId,
+                "org.kmipkit.ttlv.TtlvValue.structure", null, null,
+                "construct", "2.1", null, treeHash, null);
+        appendRouteEvent(events, caseId, GENERIC_STRUCTURE_ROUTE_IDS.get(3), targetId,
+                "org.kmipkit.ttlv.TtlvItem.create", null, null,
+                "construct", "2.1", null, treeHash, null);
+        appendRouteEvent(events, caseId, GENERIC_STRUCTURE_ROUTE_IDS.get(4), targetId,
+                "org.kmipkit.ttlv.TtlvItem.view", null, null,
+                "decode", "2.1", null, null, treeHash);
+        appendRouteEvent(events, caseId, GENERIC_STRUCTURE_ROUTE_IDS.get(5), targetId,
+                "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
+                "decode", "2.1", null, null, treeHash);
     }
 
     private static void appendMessageFieldIntegerRoutes(ArrayNode events, String caseId, String targetId,
