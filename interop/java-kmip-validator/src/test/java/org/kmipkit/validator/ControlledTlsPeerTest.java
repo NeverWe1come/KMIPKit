@@ -16,6 +16,7 @@ import org.kmipkit.extensions.AttributeSet;
 import org.kmipkit.extensions.GetAttributesRequest;
 import org.kmipkit.extensions.ModifyAttributeRequest;
 import org.kmipkit.extensions.SetAttributeRequest;
+import org.kmipkit.extensions.QueryAsyncRequestsRequest;
 import org.kmipkit.extensions.UniqueIdentifier;
 import org.kmipkit.extensions.QueryResponse;
 import org.kmipkit.extensions.QueryResponseField;
@@ -114,15 +115,15 @@ class ControlledTlsPeerTest {
                     "test-norm-structure-member-structure-member-7-7-constraint",
                     "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-7-CONSTRAINT", 0x420169, 0x420168, true));
 
-    private record StructureMemberByteStringFixture(String caseId, String targetId, boolean required) { }
+    private record StructureMemberByteStringFixture(String caseId, String targetId) { }
 
     private static final List<StructureMemberByteStringFixture> STRUCTURE_MEMBER_BYTE_STRING_FIXTURES = List.of(
             new StructureMemberByteStringFixture(
                     "test-norm-structure-member-structure-member-7-1-asynchronous-correlation-value",
-                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-1-ASYNCHRONOUS-CORRELATION-VALUE", false),
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-1-ASYNCHRONOUS-CORRELATION-VALUE"),
             new StructureMemberByteStringFixture(
                     "test-norm-structure-member-structure-member-7-2-asynchronous-correlation-value",
-                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-2-ASYNCHRONOUS-CORRELATION-VALUE", true));
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-2-ASYNCHRONOUS-CORRELATION-VALUE"));
 
     private record NormativeTarget(String caseId, String targetId) { }
 
@@ -577,6 +578,7 @@ class ControlledTlsPeerTest {
                     serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
             if ("2.1".equals(protocolVersion)) appendObjectGroupLocalRouteEvents(events);
             if ("2.1".equals(protocolVersion)) appendStructureMemberStructureRouteEvents(events);
+            if ("2.1".equals(protocolVersion)) appendStructureMemberByteStringRouteEvents(events);
             assertNewlyCataloguedLocalRoutesAreInvoked(events, protocolVersion);
         }
 
@@ -4417,6 +4419,90 @@ class ControlledTlsPeerTest {
             appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_codec.decode", fixture.targetId(),
                     "org.kmipkit.ttlv.TtlvCodec.decode", null, null, "decode", "2.1",
                     null, null, treeHash);
+        }
+    }
+
+    // OASIS KMIP 2.1 §§7.1–7.2, Tables 352–353: correlation values are Byte Strings;
+    // §7.1 is optional within its list and §7.2 requires the value.
+    private static void appendStructureMemberByteStringRouteEvents(ArrayNode events) throws Exception {
+        int rawTag = 0x420006;
+        int correlationValuesTag = 0x420176;
+        byte[] firstValue = new byte[] {0x12, 0x34, (byte) 0xfe};
+        byte[] secondValue = new byte[] {0x56, 0x00, (byte) 0x81};
+        byte[] memberWire = item(rawTag, 8, firstValue);
+        String treeHash = normalizedTreeSha256(memberWire);
+        CodecLimits limits = CodecLimits.defaults();
+
+        for (StructureMemberByteStringFixture fixture : STRUCTURE_MEMBER_BYTE_STRING_FIXTURES) {
+            try (RawTag raw = RawTag.fromRaw(rawTag);
+                    Tag tag = raw.checked();
+                    TtlvValue value = TtlvValue.ByteString(firstValue, limits);
+                    TtlvItem ignored = TtlvItem.create(tag, value, limits)) {
+                assertTrue(ignored != null, "The installed Item constructor must return an owned Item.");
+            }
+            appendRouteEvent(events, fixture.caseId(),
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.bytestring", fixture.targetId(),
+                    "org.kmipkit.ttlv.TtlvValue.ByteString", null, null, "construct", "2.1",
+                    null, treeHash, null);
+            appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_item.create", fixture.targetId(),
+                    "org.kmipkit.ttlv.TtlvItem.create", null, null, "construct", "2.1",
+                    null, treeHash, null);
+
+            try (TtlvItem decoded = TtlvCodec.decode(memberWire);
+                    TtlvItemView view = decoded.view()) {
+                assertByteStringItemView(view, rawTag, firstValue);
+            }
+            appendRouteEvent(events, fixture.caseId(),
+                    "java.generic-ttlv.function.ttlv_item_view_from_item", fixture.targetId(),
+                    "org.kmipkit.ttlv.TtlvItem.view", null, null, "decode", "2.1",
+                    null, null, treeHash);
+            appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_codec.decode", fixture.targetId(),
+                    "org.kmipkit.ttlv.TtlvCodec.decode", null, null, "decode", "2.1",
+                    null, null, treeHash);
+        }
+
+        byte[] typedPayloadWire = structure(0x42007c,
+                structure(correlationValuesTag, item(rawTag, 8, firstValue), item(rawTag, 8, secondValue)));
+        String typedPayloadHash = normalizedTreeSha256(typedPayloadWire);
+        try (QueryAsyncRequestsRequest unfiltered = QueryAsyncRequestsRequest.create();
+                TtlvStructure unfilteredPayload = unfiltered.toTtlvPayload();
+                TtlvStructureView unfilteredView = unfilteredPayload.view()) {
+            assertEquals(0, unfilteredView.itemCount(),
+                    "KMIP 2.1 §7.1 permits the optional asynchronous correlation filter to be absent.");
+        }
+        try (QueryAsyncRequestsRequest unfiltered = QueryAsyncRequestsRequest.create();
+                QueryAsyncRequestsRequest filtered = unfiltered.withCorrelationValues(
+                        List.of(firstValue, secondValue));
+                TtlvStructure payload = filtered.toTtlvPayload();
+                TtlvStructureView payloadView = payload.view();
+                TtlvItemView valuesItem = payloadView.itemAt(0);
+                Tag valuesTag = valuesItem.tag();
+                var values = valuesItem.value();
+                var valuesStructure = values.structure()) {
+            assertEquals(1, payloadView.itemCount());
+            assertEquals(correlationValuesTag, valuesTag.raw());
+            assertEquals(TtlvItemType.Structure, valuesItem.itemType());
+            assertEquals(2, valuesStructure.itemCount(),
+                    "The §7.1 correlation list must preserve both supplied values in order.");
+            try (TtlvItemView first = valuesStructure.itemAt(0);
+                    TtlvItemView second = valuesStructure.itemAt(1)) {
+                assertByteStringItemView(first, rawTag, firstValue);
+                assertByteStringItemView(second, rawTag, secondValue);
+            }
+        }
+        StructureMemberByteStringFixture queryFilterFixture = STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.get(0);
+        appendRouteEvent(events, queryFilterFixture.caseId(),
+                "java.typed-protocol.model.org.kmipkit.extensions.queryasyncrequestsrequest"
+                        + ".withcorrelationvalues", queryFilterFixture.targetId(),
+                "org.kmipkit.extensions.QueryAsyncRequestsRequest.withCorrelationValues", null, null,
+                "construct", "2.1", null, typedPayloadHash, null);
+    }
+
+    private static void assertByteStringItemView(TtlvItemView view, int rawTag, byte[] expectedValue) {
+        try (Tag tag = view.tag(); var value = view.value()) {
+            assertEquals(rawTag, tag.raw());
+            assertEquals(TtlvItemType.ByteString, view.itemType());
+            assertArrayEquals(expectedValue, value.bytes());
         }
     }
 
