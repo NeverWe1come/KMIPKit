@@ -28,3 +28,11 @@ TLS/HTTPS. Its focused test checks 60 peer exchanges and 36 request-based
 construct/send/decode cells. This closes only that scenario slice: the latest
 exact-head CI on parent commit `3a21e925` still reports 25,723 C validator
 recipe cells pending, so the exhaustive route gate remains open.
+
+For FR-003 and FR-009, C now executes the read-only
+`test-batch-count-mismatch-rejected` scenario through the installed typed batch
+constructors. Twelve controlled-peer checks across both protocol versions,
+three encodings, and two transports assert that transmitted Batch Count
+matches the two request items. This exercises the typed API's derived count;
+it does not create or send an arbitrary malformed message. The broader C
+matrix and all-language evidence remain open.

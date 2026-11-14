@@ -1154,3 +1154,26 @@ FR-005, FR-006, and FR-009.
   and coverage-matrix suite. `route_capabilities.py --check` passes with the
   regenerated manifest. The broader installed C route matrix still has
   pending recipes, so the stacked PR remains WIP.
+
+## Evidence: C typed batches derive Batch Count from their items
+
+`test-batch-count-mismatch-rejected` now runs as a read-only controlled-peer
+exchange. It submits two typed request items through the public C batch API;
+the peer accepts the request only when Batch Count is 2 and the ordered items
+are Get and Get Attribute List. The C API has no caller-supplied Batch Count
+setter, so an inconsistent count cannot enter this typed send path. The recipe
+runs for KMIP 2.0 and 2.1 with TTLV, JSON, and XML over raw TLS and HTTPS.
+
+- Red commit `d61a3341`: the regression expected 75 checks but received 60
+  because the catalog classified this request/transport scenario as local-only.
+- Green commit `82a1fb9c`: the catalog generator now classifies it as a
+  read-only server exchange; the C driver and peer recipe exercise the typed
+  two-item batch. The first full CTest run then exposed the missing expected
+  operation in the aggregate TLS harness; that expectation was corrected
+  before the passing rerun.
+- Verification: the focused batch test passed 72 total peer checks, including
+  all 12 count-mismatch scenario combinations; both protocol-specific TLS
+  peers also passed. Full CTest passed 7/7 in 80.69 seconds. The normative
+  scenario test, catalog generation check, and route-capability audit passed.
+  Exact-head PR CI remains open and PR #212 stays WIP while the broader C route
+  matrix has pending recipes.

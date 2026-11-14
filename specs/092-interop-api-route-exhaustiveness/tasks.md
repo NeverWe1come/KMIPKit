@@ -454,3 +454,13 @@ the peer checks typed and generic Ticket access and never records the Ticket.
   tests in 77.18 seconds, including the route matrix contracts and the
   KMIP 2.0/2.1 controlled TLS peers. Feature traceability passed 31/31 tests.
   Exact-head CI and the full C route matrix remain open.
+
+## C typed batch count evidence
+
+The C controlled-peer case `test-batch-count-mismatch-rejected` now exercises
+the public typed batch API as a read-only network route. Across KMIP 2.0/2.1,
+TTLV/JSON/XML, and raw TLS/HTTPS, it sends Get plus Get Attribute List and the
+peer validates Batch Count 2 against the two Batch Items. This demonstrates
+that the typed send path derives the count from its items and exposes no count
+override. Its 12 focused checks pass; this does not complete T006/T007/T009 or
+the cross-language matrix.
