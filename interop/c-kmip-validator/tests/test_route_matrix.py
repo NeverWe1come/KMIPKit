@@ -769,7 +769,7 @@ class RouteMatrixTests(unittest.TestCase):
 
         self.assertEqual(
             route_peer.recipe_for_case(case, None),
-            ((25, 26), 'async_poll_cancel_no_recursion'))
+            ((26, 25), 'async_poll_cancel_no_recursion'))
 
         manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
         selected = {**catalog, 'test_cases': [case]}
@@ -778,15 +778,16 @@ class RouteMatrixTests(unittest.TestCase):
 
         self.assertEqual(len(checks), 6)
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
-        self.assertTrue(all(check.get('peer_async_interleaving_operations') == [25, 26] and
+        self.assertTrue(all(check.get('peer_async_interleaving_operations') == [26, 25] and
                             check.get('peer_async_response_statuses') == [0, 0] and
                             check.get('peer_async_poll_no_correlation') is True and
-                            check.get('peer_async_cancel_no_correlation') is True
+                            check.get('peer_async_cancel_echo_matches') is True and
+                            check.get('peer_async_indicator_absent') is True
                             for check in checks), checks)
         for symbol, action, count in (
-                ('kmipkit_client_execute_cancel', 'send', 6),
+                ('kmipkit_client_execute_cancel', 'send', 12),
                 ('kmipkit_client_execute_poll', 'send', 6),
-                ('kmipkit_client_async_operation_outcome_cancel_response_v1', 'decode', 1),
+                ('kmipkit_client_async_operation_outcome_cancel_response_v1', 'decode', 2),
                 ('kmipkit_client_async_operation_outcome_poll_response_v1', 'decode', 1)):
             with self.subTest(symbol=symbol, action=action):
                 self.assertEqual(sum(event['public_api_symbol'] == symbol and

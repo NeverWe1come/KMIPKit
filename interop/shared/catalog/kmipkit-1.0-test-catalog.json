@@ -206320,7 +206320,8 @@
             "asynchronous_indicator": "omitted"
           },
           "expected": {
-            "poll_or_cancel_response": "not Pending and contains no async correlation"
+            "poll_response": "terminal and contains no async correlation",
+            "cancel_response": "not Pending and echoes the request correlation"
           },
           "mode": "server_exchange",
           "mutation": "read_only",
@@ -206329,8 +206330,8 @@
             "inspect_response_headers_and_payloads"
           ],
           "assertions": [
-            "poll_and_cancel_are_not_returned_as_pending",
-            "poll_and_cancel_responses_do_not_create_async_correlations"
+            "poll_response_is_terminal_without_async_correlation",
+            "cancel_success_echoes_request_correlation_without_pending_status"
           ],
           "normative_refs": [
             {
@@ -206437,8 +206438,8 @@
           "inspect_response_headers_and_payloads"
         ],
         "assertions": [
-          "poll_and_cancel_are_not_returned_as_pending",
-          "poll_and_cancel_responses_do_not_create_async_correlations"
+          "poll_response_is_terminal_without_async_correlation",
+          "cancel_success_echoes_request_correlation_without_pending_status"
         ],
         "mutation": "read_only",
         "status": "planned"
