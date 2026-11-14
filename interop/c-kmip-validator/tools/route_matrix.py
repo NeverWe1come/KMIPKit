@@ -63,6 +63,21 @@ def should_execute_attribute_case(cell: dict, case: dict, target: dict) -> bool:
     )
 
 
+def uses_scalar_target_fixture(cell: dict, case: dict, target: dict) -> bool:
+    """Choose scalar fixtures only for routes that consume a scalar target value."""
+    tag_target_case = (case.get('requires', {}).get('enum_type') == 'Tag'
+                       and target['kind'] in {'tag', 'tag_range'})
+    scalar_target_case = (
+        case['category'] == 'normative_inventory' and not case.get('requires', {}).get('protocol_scenario')
+    ) or target['kind'] in {'operation', 'object_type'} or tag_target_case
+    request_message_parser = (
+        target['kind'] == 'tag'
+        and target.get('name') == 'Request Message'
+        and cell['public_api_symbol'] == 'kmipkit_request_message_from_ttlv'
+    )
+    return scalar_target_case and not request_message_parser
+
+
 def require_complete(events: list[dict], pending: list[dict]) -> None:
     if pending:
         raise ValueError(f'{len(pending)} pending validator recipe cells')
@@ -570,11 +585,7 @@ def run(output: Path, binary: Path | None = None) -> int:
         case = cases[cell['case_id']]
         tag_target_case = (case.get('requires', {}).get('enum_type') == 'Tag'
                            and target['kind'] in {'tag', 'tag_range'})
-        # Tag-family cells must use the expanded tag itself, including reserved tags.
-        # Other semantic scenarios still need their dedicated request recipes.
-        scalar_target_case = (
-            case['category'] == 'normative_inventory' and not case.get('requires', {}).get('protocol_scenario')
-        ) or target['kind'] in {'operation', 'object_type'} or tag_target_case
+        scalar_target_case = uses_scalar_target_fixture(cell, case, target)
         item_type_target_case = (
             target['kind'] == 'enumeration_value'
             and 'KMIPKIT-ELEM-ENUMERATION-ITEM-TYPE'
