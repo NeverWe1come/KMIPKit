@@ -33,6 +33,10 @@
   request-omitted, and required success-response fixtures through the installed
   C ABI and controlled TLS peer across all six encoding/transport combinations
   for each applicable version.
+- [x] T013 Exercise both direct and `GetAttributeListRequest`-converted C
+  Get Attribute List batch items in the Create/Activate/Get Attribute List/
+  Revoke/Destroy workflow across both protocol versions and all six
+  encoding/transport combinations.
 
 T006 and T007 remain open until each separate language validator consumes the
 generated matrix, invokes every named public route, exchanges requests and
@@ -563,3 +567,24 @@ and confirms the peer's object state returns to baseline.
   across the operation and RSA-2048 catalog cases. Full CTest passed 7/7 in
   83.62 seconds, including both controlled TLS versions. Full C matrix,
   exact-head CI, and Rust/Java/Python parity remain open.
+
+## Development evidence: C request-converted Get Attribute List batch variant
+
+- Normative scope: OASIS KMIP 2.0 §§6.1.8, 6.1.1, 6.1.21, 6.1.40, 6.1.15,
+  8.2–8.6, 9.5–9.8, and 4.50; KMIP 2.1 §§6.1.8, 6.1.1, 6.1.21, 6.1.44,
+  6.1.15, 8.2–8.6, 9.5–9.8, and 4.57. This extends KMIPKIT-0092-FR-003,
+  FR-005, and FR-009.
+- Red commit `4db6e3e93`: require 24 controlled exchanges and an observed
+  `kmipkit_client_batch_item_get_attribute_list_from_request` call in addition
+  to the direct constructor. The focused test failed at 12 checks before the
+  standalone variant was registered.
+- Green commit `983472f08`: run the same five-item batch through both direct
+  and `GetAttributeListRequest`-converted Get Attribute List construction.
+- Verification: the focused test passed all 24 controlled peer checks;
+  `ctest --test-dir interop/c-kmip-validator/build --output-on-failure` passed
+  7/7. Full local run `c-route-25ebc1e0-3153-40f3-a26e-f16553b6beb4`, using
+  pinned library commit `489fafc79ef89db2524eafa7a6c6482f5cf75d97` and
+  artifact SHA-256 `980e85fdf6982b52360895b9c0713fbef42b294d22fbeb7d71136fe32235af65`,
+  records 42,190 of 66,736 cells invoked, zero failed, and 24,546 pending
+  `validator_recipe_pending` cells. The 38-cell reduction covers this batch
+  variant; matrix completeness and exact-head CI remain open.

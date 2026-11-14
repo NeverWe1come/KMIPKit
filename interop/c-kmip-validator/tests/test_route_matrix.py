@@ -3309,6 +3309,9 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertFalse(events)
 
     def test_batch_create_activate_get_attribute_list_destroy_uses_one_checked_request(self):
+        # KMIP 2.0 §§6.1.8, 6.1.1, 6.1.21, 6.1.40, 6.1.15, 8.2–8.6,
+        # 9.5–9.8, and 4.50; KMIP 2.1 §§6.1.8, 6.1.1, 6.1.21, 6.1.44,
+        # 6.1.15, 8.2–8.6, 9.5–9.8, and 4.57 govern the route and batch IDs.
         from artifact_support import ROOT
         from route_peer import execute_network_cells
         catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())

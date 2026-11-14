@@ -127,3 +127,22 @@ remain open.
   `912974f981dba88a89224c923275d8af3f3284cf50a45bfe29d2c3d33dfc4764`.
 - This is a bounded Archive slice. The full C route matrix, exact-head CI, and
   Rust/Java/Python parity remain open.
+
+### C request-converted Get Attribute List batch variant
+
+For KMIPKIT-0092-FR-003, FR-005, and FR-009, the C
+`test-batch-create-activate-destroy` route now runs the Get Attribute List item
+through both `kmipkit_client_batch_item_get_attribute_list` and
+`kmipkit_client_batch_item_get_attribute_list_from_request`. OASIS KMIP 2.0
+§§6.1.8, 6.1.1, 6.1.21, 6.1.40, 6.1.15, 8.2–8.6, 9.5–9.8, and 4.50, and KMIP
+2.1 §§6.1.8, 6.1.1, 6.1.21, 6.1.44, 6.1.15, 8.2–8.6, 9.5–9.8, and 4.57
+govern the ordered Create/Activate/Get Attribute List/Revoke/Destroy batch and
+its ID Placeholder usage. The controlled peer validated 24 exchanges across
+both versions, three encodings, two transports, and both construction routes.
+The full local matrix now records 42,190/66,736 invoked cells, zero failed,
+and 24,546 pending in run `c-route-25ebc1e0-3153-40f3-a26e-f16553b6beb4`,
+using pinned library commit `489fafc79ef89db2524eafa7a6c6482f5cf75d97`
+with artifact SHA-256
+`980e85fdf6982b52360895b9c0713fbef42b294d22fbeb7d71136fe32235af65`. This
+route slice is covered; the exhaustive matrix, exact-head CI, and parity for
+the other languages remain open.
