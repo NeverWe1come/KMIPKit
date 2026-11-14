@@ -1009,3 +1009,23 @@ protocol versions.
   hashes across both constructors; the CMake build passed; and CTest passed
   `test_c_validator` plus both controlled TLS peers (3/3). The full C route
   matrix remains incomplete outside this operation.
+
+### C mismatched Batch Count route
+
+The approved local-model case now executes the typed two-item Get / Get
+Attribute List batch through the installed C consumer and the controlled peer.
+The peer validates that the encoded Request Header Batch Count equals the two
+Batch Items before accepting the request; the consumer verifies the two typed
+response items. This exercises the plan's recompute-before-send branch without
+introducing a public manual Batch Count setter.
+
+- Red commit `0320903b` failed because the case had no installed C route recipe.
+- Green commit `ce7b7db1` connects the catalog case to the existing two-read
+  batch workflow and peer assertions.
+- Normative references: OASIS KMIP 2.0 and 2.1 §§8.1–8.6, §§9.5–9.8 and §9.21;
+  Get §6.1.19; Get Attribute List §6.1.21.
+- Verification: the focused route passed all 12 version/encoding/transport
+  exchanges; `test_route_matrix.py` passed 152/152; CTest passed 7/7, including
+  both controlled TLS peers; CMake build and Python syntax checks passed. The
+  full route matrix and its completeness gate were not rerun for this slice;
+  the overall C route matrix remains incomplete and the parent PR remains WIP.

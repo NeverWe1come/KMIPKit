@@ -32,3 +32,16 @@ state. It covers KMIP 2.0 §6.1.3/Table 155 and §11.1/Table 391, plus KMIP 2.1
 §6.1.3/Table 170 and §11.1/Table 429, over all six encoding/transport pairs.
 This is one operation's evidence only; the four-language and complete-matrix
 requirements above remain open.
+
+### C Batch Count mismatch slice
+
+For KMIPKIT-0092-FR-003, FR-005, and FR-009, the installed C route test
+`RouteMatrixTests.test_batch_count_mismatch_is_recomputed_before_transport`
+executes the catalogued two-item Get / Get Attribute List case through the
+public typed batch API. The controlled peer checks that the request's Batch
+Count equals its two Batch Items before returning two successful results. It
+covers OASIS KMIP 2.0 and 2.1 §§8.1–8.6, §§9.5–9.8 and §9.21, plus Get
+§6.1.19 and Get Attribute List §6.1.21, over all six encoding/transport pairs.
+This verifies the recomputed-count path without adding an API for callers to
+set Batch Count manually. It does not close the C route matrix or assert a
+rejection path for inconsistent generic TTLV input.
