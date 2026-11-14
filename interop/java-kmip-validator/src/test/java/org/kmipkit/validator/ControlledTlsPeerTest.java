@@ -484,6 +484,9 @@ class ControlledTlsPeerTest {
             appendGenericDataTypeRouteEvents(events, dataTypeFixtures, dataTypeVectors, protocolVersion);
             appendNormativeMessageFieldGenericRouteEvents(events, protocolVersion);
             appendNormativeRequestMessageParseEvents(events, protocolVersion);
+            if ("2.1".equals(protocolVersion)) {
+                appendAsynchronousRequestOperationStructureRouteEvents(events);
+            }
             LocalCatalogRouteChecks.executeTags(readRouteEvidenceCatalog(), protocolVersion, genericOnlyTagCaseIds(),
                     invocation -> appendLocalCatalogInvocation(events, protocolVersion, invocation));
             Set<String> typedTagIdentityCases = missingTypedTagIdentityCaseIds(events, protocolVersion);
@@ -925,6 +928,7 @@ class ControlledTlsPeerTest {
         int normativeBatchItemAccessorRouteEventCount = KMIP_2_0_AND_2_1.size() * 10;
         int newAttributePayloadRouteEventCount = KMIP_2_0_AND_2_1.size() * 3 * 20;
         int objectGroupLocalRouteEventCount = 3;
+        int asynchronousRequestOperationStructureRouteEventCount = 6;
         int structureMemberStructureRouteEventCount = STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size() * 4;
         int structureMemberByteStringRouteEventCount = STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.stream()
                 .mapToInt(fixture -> 4 + (fixture.typedQueryFilter() ? 1 : 0)).sum();
@@ -959,6 +963,7 @@ class ControlledTlsPeerTest {
                         + normativeMessageFieldGenericRouteEventCount + normativeMessageFieldParserRouteEventCount
                         + normativeBatchItemAccessorRouteEventCount + newAttributePayloadRouteEventCount
                         + credentialEnvelopeEventCount + objectGroupLocalRouteEventCount
+                        + asynchronousRequestOperationStructureRouteEventCount
                         + structureMemberStructureRouteEventCount + structureMemberByteStringRouteEventCount
                         + structureMemberValueRouteEventCount
                         + batchErrorContinuationEventCount + genericTagEventCount + typedTagIdentityEventCount
@@ -984,7 +989,7 @@ class ControlledTlsPeerTest {
         long dataTypeCaseCount = dataTypeFixtures.stream().map(DataTypeFixture::caseId).distinct().count();
         long localEnumerationCaseCount = localEnumerationFixtures.stream()
                 .map(EnumerationFixture::caseId).distinct().count();
-        assertEquals(15 + enumerationFixtures.size() + localEnumerationCaseCount + bitmaskCaseCount
+        assertEquals(16 + enumerationFixtures.size() + localEnumerationCaseCount + bitmaskCaseCount
                         + dataTypeCaseCount
                         + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + genericTagCaseIds.size()
                         + typedTagIdentityCaseIds().size() + referencedEnumCaseCount
@@ -3290,6 +3295,7 @@ class ControlledTlsPeerTest {
         caseIds.add("test-norm-tag-tag-420051");
         caseIds.add("test-norm-message-field-message-field-8-3-ephemeral");
         caseIds.add("test-norm-structure-member-structure-member-7-23-object-group");
+        caseIds.add("test-norm-operation-structure-operation-structure-7-2-asynchronous-request");
         STRUCTURE_MEMBER_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         STRUCTURE_MEMBER_VALUE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
@@ -4704,6 +4710,93 @@ class ControlledTlsPeerTest {
             assertEquals(rawTag, tag.raw());
             assertEquals(TtlvItemType.ByteString, view.itemType());
             assertArrayEquals(expectedValue, value.bytes());
+        }
+    }
+
+    // OASIS KMIP 2.1 §7.2 Table 353: Asynchronous Request is a Structure with three required fields.
+    private static void appendAsynchronousRequestOperationStructureRouteEvents(ArrayNode events) throws Exception {
+        String caseId = "test-norm-operation-structure-operation-structure-7-2-asynchronous-request";
+        String targetId = "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-2-ASYNCHRONOUS-REQUEST";
+        int rawTag = 0x420173;
+        long operation = 0x18;
+        long processingStage = 2;
+        long submissionDate = 1_800_000_000L;
+        byte[] wire = structure(rawTag,
+                item(0x42005c, 5, intBytes(Math.toIntExact(operation))),
+                item(0x420175, 5, intBytes(Math.toIntExact(processingStage))),
+                item(0x420174, 11, longBytes(submissionDate)));
+        String treeHash = normalizedTreeSha256(wire);
+        CodecLimits limits = CodecLimits.defaults();
+
+        TtlvStructure fields = TtlvStructure.create();
+        fields = appendTtlvItem(fields, 0x42005c, TtlvValue.Enumeration(operation), limits);
+        fields = appendTtlvItem(fields, 0x420175, TtlvValue.Enumeration(processingStage), limits);
+        fields = appendTtlvItem(fields, 0x420174, TtlvValue.DateTimeExtended(submissionDate), limits);
+        TtlvStructure completedFields = fields;
+        try (completedFields;
+                TtlvValue structureValue = TtlvValue.structure(completedFields, limits);
+                RawTag raw = RawTag.fromRaw(rawTag);
+                Tag tag = raw.checked();
+                TtlvItem created = TtlvItem.create(tag, structureValue, limits);
+                var view = created.view();
+                Tag viewedTag = view.tag();
+                var value = view.value();
+                var structureView = value.structure()) {
+            assertEquals(rawTag, viewedTag.raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertAsynchronousRequestFields(structureView, operation, processingStage, submissionDate);
+        }
+        appendRouteEvent(events, caseId, "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.create",
+                targetId, "org.kmipkit.ttlv.TtlvStructure.create", null, null,
+                "construct", "2.1", null, treeHash, null);
+        appendRouteEvent(events, caseId, "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvstructure.withitem",
+                targetId, "org.kmipkit.ttlv.TtlvStructure.withItem", null, null,
+                "construct", "2.1", null, treeHash, null);
+        appendRouteEvent(events, caseId, "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure",
+                targetId, "org.kmipkit.ttlv.TtlvValue.structure", null, null,
+                "construct", "2.1", null, treeHash, null);
+        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_item.create",
+                targetId, "org.kmipkit.ttlv.TtlvItem.create", null, null,
+                "construct", "2.1", null, treeHash, null);
+        appendRouteEvent(events, caseId, "java.generic-ttlv.function.ttlv_item_view_from_item",
+                targetId, "org.kmipkit.ttlv.TtlvItem.view", null, null,
+                "decode", "2.1", null, null, treeHash);
+
+        try (TtlvItem decoded = TtlvCodec.decode(wire);
+                var view = decoded.view();
+                var decodedTag = view.tag();
+                var value = view.value();
+                var structureView = value.structure()) {
+            assertEquals(rawTag, decodedTag.raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertAsynchronousRequestFields(structureView, operation, processingStage, submissionDate);
+        }
+        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_codec.decode",
+                targetId, "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
+                "decode", "2.1", null, null, treeHash);
+    }
+
+    private static void assertAsynchronousRequestFields(TtlvStructureView fields, long operation,
+            long processingStage, long submissionDate) throws Exception {
+        assertEquals(3, fields.itemCount());
+        try (TtlvItemView operationField = fields.itemAt(0);
+                Tag operationTag = operationField.tag();
+                var operationValue = operationField.value();
+                TtlvItemView processingStageField = fields.itemAt(1);
+                Tag processingStageTag = processingStageField.tag();
+                var processingStageValue = processingStageField.value();
+                TtlvItemView submissionDateField = fields.itemAt(2);
+                Tag submissionDateTag = submissionDateField.tag();
+                var submissionDateValue = submissionDateField.value()) {
+            assertEquals(0x42005c, operationTag.raw());
+            assertEquals(TtlvItemType.Enumeration, operationField.itemType());
+            assertEquals(operation, operationValue.enumeration());
+            assertEquals(0x420175, processingStageTag.raw());
+            assertEquals(TtlvItemType.Enumeration, processingStageField.itemType());
+            assertEquals(processingStage, processingStageValue.enumeration());
+            assertEquals(0x420174, submissionDateTag.raw());
+            assertEquals(TtlvItemType.DateTimeExtended, submissionDateField.itemType());
+            assertEquals(submissionDate, submissionDateValue.dateTimeExtended());
         }
     }
 
