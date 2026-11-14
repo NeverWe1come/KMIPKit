@@ -1640,3 +1640,52 @@ exclusion rules before retaining these planned cells. FR-002/FR-009 require
 zero pending cells for matrix completeness; the Java selected-scope workflow
 and ledger comparison do not enforce the global requirement. This slice does
 not complete the Java matrix, and the PR remains WIP.
+
+## KMIP 2.0/2.1 Signature Data routes
+
+KMIP 2.0 §7.32 and KMIP 2.1 §7.38 define Signature Data as a Byte String
+used to transfer signature data in cryptographic operations; its tag is
+allocated in §§11.54/11.56. The selected Java fixture exercises six applicable
+local generic routes in both protocol versions: `TtlvStructure.create`,
+`TtlvStructure.withItem`, `TtlvValue.ByteString`, `TtlvItem.create`,
+`TtlvItem.view`, and `TtlvCodec.decode`. It asserts the exact tag, Byte String
+type, and fixture bytes through construction, view, and decode.
+
+Red commit `44642769` requires these routes and fails on the missing
+`TtlvStructure.create` event for KMIP 2.0. Green commit `db754a62` adds the
+catalogued Signature Data fixture to the existing scalar operation-structure
+runner, which invokes and verifies all six routes in both versions. The
+Refactor commit refreshes the ledger and route documentation; no route cell is
+removed or treated as inapplicable.
+
+Local verification used installed Java artifact
+`489fafc79ef89db2524eafa7a6c6482f5cf75d97` with SHA-256
+`830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e`:
+
+```sh
+TMPDIR="$PWD/build/native-test-tmp" \
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/native-test-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+python3 -m unittest tools.normative_catalog.tests.test_feature_traceability \
+  scripts.tests.test_requirement_traceability
+```
+
+The focused test and full Java consumer suite pass; the suite reports 54 tests
+with zero failures, errors, or skips. The route validator accepts 22,845/22,845
+selected cells with zero failed cells. The full ledger records 71,463 planned,
+22,845 executed, and 48,618 pending cells across 1,290 case IDs. Every pending
+cell remains `route_evidence_not_emitted`, meaning a validated invocation
+record has not been emitted for that planned cell. The shared catalog and
+capability matrix first apply protocol-version, public-route,
+encoding/transport, and source-backed exclusion rules; any cell still planned
+is applicable. No pending cells are API unavailability exemptions. FR-002 and
+FR-009 require zero pending cells for matrix completion. The Java selected
+scope and ledger comparison do not enforce global completion, so this slice
+does not complete the matrix and the PR remains WIP.

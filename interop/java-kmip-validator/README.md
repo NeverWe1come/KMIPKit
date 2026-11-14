@@ -101,8 +101,8 @@ baseline, regenerate the checked-in ledger with
 rejects generated ledgers that do not record successful invocations.
 The generated ledger retains the artifact
 SHA-256 for each build; that build-specific digest is not used as a coverage
-baseline. These recipes execute 22,833 of 71,463 planned Java route cells, with
-no failed cells; the ledger records the other 48,630 as pending and does not imply
+baseline. These recipes execute 22,845 of 71,463 planned Java route cells, with
+no failed cells; the ledger records the other 48,618 as pending and does not imply
 vendor interoperability or full-matrix completion. Local TTLV recipes exercise 51
 enumeration families, all six bitmask aggregate cases, and all 44 individual
 bitmask value cases through the applicable
@@ -126,7 +126,7 @@ KMIP 2.1 §§7.3, 7.4, 7.17; tag allocations §§11.54/11.56).
 Correlation Value exercises six local generic routes in both versions and the
 typed `ClientBatchItemResult.pendingCorrelationValue` accessor against a
 controlled pending Query response (KMIP 2.0 §7.4 and KMIP 2.1 §7.8; tag
-allocation §§11.54/11.56).
+allocation §§11.54/11.56). Signature Data exercises its six local Byte String constructor, Structure, Item, view, and decoder routes in both versions (KMIP 2.0 §7.32; KMIP 2.1 §7.38; tag allocations §§11.54/11.56).
 Extension Information exercises its six generic Structure/Item routes and the
 typed `ExtensionInformation.toTtlv` encoder in both versions; the fixture checks
 all seven source-ordered fields and exact values (KMIP 2.0 §7.9 Table 329 and
@@ -162,7 +162,7 @@ one direct Name Item, and the installed direct constructors, request-to-batch
 conversions, TTLV payload conversion, controlled TLS exchange, and typed
 response readers are invoked under the operation-specific §6.1 tables.
 
-The 48,630 pending cells belong to 1,291 case IDs listed in the generated
+The 48,618 pending cells belong to 1,290 case IDs listed in the generated
 ledger; every one has the reason `route_evidence_not_emitted`. The applicability
 rule is the shared catalog and capability matrix after protocol-version,
 public-route, encoding/transport, and source-backed exclusion filters. A cell
