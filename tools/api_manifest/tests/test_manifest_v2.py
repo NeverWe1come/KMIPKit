@@ -4733,7 +4733,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         )
 
         self.assertEqual("declared", capability["capabilityState"])
-        self.assertEqual("evidence_incomplete", baseline["claim_state"])
+        self.assertEqual("evidence_complete", baseline["claim_state"])
         for method in methods:
             with self.subTest(method=method):
                 client_name = f"kmipkit_client::Client::{method}"
