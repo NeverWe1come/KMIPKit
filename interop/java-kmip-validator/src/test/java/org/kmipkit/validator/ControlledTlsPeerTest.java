@@ -13,6 +13,7 @@ import org.kmipkit.extensions.ClientBatchResponse;
 import org.kmipkit.extensions.AddAttributeRequest;
 import org.kmipkit.extensions.AttributeReference;
 import org.kmipkit.extensions.AttributeSet;
+import org.kmipkit.extensions.ExtensionInformation;
 import org.kmipkit.extensions.GetAttributesRequest;
 import org.kmipkit.extensions.ModifyAttributeRequest;
 import org.kmipkit.extensions.SetAttributeRequest;
@@ -550,6 +551,7 @@ class ControlledTlsPeerTest {
             for (ScalarOperationStructureFixture fixture : SCALAR_OPERATION_STRUCTURE_FIXTURES) {
                 appendScalarOperationStructureRouteEvents(events, fixture, protocolVersion);
             }
+            appendExtensionInformationRouteEvents(events, protocolVersion);
             LocalCatalogRouteChecks.executeTags(readRouteEvidenceCatalog(), protocolVersion, genericOnlyTagCaseIds(),
                     invocation -> appendLocalCatalogInvocation(events, protocolVersion, invocation));
             Set<String> typedTagIdentityCases = missingTypedTagIdentityCaseIds(events, protocolVersion);
@@ -995,6 +997,7 @@ class ControlledTlsPeerTest {
         int operationStructureRouteEventCount = OPERATION_STRUCTURE_FIXTURES.size() * 6;
         int scalarOperationStructureRouteEventCount = SCALAR_OPERATION_STRUCTURE_FIXTURES.size()
                 * KMIP_2_0_AND_2_1.size() * 6;
+        int extensionInformationRouteEventCount = KMIP_2_0_AND_2_1.size() * 7;
         int pendingCorrelationAccessorEventCount = KMIP_2_0_AND_2_1.size();
         int structureMemberStructureRouteEventCount = STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size() * 4;
         int structureMemberByteStringRouteEventCount = STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.stream()
@@ -1033,6 +1036,7 @@ class ControlledTlsPeerTest {
                         + asynchronousRequestOperationStructureRouteEventCount
                         + operationStructureRouteEventCount
                         + scalarOperationStructureRouteEventCount
+                        + extensionInformationRouteEventCount
                         + pendingCorrelationAccessorEventCount
                         + structureMemberStructureRouteEventCount + structureMemberByteStringRouteEventCount
                         + structureMemberValueRouteEventCount
@@ -5118,26 +5122,139 @@ class ControlledTlsPeerTest {
         }
     }
 
+    // OASIS KMIP 2.0 §7.9 / §11.54 and KMIP 2.1 §7.13 / §11.56.
+    private static void appendExtensionInformationRouteEvents(ArrayNode events, String protocolVersion)
+            throws Exception {
+        String caseId = "test-norm-operation-structure-operation-structure-7-13-extension-information";
+        String targetId = "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-13-EXTENSION-INFORMATION";
+        int structureTag = 0x4200a4;
+        int extensionTag = 0x540001;
+        int extensionType = TtlvItemType.TextString.code();
+        int extensionEnumeration = 7;
+        int parentStructureTag = 0x420010;
+        boolean extensionAttribute = true;
+        String extensionName = "kmipkit-route-evidence";
+        String extensionDescription = "Installed Extension Information route";
+        byte[] extensionNameBytes = extensionName.getBytes(StandardCharsets.UTF_8);
+        byte[] extensionDescriptionBytes = extensionDescription.getBytes(StandardCharsets.UTF_8);
+        byte[] wire = structure(structureTag,
+                item(0x4200a5, TtlvItemType.TextString.code(), extensionNameBytes),
+                item(0x4200a6, TtlvItemType.Integer.code(), intBytes(extensionTag)),
+                item(0x4200a7, TtlvItemType.Enumeration.code(), intBytes(extensionType)),
+                item(0x420129, TtlvItemType.Integer.code(), intBytes(extensionEnumeration)),
+                item(0x42012a, TtlvItemType.Boolean.code(), longBytes(1)),
+                item(0x42012b, TtlvItemType.Integer.code(), intBytes(parentStructureTag)),
+                item(0x42012c, TtlvItemType.TextString.code(), extensionDescriptionBytes));
+        String treeHash = normalizedTreeSha256(wire);
+        CodecLimits limits = CodecLimits.defaults();
+
+        TtlvStructure fields = TtlvStructure.create();
+        fields = appendTtlvItem(fields, 0x4200a5, TtlvValue.TextString(extensionNameBytes, limits), limits);
+        fields = appendTtlvItem(fields, 0x4200a6, TtlvValue.Integer(extensionTag), limits);
+        fields = appendTtlvItem(fields, 0x4200a7, TtlvValue.Enumeration(extensionType), limits);
+        fields = appendTtlvItem(fields, 0x420129, TtlvValue.Integer(extensionEnumeration), limits);
+        fields = appendTtlvItem(fields, 0x42012a, TtlvValue.Boolean(extensionAttribute), limits);
+        fields = appendTtlvItem(fields, 0x42012b, TtlvValue.Integer(parentStructureTag), limits);
+        fields = appendTtlvItem(fields, 0x42012c,
+                TtlvValue.TextString(extensionDescriptionBytes, limits), limits);
+        TtlvStructure completedFields = fields;
+        try (completedFields;
+                TtlvValue structureValue = TtlvValue.structure(completedFields, limits);
+                RawTag raw = RawTag.fromRaw(structureTag);
+                Tag tag = raw.checked();
+                TtlvItem created = TtlvItem.create(tag, structureValue, limits);
+                var view = created.view();
+                Tag viewedTag = view.tag();
+                var value = view.value();
+                var structureView = value.structure()) {
+            assertEquals(structureTag, viewedTag.raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertExtensionInformationFields(structureView, extensionNameBytes, extensionTag, extensionType,
+                    extensionEnumeration, extensionAttribute, parentStructureTag, extensionDescriptionBytes);
+        }
+        try (TtlvItem decoded = TtlvCodec.decode(wire);
+                var view = decoded.view();
+                Tag tag = view.tag();
+                var value = view.value();
+                var structureView = value.structure()) {
+            assertEquals(structureTag, tag.raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertExtensionInformationFields(structureView, extensionNameBytes, extensionTag, extensionType,
+                    extensionEnumeration, extensionAttribute, parentStructureTag, extensionDescriptionBytes);
+        }
+
+        ExtensionInformation information = ExtensionInformation.create(extensionName);
+        information = ExtensionInformation.with_tag(information, extensionTag);
+        information = ExtensionInformation.with_type(information, TtlvItemType.TextString);
+        information = ExtensionInformation.with_enumeration(information, extensionEnumeration);
+        information = ExtensionInformation.with_attribute(information, extensionAttribute);
+        information = ExtensionInformation.with_parent_structure_tag(information, parentStructureTag);
+        information = ExtensionInformation.with_description(information, extensionDescription);
+        try (ExtensionInformation completedInformation = information;
+                TtlvStructure typedFields = ExtensionInformation.toTtlv(completedInformation);
+                TtlvStructureView typedView = typedFields.view()) {
+            assertExtensionInformationFields(typedView, extensionNameBytes, extensionTag, extensionType,
+                    extensionEnumeration, extensionAttribute, parentStructureTag, extensionDescriptionBytes);
+        }
+
+        appendGenericStructureRouteEvents(events, caseId, targetId, protocolVersion, treeHash);
+        appendRouteEvent(events, caseId, "java.typed-protocol.function.extension_information_to_ttlv",
+                targetId, "org.kmipkit.extensions.ExtensionInformation.toTtlv", null, null,
+                "encode", protocolVersion, null, treeHash, null);
+    }
+
+    private static void assertExtensionInformationFields(TtlvStructureView fields, byte[] extensionName,
+            int extensionTag, int extensionType, int extensionEnumeration, boolean extensionAttribute,
+            int parentStructureTag, byte[] extensionDescription) throws Exception {
+        int[] tags = {0x4200a5, 0x4200a6, 0x4200a7, 0x420129, 0x42012a, 0x42012b, 0x42012c};
+        TtlvItemType[] types = {TtlvItemType.TextString, TtlvItemType.Integer, TtlvItemType.Enumeration,
+                TtlvItemType.Integer, TtlvItemType.Boolean, TtlvItemType.Integer, TtlvItemType.TextString};
+        assertEquals(tags.length, fields.itemCount());
+        for (int index = 0; index < tags.length; index++) {
+            try (TtlvItemView field = fields.itemAt(index);
+                    Tag tag = field.tag();
+                    var value = field.value()) {
+                assertEquals(tags[index], tag.raw());
+                assertEquals(types[index], field.itemType());
+                switch (index) {
+                    case 0 -> assertArrayEquals(extensionName, value.bytes());
+                    case 1 -> assertEquals(extensionTag, value.integer());
+                    case 2 -> assertEquals(extensionType, value.enumeration());
+                    case 3 -> assertEquals(extensionEnumeration, value.integer());
+                    case 4 -> assertEquals(extensionAttribute, value.booleanValue());
+                    case 5 -> assertEquals(parentStructureTag, value.integer());
+                    case 6 -> assertArrayEquals(extensionDescription, value.bytes());
+                    default -> throw new AssertionError("Unexpected Extension Information field index.");
+                }
+            }
+        }
+    }
+
     private static void appendGenericStructureRouteEvents(ArrayNode events, String caseId,
             String targetId, String treeHash) {
+        appendGenericStructureRouteEvents(events, caseId, targetId, "2.1", treeHash);
+    }
+
+    private static void appendGenericStructureRouteEvents(ArrayNode events, String caseId,
+            String targetId, String protocolVersion, String treeHash) {
         appendRouteEvent(events, caseId, GENERIC_STRUCTURE_ROUTE_IDS.get(0), targetId,
                 "org.kmipkit.ttlv.TtlvStructure.create", null, null,
-                "construct", "2.1", null, treeHash, null);
+                "construct", protocolVersion, null, treeHash, null);
         appendRouteEvent(events, caseId, GENERIC_STRUCTURE_ROUTE_IDS.get(1), targetId,
                 "org.kmipkit.ttlv.TtlvStructure.withItem", null, null,
-                "construct", "2.1", null, treeHash, null);
+                "construct", protocolVersion, null, treeHash, null);
         appendRouteEvent(events, caseId, GENERIC_STRUCTURE_ROUTE_IDS.get(2), targetId,
                 "org.kmipkit.ttlv.TtlvValue.structure", null, null,
-                "construct", "2.1", null, treeHash, null);
+                "construct", protocolVersion, null, treeHash, null);
         appendRouteEvent(events, caseId, GENERIC_STRUCTURE_ROUTE_IDS.get(3), targetId,
                 "org.kmipkit.ttlv.TtlvItem.create", null, null,
-                "construct", "2.1", null, treeHash, null);
+                "construct", protocolVersion, null, treeHash, null);
         appendRouteEvent(events, caseId, GENERIC_STRUCTURE_ROUTE_IDS.get(4), targetId,
                 "org.kmipkit.ttlv.TtlvItem.view", null, null,
-                "decode", "2.1", null, null, treeHash);
+                "decode", protocolVersion, null, null, treeHash);
         appendRouteEvent(events, caseId, GENERIC_STRUCTURE_ROUTE_IDS.get(5), targetId,
                 "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
-                "decode", "2.1", null, null, treeHash);
+                "decode", protocolVersion, null, null, treeHash);
     }
 
     private static void appendMessageFieldIntegerRoutes(ArrayNode events, String caseId, String targetId,
