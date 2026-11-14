@@ -1704,6 +1704,34 @@ class RouteMatrixTests(unittest.TestCase):
         ])
         self.assertIn('kmipkit_cryptographic_parameters_from_fields_v1', result['invoked_symbols'])
 
+    def test_cancel_request_constructor_and_encoder_cover_both_payload_versions(self):
+        """OASIS KMIP 2.0 §6.1.5 Table 161 and 2.1 §6.1.5 Table 176 define Cancel request payloads."""
+        from artifact_support import INSTALL, ROOT
+        from c_route_models import ModelCases
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        targets = {target['target_id']: target for target in catalog['normative_targets']}
+        tags = self.runner.catalog_tag_values(catalog)
+        models = ModelCases(INSTALL / 'lib/libkmipkit_ffi.so', catalog)
+        expected_symbols = {
+            'kmipkit_cancel_request_create',
+            'kmipkit_cancel_request_to_ttlv_payload',
+        }
+        for target_id in (
+            'KMIPKIT-ELEM-OP-C2S-CANCEL',
+            'KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-20-001',
+            'KMIPKIT-PAYLOAD-CLIENT-CANCEL-REQUEST-21-001',
+        ):
+            for version in ('2.0', '2.1'):
+                for symbol in expected_symbols:
+                    with self.subTest(target_id=target_id, protocol_version=version, symbol=symbol):
+                        result = models.execute(targets[target_id], version, symbol)
+                        self.assertIsNotNone(result)
+                        self.assertIn(symbol, result['invoked_symbols'])
+                        self.assertEqual(result['normalized_tree'], [[
+                            tags['Asynchronous Correlation Value'], 8,
+                            b'fixture-cancel-request'.hex()]])
+
     def test_query_peer_driver_checks_typed_response_ttlv_accessor(self):
         root = Path(__file__).resolve().parents[3]
         source = (root / 'interop/c-kmip-validator/src/live_driver.c').read_text()
