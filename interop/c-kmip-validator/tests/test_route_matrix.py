@@ -3609,6 +3609,36 @@ class RouteMatrixTests(unittest.TestCase):
                             and event['peer_observed_operation_sequence'] == ['Create', 'Activate']
                             for event in events))
 
+    def test_batch_undo_rolls_back_prior_create_after_later_get_failure(self):
+        """OASIS KMIP 2.0/2.1 §§8.1–8.6 define Undo continuation and its response outcomes."""
+        from artifact_support import ROOT
+        from route_peer import RECIPES, execute_network_cells
+
+        case_id = 'test-batch-undo-rolls-back-prior-success'
+        self.assertEqual(RECIPES[case_id], ((1, 10), 'batch_undo_rolls_back_prior_success'))
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12, 'Undo must pass both versions over all six wire transports')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        for check in checks:
+            self.assertEqual(check['peer_response_result_statuses'], [3, 1])
+            self.assertEqual(check['peer_response_result_reasons'], [None, 55])
+            self.assertEqual(check['peer_observed_state_before_sha256'],
+                             check['peer_observed_state_after_sha256'])
+            self.assertTrue({'kmipkit_client_execute',
+                             'kmipkit_client_batch_add_error_continuation_value',
+                             'kmipkit_client_batch_item_create',
+                             'kmipkit_client_batch_item_get'} <=
+                            set(check['public_api_trace_symbols']))
+        self.assertTrue(any(event['action'] == 'send' and
+                            event['peer_observed_operation_sequence'] == ['Create', 'Get']
+                            for event in events))
+
     def test_stop_batch_returns_only_the_failed_item_and_stops_processing(self):
         from artifact_support import ROOT
         from route_peer import RECIPES, execute_network_cells
