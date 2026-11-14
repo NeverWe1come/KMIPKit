@@ -907,6 +907,60 @@ Table 186 (2.1), and Response Batch Item §8.6 Table 361 (2.0) and Table 399
   validator still fails on missing routes, beginning with
   `test-async-indicator-omitted-default`; PR #170 remains WIP.
 
+### C omitted asynchronous indicator default
+
+The installed C consumer now constructs Create without setting the optional
+Asynchronous Indicator. For KMIP 2.0 and 2.1 over all six supported
+encoding/transport pairs, the peer verifies omission, synchronous Success,
+the Create response payload, and absence of an Asynchronous Correlation Value.
+This tests the default-Prohibited behavior in OASIS KMIP 2.0/2.1 §§8.2–8.3,
+8.6, 9.1–9.2, and 11.3; Create is §6.1.8 Table 171 (2.0) and Table 186
+(2.1).
+
+- Red commit `3ba8b1a5a` failed because the C route registry had no recipe for
+  `test-async-indicator-omitted-default`.
+- Green commit `c22343d5f` adds the typed installed-ABI route and peer checks.
+  The peer omits Unique Batch Item ID for this request, matching the request's
+  absent ID and allowing the client to associate the synchronous response.
+- Refactor commit `cdd9f7d45` shares Create request setup and response
+  assertions with the Mandatory asynchronous route.
+- Verification: the focused omitted-default route passed all 12 network
+  cells; the Mandatory Create route, five Cancel-result routes, Poll-before-
+  Cancel route, Cancel response payload roundtrip, C build, Python syntax
+  checks, and both controlled TLS CTest peers passed.
+- The matching full C route matrix recorded 40,422 invoked cells, zero failed,
+  and 26,314 `validator_recipe_pending` cells. The exact completeness
+  validator exits unsuccessfully, next reporting
+  `test-async-indicator-optional-completes-or-pends`. The gate remains open and
+  PR #170 remains WIP.
+
+### C Optional asynchronous Create completion
+
+The installed C consumer now sets `Asynchronous Indicator=Optional` and
+handles the synchronous-completion branch of Create. The controlled peer
+verifies the Optional value, successful Create response, absence of a
+correlation value, and that no Poll is sent after completion. This exercises
+KMIP 2.0/2.1 §§8.2–8.3, 8.6, 9.1–9.2, and 11.3; Create is §6.1.8 Table 171
+(2.0) and Table 186 (2.1). The catalog also permits a Pending branch, which
+remains separate coverage.
+
+- Red commit `7eda42010` failed because the C controlled peer had no recipe for
+  `test-async-indicator-optional-completes-or-pends`.
+- Green commit `8d6e93641` adds the typed C route and peer checks across KMIP
+  2.0/2.1 and all six encoding/transport pairs. The peer returns synchronous
+  Success with no correlation and records one exchange.
+- Refactor commit `8ab2db743` gives the synchronous Create response assertion a
+  shared name for the omitted and Optional indicator cases.
+- Verification: all three focused async Create route tests passed; the CMake
+  build, Python syntax checks, `test_c_validator`, and both controlled TLS
+  CTest peers passed. Temporary-file based tests used a worktree-local
+  `TMPDIR` after the shared `/tmp` filled during parallel runs.
+- The matching full C route matrix recorded 40,508 invoked cells, zero failed,
+  and 26,228 `validator_recipe_pending` cells. The exact completeness
+  validator exits unsuccessfully, next reporting
+  `test-async-indicator-prohibited-synchronous`. The gate remains open and PR
+  #170 remains WIP.
+
 ### C Adjust Attribute operation route
 
 The installed C consumer now executes Adjust Attribute through both the direct
@@ -927,7 +981,7 @@ protocol versions.
 - Refactor/documentation commit records this evidence and the KMIPKIT-0092
   traceability update.
 - Verification: `python3 interop/c-kmip-validator/tests/test_route_matrix.py`
-  passed all 148 tests; the focused route passed all 24 peer checks, comparing
+  passed all 150 tests on the merged base; the focused route passed all 24 peer checks, comparing
   normalized request hashes across both constructors; `cmake --build
   interop/c-kmip-validator/build -j 2` passed; and CTest passed `test_c_validator`
   plus both controlled TLS peers (3/3). The full C route matrix remains
