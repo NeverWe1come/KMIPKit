@@ -3937,15 +3937,17 @@ class RouteMatrixTests(unittest.TestCase):
                             and event['action'] == 'decode' for event in events))
 
     def test_certify_operation_runs_through_installed_c_abi_and_checks_identifier(self):
-        """Exercise OASIS KMIP 2.0/2.1 §6.1.6 Certify request and response payloads."""
+        """Certify a Public Key using Create Key Pair under OASIS KMIP §§6.1.6 and 6.1.9."""
         from artifact_support import ROOT
         from route_peer import execute_network_cells
 
         catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
         manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
         case_id = 'test-op-certify'
-        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
-                                               if case['case_id'] == case_id]}
+        case = next(case for case in catalog['test_cases'] if case['case_id'] == case_id)
+        self.assertEqual(['Create unique PublicKey with RSA 2048-bit attributes'],
+                         case['isolation_recipe']['setup_steps'])
+        selected = {**catalog, 'test_cases': [case]}
 
         events, _, checks = execute_network_cells(
             ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
@@ -3953,9 +3955,9 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(len(checks), 12,
                          'Certify must run for both versions and all encoding/transport pairs')
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
-        self.assertTrue(all(check['peer_setup_operations'] == [1] for check in checks))
-        self.assertTrue(all(check['peer_request_operations'] == [1, 6] for check in checks))
-        self.assertTrue(all(check['peer_cleanup_operations'] == [20, 20] for check in checks))
+        self.assertTrue(all(check['peer_setup_operations'] == [2] for check in checks))
+        self.assertTrue(all(check['peer_request_operations'] == [6] for check in checks))
+        self.assertTrue(all(check['peer_cleanup_operations'] == [20, 20, 20] for check in checks))
         self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_certify'
                             and event['action'] == 'send' for event in events))
         self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_response_certify'
