@@ -53,6 +53,7 @@ def build_command_for_language(
     catalog_path: Path,
     vectors_path: Path,
     output_path: Path,
+    allow_mutations: bool = False,
 ) -> list[str]:
     """Construct command line arguments for the specified language validator."""
     prof_arg = str(profile_path.resolve())
@@ -71,12 +72,18 @@ def build_command_for_language(
         return cmd
 
     if language == "c":
-        c_bin = base_dir / "interop/c-kmip-validator/build/kmipkit_c_validator"
+        c_bin = base_dir / "interop/c-kmip-validator/build/kmip_validator_c"
+        if os.name == "nt":
+            c_bin = c_bin.with_suffix(".exe")
         if not c_bin.exists():
-            c_bin = base_dir / "interop/c-kmip-validator/kmipkit_c_validator"
-        cmd = [str(c_bin), "--catalog", cat_arg, "--vectors", vec_arg, "--profile", prof_arg, "--output", out_arg]
+            c_bin = base_dir / "interop/c-kmip-validator/kmip_validator_c"
+            if os.name == "nt":
+                c_bin = c_bin.with_suffix(".exe")
+        cmd = [str(c_bin), "run", "--catalog", cat_arg, "--profile", prof_arg, "--output", out_arg]
         if conn_arg:
             cmd.extend(["--connection", conn_arg])
+        if allow_mutations:
+            cmd.append("--allow-mutations")
         return cmd
 
     if language == "java":
@@ -159,6 +166,7 @@ def orchestrate_interop_run(
     connection_path: Path | None = None,
     parallel: bool = False,
     dry_run: bool = False,
+    allow_mutations: bool = False,
 ) -> dict[str, Any]:
     """Orchestrate multi-language validator execution and aggregation."""
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -179,6 +187,7 @@ def orchestrate_interop_run(
             catalog_path=catalog_path,
             vectors_path=vectors_path,
             output_path=out_file,
+            allow_mutations=allow_mutations,
         )
         commands[lang] = cmd
 
@@ -228,13 +237,17 @@ def main() -> None:
     parser.add_argument("--languages", type=str, default="rust,c,java,python", help="Comma-separated languages (default: rust,c,java,python)")
     parser.add_argument("--profile", type=Path, default=Path("interop/shared/profiles/generic-kmip-2.1.json"), help="KMS profile JSON")
     parser.add_argument("--connection", type=Path, help="Connection configuration JSON")
-    parser.add_argument("--catalog", type=Path, default=Path("interop/shared/catalog/test-catalog.json"), help="Test catalog JSON")
-    parser.add_argument("--vectors", type=Path, default=Path("interop/shared/vectors/canonical-test-vectors.json"), help="Test vectors JSON")
+    parser.add_argument("--catalog", type=Path, default=Path("interop/shared/catalog/kmipkit-1.0-test-catalog.json"), help="Test catalog JSON")
+    parser.add_argument("--vectors", type=Path, default=Path("interop/shared/vectors/canonical-vectors.json"), help="Test vectors JSON")
     parser.add_argument("--output-dir", type=Path, help="Directory to store outputs (default: interop/results/<timestamp>)")
     parser.add_argument("--parallel", action="store_true", help="Execute validators concurrently")
     parser.add_argument("--dry-run", action="store_true", help="Print execution plan without executing")
+    parser.add_argument("--allow-mutations", action="store_true", help="Pass explicit mutating-operation opt-in to validators that support it")
 
     args = parser.parse_args()
+
+    if not args.dry_run and (not args.connection or not args.connection.is_file()):
+        parser.error("--connection must name a configured dedicated test server when executing validators")
 
     base_dir = Path(__file__).resolve().parents[3]
     langs = [l.strip().lower() for l in args.languages.split(",") if l.strip().lower() in SUPPORTED_LANGUAGES]
@@ -258,6 +271,7 @@ def main() -> None:
         connection_path=args.connection,
         parallel=args.parallel,
         dry_run=args.dry_run,
+        allow_mutations=args.allow_mutations,
     )
 
     print("\n=======================================================")

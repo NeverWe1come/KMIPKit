@@ -43,6 +43,84 @@ passing shared-contract job does not satisfy those language-level requirements.
 - Full verification: `python3 -m unittest discover -s interop/shared/tests -v` passed all 161 tests on 2026-11-12.
 - Refactor/documentation commit: records the object-local boundary in requirement traceability and keeps this Red/Green evidence with the feature.
 
+## Development evidence: named managed-object Object Type routes
+
+- Normative scope: KMIP 2.0 and 2.1 §§2.3–2.8 define Opaque Object, PGP Key, Private Key, Public Key, Secret Data, and Split Key; §11.34 defines their Object Type values. This implements KMIPKIT-0092-FR-003 for the installed C object constructors.
+- Red commit `051647e3a80c95dfbb61fa478ed9f364a6882fe0`: `python3 -m unittest interop.c-kmip-validator.tests.test_route_matrix.RouteMatrixTests.test_named_object_type_cells_execute_their_typed_constructors -v` failed for all six Object Type targets because the matrix dispatcher returned no execution result.
+- Green commit `120a29b5822e6de675d7a047a54109604412a94d`: dispatch each supported Object Type constructor to its matching catalogued object structure recipe; the focused test and all 92 C route-matrix contract tests passed.
+- Refactor/documentation commit: retain the six-route evidence and exact normative sections with the implementation record.
+
+## Development evidence: C Modify Attribute typed payload route
+
+- Normative scope: OASIS KMIP v2.0 §6.1.33 Table 247 and v2.1 §6.1.34 Table 265 define the Modify Attribute Request Payload. This exercises the installed public `kmipkit_modify_attribute_request_create` and `kmipkit_modify_attribute_request_to_ttlv_payload` C symbols under KMIPKIT-0092-FR-003 and FR-009.
+- Red commit `0045ca260`: `PYTHONPATH=interop/c-kmip-validator/tests:interop/c-kmip-validator/tools python3 -m unittest test_route_matrix.RouteMatrixTests.test_modify_attribute_typed_payload_route_is_inspected_from_installed_c_abi -v` failed at the expected missing-route assertion because `ModelCases.execute` returned `None` for the public payload route.
+- Green commit `51fc4f620`: added the installed-ABI recipe to construct the typed request and inspect the serialized payload, including samples with both optional fields present and omitted. The focused test passed.
+- Refactor/documentation commit: factored the repeated Attribute fixture shape and recorded the normative scope and Red/Green evidence here.
+- Verification: the focused test passed; a targeted probe of the 14 generated local request cells for `test-op-modify-attribute` and its normative payload-field cases passed for KMIP 2.0 and 2.1; `ctest --test-dir interop/c-kmip-validator/build --output-on-failure -R '^test_c_validator$'` passed.
+- The captured pre-change `route-execution-evidence.gaps.json` listed 72 network cells for `test-op-modify-attribute` as pending: 36 each for the typed request-to-batch-item and direct batch-item routes. This local payload slice does not address those transport cells; the full route matrix was not rerun here.
+
+## Development evidence: C Delegated Login response accessors
+
+- Normative scope: OASIS KMIP v2.0 §6.1.12 Tables 184–185 and v2.1 §6.1.12 Tables 199–200. The controlled peer supplies a deterministic Ticket, and the installed C consumer checks both `kmipkit_client_batch_item_response_delegated_login` and `kmipkit_client_batch_item_response_delegated_login_ttlv` under KMIPKIT-0092-FR-003, FR-005, and FR-008.
+- The public client response accessors require a handle created by a client execution. A minimal Delegated Login request with the required Rights structure obtains that handle through the existing local mutual-TLS fixture; the standalone protocol response-message parser returns a different handle type. The fixture checks the request shape and does not substitute it for request-field variant coverage.
+- Red commit `4df35394e`: the two focused response-accessor tests failed as expected because the missing Delegated Login recipe produced zero controlled-peer checks.
+- Green commit `ae0702543`: the installed C consumer verifies the typed Ticket Type and exact Ticket Value, then reads the owned Ticket TTLV copy and checks both fields, their order, types, and values. The negative test changes Ticket Value bytes without changing their length and requires failure. Returned ticket data is never included in reports or diagnostics; the generic copy and all views are released on each path.
+- Refactor/documentation commit: share the test catalog selection and record the normative scope and evidence here.
+- Verification: `cmake --build interop/c-kmip-validator/build --target kmip_validator_c test_c_validator -j 2` passed; both focused tests and `ctest --test-dir interop/c-kmip-validator/build --output-on-failure -R '^test_c_validator$'` passed. A targeted Delegated Login execution passed all 40 previously pending operation cells: four local decode cells and 36 fixture transport cells across KMIP 2.0/2.1, TTLV/JSON/XML, and raw TLS/HTTPS, with 12 passing peer checks. The full route matrix and the operation's request/response-field variant cases remain outside this slice.
+
+## Development evidence: C registered-key cryptographic batch
+
+- Normative scope: OASIS KMIP v2.0 §§6.1.39 (Register), 6.1.1 (Activate), 6.1.17 (Encrypt), 6.1.11 (Decrypt), 6.1.40 (Revoke), and 6.1.15 (Destroy); v2.1 §§6.1.43, 6.1.1, 6.1.17, 6.1.11, 6.1.44, and 6.1.15 respectively. Both versions §§8.2–8.4 and §8.6 govern ordered batch processing. The ID Placeholder use is specified in §6.1, its Unique Identifier datatype is v2.0 §4.51/v2.1 §4.58, and its enumeration value is v2.0 §11.56/v2.1 §11.58. This implements KMIPKIT-0092-FR-003 through FR-006 and FR-008 for `test-batch-register-encrypt-decrypt-destroy`.
+- A single request registers a raw AES-128 object with explicit Encrypt/Decrypt usage, activates it, encrypts and decrypts a deterministic block with explicit AES/ECB/None parameters, revokes it for Cessation of Operation, and destroys it. Every item after Register uses ID Placeholder; ordered execution and Continue are explicit so the cleanup items remain in the request after a preceding operation failure.
+- The precomputed public vector is [FIPS 197 (2001), Appendix C.1](https://csrc.nist.gov/files/pubs/fips/197/final/docs/fips-197.pdf). The two crypto requests use its predetermined inputs so the complete batch can be constructed before dispatch. The controlled fixture checks exact request fields and returns that vector; it does not implement a local cryptographic provider or establish vendor compatibility. The installed consumer checks all numeric statuses and operation order, every response identifier, exact Encrypt/Decrypt Data, and Register/Revoke generic response TTLV. The peer observes pre-active, active, revoked, and deleted state and verifies that final state equals initial state.
+- Red commit `83b3cfbe6`: the two focused tests failed at their expected peer-check counts (`0` versus `12`/`1`) because no batch recipe existed.
+- Green commit `80b308a08`: the compiled installed C consumer, checked peer request/response recipe, and lifecycle state machine execute all 304 typed-route cells for the case. The positive test passes 12 combinations (KMIP 2.0/2.1 × TTLV/JSON/XML × raw TLS/HTTPS); the negative test mutates ciphertext bytes without changing length and requires consumer failure while peer state remains clean. Key material, plaintext, and ciphertext are absent from serialized evidence and diagnostics.
+- Refactor/documentation: name the ordered operation constants and record scope, references, and verification here. The dedicated register, response-comparison, and batch-execution helpers keep this workflow separate from unrelated operation flags.
+- Verification: C build, both focused batch tests, the existing Create/Activate/Get Attribute List/Revoke/Destroy batch regression, and `ctest -R '^test_c_validator$'` passed. Before this slice 304 typed cells were pending; the targeted execution covers all 304 with zero failures. The case's 24 existing generic TTLV cells and the full matrix were not rerun for this slice; other batch, cryptographic, request-field, and error cases remain pending separately.
+
+## Development evidence: C controlled-peer registered-key batch regression
+
+- Red commit `d3a276ed6`: the controlled TLS fixture was required to observe the six-operation Register/Activate/Encrypt/Decrypt/Revoke/Destroy batch; the focused KMIP 2.0 and 2.1 peer tests failed because that operation plan was not recognized.
+- Green commit `150964b0a`: the fixture accepts the exact batch and requires each unique item identifier exactly once, then returns matching response identifiers. No request or response body is added to diagnostics.
+- Refactor/documentation: this record distinguishes the earlier missing fixture recipe from a protocol or installed-library failure and records the verified regression gates.
+- Verification: `ctest --test-dir interop/c-kmip-validator/build --output-on-failure` passed all 7 tests, including both controlled TLS peers; `python3 interop/c-kmip-validator/tests/test_route_matrix.py` passed all 109 contract tests; `git diff --check` passed. This verifies the controlled fixture and matrix contract, not external KMS interoperability.
+
+## Development evidence: C asynchronous Process then Poll route
+
+- Normative scope: OASIS KMIP 2.1 §6.1.39 and Tables 278–279 define Process correlation, the requirement that the next Poll not be Pending, and the empty Process response payload. This implements KMIPKIT-0092-FR-003 and FR-005 for `test-async-process-then-poll-state`.
+- Red commit `de923f2f`: the focused test failed because the C driver did not map the Process case to an isolated route.
+- Green commits `3e0d4a0f` and `bb4aca1d`: the installed C consumer executes Create(Pending) → Process(correlation, Prohibited) → Poll(Success with original Create payload) → authenticated Destroy. The controlled peer checks the exact correlation, response shape, fixture state, and cleanup; the general TLS peer also resets state before the next independent async case.
+- Refactor/documentation commit: records the normative source and per-cell evidence in KMIPKIT-0085 implementation evidence and this traceability record.
+- Verification: the focused Process/Poll test passed; the complete CTest suite passed 7/7. The matching matrix recorded 40,931/66,736 invoked cells, all passed, and 25,805 pending recipes. The installed artifact SHA-256 is `c93eb8f7daa60d3b6832d297887e99cd2101e4f9baf2d04f55ce4042ba4bb7a2`. Completeness remains open at `test-async-query-outstanding-filter`; no pending recipe is classified as an API limitation.
+
+## Development evidence: C asynchronous Query outstanding filters
+
+- Normative scope: OASIS KMIP 2.1 §6.1.41 Tables 285–287 defines the Query
+  Asynchronous Requests filter fields and response structure; §7.2 Table 353
+  defines the returned Asynchronous Request structure. This implements
+  KMIPKIT-0092-FR-003 and FR-005 for
+  `test-async-query-outstanding-filter`.
+- Red commit `62e393db`: the focused route test failed because the installed C
+  consumer had no Query outstanding-filter recipe.
+- Green commit `31fb6298`: added asynchronous Create/Create/Get setup, completed
+  one Create before Query, intersecting operation/correlation filters,
+  controlled response assertions, terminal Polls, and authenticated cleanup
+  across all six KMIP 2.1 encoding/transport pairs.
+- Supplemental Red commit `8b250b0d`: the focused test failed because the
+  recipe did not invoke `kmipkit_client_batch_item_response_create` for Pending
+  Create responses.
+- Supplemental Green commit `42a26232`: the consumer now uses
+  `read_pending_create_correlation()` for those responses, checking the typed
+  Create accessor's absent result payload and the exact server correlation.
+- Verification: the focused test passed, including six controlled peer checks;
+  CTest passed 7/7. The full matrix recorded 40,971/66,736 invoked cells, all
+  passed, and 25,765 pending `validator_recipe_pending` cells. The installed
+  artifact SHA-256 is
+  `c93eb8f7daa60d3b6832d297887e99cd2101e4f9baf2d04f55ce4042ba4bb7a2`. The
+  completeness validator next reports
+  `test-async-unknown-correlation-rejected`; coverage remains incomplete and
+  no pending recipe is treated as an API limitation.
+
 ## Development evidence: release pin refresh after KMIPKIT-0120
 
 - The feature branch conflicted with the updated `release/1.0.0` after PR #204 (`KMIPKIT-0120`) merged as `489fafc79ef89db2524eafa7a6c6482f5cf75d97`. The release merge was preserved as a normal signed merge commit; two FFI coverage script conflicts were resolved by retaining both the isolated `--no-clean` run and the existing package-scoped report checks.
@@ -130,3 +208,206 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   `route_capabilities.py --check` passed with 1,491 routes pinned to library
   commit `489fafc79ef89db2524eafa7a6c6482f5cf75d97`.
 - Language-level execution remains required; T006, T007, and T009 stay open.
+
+## Development evidence: C asynchronous Poll and Cancel interleaving
+
+- Normative scope: OASIS KMIP 2.1 §§6.1.5 and 6.1.38 define the Cancel and Poll
+  operations; §§8.2–8.3, 8.6, and 9.1–9.2 define the request and response
+  message shapes. The deterministic scenario sends asynchronous Create,
+  Pending Poll, then Cancel and requires one terminal result with the same
+  server-issued Asynchronous Correlation Value.
+- Red commit `632e64300`: the focused route-matrix regression failed because
+  `test-async-cancel-vs-poll-race` had no controlled C peer recipe.
+- Green commit `a2f8da437`: the installed C ABI creates and inspects typed Poll
+  and Cancel payloads, executes both operations after an asynchronous Create,
+  checks both typed response views, and makes the controlled peer verify the
+  exact three-request ordering and Pending/Pending/Success statuses.
+- Refactor commit `0e34f770c`: asynchronous Create seed authentication is
+  shared between the Cancel and Poll/Cancel routes; payload correlation checks
+  use a common helper.
+- Route-evidence merge regression: Red commit `b4fce5944` reproduced duplicate
+  local Cancel cells already emitted by the offline model executor; Green
+  commit `99f23c5e8` passes the existing cell keys into the network peer so one
+  valid receipt covers each cell. Refactor commit `b44ebf347` documents the
+  combined local and network coverage-key contract.
+- Verification: the focused asynchronous race test passed for all six KMIP
+  2.1 encoding/transport combinations. Both controlled TLS CTest peers passed.
+  The full C route matrix recorded 40,250 invoked cells, zero failed, and
+  26,486 pending, all `validator_recipe_pending`. The matching evidence
+  validator exits unsuccessfully at the remaining missing-route check because
+  the matrix is incomplete; it no longer reports duplicate route cells.
+
+## Development evidence: C asynchronous Create, Query, and Poll lifecycle
+
+- Normative scope: OASIS KMIP 2.1 §§6.1.8, 6.1.11, 6.1.38, and 6.1.41 define
+  Create, Destroy, Poll, and Query Asynchronous Requests; §§8.2–8.3, 8.6,
+  9.1–9.2, and 11.3 define the request/response and asynchronous message
+  shapes. The route correlates Query and Poll to the same server-issued value,
+  accepts only terminal Poll Success with the original Create payload, then
+  cleans up the created object using authenticated Destroy.
+- Red commit `5a1e59d84`: the focused regression failed because
+  `test-async-lifecycle-poll` had no C route implementation.
+- Green commit `9ee886593`: the installed C ABI performs Create, Query, Poll,
+  and authenticated Destroy; the peer verifies exact request ordering,
+  correlation filtering, terminal payload, and cleanup state.
+- Refactor commit `02ae1ba91`: consolidate asynchronous peer step and exchange
+  checks.
+- Verification: six focused asynchronous route tests, the CMake build, Python
+  syntax checks, `test_c_validator`, and both controlled TLS CTest peers passed.
+  The full C matrix recorded 40,655/66,736 invoked cells, zero failed, and
+  26,081 `validator_recipe_pending`. The exact completeness validator still
+  fails on missing routes, next reporting
+  `test-async-no-recursive-async-poll-cancel`; the matrix gate remains open.
+
+## Development evidence: C mandatory asynchronous Create
+
+- Normative scope: OASIS KMIP 2.0/2.1 §§8.2–8.3, 8.6, 9.1–9.2, and 11.3;
+  Create is §6.1.8 Table 171 (2.0) and Table 186 (2.1). Response Batch Item
+  structure is §8.6 Table 361 (2.0) and Table 399 (2.1). A Mandatory
+  Asynchronous Indicator requires the server to process every batch item
+  asynchronously and return a correlation value; a Pending response includes
+  the required Response Payload structure.
+- Red commit `bbab6bb04` added the accepted-Mandatory route regression. It failed
+  because the C peer recipe did not yet implement the case.
+- Green commit `01a3ea25d` constructs a typed Create request with
+  `Asynchronous Indicator=Mandatory`, accepts only Pending with the exact
+  server-issued correlation, and exercises KMIP 2.0/2.1 over all six supported
+  encoding/transport pairs. The peer checks the Pending result, correlation,
+  and empty Response Payload structure. A no-payload fixture was rejected by
+  the installed client because only Pending Poll has the no-payload exception.
+- Refactor commits `4551ce1ec` and `f1eccd192` share the Pending Create payload
+  shape check and name the asynchronous Create seed assertion by its operation.
+- Verification: the focused Mandatory Create route passed all 12 network
+  cells; the five Cancel-result routes, Poll-before-Cancel route, and Cancel
+  response payload roundtrip also passed. Both controlled TLS CTest peers,
+  Python syntax checks, and the CMake build passed.
+- The matching full route matrix recorded 40,336 invoked cells, zero failed,
+  and 26,400 `validator_recipe_pending` cells. The exact completeness validator
+  still exits unsuccessfully, next reporting `test-async-indicator-omitted-default`.
+  This route advances coverage without closing the matrix gate.
+
+## Development evidence: C omitted asynchronous indicator default
+
+- Normative scope: OASIS KMIP 2.0/2.1 §§8.2–8.3, 8.6, 9.1–9.2, and 11.3;
+  Create is §6.1.8 Table 171 (2.0) and Table 186 (2.1). When the optional
+  Asynchronous Indicator is omitted, its default is Prohibited and Create
+  completes synchronously without a correlation value.
+- Red commit `3ba8b1a5a`: the focused route test failed because no C peer recipe
+  existed for `test-async-indicator-omitted-default`.
+- Green commit `c22343d5f`: the installed C ABI sends Create with the indicator
+  omitted and checks synchronous Success, the typed response, and absent
+  correlation over all six encoding/transport combinations and both versions.
+  The peer also omits Unique Batch Item ID to match the request and permit
+  correct response association.
+- Refactor commit `cdd9f7d45`: share the Create request builder and typed
+  response assertions with Mandatory asynchronous Create.
+- Verification: the focused omitted-default route passed 12 network cells;
+  the C build, Python syntax checks, five Cancel-result routes, Poll-before-
+  Cancel route, Cancel response payload roundtrip, and both controlled TLS
+  CTest peers passed. The full matrix recorded 40,422 invoked, zero failed,
+  and 26,314 pending cells. The matching validator exits unsuccessfully at the
+  missing-route check, now beginning with
+  `test-async-indicator-optional-completes-or-pends`; T006, T007, and T009
+  remain open.
+
+## Development evidence: C Optional asynchronous Create completion
+
+- Normative scope: OASIS KMIP 2.0/2.1 §§8.2–8.3, 8.6, 9.1–9.2, and 11.3;
+  Create is §6.1.8 Table 171 (2.0) and Table 186 (2.1). For an Optional
+  indicator, the server may complete synchronously or return Pending; this
+  fixture selects synchronous completion, so no Poll is sent.
+- Red commit `7eda42010`: the focused test failed because no controlled C peer
+  recipe existed for `test-async-indicator-optional-completes-or-pends`.
+- Green commit `8d6e93641`: the installed C ABI sends Create with the Optional
+  indicator and validates synchronous Success with no correlation across both
+  versions and all six encoding/transport pairs. The peer confirms the exact
+  indicator and a single exchange.
+- Refactor commit `8ab2db743`: share the synchronous Create response check
+  between omitted and Optional indicator recipes.
+- Verification: all three focused asynchronous Create tests, the CMake build,
+  Python syntax checks, `test_c_validator`, and both controlled TLS CTest peers
+  passed. The full matrix recorded 40,508 invoked, zero failed, and 26,228
+  pending cells. The exact validator exits unsuccessfully on missing routes,
+  now beginning with `test-async-indicator-prohibited-synchronous`; T006, T007,
+  and T009 remain open.
+
+## Development evidence: C explicit Prohibited asynchronous Create
+
+- Normative scope: OASIS KMIP 2.0/2.1 §§8.2–8.3, 8.6, 9.1–9.2, and 11.3;
+  Create is §6.1.8 Table 171 (2.0) and Table 186 (2.1). An explicitly
+  Prohibited indicator requires synchronous operation without a correlation
+  value.
+- Red commit `7472db396`: the focused test failed because the C peer had no
+  route recipe for `test-async-indicator-prohibited-synchronous`.
+- Green commit `f204ff0c7`: the installed C ABI sets Prohibited and validates
+  synchronous Success with no correlation over both versions and all six
+  encoding/transport pairs.
+- Refactor commit `161155dbd`: share the synchronous indicator request,
+  response, and peer evidence checks with Optional completion.
+- Verification: four focused async Create route tests, the C build, Python
+  syntax checks, `test_c_validator`, and both controlled TLS CTest peers passed.
+  The full matrix recorded 40,594 invoked, zero failed, and 26,142 pending
+  cells. The exact validator exits unsuccessfully on missing routes, now
+  beginning with `test-async-lifecycle-poll`; T006, T007, and T009 remain open.
+
+## Development evidence: C request-based Get Attribute List batch route
+
+- Normative scope: OASIS KMIP 2.0/2.1 §§6.1.19, 6.1.21, 8.2–8.6, and 9.5–9.7.
+  The `test-batch-continue-after-failure` scenario contains Get followed by Get
+  Attribute List and must retain both item results when the first operation
+  fails under Batch Error Continuation Option Continue.
+- Red commit `3e00fdb7`: extended the controlled-peer test to require the
+  request-based Get Attribute List route across the case's version, encoding,
+  and transport matrix. Before the recipe change, the test failed with 48
+  checks instead of the required 60.
+- Green commit `a9c08eb7`: run the batch case through both direct and
+  `GetAttributeListRequest` constructors; the peer checks the same ordered
+  operations and per-item outcomes for each variant.
+- Refactor/documentation commit: cite the governing OASIS clauses on the
+  conformance test and link this evidence to FR-003 and FR-009.
+- Verification: the focused test passed all 60 peer checks, including 36
+  request-based route events for two versions × three encodings × two
+  transports × construct/send/decode. The full matrix and exact-head CI remain
+  open; T006, T007, and T009 are not complete.
+
+## CI follow-up: continued-batch route state assertion
+
+- Red evidence: exact-head C installed-consumer run `43569674395` on
+  `56b1c32a4a944c5d13047ce11b8441229335314e` failed because
+  `test_continued_batch_evidence_has_observed_unchanged_fixture_state` still
+  expected one check after the direct and standalone variants were both added.
+  The same focused test reproduced `AssertionError: 2 != 1` locally.
+- Green commit `d76df104`: require the two expected variants, verify each
+  passed, bind each variant to its public API trace symbols, and confirm the
+  controlled peer observed unchanged fixture state for every send event.
+- Refactor/documentation commit: record the exact CI regression and its
+  conformance-test coverage here and in FR-003 traceability.
+- Verification: the focused test passed for both constructor variants, and
+  `ctest --test-dir interop/c-kmip-validator/build -R
+  '^c_validator_route_matrix_contracts$' --output-on-failure` passed all route
+  matrix contract tests in 72.58 seconds. The full installed C route matrix
+  and exact-head CI remain open; T006, T007, and T009 are not complete.
+
+## Development evidence: C Adjust Attribute routes
+
+- Normative scope: OASIS KMIP 2.0 §6.1.3 Tables 155–156 and KMIP 2.1 §6.1.3
+  Tables 170–171 define the request and response. Sections 8.2–8.6 and 9.5–9.7
+  govern the client batch exchange and decoded result. Increment by five on an
+  absent integer attribute exercises §6.1.3's zero starting value.
+- Red commit `c994fa3b`: the focused installed-consumer test failed because the
+  C route registry produced zero checks instead of the required 24 direct and
+  standalone route checks.
+- Green commit `26d5f047`: build both `kmipkit_client_batch_item_adjust_attribute`
+  and `kmipkit_client_batch_item_adjust_attribute_from_request` requests, encode
+  the standalone payload, decode the typed response, and model the controlled
+  peer's numeric adjustment and cleanup.
+- Refactor/documentation commit: record the normative scope, local evidence,
+  and remaining full-matrix gate here and in FR-003 traceability; extend the
+  general TLS fixture to validate Adjust Attribute and its request fields.
+- Verification: the focused test passed all 24 checks across KMIP 2.0/2.1,
+  TTLV/JSON/XML, and raw TLS/HTTPS, with matching direct and standalone request
+  trees and successful response decoding. `cmake --build
+  interop/c-kmip-validator/build --parallel 2` passed. Full CTest passed 7/7
+  tests in 77.18 seconds, including the route matrix contracts and the
+  KMIP 2.0/2.1 controlled TLS peers. Feature traceability passed 31/31 tests.
+  Exact-head CI and the full C route matrix remain open.

@@ -6,6 +6,9 @@ repository_root="$(cd -- "${script_dir}/.." && pwd)"
 report_dir="${1:-${repository_root}/coverage-ffi}"
 report_dir="$(mkdir -p -- "${report_dir}" && cd -- "${report_dir}" && pwd)"
 target_root="${CARGO_TARGET_DIR:-${repository_root}/target}"
+report_dir="${1:-${repository_root}/coverage-ffi}"
+report_dir="$(python3 "${repository_root}/scripts/ffi_coverage_objects.py" \
+    --report-dir "${report_dir}" --prepare-report-dir)"
 ffi_target="${target_root}/ffi-coverage"
 
 if [[ "$(uname -s)" != Linux ]]; then

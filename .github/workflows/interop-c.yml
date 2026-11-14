@@ -5,64 +5,81 @@ on:
     paths:
       - 'interop/c-kmip-validator/**'
       - 'interop/shared/**'
+      - 'specs/085-interop-c-live/**'
+      - 'specs/092-interop-api-route-exhaustiveness/**'
       - '.github/workflows/interop-c.yml'
   push:
     branches:
       - release/1.0.0
+      - feature/KMIPKIT-0085-interop-c-live
     paths:
       - 'interop/c-kmip-validator/**'
       - 'interop/shared/**'
+      - 'specs/085-interop-c-live/**'
+      - 'specs/092-interop-api-route-exhaustiveness/**'
       - '.github/workflows/interop-c.yml'
 
 permissions:
   contents: read
 
 jobs:
-  changes:
-    runs-on: ubuntu-latest
-    outputs:
-      affected: ${{ steps.diff.outputs.affected }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          ref: ${{ github.sha }}
-          fetch-depth: 0
-      - id: diff
-        shell: bash
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: |
-          if [[ "$GITHUB_EVENT_NAME" != "pull_request" ]]; then
-            echo "affected=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          files="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")"
-          if grep -Eq '^interop/c-kmip-validator/' <<< "$files"; then
-            echo "affected=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "affected=false" >> "$GITHUB_OUTPUT"
-          fi
-
   validate-c:
-    needs: changes
-    if: github.event_name != 'pull_request' || needs.changes.outputs.affected == 'true'
-    name: C KMIP 2.1 Validator Build and Test
+    name: C installed consumer with KMIP 2.0/2.1 fixtures
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout v7.0.1
         with:
+          fetch-depth: 0
           persist-credentials: false
 
-      - name: Set up CMake and GCC
-        run: sudo apt-get update && sudo apt-get install -y cmake build-essential
+      - name: Check C validator workflow contract
+        run: python3 interop/c-kmip-validator/tests/test_workflow_contract.py
+
+      - name: Verify preinstalled CMake and GCC
+        run: cmake --version && gcc --version
+
+      - name: Install Rust 1.94
+        run: rustup toolchain install 1.94 --profile minimal
+
+      - name: Build and install C ABI from pinned route source
+        run: python3 interop/c-kmip-validator/tools/install_artifact.py
+
+      - name: Verify installed C ABI provenance
+        run: python3 interop/c-kmip-validator/tools/verify_artifact.py
+
+      - name: Install schema dependency for CTest and route evidence
+        run: python3 -m pip install --only-binary ':all:' jsonschema==4.23.0
 
       - name: Configure CMake
-        run: cmake -S interop/c-kmip-validator -B interop/c-kmip-validator/build
+        run: cmake -S interop/c-kmip-validator -B interop/c-kmip-validator/build -DPython3_EXECUTABLE="$(command -v python3)" -DKMIPKIT_C_INSTALL_DIR=interop/.local/c-live/install/489fafc79ef89db2524eafa7a6c6482f5cf75d97
 
       - name: Build C validator
         run: cmake --build interop/c-kmip-validator/build
 
-      - name: Run C unit tests
+      - name: Run C unit and controlled peer tests
         run: ctest --test-dir interop/c-kmip-validator/build --output-on-failure
+
+      - name: Run C matrix contract tests
+        run: python3 interop/c-kmip-validator/tests/test_route_matrix.py
+
+      - name: Execute every implemented installed C ABI matrix cell
+        run: >-
+          python3 interop/c-kmip-validator/tools/route_matrix.py
+          --binary interop/c-kmip-validator/build/kmip_validator_c
+          --output interop/c-kmip-validator/build/route-execution-evidence.json
+
+      - name: Require the complete C route evidence matrix
+        if: always()
+        run: |
+          python3 interop/shared/tools/validate_route_evidence.py \
+            --report interop/c-kmip-validator/build/route-execution-evidence.json \
+            --artifact-sha256 "$(sha256sum interop/.local/c-live/install/489fafc79ef89db2524eafa7a6c6482f5cf75d97/lib/libkmipkit_ffi.so | cut -d ' ' -f 1)"
+
+      - name: Upload sanitized C route evidence and pending cells
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # actions/upload-artifact v7.0.1
+        with:
+          name: c-route-execution-evidence
+          path: interop/c-kmip-validator/build/route-execution-evidence*.json
+          if-no-files-found: warn
