@@ -2001,17 +2001,21 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                            **({'failure_code': code or 'peer_observation_missing'} if code or not observation else {})})
                             if not observation or code or run.returncode != 0:
                                 continue
-                            request_tree, response_tree, state_evidence = observation[mutation_index]
-                            operation_name = case['operation']
-                            response_batch_item_count = len([
-                                item for item in response_tree[2]
-                                if item[0] == BATCH_ITEM_TAG and item[1] == 1
-                            ]) if response_tree is not None else 0
                             for cell in cells_by_case[case_id]:
                                 if _key(cell) in keys:
                                     continue
                                 if cell['protocol_version'] != version or cell['public_api_symbol'] not in called_symbols:
                                     continue
+                                observation_index = mutation_index
+                                if recipe[1] == 'cancel_async' and cell.get('workflow_step_index') is not None:
+                                    observation_index = cell['workflow_step_index']
+                                    if observation_index < 0 or observation_index >= len(observation):
+                                        continue
+                                request_tree, response_tree, state_evidence = observation[observation_index]
+                                response_batch_item_count = len([
+                                    item for item in response_tree[2]
+                                    if item[0] == BATCH_ITEM_TAG and item[1] == 1
+                                ]) if response_tree is not None else 0
                                 is_network = cell['transport'] is not None
                                 if is_network:
                                     if (cell['encoding'], cell['transport']) != (encoding, transport):
@@ -2078,8 +2082,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                 elif target['kind'] == 'operation':
                                     operation_value = codec.values.get(
                                         (codec.tag('Operation'), normalize(target['name'])))
+                                    operation_tree = response_tree if response_accessor_route else request_tree
                                     if operation_value is None or operation_value not in numbers(
-                                            request_tree, 0x42005C):
+                                            operation_tree, 0x42005C):
                                         continue
                                 elif target['kind'] == 'enumeration_value':
                                     option_tag = codec.tag('Batch Error Continuation Option')
