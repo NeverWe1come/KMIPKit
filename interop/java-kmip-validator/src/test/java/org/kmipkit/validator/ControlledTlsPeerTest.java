@@ -674,6 +674,7 @@ class ControlledTlsPeerTest {
             }
             appendExtensionInformationRouteEvents(events, protocolVersion);
             appendProfileInformationRouteEvents(events, protocolVersion);
+            appendServerInformationRouteEvents(events, protocolVersion);
             LocalCatalogRouteChecks.executeTags(readRouteEvidenceCatalog(), protocolVersion, genericOnlyTagCaseIds(),
                     invocation -> appendLocalCatalogInvocation(events, protocolVersion, invocation));
             Set<String> typedTagIdentityCases = missingTypedTagIdentityCaseIds(events, protocolVersion);
@@ -754,12 +755,12 @@ class ControlledTlsPeerTest {
                             assertEquals(0L, result.resultStatus());
                             try (var genericPayload = result.queryResponse().orElseThrow()) {
                                 try (var view = genericPayload.view()) {
-                                    assertEquals(3, view.itemCount());
+                                    assertEquals(4, view.itemCount());
                                 }
                             }
                             try (QueryResponse typed = result.typedQueryResponse().orElseThrow()) {
-                                assertEquals(3, typed.fieldCount());
-                                assertEquals(List.of(0x42005c, 0x4200eb, 0x42015f), typed.rawFieldTags());
+                                assertEquals(4, typed.fieldCount());
+                                assertEquals(List.of(0x42005c, 0x4200eb, 0x420088, 0x42015f), typed.rawFieldTags());
                                 QueryResponseField operation = typed.fieldAt(0);
                                 assertEquals(QueryResponseFieldKind.ENUMERATION, operation.kind());
                                 assertEquals(0x3bL, operation.enumeration().orElseThrow());
@@ -774,6 +775,18 @@ class ControlledTlsPeerTest {
                                     assertEquals(0x4200eb, profileTag.raw());
                                     assertEquals(TtlvItemType.Structure, profile.itemType());
                                     assertProfileInformationFields(profileFields);
+                                }
+                                // OASIS KMIP 2.0 §7.31 and KMIP 2.1 §7.37 Table 389.
+                                List<TtlvItemView> serverInformations = typed.serverInformations();
+                                assertEquals(1, serverInformations.size(),
+                                        "The typed Query reader must expose the Server Information structure.");
+                                try (TtlvItemView serverInformation = serverInformations.get(0);
+                                        Tag serverInformationTag = serverInformation.tag();
+                                        var serverInformationValue = serverInformation.value();
+                                        var serverInformationFields = serverInformationValue.structure()) {
+                                    assertEquals(0x420088, serverInformationTag.raw());
+                                    assertEquals(TtlvItemType.Structure, serverInformation.itemType());
+                                    assertServerInformationFields(serverInformationFields);
                                 }
                             }
                         }
@@ -4044,6 +4057,7 @@ class ControlledTlsPeerTest {
                 structure(0x42007c,
                         item(0x42005c, 5, intBytes(0x3b)),
                         profileInformationWire(),
+                        serverInformationWire(),
                         structure(0x42015f)),
                 messageExtensionWire());
     }
@@ -4054,6 +4068,22 @@ class ControlledTlsPeerTest {
                 profileVersionWire(),
                 textItem(0x4200ed, "https://kms.example.invalid"),
                 item(0x4200ee, TtlvItemType.Integer.code(), intBytes(5696)));
+    }
+
+    private static byte[] serverInformationWire() throws Exception {
+        return structure(0x420088,
+                textItem(0x42012d, "kmipkit-test-server"),
+                textItem(0x42012e, "SN-12345"),
+                textItem(0x42012f, "1.2.3"),
+                textItem(0x420130, "10%"),
+                textItem(0x420131, "KMIPKit Test"),
+                textItem(0x420132, "42"),
+                textItem(0x420133, "2026-11-14"),
+                textItem(0x420134, "cluster-a"),
+                textItem(0x420135, "kms-backup-1.example.invalid:5696"),
+                textItem(0x420135, "kms-backup-2.example.invalid:5696"),
+                textItem(0x540001, "vendor-info"),
+                item(0x540002, TtlvItemType.Integer.code(), intBytes(7)));
     }
 
     private static byte[] profileVersionWire() throws Exception {
@@ -5671,6 +5701,115 @@ class ControlledTlsPeerTest {
                 PROFILE_VERSION_TARGET_ID, protocolVersion, versionHash);
     }
 
+    // OASIS KMIP 2.0 §7.31 and KMIP 2.1 §7.37 Table 389.
+    private static void appendServerInformationRouteEvents(ArrayNode events, String protocolVersion)
+            throws Exception {
+        CodecLimits limits = CodecLimits.defaults();
+        byte[] wire = serverInformationWire();
+        String treeHash = normalizedTreeSha256(wire);
+        try (TtlvStructure fields = serverInformationFields(limits);
+                TtlvValue value = TtlvValue.structure(fields, limits);
+                RawTag rawTag = RawTag.fromRaw(0x420088);
+                Tag tag = rawTag.checked();
+                TtlvItem item = TtlvItem.create(tag, value, limits);
+                var view = item.view();
+                Tag viewedTag = view.tag();
+                var viewedValue = view.value();
+                var viewedFields = viewedValue.structure()) {
+            assertEquals(0x420088, viewedTag.raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertServerInformationFields(viewedFields);
+        }
+        try (TtlvItem decoded = TtlvCodec.decode(wire);
+                var view = decoded.view();
+                Tag viewedTag = view.tag();
+                var viewedValue = view.value();
+                var viewedFields = viewedValue.structure()) {
+            assertEquals(0x420088, viewedTag.raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertServerInformationFields(viewedFields);
+        }
+        try (TtlvStructure emptyFields = TtlvStructure.create();
+                TtlvValue emptyValue = TtlvValue.structure(emptyFields, limits);
+                RawTag rawTag = RawTag.fromRaw(0x420088);
+                Tag tag = rawTag.checked();
+                TtlvItem empty = TtlvItem.create(tag, emptyValue, limits);
+                var view = empty.view();
+                var value = view.value();
+                var fields = value.structure()) {
+            assertEquals(0, fields.itemCount(),
+                    "Every Server Information member is optional in the KMIP 2.0 and 2.1 structure.");
+        }
+        for (ServerInformationMemberFixture fixture : SERVER_INFORMATION_MEMBER_FIXTURES) {
+            appendServerInformationMemberRouteEvents(events, fixture, protocolVersion, limits);
+        }
+        appendGenericStructureRouteEvents(events, SERVER_INFORMATION_CASE_ID,
+                SERVER_INFORMATION_TARGET_ID, protocolVersion, treeHash);
+    }
+
+    private static TtlvStructure serverInformationFields(CodecLimits limits) {
+        TtlvStructure fields = TtlvStructure.create();
+        for (int index = 0; index < 8; index++) {
+            ServerInformationMemberFixture fixture = SERVER_INFORMATION_MEMBER_FIXTURES.get(index);
+            fields = appendTtlvItem(fields, fixture.rawTag(),
+                    TtlvValue.TextString(fixture.textValue().getBytes(StandardCharsets.UTF_8), limits), limits);
+        }
+        ServerInformationMemberFixture endpoints = SERVER_INFORMATION_MEMBER_FIXTURES.get(8);
+        fields = appendTtlvItem(fields, endpoints.rawTag(),
+                TtlvValue.TextString(endpoints.textValue().getBytes(StandardCharsets.UTF_8), limits), limits);
+        fields = appendTtlvItem(fields, 0x420135,
+                TtlvValue.TextString("kms-backup-2.example.invalid:5696".getBytes(StandardCharsets.UTF_8), limits),
+                limits);
+        ServerInformationMemberFixture vendor = SERVER_INFORMATION_MEMBER_FIXTURES.get(9);
+        fields = appendTtlvItem(fields, vendor.rawTag(),
+                TtlvValue.TextString(vendor.textValue().getBytes(StandardCharsets.UTF_8), limits), limits);
+        fields = appendTtlvItem(fields, 0x540002, TtlvValue.Integer(7), limits);
+        return fields;
+    }
+
+    private static void appendServerInformationMemberRouteEvents(ArrayNode events,
+            ServerInformationMemberFixture fixture, String protocolVersion, CodecLimits limits) throws Exception {
+        byte[] text = fixture.textValue().getBytes(StandardCharsets.UTF_8);
+        byte[] wire = item(fixture.rawTag(), TtlvItemType.TextString.code(), text);
+        String treeHash = normalizedTreeSha256(wire);
+        try (TtlvValue value = TtlvValue.TextString(text, limits);
+                RawTag rawTag = RawTag.fromRaw(fixture.rawTag());
+                Tag tag = rawTag.checked();
+                TtlvItem item = TtlvItem.create(tag, value, limits);
+                var view = item.view()) {
+            assertServerInformationMemberValue(view, fixture);
+        }
+        try (TtlvItem decoded = TtlvCodec.decode(wire);
+                var view = decoded.view()) {
+            assertServerInformationMemberValue(view, fixture);
+        }
+        if (!fixture.anyEncoding()) {
+            appendRouteEvent(events, fixture.caseId(),
+                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring", fixture.targetId(),
+                    "org.kmipkit.ttlv.TtlvValue.TextString", null, null,
+                    "construct", protocolVersion, null, treeHash, null);
+        }
+        appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_item.create", fixture.targetId(),
+                "org.kmipkit.ttlv.TtlvItem.create", null, null,
+                "construct", protocolVersion, null, treeHash, null);
+        appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.function.ttlv_item_view_from_item",
+                fixture.targetId(), "org.kmipkit.ttlv.TtlvItem.view", null, null,
+                "decode", protocolVersion, null, null, treeHash);
+        appendRouteEvent(events, fixture.caseId(), "java.generic-ttlv.ttlv_codec.decode", fixture.targetId(),
+                "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
+                "decode", protocolVersion, null, null, treeHash);
+    }
+
+    private static void assertServerInformationMemberValue(TtlvItemView view,
+            ServerInformationMemberFixture fixture) throws Exception {
+        try (Tag tag = view.tag();
+                var value = view.value()) {
+            assertEquals(fixture.rawTag(), tag.raw());
+            assertEquals(TtlvItemType.TextString, view.itemType());
+            assertArrayEquals(fixture.textValue().getBytes(StandardCharsets.UTF_8), value.bytes());
+        }
+    }
+
     private static TtlvStructure profileInformationFields(CodecLimits limits) {
         TtlvStructure fields = TtlvStructure.create();
         fields = appendTtlvItem(fields, 0x4200ec, TtlvValue.Enumeration(0x12a), limits);
@@ -5774,6 +5913,29 @@ class ControlledTlsPeerTest {
                         case 3 -> assertEquals(5696, value.integer());
                         default -> throw new AssertionError("Unexpected Profile Information field index.");
                     }
+                }
+            }
+        }
+    }
+
+    private static void assertServerInformationFields(TtlvStructureView fields) throws Exception {
+        int[] tags = {0x42012d, 0x42012e, 0x42012f, 0x420130, 0x420131, 0x420132,
+                0x420133, 0x420134, 0x420135, 0x420135, 0x540001, 0x540002};
+        String[] textValues = {"kmipkit-test-server", "SN-12345", "1.2.3", "10%", "KMIPKit Test",
+                "42", "2026-11-14", "cluster-a", "kms-backup-1.example.invalid:5696",
+                "kms-backup-2.example.invalid:5696", "vendor-info"};
+        assertEquals(tags.length, fields.itemCount());
+        for (int index = 0; index < tags.length; index++) {
+            try (TtlvItemView field = fields.itemAt(index);
+                    Tag tag = field.tag();
+                    var value = field.value()) {
+                assertEquals(tags[index], tag.raw());
+                if (index == tags.length - 1) {
+                    assertEquals(TtlvItemType.Integer, field.itemType());
+                    assertEquals(7, value.integer());
+                } else {
+                    assertEquals(TtlvItemType.TextString, field.itemType());
+                    assertArrayEquals(textValues[index].getBytes(StandardCharsets.UTF_8), value.bytes());
                 }
             }
         }
@@ -6117,7 +6279,7 @@ class ControlledTlsPeerTest {
     private static void assertBatchItemResponseRouteEvidence(ArrayNode events,
             ClientBatchItemResult result, String protocolVersion, String responseHash) throws Exception {
         try (TtlvStructure raw = result.raw().orElseThrow(); var view = raw.view()) {
-            assertEquals(3, view.itemCount());
+            assertEquals(4, view.itemCount());
         }
         appendRouteEvent(events, "test-norm-message-field-message-field-8-6-batch-item",
                 "java.typed-protocol.function.client_batch_item_response_raw_ttlv",
