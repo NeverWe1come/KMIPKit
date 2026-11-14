@@ -1161,3 +1161,37 @@ full ledger has 71,463 planned, 22,598 executed, and 48,865 pending cells
 across 1,317 pending case IDs. Each pending cell remains planned with reason
 `route_evidence_not_emitted`; this selected-scope result does not set
 `complete_matrix=true` and does not make the pending work an exclusion.
+
+## KMIP 2.1 Asynchronous Request required scalar member routes
+
+Sources: OASIS KMIP 2.1 Specification §7.2 Table 353 requires Operation,
+Processing Stage, and Submission Date within an Asynchronous Request Structure;
+§11.56 Table 487 assigns their tags. The local matrix requires the four generic
+TTLV routes for each member. The Operation case also requires the typed
+`AsyncOperationOutcome.responsePayloadTtlv` accessor, because that installed
+client route returns the checked Query Asynchronous Requests response payload.
+
+Red commit `055caa4f9` requires the three case IDs and all 13 route events. The
+controlled-query test fails on the missing Operation Enumeration constructor
+event, with an expected event count of 22,611 against the previous 22,598.
+Green commit `37032f9b4` invokes the installed Enumeration and DateTimeExtended
+constructors, Item creation/view, and decoder for each member. It also sends a
+typed Query Asynchronous Requests operation through mutual TLS, calls
+`AsyncOperationOutcome.responsePayloadTtlv`, and verifies the exact response
+Structure tags, order, values, status, and request operation at the peer.
+Refactor commit `ec0d651cb` closes every borrowed Item view and selects response
+field fixtures by tag. The shared route validator then identified a misspelled
+DateTimeExtended route ID; commit `7db3f9524` corrected it to the canonical
+`datetimeextended` ID from the generated matrix.
+
+Verification against the installed Java artifact built from
+`489fafc79ef89db2524eafa7a6c6482f5cf75d97`:
+
+- Focused `ControlledTlsPeerTest`: pass.
+- Full installed Java consumer suite: 54 tests, zero failures, errors, or skips.
+- Shared route validator: 22,611/22,611 selected cells invoked, zero failed;
+  selected scope complete.
+- Generated ledger comparison: matches the checked-in reference.
+- Full Java ledger: 71,463 planned, 22,611 executed, 48,852 pending across
+  1,314 case IDs. Every pending cell remains `route_evidence_not_emitted`;
+  `complete_matrix=false` and no pending cell is treated as an exemption.
