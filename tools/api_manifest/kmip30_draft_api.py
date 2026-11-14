@@ -24,6 +24,9 @@ _EXPECTED_ROUTES = (
 _EXPECTED_SOURCE_PATH = "specification/oasis/kmip-3.0/upstream/kmip-spec-v3.0.html"
 _EXPECTED_SOURCE_INVENTORY = "specification/oasis/kmip-3.0/SOURCES.md"
 _EXPECTED_BASE_MANIFEST = "specification/api/public-api.json"
+_FLUENT_CAPABILITY_ID = "kmip30_fluent_operations"
+_FLUENT_REQUIREMENTS = [f"KMIPKIT-0116-FR-{number:03}" for number in range(1, 7)]
+_LANGUAGES = {"rust", "c", "java", "python"}
 _MOJIBAKE_MARKERS = ("\u00c2\u00a7", "\u00c3", "\u00e2\u20ac", "\u00ef\u00bf\u00bd", "\ufffd")
 
 
@@ -66,6 +69,8 @@ def validate_kmip30_draft_api(
         expected_names.add(name)
         _validate_route_mapping(operation, functions.get(c_name), name, rust_method, c_name, java_method)
 
+    _validate_fluent_routes(operations, public_manifest)
+
     client_operations = [
         operation
         for operation in public_manifest.get("operations", [])
@@ -88,6 +93,79 @@ def validate_kmip30_draft_api(
         "draft route capability lacks its specification requirement",
     )
     _validate_pinned_source(draft_catalog.get("source"), root)
+
+
+def _validate_fluent_routes(operations: list[Any], public_manifest: dict[str, Any]) -> None:
+    """Validate the additive, four-language fluent surface when declared."""
+    capabilities = [
+        item
+        for item in public_manifest.get("capabilities", [])
+        if isinstance(item, dict)
+        and item.get("capabilityId") == _FLUENT_CAPABILITY_ID
+    ]
+    _require(len(capabilities) <= 1, "KMIP 3.0 fluent capability is duplicated")
+    if not capabilities:
+        _require(
+            all("fluentApi" not in route for route in operations if isinstance(route, dict)),
+            "fluent route mappings exist without a capability declaration",
+        )
+        return
+
+    capability = capabilities[0]
+    _require(
+        capability.get("capabilityState") in {"declared", "verified"},
+        "KMIP 3.0 fluent capability has an invalid state",
+    )
+    _require(capability.get("ownerSpecId") == "KMIPKIT-0116", "wrong KMIP 3.0 fluent owner spec")
+    _require(
+        capability.get("requirementIds") == _FLUENT_REQUIREMENTS,
+        "KMIP 3.0 fluent capability requirements differ from KMIPKIT-0116",
+    )
+    approval = capability.get("approvalEvidence")
+    _require(
+        isinstance(approval, dict)
+        and approval.get("kind") == "feature-specification"
+        and approval.get("path") == "specs/116-kmip30-fluent-operations/spec.md"
+        and approval.get("status") == "Approved",
+        "KMIP 3.0 fluent capability lacks approved feature evidence",
+    )
+
+    route_mappings: dict[str, set[str]] = {language: set() for language in _LANGUAGES}
+    for route in operations:
+        _require(isinstance(route, dict), "draft operation entry must be an object")
+        mappings = route.get("fluentApi")
+        _require(
+            isinstance(mappings, dict) and set(mappings) == _LANGUAGES,
+            f"fluent route mappings are incomplete for {route.get('operation')}",
+        )
+        for language, mapping in mappings.items():
+            _require(
+                isinstance(mapping, str) and mapping.strip() == mapping and bool(mapping),
+                f"fluent route mapping is malformed for {route.get('operation')} ({language})",
+            )
+            _require(
+                mapping not in route_mappings[language],
+                f"fluent route mapping is duplicated for {language}",
+            )
+            route_mappings[language].add(mapping)
+
+    capability_mappings = capability.get("mappings")
+    _require(
+        isinstance(capability_mappings, dict) and set(capability_mappings) == _LANGUAGES,
+        "KMIP 3.0 fluent capability language mappings are incomplete",
+    )
+    for language in _LANGUAGES:
+        _require(
+            isinstance(capability_mappings[language], list)
+            and set(capability_mappings[language]) == route_mappings[language],
+            f"KMIP 3.0 fluent capability mappings differ for {language}",
+        )
+    if capability.get("capabilityState") == "verified":
+        evidence = capability.get("parityEvidenceIds")
+        _require(
+            isinstance(evidence, list) and bool(evidence),
+            "verified KMIP 3.0 fluent capability lacks parity evidence",
+        )
 
 
 def _validate_route_mapping(
