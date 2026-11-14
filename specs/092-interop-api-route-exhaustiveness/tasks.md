@@ -570,3 +570,13 @@ the peer checks typed and generic Ticket access and never records the Ticket.
 - Verification: route-manifest validation passed; focused route tests passed
   65/65; shared interop tests passed 189/189; workflow contract tests passed
   96/96; Rust 1.94 validator tests passed 72/72; and `git diff --check` passed.
+
+## C typed batch count evidence
+
+The C controlled-peer case `test-batch-count-mismatch-rejected` now exercises
+the public typed batch API as a read-only network route. Across KMIP 2.0/2.1,
+TTLV/JSON/XML, and raw TLS/HTTPS, it sends Get plus Get Attribute List and the
+peer validates Batch Count 2 against the two Batch Items. This demonstrates
+that the typed send path derives the count from its items and exposes no count
+override. Its 12 focused checks pass; this does not complete T006/T007/T009 or
+the cross-language matrix.

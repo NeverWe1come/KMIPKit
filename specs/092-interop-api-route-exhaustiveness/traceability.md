@@ -49,3 +49,11 @@ The common serializer/response-reader route assertion loads the API manifest
 from the exact `library_commit` recorded in `route-capabilities.json`, so
 functions added to a later release cannot be required from an older installed
 artifact. This is part of the FR-006 artifact provenance check.
+
+For FR-003 and FR-009, C now executes the read-only
+`test-batch-count-mismatch-rejected` scenario through the installed typed batch
+constructors. Twelve controlled-peer checks across both protocol versions,
+three encodings, and two transports assert that transmitted Batch Count
+matches the two request items. This exercises the typed API's derived count;
+it does not create or send an arbitrary malformed message. The broader C
+matrix and all-language evidence remain open.
