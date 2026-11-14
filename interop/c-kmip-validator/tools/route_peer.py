@@ -6,6 +6,7 @@ request bodies, credentials, tickets, or key bytes.
 """
 from __future__ import annotations
 
+import copy
 import datetime as dt
 import hashlib
 import json
@@ -389,6 +390,7 @@ RECIPES = {
     'test-batch-order-false-correlates-response-items': ((10, 12), 'batch_order_false_two_read_items'),
     'test-batch-continue-after-failure': ((10, 12), 'batch_continue_after_failure'),
     'test-batch-stop-on-first-failure': ((10, 10), 'batch_stop_on_first_failure'),
+    'test-batch-undo-rolls-back-prior-success': ((1, 10), 'batch_undo_rolls_back_prior_success'),
     'test-norm-payload-client-create-request-20-001': ((1, 20), 'create'),
     'test-norm-payload-client-create-request-20-002': ((1, 20), 'create'),
     'test-norm-payload-client-create-request-21-001': ((1, 20), 'create'),
@@ -835,7 +837,8 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
             raise ValueError('fixture_algorithm_mismatch')
         if numbers(node, 0x42002A) != [2048 if object_type in (3, 4) else 128]:
             raise ValueError('fixture_key_length_mismatch')
-        if numbers(node, 0x42000E) != [1]:
+        expected_continuation = (3 if case_id == 'test-batch-undo-rolls-back-prior-success' else 1)
+        if numbers(node, 0x42000E) != [expected_continuation]:
             raise ValueError('fixture_cleanup_continuation_missing')
         implicit_target = case_id in ('test-op-get-attributes', 'test-op-get-attribute-list',
             'test-norm-payload-client-get-attribute-list-request-20-001',
@@ -884,6 +887,18 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
             required_order = selected_recipe[1] == 'batch_order_required_create_activate'
             if numbers(node, 0x420010) != ([1] if required_order else []):
                 raise ValueError('fixture_batch_order_option_presence_mismatch')
+    if selected_recipe[1] == 'batch_undo_rolls_back_prior_success':
+        items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+        if (len(items) != 2 or [numbers(item, 0x42005C) for item in items] != [[1], [10]] or
+                numbers(node, 0x42000E) != [3] or numbers(node, 0x420010) != [1] or
+                [byte_string_values(item, 0x420093) for item in items] !=
+                [[b'undo-create'], [b'undo-failing-get']]):
+            raise ValueError('fixture_undo_batch_shape_mismatch')
+        get_payloads = [child for child in items[1][2]
+                        if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1]
+        if (len(get_payloads) != 1 or
+                text_values(get_payloads[0], UNIQUE_IDENTIFIER_TAG) != ['missing-key']):
+            raise ValueError('fixture_undo_get_missing_identifier_mismatch')
     if selected_recipe[1] == 'get_usage_allocation_uid_variants':
         items = [child for child in node[2]
                  if child[0] == BATCH_ITEM_TAG and child[1] == 1]
@@ -2140,9 +2155,12 @@ class PeerState:
         return hashlib.sha256(state.encode()).hexdigest()
 
     def execute(self, request_tree, *, continued_batch=False, stop_after_failure=False,
-                rejected_operation=None,
+                undo_prior_success=False, rejected_operation=None,
                 rejection_status=1, rejection_reason=5):
         before = self.digest()
+        undo_enabled = undo_prior_success or numbers(request_tree, 0x42000E) == [3]
+        prior_state = copy.deepcopy((self.objects, self.attributes, self.attribute_values,
+                                     self.adjustable_attribute_values)) if undo_enabled else None
         effects, statuses, reasons = [], [], []
         placeholder = None
         labels = {9: 'checked', 10: 'object_retrieved', 11: 'attributes_retrieved',
@@ -2341,6 +2359,16 @@ class PeerState:
             reasons.append(reason)
             if stop_after_failure and status != 0:
                 break
+        if undo_enabled:
+            failure_index = next((index for index, status in enumerate(statuses) if status != 0), None)
+            if failure_index is not None:
+                for index in range(failure_index):
+                    if statuses[index] == 0:
+                        statuses[index] = 3
+                        reasons[index] = 0
+                        effects[index] = 'operation_undone'
+                (self.objects, self.attributes, self.attribute_values,
+                 self.adjustable_attribute_values) = prior_state
         return {'effects': effects, 'statuses': statuses, 'reasons': reasons,
                 'peer_observed_state_before_sha256': before,
                 'peer_observed_state_after_sha256': self.digest()}
@@ -3048,6 +3076,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         elif recipe[1] == 'batch_stop_on_first_failure':
                                             response_operations = (10,)
                                             response_item_ids = (b'item-a',)
+                                        elif recipe[1] == 'batch_undo_rolls_back_prior_success':
+                                            response_item_ids = (b'undo-create', b'undo-failing-get')
                                         if recipe[1] == 'async_query_outstanding_filter' and exchange_index < 9:
                                             state_digest = peer_state.digest()
                                             if exchange_index == 3:
@@ -3107,6 +3137,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 request_tree,
                                                 continued_batch=recipe[1] == 'batch_continue_after_failure',
                                                 stop_after_failure=recipe[1] == 'batch_stop_on_first_failure',
+                                                undo_prior_success=(recipe[1] ==
+                                                                    'batch_undo_rolls_back_prior_success'),
                                                 rejected_operation=peer_rejection.get('operation')
                                                 if reject_this_exchange else None,
                                                 rejection_status=peer_rejection.get('result_status', 1)
@@ -3425,6 +3457,27 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                     [numbers(item, 0x42007F) for item in response_items] != [[1]] or
                                                     [numbers(item, 0x42007E) for item in response_items] != [[55]]):
                                                 raise ValueError('fixture_stop_partial_response_mismatch')
+                                        elif recipe[1] == 'batch_undo_rolls_back_prior_success':
+                                            response_items = [item for item in response_tree[2]
+                                                              if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+                                            undone_payloads = [child for child in response_items[0][2]
+                                                               if child[0] == RESPONSE_PAYLOAD_TAG and
+                                                               child[1] == 1] if response_items else []
+                                            if ([numbers(item, 0x42005C) for item in response_items] !=
+                                                    [[1], [10]] or
+                                                    [numbers(item, 0x42007F) for item in response_items] !=
+                                                    [[3], [1]] or
+                                                    [numbers(item, 0x42007E) for item in response_items] !=
+                                                    [[], [55]] or
+                                                    [byte_string_values(item, 0x420093)
+                                                     for item in response_items] !=
+                                                    [[b'undo-create'], [b'undo-failing-get']] or
+                                                    len(undone_payloads) != 1 or
+                                                    numbers(undone_payloads[0], 0x420057) != [2] or
+                                                    text_values(undone_payloads[0], UNIQUE_IDENTIFIER_TAG) !=
+                                                    ['fixture-key-1'] or
+                                                    peer_state.objects):
+                                                raise ValueError('fixture_undo_response_or_rollback_mismatch')
                                         elif placeholder_chain_recipe:
                                             verify_placeholder_chain_response(response_tree, response_operations)
                                         elif batch_order_placeholder_recipe:
@@ -3700,6 +3753,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                    'test-batch-order-omitted-defaults-true',
                                                    'test-batch-continue-after-failure',
                                                    'test-batch-stop-on-first-failure',
+                                                   'test-batch-undo-rolls-back-prior-success',
                                                    'test-norm-payload-client-get-usage-allocation-request-20-001',
                                                    'test-norm-payload-client-get-usage-allocation-request-21-001'} else {}),
                                            **({'peer_response_result_statuses': [
@@ -3715,21 +3769,24 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                    'test-batch-order-omitted-defaults-true',
                                                    'test-batch-continue-after-failure',
                                                    'test-batch-stop-on-first-failure',
+                                                   'test-batch-undo-rolls-back-prior-success',
                                                    'test-norm-payload-client-get-usage-allocation-request-20-001',
                                                    'test-norm-payload-client-get-usage-allocation-request-21-001'} else {}),
                                            **({'peer_response_unique_batch_item_ids': [
                                                value.decode('utf-8') for item in observation[0][1][2]
                                                if item[0] == BATCH_ITEM_TAG
                                                for value in byte_string_values(item, 0x420093)]}
-                                              if observation and case_id ==
-                                              'test-batch-stop-on-first-failure' else {}),
+                                              if observation and case_id in {
+                                                  'test-batch-stop-on-first-failure',
+                                                  'test-batch-undo-rolls-back-prior-success'} else {}),
                                            **({'peer_observed_effects': observation[0][2]['effects'],
                                                'peer_observed_state_before_sha256': observation[0][2][
                                                    'peer_observed_state_before_sha256'],
                                                'peer_observed_state_after_sha256': observation[0][2][
                                                    'peer_observed_state_after_sha256']}
-                                              if observation and case_id ==
-                                              'test-batch-stop-on-first-failure' else {}),
+                                              if observation and case_id in {
+                                                  'test-batch-stop-on-first-failure',
+                                                  'test-batch-undo-rolls-back-prior-success'} else {}),
                                            **({'peer_request_unique_identifier_present_by_batch_item': [
                                                bool(text_values(item, UNIQUE_IDENTIFIER_TAG))
                                                for item in observation[0][0][2]

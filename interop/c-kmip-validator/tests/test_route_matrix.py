@@ -3627,7 +3627,9 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
         for check in checks:
             self.assertEqual(check['peer_response_result_statuses'], [3, 1])
-            self.assertEqual(check['peer_response_result_reasons'], [None, 55])
+            self.assertEqual(check['peer_response_unique_batch_item_ids'],
+                             ['undo-create', 'undo-failing-get'])
+            self.assertEqual(check['peer_observed_effects'], ['operation_undone', 'object_not_found'])
             self.assertEqual(check['peer_observed_state_before_sha256'],
                              check['peer_observed_state_after_sha256'])
             self.assertTrue({'kmipkit_client_execute',

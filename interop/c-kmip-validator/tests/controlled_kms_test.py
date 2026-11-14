@@ -257,7 +257,10 @@ def response(operations: tuple[int, ...], protocol_minor: int,
         item_fields += integer(0x42007F, result_status, 5)
         if result_reason is not None:
             item_fields += enumeration(0x42007E, result_reason)
-        if result_status == 0:
+        # KMIP 2.0/2.1 §8.6 requires a Response Payload when the result is
+        # not Failure. Operation Undone therefore retains the payload for
+        # the operation that was performed and then rolled back.
+        if result_status != 1:
             item_fields += tlv(0x42007C, 1, payload_value)
         batch_items.append(tlv(
             0x42000F,
@@ -483,6 +486,8 @@ def main() -> int:
         expected_operations += (45, 45, 46)
         expected_cases += ("test-op-login", "test-op-logout")
     expected_operations += stop_on_first_failure_batch
+    expected_operations += (1, 10)
+    expected_cases += ("test-batch-undo-rolls-back-prior-success",)
     expected_operations += (1, 25)
     expected_cases += ("test-op-cancel",)
     expected_operations += (1, 25) * len(ASYNC_CANCEL_RESULT_CASES)
@@ -714,6 +719,17 @@ def main() -> int:
                                 response_item_ids = (b"item-a",)
                                 response_statuses = (1,)
                                 response_reasons = (55,)
+                            if (operations == (1, 10) and
+                                    enumeration(0x42000E, 3) in request):
+                                expected_undo_item_ids = (b"undo-create", b"undo-failing-get")
+                                if (any(request.count(tlv(0x420093, 8, item_id)) != 1
+                                        for item_id in expected_undo_item_ids) or
+                                        request.count(tlv(0x420094, 7, b"missing-key")) != 1 or
+                                        tlv(0x420010, 6, bytes.fromhex("0000000000000001")) not in request):
+                                    raise AssertionError("Undo batch fields mismatch")
+                                response_item_ids = expected_undo_item_ids
+                                response_statuses = (3, 1)
+                                response_reasons = (None, 55)
                             if two_read_batch:
                                 continue_after_failure = tlv(0x420094, 7, b"missing-key") in request
                                 expected_fixture_identifiers = 1 if continue_after_failure else 2
@@ -738,7 +754,8 @@ def main() -> int:
                                     response_item_ids = (b"item-b", b"item-a")
                                     response_statuses = None
                                     response_reasons = None
-                            elif operations != stop_on_first_failure_batch:
+                            elif operations != stop_on_first_failure_batch and not (
+                                    operations == (1, 10) and enumeration(0x42000E, 3) in request):
                                 response_statuses = None
                                 response_reasons = None
                             if placeholder_chain:

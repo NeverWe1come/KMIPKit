@@ -958,6 +958,92 @@ static bool single_item_get_response_accessors_match(
     return valid;
 }
 
+static bool undo_batch_response_item_matches(
+    kmipkit_client_batch_item_response_t *response_item,
+    uint32_t expected_operation,
+    uint32_t expected_result_status,
+    uint8_t expected_reason_present,
+    uint32_t expected_result_reason,
+    const char *expected_batch_item_id,
+    int32_t *out_status) {
+    kmipkit_client_batch_item_metadata_v1_t metadata_v1 = {
+        .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v1_t),
+        .abi_version = 1
+    };
+    kmipkit_client_batch_item_metadata_v2_t metadata_v2 = {
+        .struct_size = (uint32_t)sizeof(kmipkit_client_batch_item_metadata_v2_t),
+        .abi_version = 2
+    };
+    uint8_t header_present = 0;
+    kmipkit_ttlv_structure_t *header = NULL;
+    kmipkit_ttlv_structure_view_t *header_view = NULL;
+    uint64_t header_item_count = 0;
+    uint8_t item_id_present = 0;
+    kmipkit_byte_span_v1_t item_id = {0};
+    uint8_t correlation_present = 1;
+    kmipkit_byte_span_v1_t correlation = {0};
+    uint8_t typed_present = 1;
+    uint32_t object_type = UINT32_MAX;
+    kmipkit_unique_identifier_v1_t identifier = {
+        .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+        .abi_version = 1
+    };
+    uint8_t payload_present = 1;
+    kmipkit_ttlv_structure_t *any_object = NULL;
+
+    int32_t status = kmipkit_client_batch_item_response_metadata_v1(
+        response_item, &metadata_v1);
+    if (status == 0) status = kmipkit_client_batch_item_response_metadata_v2(
+        response_item, &metadata_v2);
+    if (status == 0) status = kmipkit_client_batch_item_response_header_ttlv(
+        response_item, &header_present, &header);
+    if (status == 0 && header_present && header)
+        status = kmipkit_ttlv_structure_view(header, &header_view);
+    if (status == 0 && header_view)
+        status = kmipkit_ttlv_structure_view_item_count(header_view, &header_item_count);
+    if (status == 0) status = kmipkit_client_batch_item_response_unique_batch_item_id(
+        response_item, &item_id_present, &item_id);
+    if (status == 0) status = kmipkit_client_batch_item_response_pending_correlation_value(
+        response_item, &correlation_present, &correlation);
+    if (status == 0 && expected_operation == KMIPKIT_ENUMERATION_OPERATION_CREATE) {
+        status = kmipkit_client_batch_item_response_create(
+            response_item, &typed_present, &object_type, &identifier);
+    } else if (status == 0 && expected_operation == KMIPKIT_ENUMERATION_OPERATION_GET) {
+        status = kmipkit_client_batch_item_response_get(
+            response_item, &typed_present, &payload_present, &object_type,
+            &identifier, &any_object);
+    }
+
+    size_t expected_id_length = strlen(expected_batch_item_id);
+    bool no_success_payload = object_type == 0 &&
+        identifier.kind == 0 && identifier.text_data == NULL && identifier.text_length == 0 &&
+        identifier.enumeration_value == 0 && identifier.integer_value == 0 && any_object == NULL;
+    if (expected_operation == KMIPKIT_ENUMERATION_OPERATION_CREATE) {
+        no_success_payload = no_success_payload && typed_present == 0;
+    } else if (expected_operation == KMIPKIT_ENUMERATION_OPERATION_GET) {
+        no_success_payload = no_success_payload && typed_present != 0 && payload_present == 0;
+    }
+    bool valid = status == 0 && metadata_v1.result_status == expected_result_status &&
+        metadata_v1.has_result_reason == expected_reason_present &&
+        metadata_v1.result_reason == expected_result_reason &&
+        metadata_v2.operation == expected_operation &&
+        metadata_v2.result_status == expected_result_status &&
+        metadata_v2.has_result_reason == expected_reason_present &&
+        metadata_v2.result_reason == expected_result_reason &&
+        header_present != 0 && header_view != NULL && header_item_count > 0 &&
+        item_id_present != 0 && item_id.data != NULL && item_id.length == expected_id_length &&
+        memcmp(item_id.data, expected_batch_item_id, expected_id_length) == 0 &&
+        correlation_present == 0 && correlation.data == NULL && correlation.length == 0 &&
+        no_success_payload;
+    if (status == 0 && !valid) status = KMIPKIT_ERROR_INVALID_INPUT;
+
+    if (any_object) kmipkit_ttlv_structure_release(any_object);
+    if (header_view) kmipkit_ttlv_structure_view_release(header_view);
+    if (header) kmipkit_ttlv_structure_release(header);
+    *out_status = status;
+    return valid;
+}
+
 static bool check_response_matches_created_key(
     kmipkit_client_batch_item_response_t *response_item,
     const kmipkit_unique_identifier_v1_t *created_identifier,
@@ -6085,6 +6171,8 @@ create_key_pair_cleanup:
         strcmp(test_case->case_id, "test-norm-payload-client-get-request-21-001") == 0;
     bool stop_on_first_failure_workflow =
         strcmp(test_case->case_id, "test-batch-stop-on-first-failure") == 0;
+    bool batch_undo_rollback_workflow =
+        strcmp(test_case->case_id, "test-batch-undo-rolls-back-prior-success") == 0;
     bool batch_two_read_items_workflow =
         strcmp(test_case->case_id, "test-batch-count-matches-items") == 0 ||
         strcmp(test_case->case_id, "test-batch-count-mismatch-rejected") == 0 ||
@@ -6141,6 +6229,7 @@ create_key_pair_cleanup:
         get_attributes_workflow || get_attribute_list_workflow || get_constraints_workflow ||
         get_usage_allocation_workflow || add_attribute_workflow;
     if (strcmp(test_case->operation, "Create") == 0 && !create_workflow &&
+        !batch_undo_rollback_workflow &&
         !batch_order_placeholder_workflow &&
         !batch_create_activate_get_attribute_list_revoke_destroy_workflow &&
         !batch_placeholder_chain_workflow) {
@@ -6167,7 +6256,8 @@ create_key_pair_cleanup:
         return outcome_not_run("Get Constraints variations are not yet mapped to isolated C fixtures");
     }
     if (strcmp(test_case->operation, "Get") == 0 && !get_workflow &&
-        !single_item_batch_options_workflow && !batch_two_read_items_workflow) {
+        !single_item_batch_options_workflow && !batch_two_read_items_workflow &&
+        !batch_undo_rollback_workflow) {
         return outcome_not_run("object-specific Get recipes are not yet mapped to isolated C fixtures");
     }
     if (strcmp(test_case->operation, "Get Attributes") == 0 && !get_attributes_workflow) {
@@ -6395,6 +6485,31 @@ create_key_pair_cleanup:
                 second_item, request_validation_diagnostic, sizeof(request_validation_diagnostic)) ||
                 !request_item_is_valid(
                 third_item, request_validation_diagnostic, sizeof(request_validation_diagnostic)))) {
+            status = KMIPKIT_ERROR_INVALID_INPUT;
+        }
+    } else if (batch_undo_rollback_workflow) {
+        static const uint8_t missing_identifier_data[] = "missing-key";
+        const kmipkit_unique_identifier_v1_t missing_identifier = {
+            .struct_size = (uint32_t)sizeof(kmipkit_unique_identifier_v1_t),
+            .abi_version = 1,
+            .kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING,
+            .text_data = missing_identifier_data,
+            .text_length = sizeof(missing_identifier_data) - 1
+        };
+        request_construction_step = "Undo batch Create Attributes";
+        status = create_symmetric_key_attributes(client, &request_attributes) ? 0 :
+            KMIPKIT_ERROR_INVALID_INPUT;
+        if (status == 0) status = kmipkit_client_batch_item_create(
+            KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY,
+            request_attributes, NULL, &item);
+        if (status == 0) status = kmipkit_client_batch_item_get(
+            &missing_identifier, 0, 0, 0, 0, 0, 0, NULL, &second_item);
+        if (status == 0) status = set_batch_item_id(&item, "undo-create");
+        if (status == 0) status = set_batch_item_id(&second_item, "undo-failing-get");
+        if (status == 0 && (!request_item_is_valid(
+                item, request_validation_diagnostic, sizeof(request_validation_diagnostic)) ||
+                !request_item_is_valid(
+                second_item, request_validation_diagnostic, sizeof(request_validation_diagnostic)))) {
             status = KMIPKIT_ERROR_INVALID_INPUT;
         }
     } else if (batch_two_read_items_workflow) {
@@ -6709,6 +6824,12 @@ create_key_pair_cleanup:
             batch, KMIPKIT_ENUMERATION_BATCH_ERROR_CONTINUATION_OPTION_CONTINUE);
         if (status == 0) status = kmipkit_client_batch_add_item(batch, &setup_item);
         if (status == 0) status = kmipkit_client_batch_add_item(batch, &activate_item);
+    } else if (status == 0 && batch_undo_rollback_workflow) {
+        status = kmipkit_client_batch_set_order_option(batch, 1);
+        if (status == 0) status = kmipkit_client_batch_add_error_continuation_value(
+            batch, KMIPKIT_ENUMERATION_BATCH_ERROR_CONTINUATION_OPTION_UNDO);
+        if (status == 0) status = kmipkit_client_batch_add_item(batch, &item);
+        if (status == 0) status = kmipkit_client_batch_add_item(batch, &second_item);
     } else if (status == 0 && batch_two_read_items_workflow) {
         if (strcmp(test_case->case_id, "test-batch-order-false-correlates-response-items") == 0) {
             status = kmipkit_client_batch_set_order_option(batch, 0);
@@ -6803,6 +6924,7 @@ create_key_pair_cleanup:
         stop_on_first_failure_workflow ? 1 :
         batch_order_placeholder_workflow ? 2 :
         get_usage_allocation_identifier_variants_workflow ? 3 :
+        batch_undo_rollback_workflow ? 2 :
         batch_two_read_items_workflow ? 2 : create_workflow ? 2 :
         batch_placeholder_chain_workflow ? 3 :
         (active_destroy_negative_workflow ||
@@ -6846,6 +6968,38 @@ create_key_pair_cleanup:
                      "KMIPKit could not inspect the complete Interop response batch (status %d)", status);
             goto cleanup;
         }
+    }
+    if (batch_undo_rollback_workflow) {
+        status = kmipkit_client_batch_response_item_at(response, 0, &setup_response_item);
+        if (status == 0) status = kmipkit_client_batch_response_item_at(
+            response, 1, &second_response_item);
+        bool create_undone_valid = status == 0 && undo_batch_response_item_matches(
+            setup_response_item, KMIPKIT_ENUMERATION_OPERATION_CREATE,
+            KMIPKIT_ENUMERATION_RESULT_STATUS_OPERATION_UNDONE, 0, 0,
+            "undo-create", &status);
+        bool failed_get_valid = status == 0 && undo_batch_response_item_matches(
+            second_response_item, KMIPKIT_ENUMERATION_OPERATION_GET,
+            KMIPKIT_ENUMERATION_RESULT_STATUS_OPERATION_FAILED, 1,
+            KMIPKIT_ENUMERATION_RESULT_REASON_OBJECT_NOT_FOUND,
+            "undo-failing-get", &status);
+        if (status != 0 || !create_undone_valid || !failed_get_valid) {
+            outcome.library_failed = status != 0;
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit did not preserve the Undo batch response outcomes");
+            goto cleanup;
+        }
+        bool create_target = strcmp(test_case->operation, "Create") == 0;
+        response_item = create_target ? setup_response_item : second_response_item;
+        outcome.success = true;
+        outcome.library_validated = true;
+        outcome.has_result_status_code = true;
+        outcome.result_status_code = create_target ?
+            KMIPKIT_ENUMERATION_RESULT_STATUS_OPERATION_UNDONE :
+            KMIPKIT_ENUMERATION_RESULT_STATUS_OPERATION_FAILED;
+        outcome.has_result_reason_code = !create_target;
+        outcome.result_reason_code = create_target ? 0 :
+            KMIPKIT_ENUMERATION_RESULT_REASON_OBJECT_NOT_FOUND;
+        goto cleanup;
     }
     if (batch_two_read_items_workflow) {
         bool get_matched = false;
