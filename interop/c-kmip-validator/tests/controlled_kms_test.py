@@ -25,6 +25,7 @@ ASYNC_CANCEL_RESULT_CASES = (
     "test-async-cancel-result-unavailable",
 )
 ASYNC_CANCEL_POLL_RACE_CASE = "test-async-cancel-vs-poll-race"
+ASYNC_NO_RECURSIVE_POLL_CANCEL_CASE = "test-async-no-recursive-async-poll-cancel"
 
 
 def tlv(tag: int, item_type: int, value: bytes) -> bytes:
@@ -388,6 +389,8 @@ def main() -> int:
     if protocol_version == "2.1":
         expected_operations += (1, 57, 26, 20)
         expected_cases += ("test-async-lifecycle-poll",)
+        expected_operations += (26, 25)
+        expected_cases += (ASYNC_NO_RECURSIVE_POLL_CANCEL_CASE,)
         expected_operations += (1, 26, 25)
         expected_cases += (ASYNC_CANCEL_POLL_RACE_CASE,)
     expected_cases += ("test-op-hash", "test-op-rng-retrieve", "test-op-rng-seed")
@@ -472,6 +475,7 @@ def main() -> int:
             nonlocal handled
             cancel_result_index = 0
             async_lifecycle_poll = False
+            async_request_pending = False
             try:
                 while handled < len(expected_operations):
                     accepted, _ = server.accept()
@@ -680,6 +684,7 @@ def main() -> int:
                                 raise AssertionError("request is missing configured KMIP credentials")
                             if operations == (1,) and enumeration(0x420007, 1) in request:
                                 cancel_correlation = b"fixture-cancel-correlation"
+                                async_request_pending = True
                                 stream.sendall(pending_create_response(protocol_minor, cancel_correlation))
                             elif operations == (57,):
                                 cancel_correlation = b"fixture-cancel-correlation"
@@ -693,8 +698,10 @@ def main() -> int:
                                     raise AssertionError("Poll request omitted its exact pending correlation value")
                                 if async_lifecycle_poll:
                                     stream.sendall(completed_poll_create_response(protocol_minor))
-                                else:
+                                elif async_request_pending:
                                     stream.sendall(pending_poll_response(protocol_minor, cancel_correlation))
+                                else:
+                                    stream.sendall(completed_poll_create_response(protocol_minor))
                             else:
                                 if operations == (1,) and tlv(0x420093, 8, b"interop-create") not in request:
                                     response_item_ids = (None,)
@@ -702,7 +709,7 @@ def main() -> int:
                                     response_item_ids = (None,)
                                     async_lifecycle_poll = False
                                 cancellation_result = 1
-                                if operations == (25,):
+                                if operations == (25,) and async_request_pending:
                                     if cancel_result_index >= len(cancel_result_values):
                                         raise AssertionError("peer received an unplanned Cancel request")
                                     cancellation_result = cancel_result_values[cancel_result_index]
@@ -719,6 +726,10 @@ def main() -> int:
                                     rng_length=32 if integer(0x4200C4, 32) in request or
                                     tlv(0x4200C2, 8, bytes(range(32))) in request else 16,
                                     cancellation_result=cancellation_result))
+                                if operations == (25,):
+                                    async_request_pending = False
+                                elif operations == (20,) and async_lifecycle_poll:
+                                    async_request_pending = False
                             handled += len(operations)
                             handled_operations.extend(operations)
                             handled_batches.append(operations)
