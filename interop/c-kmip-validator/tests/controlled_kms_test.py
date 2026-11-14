@@ -173,6 +173,10 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                 tlv(0x42006F, 7, b"fixture-public-key-1")
         elif operation == 3:
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
+        elif operation == 5:
+            identifier = (response_identifiers[item_index]
+                          if response_identifiers is not None else b"fixture-derived-key")
+            payload_value = tlv(0x420094, 7, identifier)
         elif operation == 6:
             payload_value = tlv(0x420094, 7, b"fixture-certificate-1")
         elif operation == 40:
@@ -236,6 +240,7 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                                     54: b"interop-set-defaults",
                                     55: b"interop-set-constraints",
                                     1: b"interop-create",
+                                    5: b"interop-derive-key",
                                     40: b"interop-create-split-key",
                                     11: b"interop-attributes",
                                     12: b"interop-attributes",
@@ -546,6 +551,8 @@ def main() -> int:
     expected_operations += (2, 20, 20)
     expected_operations += (40, 20, 20, 20)
     expected_cases += ("test-op-certify", "test-op-create-key-pair", "test-op-create-split-key")
+    expected_operations += (1, 18, 5, 19, 20, 20)
+    expected_cases += ("test-op-derive-key",)
     expected_operations += (1, 18, 33, 19, 20) * 2
     expected_cases += ("test-op-sign", "test-crypto-sign-rsa-2048-pkcs1_v1_5")
     expected_operations += (1, 18, 34, 19, 20) * 2
@@ -1060,7 +1067,22 @@ def main() -> int:
                                     raise AssertionError("Cancel request omitted its exact pending correlation value")
                                 if operations == (40,):
                                     response_item_ids = (b"interop-create-split-key",)
+                                if operations == (1,) and tlv(
+                                        0x420093, 8, b"interop-derive-create") in request:
+                                    response_item_ids = (b"interop-derive-create",)
+                                if operations == (18,) and tlv(
+                                        0x420093, 8, b"interop-derive-activate") in request:
+                                    response_item_ids = (b"interop-derive-activate",)
                                 response_identifiers = None
+                                if operations == (19, 20, 20) and tlv(
+                                        0x420093, 8, b"interop-derive-revoke-source") in request:
+                                    response_item_ids = (
+                                        b"interop-derive-revoke-source",
+                                        b"interop-derive-destroy-source",
+                                        b"interop-derive-destroy-result",
+                                    )
+                                    response_identifiers = (
+                                        b"fixture-key-1", b"fixture-key-1", b"fixture-derived-key")
                                 if operations == (20, 20, 20):
                                     split_key_destroy_ids = (
                                         b"interop-destroy-split-one",

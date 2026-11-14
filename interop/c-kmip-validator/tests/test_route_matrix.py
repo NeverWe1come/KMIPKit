@@ -4242,9 +4242,9 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(len(checks), 12,
                          'Derive Key must run for both versions and all six encoding/transport pairs')
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
-        self.assertTrue(all(check['peer_setup_operations'] == [1] and
+        self.assertTrue(all(check['peer_setup_operations'] == [1, 18] and
                             check['peer_request_operations'] == [5] and
-                            check['peer_cleanup_operations'] == [19, 20] and
+                            check['peer_cleanup_operations'] == [19, 20, 20] and
                             check['peer_final_state_matches_setup'] for check in checks))
         self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_derive_key'
                             and event['action'] == 'send' for event in events))
