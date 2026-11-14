@@ -172,3 +172,31 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   `route_capabilities.py --check` passed with 1,491 routes pinned to library
   commit `489fafc79ef89db2524eafa7a6c6482f5cf75d97`.
 - Language-level execution remains required; T006, T007, and T009 stay open.
+
+## Development evidence: C asynchronous Poll and Cancel interleaving
+
+- Normative scope: OASIS KMIP 2.1 §§6.1.5 and 6.1.38 define the Cancel and Poll
+  operations; §§8.2–8.3, 8.6, and 9.1–9.2 define the request and response
+  message shapes. The deterministic scenario sends asynchronous Create,
+  Pending Poll, then Cancel and requires one terminal result with the same
+  server-issued Asynchronous Correlation Value.
+- Red commit `632e64300`: the focused route-matrix regression failed because
+  `test-async-cancel-vs-poll-race` had no controlled C peer recipe.
+- Green commit `a2f8da437`: the installed C ABI creates and inspects typed Poll
+  and Cancel payloads, executes both operations after an asynchronous Create,
+  checks both typed response views, and makes the controlled peer verify the
+  exact three-request ordering and Pending/Pending/Success statuses.
+- Refactor commit `0e34f770c`: asynchronous Create seed authentication is
+  shared between the Cancel and Poll/Cancel routes; payload correlation checks
+  use a common helper.
+- Route-evidence merge regression: Red commit `b4fce5944` reproduced duplicate
+  local Cancel cells already emitted by the offline model executor; Green
+  commit `99f23c5e8` passes the existing cell keys into the network peer so one
+  valid receipt covers each cell. Refactor commit `b44ebf347` documents the
+  combined local and network coverage-key contract.
+- Verification: the focused asynchronous race test passed for all six KMIP
+  2.1 encoding/transport combinations. Both controlled TLS CTest peers passed.
+  The full C route matrix recorded 40,250 invoked cells, zero failed, and
+  26,486 pending, all `validator_recipe_pending`. The matching evidence
+  validator exits unsuccessfully at the remaining missing-route check because
+  the matrix is incomplete; it no longer reports duplicate route cells.

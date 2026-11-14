@@ -11,7 +11,7 @@ network recipes. Library sources are unchanged.
 | KMIPKIT-0092-FR-002, FR-007, FR-009 | Per-cell evidence and explicit pending sidecar; duplicate protection; common schema and validator in CI. Incomplete recipes keep the gate failing. |
 | KMIPKIT-0092-FR-003 | Exact assigned scalar values, reserved-tag rejection, typed attributes, and cryptographic-parameter field/TTLV round trips are checked locally. Broader semantic branch/model recipes remain pending. No absent encoder/send/high-level API is fabricated. |
 | KMIPKIT-0092-FR-004 | Ordered, redacted tree digests are retained per cell. Cross-language digest normalization/parity is pending. |
-| KMIPKIT-0092-FR-005 | Controlled peers parse all six encoding/transport pairs, check recipe fields, numeric ordered results, lifecycle transitions and deletion. Check, Get Attribute List, Log, Revoke, and Interop response TTLV accessors are read and structurally checked. Cryptographic, asynchronous, and remaining positive operation recipes are pending. |
+| KMIPKIT-0092-FR-005 | Controlled peers parse all six encoding/transport pairs, check recipe fields, numeric ordered results, lifecycle transitions and deletion. Check, Get Attribute List, Log, Revoke, and Interop response TTLV accessors are read and structurally checked. The C peer now covers catalogued asynchronous Cancel results and the KMIP 2.1 Poll/Cancel interleaving; other asynchronous and positive operation recipes remain pending. |
 | KMIPKIT-0092-FR-008 | Reports contain public identities, axes, digests, sanitized failure codes and numeric outcomes. Request bodies and fixture keys/tickets never enter evidence. |
 
 The exact OASIS document and section remain on each case in the generated shared
@@ -846,3 +846,35 @@ addition to the direct Cancel recipe. This evidence follows OASIS KMIP 2.0
   validator exits unsuccessfully on the remaining Create seed constructor,
   send, response-decoder, and local Create-response accessor cells. The C
   completeness gate and PR #170 remain WIP.
+
+### C asynchronous Poll and Cancel interleaving
+
+The C installed-ABI route seeds an asynchronous Create and reads the
+server-issued correlation value from its Pending response. It constructs and
+inspects typed Poll and Cancel request payloads with that exact value, sends
+Poll first, and verifies the Poll response is Pending with no Response Payload.
+It then sends Cancel and verifies the echoed correlation and Canceled result.
+The controlled peer records exactly three requests (Create, Poll, Cancel) and
+the response statuses Pending, Pending, Success, proving one terminal result
+in this deterministic interleaving. This does not simulate simultaneous
+threads. The recipe runs on KMIP 2.1 over TTLV, JSON, and XML with raw TLS and
+HTTPS. It follows OASIS KMIP 2.1 §§6.1.5, 6.1.38, 8.2–8.3, 8.6, and 9.1–9.2.
+
+- Red commit `632e64300` required the Poll-before-Cancel peer route and six
+  passing network cells; it failed because the C route recipe was absent.
+- Green commit `a2f8da437` adds the C request construction, Poll and Cancel
+  execution, response checks, and deterministic peer fixture.
+- Refactor commit `0e34f770c` shares asynchronous seed authentication and
+  generalizes correlation-payload validation.
+- A follow-up matrix merge regression was captured by Red commit `b4fce5944`:
+  the exact validator rejected duplicate local Cancel route cells emitted by
+  both the offline runner and network peer. Green commit `99f23c5e8` passes
+  already-covered local cells into the peer runner to avoid duplicate receipts.
+- Refactor commit `b44ebf347` documents that the peer runner's returned key
+  set includes both reused local receipts and newly observed network cells.
+- Verification: the focused race test passed for all six network cells and
+  both controlled TLS CTest peers passed. The full C matrix recorded 40,250
+  invoked cells, zero failed cells, and 26,486 pending cells, all
+  `validator_recipe_pending`. The matching completeness validator now reaches
+  the missing-route check without duplicate-cell errors and exits unsuccessfully
+  because the overall matrix remains incomplete. PR #170 remains WIP.
