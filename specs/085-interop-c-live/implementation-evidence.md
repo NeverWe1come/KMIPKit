@@ -933,3 +933,30 @@ This tests the default-Prohibited behavior in OASIS KMIP 2.0/2.1 §§8.2–8.3,
   validator exits unsuccessfully, next reporting
   `test-async-indicator-optional-completes-or-pends`. The gate remains open and
   PR #170 remains WIP.
+
+### C Optional asynchronous Create completion
+
+The installed C consumer now sets `Asynchronous Indicator=Optional` and
+handles the synchronous-completion branch of Create. The controlled peer
+verifies the Optional value, successful Create response, absence of a
+correlation value, and that no Poll is sent after completion. This exercises
+KMIP 2.0/2.1 §§8.2–8.3, 8.6, 9.1–9.2, and 11.3; Create is §6.1.8 Table 171
+(2.0) and Table 186 (2.1). The catalog also permits a Pending branch, which
+remains separate coverage.
+
+- Red commit `7eda42010` failed because the C controlled peer had no recipe for
+  `test-async-indicator-optional-completes-or-pends`.
+- Green commit `8d6e93641` adds the typed C route and peer checks across KMIP
+  2.0/2.1 and all six encoding/transport pairs. The peer returns synchronous
+  Success with no correlation and records one exchange.
+- Refactor commit `8ab2db743` gives the synchronous Create response assertion a
+  shared name for the omitted and Optional indicator cases.
+- Verification: all three focused async Create route tests passed; the CMake
+  build, Python syntax checks, `test_c_validator`, and both controlled TLS
+  CTest peers passed. Temporary-file based tests used a worktree-local
+  `TMPDIR` after the shared `/tmp` filled during parallel runs.
+- The matching full C route matrix recorded 40,508 invoked cells, zero failed,
+  and 26,228 `validator_recipe_pending` cells. The exact completeness
+  validator exits unsuccessfully, next reporting
+  `test-async-indicator-prohibited-synchronous`. The gate remains open and PR
+  #170 remains WIP.
