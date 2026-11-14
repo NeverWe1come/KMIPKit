@@ -2495,7 +2495,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         cell['public_api_symbol'] ==
                                         'kmipkit_client_batch_add_error_continuation_value')
                                     async_request_constructor = (
-                                        recipe[1] == 'cancel_poll_race' and
+                                        recipe[1] in (
+                                            'cancel_poll_race',
+                                            'async_poll_cancel_no_recursion') and
                                         cell['action'] == 'construct' and
                                         cell['public_api_symbol'] in {
                                             'kmipkit_poll_request_create',

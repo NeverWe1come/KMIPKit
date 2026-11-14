@@ -206317,7 +206317,8 @@
               "Cancel",
               "Poll"
             ],
-            "asynchronous_indicator": "omitted"
+            "asynchronous_indicator": "omitted",
+            "cancel_result": "Canceled"
           },
           "expected": {
             "poll_response": "terminal and contains no async correlation",

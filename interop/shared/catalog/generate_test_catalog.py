@@ -1205,7 +1205,8 @@ def _protocol_scenario_cases(
         sections=async_base + ["6.1.41"], versions=["2.1"], setup=["Configure multiple pending requests with distinct correlations"])
     add("test-async-no-recursive-async-poll-cancel", "asynchronous_workflows", ["Cancel", "Poll"],
         [correlation, cancel_op, poll_op, *cancel_request, *cancel_response],
-        parameters={"operations": ["Cancel", "Poll"], "asynchronous_indicator": "omitted"},
+        parameters={"operations": ["Cancel", "Poll"], "asynchronous_indicator": "omitted",
+                    "cancel_result": "Canceled"},
         expected={"poll_response": "terminal and contains no async correlation",
                   "cancel_response": "not Pending and echoes the request correlation"},
         steps=["execute_poll_and_cancel_responses", "inspect_response_headers_and_payloads"],
