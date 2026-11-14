@@ -40,6 +40,11 @@ REQUEST_HEADER_FIELD_FIXTURES = {
         ('Server Correlation Value', 7, b'server-correlation'),
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP': ('Time Stamp', 9, 1_760_000_000),
 }
+REQUEST_HEADER_BATCH_OPTION_FIXTURES = {
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION':
+        ('Batch Error Continuation Option', 5, None),
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION': ('Batch Order Option', 6, 1),
+}
 OUTPUT_ROOT = ROOT / 'interop/c-kmip-validator/build'
 
 
@@ -263,6 +268,35 @@ def _with_request_header_field(fixture: tuple, tags: dict[str, int], field: tupl
     return fixture[0], fixture[1], message
 
 
+def _request_message_with_two_items(fixture: tuple, tags: dict[str, int]) -> tuple:
+    """Add unique identifiers and a matching count for batch-level options."""
+    message = list(fixture[2])
+    header_index = next(index for index, item in enumerate(message)
+                        if item[0] == tags['Request Header'])
+    header = message[header_index]
+    header_fields = list(header[2])
+    count_index = next(index for index, item in enumerate(header_fields)
+                       if item[0] == tags['Batch Count'])
+    header_fields[count_index] = (tags['Batch Count'], 2, (2).to_bytes(4, 'big'))
+    message[header_index] = (header[0], header[1], header_fields)
+
+    batch_item = next(item for item in message if item[0] == tags['Batch Item'])
+    payload_index = next(index for index, item in enumerate(batch_item[2])
+                         if item[0] == tags['Request Payload'])
+    first_fields = list(batch_item[2])
+    first_fields.insert(payload_index,
+                        (tags['Unique Batch Item ID'], 8, b'route-batch-item-1'))
+    second_fields = list(first_fields)
+    identifier_index = next(index for index, item in enumerate(second_fields)
+                            if item[0] == tags['Unique Batch Item ID'])
+    second_fields[identifier_index] = (tags['Unique Batch Item ID'], 8, b'route-batch-item-2')
+    first_item = (batch_item[0], batch_item[1], first_fields)
+    second_item = (batch_item[0], batch_item[1], second_fields)
+    message = [item for item in message if item[0] != tags['Batch Item']]
+    message.extend((first_item, second_item))
+    return fixture[0], fixture[1], message
+
+
 def _request_header_field_data(name: str, kind: int, value: object, catalog: dict,
                                protocol_version: str) -> bytes | None:
     if kind == 5:
@@ -272,10 +306,8 @@ def _request_header_field_data(name: str, kind: int, value: object, catalog: dic
         value = values[0]
         return value.to_bytes(4, 'big')
     if kind in (2, 6, 9):
-        width = 8 if kind == 9 else 4
+        width = 8 if kind in (6, 9) else 4
         data = int(value).to_bytes(width, 'big', signed=kind == 9)
-        if kind == 6:
-            data += bytes(4)
         return data
     if kind in (7, 8):
         return value
@@ -301,6 +333,19 @@ def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
     if target.get('kind') in {'tag', 'message_field'} and target.get('name') == 'Request Message':
         fixture = _request_message_fixture(protocol_version, tags, catalog)
         return [fixture] if fixture is not None else None
+    batch_option = REQUEST_HEADER_BATCH_OPTION_FIXTURES.get(target.get('target_id'))
+    if batch_option is not None:
+        fixture = _request_message_fixture(protocol_version, tags, catalog)
+        if fixture is None:
+            return None
+        name, kind, value = batch_option
+        tag = tags.get(name)
+        data = _request_header_field_data(name, kind, value, catalog, protocol_version)
+        if tag is None or data is None:
+            return None
+        multi_item_fixture = _request_message_with_two_items(fixture, tags)
+        return [_with_request_header_field(
+            multi_item_fixture, tags, (tag, kind, data), after_tag='Protocol Version')]
     header_field = _request_header_field_fixture(target, catalog, tags, protocol_version)
     if header_field is not None:
         fixture = _request_message_fixture(protocol_version, tags, catalog)
