@@ -47,7 +47,9 @@ def test_fluent_lifecycle_builds_typed_batch_items() -> None:
 
 
 def test_lifecycle_builders_validate_and_reject_invalid_arguments() -> None:
-    request = fluent.Request(None)
+    with pytest.raises(errors.KmipKitError):
+        fluent.Request(None)  # type: ignore[arg-type]
+    request = fluent.Request(object())  # type: ignore[arg-type]
     identifier = extensions.UniqueIdentifier.text_string("lifecycle-target")
     with pytest.raises(errors.KmipKitError):
         request.locate(None)
@@ -88,10 +90,10 @@ def test_lifecycle_builders_validate_and_reject_invalid_arguments() -> None:
                     with pytest.raises(errors.KmipKitError):
                         revoke.execute(limits)
 
-    operation = fluent.Operation(None, "unassigned", identifier)
+    operation = fluent.Operation(object(), "unassigned", identifier)  # type: ignore[arg-type]
     with pytest.raises(errors.KmipKitError):
         operation.build()
-    operation = fluent.Operation(None, "activate", identifier)
+    operation = fluent.Operation(object(), "activate", identifier)  # type: ignore[arg-type]
     operation.with_options(client.RequestOptions()).asynchronous_indicator(0)
     operation.validate()
     item = operation.to_batch_item()
