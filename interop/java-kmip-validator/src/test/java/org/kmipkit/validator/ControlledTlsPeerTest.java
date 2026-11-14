@@ -118,6 +118,9 @@ class ControlledTlsPeerTest {
     private record ProfileInformationMemberFixture(String caseId, String targetId, int rawTag,
             TtlvItemType itemType, int integerValue, String textValue, boolean structure) { }
 
+    private record ServerInformationMemberFixture(String caseId, String targetId, int rawTag,
+            String textValue, boolean anyEncoding) { }
+
     private static final String PROFILE_INFORMATION_CASE_ID =
             "test-norm-operation-structure-operation-structure-7-31-profile-information";
     private static final String PROFILE_INFORMATION_TARGET_ID =
@@ -138,6 +141,10 @@ class ControlledTlsPeerTest {
             "test-norm-operation-structure-operation-structure-7-7-constraints";
     private static final String CONSTRAINTS_TARGET_ID =
             "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-7-CONSTRAINTS";
+    private static final String SERVER_INFORMATION_CASE_ID =
+            "test-norm-operation-structure-operation-structure-7-37-server-information";
+    private static final String SERVER_INFORMATION_TARGET_ID =
+            "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-37-SERVER-INFORMATION";
     private static final List<ProfileInformationMemberFixture> PROFILE_INFORMATION_MEMBER_FIXTURES = List.of(
             new ProfileInformationMemberFixture(
                     "test-norm-structure-member-structure-member-7-31-profile-version",
@@ -166,6 +173,59 @@ class ControlledTlsPeerTest {
             PROFILE_INFORMATION_MEMBER_FIXTURES.get(2).caseId(),
             PROFILE_INFORMATION_MEMBER_FIXTURES.get(3).caseId(),
             PROFILE_INFORMATION_MEMBER_FIXTURES.get(4).caseId());
+    private static final List<ServerInformationMemberFixture> SERVER_INFORMATION_MEMBER_FIXTURES = List.of(
+            new ServerInformationMemberFixture(
+                    "test-norm-structure-member-structure-member-7-37-server-name",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-SERVER-NAME", 0x42012d,
+                    "kmipkit-test-server", false),
+            new ServerInformationMemberFixture(
+                    "test-norm-structure-member-structure-member-7-37-server-serial-number",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-SERVER-SERIAL-NUMBER", 0x42012e,
+                    "SN-12345", false),
+            new ServerInformationMemberFixture(
+                    "test-norm-structure-member-structure-member-7-37-server-version",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-SERVER-VERSION", 0x42012f,
+                    "1.2.3", false),
+            new ServerInformationMemberFixture(
+                    "test-norm-structure-member-structure-member-7-37-server-load",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-SERVER-LOAD", 0x420130,
+                    "10%", false),
+            new ServerInformationMemberFixture(
+                    "test-norm-structure-member-structure-member-7-37-product-name",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-PRODUCT-NAME", 0x420131,
+                    "KMIPKit Test", false),
+            new ServerInformationMemberFixture(
+                    "test-norm-structure-member-structure-member-7-37-build-level",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-BUILD-LEVEL", 0x420132,
+                    "42", false),
+            new ServerInformationMemberFixture(
+                    "test-norm-structure-member-structure-member-7-37-build-date",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-BUILD-DATE", 0x420133,
+                    "2026-11-14", false),
+            new ServerInformationMemberFixture(
+                    "test-norm-structure-member-structure-member-7-37-cluster-info",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-CLUSTER-INFO", 0x420134,
+                    "cluster-a", false),
+            new ServerInformationMemberFixture(
+                    "test-norm-structure-member-structure-member-7-37-alternative-failover-endpoints",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-ALTERNATIVE-FAILOVER-ENDPOINTS", 0x420135,
+                    "kms-backup-1.example.invalid:5696", false),
+            new ServerInformationMemberFixture(
+                    "test-norm-structure-member-structure-member-7-37-vendor-specific",
+                    "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-37-VENDOR-SPECIFIC", 0x540001,
+                    "vendor-info", true));
+    private static final List<String> SERVER_INFORMATION_CASE_IDS = List.of(
+            SERVER_INFORMATION_CASE_ID,
+            SERVER_INFORMATION_MEMBER_FIXTURES.get(0).caseId(),
+            SERVER_INFORMATION_MEMBER_FIXTURES.get(1).caseId(),
+            SERVER_INFORMATION_MEMBER_FIXTURES.get(2).caseId(),
+            SERVER_INFORMATION_MEMBER_FIXTURES.get(3).caseId(),
+            SERVER_INFORMATION_MEMBER_FIXTURES.get(4).caseId(),
+            SERVER_INFORMATION_MEMBER_FIXTURES.get(5).caseId(),
+            SERVER_INFORMATION_MEMBER_FIXTURES.get(6).caseId(),
+            SERVER_INFORMATION_MEMBER_FIXTURES.get(7).caseId(),
+            SERVER_INFORMATION_MEMBER_FIXTURES.get(8).caseId(),
+            SERVER_INFORMATION_MEMBER_FIXTURES.get(9).caseId());
 
     private static final List<OperationStructureFixture> OPERATION_STRUCTURE_FIXTURES = List.of(
             new OperationStructureFixture(
@@ -1075,6 +1135,9 @@ class ControlledTlsPeerTest {
         int extensionInformationRouteEventCount = KMIP_2_0_AND_2_1.size() * 7;
         int profileInformationRouteEventCount = KMIP_2_0_AND_2_1.size()
                 * (2 * GENERIC_STRUCTURE_ROUTE_IDS.size() + 4 * PROFILE_INFORMATION_MEMBER_FIXTURES.size());
+        int serverInformationRouteEventCount = KMIP_2_0_AND_2_1.size()
+                * (GENERIC_STRUCTURE_ROUTE_IDS.size() + SERVER_INFORMATION_MEMBER_FIXTURES.stream()
+                        .mapToInt(fixture -> fixture.anyEncoding() ? 3 : 4).sum());
         int objectTypeMemberRouteEventCount = 4;
         int constraintStructureRouteEventCount = 2 * GENERIC_STRUCTURE_ROUTE_IDS.size();
         int pendingCorrelationAccessorEventCount = KMIP_2_0_AND_2_1.size();
@@ -1117,6 +1180,7 @@ class ControlledTlsPeerTest {
                         + scalarOperationStructureRouteEventCount
                         + extensionInformationRouteEventCount
                         + profileInformationRouteEventCount
+                        + serverInformationRouteEventCount
                         + objectTypeMemberRouteEventCount
                         + constraintStructureRouteEventCount
                         + pendingCorrelationAccessorEventCount
@@ -1153,7 +1217,8 @@ class ControlledTlsPeerTest {
                         + typedTagIdentityCaseIds().size() + referencedEnumCaseCount
                         + 11 + STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size()
                         + STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.size()
-                        + STRUCTURE_MEMBER_VALUE_FIXTURES.size() + PROFILE_INFORMATION_CASE_IDS.size(),
+                        + STRUCTURE_MEMBER_VALUE_FIXTURES.size() + PROFILE_INFORMATION_CASE_IDS.size()
+                        + SERVER_INFORMATION_CASE_IDS.size(),
                 report.path("case_ids").size());
         List<String> expectedCredentialCaseIds = CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().toList();
         int credentialCaseStart = report.path("case_ids").size() - expectedCredentialCaseIds.size();
@@ -3459,6 +3524,7 @@ class ControlledTlsPeerTest {
         caseIds.add(CONSTRAINT_CASE_ID);
         caseIds.add(CONSTRAINTS_CASE_ID);
         PROFILE_INFORMATION_CASE_IDS.forEach(caseIds::add);
+        SERVER_INFORMATION_CASE_IDS.forEach(caseIds::add);
         OPERATION_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         SCALAR_OPERATION_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         STRUCTURE_MEMBER_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
@@ -4462,6 +4528,26 @@ class ControlledTlsPeerTest {
             for (String route : List.of(valueRoute, "java.generic-ttlv.ttlv_item.create",
                     "java.generic-ttlv.function.ttlv_item_view_from_item", "java.generic-ttlv.ttlv_codec.decode")) {
                 String action = route.endsWith("ttlv_item.create") || route.equals(valueRoute)
+                        ? "construct" : "decode";
+                assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(), route,
+                        action, protocolVersion);
+            }
+        }
+        // OASIS KMIP 2.0 §7.31 and KMIP 2.1 §7.37: Server Information has optional
+        // Text String members and repeatable Alternative Failover Endpoints and Vendor-Specific values.
+        assertGenericStructureRouteEvents(events, SERVER_INFORMATION_CASE_ID,
+                SERVER_INFORMATION_TARGET_ID, protocolVersion);
+        for (ServerInformationMemberFixture fixture : SERVER_INFORMATION_MEMBER_FIXTURES) {
+            List<String> routes = fixture.anyEncoding()
+                    ? List.of("java.generic-ttlv.ttlv_item.create",
+                            "java.generic-ttlv.function.ttlv_item_view_from_item",
+                            "java.generic-ttlv.ttlv_codec.decode")
+                    : List.of("java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.textstring",
+                            "java.generic-ttlv.ttlv_item.create",
+                            "java.generic-ttlv.function.ttlv_item_view_from_item",
+                            "java.generic-ttlv.ttlv_codec.decode");
+            for (String route : routes) {
+                String action = route.endsWith("ttlv_item.create") || route.endsWith("textstring")
                         ? "construct" : "decode";
                 assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(), route,
                         action, protocolVersion);
