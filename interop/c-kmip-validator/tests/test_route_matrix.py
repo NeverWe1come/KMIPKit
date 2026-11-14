@@ -394,7 +394,7 @@ class RouteMatrixTests(unittest.TestCase):
                     self.assertIn('kmipkit_response_message_from_ttlv', result['invoked_symbols'])
 
     def test_response_message_optional_fields_use_complete_parser_fixtures(self):
-        """OASIS KMIP 2.0/2.1 §§8.5–8.6 define optional response fields (0092-FR-003)."""
+        """OASIS KMIP 2.0/2.1 §8.6 Table 399 and §9.17 define response fields (0092-FR-003)."""
         from artifact_support import INSTALL, ROOT
         from route_ttlv import TreeAbi, encode
 
@@ -440,6 +440,17 @@ class RouteMatrixTests(unittest.TestCase):
                     self.assertEqual(actual[0], kind)
                     if expected_value is not None:
                         self.assertEqual(actual[1], expected_value)
+                    if name == 'Result Message':
+                        batch_fields = {field[0]: field for field in response[2][1][2]}
+                        failure = self.runner.catalog_enum_value(
+                            catalog, 'Result Status', 'Operation Failed', version)
+                        general_failure = self.runner.catalog_enum_value(
+                            catalog, 'Result Reason', 'General Failure', version)
+                        self.assertEqual(batch_fields[tags['Result Status']][2],
+                                         failure.to_bytes(4, 'big'))
+                        self.assertEqual(batch_fields[tags['Result Reason']][2],
+                                         general_failure.to_bytes(4, 'big'))
+                        self.assertNotIn(tags['Response Payload'], batch_fields)
                     result = abi.roundtrip(encode(response))
                     self.assertIn('kmipkit_response_message_from_ttlv', result['invoked_symbols'])
 

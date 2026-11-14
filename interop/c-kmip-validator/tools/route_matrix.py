@@ -109,6 +109,23 @@ RESPONSE_MESSAGE_CONTEXT_TARGETS = frozenset({
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-RESPONSE-PAYLOAD',
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-RESULT-STATUS',
 })
+RESPONSE_HEADER_FIELD_FIXTURES = {
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-5-ATTESTATION-TYPE': ('Attestation Type', 5, None),
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-5-CLIENT-CORRELATION-VALUE':
+        ('Client Correlation Value', 7, b'client-correlation'),
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-5-NONCE': ('Nonce', 1, None),
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-5-SERVER-CORRELATION-VALUE':
+        ('Server Correlation Value', 7, b'server-correlation'),
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-5-SERVER-HASHED-PASSWORD':
+        ('Server Hashed Password', 8, b'fixture-hashed-password'),
+}
+RESPONSE_BATCH_FIELD_FIXTURES = {
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-UNIQUE-BATCH-ITEM-ID':
+        ('Unique Batch Item ID', 8, b'route-response-batch-item'),
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-RESULT-MESSAGE':
+        ('Result Message', 7, b'fixture-result-message'),
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-MESSAGE-EXTENSION': ('Message Extension', 1, None),
+}
 OUTPUT_ROOT = ROOT / 'interop/c-kmip-validator/build'
 
 
@@ -349,6 +366,70 @@ def _response_message_fixture(protocol_version: str, tags: dict[str, int],
     return tags['Response Message'], 1, [header, batch_item]
 
 
+def _response_message_failure_fixture(protocol_version: str, tags: dict[str, int],
+                                      catalog: dict, result_message: bytes) -> tuple | None:
+    """Build a complete Failure response, whose shape permits Result Message."""
+    operation = catalog_enum_value(catalog, 'Operation', 'Get', protocol_version)
+    failure = catalog_enum_value(catalog, 'Result Status', 'Operation Failed', protocol_version)
+    reason = catalog_enum_value(catalog, 'Result Reason', 'General Failure', protocol_version)
+    if operation is None or failure is None or reason is None:
+        return None
+    base = _response_message_fixture(protocol_version, tags, catalog)
+    if base is None:
+        return None
+    header = base[2][0]
+    batch_item = (tags['Batch Item'], 1, [
+        (tags['Operation'], 5, operation.to_bytes(4, 'big')),
+        (tags['Result Status'], 5, failure.to_bytes(4, 'big')),
+        (tags['Result Reason'], 5, reason.to_bytes(4, 'big')),
+        (tags['Result Message'], 7, result_message),
+    ])
+    return tags['Response Message'], 1, [header, batch_item]
+
+
+def _with_response_header_field(fixture: tuple, tags: dict[str, int], field: tuple,
+                                *, after_tag: str = 'Time Stamp') -> tuple:
+    message = list(fixture[2])
+    header_index = next(index for index, item in enumerate(message)
+                        if item[0] == tags['Response Header'])
+    header = message[header_index]
+    fields = list(header[2])
+    anchor_index = next(index for index, item in enumerate(fields)
+                        if item[0] == tags[after_tag])
+    fields.insert(anchor_index + 1, field)
+    message[header_index] = (header[0], header[1], fields)
+    return fixture[0], fixture[1], message
+
+
+def _with_response_batch_field(fixture: tuple, tags: dict[str, int], field: tuple,
+                               *, after_tag: str) -> tuple:
+    message = list(fixture[2])
+    batch_index = next(index for index, item in enumerate(message)
+                       if item[0] == tags['Batch Item'])
+    batch_item = message[batch_index]
+    fields = list(batch_item[2])
+    anchor_index = next(index for index, item in enumerate(fields)
+                        if item[0] == tags[after_tag])
+    fields.insert(anchor_index + 1, field)
+    message[batch_index] = (batch_item[0], batch_item[1], fields)
+    return fixture[0], fixture[1], message
+
+
+def _response_nonce(tags: dict[str, int]) -> tuple:
+    return tags['Nonce'], 1, [
+        (tags['Nonce ID'], 8, b'fixture-nonce-id'),
+        (tags['Nonce Value'], 8, b'fixture-nonce-value'),
+    ]
+
+
+def _message_extension_fixture(tags: dict[str, int]) -> tuple:
+    return tags['Message Extension'], 1, [
+        (tags['Vendor Identification'], 7, b'kmipkit.test'),
+        (tags['Criticality Indicator'], 6, bytes(8)),
+        (tags['Vendor Extension'], 1, [(0x540001, 7, b'fixture-extension')]),
+    ]
+
+
 def _with_request_header_field(fixture: tuple, tags: dict[str, int], field: tuple,
                                *, after_tag: str) -> tuple:
     """Insert one optional field at its normative position in Request Header."""
@@ -434,13 +515,7 @@ def _with_request_batch_item_field(fixture: tuple, tags: dict[str, int], field: 
 
 def _request_message_with_extension(fixture: tuple, tags: dict[str, int]) -> tuple:
     """Add a structurally valid vendor Message Extension to the Get batch item."""
-    extension = (tags['Message Extension'], 1, [
-        (tags['Vendor Identification'], 7, b'kmipkit.test'),
-        (tags['Criticality Indicator'], 6, bytes(8)),
-        (tags['Vendor Extension'], 1, [
-            (0x540001, 7, b'fixture-extension'),
-        ]),
-    ])
+    extension = _message_extension_fixture(tags)
     return _with_request_batch_item_field(fixture, tags, extension,
                                           after_tag='Request Payload')
 
@@ -487,6 +562,38 @@ def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
     if response_message_target:
         fixture = _response_message_fixture(protocol_version, tags, catalog)
         return [fixture] if fixture is not None else None
+    response_header_field = RESPONSE_HEADER_FIELD_FIXTURES.get(target.get('target_id'))
+    if response_header_field is not None:
+        fixture = _response_message_fixture(protocol_version, tags, catalog)
+        if fixture is None:
+            return None
+        name, kind, value = response_header_field
+        field = (_response_nonce(tags) if name == 'Nonce' else
+                 (tags[name], kind, _request_header_field_data(
+                     name, kind, value, catalog, protocol_version)))
+        if field[2] is None:
+            return None
+        return [_with_response_header_field(fixture, tags, field)]
+    response_batch_field = RESPONSE_BATCH_FIELD_FIXTURES.get(target.get('target_id'))
+    if response_batch_field is not None:
+        name, kind, value = response_batch_field
+        if name == 'Result Message':
+            fixture = _response_message_failure_fixture(
+                protocol_version, tags, catalog, value)
+            return [fixture] if fixture is not None else None
+        fixture = _response_message_fixture(protocol_version, tags, catalog)
+        if fixture is None:
+            return None
+        if name == 'Message Extension':
+            field = _message_extension_fixture(tags)
+        else:
+            field = (tags[name], kind, _request_header_field_data(
+                name, kind, value, catalog, protocol_version))
+        if field[2] is None:
+            return None
+        anchor = {'Unique Batch Item ID': 'Operation', 'Result Message': 'Result Status',
+                  'Message Extension': 'Response Payload'}[name]
+        return [_with_response_batch_field(fixture, tags, field, after_tag=anchor)]
     if target.get('kind') in {'tag', 'message_field'} and target.get('name') == 'Request Message':
         fixture = _request_message_fixture(protocol_version, tags, catalog)
         return [fixture] if fixture is not None else None
