@@ -3084,12 +3084,27 @@ class RouteMatrixTests(unittest.TestCase):
                             event['action'] == 'send' for event in events))
         self.assertTrue(any(event['target_id'] == 'KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST' and
                             event['action'] == 'send' for event in events))
+        self.assertTrue(any(event['public_api_symbol'] ==
+                            'kmipkit_client_batch_item_get_attribute_list_from_request' and
+                            event['action'] == 'send' for event in events))
+        self.assertTrue(any(event['public_api_symbol'] ==
+                            'kmipkit_get_attribute_list_request_to_ttlv_payload' and
+                            event['action'] == 'encode' for event in events))
+        for variant in ('direct', 'standalone'):
+            variant_checks = [check for check in checks if check['constructor_variant'] == variant]
+            self.assertEqual(len(variant_checks), 12)
         for check in checks:
-            self.assertEqual(check['constructor_variant'] in {'direct', 'standalone'}, True)
             self.assertEqual(check['peer_response_operation_values'], [10, 12])
             self.assertEqual(check['peer_response_result_statuses'], [0, 0])
             self.assertTrue({'kmipkit_client_batch_item_get',
                              'kmipkit_client_execute'} <= set(check['public_api_trace_symbols']))
+            self.assertTrue({'kmipkit_client_batch_item_response_get',
+                             'kmipkit_client_batch_item_response_get_attribute_list',
+                             'kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv',
+                             'kmipkit_client_batch_item_response_header_ttlv',
+                             'kmipkit_client_batch_item_response_metadata_v1',
+                             'kmipkit_client_batch_item_response_pending_correlation_value'} <=
+                            set(check['public_api_trace_symbols']))
             attribute_constructor = ('kmipkit_client_batch_item_get_attribute_list'
                                      if check['constructor_variant'] == 'direct' else
                                      'kmipkit_client_batch_item_get_attribute_list_from_request')
