@@ -339,13 +339,7 @@ def _request_message_fixture(protocol_version: str, tags: dict[str, int], catalo
     return (tags['Request Message'], 1, [header, (tags['Batch Item'], 1, batch_fields)])
 
 
-def _response_message_fixture(protocol_version: str, tags: dict[str, int],
-                              catalog: dict) -> tuple | None:
-    """Build a complete Get response for the public Response Message parser."""
-    operation = catalog_enum_value(catalog, 'Operation', 'Get', protocol_version)
-    success = catalog_enum_value(catalog, 'Result Status', 'Success', protocol_version)
-    if operation is None or success is None:
-        return None
+def _response_header_fixture(protocol_version: str, tags: dict[str, int]) -> tuple:
     header = (tags['Response Header'], 1, [
         (tags['Protocol Version'], 1, [
             (tags['Protocol Version Major'], 2, (2).to_bytes(4, 'big')),
@@ -355,6 +349,17 @@ def _response_message_fixture(protocol_version: str, tags: dict[str, int],
         (tags['Time Stamp'], 9, (1_760_000_000).to_bytes(8, 'big', signed=True)),
         (tags['Batch Count'], 2, (1).to_bytes(4, 'big')),
     ])
+    return header
+
+
+def _response_message_fixture(protocol_version: str, tags: dict[str, int],
+                              catalog: dict) -> tuple | None:
+    """Build a complete Get response for the public Response Message parser."""
+    operation = catalog_enum_value(catalog, 'Operation', 'Get', protocol_version)
+    success = catalog_enum_value(catalog, 'Result Status', 'Success', protocol_version)
+    if operation is None or success is None:
+        return None
+    header = _response_header_fixture(protocol_version, tags)
     payload = (tags['Response Payload'], 1, [
         (tags['Unique Identifier'], 7, b'fixture-response-object'),
     ])
@@ -374,10 +379,7 @@ def _response_message_failure_fixture(protocol_version: str, tags: dict[str, int
     reason = catalog_enum_value(catalog, 'Result Reason', 'General Failure', protocol_version)
     if operation is None or failure is None or reason is None:
         return None
-    base = _response_message_fixture(protocol_version, tags, catalog)
-    if base is None:
-        return None
-    header = base[2][0]
+    header = _response_header_fixture(protocol_version, tags)
     batch_item = (tags['Batch Item'], 1, [
         (tags['Operation'], 5, operation.to_bytes(4, 'big')),
         (tags['Result Status'], 5, failure.to_bytes(4, 'big')),
