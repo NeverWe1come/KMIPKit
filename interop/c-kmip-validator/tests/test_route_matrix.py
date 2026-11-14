@@ -694,6 +694,33 @@ class RouteMatrixTests(unittest.TestCase):
                             for check in checks), checks)
         self.assertFalse(any(event.get('workflow_operation') == 'Poll' for event in events))
 
+    def test_async_prohibited_create_completes_synchronously(self):
+        """OASIS KMIP 2.0/2.1 §§8.2–8.3, 8.6, 9.1–9.2, 11.3; Create: 2.0 §6.1.8 Table 171; 2.1 §6.1.8 Table 186."""
+        from artifact_support import ROOT
+        import route_peer
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-async-indicator-prohibited-synchronous')
+
+        self.assertEqual(route_peer.recipe_for_case(case, None), ((1,), 'async_create_prohibited_sync'))
+
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case]}
+        events, _, checks = route_peer.execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(all(check.get('peer_async_response_statuses') == [0] and
+                            check.get('peer_async_indicator_prohibited') is True and
+                            check.get('peer_async_correlation_absent') is True and
+                            check.get('peer_async_no_poll_after_completion') is True and
+                            'kmipkit_client_batch_set_asynchronous_indicator' in
+                            check['public_api_success_symbols']
+                            for check in checks), checks)
+        self.assertFalse(any(event.get('workflow_operation') == 'Poll' for event in events))
+
     def test_stop_on_first_failure_case_has_a_controlled_peer_recipe(self):
         import route_peer
         from artifact_support import ROOT
