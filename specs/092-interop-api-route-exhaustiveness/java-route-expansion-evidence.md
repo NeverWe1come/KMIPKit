@@ -1424,3 +1424,55 @@ source-backed exclusion removes them. No pending cell has been proven excluded
 or unavailable. The Java selected-scope CI gate and ledger equality check do
 not require zero pending cells, so passing that gate is not full-matrix
 completion; FR-002/FR-009 remain open.
+
+## KMIP 2.0/2.1 Extension Information routes
+
+KMIP 2.0 §7.9 Table 329 and KMIP 2.1 §7.13 Table 365 define Extension
+Information as a Structure; its tag allocation is in §§11.54/11.56. The
+fixture checks the required Extension Name and all six optional fields in
+source order: Extension Tag, Extension Type, Extension Enumeration, Extension
+Attribute, Extension Parent Structure Tag, and Extension Description. It
+invokes the six generic Structure/Item routes and the installed typed
+`ExtensionInformation.toTtlv` route in both versions, for 14 cells total, and
+asserts the encoded tags, types, values, decoded structure, and typed output.
+
+Red commit `f08676be4` adds route requirements and fails because the fixture
+does not yet emit the Extension Information `TtlvStructure.create` invocation.
+Green commit `f19c98464` constructs the generic fixture, checks the exact
+seven-field TTLV shape, decodes it, then invokes the public typed builder and
+`toTtlv` encoder and checks the same shape. Green follow-up `56bb1fe4` adds the
+new case ID to the report and updates its expected case count after the first
+full-suite run exposed that metadata mismatch. No route requirement was
+removed or weakened.
+
+Verification used the installed Java artifact pinned to
+`489fafc79ef89db2524eafa7a6c6482f5cf75d97` with SHA-256
+`830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e`:
+
+```sh
+TMPDIR="$PWD/build/native-test-tmp" \
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/native-test-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+python3 -m unittest tools.normative_catalog.tests.test_feature_traceability \
+  scripts.tests.test_requirement_traceability
+```
+
+The focused `ControlledTlsPeerTest` and full Java consumer suite pass; the full
+suite reports 54 tests with no failures, errors, or skips. The shared validator
+accepts 22,753/22,753 selected cells with zero failed cells, and both ledger
+comparison commands pass. The full ledger has 71,463 planned, 22,753 executed,
+and 48,710 pending cells across 1,301 case IDs. Every pending cell remains
+`route_evidence_not_emitted`. Applicability is determined by the shared
+normative catalog and installed-route capability matrix after protocol-version,
+route, encoding/transport, and source-backed exclusion rules; all cells still
+planned are applicable and remain required coverage under FR-002/FR-009. The
+completeness gate requires zero pending cells, while this Java CI step checks
+only its declared selected scope and ledger equality; it does not yet enforce
+global completeness. The PR remains WIP.
