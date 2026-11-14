@@ -5071,11 +5071,6 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         return execute_attribute_mutation_case(client, ATTRIBUTE_MUTATION_DELETE);
     if (strcmp(test_case->case_id, "test-batch-register-encrypt-decrypt-destroy") == 0)
         return execute_registered_crypto_batch(client);
-    if (strcmp(test_case->operation, "Discover Versions") == 0 &&
-        client->protocol_minor == 0) {
-        return outcome_not_run(
-            "the public C Discover Versions builder only offers KMIP 2.1 and cannot construct a KMIP 2.0 offer");
-    }
     if (strcmp(test_case->operation, "Login") == 0 && client->protocol_minor == 0) {
         return outcome_not_run(
             "the public C Login builder only supports KMIP 2.1");
@@ -6261,15 +6256,16 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
                      "KMIPKit could not read the typed Discover Versions payload (status %d)", status);
             goto cleanup;
         }
-        bool configured_version_found = false;
+        bool response_matches_offer = present != 0;
         for (uint64_t index = 0; index < version_count; ++index) {
-            if (versions[index].major == client->protocol_major &&
-                versions[index].minor == client->protocol_minor) configured_version_found = true;
+            if (versions[index].major != 2 || versions[index].minor != 1) {
+                response_matches_offer = false;
+            }
         }
-        if (!present || !configured_version_found) {
+        if (!response_matches_offer) {
             outcome.success = false;
             snprintf(outcome.result_reason, sizeof(outcome.result_reason),
-                     "server did not advertise the configured KMIP protocol version");
+                     "server returned a Discover Versions value outside the C builder's 2.1 offer");
         }
     } else if (delegated_login_workflow) {
         if (!delegated_login_response_matches_fixture(response_item, &status)) {

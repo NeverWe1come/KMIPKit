@@ -85,7 +85,8 @@ def response(operations: tuple[int, ...], protocol_minor: int,
              result_statuses: tuple[int, ...] | None = None,
              result_reasons: tuple[int | None, ...] | None = None,
              rng_length: int = 16,
-             cancellation_result: int = 1) -> bytes:
+             cancellation_result: int = 1,
+             discover_versions: tuple[tuple[int, int], ...] | None = None) -> bytes:
     version = tlv(0x420069, 1,
                   integer(0x42006A, 2) + integer(0x42006B, protocol_minor))
     header = tlv(
@@ -109,9 +110,11 @@ def response(operations: tuple[int, ...], protocol_minor: int,
             result_status = result_statuses[item_index]
             result_reason = result_reasons[item_index] if result_reasons is not None else None
         if operation == 30:
-            payload_value = tlv(
-            0x420069, 1,
-            integer(0x42006A, 2) + integer(0x42006B, protocol_minor),
+            versions = discover_versions if discover_versions is not None else ((2, protocol_minor),)
+            payload_value = b"".join(
+                tlv(0x420069, 1,
+                    integer(0x42006A, major) + integer(0x42006B, minor))
+                for major, minor in versions
             )
         elif operation == 24:
             query_operations = (24, 30, 44) if protocol_minor == 0 else (24, 30, 44, 59)
@@ -434,6 +437,9 @@ def main() -> int:
     )
     expected_operations, expected_cases = include_delegated_login(
         expected_operations, expected_cases)
+    if protocol_version == "2.0":
+        expected_operations += (30,)
+        expected_cases += ("test-op-discover-versions",)
     expected_operations += (37, 38, 39)
     expected_operations += (39, 37, 38)
     expected_operations += (1, 13, 19, 20)
@@ -939,7 +945,10 @@ def main() -> int:
                                     result_reasons=response_reasons,
                                     rng_length=32 if integer(0x4200C4, 32) in request or
                                     tlv(0x4200C2, 8, bytes(range(32))) in request else 16,
-                                    cancellation_result=cancellation_result))
+                                    cancellation_result=cancellation_result,
+                                    discover_versions=(
+                                        () if protocol_minor == 0 else ((2, 1),)
+                                    ) if operations == (30,) else None))
                                 if operations == (25,):
                                     async_request_pending = False
                                     async_poll_mode = "none"
@@ -1065,9 +1074,11 @@ def main() -> int:
                 )
             discovery = next(case for case in result["cases"]
                              if case["case_id"] == "test-op-discover-versions")
-            if discovery["status"] != "not_run" or "cannot construct a KMIP 2.0 offer" not in discovery.get("diagnostic", ""):
+            if discovery["status"] != "passed" or \
+                    discovery["server_compatibility"] != "supported" or \
+                    discovery["library_correctness"] != "passed":
                 raise AssertionError(
-                    "KMIP 2.0 Discover Versions must report the documented C API offer limitation"
+                    "KMIP 2.0 Discover Versions must accept an empty common-version response"
                 )
             login = next(case for case in result["cases"] if case["case_id"] == "test-op-login")
             if login["status"] != "not_run" or "Login builder only supports KMIP 2.1" not in login.get("diagnostic", ""):
