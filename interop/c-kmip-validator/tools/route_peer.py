@@ -1069,6 +1069,17 @@ def target_operation_exchange_index(recipe):
     return 1 if recipe is not None and recipe[1] in ('login_logout', 'cancel_async') else 0
 
 
+def observation_for_cell(observations, cell, recipe, fallback_index):
+    """Select the peer exchange described by a workflow matrix cell."""
+    index = fallback_index
+    workflow_step_index = cell.get('workflow_step_index')
+    if recipe[1] == 'cancel_async' and workflow_step_index is not None:
+        index = workflow_step_index
+    if index < 0 or index >= len(observations):
+        return None
+    return observations[index]
+
+
 def recipe_for_case(case, attribute_fixture):
     recipe = RECIPES.get(case['case_id'])
     if recipe is not None:
@@ -2006,12 +2017,11 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     continue
                                 if cell['protocol_version'] != version or cell['public_api_symbol'] not in called_symbols:
                                     continue
-                                observation_index = mutation_index
-                                if recipe[1] == 'cancel_async' and cell.get('workflow_step_index') is not None:
-                                    observation_index = cell['workflow_step_index']
-                                    if observation_index < 0 or observation_index >= len(observation):
-                                        continue
-                                request_tree, response_tree, state_evidence = observation[observation_index]
+                                selected_observation = observation_for_cell(
+                                    observation, cell, recipe, mutation_index)
+                                if selected_observation is None:
+                                    continue
+                                request_tree, response_tree, state_evidence = selected_observation
                                 response_batch_item_count = len([
                                     item for item in response_tree[2]
                                     if item[0] == BATCH_ITEM_TAG and item[1] == 1
