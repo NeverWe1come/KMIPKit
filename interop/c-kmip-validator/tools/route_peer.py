@@ -183,6 +183,19 @@ class Codec:
         return ET.tostring(self.to_xml(parse(wire)))
 
 
+def catalog_enum_value(catalog: dict, enum_name: str, value_name: str,
+                       protocol_version: str) -> int | None:
+    parent_id = f"KMIPKIT-ELEM-ENUMERATION-{enum_name.upper().replace(' ', '-')}"
+    matches = [target for target in catalog['normative_targets']
+               if target['kind'] == 'enumeration_value'
+               and target['name'] == value_name
+               and parent_id in target.get('parent_element_ids', [])
+               and protocol_version in target['protocol_versions']]
+    if len(matches) != 1:
+        return None
+    return int(matches[0]['wire_value'], 16)
+
+
 def parse(data):
     if len(data) < 8:
         raise ValueError('fixture_truncated_header')
@@ -274,6 +287,11 @@ def tree_digest(node):
 
 RECIPES = {
     'test-op-cancel': ((25,), 'cancel_async'),
+    'test-async-cancel-result-canceled': ((25,), 'cancel_async'),
+    'test-async-cancel-result-unable-to-cancel': ((25,), 'cancel_async'),
+    'test-async-cancel-result-completed': ((25,), 'cancel_async'),
+    'test-async-cancel-result-failed': ((25,), 'cancel_async'),
+    'test-async-cancel-result-unavailable': ((25,), 'cancel_async'),
     'test-op-hash': ((39,), 'hash'),
     'test-crypto-hash-sha_256-0': ((39,), 'hash'),
     'test-op-rng-retrieve': ((37,), 'rng_retrieve'),
@@ -1787,8 +1805,6 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                     'explicit' if variant == 'usage-allocation-explicit' else 'omitted')
                             else:
                                 run_environment['KMIPKIT_C_ATTRIBUTE_REQUEST_ROUTE'] = variant
-                            if recipe[1] == 'cancel_async':
-                                run_environment['KMIPKIT_C_CANCEL_RESULT'] = str(cancel_result)
                             if case_id in {
                                     'test-norm-payload-client-get-attribute-list-request-20-001',
                                     'test-norm-payload-client-get-attribute-list-request-21-001'}:

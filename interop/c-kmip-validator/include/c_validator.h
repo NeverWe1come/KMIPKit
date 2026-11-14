@@ -41,6 +41,7 @@ typedef struct {
     char workflow_type[64];
     char enum_type[KMIP_MAX_NAME_LEN];
     char bitmask_type[KMIP_MAX_NAME_LEN];
+    char cancellation_result[KMIP_MAX_NAME_LEN];
     char normative_sections[KMIP_MAX_VERSIONS][512];
     unsigned int protocol_version_mask;
 } kmip_test_case_t;

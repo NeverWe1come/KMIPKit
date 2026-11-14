@@ -192,6 +192,8 @@ bool kmip_load_catalog(const char *json_path, kmip_test_case_t *out_cases, size_
     for (size_t i = 0; i < count && valid; ++i) {
         int row = json_array_get(&document, cases, i);
         int requires = json_object_get(&document, row, "requires");
+        int protocol_scenario = json_object_get(&document, requires, "protocol_scenario");
+        int scenario_parameters = json_object_get(&document, protocol_scenario, "parameters");
         int execution = json_object_get(&document, row, "execution");
         int versions = json_object_get(&document, execution, "protocol_versions");
         int normative = json_object_get(&document, row, "normative_refs");
@@ -244,7 +246,9 @@ bool kmip_load_catalog(const char *json_path, kmip_test_case_t *out_cases, size_
             load_optional_requires(&document, requires, "enum_type", test_case->enum_type,
                                    sizeof(test_case->enum_type)) &&
             load_optional_requires(&document, requires, "bitmask_type", test_case->bitmask_type,
-                                   sizeof(test_case->bitmask_type));
+                                   sizeof(test_case->bitmask_type)) &&
+            copy_member(&document, scenario_parameters, "cancel_result",
+                        test_case->cancellation_result, sizeof(test_case->cancellation_result), false);
         if (!valid) {
             fprintf(stderr, "invalid test catalog row %zu\n", i);
             break;

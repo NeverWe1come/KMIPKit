@@ -523,6 +523,25 @@ class RouteMatrixTests(unittest.TestCase):
             with self.subTest(case_id=case['case_id']):
                 self.assertEqual(route_peer.recipe_for_case(case, None), ((25,), 'cancel_async'))
 
+    def test_async_cancel_result_cases_execute_the_catalogued_value_over_all_routes(self):
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected_cases = [case for case in catalog['test_cases']
+                          if case['case_id'].startswith('test-async-cancel-result-')]
+        selected = {**catalog, 'test_cases': selected_cases}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 60)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertEqual(sum(event['public_api_symbol'] ==
+                             'kmipkit_client_async_operation_outcome_cancel_response_v1'
+                             for event in events), 30)
+
     def test_stop_on_first_failure_case_has_a_controlled_peer_recipe(self):
         import route_peer
         from artifact_support import ROOT

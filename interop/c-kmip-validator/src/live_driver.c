@@ -1319,7 +1319,25 @@ static int32_t read_pending_create_correlation(
     return status;
 }
 
-static kmip_execution_outcome_t execute_cancel_route(kmip_live_client_t *client) {
+static bool cancellation_result_from_name(const char *name, uint32_t *result) {
+    if (!name || name[0] == '\0' || strcmp(name, "Canceled") == 0) {
+        *result = KMIPKIT_ENUMERATION_CANCELLATION_RESULT_CANCELED;
+    } else if (strcmp(name, "Unable to Cancel") == 0) {
+        *result = KMIPKIT_ENUMERATION_CANCELLATION_RESULT_UNABLE_TO_CANCEL;
+    } else if (strcmp(name, "Completed") == 0) {
+        *result = KMIPKIT_ENUMERATION_CANCELLATION_RESULT_COMPLETED;
+    } else if (strcmp(name, "Failed") == 0) {
+        *result = KMIPKIT_ENUMERATION_CANCELLATION_RESULT_FAILED;
+    } else if (strcmp(name, "Unavailable") == 0) {
+        *result = KMIPKIT_ENUMERATION_CANCELLATION_RESULT_UNAVAILABLE;
+    } else {
+        return false;
+    }
+    return true;
+}
+
+static kmip_execution_outcome_t execute_cancel_route(kmip_live_client_t *client,
+                                                     const char *cancellation_result) {
     static const uint8_t expected_correlation[] = "fixture-cancel-correlation";
     kmipkit_ttlv_structure_t *attributes = NULL;
     kmipkit_client_batch_item_t *create_item = NULL;
@@ -1333,19 +1351,11 @@ static kmip_execution_outcome_t execute_cancel_route(kmip_live_client_t *client)
     };
     kmipkit_byte_span_v1_t correlation = {0};
     uint8_t response_present = 0;
-    uint32_t expected_cancel_result = 1;
+    uint32_t expected_cancel_result = KMIPKIT_ENUMERATION_CANCELLATION_RESULT_CANCELED;
     kmip_execution_outcome_t outcome = { .executed = true };
-    int32_t status = 0;
-    const char *cancel_result_text = getenv("KMIPKIT_C_CANCEL_RESULT");
-    if (cancel_result_text && cancel_result_text[0] != '\0') {
-        char *end = NULL;
-        unsigned long parsed = strtoul(cancel_result_text, &end, 10);
-        if (end == cancel_result_text || *end != '\0' || parsed < 1 || parsed > 5) {
-            status = KMIPKIT_ERROR_INVALID_INPUT;
-        } else {
-            expected_cancel_result = (uint32_t)parsed;
-        }
-    }
+    int32_t status = cancellation_result_from_name(cancellation_result,
+                                                   &expected_cancel_result) ? 0 :
+        KMIPKIT_ERROR_INVALID_INPUT;
     if (status == 0) status = create_symmetric_key_attributes(client, &attributes) ? 0 : -1;
     if (status == 0) status = kmipkit_client_batch_item_create(
         KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY, attributes, NULL, &create_item);
@@ -3103,8 +3113,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         !unsupported_version_boundary_workflow && !get_usage_allocation_uid_variant) {
         return outcome_not_run("catalog mode is not supported by the C validator");
     }
-    if (strcmp(test_case->case_id, "test-op-cancel") == 0) {
-        return execute_cancel_route(client);
+    if (strcmp(test_case->case_id, "test-op-cancel") == 0 ||
+        strncmp(test_case->case_id, "test-async-cancel-result-", 25) == 0) {
+        return execute_cancel_route(client, test_case->cancellation_result);
     }
     if (get_usage_allocation_uid_variant &&
         !usage_allocation_identifier_explicit && !usage_allocation_identifier_omitted) {

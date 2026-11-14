@@ -103,6 +103,29 @@ int main(void) {
     assert(kmip20_cases > 0 && kmip21_cases > 0);
     assert(local_model_cases > 0);
     assert(cases_with_normative_sections == catalog_count);
+    const char *cancel_case_ids[] = {
+        "test-async-cancel-result-canceled",
+        "test-async-cancel-result-unable-to-cancel",
+        "test-async-cancel-result-completed",
+        "test-async-cancel-result-failed",
+        "test-async-cancel-result-unavailable",
+    };
+    const char *cancel_result_names[] = {
+        "Canceled", "Unable to Cancel", "Completed", "Failed", "Unavailable",
+    };
+    for (size_t expected = 0; expected < sizeof(cancel_case_ids) / sizeof(cancel_case_ids[0]);
+         ++expected) {
+        bool found = false;
+        for (size_t index = 0; index < catalog_count; ++index) {
+            if (strcmp(catalog[index].case_id, cancel_case_ids[expected]) == 0) {
+                assert(strcmp(catalog[index].cancellation_result,
+                              cancel_result_names[expected]) == 0);
+                found = true;
+                break;
+            }
+        }
+        assert(found);
+    }
 
     kmip_connection_config_t connection;
     assert(kmip_load_connection("../shared/profiles/connection.example.json", &connection));
