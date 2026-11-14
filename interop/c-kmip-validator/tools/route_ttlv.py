@@ -203,47 +203,39 @@ class TreeAbi(InstalledAbi):
         finally:
             self.release('ttlv_structure', structure)
 
-    def roundtrip_request_message(self, tree, limits):
-        if tree[0] != 0x420078 or tree[1] != 1:
+    def roundtrip_typed_message(self, tree, limits, *, root_tag: int, parser: str,
+                                accessor: str, handle_name: str, message_kind: str) -> None:
+        if tree[0] != root_tag or tree[1] != 1:
             return
         structure = self.construct_structure(tree[2], limits)
         message, validation_error, returned_structure = (C.c_void_p() for _ in range(3))
         try:
-            self.called.add('kmipkit_request_message_from_ttlv')
-            status = self.library.kmipkit_request_message_from_ttlv(
+            self.called.add(parser)
+            status = getattr(self.library, parser)(
                 structure, C.byref(message), C.byref(validation_error))
             structure = C.c_void_p()
             if status != 0 or not message.value:
-                raise ValueError('typed_request_message_rejected')
-            self.call('kmipkit_request_message_ttlv', message, C.byref(returned_structure))
+                raise ValueError(f'typed_{message_kind}_message_rejected')
+            self.call(accessor, message, C.byref(returned_structure))
             if self.read_structure(returned_structure) != tree[2]:
-                raise ValueError('typed_request_message_tree_mismatch')
+                raise ValueError(f'typed_{message_kind}_message_tree_mismatch')
         finally:
             self.release('ttlv_structure', structure)
             self.release('ttlv_structure', returned_structure)
             self.release('message_validation_error', validation_error)
-            self.release('request_message', message)
+            self.release(handle_name, message)
+
+    def roundtrip_request_message(self, tree, limits):
+        self.roundtrip_typed_message(
+            tree, limits, root_tag=0x420078,
+            parser='kmipkit_request_message_from_ttlv', accessor='kmipkit_request_message_ttlv',
+            handle_name='request_message', message_kind='request')
 
     def roundtrip_response_message(self, tree, limits):
-        if tree[0] != 0x42007B or tree[1] != 1:
-            return
-        structure = self.construct_structure(tree[2], limits)
-        message, validation_error, returned_structure = (C.c_void_p() for _ in range(3))
-        try:
-            self.called.add('kmipkit_response_message_from_ttlv')
-            status = self.library.kmipkit_response_message_from_ttlv(
-                structure, C.byref(message), C.byref(validation_error))
-            structure = C.c_void_p()
-            if status != 0 or not message.value:
-                raise ValueError('typed_response_message_rejected')
-            self.call('kmipkit_response_message_ttlv', message, C.byref(returned_structure))
-            if self.read_structure(returned_structure) != tree[2]:
-                raise ValueError('typed_response_message_tree_mismatch')
-        finally:
-            self.release('ttlv_structure', structure)
-            self.release('ttlv_structure', returned_structure)
-            self.release('message_validation_error', validation_error)
-            self.release('response_message', message)
+        self.roundtrip_typed_message(
+            tree, limits, root_tag=0x42007B,
+            parser='kmipkit_response_message_from_ttlv', accessor='kmipkit_response_message_ttlv',
+            handle_name='response_message', message_kind='response')
 
     def roundtrip(self, wire):
         self.called.clear()
