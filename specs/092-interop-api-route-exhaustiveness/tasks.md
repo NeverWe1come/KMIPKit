@@ -23,11 +23,40 @@
 - [ ] T009 Run common checks, review the scoped diff, commit Red/Green/Refactor
   evidence, push the feature branch, and remove `[WIP]` only after its exact-head
   CI passes.
+- [x] T010 Execute the C Archive operation through the installed public ABI
+  and controlled KMIP peers for both protocol versions, all three encodings,
+  and both supported transports; verify the response identifier and cleanup.
 
 T006 and T007 remain open until each separate language validator consumes the
 generated matrix, invokes every named public route, exchanges requests and
 responses with a controlled peer, and emits validated per-cell evidence. A
 passing shared-contract job does not satisfy those language-level requirements.
+
+## Development evidence: C Archive operation route
+
+- Normative scope: OASIS KMIP v2.0 §6.1.4 Tables 158–159 and KMIP v2.1
+  §6.1.4 Tables 173–174 define Archive request and response payloads. This
+  implements the C route slice of KMIPKIT-0092-FR-003, FR-005, and FR-009.
+- Red commit `1b63e95e`: the focused test failed because the installed C driver
+  emitted no Archive network checks.
+- Green commit `1db86e47`: the installed consumer executes Create → Archive →
+  Revoke → Destroy in one ordered batch, uses ID Placeholder after Create,
+  checks the Archive response Unique Identifier, and verifies observable peer
+  state and teardown across KMIP 2.0/2.1, TTLV/JSON/XML, and raw TLS/HTTPS.
+  Its 12 controlled-peer checks invoke the public Archive constructor and
+  response accessor.
+- Red commit `443f6923`: a regression test reproduced stale compiled catalog
+  provenance when the selected CMake build directory survived a branch rebase.
+- Green commit `04958e18`: the catalog file is now a CMake configure
+  dependency, so its provenance hash is refreshed whenever the catalog changes.
+- Verification: the Archive and provenance focused tests passed; CMake rebuilt
+  both validator targets with catalog SHA-256
+  `ffa991b5595773d543a8e667986ba2836a3abb784a58e88102c029197e326d8b`; CTest
+  passed 7/7, including both controlled TLS peer suites. The exhaustive C
+  matrix run `c-route-d957888d-c869-4519-8543-7e95081282b3` invoked 41,844 of
+  66,736 cells with zero failed cells and 24,892 pending validator recipes;
+  all 42 Archive events passed. The cross-language matrix and exact-head CI
+  remain open.
 
 ## Development evidence: Secret Data constructor applicability
 

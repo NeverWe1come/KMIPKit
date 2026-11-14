@@ -36,3 +36,23 @@ three encodings, and two transports assert that transmitted Batch Count
 matches the two request items. This exercises the typed API's derived count;
 it does not create or send an arbitrary malformed message. The broader C
 matrix and all-language evidence remain open.
+
+For FR-003, FR-005, and FR-009, C now executes the Archive request route using
+the installed public ABI. The controlled peer checks the KMIP 2.0/2.1 request
+and response shapes, ID Placeholder resolution, returned Unique Identifier,
+ordered Revoke/Destroy cleanup, and observable object state across 12
+version/encoding/transport combinations. The focused Archive test and full
+local CTest suite pass. This closes only the Archive C route slice; the full C
+route matrix, exact-head CI, and Rust/Java/Python parity remain open.
+
+The local C matrix run `c-route-d957888d-c869-4519-8543-7e95081282b3` invoked
+41,844/66,736 cells with zero failures and 24,892 pending validator recipes;
+all 42 Archive route events passed. This run uses installed release artifact
+`489fafc79ef89db2524eafa7a6c6482f5cf75d97` (SHA-256
+`980e85fdf6982b52360895b9c0713fbef42b294d22fbeb7d71136fe32235af65`) and is
+local evidence, not exact-head CI or a complete matrix.
+
+The Archive continuation also fixes stale catalog provenance after a rebase:
+the CMake validator now reconfigures when the shared catalog changes, keeping
+the compiled report hash aligned with the inputs used by the route runner.
+The provenance regression and both controlled TLS peer suites pass.
