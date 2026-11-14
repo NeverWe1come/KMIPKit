@@ -1120,8 +1120,8 @@ def verify_terminal_cancel_response_with_correlation(response_tree):
         raise ValueError('fixture_nonrecursive_cancel_response_mismatch')
 
 
-def nonrecursive_poll_cancel_peer_check(observation):
-    """Summarize the terminal Poll and Cancel exchanges and correlation absence."""
+def async_interleaving_peer_evidence(observation):
+    """Return the shared operation order and response-status evidence."""
     return {
         'peer_async_interleaving_operations': [
             numbers(request[0], 0x42005C)[0] for request in observation],
@@ -1130,6 +1130,13 @@ def nonrecursive_poll_cancel_peer_check(observation):
             for _, response_tree, _ in observation
             for item in response_tree[2]
             if item[0] == BATCH_ITEM_TAG],
+    }
+
+
+def nonrecursive_poll_cancel_peer_check(observation):
+    """Summarize the terminal Poll and Cancel exchanges and correlation handling."""
+    return {
+        **async_interleaving_peer_evidence(observation),
         'peer_async_poll_no_correlation':
             not byte_string_values(observation[0][1], 0x420006),
         'peer_async_cancel_echo_matches':
@@ -1224,13 +1231,7 @@ def assert_async_lifecycle_exchange(node, version, exchange_index):
 def async_lifecycle_peer_check(observation):
     """Summarize the controlled Create, Query, Poll, and cleanup sequence."""
     return {
-        'peer_async_interleaving_operations': [
-            numbers(request[0], 0x42005C)[0] for request in observation],
-        'peer_async_response_statuses': [
-            numbers(item, 0x42007F)[0]
-            for _, response_tree, _ in observation
-            for item in response_tree[2]
-            if item[0] == BATCH_ITEM_TAG],
+        **async_interleaving_peer_evidence(observation),
         'peer_async_query_correlation_match':
             byte_string_values(next(descendants(observation[1][1], 0x420176)),
                                0x420006) == [CANCEL_CORRELATION_VALUE],
