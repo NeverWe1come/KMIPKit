@@ -547,6 +547,7 @@ class ControlledTlsPeerTest {
                     serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
             appendNewAttributeMutationEvents(events, protocolVersion, serverCertificatePem,
                     serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
+            if ("2.1".equals(protocolVersion)) appendObjectGroupLocalRouteEvents(events);
             assertNewlyCataloguedLocalRoutesAreInvoked(events, protocolVersion);
         }
 
@@ -873,6 +874,7 @@ class ControlledTlsPeerTest {
         int normativeMessageFieldParserRouteEventCount = KMIP_2_0_AND_2_1.size() * 10;
         int normativeBatchItemAccessorRouteEventCount = KMIP_2_0_AND_2_1.size() * 10;
         int newAttributePayloadRouteEventCount = KMIP_2_0_AND_2_1.size() * 3 * 20;
+        int objectGroupLocalRouteEventCount = 3;
         int credentialGenericRouteEventCount = CREDENTIAL_TYPE_MODEL_CASE_IDS.size()
                 * KMIP_2_0_AND_2_1.size() * 4;
         int credentialEnvelopeEventCount = CREDENTIAL_TYPE_MODEL_CASE_IDS.size()
@@ -902,7 +904,7 @@ class ControlledTlsPeerTest {
                         + batchItemAdditionalResponseRouteEventCount + credentialGenericRouteEventCount
                         + normativeMessageFieldGenericRouteEventCount + normativeMessageFieldParserRouteEventCount
                         + normativeBatchItemAccessorRouteEventCount + newAttributePayloadRouteEventCount
-                        + credentialEnvelopeEventCount
+                        + credentialEnvelopeEventCount + objectGroupLocalRouteEventCount
                         + batchErrorContinuationEventCount + genericTagEventCount + typedTagIdentityEventCount
                         + referencedEnumEventCount + referencedEnumAggregateEventCount,
                 report.path("events").size());
@@ -929,7 +931,7 @@ class ControlledTlsPeerTest {
         assertEquals(15 + enumerationFixtures.size() + localEnumerationCaseCount + bitmaskCaseCount
                         + dataTypeCaseCount
                         + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + genericTagCaseIds.size()
-                        + typedTagIdentityCaseIds().size() + referencedEnumCaseCount + 9,
+                        + typedTagIdentityCaseIds().size() + referencedEnumCaseCount + 10,
                 report.path("case_ids").size());
         List<String> expectedCredentialCaseIds = CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().toList();
         int credentialCaseStart = report.path("case_ids").size() - expectedCredentialCaseIds.size();
@@ -3228,6 +3230,7 @@ class ControlledTlsPeerTest {
         caseIds.add("test-norm-message-field-message-field-9-13-message-extension");
         caseIds.add("test-norm-tag-tag-420051");
         caseIds.add("test-norm-message-field-message-field-8-3-ephemeral");
+        caseIds.add("test-norm-structure-member-structure-member-7-23-object-group");
         caseIds.add("test-norm-payload-client-add-attribute-request-20-002");
         caseIds.add("test-norm-payload-client-add-attribute-request-21-002");
         caseIds.add("test-norm-payload-client-modify-attribute-request-20-003");
@@ -4231,6 +4234,67 @@ class ControlledTlsPeerTest {
                 assertRouteEventRecorded(events, caseId, operationTarget, route, "decode", protocolVersion);
             }
         }
+    }
+
+    // OASIS KMIP 2.1 §7.23 Table 375: Object Group is an optional, repeatable Attribute.
+    private static void appendObjectGroupLocalRouteEvents(ArrayNode events) throws Exception {
+        String caseId = "test-norm-structure-member-structure-member-7-23-object-group";
+        String targetId = "KMIPKIT-ELEM-STRUCTURE-MEMBER-7-23-OBJECT-GROUP";
+        int rawTag = 0x420056;
+        String fixture = "kmipkit-object-group";
+        byte[] fixtureBytes = fixture.getBytes(StandardCharsets.UTF_8);
+        byte[] wire = textItem(rawTag, fixture);
+        String treeHash = normalizedTreeSha256(wire);
+        CodecLimits limits = CodecLimits.defaults();
+        byte[] absentObjectGroupsWire = structure(0x420126);
+        byte[] repeatedObjectGroupsWire = structure(0x420126, wire, textItem(rawTag, "kmipkit-object-group-2"));
+        try (TtlvItem absentGroups = TtlvCodec.decode(absentObjectGroupsWire);
+                var absentGroupsView = absentGroups.view();
+                var absentGroupsValue = absentGroupsView.value();
+                var absentGroupsMembers = absentGroupsValue.structure();
+                TtlvItem repeatedGroups = TtlvCodec.decode(repeatedObjectGroupsWire);
+                var repeatedGroupsView = repeatedGroups.view();
+                var repeatedGroupsValue = repeatedGroupsView.value();
+                var repeatedGroupsMembers = repeatedGroupsValue.structure()) {
+            assertEquals(0x420126, absentGroupsView.tag().raw());
+            assertEquals(0, absentGroupsMembers.itemCount(), "Object Group is optional in Object Groups.");
+            assertEquals(2, repeatedGroupsMembers.itemCount(), "Object Group may be repeated.");
+            for (int index = 0; index < repeatedGroupsMembers.itemCount(); index++) {
+                try (var member = repeatedGroupsMembers.itemAt(index);
+                        var memberTag = member.tag();
+                        var memberValue = member.value()) {
+                    assertEquals(rawTag, memberTag.raw());
+                    assertEquals(TtlvItemType.TextString, member.itemType());
+                    assertTrue(memberValue.bytes().length > 0);
+                }
+            }
+        }
+        try (RawTag raw = RawTag.fromRaw(rawTag);
+                Tag tag = raw.checked();
+                TtlvValue value = TtlvValue.TextString(fixtureBytes, limits);
+                TtlvItem created = TtlvItem.create(tag, value, limits);
+                var view = created.view();
+                var viewValue = view.value()) {
+            assertEquals(rawTag, view.tag().raw());
+            assertEquals(TtlvItemType.TextString, view.itemType());
+            assertArrayEquals(fixtureBytes, viewValue.bytes());
+        }
+        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_item.create", targetId,
+                "org.kmipkit.ttlv.TtlvItem.create", null, null, "construct", "2.1",
+                null, treeHash, null);
+        appendRouteEvent(events, caseId, "java.generic-ttlv.function.ttlv_item_view_from_item", targetId,
+                "org.kmipkit.ttlv.TtlvItem.view", null, null, "decode", "2.1",
+                null, null, treeHash);
+        try (TtlvItem decoded = TtlvCodec.decode(wire);
+                var view = decoded.view();
+                var value = view.value()) {
+            assertEquals(rawTag, view.tag().raw());
+            assertEquals(TtlvItemType.TextString, view.itemType());
+            assertArrayEquals(fixtureBytes, value.bytes());
+        }
+        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_codec.decode", targetId,
+                "org.kmipkit.ttlv.TtlvCodec.decode", null, null, "decode", "2.1",
+                null, null, treeHash);
     }
 
     private static void assertRouteEventRecorded(ArrayNode events, String caseId, String targetId,
