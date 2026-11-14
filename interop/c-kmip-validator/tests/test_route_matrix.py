@@ -567,8 +567,18 @@ class RouteMatrixTests(unittest.TestCase):
 
         manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
         selected = {**catalog, 'test_cases': [case]}
+        from coverage_matrix import iter_cells
+        from validate_route_evidence import _key
+        covered_local_cells = {
+            _key(cell) for cell in iter_cells(selected, manifest, languages=('c',))
+            if cell['transport'] is None and cell['public_api_symbol'] in {
+                'kmipkit_cancel_request_create',
+                'kmipkit_cancel_request_to_ttlv_payload',
+            }
+        }
         events, _, checks = route_peer.execute_network_cells(
-            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest,
+            covered_keys=covered_local_cells)
 
         self.assertEqual(len(checks), 6)
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
@@ -579,14 +589,15 @@ class RouteMatrixTests(unittest.TestCase):
         for symbol, action, count in (
                 ('kmipkit_poll_request_create', 'construct', 1),
                 ('kmipkit_poll_request_to_ttlv_payload', 'encode', 1),
-                ('kmipkit_cancel_request_create', 'construct', 2),
-                ('kmipkit_cancel_request_to_ttlv_payload', 'encode', 2),
+                ('kmipkit_cancel_request_create', 'construct', 0),
+                ('kmipkit_cancel_request_to_ttlv_payload', 'encode', 0),
                 ('kmipkit_client_async_operation_outcome_poll_response_v1', 'decode', 1),
                 ('kmipkit_client_async_operation_outcome_cancel_response_v1', 'decode', 1),
                 ('kmipkit_client_batch_item_response_create', 'decode', 1)):
             with self.subTest(symbol=symbol, action=action):
                 self.assertEqual(sum(event['public_api_symbol'] == symbol and
                                      event['action'] == action for event in events), count)
+        self.assertTrue(all(_key(event) not in covered_local_cells for event in events))
         self.assertTrue(all(check.get('peer_async_interleaving_operations') == [1, 26, 25] and
                             check.get('peer_async_response_statuses') == [2, 2, 0] and
                             check.get('peer_async_terminal_state_count') == 1
