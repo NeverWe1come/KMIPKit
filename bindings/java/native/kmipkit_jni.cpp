@@ -3102,6 +3102,272 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_symmetricKeyBui
     });
 }
 
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderCreate(
+        JNIEnv* env, jclass, jint operation, jlong raw_attributes, jint raw_identifier_kind,
+        jbyteArray raw_identifier_text, jlong raw_identifier_number, jbyteArray raw_ciphertext) {
+    return guarded<jlong>(env, 0, [&] {
+        std::vector<uint8_t> identifier_text;
+        std::vector<uint8_t> ciphertext;
+        kmipkit::secure::VectorWiper identifier_text_wiper(identifier_text);
+        kmipkit::secure::VectorWiper ciphertext_wiper(ciphertext);
+        kmipkit_unique_identifier_v1_t identifier{};
+        bool identifier_present = false;
+        const bool needs_identifier = operation >= 2 && operation <= 5;
+        if (needs_identifier
+                && (!read_optional_identifier(env, raw_identifier_kind, raw_identifier_text,
+                        raw_identifier_number, &identifier, identifier_text, &identifier_present)
+                    || !identifier_present)) {
+            if (!env->ExceptionCheck()) throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        if (!needs_identifier && (raw_identifier_kind != 0 || raw_identifier_text != nullptr
+                || raw_identifier_number != 0 || raw_ciphertext != nullptr)) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        bool ciphertext_present = false;
+        if (operation == 3) {
+            if (!read_optional_java_bytes(env, raw_ciphertext, ciphertext, &ciphertext_present)
+                    || !ciphertext_present) {
+                if (!env->ExceptionCheck()) throw_invalid_input(env);
+                return static_cast<jlong>(0);
+            }
+        } else if (raw_ciphertext != nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        const auto attributes = from_java_handle<kmipkit_attribute_set_t>(raw_attributes);
+        const auto identifier_pointer = identifier_present ? &identifier : nullptr;
+        const auto span = byte_span(ciphertext);
+        const kmipkit_byte_span_v1_t* span_pointer = operation == 3 ? &span : nullptr;
+        return return_handle<kmipkit_kmip30_operation_builder_t>(env, [&](auto output) {
+            switch (operation) {
+            case 0: return kmipkit_create_group_builder_create(attributes, output);
+            case 1: return kmipkit_create_user_builder_create(attributes, output);
+            case 2: return kmipkit_deactivate_builder_create(identifier_pointer, output);
+            case 3: return kmipkit_decapsulate_builder_create(identifier_pointer, span_pointer, output);
+            case 4: return kmipkit_encapsulate_builder_create(identifier_pointer, output);
+            case 5: return kmipkit_obliterate_builder_create(identifier_pointer, output);
+            default: return static_cast<int32_t>(KMIPKIT_ERROR_INVALID_INPUT);
+            }
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_kmip30CreateCredentialBuilderCreate(
+        JNIEnv* env, jclass, jlong raw_attributes, jlong raw_object) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_kmip30_operation_builder_t>(env, [&](auto output) {
+            return kmipkit_create_credential_builder_create(
+                    from_java_handle<kmipkit_attribute_set_t>(raw_attributes),
+                    from_java_handle<kmipkit_create_credential_object_t>(raw_object), output);
+        });
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderSetAttributes(
+        JNIEnv* env, jclass, jlong raw_builder, jlong raw_attributes) {
+    guarded<int>(env, 0, [&] {
+        check_status(env, [&] { return kmipkit_kmip30_operation_builder_set_attributes(
+                from_java_handle<kmipkit_kmip30_operation_builder_t>(raw_builder),
+                from_java_handle<kmipkit_attribute_set_t>(raw_attributes)); });
+        return 0;
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderSetCryptographicParameters(
+        JNIEnv* env, jclass, jlong raw_builder, jlong raw_parameters) {
+    guarded<int>(env, 0, [&] {
+        check_status(env, [&] { return kmipkit_kmip30_operation_builder_set_cryptographic_parameters(
+                from_java_handle<kmipkit_kmip30_operation_builder_t>(raw_builder),
+                from_java_handle<kmipkit_cryptographic_parameters_t>(raw_parameters)); });
+        return 0;
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderSetDeactivationReason(
+        JNIEnv* env, jclass, jlong raw_builder, jlong raw_reason) {
+    guarded<int>(env, 0, [&] {
+        check_status(env, [&] { return kmipkit_kmip30_operation_builder_set_deactivation_reason(
+                from_java_handle<kmipkit_kmip30_operation_builder_t>(raw_builder),
+                from_java_handle<kmipkit_ttlv_structure_t>(raw_reason)); });
+        return 0;
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderSetDeactivationDate(
+        JNIEnv* env, jclass, jlong raw_builder, jlong unix_seconds) {
+    guarded<int>(env, 0, [&] {
+        check_status(env, [&] { return kmipkit_kmip30_operation_builder_set_deactivation_date(
+                from_java_handle<kmipkit_kmip30_operation_builder_t>(raw_builder), unix_seconds); });
+        return 0;
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderSetAsynchronousIndicator(
+        JNIEnv* env, jclass, jlong raw_builder, jlong value) {
+    guarded<int>(env, 0, [&] {
+        if (value < 0 || static_cast<uint64_t>(value) > std::numeric_limits<uint32_t>::max()) {
+            throw_invalid_input(env);
+            return 0;
+        }
+        check_status(env, [&] { return kmipkit_kmip30_operation_builder_set_asynchronous_indicator(
+                from_java_handle<kmipkit_kmip30_operation_builder_t>(raw_builder),
+                static_cast<uint32_t>(value)); });
+        return 0;
+    });
+}
+
+JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderValidate(
+        JNIEnv* env, jclass, jlong raw_builder) {
+    guarded<int>(env, 0, [&] {
+        check_status(env, [&] { return kmipkit_kmip30_operation_builder_validate(
+                from_java_handle<kmipkit_kmip30_operation_builder_t>(raw_builder)); });
+        return 0;
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderBuildBatchItem(
+        JNIEnv* env, jclass, jlong raw_builder) {
+    return guarded<jlong>(env, 0, [&] {
+        kmipkit_client_batch_item_t* output = nullptr;
+        const int32_t status = kmipkit_kmip30_operation_builder_build_batch_item(
+                from_java_handle<kmipkit_kmip30_operation_builder_t>(raw_builder), &output);
+        if (status != 0) {
+            throw_client_operation_status(env, status);
+            return static_cast<jlong>(0);
+        }
+        if (output == nullptr) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        return to_java_handle(output);
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_createCredentialObjectCertificate(
+        JNIEnv* env, jclass, jlong raw_certificate) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_create_credential_object_t>(env, [&](auto output) {
+            return kmipkit_create_credential_object_certificate(
+                    from_java_handle<kmipkit_ttlv_item_t>(raw_certificate), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_createCredentialObjectPassword(
+        JNIEnv* env, jclass, jbyteArray raw_password, jbyteArray raw_salt, jboolean has_algorithm,
+        jlong algorithm, jbyteArray raw_salted, jboolean has_iterations, jint iterations) {
+    return guarded<jlong>(env, 0, [&] {
+        std::vector<uint8_t> password, salt, salted;
+        kmipkit::secure::VectorWiper password_wiper(password);
+        kmipkit::secure::VectorWiper salt_wiper(salt);
+        kmipkit::secure::VectorWiper salted_wiper(salted);
+        bool password_present = false, salt_present = false, salted_present = false;
+        if (!read_optional_java_bytes(env, raw_password, password, &password_present)
+                || !read_optional_java_bytes(env, raw_salt, salt, &salt_present)
+                || !read_optional_java_bytes(env, raw_salted, salted, &salted_present)) {
+            return static_cast<jlong>(0);
+        }
+        if (algorithm < 0 || static_cast<uint64_t>(algorithm) > UINT32_MAX
+                || (has_algorithm != JNI_TRUE && has_algorithm != JNI_FALSE)
+                || (has_iterations != JNI_TRUE && has_iterations != JNI_FALSE)) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        auto password_span = byte_span(password);
+        auto salt_span = byte_span(salt);
+        auto salted_span = byte_span(salted);
+        return return_handle<kmipkit_create_credential_object_t>(env, [&](auto output) {
+            return kmipkit_create_credential_object_password(
+                    password_present ? &password_span : nullptr,
+                    salt_present ? &salt_span : nullptr, has_algorithm,
+                    static_cast<uint32_t>(algorithm), salted_present ? &salted_span : nullptr,
+                    has_iterations, iterations, output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_createCredentialObjectDevice(
+        JNIEnv* env, jclass, jbyteArray raw_serial, jbyteArray raw_identifier,
+        jbyteArray raw_network, jbyteArray raw_machine, jbyteArray raw_media) {
+    return guarded<jlong>(env, 0, [&] {
+        std::vector<uint8_t> values[5];
+        kmipkit::secure::VectorWiper<std::allocator<uint8_t>> wipe_serial(values[0]);
+        kmipkit::secure::VectorWiper<std::allocator<uint8_t>> wipe_identifier(values[1]);
+        kmipkit::secure::VectorWiper<std::allocator<uint8_t>> wipe_network(values[2]);
+        kmipkit::secure::VectorWiper<std::allocator<uint8_t>> wipe_machine(values[3]);
+        kmipkit::secure::VectorWiper<std::allocator<uint8_t>> wipe_media(values[4]);
+        jbyteArray inputs[5] = {raw_serial, raw_identifier, raw_network, raw_machine, raw_media};
+        bool present[5]{};
+        for (size_t index = 0; index < 5; ++index) {
+            if (!read_optional_java_bytes(env, inputs[index], values[index], &present[index])) {
+                return static_cast<jlong>(0);
+            }
+        }
+        kmipkit_byte_span_v1_t spans[5]{};
+        for (size_t index = 0; index < 5; ++index) spans[index] = byte_span(values[index]);
+        return return_handle<kmipkit_create_credential_object_t>(env, [&](auto output) {
+            return kmipkit_create_credential_object_device(
+                    present[0] ? &spans[0] : nullptr, present[1] ? &spans[1] : nullptr,
+                    present[2] ? &spans[2] : nullptr, present[3] ? &spans[3] : nullptr,
+                    present[4] ? &spans[4] : nullptr, output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_createCredentialObjectHashedPassword(
+        JNIEnv* env, jclass, jboolean has_algorithm, jlong algorithm,
+        jbyteArray raw_username_password, jbyteArray raw_password_username) {
+    return guarded<jlong>(env, 0, [&] {
+        std::vector<uint8_t> username_password, password_username;
+        kmipkit::secure::VectorWiper username_wiper(username_password);
+        kmipkit::secure::VectorWiper password_wiper(password_username);
+        bool username_present = false, password_present = false;
+        if (!read_optional_java_bytes(env, raw_username_password, username_password, &username_present)
+                || !read_optional_java_bytes(env, raw_password_username, password_username, &password_present)
+                || !username_present || !password_present || algorithm < 0
+                || static_cast<uint64_t>(algorithm) > UINT32_MAX) {
+            if (!env->ExceptionCheck()) throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        auto first = byte_span(username_password);
+        auto second = byte_span(password_username);
+        return return_handle<kmipkit_create_credential_object_t>(env, [&](auto output) {
+            return kmipkit_create_credential_object_hashed_password(
+                    has_algorithm, static_cast<uint32_t>(algorithm), &first, &second, output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_createCredentialObjectOneTimePassword(
+        JNIEnv* env, jclass, jlong algorithm, jboolean has_digest, jlong digest,
+        jbyteArray raw_serial, jbyteArray raw_seed, jboolean has_interval, jlong interval,
+        jboolean has_digits, jint digits) {
+    return guarded<jlong>(env, 0, [&] {
+        std::vector<uint8_t> serial, seed;
+        kmipkit::secure::VectorWiper serial_wiper(serial);
+        kmipkit::secure::VectorWiper seed_wiper(seed);
+        bool serial_present = false, seed_present = false;
+        if (!read_optional_java_bytes(env, raw_serial, serial, &serial_present)
+                || !read_optional_java_bytes(env, raw_seed, seed, &seed_present)
+                || algorithm < 0 || static_cast<uint64_t>(algorithm) > UINT32_MAX
+                || digest < 0 || static_cast<uint64_t>(digest) > UINT32_MAX
+                || interval < 0 || static_cast<uint64_t>(interval) > UINT32_MAX) {
+            if (!env->ExceptionCheck()) throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        auto serial_span = byte_span(serial);
+        auto seed_span = byte_span(seed);
+        return return_handle<kmipkit_create_credential_object_t>(env, [&](auto output) {
+            return kmipkit_create_credential_object_one_time_password(
+                    static_cast<uint32_t>(algorithm), has_digest, static_cast<uint32_t>(digest),
+                    serial_present ? &serial_span : nullptr, seed_present ? &seed_span : nullptr,
+                    has_interval, static_cast<uint32_t>(interval), has_digits, digits, output);
+        });
+    });
+}
+
 JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_symmetricKeyBuilderAddAttributeItem(
         JNIEnv* env, jclass, jlong raw_builder, jlong raw_item) {
     guarded<int>(env, 0, [&] {
@@ -5934,6 +6200,10 @@ JNIEXPORT void JNICALL Java_org_kmipkit_NativeExtensionRegistry_release(
                 from_java_handle<kmipkit_symmetric_key_builder_t>(raw_handle)); break;
         case 72: kmipkit_crypto_operation_builder_release(
                 from_java_handle<kmipkit_crypto_operation_builder_t>(raw_handle)); break;
+        case 73: kmipkit_kmip30_operation_builder_release(
+                from_java_handle<kmipkit_kmip30_operation_builder_t>(raw_handle)); break;
+        case 74: kmipkit_create_credential_object_release(
+                from_java_handle<kmipkit_create_credential_object_t>(raw_handle)); break;
         default: throw_invalid_input(env); break;
         }
         return 0;
@@ -10829,6 +11099,54 @@ JNIEXPORT jbyteArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatc
             return static_cast<jbyteArray>(nullptr);
         }
         return span_to_java_bytes(env, present, value);
+    });
+}
+
+JNIEXPORT jobjectArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseKmip30Identifier(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jobjectArray>(env, nullptr, [&] {
+        uint8_t present = 0;
+        kmipkit_unique_identifier_v1_t identifier{};
+        identifier.struct_size = static_cast<uint32_t>(sizeof(identifier));
+        identifier.abi_version = 1;
+        const int32_t status = kmipkit_client_batch_item_response_kmip30_identifier(
+                from_java_handle<kmipkit_client_batch_item_response_t>(raw_item),
+                &present, &identifier);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        if (present > 1) {
+            throw_invalid_input(env);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jlongArray fields = make_long_array(env, {static_cast<jlong>(present)});
+        if (fields == nullptr) return static_cast<jobjectArray>(nullptr);
+        jobjectArray value = present == 1 ? identifier_to_java(env, identifier, 1) : nullptr;
+        if (env->ExceptionCheck()) {
+            env->DeleteLocalRef(fields);
+            if (value != nullptr) env->DeleteLocalRef(value);
+            return static_cast<jobjectArray>(nullptr);
+        }
+        jobjectArray result = make_object_array(env, {fields, value});
+        env->DeleteLocalRef(fields);
+        if (value != nullptr) env->DeleteLocalRef(value);
+        return result;
+    });
+}
+
+JNIEXPORT jbyteArray JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseEncapsulateData(
+        JNIEnv* env, jclass, jlong raw_item) {
+    return guarded<jbyteArray>(env, nullptr, [&] {
+        uint8_t present = 0;
+        kmipkit_byte_span_v1_t data{};
+        const int32_t status = kmipkit_client_batch_item_response_encapsulate_data(
+                from_java_handle<kmipkit_client_batch_item_response_t>(raw_item), &present, &data);
+        if (status != 0) {
+            throw_status(env, status);
+            return static_cast<jbyteArray>(nullptr);
+        }
+        return span_to_java_bytes(env, present, data);
     });
 }
 

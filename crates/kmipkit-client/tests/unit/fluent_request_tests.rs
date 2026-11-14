@@ -1963,14 +1963,13 @@ fn kmip30_fluent_builders_cover_all_assigned_client_routes() {
 }
 
 #[test]
-fn kmip30_create_credential_request_rejects_a_type_that_does_not_match_its_object() {
+fn kmip30_create_credential_request_derives_type_from_its_object() {
     let request = kmipkit_protocol::CreateCredentialRequest::new(
-        kmipkit_protocol::CredentialType::HashedPassword,
         AttributeSet::new(),
         kmip30_password_credential(),
     );
 
-    assert!(request.into_ttlv_payload().is_err());
+    assert!(request.into_ttlv_payload().is_ok());
 }
 
 #[test]

@@ -33,7 +33,6 @@ pub(in crate::extension_registry) struct Kmip30OperationBuilder {
 
 enum BuilderRequest {
     CreateCredential {
-        credential_type: CredentialType,
         attributes: AttributeSet,
         object: Item,
     },
@@ -310,15 +309,12 @@ impl Kmip30OperationBuilder {
 
     fn build_request(&self) -> FfiResult<ClientRequest> {
         Ok(match &self.request {
-            BuilderRequest::CreateCredential {
-                credential_type,
-                attributes,
-                object,
-            } => ClientRequest::create_credential(CreateCredentialRequest::new(
-                *credential_type,
-                copy_attributes(attributes)?,
-                credential_object(object.try_clone().map_err(model_status)?)?,
-            )),
+            BuilderRequest::CreateCredential { attributes, object } => {
+                ClientRequest::create_credential(CreateCredentialRequest::new(
+                    copy_attributes(attributes)?,
+                    credential_object(object.try_clone().map_err(model_status)?)?,
+                ))
+            }
             BuilderRequest::CreateGroup(attributes) => {
                 ClientRequest::create_group(CreateGroupRequest::new(copy_attributes(attributes)?))
             }
@@ -415,16 +411,11 @@ fn create_credential_input(
     object: *mut kmipkit_create_credential_object_t,
 ) -> FfiResult<BuilderRequest> {
     let object = input_object(object)?;
-    let credential_type = match object.tag().raw() {
-        0x0042_0013 => CredentialType::Attestation,
-        0x0042_01A1 => CredentialType::UsernameAndPassword,
-        0x0042_01A6 => CredentialType::Device,
-        0x0042_01AF => CredentialType::HashedPassword,
-        0x0042_01A7 => CredentialType::OneTimePassword,
+    match object.tag().raw() {
+        0x0042_0013 | 0x0042_01A1 | 0x0042_01A6 | 0x0042_01AF | 0x0042_01A7 => {}
         _ => return Err(ERROR_INVALID_INPUT),
-    };
+    }
     Ok(BuilderRequest::CreateCredential {
-        credential_type,
         attributes: input_attributes(attributes)?,
         object,
     })
