@@ -10,9 +10,12 @@ import org.kmipkit.extensions.ClientBatch;
 import org.kmipkit.extensions.ClientBatchItem;
 import org.kmipkit.extensions.ClientBatchItemResult;
 import org.kmipkit.extensions.ClientBatchResponse;
+import org.kmipkit.extensions.AddAttributeRequest;
 import org.kmipkit.extensions.AttributeReference;
 import org.kmipkit.extensions.AttributeSet;
 import org.kmipkit.extensions.GetAttributesRequest;
+import org.kmipkit.extensions.ModifyAttributeRequest;
+import org.kmipkit.extensions.SetAttributeRequest;
 import org.kmipkit.extensions.UniqueIdentifier;
 import org.kmipkit.extensions.QueryResponse;
 import org.kmipkit.extensions.QueryResponseField;
@@ -438,8 +441,6 @@ class ControlledTlsPeerTest {
                     invocation -> appendLocalCatalogInvocation(events, protocolVersion, invocation));
             LocalCatalogRouteChecks.executeReferencedEnums(readRouteEvidenceCatalog(), protocolVersion,
                     invocation -> appendLocalCatalogInvocation(events, protocolVersion, invocation));
-            assertNewlyCataloguedLocalRoutesAreInvoked(events, protocolVersion);
-
             byte[] serverCertificatePem = fixture("server-cert.pem");
             byte[] serverPrivateKeyPem = fixture("server-key.pem");
             byte[] clientCertificatePem = fixture("client-cert.pem");
@@ -536,6 +537,9 @@ class ControlledTlsPeerTest {
             appendControlledKeyFormatRawResponseRouteEvents(events, protocolVersion);
             appendPendingQueryCorrelationEvidence(events, protocolVersion, serverCertificatePem,
                     serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
+            appendNewAttributeMutationEvents(events, protocolVersion, serverCertificatePem,
+                    serverPrivateKeyPem, clientCertificatePem, clientPrivateKeyPem);
+            assertNewlyCataloguedLocalRoutesAreInvoked(events, protocolVersion);
         }
 
         writeRouteExecutionReport(reportPath, mapper, events);
@@ -857,9 +861,10 @@ class ControlledTlsPeerTest {
         int batchItemExtensionCountEventCount = KMIP_2_0_AND_2_1.size() * 3;
         int batchItemGenericRouteEventCount = KMIP_2_0_AND_2_1.size() * 4;
         int batchItemAdditionalResponseRouteEventCount = KMIP_2_0_AND_2_1.size() * 12;
-        int normativeMessageFieldGenericRouteEventCount = KMIP_2_0_AND_2_1.size() * 27;
-        int normativeMessageFieldParserRouteEventCount = KMIP_2_0_AND_2_1.size() * 9;
+        int normativeMessageFieldGenericRouteEventCount = KMIP_2_0_AND_2_1.size() * 31;
+        int normativeMessageFieldParserRouteEventCount = KMIP_2_0_AND_2_1.size() * 10;
         int normativeBatchItemAccessorRouteEventCount = KMIP_2_0_AND_2_1.size() * 10;
+        int newAttributePayloadRouteEventCount = KMIP_2_0_AND_2_1.size() * 3 * 20;
         int credentialGenericRouteEventCount = CREDENTIAL_TYPE_MODEL_CASE_IDS.size()
                 * KMIP_2_0_AND_2_1.size() * 4;
         int credentialEnvelopeEventCount = CREDENTIAL_TYPE_MODEL_CASE_IDS.size()
@@ -888,7 +893,8 @@ class ControlledTlsPeerTest {
                         + batchItemExtensionCountEventCount + batchItemGenericRouteEventCount
                         + batchItemAdditionalResponseRouteEventCount + credentialGenericRouteEventCount
                         + normativeMessageFieldGenericRouteEventCount + normativeMessageFieldParserRouteEventCount
-                        + normativeBatchItemAccessorRouteEventCount + credentialEnvelopeEventCount
+                        + normativeBatchItemAccessorRouteEventCount + newAttributePayloadRouteEventCount
+                        + credentialEnvelopeEventCount
                         + batchErrorContinuationEventCount + genericTagEventCount + typedTagIdentityEventCount
                         + referencedEnumEventCount + referencedEnumAggregateEventCount,
                 report.path("events").size());
@@ -915,7 +921,7 @@ class ControlledTlsPeerTest {
         assertEquals(15 + enumerationFixtures.size() + localEnumerationCaseCount + bitmaskCaseCount
                         + dataTypeCaseCount
                         + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + genericTagCaseIds.size()
-                        + typedTagIdentityCaseIds().size() + referencedEnumCaseCount + 2,
+                        + typedTagIdentityCaseIds().size() + referencedEnumCaseCount + 9,
                 report.path("case_ids").size());
         List<String> expectedCredentialCaseIds = CREDENTIAL_TYPE_MODEL_CASE_IDS.values().stream().sorted().toList();
         int credentialCaseStart = report.path("case_ids").size() - expectedCredentialCaseIds.size();
@@ -3213,6 +3219,13 @@ class ControlledTlsPeerTest {
         caseIds.add("test-norm-message-field-message-field-8-6-message-extension");
         caseIds.add("test-norm-message-field-message-field-9-13-message-extension");
         caseIds.add("test-norm-tag-tag-420051");
+        caseIds.add("test-norm-message-field-message-field-8-3-ephemeral");
+        caseIds.add("test-norm-payload-client-add-attribute-request-20-002");
+        caseIds.add("test-norm-payload-client-add-attribute-request-21-002");
+        caseIds.add("test-norm-payload-client-modify-attribute-request-20-003");
+        caseIds.add("test-norm-payload-client-modify-attribute-request-21-003");
+        caseIds.add("test-norm-payload-client-set-attribute-request-20-002");
+        caseIds.add("test-norm-payload-client-set-attribute-request-21-002");
         genericOnlyTagCaseIds().forEach(caseIds::add);
         typedTagIdentityCaseIds().stream()
                 .filter(caseId -> !"test-norm-tag-tag-420051".equals(caseId))
@@ -3816,6 +3829,9 @@ class ControlledTlsPeerTest {
 
     private static void appendNormativeMessageFieldGenericRouteEvents(ArrayNode events,
             String protocolVersion) throws Exception {
+        // OASIS KMIP 2.0/2.1 §8.3 defines the optional Boolean Ephemeral field in a Request Batch Item.
+        appendMessageFieldBooleanRoutes(events, "test-norm-message-field-message-field-8-3-ephemeral",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-EPHEMERAL", 0x420154, protocolVersion);
         appendMessageFieldIntegerRoutes(events, "test-norm-message-field-message-field-8-5-batch-count",
                 "KMIPKIT-ELEM-MESSAGE-FIELD-8-5-BATCH-COUNT", protocolVersion, false);
         appendMessageFieldIntegerRoutes(events, "test-norm-message-field-message-field-9-5-batch-count",
@@ -3838,6 +3854,334 @@ class ControlledTlsPeerTest {
                 messageExtensionWire(), messageExtensionStructure(), protocolVersion, false, true);
     }
 
+    private static void appendMessageFieldBooleanRoutes(ArrayNode events, String caseId, String targetId,
+            int rawTag, String protocolVersion) throws Exception {
+        byte[] wire = item(rawTag, TtlvItemType.Boolean.code(), longBytes(1));
+        String treeHash = normalizedTreeSha256(wire);
+        try (TtlvValue value = TtlvValue.Boolean(true);
+                RawTag raw = RawTag.fromRaw(rawTag);
+                Tag tag = raw.checked();
+                TtlvItem created = TtlvItem.create(tag, value, CodecLimits.defaults());
+                var view = created.view();
+                var viewValue = view.value()) {
+            assertEquals(rawTag, view.tag().raw());
+            assertEquals(TtlvItemType.Boolean, view.itemType());
+            assertTrue(viewValue.booleanValue());
+        }
+        appendRouteEvent(events, caseId, "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.boolean",
+                targetId, "org.kmipkit.ttlv.TtlvValue.Boolean", null, null,
+                "construct", protocolVersion, null, treeHash, null);
+        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_item.create", targetId,
+                "org.kmipkit.ttlv.TtlvItem.create", null, null,
+                "construct", protocolVersion, null, treeHash, null);
+        appendRouteEvent(events, caseId, "java.generic-ttlv.function.ttlv_item_view_from_item", targetId,
+                "org.kmipkit.ttlv.TtlvItem.view", null, null,
+                "decode", protocolVersion, null, null, treeHash);
+        try (TtlvItem decoded = TtlvCodec.decode(wire);
+                var decodedView = decoded.view();
+                var decodedValue = decodedView.value()) {
+            assertEquals(rawTag, decodedView.tag().raw());
+            assertEquals(TtlvItemType.Boolean, decodedView.itemType());
+            assertTrue(decodedValue.booleanValue());
+        }
+        appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_codec.decode", targetId,
+                "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
+                "decode", protocolVersion, null, null, treeHash);
+    }
+
+    // OASIS KMIP 2.0/2.1 §5.7 Tables 148/163 define New Attribute as a Structure containing one
+    // direct attribute Item. The operation fixtures follow §6.1.2 Tables 152/167, §6.1.33 Table 247 /
+    // §6.1.34 Table 265, and §6.1.47 Table 296 / §6.1.51 Table 322, respectively.
+    private void appendNewAttributeMutationEvents(ArrayNode events, String protocolVersion,
+            byte[] serverCertificatePem, byte[] serverPrivateKeyPem,
+            byte[] clientCertificatePem, byte[] clientPrivateKeyPem) throws Exception {
+        int minor = "2.0".equals(protocolVersion) ? 0 : 1;
+        for (String operation : List.of("addAttribute", "modifyAttribute", "setAttribute")) {
+            String title = switch (operation) {
+                case "addAttribute" -> "Add Attribute";
+                case "modifyAttribute" -> "Modify Attribute";
+                case "setAttribute" -> "Set Attribute";
+                default -> throw new AssertionError("Unknown attribute mutation fixture.");
+            };
+            String suffix = switch (operation) {
+                case "addAttribute" -> "add-attribute-request";
+                case "modifyAttribute" -> "modify-attribute-request";
+                case "setAttribute" -> "set-attribute-request";
+                default -> throw new AssertionError("Unknown attribute mutation fixture.");
+            };
+            String versionCode = "2.0".equals(protocolVersion) ? "20" : "21";
+            String ordinal = "modifyAttribute".equals(operation) ? "003" : "002";
+            String routeOperation = attributeMutationRouteName(operation);
+            String caseId = "test-norm-payload-client-" + suffix + "-" + versionCode + "-" + ordinal;
+            String payloadTarget = "KMIPKIT-PAYLOAD-CLIENT-" + suffix.toUpperCase(Locale.ROOT)
+                    + "-" + versionCode + "-" + ordinal;
+            String operationTarget = "KMIPKIT-ELEM-OP-C2S-" + title.toUpperCase(Locale.ROOT)
+                    .replace(' ', '-');
+            String clientItemRoute = "java.typed-protocol.client_batch_item." + routeOperation;
+            String clientItemSymbol = "org.kmipkit.extensions.ClientBatchItem." + operation;
+            String toBatchItemRoute = "java.typed-protocol.function.attribute_request_" + routeOperation
+                    + "_to_batch_item";
+            String requestClass = title.replace(" ", "") + "Request";
+            String toBatchItemSymbol = "org.kmipkit.extensions." + requestClass + ".toBatchItem";
+            String toPayloadRoute = "java.typed-protocol.function.attribute_request_" + routeOperation
+                    + "_to_ttlv_payload";
+            String toPayloadSymbol = "org.kmipkit.extensions." + requestClass + ".toTtlvPayload";
+            String responseRoute = "java.typed-protocol.function.client_batch_item_response_" + routeOperation;
+            String responseSymbol = "org.kmipkit.extensions.ClientBatchItemResult." + operation + "Response";
+            int operationValue = switch (operation) {
+                case "addAttribute" -> 0x0d;
+                case "modifyAttribute" -> 0x0e;
+                case "setAttribute" -> 0x31;
+                default -> throw new AssertionError("Unknown attribute mutation fixture.");
+            };
+
+            byte[] newAttributeWire = newAttributeStructureWire();
+            String newAttributeHash = normalizedTreeSha256(newAttributeWire);
+            appendNewAttributeGenericRouteEvents(events, caseId, payloadTarget, operationTarget,
+                    protocolVersion, newAttributeWire, newAttributeHash);
+
+            SSLServerSocket listener = listener(certificate(serverCertificatePem),
+                    privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
+            byte[] responseBytes = attributeMutationResponse(minor, operationValue);
+            FutureTask<byte[]> peer = new FutureTask<>(() -> serveOneResponse(listener, responseBytes));
+            Thread peerThread = new Thread(peer,
+                    "java-validator-" + operation + "-new-attribute-peer-" + protocolVersion);
+            peerThread.setDaemon(true);
+            peerThread.start();
+
+            Path connectionFile = temporaryDirectory.resolve(operation + "-new-attribute-"
+                    + protocolVersion + ".json");
+            Files.writeString(connectionFile, connectionJson(listener.getLocalPort(), serverCertificatePem,
+                    clientCertificatePem, clientPrivateKeyPem, false, protocolVersion));
+            try (JavaKmipDriver driver = JavaKmipDriver.connect(ConnectionConfig.load(connectionFile));
+                    TtlvItem newAttributeItem = TtlvCodec.decode(newAttributeNameItemWire());
+                    TtlvStructure genericPayload = attributeRequestPayload(operation, newAttributeItem);
+                    ClientBatchItem directRequest = directAttributeMutationItem(operation, newAttributeItem)
+                            .withUniqueBatchItemId("item-0".getBytes(StandardCharsets.US_ASCII));
+                    ClientBatchItem typedRequest = attributeRequestBatchItem(operation, newAttributeItem)
+                            .withUniqueBatchItemId("item-1".getBytes(StandardCharsets.US_ASCII));
+                    ClientBatch batch = ClientBatch.create()) {
+                try (var payloadView = genericPayload.view();
+                        var newAttributeField = payloadView.itemAt(1);
+                        var fieldTag = newAttributeField.tag();
+                        var fieldValue = newAttributeField.value();
+                        var fieldContents = fieldValue.structure()) {
+                    assertEquals(2, payloadView.itemCount());
+                    assertEquals(0x42013d, fieldTag.raw());
+                    assertEquals(TtlvItemType.Structure, newAttributeField.itemType());
+                    assertEquals(1, fieldContents.itemCount(),
+                            "The typed payload must preserve its direct Name attribute Item.");
+                }
+                batch.add(directRequest);
+                batch.add(typedRequest);
+                String responseHash = normalizedTreeSha256(responseBytes);
+                try (ClientBatchResponse response = driver.executeBatchForEvidence(batch)) {
+                    assertEquals(2, response.itemCount());
+                    for (int index = 0; index < response.itemCount(); index++) {
+                        try (ClientBatchItemResult result = response.itemAt(index)) {
+                            assertEquals((long) operationValue, result.operation());
+                            assertEquals(0L, result.resultStatus());
+                            String uniqueIdentifier = switch (operation) {
+                                case "addAttribute" -> result.addAttributeResponse().orElseThrow()
+                                        .uniqueIdentifier();
+                                case "modifyAttribute" -> result.modifyAttributeResponse().orElseThrow()
+                                        .uniqueIdentifier();
+                                case "setAttribute" -> result.setAttributeResponse().orElseThrow()
+                                        .uniqueIdentifier();
+                                default -> throw new AssertionError("Unknown attribute mutation fixture.");
+                            };
+                            assertEquals("object-7", uniqueIdentifier);
+                        }
+                    }
+                }
+                byte[] requestBytes = peer.get(15, TimeUnit.SECONDS);
+                assertEquals(operationValue, requestOperation(requestBytes));
+                assertEquals(minor, requestProtocolMinorVersion(requestBytes));
+                assertTrue(contains(requestBytes, newAttributeWire),
+                        "The controlled peer must receive the exact New Attribute Structure.");
+                String requestHash = normalizedTreeSha256(requestBytes);
+                appendNewAttributeTypedMutationRouteEvents(events, caseId, payloadTarget, operationTarget,
+                        clientItemRoute, clientItemSymbol, toBatchItemRoute, toBatchItemSymbol,
+                        protocolVersion, requestHash, responseHash);
+                appendRouteEvent(events, caseId, toPayloadRoute, payloadTarget, toPayloadSymbol,
+                        null, null, "encode", protocolVersion, null, requestHash, null);
+                appendRouteEvent(events, caseId, toPayloadRoute, operationTarget, toPayloadSymbol,
+                        null, null, "encode", protocolVersion, null, requestHash, null);
+                appendRouteEvent(events, caseId, responseRoute, operationTarget, responseSymbol,
+                        null, null, "decode", protocolVersion, null, null, responseHash);
+            } finally {
+                listener.close();
+            }
+        }
+    }
+
+    private static void appendNewAttributeGenericRouteEvents(ArrayNode events, String caseId,
+            String payloadTarget, String operationTarget, String protocolVersion,
+            byte[] newAttributeWire, String treeHash) throws Exception {
+        CodecLimits limits = CodecLimits.defaults();
+        try (TtlvStructure empty = TtlvStructure.create();
+                TtlvItem directAttribute = TtlvCodec.decode(newAttributeNameItemWire());
+                TtlvStructure content = TtlvStructure.withItem(empty, directAttribute, limits);
+                TtlvValue structureValue = TtlvValue.structure(content, limits);
+                RawTag raw = RawTag.fromRaw(0x42013d);
+                Tag tag = raw.checked();
+                TtlvItem item = TtlvItem.create(tag, structureValue, limits);
+                var view = item.view();
+                var value = view.value();
+                var fields = value.structure()) {
+            assertEquals(0x42013d, view.tag().raw());
+            assertEquals(TtlvItemType.Structure, view.itemType());
+            assertEquals(1, fields.itemCount(),
+                    "New Attribute is a Structure containing exactly one direct attribute Item.");
+        }
+        appendRouteEvent(events, caseId,
+                "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure", payloadTarget,
+                "org.kmipkit.ttlv.TtlvValue.structure", null, null,
+                "construct", protocolVersion, null, treeHash, null);
+        for (String target : List.of(payloadTarget, operationTarget)) {
+            appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_item.create", target,
+                    "org.kmipkit.ttlv.TtlvItem.create", null, null,
+                    "construct", protocolVersion, null, treeHash, null);
+            appendRouteEvent(events, caseId, "java.generic-ttlv.function.ttlv_item_view_from_item", target,
+                    "org.kmipkit.ttlv.TtlvItem.view", null, null,
+                    "decode", protocolVersion, null, null, treeHash);
+            try (TtlvItem decoded = TtlvCodec.decode(newAttributeWire);
+                    var decodedView = decoded.view();
+                    var decodedValue = decodedView.value();
+                    var decodedFields = decodedValue.structure()) {
+                assertEquals(0x42013d, decodedView.tag().raw());
+                assertEquals(TtlvItemType.Structure, decodedView.itemType());
+                assertEquals(1, decodedFields.itemCount());
+            }
+            appendRouteEvent(events, caseId, "java.generic-ttlv.ttlv_codec.decode", target,
+                    "org.kmipkit.ttlv.TtlvCodec.decode", null, null,
+                    "decode", protocolVersion, null, null, treeHash);
+        }
+    }
+
+    private static void appendNewAttributeTypedMutationRouteEvents(ArrayNode events, String caseId,
+            String payloadTarget, String operationTarget, String clientItemRoute, String clientItemSymbol,
+            String toBatchItemRoute, String toBatchItemSymbol, String protocolVersion,
+            String requestHash, String responseHash) {
+        for (String target : List.of(payloadTarget, operationTarget)) {
+            appendRouteEvent(events, caseId, clientItemRoute, target, clientItemSymbol,
+                    "java.execute.typed-batch", "org.kmipkit.extensions.Client.execute",
+                    "construct", protocolVersion, "raw_tls", requestHash, null);
+            ObjectNode clientSent = appendRouteEvent(events, caseId, clientItemRoute, target, clientItemSymbol,
+                    "java.execute.typed-batch", "org.kmipkit.extensions.Client.execute",
+                    "send", protocolVersion, "raw_tls", requestHash, null);
+            clientSent.put("request_delivery_state", "response_received");
+            clientSent.put("transport_invocation_count", 1);
+            appendRouteEvent(events, caseId, toBatchItemRoute, target, toBatchItemSymbol,
+                    "java.execute.typed-batch", "org.kmipkit.extensions.Client.execute",
+                    "construct", protocolVersion, "raw_tls", requestHash, null);
+            ObjectNode convertedSent = appendRouteEvent(events, caseId, toBatchItemRoute, target,
+                    toBatchItemSymbol, "java.execute.typed-batch", "org.kmipkit.extensions.Client.execute",
+                    "send", protocolVersion, "raw_tls", requestHash, null);
+            convertedSent.put("request_delivery_state", "response_received");
+            convertedSent.put("transport_invocation_count", 1);
+        }
+        appendRouteEvent(events, caseId, clientItemRoute, operationTarget, clientItemSymbol,
+                "java.execute.typed-batch", "org.kmipkit.extensions.Client.execute",
+                "decode", protocolVersion, "raw_tls", null, responseHash);
+        appendRouteEvent(events, caseId, toBatchItemRoute, operationTarget, toBatchItemSymbol,
+                "java.execute.typed-batch", "org.kmipkit.extensions.Client.execute",
+                "decode", protocolVersion, "raw_tls", null, responseHash);
+    }
+
+    private static ClientBatchItem directAttributeMutationItem(String operation, TtlvItem newAttribute) {
+        UniqueIdentifier identifier = UniqueIdentifier.textString("object-7");
+        return switch (operation) {
+            case "addAttribute" -> ClientBatchItem.addAttribute(identifier, newAttribute);
+            case "modifyAttribute" -> ClientBatchItem.modifyAttribute(identifier, null, newAttribute);
+            case "setAttribute" -> ClientBatchItem.setAttribute(identifier, newAttribute);
+            default -> throw new AssertionError("Unknown attribute mutation fixture.");
+        };
+    }
+
+    private static TtlvStructure attributeRequestPayload(String operation, TtlvItem newAttribute) {
+        UniqueIdentifier identifier = UniqueIdentifier.textString("object-7");
+        return switch (operation) {
+            case "addAttribute" -> {
+                try (AddAttributeRequest request = AddAttributeRequest.create(identifier, newAttribute)) {
+                    yield request.toTtlvPayload();
+                }
+            }
+            case "modifyAttribute" -> {
+                try (ModifyAttributeRequest request =
+                        ModifyAttributeRequest.create(identifier, null, newAttribute)) {
+                    yield request.toTtlvPayload();
+                }
+            }
+            case "setAttribute" -> {
+                try (SetAttributeRequest request = SetAttributeRequest.create(identifier, newAttribute)) {
+                    yield request.toTtlvPayload();
+                }
+            }
+            default -> throw new AssertionError("Unknown attribute mutation fixture.");
+        };
+    }
+
+    private static ClientBatchItem attributeRequestBatchItem(String operation, TtlvItem newAttribute) {
+        UniqueIdentifier identifier = UniqueIdentifier.textString("object-7");
+        return switch (operation) {
+            case "addAttribute" -> {
+                try (AddAttributeRequest request = AddAttributeRequest.create(identifier, newAttribute)) {
+                    yield request.toBatchItem();
+                }
+            }
+            case "modifyAttribute" -> {
+                try (ModifyAttributeRequest request =
+                        ModifyAttributeRequest.create(identifier, null, newAttribute)) {
+                    yield request.toBatchItem();
+                }
+            }
+            case "setAttribute" -> {
+                try (SetAttributeRequest request = SetAttributeRequest.create(identifier, newAttribute)) {
+                    yield request.toBatchItem();
+                }
+            }
+            default -> throw new AssertionError("Unknown attribute mutation fixture.");
+        };
+    }
+
+    private static byte[] newAttributeNameItemWire() throws Exception {
+        return structure(0x42000a,
+                textItem(0x4200a5, "new name"), item(0x4200a6, 5, intBytes(1)));
+    }
+
+    private static byte[] newAttributeStructureWire() throws Exception {
+        return structure(0x42013d, newAttributeNameItemWire());
+    }
+
+    private static byte[] attributeMutationResponse(int protocolMinorVersion, int operation)
+            throws Exception {
+        byte[] protocolVersion = structure(0x420069,
+                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(protocolMinorVersion)));
+        byte[] header = structure(0x42007a, protocolVersion,
+                item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(2)));
+        byte[] firstPayload = structure(0x42007c, textItem(0x420094, "object-7"));
+        byte[] secondPayload = structure(0x42007c, textItem(0x420094, "object-7"));
+        byte[] firstItem = structure(0x42000f,
+                item(0x42005c, 5, intBytes(operation)),
+                item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)),
+                item(0x42007f, 5, intBytes(0)), firstPayload);
+        byte[] secondItem = structure(0x42000f,
+                item(0x42005c, 5, intBytes(operation)),
+                item(0x420093, 8, "item-1".getBytes(StandardCharsets.US_ASCII)),
+                item(0x42007f, 5, intBytes(0)), secondPayload);
+        return structure(0x42007b, header, firstItem, secondItem);
+    }
+
+    private static String attributeMutationRouteName(String operation) {
+        return switch (operation) {
+            case "addAttribute" -> "add_attribute";
+            case "modifyAttribute" -> "modify_attribute";
+            case "setAttribute" -> "set_attribute";
+            default -> throw new AssertionError("Unknown attribute mutation fixture.");
+        };
+    }
+
     private static void assertNewlyCataloguedLocalRoutesAreInvoked(ArrayNode events,
             String protocolVersion) {
         String ephemeralCase = "test-norm-message-field-message-field-8-3-ephemeral";
@@ -3854,26 +4198,51 @@ class ControlledTlsPeerTest {
                 "java.typed-protocol.model.org.kmipkit.message.requestmessage.fromttlv",
                 "construct", protocolVersion);
 
-        if ("2.0".equals(protocolVersion)) {
-            assertRouteEventRecorded(events, "test-norm-payload-client-add-attribute-request-20-002",
-                    "KMIPKIT-PAYLOAD-CLIENT-ADD-ATTRIBUTE-REQUEST-20-002",
+        String versionCode = "2.0".equals(protocolVersion) ? "20" : "21";
+        for (String operation : List.of("addAttribute", "modifyAttribute", "setAttribute")) {
+            String title = switch (operation) {
+                case "addAttribute" -> "Add Attribute";
+                case "modifyAttribute" -> "Modify Attribute";
+                case "setAttribute" -> "Set Attribute";
+                default -> throw new AssertionError("Unknown attribute mutation fixture.");
+            };
+            String suffix = switch (operation) {
+                case "addAttribute" -> "add-attribute-request";
+                case "modifyAttribute" -> "modify-attribute-request";
+                case "setAttribute" -> "set-attribute-request";
+                default -> throw new AssertionError("Unknown attribute mutation fixture.");
+            };
+            String ordinal = "modifyAttribute".equals(operation) ? "003" : "002";
+            String routeOperation = attributeMutationRouteName(operation);
+            String caseId = "test-norm-payload-client-" + suffix + "-" + versionCode + "-" + ordinal;
+            String payloadTarget = "KMIPKIT-PAYLOAD-CLIENT-" + suffix.toUpperCase(Locale.ROOT)
+                    + "-" + versionCode + "-" + ordinal;
+            String operationTarget = "KMIPKIT-ELEM-OP-C2S-" + title.toUpperCase(Locale.ROOT)
+                    .replace(' ', '-');
+            String clientRoute = "java.typed-protocol.client_batch_item." + routeOperation;
+            String batchRoute = "java.typed-protocol.function.attribute_request_" + routeOperation
+                    + "_to_batch_item";
+            String payloadRoute = "java.typed-protocol.function.attribute_request_" + routeOperation
+                    + "_to_ttlv_payload";
+            String responseRoute = "java.typed-protocol.function.client_batch_item_response_" + routeOperation;
+            assertRouteEventRecorded(events, caseId, payloadTarget,
                     "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure", "construct", protocolVersion);
-            assertRouteEventRecorded(events, "test-norm-payload-client-modify-attribute-request-20-003",
-                    "KMIPKIT-PAYLOAD-CLIENT-MODIFY-ATTRIBUTE-REQUEST-20-003",
-                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure", "construct", protocolVersion);
-            assertRouteEventRecorded(events, "test-norm-payload-client-set-attribute-request-20-002",
-                    "KMIPKIT-PAYLOAD-CLIENT-SET-ATTRIBUTE-REQUEST-20-002",
-                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure", "construct", protocolVersion);
-        } else {
-            assertRouteEventRecorded(events, "test-norm-payload-client-add-attribute-request-21-002",
-                    "KMIPKIT-PAYLOAD-CLIENT-ADD-ATTRIBUTE-REQUEST-21-002",
-                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure", "construct", protocolVersion);
-            assertRouteEventRecorded(events, "test-norm-payload-client-modify-attribute-request-21-003",
-                    "KMIPKIT-PAYLOAD-CLIENT-MODIFY-ATTRIBUTE-REQUEST-21-003",
-                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure", "construct", protocolVersion);
-            assertRouteEventRecorded(events, "test-norm-payload-client-set-attribute-request-21-002",
-                    "KMIPKIT-PAYLOAD-CLIENT-SET-ATTRIBUTE-REQUEST-21-002",
-                    "java.generic-ttlv.model.org.kmipkit.ttlv.ttlvvalue.structure", "construct", protocolVersion);
+            for (String target : List.of(payloadTarget, operationTarget)) {
+                assertRouteEventRecorded(events, caseId, target,
+                        "java.generic-ttlv.ttlv_item.create", "construct", protocolVersion);
+                assertRouteEventRecorded(events, caseId, target,
+                        "java.generic-ttlv.function.ttlv_item_view_from_item", "decode", protocolVersion);
+                assertRouteEventRecorded(events, caseId, target,
+                        "java.generic-ttlv.ttlv_codec.decode", "decode", protocolVersion);
+                assertRouteEventRecorded(events, caseId, target, clientRoute, "construct", protocolVersion);
+                assertRouteEventRecorded(events, caseId, target, clientRoute, "send", protocolVersion);
+                assertRouteEventRecorded(events, caseId, target, batchRoute, "construct", protocolVersion);
+                assertRouteEventRecorded(events, caseId, target, batchRoute, "send", protocolVersion);
+                assertRouteEventRecorded(events, caseId, target, payloadRoute, "encode", protocolVersion);
+            }
+            for (String route : List.of(clientRoute, batchRoute, responseRoute)) {
+                assertRouteEventRecorded(events, caseId, operationTarget, route, "decode", protocolVersion);
+            }
         }
     }
 
@@ -3982,6 +4351,63 @@ class ControlledTlsPeerTest {
                     field.targetId(), "org.kmipkit.message.RequestMessage.fromTtlv", null, null,
                     "construct", protocolVersion, null, treeHash, null);
         }
+        appendEphemeralRequestMessageParseEvent(events, protocolVersion);
+    }
+
+    private static void appendEphemeralRequestMessageParseEvent(ArrayNode events,
+            String protocolVersion) throws Exception {
+        int minorVersion = "2.0".equals(protocolVersion) ? 0 : 1;
+        byte[] wire = ephemeralRequestMessageWire(minorVersion);
+        try (RequestMessage message = RequestMessage.fromTtlv(ephemeralRequestMessageStructure(minorVersion));
+                var item = message.batchItemAt(0)) {
+            assertEquals(java.util.OptionalLong.of(0x0a), item.operation());
+            assertEquals(java.util.Optional.of(true), item.ephemeral());
+            assertEquals(java.util.Optional.of(1L), item.withRequestPayload(value -> value.itemCount()));
+        }
+        appendRouteEvent(events, "test-norm-message-field-message-field-8-3-ephemeral",
+                "java.typed-protocol.model.org.kmipkit.message.requestmessage.fromttlv",
+                "KMIPKIT-ELEM-MESSAGE-FIELD-8-3-EPHEMERAL",
+                "org.kmipkit.message.RequestMessage.fromTtlv", null, null,
+                "construct", protocolVersion, null, normalizedTreeSha256(wire), null);
+    }
+
+    private static TtlvStructure ephemeralRequestMessageStructure(int protocolMinorVersion) {
+        CodecLimits limits = CodecLimits.defaults();
+        byte[] uniqueIdentifier = "ephemeral-fixture".getBytes(StandardCharsets.US_ASCII);
+        TtlvStructure version = TtlvStructure.create();
+        version = appendTtlvItem(version, 0x42006a, TtlvValue.Integer(2), limits);
+        version = appendTtlvItem(version, 0x42006b, TtlvValue.Integer(protocolMinorVersion), limits);
+        TtlvStructure header = TtlvStructure.create();
+        header = appendTtlvItem(header, 0x420069, TtlvValue.structure(version, limits), limits);
+        header = appendTtlvItem(header, 0x420092, TtlvValue.DateTime(1), limits);
+        header = appendTtlvItem(header, 0x42000d, TtlvValue.Integer(1), limits);
+
+        TtlvStructure payload = TtlvStructure.create();
+        payload = appendTtlvItem(payload, 0x420094,
+                TtlvValue.TextString(uniqueIdentifier, limits), limits);
+        TtlvStructure requestItem = TtlvStructure.create();
+        requestItem = appendTtlvItem(requestItem, 0x42005c, TtlvValue.Enumeration(0x0a), limits);
+        requestItem = appendTtlvItem(requestItem, 0x420154, TtlvValue.Boolean(true), limits);
+        requestItem = appendTtlvItem(requestItem, 0x420093,
+                TtlvValue.ByteString("item-0".getBytes(StandardCharsets.US_ASCII), limits), limits);
+        requestItem = appendTtlvItem(requestItem, 0x420079, TtlvValue.structure(payload, limits), limits);
+
+        TtlvStructure message = TtlvStructure.create();
+        message = appendTtlvItem(message, 0x420077, TtlvValue.structure(header, limits), limits);
+        return appendTtlvItem(message, 0x42000f, TtlvValue.structure(requestItem, limits), limits);
+    }
+
+    private static byte[] ephemeralRequestMessageWire(int protocolMinorVersion) throws Exception {
+        byte[] uniqueIdentifier = "ephemeral-fixture".getBytes(StandardCharsets.US_ASCII);
+        byte[] version = structure(0x420069,
+                item(0x42006a, 2, intBytes(2)), item(0x42006b, 2, intBytes(protocolMinorVersion)));
+        byte[] header = structure(0x420077, version,
+                item(0x420092, 9, longBytes(1)), item(0x42000d, 2, intBytes(1)));
+        byte[] payload = structure(0x420079, item(0x420094, 7, uniqueIdentifier));
+        byte[] requestItem = structure(0x42000f,
+                item(0x42005c, 5, intBytes(0x0a)), item(0x420154, 6, longBytes(1)),
+                item(0x420093, 8, "item-0".getBytes(StandardCharsets.US_ASCII)), payload);
+        return structure(0x420078, header, requestItem);
     }
 
     private static TtlvStructure requestMessageStructure(int protocolMinorVersion) {
