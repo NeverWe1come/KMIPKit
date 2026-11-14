@@ -1075,3 +1075,22 @@ preserving their server-issued correlations.
   The matching completeness validator now reports
   `test-async-unknown-correlation-rejected` as the next missing recipe; PR
   #170 remains WIP.
+### Discover Versions offer and installed C route matrix
+
+The controlled peer now checks the public C Discover Versions request's
+advertised Protocol Version list against the constructor's fixed KMIP 2.1
+offer. The route test executes the pinned installed consumer through TTLV,
+JSON, and XML over raw TLS and HTTPS, and requires both the Discover Versions
+builder and typed supported-versions response accessor in the invocation
+evidence. The KMIP 2.0 row remains classified by the existing source-backed C
+API limitation: this constructor cannot offer KMIP 2.0. These checks follow
+OASIS KMIP 2.0 §6.1.16, Table 196; KMIP 2.1 §6.1.16, Tables 211–212; and
+KMIPKIT-0092-FR-001, FR-005, FR-006, and FR-009.
+
+- Red commit `24dfd7437` proved the peer accepted an incorrect KMIP 2.0 offer
+  under the Discover Versions case.
+- Green commit `d4564903d` rejects the incorrect offer and checks the fixed
+  KMIP 2.1 structure.
+- The installed route test passed all six encoding/transport combinations.
+  The focused checks passed 2/2, and the C route-matrix unit suite passed
+  141/141. The broader completeness matrix remains open; PR #170 remains WIP.

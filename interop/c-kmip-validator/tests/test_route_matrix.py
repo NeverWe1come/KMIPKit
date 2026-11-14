@@ -1945,6 +1945,44 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(all(event['public_api_symbol'] == 'kmipkit_client_batch_item_query'
                             for event in fields))
 
+    def test_discover_versions_uses_the_installed_builder_across_all_network_routes(self):
+        """OASIS KMIP 2.1 §6.1.16, Tables 211–212; KMIPKIT-0092-FR-001/005/006."""
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case = next(item for item in catalog['test_cases']
+                    if item['case_id'] == 'test-op-discover-versions')
+        selected = {**catalog, 'test_cases': [case]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest,
+            protocol_versions=('2.1',))
+
+        self.assertEqual(len(checks), 6, checks)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertEqual({(check['encoding'], check['transport']) for check in checks}, {
+            ('TTLV', 'raw_tls'), ('TTLV', 'https'),
+            ('JSON', 'raw_tls'), ('JSON', 'https'),
+            ('XML', 'raw_tls'), ('XML', 'https'),
+        })
+        self.assertTrue(all('kmipkit_client_batch_item_discover_versions' in
+                            check['public_api_trace_symbols'] for check in checks), checks)
+        self.assertTrue(all(
+            'kmipkit_client_batch_item_response_discover_versions_supported_versions' in
+            check['public_api_trace_symbols'] for check in checks), checks)
+        response_fields = [event for event in events
+                           if event['case_id'] == case['case_id'] and
+                           event['action'] == 'decode' and
+                           event['route_id'] == (
+                               'c.typed-protocol.function.'
+                               'client_batch_item_response_discover_versions_supported_versions')]
+        self.assertTrue(response_fields)
+        self.assertTrue(all(event['public_api_symbol'] ==
+                            'kmipkit_client_batch_item_response_discover_versions_supported_versions'
+                            for event in response_fields), response_fields)
+
     def test_create_payload_normative_cases_invoke_c_and_match_controlled_peer(self):
         from artifact_support import ROOT
         from route_peer import execute_network_cells
