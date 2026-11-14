@@ -39,12 +39,14 @@ REQUEST_HEADER_FIELD_FIXTURES = {
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-SERVER-CORRELATION-VALUE':
         ('Server Correlation Value', 7, b'server-correlation'),
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP': ('Time Stamp', 9, 1_760_000_000),
-}
-REQUEST_HEADER_BATCH_OPTION_FIXTURES = {
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION':
         ('Batch Error Continuation Option', 5, None),
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION': ('Batch Order Option', 6, 1),
 }
+REQUEST_HEADER_MULTI_ITEM_OPTION_TARGETS = frozenset({
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION',
+})
 OUTPUT_ROOT = ROOT / 'interop/c-kmip-validator/build'
 
 
@@ -333,24 +335,13 @@ def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
     if target.get('kind') in {'tag', 'message_field'} and target.get('name') == 'Request Message':
         fixture = _request_message_fixture(protocol_version, tags, catalog)
         return [fixture] if fixture is not None else None
-    batch_option = REQUEST_HEADER_BATCH_OPTION_FIXTURES.get(target.get('target_id'))
-    if batch_option is not None:
-        fixture = _request_message_fixture(protocol_version, tags, catalog)
-        if fixture is None:
-            return None
-        name, kind, value = batch_option
-        tag = tags.get(name)
-        data = _request_header_field_data(name, kind, value, catalog, protocol_version)
-        if tag is None or data is None:
-            return None
-        multi_item_fixture = _request_message_with_two_items(fixture, tags)
-        return [_with_request_header_field(
-            multi_item_fixture, tags, (tag, kind, data), after_tag='Protocol Version')]
     header_field = _request_header_field_fixture(target, catalog, tags, protocol_version)
     if header_field is not None:
         fixture = _request_message_fixture(protocol_version, tags, catalog)
         if fixture is None:
             return None
+        if target.get('target_id') in REQUEST_HEADER_MULTI_ITEM_OPTION_TARGETS:
+            fixture = _request_message_with_two_items(fixture, tags)
         return [_with_request_header_field(fixture, tags, header_field,
                                            after_tag='Protocol Version')]
     if target.get('target_id') == 'KMIPKIT-ELEM-MESSAGE-FIELD-8-3-EPHEMERAL':
