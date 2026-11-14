@@ -3318,7 +3318,10 @@ class RouteMatrixTests(unittest.TestCase):
                                                if case['case_id'] == case_id]}
         events, _, checks = execute_network_cells(
             ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
-        self.assertEqual(len(checks), 12, 'batch workflow must pass both versions over all six wire transports')
+        self.assertEqual(
+            len(checks), 24,
+            'direct and request-conversion batches must pass both versions over all six wire transports',
+        )
         self.assertTrue(all(check['status'] == 'passed' for check in checks))
         expected_operations = {
             'KMIPKIT-ELEM-OP-C2S-CREATE', 'KMIPKIT-ELEM-OP-C2S-ACTIVATE',
@@ -3328,6 +3331,7 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(expected_operations <= {event['target_id'] for event in events})
         for symbol in ('kmipkit_client_batch_item_create', 'kmipkit_client_batch_item_activate',
                        'kmipkit_client_batch_item_get_attribute_list',
+                       'kmipkit_client_batch_item_get_attribute_list_from_request',
                        'kmipkit_client_batch_item_revoke', 'kmipkit_client_batch_item_destroy'):
             self.assertTrue(any(event['public_api_symbol'] == symbol and event['action'] == 'send'
                                 for event in events), symbol)
