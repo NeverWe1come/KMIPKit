@@ -510,6 +510,19 @@ class RouteMatrixTests(unittest.TestCase):
                              'kmipkit_client_async_operation_outcome_cancel_response_v1'
                              for event in events), 2)
 
+    def test_each_async_cancel_result_case_uses_the_pending_cancel_peer(self):
+        from artifact_support import ROOT
+        import route_peer
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        cases = [case for case in catalog['test_cases']
+                 if case['case_id'].startswith('test-async-cancel-result-')]
+
+        self.assertEqual(len(cases), 5)
+        for case in cases:
+            with self.subTest(case_id=case['case_id']):
+                self.assertEqual(route_peer.recipe_for_case(case, None), ((25,), 'cancel_async'))
+
     def test_stop_on_first_failure_case_has_a_controlled_peer_recipe(self):
         import route_peer
         from artifact_support import ROOT
