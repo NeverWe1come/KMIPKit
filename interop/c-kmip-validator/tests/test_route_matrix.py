@@ -4198,6 +4198,33 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_response_create_key_pair'
                             and event['action'] == 'decode' for event in events))
 
+    def test_create_split_key_returns_all_part_identifiers_and_cleans_them(self):
+        """Exercise KMIP 2.0/2.1 §6.1.10 through the installed typed C ABI."""
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        case_id = 'test-op-create-split-key'
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == case_id]}
+
+        events, _, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12,
+                         'Create Split Key must run across both versions and all six wire combinations')
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertTrue(all(check['peer_request_operations'] == [40] and
+                            check['peer_cleanup_operations'] == [20, 20, 20] and
+                            check['peer_final_state_matches_setup'] for check in checks))
+        self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_create_split_key'
+                            and event['action'] == 'send' for event in events))
+        for symbol in ('kmipkit_client_batch_item_response_create_split_key_count',
+                       'kmipkit_client_batch_item_response_create_split_key_unique_identifier_at'):
+            self.assertTrue(any(event['public_api_symbol'] == symbol and event['action'] == 'decode'
+                                for event in events), symbol)
+
     def test_certify_operation_runs_through_installed_c_abi_and_checks_identifier(self):
         """Certify a Public Key using Create Key Pair under OASIS KMIP §§6.1.6 and 6.1.9."""
         from artifact_support import ROOT
