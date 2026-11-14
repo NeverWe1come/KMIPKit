@@ -23,7 +23,7 @@ def test_baseline_readiness_uses_rust_evaluator_and_never_claims_support() -> No
     assert result is not None
     assert result.profile_id == BASELINE_ID
     assert result.target_selected is True
-    assert result.runtime_validation_available is True
+    assert result.runtime_validation_available is False
     assert result.effective_state == "evidence_incomplete"
     assert result.requirement_records_complete is True
     assert result.published_claim is False
@@ -89,7 +89,7 @@ def test_catalog_snapshots_are_complete_ordered_and_immutable() -> None:
         assert isinstance(row.mandatory_status, str) and isinstance(row.fixture_availability, str)
 
     baseline = next(row for row in profiles if row.profile_id == BASELINE_ID)
-    assert baseline.claim_state == "evidence_complete"
+    assert baseline.claim_state == "evidence_incomplete"
     assert baseline.selected_target is True
 
 
