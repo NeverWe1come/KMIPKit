@@ -227,3 +227,27 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   and 26,400 `validator_recipe_pending` cells. The exact completeness validator
   still exits unsuccessfully, next reporting `test-async-indicator-omitted-default`.
   This route advances coverage without closing the matrix gate.
+
+## Development evidence: C omitted asynchronous indicator default
+
+- Normative scope: OASIS KMIP 2.0/2.1 §§8.2–8.3, 8.6, 9.1–9.2, and 11.3;
+  Create is §6.1.8 Table 171 (2.0) and Table 186 (2.1). When the optional
+  Asynchronous Indicator is omitted, its default is Prohibited and Create
+  completes synchronously without a correlation value.
+- Red commit `3ba8b1a5a`: the focused route test failed because no C peer recipe
+  existed for `test-async-indicator-omitted-default`.
+- Green commit `c22343d5f`: the installed C ABI sends Create with the indicator
+  omitted and checks synchronous Success, the typed response, and absent
+  correlation over all six encoding/transport combinations and both versions.
+  The peer also omits Unique Batch Item ID to match the request and permit
+  correct response association.
+- Refactor commit `cdd9f7d45`: share the Create request builder and typed
+  response assertions with Mandatory asynchronous Create.
+- Verification: the focused omitted-default route passed 12 network cells;
+  the C build, Python syntax checks, five Cancel-result routes, Poll-before-
+  Cancel route, Cancel response payload roundtrip, and both controlled TLS
+  CTest peers passed. The full matrix recorded 40,422 invoked, zero failed,
+  and 26,314 pending cells. The matching validator exits unsuccessfully at the
+  missing-route check, now beginning with
+  `test-async-indicator-optional-completes-or-pends`; T006, T007, and T009
+  remain open.

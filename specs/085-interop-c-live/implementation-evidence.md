@@ -906,3 +906,30 @@ Table 186 (2.1), and Response Batch Item §8.6 Table 361 (2.0) and Table 399
   and 26,400 pending, all `validator_recipe_pending`. The matching completeness
   validator still fails on missing routes, beginning with
   `test-async-indicator-omitted-default`; PR #170 remains WIP.
+
+### C omitted asynchronous indicator default
+
+The installed C consumer now constructs Create without setting the optional
+Asynchronous Indicator. For KMIP 2.0 and 2.1 over all six supported
+encoding/transport pairs, the peer verifies omission, synchronous Success,
+the Create response payload, and absence of an Asynchronous Correlation Value.
+This tests the default-Prohibited behavior in OASIS KMIP 2.0/2.1 §§8.2–8.3,
+8.6, 9.1–9.2, and 11.3; Create is §6.1.8 Table 171 (2.0) and Table 186
+(2.1).
+
+- Red commit `3ba8b1a5a` failed because the C route registry had no recipe for
+  `test-async-indicator-omitted-default`.
+- Green commit `c22343d5f` adds the typed installed-ABI route and peer checks.
+  The peer omits Unique Batch Item ID for this request, matching the request's
+  absent ID and allowing the client to associate the synchronous response.
+- Refactor commit `cdd9f7d45` shares Create request setup and response
+  assertions with the Mandatory asynchronous route.
+- Verification: the focused omitted-default route passed all 12 network
+  cells; the Mandatory Create route, five Cancel-result routes, Poll-before-
+  Cancel route, Cancel response payload roundtrip, C build, Python syntax
+  checks, and both controlled TLS CTest peers passed.
+- The matching full C route matrix recorded 40,422 invoked cells, zero failed,
+  and 26,314 `validator_recipe_pending` cells. The exact completeness
+  validator exits unsuccessfully, next reporting
+  `test-async-indicator-optional-completes-or-pends`. The gate remains open and
+  PR #170 remains WIP.
