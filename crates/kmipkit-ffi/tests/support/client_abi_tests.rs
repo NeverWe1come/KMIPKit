@@ -222,7 +222,10 @@ fn batch_item_operation_readback_and_encoded_probe_validate_handle_state() {
         );
         let mut empty_item = ptr::null_mut();
         assert_eq!(
-            kmipkit_test_client_batch_item_encoded_operation(&raw mut empty_item, &raw mut operation,),
+            kmipkit_test_client_batch_item_encoded_operation(
+                &raw mut empty_item,
+                &raw mut operation,
+            ),
             ERROR_INVALID_INPUT
         );
     }
