@@ -9,9 +9,9 @@
   builders in Rust, C, Java, and Python; record exact Red evidence.
 - [x] G001 Implement Rust builders, typed conversion, and selected-version
   execution using existing request models.
-- [ ] G002 Implement the opaque C ABI, direct common-task calls, builder
+- [x] G002 Implement the opaque C ABI, direct common-task calls, builder
   lifecycle, results, and ownership tests.
-- [ ] G003 Implement Java/JNI and Python/CFFI builders, typed response access,
+- [x] G003 Implement Java/JNI and Python/CFFI builders, typed response access,
   PEP 561 stubs, and prior-API compatibility tests.
 - [ ] D001 Update manifest, generated exports, operation capability matrix,
   traceability, and bilingual guides/examples.

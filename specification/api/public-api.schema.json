@@ -60,10 +60,7 @@
         "id",
         "kind",
         "requirementIds",
-        "rust",
-        "c",
-        "java",
-        "python"
+        "c"
       ],
       "properties": {
         "id": {
@@ -152,8 +149,32 @@
       },
       "additionalProperties": false,
       "allOf": [
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "opaque-handle"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "else": {
+        "required": [
+          "rust",
+          "java",
+          "python"
+        ]
+      }
+    },
         {
           "if": {
+            "properties": {
+              "kind": {
+            "const": "enum"
+          },
+          "c": {
             "properties": {
               "kind": {
                 "const": "enum"
@@ -162,6 +183,9 @@
             "required": [
               "kind"
             ]
+              }
+            },
+        "required": ["kind", "c"]
           },
           "then": {
             "required": [

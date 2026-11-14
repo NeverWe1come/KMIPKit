@@ -6325,7 +6325,9 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             if "core::any::Any" in row["exportName"]
             and "<'" in row["exportName"]
         ]
-        self.assertEqual(len(any_lifetime_rows), 67)
+        # The refreshed compiler inventory has 95 paths at 0115 plus the
+        # seven lifetime-bound KMIPKIT-0116 operation builders.
+        self.assertEqual(len(any_lifetime_rows), 102)
         for row in any_lifetime_rows:
             exclusion_key = (row["packageId"], _canonical_export_name(row["exportName"]))
             if exclusion_key in approved_exclusion_keys:

@@ -1184,7 +1184,18 @@ def _validate_declaration_parity_scope(
     declarations: list[dict[str, Any]],
 ) -> Any:
     parity_scope = declaration.get("parityScope")
-    if capability is not None and parity_scope != capability.get("parityScope"):
+    c_abi_only_with_four_language_capability = (
+        capability is not None
+        and capability.get("parityScope") == "four-language"
+        and parity_scope == "c-only"
+        and package_id == "c-kmipkit"
+        and set(declaration.get("languageMappings", {})) == {"c"}
+    )
+    if (
+        capability is not None
+        and parity_scope != capability.get("parityScope")
+        and not c_abi_only_with_four_language_capability
+    ):
         raise ManifestError("public declaration parity scope differs from its capability")
     if parity_scope == "rust-only-adr":
         accepted_transport_exception = (
@@ -1211,7 +1222,10 @@ def _validate_declaration_parity_scope(
         if (
             package_id != "c-kmipkit"
             or capability is None
-            or capability.get("parityScope") != "c-only"
+            or (
+                capability.get("parityScope") != "c-only"
+                and not c_abi_only_with_four_language_capability
+            )
         ):
             raise ManifestError("C-only parity is reserved for explicit C ABI capabilities")
     elif parity_scope != "four-language":
@@ -1298,9 +1312,19 @@ def _validate_public_declaration_approval(
             declaration.get("approvalSource"), root, adr_id=owner_adr_id
         )
     else:
+        c_handle_under_four_language_capability = (
+            parity_scope == "c-only"
+            and declaration.get("packageId") == "c-kmipkit"
+            and capability is not None
+            and capability.get("parityScope") == "four-language"
+            and set(declaration.get("languageMappings", {})) == {"c"}
+        )
         if parity_scope not in {"four-language", "c-only"} or (
             parity_scope == "c-only"
-            and (capability is None or capability.get("parityScope") != "c-only")
+            and (capability is None or (
+                capability.get("parityScope") != "c-only"
+                and not c_handle_under_four_language_capability
+            ))
         ):
             raise ManifestError("feature-owned public declaration has an invalid parity scope")
         _validate_approval_source(
@@ -2576,7 +2600,7 @@ def _validate_references(manifest: dict[str, Any]) -> None:
                     raise ManifestError("C-only excluded function output references an unknown value layout")
 
     for record in manifest["types"]:
-        if record["kind"] != "enum":
+        if record["kind"] != "enum" or record["c"]["kind"] != "enum":
             continue
         values = record["enumRepresentation"]["values"]
         names = [entry["name"] for entry in values]
