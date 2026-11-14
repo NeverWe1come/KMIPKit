@@ -3591,6 +3591,13 @@ class RouteMatrixTests(unittest.TestCase):
             self.assertTrue({'kmipkit_client_execute', 'kmipkit_client_batch_item_create',
                              'kmipkit_client_batch_item_activate'} <=
                             set(check['public_api_trace_symbols']))
+            self.assertTrue({'kmipkit_client_batch_item_response_header_ttlv',
+                             'kmipkit_client_batch_item_response_metadata_v1',
+                             'kmipkit_client_batch_item_response_pending_correlation_value',
+                             'kmipkit_client_batch_item_response_unique_batch_item_id'} <=
+                            set(check['public_api_trace_symbols']))
+            self.assertNotIn('kmipkit_client_batch_item_response_raw_ttlv',
+                             check['public_api_trace_symbols'])
             if check['case_id'] == 'test-batch-order-required-placeholder-resolution':
                 self.assertIn('kmipkit_client_batch_set_order_option', check['public_api_trace_symbols'])
         self.assertTrue(any(event['case_id'] == 'test-batch-order-required-placeholder-resolution'
