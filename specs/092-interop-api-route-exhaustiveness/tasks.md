@@ -369,3 +369,21 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   request-based route events for two versions × three encodings × two
   transports × construct/send/decode. The full matrix and exact-head CI remain
   open; T006, T007, and T009 are not complete.
+
+## CI follow-up: continued-batch route state assertion
+
+- Red evidence: exact-head C installed-consumer run `43569674395` on
+  `56b1c32a4a944c5d13047ce11b8441229335314e` failed because
+  `test_continued_batch_evidence_has_observed_unchanged_fixture_state` still
+  expected one check after the direct and standalone variants were both added.
+  The same focused test reproduced `AssertionError: 2 != 1` locally.
+- Green commit `d76df104`: require the two expected variants, verify each
+  passed, bind each variant to its public API trace symbols, and confirm the
+  controlled peer observed unchanged fixture state for every send event.
+- Refactor/documentation commit: record the exact CI regression and its
+  conformance-test coverage here and in FR-003 traceability.
+- Verification: the focused test passed for both constructor variants, and
+  `ctest --test-dir interop/c-kmip-validator/build -R
+  '^c_validator_route_matrix_contracts$' --output-on-failure` passed all route
+  matrix contract tests in 72.58 seconds. The full installed C route matrix
+  and exact-head CI remain open; T006, T007, and T009 are not complete.
