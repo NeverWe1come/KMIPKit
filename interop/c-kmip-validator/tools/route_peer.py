@@ -301,6 +301,7 @@ RECIPES = {
     'test-async-indicator-mandatory-pending': ((1,), 'async_create_pending'),
     'test-async-indicator-omitted-default': ((1,), 'async_create_sync_default'),
     'test-async-indicator-optional-completes-or-pends': ((1,), 'async_create_optional_complete'),
+    'test-async-indicator-prohibited-synchronous': ((1,), 'async_create_prohibited_sync'),
     'test-op-cancel': ((25,), 'cancel_async'),
     'test-async-cancel-result-canceled': ((25,), 'cancel_async'),
     'test-async-cancel-result-unable-to-cancel': ((25,), 'cancel_async'),
@@ -1699,6 +1700,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             assert_sync_create_request(request_tree, version, 2)
                                             response_operations = (1,)
                                             response_item_ids = (None,)
+                                        elif recipe[1] == 'async_create_prohibited_sync' and exchange_index == 0:
+                                            assert_sync_create_request(request_tree, version, 3)
+                                            response_operations = (1,)
+                                            response_item_ids = (None,)
                                         elif recipe[1] in ('cancel_async', 'cancel_poll_race') and exchange_index == 0:
                                             assert_async_create_seed_request(request_tree, version)
                                             response_operations = (1,)
@@ -1828,6 +1833,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         elif recipe[1] == 'async_create_sync_default' and exchange_index == 0:
                                             verify_sync_create_response(response_tree)
                                         elif recipe[1] == 'async_create_optional_complete' and exchange_index == 0:
+                                            verify_sync_create_response(response_tree)
+                                        elif recipe[1] == 'async_create_prohibited_sync' and exchange_index == 0:
                                             verify_sync_create_response(response_tree)
                                         elif recipe[1] in ('async_create_pending', 'cancel_async',
                                                            'cancel_poll_race') and exchange_index == 0:
@@ -2056,6 +2063,18 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                'peer_async_no_poll_after_completion':
                                                    len(observation) == 1}
                                               if recipe[1] == 'async_create_optional_complete' else {}),
+                                           **({'peer_async_response_statuses': [
+                                                   numbers(item, 0x42007F)[0]
+                                                   for item in observation[0][1][2]
+                                                   if item[0] == BATCH_ITEM_TAG],
+                                               'peer_async_indicator_prohibited':
+                                                   numbers(next(descendants(observation[0][0], 0x420077),
+                                                                observation[0][0]), 0x420007) == [3],
+                                               'peer_async_correlation_absent':
+                                                   not byte_string_values(observation[0][1], 0x420006),
+                                               'peer_async_no_poll_after_completion':
+                                                   len(observation) == 1}
+                                              if recipe[1] == 'async_create_prohibited_sync' else {}),
                                            **({'peer_async_interleaving_operations': [
                                                    numbers(request[0], 0x42005C)[0]
                                                    for request in observation],

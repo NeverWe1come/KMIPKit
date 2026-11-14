@@ -3455,6 +3455,11 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
         return execute_sync_create_route(
             client, true, KMIPKIT_ENUMERATION_ASYNCHRONOUS_INDICATOR_OPTIONAL);
     }
+    if (strcmp(test_case->case_id,
+               "test-async-indicator-prohibited-synchronous") == 0) {
+        return execute_sync_create_route(
+            client, true, KMIPKIT_ENUMERATION_ASYNCHRONOUS_INDICATOR_PROHIBITED);
+    }
     if (strcmp(test_case->case_id, "test-async-cancel-vs-poll-race") == 0) {
         return execute_cancel_poll_race_route(client);
     }
