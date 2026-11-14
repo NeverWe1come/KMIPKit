@@ -1376,3 +1376,51 @@ across 1,303 case IDs. All remaining cells retain `route_evidence_not_emitted`;
 the shared catalog and installed-route capability matrix still determines
 applicability, and the completeness requirement remains open under FR-002 and
 FR-009.
+
+## KMIP 2.0/2.1 Correlation Value routes
+
+Correlation Value is a Byte String in KMIP 2.0 §7.4 and KMIP 2.1 §7.8; its
+tag is `0x4200D6`, allocated in KMIP 2.0 §11.54 and KMIP 2.1 §11.56. The
+fixture runs six generic Structure, primitive, Item, view, and decoder routes
+for each version. The controlled pending Query response also exercises the
+implemented typed `ClientBatchItemResult.pendingCorrelationValue` accessor for
+both versions and checks the exact correlation bytes.
+
+Red commit `a23be1946` requires the six generic routes and fails because the
+Correlation Value fixture lacks its `TtlvStructure.create` event. Green commit
+`0c8482daf` invokes and asserts the generic routes in both versions. A separate
+typed-route Red commit `ee33bf953` then fails because the implemented pending
+correlation accessor is not attributed to the Correlation Value case. Green
+commit `847a7314b` invokes the accessor on the controlled decoded response,
+checks its returned bytes, and emits the typed route event for this case. The
+fixture consolidation and evidence updates are recorded in the Refactor commit.
+
+Verification used installed Java artifact pin
+`489fafc79ef89db2524eafa7a6c6482f5cf75d97` with SHA-256
+`830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e`:
+
+```sh
+TMPDIR="$PWD/build/native-test-tmp" \
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/native-test-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+python3 -m unittest tools.normative_catalog.tests.test_feature_traceability \
+  scripts.tests.test_requirement_traceability
+```
+
+The Java consumer suite passes 54 tests with zero failures, errors, or skips.
+The shared validator accepts 22,739/22,739 selected cells with zero failed
+cells. The full ledger has 71,463 planned, 22,739 executed, and 48,724 pending
+cells across 1,302 case IDs. Every remaining cell retains
+`route_evidence_not_emitted`: under the shared catalog/capability rule, planned
+cells are applicable unless protocol version, route, encoding/transport, or a
+source-backed exclusion removes them. No pending cell has been proven excluded
+or unavailable. The Java selected-scope CI gate and ledger equality check do
+not require zero pending cells, so passing that gate is not full-matrix
+completion; FR-002/FR-009 remain open.

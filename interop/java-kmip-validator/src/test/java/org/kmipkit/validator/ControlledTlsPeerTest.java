@@ -152,10 +152,8 @@ class ControlledTlsPeerTest {
             new ScalarOperationStructureFixture(
                     "test-norm-operation-structure-operation-structure-7-17-init-indicator",
                     "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-17-INIT-INDICATOR",
-                    0x4200d7, TtlvItemType.Boolean, false));
-
-    private static final List<ScalarOperationStructureFixture> NEXT_SCALAR_OPERATION_STRUCTURE_FIXTURES =
-            List.of(new ScalarOperationStructureFixture(
+                    0x4200d7, TtlvItemType.Boolean, false),
+            new ScalarOperationStructureFixture(
                     "test-norm-operation-structure-operation-structure-7-8-correlation-value",
                     "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-8-CORRELATION-VALUE",
                     0x4200d6, TtlvItemType.ByteString, false));
@@ -550,9 +548,6 @@ class ControlledTlsPeerTest {
                 }
             }
             for (ScalarOperationStructureFixture fixture : SCALAR_OPERATION_STRUCTURE_FIXTURES) {
-                appendScalarOperationStructureRouteEvents(events, fixture, protocolVersion);
-            }
-            for (ScalarOperationStructureFixture fixture : NEXT_SCALAR_OPERATION_STRUCTURE_FIXTURES) {
                 appendScalarOperationStructureRouteEvents(events, fixture, protocolVersion);
             }
             LocalCatalogRouteChecks.executeTags(readRouteEvidenceCatalog(), protocolVersion, genericOnlyTagCaseIds(),
@@ -998,8 +993,8 @@ class ControlledTlsPeerTest {
         int objectGroupLocalRouteEventCount = 3;
         int asynchronousRequestOperationStructureRouteEventCount = 6;
         int operationStructureRouteEventCount = OPERATION_STRUCTURE_FIXTURES.size() * 6;
-        int scalarOperationStructureRouteEventCount = (SCALAR_OPERATION_STRUCTURE_FIXTURES.size()
-                + NEXT_SCALAR_OPERATION_STRUCTURE_FIXTURES.size()) * KMIP_2_0_AND_2_1.size() * 6;
+        int scalarOperationStructureRouteEventCount = SCALAR_OPERATION_STRUCTURE_FIXTURES.size()
+                * KMIP_2_0_AND_2_1.size() * 6;
         int pendingCorrelationAccessorEventCount = KMIP_2_0_AND_2_1.size();
         int structureMemberStructureRouteEventCount = STRUCTURE_MEMBER_STRUCTURE_FIXTURES.size() * 4;
         int structureMemberByteStringRouteEventCount = STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.stream()
@@ -1065,7 +1060,6 @@ class ControlledTlsPeerTest {
         long localEnumerationCaseCount = localEnumerationFixtures.stream()
                 .map(EnumerationFixture::caseId).distinct().count();
         assertEquals(16 + OPERATION_STRUCTURE_FIXTURES.size() + SCALAR_OPERATION_STRUCTURE_FIXTURES.size()
-                        + NEXT_SCALAR_OPERATION_STRUCTURE_FIXTURES.size()
                         + enumerationFixtures.size() + localEnumerationCaseCount + bitmaskCaseCount
                         + dataTypeCaseCount
                         + CREDENTIAL_TYPE_MODEL_CASE_IDS.size() + genericTagCaseIds.size()
@@ -3375,7 +3369,6 @@ class ControlledTlsPeerTest {
         caseIds.add("test-norm-operation-structure-operation-structure-7-2-asynchronous-request");
         OPERATION_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         SCALAR_OPERATION_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
-        NEXT_SCALAR_OPERATION_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         STRUCTURE_MEMBER_STRUCTURE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         STRUCTURE_MEMBER_BYTE_STRING_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
         STRUCTURE_MEMBER_VALUE_FIXTURES.forEach(fixture -> caseIds.add(fixture.caseId()));
@@ -4331,9 +4324,6 @@ class ControlledTlsPeerTest {
         for (ScalarOperationStructureFixture fixture : SCALAR_OPERATION_STRUCTURE_FIXTURES) {
             assertScalarOperationStructureRouteEvents(events, fixture, protocolVersion);
         }
-        for (ScalarOperationStructureFixture fixture : NEXT_SCALAR_OPERATION_STRUCTURE_FIXTURES) {
-            assertScalarOperationStructureRouteEvents(events, fixture, protocolVersion);
-        }
         assertRouteEventRecorded(events,
                 "test-norm-operation-structure-operation-structure-7-8-correlation-value",
                 "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-8-CORRELATION-VALUE",
@@ -4911,8 +4901,8 @@ class ControlledTlsPeerTest {
         appendGenericStructureRouteEvents(events, fixture.caseId(), fixture.targetId(), treeHash);
     }
 
-    // OASIS KMIP 2.0 §§7.1–7.2, 7.6, 7.10, 7.12–7.13, and 7.15–7.16 plus KMIP 2.1
-    // §§7.3–7.4, 7.10, 7.14, 7.16–7.17, and 7.19–7.20 define these field value types.
+    // OASIS KMIP 2.0 §§7.1–7.2, 7.4, 7.6, 7.10, 7.12–7.13, and 7.15–7.16 plus KMIP 2.1
+    // §§7.3–7.4, 7.8, 7.10, 7.14, 7.16–7.17, and 7.19–7.20 define these field value types.
     private static void appendScalarOperationStructureRouteEvents(ArrayNode events,
             ScalarOperationStructureFixture fixture, String protocolVersion) throws Exception {
         CodecLimits limits = CodecLimits.defaults();
