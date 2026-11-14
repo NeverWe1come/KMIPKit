@@ -8345,6 +8345,7 @@ fn push_batch_item_operation(
     push(batch_item, OPERATION, Value::enumeration(operation))
 }
 
+#[cfg(any(test, feature = "test-support"))]
 fn decode_batch_item_operation(bytes: &[u8]) -> Result<u32, ProtocolError> {
     const OPERATION_HEADER: [u8; 8] = [0x42, 0x00, 0x5c, 0x05, 0x00, 0x00, 0x00, 0x04];
     if bytes.get(8..8 + OPERATION_HEADER.len()) != Some(OPERATION_HEADER.as_slice()) {
@@ -8365,6 +8366,7 @@ fn decode_batch_item_operation(bytes: &[u8]) -> Result<u32, ProtocolError> {
     Ok(u32::from_be_bytes(raw))
 }
 
+#[cfg(any(test, feature = "test-support"))]
 fn decode_operation_enumeration(bytes: &[u8]) -> Result<[u8; 4], ProtocolError> {
     bytes.try_into().map_err(|_| {
         ProtocolError::new(
