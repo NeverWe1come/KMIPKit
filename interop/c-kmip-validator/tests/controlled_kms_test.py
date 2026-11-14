@@ -184,6 +184,8 @@ def response(operations: tuple[int, ...], protocol_minor: int,
         elif operation == 33:
             payload_value = tlv(0x420094, 7, b"fixture-key-1") + tlv(
                 0x4200C3, 8, b"fixture-signature-data")
+        elif operation == 34:
+            payload_value = tlv(0x420094, 7, b"fixture-key-1") + enumeration(0x42009B, 1)
         elif operation in (13, 14, 15, 48, 49):
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 11:
@@ -529,6 +531,9 @@ def main() -> int:
     expected_cases += ("test-op-certify", "test-op-create-key-pair")
     expected_operations += (1, 18, 33, 19, 20) * 2
     expected_cases += ("test-op-sign", "test-crypto-sign-rsa-2048-pkcs1_v1_5")
+    expected_operations += (1, 18, 34, 19, 20) * 2
+    expected_cases += ("test-op-signature-verify",
+                       "test-crypto-signature-verify-rsa-2048-pkcs1_v1_5")
     expected_cases += ("test-batch-create-activate-destroy",)
     expected_cases += ("test-batch-placeholder-chain-resolves",)
     expected_cases += (
@@ -641,6 +646,7 @@ def main() -> int:
                             two_read_batch = operations == (10, 12)
                             placeholder_chain = operations == (1, 18, 10)
                             sign_lifecycle = operations == (1, 18, 33, 19, 20)
+                            signature_verify_lifecycle = operations == (1, 18, 34, 19, 20)
                             placeholder_cleanup = operations == (19, 20) and \
                                 tlv(0x420093, 8, b"placeholder-revoke-cleanup") in request
                             response_operations = operations
@@ -655,6 +661,17 @@ def main() -> int:
                                             for item_id in response_item_ids)):
                                     raise AssertionError(
                                         "Sign lifecycle must resolve the created ID Placeholder and correlate all items"
+                                    )
+                            if signature_verify_lifecycle:
+                                response_item_ids = (
+                                    b"interop-create", b"interop-activate",
+                                    b"interop-signature-verify", b"interop-revoke", b"interop-destroy",
+                                )
+                                if (request.count(enumeration(0x420094, 1)) != 4 or
+                                        any(request.count(tlv(0x420093, 8, item_id)) != 1
+                                            for item_id in response_item_ids)):
+                                    raise AssertionError(
+                                        "Signature Verify lifecycle must resolve the ID Placeholder and correlate all items"
                                     )
                             if operations == (1, 6):
                                 response_item_ids = (
