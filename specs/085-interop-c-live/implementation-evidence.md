@@ -983,3 +983,28 @@ and Table 186 (2.1).
   and 26,142 `validator_recipe_pending` cells. The exact completeness
   validator exits unsuccessfully, next reporting `test-async-lifecycle-poll`.
   The gate remains open and PR #170 remains WIP.
+
+### C asynchronous Create, Query, and Poll lifecycle
+
+The installed C consumer now creates a key asynchronously, queries for the
+request using its exact server-issued correlation value, polls that same
+correlation to terminal Success, validates the returned Create payload, and
+destroys the created key with authenticated cleanup. The peer verifies the
+Create → Query → Poll → Destroy order, exact correlation filtering, terminal
+response shape, and restored fixture state. This follows OASIS KMIP 2.1
+§§6.1.8, 6.1.11, 6.1.38, 6.1.41, 8.2–8.3, 8.6, 9.1–9.2, and 11.3.
+
+- Red commit `5a1e59d84` failed because the C route matrix had no implementation
+  for `test-async-lifecycle-poll`.
+- Green commit `9ee886593` implements the typed Query/Poll lifecycle and checks
+  the correlation and terminal Create result through the installed ABI.
+- Refactor commit `02ae1ba91` consolidates controlled-peer state and exchange
+  checks shared by the asynchronous lifecycle routes.
+- Verification: six focused asynchronous route tests passed; the CMake build,
+  Python syntax checks, and three CTest cases (`test_c_validator` and both
+  controlled TLS peers) passed. The full route matrix recorded 40,655/66,736
+  invoked cells, zero failed, and 26,081 `validator_recipe_pending` cells.
+  The installed C artifact SHA-256 is
+  `c93eb8f7daa60d3b6832d297887e99cd2101e4f9baf2d04f55ce4042ba4bb7a2`. The
+  completeness validator still fails, next reporting
+  `test-async-no-recursive-async-poll-cancel`; PR #170 remains WIP.

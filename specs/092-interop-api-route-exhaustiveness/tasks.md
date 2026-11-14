@@ -201,6 +201,28 @@ requires the explicit dedicated-environment mutation opt-in for both versions.
   validator exits unsuccessfully at the remaining missing-route check because
   the matrix is incomplete; it no longer reports duplicate route cells.
 
+## Development evidence: C asynchronous Create, Query, and Poll lifecycle
+
+- Normative scope: OASIS KMIP 2.1 §§6.1.8, 6.1.11, 6.1.38, and 6.1.41 define
+  Create, Destroy, Poll, and Query Asynchronous Requests; §§8.2–8.3, 8.6,
+  9.1–9.2, and 11.3 define the request/response and asynchronous message
+  shapes. The route correlates Query and Poll to the same server-issued value,
+  accepts only terminal Poll Success with the original Create payload, then
+  cleans up the created object using authenticated Destroy.
+- Red commit `5a1e59d84`: the focused regression failed because
+  `test-async-lifecycle-poll` had no C route implementation.
+- Green commit `9ee886593`: the installed C ABI performs Create, Query, Poll,
+  and authenticated Destroy; the peer verifies exact request ordering,
+  correlation filtering, terminal payload, and cleanup state.
+- Refactor commit `02ae1ba91`: consolidate asynchronous peer step and exchange
+  checks.
+- Verification: six focused asynchronous route tests, the CMake build, Python
+  syntax checks, `test_c_validator`, and both controlled TLS CTest peers passed.
+  The full C matrix recorded 40,655/66,736 invoked cells, zero failed, and
+  26,081 `validator_recipe_pending`. The exact completeness validator still
+  fails on missing routes, next reporting
+  `test-async-no-recursive-async-poll-cancel`; the matrix gate remains open.
+
 ## Development evidence: C mandatory asynchronous Create
 
 - Normative scope: OASIS KMIP 2.0/2.1 §§8.2–8.3, 8.6, 9.1–9.2, and 11.3;
