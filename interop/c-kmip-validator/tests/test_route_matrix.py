@@ -3830,7 +3830,7 @@ class RouteMatrixTests(unittest.TestCase):
             self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_' + name and event['action'] == 'decode' for event in events))
 
     def test_sign_cases_call_their_public_routes_and_check_signature_data(self):
-        """Exercise OASIS KMIP 2.0/2.1 §6.1.48 Sign through the installed C ABI."""
+        """Exercise OASIS KMIP 2.0 §6.1.49 and KMIP 2.1 §6.1.55 Sign through the installed C ABI."""
         from artifact_support import ROOT
         from route_peer import RECIPES, execute_network_cells
 
@@ -3847,8 +3847,10 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(len(checks), 24,
                          'Sign cases must cover both versions and all six encoding/transport pairs')
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
-        self.assertTrue(all(check['peer_request_operations'] == [1, 52] for check in checks))
-        self.assertTrue(all(check['peer_cleanup_operations'] == [20] for check in checks))
+        self.assertTrue(all(check['peer_request_operations'] == [1, 18, 33, 19, 20]
+                            for check in checks))
+        self.assertTrue(all(check['peer_setup_operations'] == [1] for check in checks))
+        self.assertTrue(all(check['peer_cleanup_operations'] == [19, 20] for check in checks))
         self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_sign' and
                             event['action'] == 'send' for event in events))
         self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_response_sign' and
