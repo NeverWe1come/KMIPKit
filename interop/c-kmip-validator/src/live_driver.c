@@ -1433,6 +1433,172 @@ static kmip_execution_outcome_t execute_cancel_route(kmip_live_client_t *client,
     return outcome;
 }
 
+static bool poll_payload_preserves_correlation(kmipkit_ttlv_structure_t *payload,
+                                               const kmipkit_byte_span_v1_t *correlation) {
+    if (!payload || !correlation || !correlation->data || correlation->length == 0) return false;
+    kmipkit_ttlv_structure_view_t *view = NULL;
+    kmipkit_ttlv_item_view_t *item = NULL;
+    kmipkit_ttlv_value_view_t *value = NULL;
+    uint64_t count = 0;
+    bool valid = kmipkit_ttlv_structure_view(payload, &view) == 0 &&
+        kmipkit_ttlv_structure_view_item_count(view, &count) == 0 && count == 1 &&
+        kmipkit_ttlv_structure_view_item_at(view, 0, &item) == 0 &&
+        item_view_has_tag(item, UINT32_C(0x420006), KMIPKIT_TTLV_ITEM_TYPE_BYTE_STRING, &value);
+    uint64_t length = 0;
+    if (valid) valid = kmipkit_ttlv_value_view_byte_length(value, &length) == 0 &&
+        length == correlation->length;
+    for (uint64_t index = 0; valid && index < length; ++index) {
+        uint8_t byte = 0;
+        valid = kmipkit_ttlv_value_view_byte_at(value, index, &byte) == 0 &&
+            byte == correlation->data[index];
+    }
+    if (value) kmipkit_ttlv_value_view_release(value);
+    if (item) kmipkit_ttlv_item_view_release(item);
+    if (view) kmipkit_ttlv_structure_view_release(view);
+    return valid;
+}
+
+static bool async_response_correlation_matches(
+    const kmipkit_client_async_operation_response_v1_t *response,
+    const kmipkit_byte_span_v1_t *correlation) {
+    if (!response || !correlation || !correlation->data ||
+        response->has_asynchronous_correlation_value != 1 ||
+        !response->asynchronous_correlation_value.data ||
+        response->asynchronous_correlation_value.length != correlation->length) return false;
+    return memcmp(response->asynchronous_correlation_value.data, correlation->data,
+                  (size_t)correlation->length) == 0;
+}
+
+static kmip_execution_outcome_t execute_cancel_poll_race_route(kmip_live_client_t *client) {
+    static const uint8_t expected_correlation[] = "fixture-cancel-correlation";
+    kmipkit_ttlv_structure_t *attributes = NULL;
+    kmipkit_ttlv_structure_t *poll_payload = NULL;
+    kmipkit_client_batch_item_t *create_item = NULL;
+    kmipkit_client_batch_t *seed_batch = NULL;
+    kmipkit_client_batch_response_t *seed_response = NULL;
+    kmipkit_client_batch_item_response_t *seed_response_item = NULL;
+    kmipkit_poll_request_t *poll_request = NULL;
+    kmipkit_cancel_request_t *cancel_request = NULL;
+    kmipkit_client_async_operation_outcome_t *poll_outcome = NULL;
+    kmipkit_client_async_operation_outcome_t *cancel_outcome = NULL;
+    kmipkit_ttlv_structure_t *cancel_payload = NULL;
+    kmipkit_client_async_operation_response_v1_t poll_response = {
+        .struct_size = (uint32_t)sizeof(kmipkit_client_async_operation_response_v1_t),
+        .abi_version = 1
+    };
+    kmipkit_client_async_operation_response_v1_t cancel_response = {
+        .struct_size = (uint32_t)sizeof(kmipkit_client_async_operation_response_v1_t),
+        .abi_version = 1
+    };
+    kmipkit_byte_span_v1_t correlation = {0};
+    kmipkit_byte_span_v1_t poll_request_correlation = {0};
+    kmipkit_byte_span_v1_t cancel_request_correlation = {0};
+    uint8_t poll_response_present = 0;
+    uint8_t cancel_response_present = 0;
+    kmip_execution_outcome_t outcome = { .executed = true };
+    int32_t status = create_symmetric_key_attributes(client, &attributes) ? 0 : -1;
+    if (status == 0) status = kmipkit_client_batch_item_create(
+        KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY, attributes, NULL, &create_item);
+    if (status == 0) status = kmipkit_client_batch_create(&seed_batch);
+    if (status == 0) status = kmipkit_client_batch_set_asynchronous_indicator(seed_batch, 1);
+    if (status == 0 && client->username_env[0] != '\0') {
+        kmipkit_authentication_t *authentication = NULL;
+        if (!create_authentication(client, &authentication)) {
+            status = KMIPKIT_ERROR_INVALID_INPUT;
+        } else {
+            status = kmipkit_client_batch_set_authentication(seed_batch, authentication);
+            if (status != 0) kmipkit_authentication_release(authentication);
+        }
+    }
+    if (status == 0) status = kmipkit_client_batch_add_item(seed_batch, &create_item);
+    if (status == 0) status = kmipkit_client_execute(
+        client->client, &seed_batch, client->limits, &seed_response);
+    if (status == 0) status = read_pending_create_correlation(
+        seed_response, expected_correlation, sizeof(expected_correlation) - 1,
+        &seed_response_item, &correlation);
+    if (status == 0) status = kmipkit_poll_request_create(
+        correlation.data, correlation.length, &poll_request);
+    if (status == 0) status = kmipkit_poll_request_asynchronous_correlation_value(
+        poll_request, &poll_request_correlation);
+    if (status == 0 && (poll_request_correlation.length != correlation.length ||
+        !poll_request_correlation.data || memcmp(poll_request_correlation.data, correlation.data,
+                                                  (size_t)correlation.length) != 0)) {
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    if (status == 0) status = kmipkit_poll_request_to_ttlv_payload(poll_request, &poll_payload);
+    if (status == 0 && !poll_payload_preserves_correlation(poll_payload, &correlation)) {
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    if (status == 0) status = kmipkit_client_execute_poll(
+        client->client, correlation.data, correlation.length, client->limits, &poll_outcome);
+    if (status == 0) status = kmipkit_client_async_operation_outcome_poll_response_v1(
+        poll_outcome, &poll_response_present, &poll_response);
+    if (status == 0) {
+        bool pending = poll_response_present != 0 &&
+            poll_response.operation == KMIPKIT_ENUMERATION_OPERATION_POLL &&
+            poll_response.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_OPERATION_PENDING &&
+            poll_response.is_pending == 1 && poll_response.has_cancellation_result == 0 &&
+            poll_response.has_response_payload == 0 &&
+            async_response_correlation_matches(&poll_response, &correlation);
+        if (!pending) status = KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    if (status == 0) status = kmipkit_cancel_request_create(
+        correlation.data, correlation.length, &cancel_request);
+    if (status == 0) status = kmipkit_cancel_request_asynchronous_correlation_value(
+        cancel_request, &cancel_request_correlation);
+    if (status == 0 && (cancel_request_correlation.length != correlation.length ||
+        !cancel_request_correlation.data || memcmp(cancel_request_correlation.data, correlation.data,
+                                                    (size_t)correlation.length) != 0)) {
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    if (status == 0) status = kmipkit_cancel_request_to_ttlv_payload(cancel_request, &cancel_payload);
+    if (status == 0 && !poll_payload_preserves_correlation(cancel_payload, &correlation)) {
+        status = KMIPKIT_ERROR_INVALID_INPUT;
+    }
+    if (status == 0) status = kmipkit_client_execute_cancel(
+        client->client, correlation.data, correlation.length, client->limits, &cancel_outcome);
+    if (status == 0) status = kmipkit_client_async_operation_outcome_cancel_response_v1(
+        cancel_outcome, &cancel_response_present, &cancel_response);
+    if (status == 0) {
+        bool terminal = cancel_response_present != 0 &&
+            cancel_response.operation == KMIPKIT_ENUMERATION_OPERATION_CANCEL &&
+            cancel_response.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS &&
+            cancel_response.is_pending == 0 && cancel_response.has_cancellation_result == 1 &&
+            cancel_response.cancellation_result == KMIPKIT_ENUMERATION_CANCELLATION_RESULT_CANCELED &&
+            async_response_correlation_matches(&cancel_response, &correlation);
+        outcome.success = terminal;
+        outcome.library_validated = terminal;
+        outcome.library_failed = !terminal;
+        outcome.has_result_status_code = true;
+        outcome.result_status_code = cancel_response.result_status;
+        if (!terminal) {
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit Poll/Cancel route did not preserve one pending and one terminal response");
+        }
+    } else {
+        uint32_t category = 0;
+        uint32_t cause = 0;
+        uint32_t delivery = 0;
+        (void)kmipkit_last_error_get(&status, &category, &cause, &delivery);
+        outcome.library_failed = true;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit asynchronous Create/Poll/Cancel route failed (category=%u cause=%u delivery=%u)",
+                 category, cause, delivery);
+    }
+    if (cancel_outcome) kmipkit_client_async_operation_outcome_release(cancel_outcome);
+    if (poll_outcome) kmipkit_client_async_operation_outcome_release(poll_outcome);
+    if (cancel_payload) kmipkit_ttlv_structure_release(cancel_payload);
+    if (cancel_request) kmipkit_cancel_request_release(cancel_request);
+    if (seed_response_item) kmipkit_client_batch_item_response_release(seed_response_item);
+    if (seed_response) kmipkit_client_batch_response_release(seed_response);
+    if (seed_batch) kmipkit_client_batch_release(seed_batch);
+    if (create_item) kmipkit_client_batch_item_release(create_item);
+    if (poll_payload) kmipkit_ttlv_structure_release(poll_payload);
+    if (poll_request) kmipkit_poll_request_release(poll_request);
+    if (attributes) kmipkit_ttlv_structure_release(attributes);
+    return outcome;
+}
+
 typedef const char *(*kmip_enumeration_name_fn)(uint32_t);
 typedef uint32_t (*kmip_bitmask_split_fn)(uint32_t);
 
@@ -3127,6 +3293,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     if (strcmp(test_case->case_id, "test-op-cancel") == 0 ||
         strncmp(test_case->case_id, "test-async-cancel-result-", 25) == 0) {
         return execute_cancel_route(client, test_case->cancellation_result);
+    }
+    if (strcmp(test_case->case_id, "test-async-cancel-vs-poll-race") == 0) {
+        return execute_cancel_poll_race_route(client);
     }
     if (get_usage_allocation_uid_variant &&
         !usage_allocation_identifier_explicit && !usage_allocation_identifier_omitted) {

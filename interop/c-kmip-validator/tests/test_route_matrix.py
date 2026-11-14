@@ -572,10 +572,25 @@ class RouteMatrixTests(unittest.TestCase):
 
         self.assertEqual(len(checks), 6)
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
-        self.assertEqual(sum(event['public_api_symbol'] == 'kmipkit_client_execute_poll'
-                             for event in events), 12)
-        self.assertEqual(sum(event['public_api_symbol'] == 'kmipkit_client_execute_cancel'
-                             for event in events), 12)
+        self.assertEqual(sum(event['public_api_symbol'] == 'kmipkit_client_execute_poll' and
+                             event['action'] == 'send' for event in events), 6)
+        self.assertEqual(sum(event['public_api_symbol'] == 'kmipkit_client_execute_cancel' and
+                             event['action'] == 'send' for event in events), 12)
+        for symbol, action, count in (
+                ('kmipkit_poll_request_create', 'construct', 1),
+                ('kmipkit_poll_request_to_ttlv_payload', 'encode', 1),
+                ('kmipkit_cancel_request_create', 'construct', 2),
+                ('kmipkit_cancel_request_to_ttlv_payload', 'encode', 2),
+                ('kmipkit_client_async_operation_outcome_poll_response_v1', 'decode', 1),
+                ('kmipkit_client_async_operation_outcome_cancel_response_v1', 'decode', 1),
+                ('kmipkit_client_batch_item_response_create', 'decode', 1)):
+            with self.subTest(symbol=symbol, action=action):
+                self.assertEqual(sum(event['public_api_symbol'] == symbol and
+                                     event['action'] == action for event in events), count)
+        self.assertTrue(all(check.get('peer_async_interleaving_operations') == [1, 26, 25] and
+                            check.get('peer_async_response_statuses') == [2, 2, 0] and
+                            check.get('peer_async_terminal_state_count') == 1
+                            for check in checks), checks)
 
     def test_stop_on_first_failure_case_has_a_controlled_peer_recipe(self):
         import route_peer

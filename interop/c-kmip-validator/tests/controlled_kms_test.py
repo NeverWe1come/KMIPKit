@@ -24,6 +24,7 @@ ASYNC_CANCEL_RESULT_CASES = (
     "test-async-cancel-result-failed",
     "test-async-cancel-result-unavailable",
 )
+ASYNC_CANCEL_POLL_RACE_CASE = "test-async-cancel-vs-poll-race"
 
 
 def tlv(tag: int, item_type: int, value: bytes) -> bytes:
@@ -220,6 +221,17 @@ def pending_create_response(protocol_minor: int, correlation: bytes) -> bytes:
     return tlv(0x42007B, 1, header + item)
 
 
+def pending_poll_response(protocol_minor: int, correlation: bytes) -> bytes:
+    version = tlv(0x420069, 1,
+                  integer(0x42006A, 2) + integer(0x42006B, protocol_minor))
+    header = tlv(0x42007A, 1, version + tlv(0x420092, 9, struct.pack(">q", int(time.time())))
+                 + integer(0x42000D, 1))
+    item = tlv(0x42000F, 1,
+               integer(0x42005C, 26, 5) + integer(0x42007F, 2, 5)
+               + tlv(0x420006, 8, correlation))
+    return tlv(0x42007B, 1, header + item)
+
+
 def include_delegated_login(operations: tuple[int, ...],
                             cases: tuple[str, ...]) -> tuple[tuple[int, ...], tuple[str, ...]]:
     """Add the catalog's first-run Delegated Login to the controlled peer plan."""
@@ -344,6 +356,9 @@ def main() -> int:
     expected_cases += ("test-op-cancel",)
     expected_operations += (1, 25) * len(ASYNC_CANCEL_RESULT_CASES)
     expected_cases += ASYNC_CANCEL_RESULT_CASES
+    if protocol_version == "2.1":
+        expected_operations += (1, 26, 25)
+        expected_cases += (ASYNC_CANCEL_POLL_RACE_CASE,)
     expected_cases += ("test-op-hash", "test-op-rng-retrieve", "test-op-rng-seed")
     expected_cases += (
         "test-crypto-hash-sha_256-0",
@@ -392,6 +407,8 @@ def main() -> int:
         cancellation_targets[case["requires"]["protocol_scenario"]["parameters"]["cancel_result"]]
         for case in catalog_cases if case["case_id"] in ASYNC_CANCEL_RESULT_CASES
     ]
+    if protocol_version == "2.1":
+        cancel_result_values.append(cancellation_targets["Canceled"])
     version_cases = [
         case for case in catalog_cases
         if protocol_version in case["execution"]["protocol_versions"]
@@ -625,13 +642,18 @@ def main() -> int:
                                 )
                             # The dedicated asynchronous C executor has no authentication input;
                             # every ordinary batch in this peer still proves configured credentials.
-                            if operations != (25,) and (
+                            if operations not in ((25,), (26,)) and (
                                     tlv(0x420099, 7, b"interop-user") not in request or
                                     tlv(0x4200A1, 7, b"interop-password") not in request):
                                 raise AssertionError("request is missing configured KMIP credentials")
                             if operations == (1,) and enumeration(0x420007, 1) in request:
                                 cancel_correlation = b"fixture-cancel-correlation"
                                 stream.sendall(pending_create_response(protocol_minor, cancel_correlation))
+                            elif operations == (26,):
+                                cancel_correlation = b"fixture-cancel-correlation"
+                                if request.count(tlv(0x420006, 8, cancel_correlation)) != 1:
+                                    raise AssertionError("Poll request omitted its exact pending correlation value")
+                                stream.sendall(pending_poll_response(protocol_minor, cancel_correlation))
                             else:
                                 cancellation_result = 1
                                 if operations == (25,):
