@@ -827,8 +827,11 @@ These checks also follow KMIPKIT-0092-FR-001, FR-005, FR-006, and FR-009.
   93/93; and `route_capabilities.py --check` passes. For the controlled KMIP
   2.0 peer, the offer/header mismatch yields an empty intersection as defined
   by §6.1.16 and the typed accessor accepts the present empty Supported
-  Versions list. The global C completeness matrix still has pending recipes,
-  so PR #170 and the stacked PR remain WIP.
+  Versions list. Exact-head CI run `43548278272` records 40,008/66,736 invoked
+  cells, zero failed, and 26,728 pending; all 42 Discover Versions cells passed
+  (21 for each message version) with none pending. The C matrix completeness
+  gate remains red on recipes for other operations, so PR #170 and the stacked
+  PR remain WIP.
 
 ### Async Cancel local payload routes
 
