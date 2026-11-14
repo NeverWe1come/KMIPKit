@@ -74,6 +74,17 @@
           {"name": "One Time Password Credential", "wire_value": "0x0000000F"},
           {"name": "Hashed Password Credential", "wire_value": "0x00000010"}
         ]
+      },
+      {
+        "kind": "enumeration",
+        "name": "Credential Type",
+        "sourceId": "kmip-3.0",
+        "section": "11.11",
+        "table": "551",
+        "values": [
+          {"name": "Password", "wire_value": "0x00000007"},
+          {"name": "Certificate", "wire_value": "0x00000008"}
+        ]
       }
     ]
   }

@@ -14,6 +14,8 @@ typedef uint32_t kmipkit_credential_type_t;
 #define KMIPKIT_CREDENTIAL_TYPE_ONE_TIME_PASSWORD ((kmipkit_credential_type_t)4)
 #define KMIPKIT_CREDENTIAL_TYPE_HASHED_PASSWORD ((kmipkit_credential_type_t)5)
 #define KMIPKIT_CREDENTIAL_TYPE_TICKET ((kmipkit_credential_type_t)6)
+#define KMIPKIT_CREDENTIAL_TYPE_PASSWORD ((kmipkit_credential_type_t)7)
+#define KMIPKIT_CREDENTIAL_TYPE_CERTIFICATE ((kmipkit_credential_type_t)8)
 
 typedef uint8_t kmipkit_ttlv_item_type_t;
 #define KMIPKIT_TTLV_ITEM_TYPE_STRUCTURE ((kmipkit_ttlv_item_type_t)1)
@@ -800,6 +802,8 @@ typedef uint8_t kmipkit_query_response_field_kind_t;
 #define KMIPKIT_V3_0_OPERATION_DECAPSULATE ((uint32_t)66)
 #define KMIPKIT_V3_0_OPERATION_ENCAPSULATE ((uint32_t)65)
 #define KMIPKIT_V3_0_OPERATION_OBLITERATE ((uint32_t)61)
+#define KMIPKIT_V3_0_CREDENTIAL_TYPE_CERTIFICATE ((uint32_t)8)
+#define KMIPKIT_V3_0_CREDENTIAL_TYPE_PASSWORD ((uint32_t)7)
 
 /* C ABI record input for kmipkit_transport_config_v1_t.endpoint_kind: raw TLS endpoint. */
 #define KMIPKIT_TRANSPORT_ENDPOINT_RAW_TLS ((uint32_t)1)

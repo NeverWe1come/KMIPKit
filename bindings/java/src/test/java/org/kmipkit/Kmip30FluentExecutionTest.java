@@ -33,8 +33,13 @@ import org.kmipkit.extensions.RequestOptions;
 import org.kmipkit.extensions.TransportConfiguration;
 import org.kmipkit.extensions.UniqueIdentifier;
 import org.kmipkit.fluent.CreateCredentialObject;
+import org.kmipkit.protocol.CryptographicParameters;
 import org.kmipkit.ttlv.CodecLimits;
+import org.kmipkit.ttlv.RawTag;
+import org.kmipkit.ttlv.Tag;
+import org.kmipkit.ttlv.TtlvItem;
 import org.kmipkit.ttlv.TtlvStructure;
+import org.kmipkit.ttlv.TtlvValue;
 
 /** Executes KMIP 3.0 fluent builders through a controlled TLS 1.3 peer. */
 final class Kmip30FluentExecutionTest {
@@ -76,6 +81,58 @@ final class Kmip30FluentExecutionTest {
                 }
             }
             assertFalse(credential.toString().contains("credential-secret"));
+        }
+    }
+
+    @Test
+    void credentialAlternativesAndOptionalKmip30InputsReachTypedAbi() throws Exception {
+        try (ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration configuration = ClientConfiguration.create(registry);
+                TransportConfiguration transport = transport(1);
+                KmipClient client = KmipClient.create(configuration, transport);
+                TtlvStructure source = TtlvStructure.create();
+                AttributeSet attributes = AttributeSet.tryNew(source);
+                SecretBytes firstSecret = SecretBytes.fromBytes(new byte[] {1, 2, 3});
+                SecretBytes secondSecret = SecretBytes.fromBytes(new byte[] {4, 5, 6});
+                SecretBytes otpSeed = SecretBytes.fromBytes(new byte[] {7, 8, 9});
+                SecretText passwordText = SecretText.fromString("credential-password");
+                TtlvItem certificateItem = certificateItem();
+                CreateCredentialObject password = CreateCredentialObject.password(
+                        passwordText, null, null, null, null);
+                CreateCredentialObject certificate = CreateCredentialObject.certificate(certificateItem);
+                CreateCredentialObject device = CreateCredentialObject.device(
+                        "serial", "device-id", "network-id", null, "media-id");
+                CreateCredentialObject hashedPassword = CreateCredentialObject.hashedPassword(
+                        firstSecret, secondSecret, 1L);
+                CreateCredentialObject oneTimePassword = CreateCredentialObject.oneTimePassword(
+                        1, 1L, "otp-serial", otpSeed, 30L, 6)) {
+            for (CreateCredentialObject object : List.of(
+                    password, certificate, device, hashedPassword, oneTimePassword)) {
+                try (var builder = client.request().createCredential(attributes, object)) {
+                    builder.validate();
+                    try (var item = builder.toBatchItem()) {
+                        assertEquals(0x3f, item.operation());
+                    }
+                }
+            }
+
+            UniqueIdentifier identifier = UniqueIdentifier.textString("kmip30-target");
+            try (TtlvStructure reason = TtlvStructure.create();
+                    CryptographicParameters parameters = CryptographicParameters.builder()
+                            .cryptographicAlgorithm(1).build();
+                    var deactivate = client.request().deactivate(identifier)
+                            .deactivationReason(reason).deactivationDate(1_700_000_000L);
+                    var encapsulate = client.request().encapsulate(identifier)
+                            .attributes(attributes).cryptographicParameters(parameters)) {
+                deactivate.validate();
+                encapsulate.validate();
+                try (var deactivateItem = deactivate.toBatchItem();
+                        var encapsulateItem = encapsulate.toBatchItem()) {
+                    assertEquals(0x40, deactivateItem.operation());
+                    assertEquals(0x41, encapsulateItem.operation());
+                }
+            }
         }
     }
 
@@ -225,6 +282,30 @@ final class Kmip30FluentExecutionTest {
                 assertEquals(0x3f, item.operation());
             }
             builder.close();
+        }
+    }
+
+    private static TtlvItem certificateItem() {
+        CodecLimits limits = CodecLimits.defaults();
+        TtlvStructure contents = TtlvStructure.create();
+        try {
+            contents = TtlvStructure.withItem(contents,
+                    ttlvItem(0x0042_001d, TtlvValue.Enumeration(1), limits), limits);
+            contents = TtlvStructure.withItem(contents,
+                    ttlvItem(0x0042_001e, TtlvValue.ByteString(
+                            new byte[] {1, 2, 3}, limits), limits), limits);
+            try (TtlvValue value = TtlvValue.structure(contents, limits)) {
+                contents.close();
+                return ttlvItem(0x0042_0013, value, limits);
+            }
+        } finally {
+            contents.close();
+        }
+    }
+
+    private static TtlvItem ttlvItem(int rawTag, TtlvValue value, CodecLimits limits) {
+        try (RawTag raw = RawTag.fromRaw(rawTag); Tag tag = raw.checked(); value) {
+            return TtlvItem.create(tag, value, limits);
         }
     }
 

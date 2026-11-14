@@ -148,6 +148,26 @@
           "wireValue": "0x00000010"
         }
       ]
+    },
+    {
+      "version": "v3_0",
+      "kind": "enumeration",
+      "name": "Credential Type",
+      "sourceId": "kmip-3.0",
+      "section": "11.11",
+      "table": "551",
+      "assignedValues": [
+        {
+          "name": "Password",
+          "identifier": "PASSWORD",
+          "wireValue": "0x00000007"
+        },
+        {
+          "name": "Certificate",
+          "identifier": "CERTIFICATE",
+          "wireValue": "0x00000008"
+        }
+      ]
     }
   ],
   "groups": [

@@ -2940,4 +2940,17 @@ public final class KmipValues {
             default -> null;
         };
     }
+    /** Password; kmip-3.0 §11.11, Table 551. */
+    public static final long V3_0_CREDENTIAL_TYPE_PASSWORD = 0x00000007L;
+    /** Certificate; kmip-3.0 §11.11, Table 551. */
+    public static final long V3_0_CREDENTIAL_TYPE_CERTIFICATE = 0x00000008L;
+    /** Returns the KMIP v3.0 Credential Type name, or null for an unassigned value. */
+    public static String v3_0CredentialTypeName(long raw) {
+        if (raw < 0 || raw > 0xFFFF_FFFFL) return null;
+        return switch ((int) raw) {
+            case 0x00000007 -> "Password";
+            case 0x00000008 -> "Certificate";
+            default -> null;
+        };
+    }
 }

@@ -6082,8 +6082,7 @@ fn public_c_kmip30_executes_all_seven_typed_routes_with_explicit_version() {
     // The first and second halves exercise direct and builder APIs. Create Credential
     // cycles through every KMIP 3.0 §11.11 Table 551 object alternative.
     const OPERATIONS: [u32; 22] = [
-        63, 63, 63, 63, 63, 60, 62, 64, 66, 65, 61,
-        63, 63, 63, 63, 63, 60, 62, 64, 66, 65, 61,
+        63, 63, 63, 63, 63, 60, 62, 64, 66, 65, 61, 63, 63, 63, 63, 63, 60, 62, 64, 66, 65, 61,
     ];
     const CREDENTIAL_TYPES: [u32; 5] = [8, 7, 2, 5, 4];
     let pki = EphemeralPki::generate().expect("ephemeral test PKI is generated");

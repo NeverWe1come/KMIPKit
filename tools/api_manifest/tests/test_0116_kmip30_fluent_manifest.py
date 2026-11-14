@@ -23,6 +23,50 @@ OPERATIONS_BY_CODE = {
 
 
 class Kmip30FluentManifestTests(unittest.TestCase):
+    def test_kmip30_credential_type_values_have_exact_four_language_mappings(self) -> None:
+        document = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        capability = next(
+            row for row in document["capabilities"]
+            if row["capabilityId"] == "kmip30_credential_type_values"
+        )
+        self.assertEqual("KMIPKIT-0116", capability["ownerSpecId"])
+        self.assertEqual("verified", capability["capabilityState"])
+        self.assertEqual(
+            {"KMIPKIT-0116-FR-003", "KMIPKIT-0116-FR-005", "KMIPKIT-0116-FR-006"},
+            set(capability["requirementIds"]),
+        )
+        expected = {
+            "rust": {
+                "kmipkit::protocol::CredentialType::Password",
+                "kmipkit::protocol::CredentialType::Certificate",
+                "kmipkit_protocol::CredentialType::Password",
+                "kmipkit_protocol::CredentialType::Certificate",
+            },
+            "c": {
+                "KMIPKIT_CREDENTIAL_TYPE_PASSWORD",
+                "KMIPKIT_CREDENTIAL_TYPE_CERTIFICATE",
+            },
+            "java": {
+                "org.kmipkit.credentials.CredentialType.PASSWORD",
+                "org.kmipkit.credentials.CredentialType.CERTIFICATE",
+            },
+            "python": {
+                "kmipkit.credentials.CredentialType.PASSWORD",
+                "kmipkit.credentials.CredentialType.CERTIFICATE",
+            },
+        }
+        self.assertEqual(
+            expected,
+            {language: set(names) for language, names in capability["mappings"].items()},
+        )
+        declarations = [
+            row for row in document["publicDeclarations"]
+            if row.get("capabilityId") == "kmip30_credential_type_values"
+        ]
+        self.assertEqual(10, len(declarations))
+        self.assertTrue(all(row["declarationState"] == "declared" for row in declarations))
+        self.assertTrue(all("KMIPKIT-0116-FR-003" in row["requirementIds"] for row in declarations))
+
     def test_capability_can_include_method_mappings_beyond_canonical_routes(self) -> None:
         languages = {"rust", "c", "java", "python"}
         names = (

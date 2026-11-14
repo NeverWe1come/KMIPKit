@@ -1348,4 +1348,11 @@ static inline const char *KMIPKIT_V3_0_OBJECT_TYPE_name(uint32_t raw) {
     default: return 0;
     }
 }
+static inline const char *KMIPKIT_V3_0_CREDENTIAL_TYPE_name(uint32_t raw) {
+    switch (raw) {
+    case UINT32_C(0x00000007): return "Password";
+    case UINT32_C(0x00000008): return "Certificate";
+    default: return 0;
+    }
+}
 #endif

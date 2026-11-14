@@ -94,6 +94,7 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
             "fluent_java_python_lifecycle_facade",
             "generic_ttlv_model",
             "hashed_password_timestamp_sequence",
+            "kmip30_credential_type_values",
             "kmip30_draft_routes",
             "kmip30_fluent_operations",
             "kmip_protocol_version_selection",

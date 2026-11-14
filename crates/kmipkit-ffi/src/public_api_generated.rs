@@ -21,6 +21,7 @@ pub(crate) const C_AVAILABLE_CAPABILITIES: &[&str] = &[
     "fluent_java_python_lifecycle_facade",
     "generic_ttlv_model",
     "hashed_password_timestamp_sequence",
+    "kmip30_credential_type_values",
     "kmip30_draft_routes",
     "kmip30_fluent_operations",
     "kmip_protocol_version_selection",
@@ -37674,5 +37675,65 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "KMIPKIT-0116:rust-request-builder-module:obliterate",
         "rust-kmipkit-client",
         "kmipkit_client::fluent::RequestBuilder<'a>::obliterate",
+    ),
+    (
+        "kmipkit-0047-rust-kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type",
+        "rust-kmipkit",
+        "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type",
+    ),
+    (
+        "kmipkit-0047-rust-kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::CERTIFICATE",
+        "rust-kmipkit",
+        "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::CERTIFICATE",
+    ),
+    (
+        "kmipkit-0047-rust-kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::PASSWORD",
+        "rust-kmipkit",
+        "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::PASSWORD",
+    ),
+    (
+        "kmipkit-0047-rust-kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::name",
+        "rust-kmipkit",
+        "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::name",
+    ),
+    (
+        "kmipkit-0047-rust-kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type",
+    ),
+    (
+        "kmipkit-0047-rust-kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::CERTIFICATE",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::CERTIFICATE",
+    ),
+    (
+        "kmipkit-0047-rust-kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::PASSWORD",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::PASSWORD",
+    ),
+    (
+        "kmipkit-0047-rust-kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::name",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::name",
+    ),
+    (
+        "rust-observed-6ea88ac35ea9a965219d",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialType::Password",
+    ),
+    (
+        "rust-observed-a3ca02745ce4426cf04f",
+        "rust-kmipkit",
+        "kmipkit::protocol::CredentialType::Password",
+    ),
+    (
+        "rust-observed-4d58ff19929b09508f3b",
+        "rust-kmipkit-protocol",
+        "kmipkit_protocol::CredentialType::Certificate",
+    ),
+    (
+        "rust-observed-e7239bbcaf2e2a774997",
+        "rust-kmipkit",
+        "kmipkit::protocol::CredentialType::Certificate",
     ),
 ];

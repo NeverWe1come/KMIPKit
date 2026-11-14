@@ -8,11 +8,20 @@ import socket
 import ssl
 import struct
 import threading
+from collections.abc import Callable
 from pathlib import Path
 
 import pytest
 from _test_support import mtls_transport_config, read_ttlv_frame, require_tls13_mtls_peer
-from kmipkit import attribute_operations, client, errors, extensions, fluent, ttlv
+from kmipkit import (
+    attribute_operations,
+    client,
+    cryptographic_parameters,
+    errors,
+    extensions,
+    fluent,
+    ttlv,
+)
 from kmipkit.credentials import SecretBytes, SecretText
 
 _FIXTURES = Path(__file__).parent / "fixtures" / "login-mtls"
@@ -109,6 +118,118 @@ def test_every_assigned_route_validates_and_builds_its_typed_operation() -> None
         attributes.close()
 
 
+def test_credential_alternatives_and_optional_kmip30_inputs_reach_typed_abi() -> None:
+    registry = extensions.create_client_extension_registry(
+        (), extensions.default_extension_registry_limits()
+    )
+    configuration = extensions.create_client_configuration(registry)
+    attributes = _empty_attributes()
+    first_secret = SecretBytes.from_bytes(b"first-secret")
+    second_secret = SecretBytes.from_bytes(b"second-secret")
+    otp_seed = SecretBytes.from_bytes(b"otp-seed")
+    password_text = SecretText.from_text("credential-password")
+    certificate_item = _certificate_item()
+    objects = [
+        fluent.CreateCredentialObject.password(password=password_text),
+        fluent.CreateCredentialObject.certificate(certificate_item),
+        fluent.CreateCredentialObject.device(
+            serial_number="serial",
+            device_identifier="device-id",
+            network_identifier="network-id",
+            media_identifier="media-id",
+        ),
+        fluent.CreateCredentialObject.hashed_password(
+            first_secret, second_secret, hashing_algorithm=1
+        ),
+        fluent.CreateCredentialObject.one_time_password(
+            1, digest=1, serial="otp-serial", seed=otp_seed, interval=30, digits=6
+        ),
+    ]
+    try:
+        with configuration, client.Client.create(
+            configuration, mtls_transport_config(1, _FIXTURES)
+        ) as kmip_client:
+            for credential in objects:
+                builder = kmip_client.request().create_credential(attributes, credential)
+                try:
+                    builder.validate()
+                    with builder.to_batch_item() as item:
+                        assert item.operation == 0x3F
+                finally:
+                    builder.close()
+
+            identifier = extensions.UniqueIdentifier.text_string("kmip30-target")
+            reason = ttlv.ttlv_structure_create()
+            parameters = (
+                cryptographic_parameters.CryptographicParameters.builder()
+                .cryptographic_algorithm(1)
+                .build()
+            )
+            deactivate = kmip_client.request().deactivate(identifier)
+            encapsulate = kmip_client.request().encapsulate(identifier)
+            try:
+                deactivate.deactivation_reason(reason).deactivation_date(1_700_000_000)
+                encapsulate.attributes(attributes).cryptographic_parameters(parameters)
+                deactivate.validate()
+                encapsulate.validate()
+                with deactivate.to_batch_item() as deactivate_item:
+                    assert deactivate_item.operation == 0x40
+                with encapsulate.to_batch_item() as encapsulate_item:
+                    assert encapsulate_item.operation == 0x41
+            finally:
+                encapsulate.close()
+                deactivate.close()
+                parameters.close()
+                reason.close()
+    finally:
+        for credential in objects:
+            credential.close()
+        certificate_item.close()
+        password_text.close()
+        otp_seed.close()
+        second_secret.close()
+        first_secret.close()
+        attributes.close()
+
+
+def test_kmip30_fluent_rejects_wrong_credential_and_optional_field_types() -> None:
+    _assert_invalid_input(lambda: fluent.CreateCredentialObject.certificate(object()))
+    secret = SecretBytes.from_bytes(b"hashed-password")
+    try:
+        _assert_invalid_input(
+            lambda: fluent.CreateCredentialObject.hashed_password(secret, None)
+        )
+    finally:
+        secret.close()
+
+    registry = extensions.create_client_extension_registry(
+        (), extensions.default_extension_registry_limits()
+    )
+    configuration = extensions.create_client_configuration(registry)
+    attributes = _empty_attributes()
+    try:
+        with configuration, client.Client.create(
+            configuration, mtls_transport_config(1, _FIXTURES)
+        ) as kmip_client:
+            _assert_invalid_input(
+                lambda: kmip_client.request().create_credential(attributes, object())
+            )
+            identifier = extensions.UniqueIdentifier.text_string("kmip30-invalid-input")
+            with kmip_client.request().deactivate(identifier) as deactivate:
+                _assert_invalid_input(
+                    lambda: deactivate.deactivation_reason(object())
+                )
+                _assert_invalid_input(lambda: deactivate.deactivation_date(True))
+                _assert_invalid_input(lambda: deactivate.deactivation_date(1 << 63))
+            with kmip_client.request().encapsulate(identifier) as encapsulate:
+                _assert_invalid_input(
+                    lambda: encapsulate.cryptographic_parameters(object())
+                )
+    finally:
+        attributes.close()
+        registry.close()
+
+
 def _item(tag: int, item_type: int, value: bytes) -> bytes:
     return (
         tag.to_bytes(3, "big")
@@ -117,6 +238,11 @@ def _item(tag: int, item_type: int, value: bytes) -> bytes:
         + value
         + bytes((-len(value)) % 8)
     )
+
+
+def _assert_invalid_input(action: Callable[[], object]) -> None:
+    with pytest.raises(errors.InvalidInputError):
+        action()
 
 
 def _structure(tag: int, *children: bytes) -> bytes:
@@ -208,6 +334,39 @@ def _empty_attributes() -> attribute_operations.AttributeSet:
         return attribute_operations.AttributeSet.try_new(structure)
     finally:
         structure.close()
+
+
+def _certificate_item() -> ttlv.TtlvItem:
+    limits = ttlv.codec_limits_defaults()
+    structure = ttlv.ttlv_structure_create()
+    try:
+        structure = ttlv.ttlv_structure_with_item(
+            structure,
+            _ttlv_item(0x0042001D, ttlv.ttlv_value_enumeration(1), limits),
+            limits,
+        )
+        structure = ttlv.ttlv_structure_with_item(
+            structure,
+            _ttlv_item(0x0042001E, ttlv.ttlv_value_byte_string(b"cert", limits), limits),
+            limits,
+        )
+        value = ttlv.ttlv_value_structure(structure, limits)
+        structure.close()
+        return _ttlv_item(0x00420013, value, limits)
+    finally:
+        structure.close()
+        limits.close()
+
+
+def _ttlv_item(raw_tag: int, value: ttlv.Value, limits: ttlv.CodecLimits) -> ttlv.TtlvItem:
+    raw = ttlv.raw_tag_from_raw(raw_tag)
+    tag = ttlv.raw_tag_try_checked(raw)
+    try:
+        return ttlv.ttlv_item_create(tag, value, limits)
+    finally:
+        raw.close()
+        tag.close()
+        value.close()
 
 
 def _request_operation(request: bytes) -> int:

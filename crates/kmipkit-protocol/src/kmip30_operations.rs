@@ -224,8 +224,8 @@ pub enum CreateCredentialObject {
 impl CreateCredentialObject {
     const fn credential_type(&self) -> CredentialType {
         match self {
-            Self::Certificate(_) => CredentialType::Attestation,
-            Self::PasswordCredential(_) => CredentialType::UsernameAndPassword,
+            Self::Certificate(_) => CredentialType::Certificate,
+            Self::PasswordCredential(_) => CredentialType::Password,
             Self::DeviceCredential(_) => CredentialType::Device,
             Self::HashedPasswordCredential(_) => CredentialType::HashedPassword,
             Self::OneTimePasswordCredential(_) => CredentialType::OneTimePassword,

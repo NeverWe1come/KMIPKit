@@ -102,6 +102,10 @@ fn capability_query_reports_the_opt_in_kmip30_draft_routes() {
         kmipkit::capability_is_available("kmip30_draft_routes"),
         Ok(true)
     );
+    assert_eq!(
+        kmipkit::capability_is_available("kmip30_credential_type_values"),
+        Ok(true)
+    );
 }
 
 #[test]

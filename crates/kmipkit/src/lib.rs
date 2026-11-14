@@ -119,8 +119,9 @@ impl std::error::Error for RuntimeMetadataError {}
 /// capability identifiers return `Ok(false)`. Identifiers longer than 128 UTF-8
 /// bytes return [`RuntimeMetadataError::ResourceLimit`], matching the fixed-width
 /// binding boundary. This local query does not send a KMIP request and therefore
-/// has no request-delivery state. The opt-in `kmip30_draft_routes` capability
-/// reports route availability and does not assert KMIP 3.0 conformance.
+/// has no request-delivery state. The opt-in `kmip30_draft_routes` and
+/// `kmip30_credential_type_values` capabilities report the selected KMIP 3.0
+/// API surface and do not assert conformance.
 ///
 /// # Errors
 ///
@@ -152,6 +153,7 @@ pub fn capability_is_available(capability_id: &str) -> Result<bool, RuntimeMetad
             | "fluent_java_python_lifecycle_facade"
             | "generic_ttlv_model"
             | "hashed_password_timestamp_sequence"
+            | "kmip30_credential_type_values"
             | "kmip30_draft_routes"
             | "kmip30_fluent_operations"
             | "kmip_protocol_version_selection"

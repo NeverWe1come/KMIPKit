@@ -2128,7 +2128,8 @@ fn assert_kmip30_ordered_attributes(attribute: &Item) {
     assert_eq!(read_enumeration(&fields[2]), Some(0xf000_0002));
 }
 
-// KMIPKIT-0116-FR-001/003; KMIP 3.0 WD §6.1.9/10/13, Tables 277/280/290.
+// KMIPKIT-0116-FR-001/003; KMIP 3.0 WD §§2.1.3.1, 6.1.9/10/13 and 11.11,
+// Tables 277/280/290/551.
 #[test]
 fn kmip30_fluent_create_builders_preserve_attribute_order_and_closed_credential_value() {
     let mut client = failed_request_client();
@@ -2161,7 +2162,7 @@ fn kmip30_fluent_create_builders_preserve_attribute_order_and_closed_credential_
     let payload = credential.into_ttlv_payload().unwrap();
     let fields = payload.view();
     assert_eq!(fields.children()[0].tag().raw(), 0x0042_0024);
-    assert_eq!(read_enumeration(&fields.children()[0]), Some(1));
+    assert_eq!(read_enumeration(&fields.children()[0]), Some(7));
     assert_kmip30_ordered_attributes(&fields.children()[1]);
     assert_eq!(fields.children()[2].tag().raw(), 0x0042_01A1);
     let credential = fields.children()[2].as_structure().unwrap();

@@ -205,10 +205,7 @@ fn create_credential_uses_table_277_order_and_redacts_credential_material() {
         ValueView::Enumeration(value) => *value,
         _ => panic!("Credential Type is encoded as an Enumeration"),
     });
-    assert_eq!(
-        encoded_credential_type,
-        7
-    );
+    assert_eq!(encoded_credential_type, 7);
 }
 
 #[test]

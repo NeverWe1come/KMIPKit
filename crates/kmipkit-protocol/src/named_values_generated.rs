@@ -2916,6 +2916,22 @@ pub mod values {
                         }
                     }
                 }
+                /// KMIP Credential Type values from §11.11, Table 551.
+                pub mod credential_type {
+                    /// `Password`; kmip-3.0 §11.11, Table 551.
+                    pub const PASSWORD: u32 = 0x0000_0007;
+                    /// `Certificate`; kmip-3.0 §11.11, Table 551.
+                    pub const CERTIFICATE: u32 = 0x0000_0008;
+                    /// Returns the assigned name for a known value.
+                    #[must_use]
+                    pub const fn name(raw: u32) -> Option<&'static str> {
+                        match raw {
+                            0x0000_0007 => Some("Password"),
+                            0x0000_0008 => Some("Certificate"),
+                            _ => None,
+                        }
+                    }
+                }
             }
         }
     }

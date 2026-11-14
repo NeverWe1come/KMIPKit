@@ -313749,6 +313749,9 @@
           "KMIPKIT_V2_1_OPERATION_SET_CONSTRAINTS",
           "KMIPKIT_V2_1_OPERATION_SET_DEFAULTS",
           "KMIPKIT_V2_1_OPERATION_name",
+          "KMIPKIT_V3_0_CREDENTIAL_TYPE_CERTIFICATE",
+          "KMIPKIT_V3_0_CREDENTIAL_TYPE_PASSWORD",
+          "KMIPKIT_V3_0_CREDENTIAL_TYPE_name",
           "KMIPKIT_V3_0_OBJECT_CLASS_SYSTEM",
           "KMIPKIT_V3_0_OBJECT_CLASS_USER",
           "KMIPKIT_V3_0_OBJECT_CLASS_name",
@@ -314640,6 +314643,8 @@
           "org.kmipkit.protocol.KmipValues.V2_1_OPERATION_QUERY_ASYNCHRONOUS_REQUESTS",
           "org.kmipkit.protocol.KmipValues.V2_1_OPERATION_SET_CONSTRAINTS",
           "org.kmipkit.protocol.KmipValues.V2_1_OPERATION_SET_DEFAULTS",
+          "org.kmipkit.protocol.KmipValues.V3_0_CREDENTIAL_TYPE_CERTIFICATE",
+          "org.kmipkit.protocol.KmipValues.V3_0_CREDENTIAL_TYPE_PASSWORD",
           "org.kmipkit.protocol.KmipValues.V3_0_OBJECT_CLASS_SYSTEM",
           "org.kmipkit.protocol.KmipValues.V3_0_OBJECT_CLASS_USER",
           "org.kmipkit.protocol.KmipValues.V3_0_OBJECT_TYPE_DEVICE_CREDENTIAL",
@@ -314680,6 +314685,7 @@
           "org.kmipkit.protocol.KmipValues.WrappingMethod.TR_31",
           "org.kmipkit.protocol.KmipValues.WrappingMethod.name",
           "org.kmipkit.protocol.KmipValues.v2_1OperationName",
+          "org.kmipkit.protocol.KmipValues.v3_0CredentialTypeName",
           "org.kmipkit.protocol.KmipValues.v3_0ObjectClassName",
           "org.kmipkit.protocol.KmipValues.v3_0ObjectTypeName",
           "org.kmipkit.protocol.KmipValues.v3_0OperationName"
@@ -315488,6 +315494,8 @@
           "kmipkit.protocol_values.V2_1_OPERATION_QUERY_ASYNCHRONOUS_REQUESTS",
           "kmipkit.protocol_values.V2_1_OPERATION_SET_CONSTRAINTS",
           "kmipkit.protocol_values.V2_1_OPERATION_SET_DEFAULTS",
+          "kmipkit.protocol_values.V3_0_CREDENTIAL_TYPE_CERTIFICATE",
+          "kmipkit.protocol_values.V3_0_CREDENTIAL_TYPE_PASSWORD",
           "kmipkit.protocol_values.V3_0_OBJECT_CLASS_SYSTEM",
           "kmipkit.protocol_values.V3_0_OBJECT_CLASS_USER",
           "kmipkit.protocol_values.V3_0_OBJECT_TYPE_DEVICE_CREDENTIAL",
@@ -315528,6 +315536,7 @@
           "kmipkit.protocol_values.WrappingMethod.TR_31",
           "kmipkit.protocol_values.WrappingMethod.name",
           "kmipkit.protocol_values.v2_1_operation_name",
+          "kmipkit.protocol_values.v3_0_credential_type_name",
           "kmipkit.protocol_values.v3_0_object_class_name",
           "kmipkit.protocol_values.v3_0_object_type_name",
           "kmipkit.protocol_values.v3_0_operation_name"
@@ -316370,6 +316379,10 @@
           "kmipkit::protocol::named_values_generated::values::versions::v2_1::enumeration::operation::name",
           "kmipkit::protocol::named_values_generated::values::versions::v3_0",
           "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration",
+          "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type",
+          "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::CERTIFICATE",
+          "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::PASSWORD",
+          "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::name",
           "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class",
           "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class::SYSTEM",
           "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::object_class::USER",
@@ -317228,6 +317241,10 @@
           "kmipkit_protocol::named_values_generated::values::versions::v2_1::enumeration::operation::name",
           "kmipkit_protocol::named_values_generated::values::versions::v3_0",
           "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration",
+          "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type",
+          "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::CERTIFICATE",
+          "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::PASSWORD",
+          "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::name",
           "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::object_class",
           "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::object_class::SYSTEM",
           "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::object_class::USER",
@@ -322993,6 +323010,50 @@
         "KMIPKIT-0116-FR-002",
         "KMIPKIT-0116-FR-003",
         "KMIPKIT-0116-FR-004",
+        "KMIPKIT-0116-FR-005",
+        "KMIPKIT-0116-FR-006"
+      ]
+    },
+    {
+      "approvalEvidence": {
+        "evidence": "**Status**: Approved by the maintainer's explicit authorization to implement",
+        "kind": "feature-specification",
+        "path": "specs/116-kmip30-fluent-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "kmip30_credential_type_values",
+      "capabilityState": "verified",
+      "mappings": {
+        "c": [
+          "KMIPKIT_CREDENTIAL_TYPE_CERTIFICATE",
+          "KMIPKIT_CREDENTIAL_TYPE_PASSWORD"
+        ],
+        "java": [
+          "org.kmipkit.credentials.CredentialType.CERTIFICATE",
+          "org.kmipkit.credentials.CredentialType.PASSWORD"
+        ],
+        "python": [
+          "kmipkit.credentials.CredentialType.CERTIFICATE",
+          "kmipkit.credentials.CredentialType.PASSWORD"
+        ],
+        "rust": [
+          "kmipkit::protocol::CredentialType::Certificate",
+          "kmipkit::protocol::CredentialType::Password",
+          "kmipkit_protocol::CredentialType::Certificate",
+          "kmipkit_protocol::CredentialType::Password"
+        ]
+      },
+      "ownerSpecId": "KMIPKIT-0116",
+      "parityEvidenceIds": [
+        "bindings/c/tests/fluent_kmip30_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/credentials/CredentialTypeParityTest.java",
+        "bindings/python/tests/test_credential_type.py",
+        "crates/kmipkit-protocol/tests/unit/kmip30_client_models_tests.rs",
+        "tools/normative_catalog/tests/test_generate_named_values.py"
+      ],
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0116-FR-003",
         "KMIPKIT-0116-FR-005",
         "KMIPKIT-0116-FR-006"
       ]
@@ -1080418,6 +1080479,1019 @@
         "KMIPKIT-0116-FR-002",
         "KMIPKIT-0116-FR-006"
       ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/047-named-protocol-values/spec.md",
+        "status": "Approved"
+      },
+      "cValue": 8,
+      "cValueType": "uint32_t",
+      "capabilityId": "named_protocol_values",
+      "declarationId": "kmipkit-0047-c-KMIPKIT_V3_0_CREDENTIAL_TYPE_CERTIFICATE",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_V3_0_CREDENTIAL_TYPE_CERTIFICATE",
+      "kind": "macro",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_V3_0_CREDENTIAL_TYPE_CERTIFICATE",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.KmipValues.V3_0_CREDENTIAL_TYPE_CERTIFICATE",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.protocol_values.V3_0_CREDENTIAL_TYPE_CERTIFICATE",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::CERTIFICATE",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0047-FR-009",
+        "KMIPKIT-0047-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/047-named-protocol-values/spec.md",
+        "status": "Approved"
+      },
+      "cValue": 7,
+      "cValueType": "uint32_t",
+      "capabilityId": "named_protocol_values",
+      "declarationId": "kmipkit-0047-c-KMIPKIT_V3_0_CREDENTIAL_TYPE_PASSWORD",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_V3_0_CREDENTIAL_TYPE_PASSWORD",
+      "kind": "macro",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_V3_0_CREDENTIAL_TYPE_PASSWORD",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.KmipValues.V3_0_CREDENTIAL_TYPE_PASSWORD",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.protocol_values.V3_0_CREDENTIAL_TYPE_PASSWORD",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::PASSWORD",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0047-FR-009",
+        "KMIPKIT-0047-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/047-named-protocol-values/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "named_protocol_values",
+      "declarationId": "kmipkit-0047-c-KMIPKIT_V3_0_CREDENTIAL_TYPE_name",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_V3_0_CREDENTIAL_TYPE_name",
+      "kind": "function",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_V3_0_CREDENTIAL_TYPE_name",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.KmipValues.v3_0CredentialTypeName",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.protocol_values.v3_0_credential_type_name",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::name",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0047-FR-009",
+        "KMIPKIT-0047-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/047-named-protocol-values/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "named_protocol_values",
+      "declarationId": "kmipkit-0047-java-org.kmipkit.protocol.KmipValues.V3_0_CREDENTIAL_TYPE_CERTIFICATE",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.protocol.KmipValues.V3_0_CREDENTIAL_TYPE_CERTIFICATE",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_V3_0_CREDENTIAL_TYPE_CERTIFICATE",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.KmipValues.V3_0_CREDENTIAL_TYPE_CERTIFICATE",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.protocol_values.V3_0_CREDENTIAL_TYPE_CERTIFICATE",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::CERTIFICATE",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0047-FR-009",
+        "KMIPKIT-0047-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/047-named-protocol-values/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "named_protocol_values",
+      "declarationId": "kmipkit-0047-java-org.kmipkit.protocol.KmipValues.V3_0_CREDENTIAL_TYPE_PASSWORD",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.protocol.KmipValues.V3_0_CREDENTIAL_TYPE_PASSWORD",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_V3_0_CREDENTIAL_TYPE_PASSWORD",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.KmipValues.V3_0_CREDENTIAL_TYPE_PASSWORD",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.protocol_values.V3_0_CREDENTIAL_TYPE_PASSWORD",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::PASSWORD",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0047-FR-009",
+        "KMIPKIT-0047-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/047-named-protocol-values/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "named_protocol_values",
+      "declarationId": "kmipkit-0047-java-org.kmipkit.protocol.KmipValues.v3_0CredentialTypeName",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.protocol.KmipValues.v3_0CredentialTypeName",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_V3_0_CREDENTIAL_TYPE_name",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.KmipValues.v3_0CredentialTypeName",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.protocol_values.v3_0_credential_type_name",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::name",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0047-FR-009",
+        "KMIPKIT-0047-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/047-named-protocol-values/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "named_protocol_values",
+      "declarationId": "kmipkit-0047-python-kmipkit.protocol_values.V3_0_CREDENTIAL_TYPE_CERTIFICATE",
+      "declarationState": "declared",
+      "exportName": "kmipkit.protocol_values.V3_0_CREDENTIAL_TYPE_CERTIFICATE",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_V3_0_CREDENTIAL_TYPE_CERTIFICATE",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.KmipValues.V3_0_CREDENTIAL_TYPE_CERTIFICATE",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.protocol_values.V3_0_CREDENTIAL_TYPE_CERTIFICATE",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::CERTIFICATE",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0047-FR-009",
+        "KMIPKIT-0047-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/047-named-protocol-values/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "named_protocol_values",
+      "declarationId": "kmipkit-0047-python-kmipkit.protocol_values.V3_0_CREDENTIAL_TYPE_PASSWORD",
+      "declarationState": "declared",
+      "exportName": "kmipkit.protocol_values.V3_0_CREDENTIAL_TYPE_PASSWORD",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_V3_0_CREDENTIAL_TYPE_PASSWORD",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.KmipValues.V3_0_CREDENTIAL_TYPE_PASSWORD",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.protocol_values.V3_0_CREDENTIAL_TYPE_PASSWORD",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::PASSWORD",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0047-FR-009",
+        "KMIPKIT-0047-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/047-named-protocol-values/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "named_protocol_values",
+      "declarationId": "kmipkit-0047-python-kmipkit.protocol_values.v3_0_credential_type_name",
+      "declarationState": "declared",
+      "exportName": "kmipkit.protocol_values.v3_0_credential_type_name",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_V3_0_CREDENTIAL_TYPE_name",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.KmipValues.v3_0CredentialTypeName",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.protocol_values.v3_0_credential_type_name",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::name",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0047-FR-009",
+        "KMIPKIT-0047-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/047-named-protocol-values/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "named_protocol_values",
+      "declarationId": "kmipkit-0047-rust-kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type",
+      "declarationState": "declared",
+      "exportName": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type",
+      "kind": "module",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_named_values_namespace_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.KmipValues",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.protocol_values",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0047-FR-009",
+        "KMIPKIT-0047-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/047-named-protocol-values/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "named_protocol_values",
+      "declarationId": "kmipkit-0047-rust-kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::CERTIFICATE",
+      "declarationState": "declared",
+      "exportName": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::CERTIFICATE",
+      "kind": "constant",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_V3_0_CREDENTIAL_TYPE_CERTIFICATE",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.KmipValues.V3_0_CREDENTIAL_TYPE_CERTIFICATE",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.protocol_values.V3_0_CREDENTIAL_TYPE_CERTIFICATE",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::CERTIFICATE",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0047-FR-009",
+        "KMIPKIT-0047-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/047-named-protocol-values/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "named_protocol_values",
+      "declarationId": "kmipkit-0047-rust-kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::PASSWORD",
+      "declarationState": "declared",
+      "exportName": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::PASSWORD",
+      "kind": "constant",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_V3_0_CREDENTIAL_TYPE_PASSWORD",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.KmipValues.V3_0_CREDENTIAL_TYPE_PASSWORD",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.protocol_values.V3_0_CREDENTIAL_TYPE_PASSWORD",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::PASSWORD",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0047-FR-009",
+        "KMIPKIT-0047-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/047-named-protocol-values/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "named_protocol_values",
+      "declarationId": "kmipkit-0047-rust-kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::name",
+      "declarationState": "declared",
+      "exportName": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::name",
+      "kind": "function",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_V3_0_CREDENTIAL_TYPE_name",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.KmipValues.v3_0CredentialTypeName",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.protocol_values.v3_0_credential_type_name",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::name",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0047-FR-009",
+        "KMIPKIT-0047-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/047-named-protocol-values/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "named_protocol_values",
+      "declarationId": "kmipkit-0047-rust-kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type",
+      "kind": "module",
+      "languageMappings": {
+        "c": {
+          "name": "kmipkit_named_values_namespace_t",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.KmipValues",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.protocol_values",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0047-FR-009",
+        "KMIPKIT-0047-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/047-named-protocol-values/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "named_protocol_values",
+      "declarationId": "kmipkit-0047-rust-kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::CERTIFICATE",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::CERTIFICATE",
+      "kind": "constant",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_V3_0_CREDENTIAL_TYPE_CERTIFICATE",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.KmipValues.V3_0_CREDENTIAL_TYPE_CERTIFICATE",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.protocol_values.V3_0_CREDENTIAL_TYPE_CERTIFICATE",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::CERTIFICATE",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0047-FR-009",
+        "KMIPKIT-0047-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/047-named-protocol-values/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "named_protocol_values",
+      "declarationId": "kmipkit-0047-rust-kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::PASSWORD",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::PASSWORD",
+      "kind": "constant",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_V3_0_CREDENTIAL_TYPE_PASSWORD",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.KmipValues.V3_0_CREDENTIAL_TYPE_PASSWORD",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.protocol_values.V3_0_CREDENTIAL_TYPE_PASSWORD",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::PASSWORD",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0047-FR-009",
+        "KMIPKIT-0047-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved",
+        "kind": "feature-specification",
+        "path": "specs/047-named-protocol-values/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "named_protocol_values",
+      "declarationId": "kmipkit-0047-rust-kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::name",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::name",
+      "kind": "function",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_V3_0_CREDENTIAL_TYPE_name",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.protocol.KmipValues.v3_0CredentialTypeName",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.protocol_values.v3_0_credential_type_name",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::credential_type::name",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0047-FR-009",
+        "KMIPKIT-0047-FR-005"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by the maintainer's explicit authorization to implement",
+        "kind": "feature-specification",
+        "path": "specs/116-kmip30-fluent-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "kmip30_credential_type_values",
+      "declarationId": "rust-observed-6ea88ac35ea9a965219d",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::CredentialType::Password",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_TYPE_PASSWORD",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialType.PASSWORD",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialType.PASSWORD",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialType::Password",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0116-FR-003",
+        "KMIPKIT-0116-FR-005",
+        "KMIPKIT-0116-FR-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by the maintainer's explicit authorization to implement",
+        "kind": "feature-specification",
+        "path": "specs/116-kmip30-fluent-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "kmip30_credential_type_values",
+      "declarationId": "rust-observed-a3ca02745ce4426cf04f",
+      "declarationState": "declared",
+      "exportName": "kmipkit::protocol::CredentialType::Password",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_TYPE_PASSWORD",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialType.PASSWORD",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialType.PASSWORD",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::CredentialType::Password",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0116-FR-003",
+        "KMIPKIT-0116-FR-005",
+        "KMIPKIT-0116-FR-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by the maintainer's explicit authorization to implement",
+        "kind": "feature-specification",
+        "path": "specs/116-kmip30-fluent-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "kmip30_credential_type_values",
+      "declarationId": "kmip30-credential-type-c-password",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_CREDENTIAL_TYPE_PASSWORD",
+      "kind": "macro",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_TYPE_PASSWORD",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialType.PASSWORD",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialType.PASSWORD",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialType::Password",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0116-FR-003",
+        "KMIPKIT-0116-FR-005",
+        "KMIPKIT-0116-FR-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by the maintainer's explicit authorization to implement",
+        "kind": "feature-specification",
+        "path": "specs/116-kmip30-fluent-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "kmip30_credential_type_values",
+      "declarationId": "kmip30-credential-type-java-password",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.CredentialType.PASSWORD",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_TYPE_PASSWORD",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialType.PASSWORD",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialType.PASSWORD",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialType::Password",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0116-FR-003",
+        "KMIPKIT-0116-FR-005",
+        "KMIPKIT-0116-FR-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by the maintainer's explicit authorization to implement",
+        "kind": "feature-specification",
+        "path": "specs/116-kmip30-fluent-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "kmip30_credential_type_values",
+      "declarationId": "kmip30-credential-type-python-password",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.CredentialType.PASSWORD",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_TYPE_PASSWORD",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialType.PASSWORD",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialType.PASSWORD",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialType::Password",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0116-FR-003",
+        "KMIPKIT-0116-FR-005",
+        "KMIPKIT-0116-FR-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by the maintainer's explicit authorization to implement",
+        "kind": "feature-specification",
+        "path": "specs/116-kmip30-fluent-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "kmip30_credential_type_values",
+      "declarationId": "rust-observed-4d58ff19929b09508f3b",
+      "declarationState": "declared",
+      "exportName": "kmipkit_protocol::CredentialType::Certificate",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_TYPE_CERTIFICATE",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialType.CERTIFICATE",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialType.CERTIFICATE",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialType::Certificate",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "rust-kmipkit-protocol",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0116-FR-003",
+        "KMIPKIT-0116-FR-005",
+        "KMIPKIT-0116-FR-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by the maintainer's explicit authorization to implement",
+        "kind": "feature-specification",
+        "path": "specs/116-kmip30-fluent-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "kmip30_credential_type_values",
+      "declarationId": "rust-observed-e7239bbcaf2e2a774997",
+      "declarationState": "declared",
+      "exportName": "kmipkit::protocol::CredentialType::Certificate",
+      "kind": "variant",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_TYPE_CERTIFICATE",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialType.CERTIFICATE",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialType.CERTIFICATE",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit::protocol::CredentialType::Certificate",
+          "packageId": "rust-kmipkit"
+        }
+      },
+      "packageId": "rust-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0116-FR-003",
+        "KMIPKIT-0116-FR-005",
+        "KMIPKIT-0116-FR-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by the maintainer's explicit authorization to implement",
+        "kind": "feature-specification",
+        "path": "specs/116-kmip30-fluent-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "kmip30_credential_type_values",
+      "declarationId": "kmip30-credential-type-c-certificate",
+      "declarationState": "declared",
+      "exportName": "KMIPKIT_CREDENTIAL_TYPE_CERTIFICATE",
+      "kind": "macro",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_TYPE_CERTIFICATE",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialType.CERTIFICATE",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialType.CERTIFICATE",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialType::Certificate",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "c-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0116-FR-003",
+        "KMIPKIT-0116-FR-005",
+        "KMIPKIT-0116-FR-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by the maintainer's explicit authorization to implement",
+        "kind": "feature-specification",
+        "path": "specs/116-kmip30-fluent-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "kmip30_credential_type_values",
+      "declarationId": "kmip30-credential-type-java-certificate",
+      "declarationState": "declared",
+      "exportName": "org.kmipkit.credentials.CredentialType.CERTIFICATE",
+      "kind": "java-member",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_TYPE_CERTIFICATE",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialType.CERTIFICATE",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialType.CERTIFICATE",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialType::Certificate",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "java-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0116-FR-003",
+        "KMIPKIT-0116-FR-005",
+        "KMIPKIT-0116-FR-006"
+      ]
+    },
+    {
+      "approvalSource": {
+        "evidence": "**Status**: Approved by the maintainer's explicit authorization to implement",
+        "kind": "feature-specification",
+        "path": "specs/116-kmip30-fluent-operations/spec.md",
+        "status": "Approved"
+      },
+      "capabilityId": "kmip30_credential_type_values",
+      "declarationId": "kmip30-credential-type-python-certificate",
+      "declarationState": "declared",
+      "exportName": "kmipkit.credentials.CredentialType.CERTIFICATE",
+      "kind": "python-export",
+      "languageMappings": {
+        "c": {
+          "name": "KMIPKIT_CREDENTIAL_TYPE_CERTIFICATE",
+          "packageId": "c-kmipkit"
+        },
+        "java": {
+          "name": "org.kmipkit.credentials.CredentialType.CERTIFICATE",
+          "packageId": "java-kmipkit"
+        },
+        "python": {
+          "name": "kmipkit.credentials.CredentialType.CERTIFICATE",
+          "packageId": "python-kmipkit"
+        },
+        "rust": {
+          "name": "kmipkit_protocol::CredentialType::Certificate",
+          "packageId": "rust-kmipkit-protocol"
+        }
+      },
+      "packageId": "python-kmipkit",
+      "parityScope": "four-language",
+      "requirementIds": [
+        "KMIPKIT-0116-FR-003",
+        "KMIPKIT-0116-FR-005",
+        "KMIPKIT-0116-FR-006"
+      ]
     }
   ],
   "publicPackages": [
@@ -1080579,6 +1081653,14 @@
           {
             "name": "Ticket",
             "value": 6
+          },
+          {
+            "name": "Password",
+            "value": 7
+          },
+          {
+            "name": "Certificate",
+            "value": 8
           }
         ]
       },

@@ -2741,3 +2741,13 @@ def v3_0_object_type_name(raw: int) -> str | None:
         0x0000000F: 'One Time Password Credential',
         0x00000010: 'Hashed Password Credential',
     }.get(raw)
+
+V3_0_CREDENTIAL_TYPE_PASSWORD = 0x00000007  # kmip-3.0 §11.11, Table 551
+V3_0_CREDENTIAL_TYPE_CERTIFICATE = 0x00000008  # kmip-3.0 §11.11, Table 551
+
+def v3_0_credential_type_name(raw: int) -> str | None:
+    """Return the assigned KMIP v3.0 Credential Type name."""
+    return {
+        0x00000007: 'Password',
+        0x00000008: 'Certificate',
+    }.get(raw)
