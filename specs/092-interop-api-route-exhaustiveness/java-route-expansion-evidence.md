@@ -1476,3 +1476,66 @@ planned are applicable and remain required coverage under FR-002/FR-009. The
 completeness gate requires zero pending cells, while this Java CI step checks
 only its declared selected scope and ledger equality; it does not yet enforce
 global completeness. The PR remains WIP.
+
+## KMIP 2.0/2.1 Profile Information and Profile Version routes
+
+KMIP 2.0 §§7.25–7.26, Tables 345–346, and KMIP 2.1 §§7.31–7.32,
+Tables 383–384 define Profile Information and Profile Version. The fixture
+checks required Profile Name, optional Profile Version, Server URI, and Server
+Port in table order. When Profile Version is present, it contains both
+required Integer members, Profile Version Major and Minor. It also constructs
+a Profile Information structure with only the required Profile Name to verify
+that its three optional members may be absent.
+
+The local matrix adds 64 invocations in each selected protocol scope combined:
+six generic Structure/Item routes for each outer structure, plus constructor,
+Item creation, Item view, and decode routes for each of the five member cases,
+in KMIP 2.0 and 2.1. The installed Query consumer fixture now includes a real
+Profile Information item in its controlled mutual-TLS response. It invokes
+`QueryResponse.profileInformation()` and checks the returned Structure, all
+four fields, their order and types, and the nested Profile Version values. The
+capability manifest declares no separate route ID for this convenience getter;
+its invocation and value assertions are therefore functional consumer evidence,
+without adding an invented route cell to the ledger.
+
+Red commit `a3154579` adds route requirements and fails on the missing Profile
+Information `TtlvStructure.create` event. A second Red commit `46b409f8` adds
+the installed `QueryResponse.profileInformation()` assertion and fails because
+the controlled response has no Profile Information field. Green commit
+`6ea7a42f` invokes and checks both structures and all five member fixtures,
+then updates the controlled TLS Query response and the raw batch-item shape
+assertion. The Refactor commit records the evidence and refreshes the ledger;
+no route requirement or applicability rule was relaxed.
+
+Local verification used the installed Java artifact pinned to
+`489fafc79ef89db2524eafa7a6c6482f5cf75d97` with SHA-256
+`830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e`:
+
+```sh
+TMPDIR="$PWD/build/native-test-tmp" \
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/native-test-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+python3 -m unittest tools.normative_catalog.tests.test_feature_traceability \
+  scripts.tests.test_requirement_traceability
+```
+
+The focused controlled-peer test and full Java consumer suite pass; the suite
+reports 54 tests with zero failures, errors, or skips. The route validator
+accepts 22,817/22,817 selected cells with zero failed cells. The full ledger
+records 71,463 planned, 22,817 executed, and 48,646 pending cells across 1,294
+case IDs. Every pending cell has reason `route_evidence_not_emitted`: no
+validated per-cell invocation evidence has been recorded for it. Those cells
+remain applicable because the shared catalog and route-capability matrix keep
+them planned after protocol-version, route, encoding/transport, and
+source-backed exclusion rules. No pending cell is recategorized as unsupported
+or non-applicable. Under FR-002/FR-009, completeness still requires zero
+pending cells. The Java workflow's selected-scope validation and ledger
+comparison do not enforce that global condition, so this passing local slice
+does not complete the full matrix; the PR remains WIP.
