@@ -7,6 +7,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import socket
 import ssl
 import struct
@@ -15,6 +16,14 @@ import sys
 import tempfile
 import threading
 import time
+
+ASYNC_CANCEL_RESULT_CASES = (
+    "test-async-cancel-result-canceled",
+    "test-async-cancel-result-unable-to-cancel",
+    "test-async-cancel-result-completed",
+    "test-async-cancel-result-failed",
+    "test-async-cancel-result-unavailable",
+)
 
 
 def tlv(tag: int, item_type: int, value: bytes) -> bytes:
@@ -37,7 +46,8 @@ def response(operations: tuple[int, ...], protocol_minor: int,
              unique_batch_item_ids: tuple[bytes, ...] | None = None,
              result_statuses: tuple[int, ...] | None = None,
              result_reasons: tuple[int | None, ...] | None = None,
-             rng_length: int = 16) -> bytes:
+             rng_length: int = 16,
+             cancellation_result: int = 1) -> bytes:
     version = tlv(0x420069, 1,
                   integer(0x42006A, 2) + integer(0x42006B, protocol_minor))
     header = tlv(
@@ -111,7 +121,7 @@ def response(operations: tuple[int, ...], protocol_minor: int,
         elif operation == 25:
             payload_value = tlv(
                 0x420006, 8, b"fixture-cancel-correlation"
-            ) + enumeration(0x420012, 1)
+            ) + enumeration(0x420012, cancellation_result)
         elif operation == 1:
             payload_value = enumeration(0x420057, created_object_type) + \
                 tlv(0x420094, 7, b"fixture-key-1")
@@ -332,6 +342,8 @@ def main() -> int:
     expected_operations += stop_on_first_failure_batch
     expected_operations += (1, 25)
     expected_cases += ("test-op-cancel",)
+    expected_operations += (1, 25) * len(ASYNC_CANCEL_RESULT_CASES)
+    expected_cases += ASYNC_CANCEL_RESULT_CASES
     expected_cases += ("test-op-hash", "test-op-rng-retrieve", "test-op-rng-seed")
     expected_cases += (
         "test-crypto-hash-sha_256-0",
@@ -366,7 +378,20 @@ def main() -> int:
         expected_cases += ("test-v20-reject-get-constraints", "test-v20-reject-ping")
     shared = repository / "interop/shared"
     catalog = shared / "catalog/kmipkit-1.0-test-catalog.json"
-    catalog_cases = json.loads(catalog.read_text(encoding="utf-8"))["test_cases"]
+    catalog_data = json.loads(catalog.read_text(encoding="utf-8"))
+    catalog_cases = catalog_data["test_cases"]
+    cancellation_targets = {
+        target["name"]: int(target["wire_value"], 16)
+        for target in catalog_data["normative_targets"]
+        if target["kind"] == "enumeration_value"
+        and "KMIPKIT-ELEM-ENUMERATION-CANCELLATION-RESULT" in target.get("parent_element_ids", [])
+        and re.fullmatch(r"[0-9A-Fa-f]{8}", target.get("wire_value", ""))
+        and protocol_version in target["protocol_versions"]
+    }
+    cancel_result_values = [cancellation_targets["Canceled"]] + [
+        cancellation_targets[case["requires"]["protocol_scenario"]["parameters"]["cancel_result"]]
+        for case in catalog_cases if case["case_id"] in ASYNC_CANCEL_RESULT_CASES
+    ]
     version_cases = [
         case for case in catalog_cases
         if protocol_version in case["execution"]["protocol_versions"]
@@ -397,6 +422,7 @@ def main() -> int:
 
         def serve() -> None:
             nonlocal handled
+            cancel_result_index = 0
             try:
                 while handled < len(expected_operations):
                     accepted, _ = server.accept()
@@ -607,6 +633,12 @@ def main() -> int:
                                 cancel_correlation = b"fixture-cancel-correlation"
                                 stream.sendall(pending_create_response(protocol_minor, cancel_correlation))
                             else:
+                                cancellation_result = 1
+                                if operations == (25,):
+                                    if cancel_result_index >= len(cancel_result_values):
+                                        raise AssertionError("peer received an unplanned Cancel request")
+                                    cancellation_result = cancel_result_values[cancel_result_index]
+                                    cancel_result_index += 1
                                 if operations == (25,) and request.count(
                                         tlv(0x420006, 8, b"fixture-cancel-correlation")) != 1:
                                     raise AssertionError("Cancel request omitted its exact pending correlation value")
@@ -617,7 +649,8 @@ def main() -> int:
                                     result_statuses=response_statuses,
                                     result_reasons=response_reasons,
                                     rng_length=32 if integer(0x4200C4, 32) in request or
-                                    tlv(0x4200C2, 8, bytes(range(32))) in request else 16))
+                                    tlv(0x4200C2, 8, bytes(range(32))) in request else 16,
+                                    cancellation_result=cancellation_result))
                             handled += len(operations)
                             handled_operations.extend(operations)
                             handled_batches.append(operations)
@@ -747,9 +780,13 @@ def main() -> int:
             if logout["status"] != "not_run" or "cannot obtain a server-issued Ticket" not in logout.get("diagnostic", ""):
                 raise AssertionError("KMIP 2.0 Logout must report the missing Login Ticket prerequisite")
         if run.returncode != 0:
+            failed_cases = [
+                (case["case_id"], case["status"])
+                for case in result["cases"] if case["status"] == "failed"
+            ]
             raise AssertionError(
                 f"C validator exited {run.returncode}; stderr={run.stderr[-400:]!r}; "
-                f"summary={run.stdout[:1800]!r}"
+                f"failed_cases={failed_cases!r}; summary={run.stdout[:1800]!r}"
             )
         correctness = {case["case_id"]: case["library_correctness"] for case in result["cases"]}
         if any(correctness.get(case_id) != "passed" for case_id in expected_cases):
