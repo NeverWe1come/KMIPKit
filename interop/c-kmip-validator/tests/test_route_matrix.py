@@ -771,6 +771,15 @@ class RouteMatrixTests(unittest.TestCase):
             route_peer.recipe_for_case(case, None),
             ((26, 25), 'async_poll_cancel_no_recursion'))
 
+        cancel_response_target = next(item for item in catalog['normative_targets']
+                                      if item['target_id'] ==
+                                      'KMIPKIT-PAYLOAD-CLIENT-CANCEL-RESPONSE-21-002')
+        tags = self.runner.catalog_tag_values(catalog)
+        self.assertEqual(
+            self.runner.generic_tree_fixtures(
+                cancel_response_target, catalog, tags, '2.1', case=case),
+            [(tags['Cancellation Result'], 5, (1).to_bytes(4, 'big'))])
+
         manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
         selected = {**catalog, 'test_cases': [case]}
         events, _, checks = route_peer.execute_network_cells(
@@ -792,6 +801,9 @@ class RouteMatrixTests(unittest.TestCase):
             with self.subTest(symbol=symbol, action=action):
                 self.assertEqual(sum(event['public_api_symbol'] == symbol and
                                      event['action'] == action for event in events), count)
+        self.assertEqual(sum(event['public_api_symbol'] == 'kmipkit_poll_request_create' and
+                             event['action'] == 'construct' and event['transport'] is None
+                             for event in events), 1)
 
     def test_stop_on_first_failure_case_has_a_controlled_peer_recipe(self):
         import route_peer
