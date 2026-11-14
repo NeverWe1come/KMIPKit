@@ -196,6 +196,8 @@ def response(operations: tuple[int, ...], protocol_minor: int,
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 20:
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
+        elif operation == 21:
+            payload_value = tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 17:
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 19 and result_status == 0:
@@ -220,6 +222,7 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                                     9: b"interop-check",
                                     18: b"interop-activate",
                                     19: b"interop-revoke",
+                                    21: b"interop-archive",
                                     56: b"interop-get-constraints",
                                     17: b"interop-get-usage-allocation",
                                 }.get(operation))
@@ -442,6 +445,8 @@ def main() -> int:
         expected_cases += ("test-op-discover-versions",)
     expected_operations += (37, 38, 39)
     expected_operations += (39, 37, 38)
+    expected_operations += (1, 21, 19, 20)
+    expected_cases += ("test-op-archive",)
     expected_operations += (1, 13, 19, 20)
     expected_operations += (1, 49, 19, 20)
     expected_operations += (1, 17, 19, 20)

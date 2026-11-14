@@ -3833,7 +3833,7 @@ class RouteMatrixTests(unittest.TestCase):
                          'Archive must run for both versions and all encoding/transport pairs')
         self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
         self.assertTrue(all(check['peer_setup_operations'] == [1] for check in checks))
-        self.assertTrue(all(check['peer_request_operations'] == [21] for check in checks))
+        self.assertTrue(all(check['peer_request_operations'] == [1, 21, 19, 20] for check in checks))
         self.assertTrue(all(check['peer_cleanup_operations'] == [19, 20] for check in checks))
         self.assertTrue(any(event['public_api_symbol'] == 'kmipkit_client_batch_item_archive'
                             and event['action'] == 'send' for event in events))
