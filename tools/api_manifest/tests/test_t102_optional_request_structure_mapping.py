@@ -196,8 +196,8 @@ PKCS11_REQUEST_SETTER_IDS = {
 # Register declarations, lifecycle declarations, KMIPKIT-0102 Rust, KMIPKIT-0103
 # C, KMIPKIT-0104 Java, and KMIPKIT-0105 Python crypto facades; KMIPKIT-0095
 # response views; KMIPKIT-0096 expert attributes; KMIPKIT-0093 reconciliation;
-# and KMIPKIT-0108 attribute operations.
-OTHER_DECLARATIONS_SHA256 = "51d1ab061909f28e9e1bc7ec5310af8c30b1ed373f28cd01b440272f097bb7ba"
+# and KMIPKIT-0108/0109 attribute operations and bindings.
+OTHER_DECLARATIONS_SHA256 = "5c988e5cd9f72a696118e11413a3d48a555b621ceda73179e5764cf763271862"
 OTHER_OPERATIONS_SHA256 = "2ea94003f2877d0e6d84271d67d9add6f48a5c5b7a837c48b22fe40f41022d39"
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(

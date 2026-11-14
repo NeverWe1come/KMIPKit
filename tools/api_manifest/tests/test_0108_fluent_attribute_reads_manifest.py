@@ -1,10 +1,18 @@
-"""Pin the KMIPKIT-0108 Rust read builders without claiming binding parity."""
+"""Pin KMIPKIT-0108 read builders and their current cross-language status."""
 
 import json
 import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
+PENDING_BINDING_EXPORTS = {
+    "kmipkit_client::GetAttributeListBuilder<'a>::build_request",
+    "kmipkit_client::GetAttributesBuilder<'a>::build_request",
+    "kmipkit_client::fluent::GetAttributeListBuilder",
+    "kmipkit_client::fluent::GetAttributeListBuilder<'a>::build_request",
+    "kmipkit_client::fluent::GetAttributesBuilder",
+    "kmipkit_client::fluent::GetAttributesBuilder<'a>::build_request",
+}
 
 
 class FluentAttributeReadManifestTests(unittest.TestCase):
@@ -14,13 +22,16 @@ class FluentAttributeReadManifestTests(unittest.TestCase):
             (ROOT / "specification/api/public-api.json").read_text(encoding="utf-8")
         )
 
-    def test_exact_builder_paths_are_traced_and_wait_for_binding_parity(self) -> None:
+    def test_exact_builder_paths_are_traced_with_current_binding_status(self) -> None:
         expected: dict[str, tuple[str, str]] = {}
         for prefix in ("kmipkit_client::", "kmipkit_client::fluent::"):
-            expected[f"{prefix}GetAttributesBuilder"] = ("type", "KMIPKIT-0108-FR-001")
-            expected[f"{prefix}GetAttributeListBuilder"] = (
-                "type", "KMIPKIT-0108-FR-002"
-            )
+            if prefix.endswith("fluent::"):
+                expected[f"{prefix}GetAttributesBuilder"] = (
+                    "type", "KMIPKIT-0108-FR-001"
+                )
+                expected[f"{prefix}GetAttributeListBuilder"] = (
+                    "type", "KMIPKIT-0108-FR-002"
+                )
             expected[f"{prefix}RequestBuilder<'a>::get_attributes"] = (
                 "associated-item", "KMIPKIT-0108-FR-001"
             )
@@ -68,16 +79,51 @@ class FluentAttributeReadManifestTests(unittest.TestCase):
         self.assertEqual(expected, {
             row["exportName"]: (row["kind"], row["requirementIds"][0]) for row in rows
         })
+        self.assertEqual(
+            PENDING_BINDING_EXPORTS,
+            {
+                row["exportName"]
+                for row in rows
+                if row["declarationState"] == "blocked"
+            },
+        )
         for row in rows:
             with self.subTest(export=row["exportName"]):
                 self.assertEqual("rust-kmipkit-client", row["packageId"])
                 self.assertEqual("fluent_dx_api", row["capabilityId"])
-                self.assertEqual("blocked", row["declarationState"])
                 self.assertEqual("four-language", row["parityScope"])
                 self.assertEqual("KMIPKIT-0108", row["candidateSpecId"])
-                self.assertIn("binding mappings remain pending", row["blockedReason"])
-                self.assertNotIn("approvalSource", row)
-                self.assertNotIn("languageMappings", row)
+                if row["declarationState"] == "blocked":
+                    self.assertIn("binding mappings remain pending", row["blockedReason"])
+                    self.assertNotIn("approvalSource", row)
+                    self.assertNotIn("languageMappings", row)
+                else:
+                    self.assertEqual("declared", row["declarationState"])
+                    self.assertEqual(
+                        {"c", "java", "python", "rust"},
+                        set(row["languageMappings"]),
+                    )
+                    self.assertEqual("Approved", row["approvalSource"]["status"])
+
+    def test_root_builder_aliases_are_declared_by_the_binding_delivery(self) -> None:
+        expected = {
+            "kmipkit_client::GetAttributesBuilder",
+            "kmipkit_client::GetAttributeListBuilder",
+        }
+        rows = [
+            row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("candidateSpecId") == "KMIPKIT-0109"
+            and row.get("exportName") in expected
+        ]
+        self.assertEqual(expected, {row["exportName"] for row in rows})
+        for row in rows:
+            with self.subTest(export=row["exportName"]):
+                self.assertEqual("declared", row["declarationState"])
+                self.assertEqual(
+                    {"c", "java", "python", "rust"},
+                    set(row["languageMappings"]),
+                )
 
     def test_exclusions_cover_only_the_exact_standard_trait_paths(self) -> None:
         rows = [
