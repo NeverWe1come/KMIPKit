@@ -4324,6 +4324,14 @@ class ControlledTlsPeerTest {
         for (ScalarOperationStructureFixture fixture : SCALAR_OPERATION_STRUCTURE_FIXTURES) {
             assertScalarOperationStructureRouteEvents(events, fixture, protocolVersion);
         }
+        // OASIS KMIP 2.0 §7.9 / §11.54 and KMIP 2.1 §7.13 / §11.56.
+        assertGenericStructureRouteEvents(events,
+                "test-norm-operation-structure-operation-structure-7-13-extension-information",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-13-EXTENSION-INFORMATION", protocolVersion);
+        assertRouteEventRecorded(events,
+                "test-norm-operation-structure-operation-structure-7-13-extension-information",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-13-EXTENSION-INFORMATION",
+                "java.typed-protocol.function.extension_information_to_ttlv", "encode", protocolVersion);
         assertRouteEventRecorded(events,
                 "test-norm-operation-structure-operation-structure-7-8-correlation-value",
                 "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-8-CORRELATION-VALUE",
