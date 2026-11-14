@@ -1632,10 +1632,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         if logout_recipe:
                                             assert_login_logout_exchange(request_tree, version, exchange_index)
                                             response_operations = ((45,) if exchange_index == 0 else (46,))
-                                        elif recipe[1] == 'cancel_async' and exchange_index == 0:
-                                            assert_async_cancel_seed_request(request_tree, version)
-                                            response_operations = (1,)
-                                        elif recipe[1] == 'cancel_poll_race' and exchange_index == 0:
+                                        elif recipe[1] in ('cancel_async', 'cancel_poll_race') and exchange_index == 0:
                                             assert_async_cancel_seed_request(request_tree, version)
                                             response_operations = (1,)
                                         elif recipe[1] == 'cancel_poll_race' and exchange_index == 1:

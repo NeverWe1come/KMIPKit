@@ -1347,6 +1347,17 @@ static bool cancellation_result_from_name(const char *name, uint32_t *result) {
     return false;
 }
 
+static int32_t set_async_seed_authentication(kmip_live_client_t *client,
+                                             kmipkit_client_batch_t *seed_batch) {
+    if (!client || !seed_batch) return KMIPKIT_ERROR_INVALID_INPUT;
+    if (client->username_env[0] == '\0') return 0;
+    kmipkit_authentication_t *authentication = NULL;
+    if (!create_authentication(client, &authentication)) return KMIPKIT_ERROR_INVALID_INPUT;
+    int32_t status = kmipkit_client_batch_set_authentication(seed_batch, authentication);
+    if (status != 0) kmipkit_authentication_release(authentication);
+    return status;
+}
+
 static kmip_execution_outcome_t execute_cancel_route(kmip_live_client_t *client,
                                                      const char *cancellation_result) {
     static const uint8_t expected_correlation[] = "fixture-cancel-correlation";
@@ -1372,15 +1383,7 @@ static kmip_execution_outcome_t execute_cancel_route(kmip_live_client_t *client,
         KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY, attributes, NULL, &create_item);
     if (status == 0) status = kmipkit_client_batch_create(&seed_batch);
     if (status == 0) status = kmipkit_client_batch_set_asynchronous_indicator(seed_batch, 1);
-    if (status == 0 && client->username_env[0] != '\0') {
-        kmipkit_authentication_t *authentication = NULL;
-        if (!create_authentication(client, &authentication)) {
-            status = KMIPKIT_ERROR_INVALID_INPUT;
-        } else {
-            status = kmipkit_client_batch_set_authentication(seed_batch, authentication);
-            if (status != 0) kmipkit_authentication_release(authentication);
-        }
-    }
+    if (status == 0) status = set_async_seed_authentication(client, seed_batch);
     if (status == 0) status = kmipkit_client_batch_add_item(seed_batch, &create_item);
     if (status == 0) status = kmipkit_client_execute(
         client->client, &seed_batch, client->limits, &seed_response);
@@ -1433,8 +1436,8 @@ static kmip_execution_outcome_t execute_cancel_route(kmip_live_client_t *client,
     return outcome;
 }
 
-static bool poll_payload_preserves_correlation(kmipkit_ttlv_structure_t *payload,
-                                               const kmipkit_byte_span_v1_t *correlation) {
+static bool async_request_payload_preserves_correlation(kmipkit_ttlv_structure_t *payload,
+                                                        const kmipkit_byte_span_v1_t *correlation) {
     if (!payload || !correlation || !correlation->data || correlation->length == 0) return false;
     kmipkit_ttlv_structure_view_t *view = NULL;
     kmipkit_ttlv_item_view_t *item = NULL;
@@ -1501,15 +1504,7 @@ static kmip_execution_outcome_t execute_cancel_poll_race_route(kmip_live_client_
         KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY, attributes, NULL, &create_item);
     if (status == 0) status = kmipkit_client_batch_create(&seed_batch);
     if (status == 0) status = kmipkit_client_batch_set_asynchronous_indicator(seed_batch, 1);
-    if (status == 0 && client->username_env[0] != '\0') {
-        kmipkit_authentication_t *authentication = NULL;
-        if (!create_authentication(client, &authentication)) {
-            status = KMIPKIT_ERROR_INVALID_INPUT;
-        } else {
-            status = kmipkit_client_batch_set_authentication(seed_batch, authentication);
-            if (status != 0) kmipkit_authentication_release(authentication);
-        }
-    }
+    if (status == 0) status = set_async_seed_authentication(client, seed_batch);
     if (status == 0) status = kmipkit_client_batch_add_item(seed_batch, &create_item);
     if (status == 0) status = kmipkit_client_execute(
         client->client, &seed_batch, client->limits, &seed_response);
@@ -1526,7 +1521,7 @@ static kmip_execution_outcome_t execute_cancel_poll_race_route(kmip_live_client_
         status = KMIPKIT_ERROR_INVALID_INPUT;
     }
     if (status == 0) status = kmipkit_poll_request_to_ttlv_payload(poll_request, &poll_payload);
-    if (status == 0 && !poll_payload_preserves_correlation(poll_payload, &correlation)) {
+    if (status == 0 && !async_request_payload_preserves_correlation(poll_payload, &correlation)) {
         status = KMIPKIT_ERROR_INVALID_INPUT;
     }
     if (status == 0) status = kmipkit_client_execute_poll(
@@ -1552,7 +1547,7 @@ static kmip_execution_outcome_t execute_cancel_poll_race_route(kmip_live_client_
         status = KMIPKIT_ERROR_INVALID_INPUT;
     }
     if (status == 0) status = kmipkit_cancel_request_to_ttlv_payload(cancel_request, &cancel_payload);
-    if (status == 0 && !poll_payload_preserves_correlation(cancel_payload, &correlation)) {
+    if (status == 0 && !async_request_payload_preserves_correlation(cancel_payload, &correlation)) {
         status = KMIPKIT_ERROR_INVALID_INPUT;
     }
     if (status == 0) status = kmipkit_client_execute_cancel(
