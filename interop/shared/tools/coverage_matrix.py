@@ -228,9 +228,14 @@ def _case_obligations(
     return obligations
 
 
-def _unavailable_for_target(manifest: dict, language: str, target_id: str) -> dict | None:
+def _unavailable_for_target(
+    manifest: dict, language: str, target_id: str, protocol_version: str | None = None
+) -> dict | None:
     for item in manifest["unavailable"]:
         if item["language"] != language:
+            continue
+        versions = item.get("protocol_versions")
+        if protocol_version is not None and versions and protocol_version not in versions:
             continue
         if target_id in item.get("operation_ids", []) or target_id in item.get("normative_target_ids", []):
             return item
@@ -316,7 +321,9 @@ def iter_cells(catalog: dict, manifest: dict, *, languages: tuple[str, ...] = LA
                                      and not _route_excludes_target(case, route, target)
                                      and ("*" in route["normative_target_ids"]
                                           or target_id in route["normative_target_ids"])]
-                    if not target_routes and _unavailable_for_target(manifest, language, target_id) is None:
+                    if not target_routes and _unavailable_for_target(
+                        manifest, language, target_id, version
+                    ) is None:
                         raise ValueError(
                             f"no public construction route or source-backed limitation for "
                             f"{case['case_id']} target {target_id} ({language}, KMIP {version})"

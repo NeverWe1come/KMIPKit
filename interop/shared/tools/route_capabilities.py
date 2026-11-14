@@ -622,6 +622,16 @@ def _client_request_targets(targets):
         if target.get('operation_id') in operation_ids and target.get('role') == 'request'})
 
 
+def _route_protocol_versions(language, symbol, mode):
+    """Return versions this specific public route can construct or decode."""
+    if (language == 'c' and mode == 'network'
+            and symbol == 'kmipkit_client_batch_item_discover_versions'):
+        # The public C convenience constructor calls DiscoverVersionsRequest::new(),
+        # whose fixed offer is KMIP 2.1. C has no with_versions constructor.
+        return ['2.1']
+    return ['2.0', '2.1']
+
+
 def build_manifest(root=ROOT, commit=PINNED_SOURCE_COMMIT):
     """Generate constructor identities from the exact package's public sources."""
     commit = validate_git_commit(commit)
@@ -678,7 +688,8 @@ def build_manifest(root=ROOT, commit=PINNED_SOURCE_COMMIT):
             'operation_ids': [operation_id] if operation_id else [],
             'normative_target_ids': (_request_operation_targets(operation_id, targets) if operation_id else
                 _client_request_targets(targets) if symbol == 'kmipkit_client::ClientBatchItem::new' else ['*']),
-            'case_categories': categories + ['normative_inventory'], 'protocol_versions': ['2.0', '2.1'],
+            'case_categories': categories + ['normative_inventory'],
+            'protocol_versions': _route_protocol_versions(language, symbol, mode),
             'combinations': combinations, 'actions': ['decode'] if generic and 'decode' in symbol else ['construct'],
             'source_paths': [path], 'artifact_commit': commit,
             'execution_route_id': execution_id, 'artifact_verification': 'required'})
@@ -695,7 +706,8 @@ def build_manifest(root=ROOT, commit=PINNED_SOURCE_COMMIT):
             'public_api_symbol': symbol, 'operation_ids': [model['operation_id']] if model.get('operation_id') else [],
             'normative_target_ids': model['normative_target_ids'],
             'case_categories': ['normative_inventory', 'attributes', 'managed_objects', 'enums_and_bitmasks'],
-            'protocol_versions': ['2.0', '2.1'], 'combinations': [{'encoding': 'TTLV', 'transport': None}],
+            'protocol_versions': _route_protocol_versions(language, symbol, 'local'),
+            'combinations': [{'encoding': 'TTLV', 'transport': None}],
             'actions': ['decode'] if re.search(r'(?:from|try_from)_(?:ttlv|item)$', symbol.lower())
                 or re.search(r'(?:::|\.)try_from_(?:ttlv|item)$', symbol.lower())
                 or symbol.lower().endswith(('::with_ttlv', '.with_ttlv', '::with_value', '.with_value'))
@@ -723,6 +735,7 @@ def build_manifest(root=ROOT, commit=PINNED_SOURCE_COMMIT):
                 elif action not in existing['actions']:
                     existing['actions'].append(action)
                     existing['actions'].sort()
+                existing['protocol_versions'] = _route_protocol_versions(language, symbol, existing['mode'])
                 continue
             function_id = function['id']
             operation_id = _function_operation_id(function_id, operations)
@@ -741,7 +754,8 @@ def build_manifest(root=ROOT, commit=PINNED_SOURCE_COMMIT):
                 'public_api_symbol': symbol, 'operation_ids': [operation_id] if operation_id else [],
                 'normative_target_ids': target_ids,
                 'case_categories': categories + ['normative_inventory'],
-                'protocol_versions': ['2.0', '2.1'], 'combinations': combinations,
+                'protocol_versions': _route_protocol_versions(language, symbol, mode),
+                'combinations': combinations,
                 'actions': [action], 'source_paths': ['specification/api/public-api.json'],
                 'artifact_commit': commit, 'execution_route_id': execution_id,
                 'artifact_verification': 'required'}
@@ -755,6 +769,14 @@ def build_manifest(root=ROOT, commit=PINNED_SOURCE_COMMIT):
             generic_path = next(r['source_paths'][0] for r in data['routes'] if r['language'] == language and r['api_level'] == 'generic-ttlv' and r['actions'] == ['decode'])
             data['unavailable'].append({'language': language, 'capability': capability,
                 'reason': reason, 'source_paths': [path if capability != 'generic-encode' else generic_path]})
+    data['unavailable'].append({'language': 'c', 'capability': 'protocol-version-limit',
+        'operation_ids': ['KMIPKIT-ELEM-OP-C2S-DISCOVER-VERSIONS'],
+        'normative_target_ids': ['KMIPKIT-PAYLOAD-CLIENT-DISCOVER-VERSIONS-REQUEST-20-001'],
+        'protocol_versions': ['2.0'],
+        'reason': 'The public C Discover Versions constructor always uses DiscoverVersionsRequest::new(), which offers KMIP 2.1; the installed C API has no constructor to select a KMIP 2.0 offer.',
+        'source_paths': ['crates/kmipkit-protocol/src/discover_versions.rs',
+                         'crates/kmipkit-ffi/src/extension_registry.rs',
+                         'bindings/c/include/kmipkit.h']})
     for language in ('c', 'java', 'python'):
         data['unavailable'].append({'language': language, 'capability': 'constructor',
             'operation_ids': ['KMIPKIT-ELEM-OP-C2S-SET-ENDPOINT-ROLE'],
