@@ -553,7 +553,10 @@ fn default_tls_policy_rejects_tls12_only_server_and_opt_in_compat_connects_with_
 
     // Default policy remains TLS 1.3 only and rejects TLS 1.2 servers.
     let default_cfg = transport_config(&pki, &pki, None, Vec::new());
-    assert_eq!(default_cfg.tls_version_policy(), TlsVersionPolicy::Tls13Only);
+    assert_eq!(
+        default_cfg.tls_version_policy(),
+        TlsVersionPolicy::Tls13Only
+    );
     let default_client =
         tls::build_client_config(&default_cfg).expect("default TLS 1.3 config builds");
     expect_tls_rejection(handshake(&default_client, Arc::clone(&tls12_peer)));
@@ -762,7 +765,12 @@ fn trust_input(pki: &TestPki) -> TrustSource {
 }
 
 fn server_config(pki: &TestPki, require_client_auth: bool, tickets: usize) -> Arc<ServerConfig> {
-    server_config_with_versions(pki, require_client_auth, tickets, &[&rustls::version::TLS13])
+    server_config_with_versions(
+        pki,
+        require_client_auth,
+        tickets,
+        &[&rustls::version::TLS13],
+    )
 }
 
 fn server_config_with_versions(

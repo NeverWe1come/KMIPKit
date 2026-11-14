@@ -29,7 +29,9 @@
 //! parses and validates the selected material before returning a config; it
 //! opens no socket and performs no DNS lookup.
 //!
-//! The production-adapter TLS policy uses rustls with AWS-LC, TLS 1.3 only,
+//! The production-adapter TLS policy uses rustls with AWS-LC, TLS 1.3 only
+//! by default (with explicit opt-in [`TlsVersionPolicy::Tls12And13Compat`]
+//! for OASIS KMIP Profiles v2.0/v2.1 ECDHE-GCM suites),
 //! and mutual TLS. Adapters validate the server chain, certificate validity,
 //! and hostname; an optional TLS server-name override is available only for IP
 //! endpoints. Early data and TLS key logging are disabled. Caller-supplied

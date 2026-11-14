@@ -981,6 +981,7 @@ impl fmt::Debug for TransportConfig {
             .field("revocation_lists", &"[REDACTED]")
             .field("tls_server_name", &"[REDACTED]")
             .field("enable_sni", &self.enable_sni)
+            .field("tls_version_policy", &self.tls_version_policy)
             .finish_non_exhaustive()
     }
 }
@@ -1120,6 +1121,7 @@ impl fmt::Debug for TransportConfigBuilder {
                 "tls_server_name",
                 &self.tls_server_name.as_ref().map(|_| "[REDACTED]"),
             )
+            .field("tls_version_policy", &self.tls_version_policy)
             .finish()
     }
 }

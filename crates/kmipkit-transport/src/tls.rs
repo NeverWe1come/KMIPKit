@@ -267,8 +267,8 @@ pub(crate) fn build_client_config_with_clock(
 ) -> Result<TlsClientConfig, TransportConfigError> {
     let provider = Arc::clone(configuration.tls_crypto_provider());
     let verifier = build_webpki_verifier(configuration, Arc::clone(&provider))?;
-    let builder = tls_builder(provider, configuration.tls_version_policy())?
-        .with_webpki_verifier(verifier);
+    let builder =
+        tls_builder(provider, configuration.tls_version_policy())?.with_webpki_verifier(verifier);
     Ok(finish_client_config(configuration, clock, builder))
 }
 
