@@ -484,6 +484,27 @@ class RouteMatrixTests(unittest.TestCase):
             (route_peer.Codec(catalog).tag('Cancellation Result'), 5, (1).to_bytes(4, 'big')),
         ])
 
+    def test_cancel_executes_all_installed_encoding_and_transport_routes(self):
+        """OASIS KMIP 2.0/2.1 §6.1.5 Cancel runs once for each configured wire route."""
+        from artifact_support import ROOT
+        from route_peer import execute_network_cells
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        manifest = json.loads((ROOT / 'interop/shared/coverage/route-capabilities.json').read_text())
+        selected = {**catalog, 'test_cases': [case for case in catalog['test_cases']
+                                               if case['case_id'] == 'test-op-cancel']}
+
+        events, keys, checks = execute_network_cells(
+            ROOT / 'interop/c-kmip-validator/build/kmip_validator_c', selected, manifest)
+
+        self.assertEqual(len(checks), 12)
+        self.assertTrue(all(check['status'] == 'passed' for check in checks), checks)
+        self.assertEqual(len(events), 38)
+        self.assertEqual(len(keys), 38)
+        self.assertEqual(sum(event['public_api_symbol'] ==
+                             'kmipkit_client_async_operation_outcome_cancel_response_v1'
+                             for event in events), 2)
+
     def test_stop_on_first_failure_case_has_a_controlled_peer_recipe(self):
         import route_peer
         from artifact_support import ROOT

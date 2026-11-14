@@ -1277,6 +1277,56 @@ static kmip_execution_outcome_t outcome_failed(const char *reason) {
     return outcome;
 }
 
+static kmip_execution_outcome_t execute_cancel_route(kmip_live_client_t *client) {
+    static const uint8_t correlation[] = "fixture-cancel-correlation";
+    kmipkit_client_async_operation_outcome_t *async_outcome = NULL;
+    kmipkit_client_async_operation_response_v1_t cancel_response = {
+        .struct_size = (uint32_t)sizeof(kmipkit_client_async_operation_response_v1_t),
+        .abi_version = 1
+    };
+    uint8_t response_present = 0;
+    kmip_execution_outcome_t outcome = { .executed = true };
+    int32_t status = kmipkit_client_execute_cancel(
+        client->client, correlation, sizeof(correlation) - 1, client->limits, &async_outcome);
+    if (status == 0) {
+        status = kmipkit_client_async_operation_outcome_cancel_response_v1(
+            async_outcome, &response_present, &cancel_response);
+    }
+    if (status == 0) {
+        bool valid = response_present != 0 &&
+            cancel_response.operation == KMIPKIT_ENUMERATION_OPERATION_CANCEL &&
+            cancel_response.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS &&
+            cancel_response.is_pending == 0 &&
+            cancel_response.has_cancellation_result == 1 &&
+            cancel_response.cancellation_result == 1 &&
+            cancel_response.has_asynchronous_correlation_value == 1 &&
+            cancel_response.asynchronous_correlation_value.data != NULL &&
+            cancel_response.asynchronous_correlation_value.length == sizeof(correlation) - 1 &&
+            memcmp(cancel_response.asynchronous_correlation_value.data, correlation,
+                   sizeof(correlation) - 1) == 0;
+        outcome.success = valid;
+        outcome.library_validated = valid;
+        outcome.library_failed = !valid;
+        outcome.has_result_status_code = true;
+        outcome.result_status_code = cancel_response.result_status;
+        if (!valid) {
+            snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                     "KMIPKit Cancel response did not preserve the successful result, echo, or Cancellation Result");
+        }
+    } else {
+        uint32_t category = 0;
+        uint32_t cause = 0;
+        uint32_t delivery = 0;
+        (void)kmipkit_last_error_get(&status, &category, &cause, &delivery);
+        outcome.library_failed = true;
+        snprintf(outcome.result_reason, sizeof(outcome.result_reason),
+                 "KMIPKit Cancel exchange failed (category=%u cause=%u delivery=%u)",
+                 category, cause, delivery);
+    }
+    if (async_outcome) kmipkit_client_async_operation_outcome_release(async_outcome);
+    return outcome;
+}
+
 typedef const char *(*kmip_enumeration_name_fn)(uint32_t);
 typedef uint32_t (*kmip_bitmask_split_fn)(uint32_t);
 
@@ -2967,6 +3017,9 @@ kmip_execution_outcome_t kmip_live_execute_case(const kmip_test_case_t *test_cas
     if (strcmp(test_case->mode, "server_exchange") != 0 &&
         !unsupported_version_boundary_workflow && !get_usage_allocation_uid_variant) {
         return outcome_not_run("catalog mode is not supported by the C validator");
+    }
+    if (strcmp(test_case->case_id, "test-op-cancel") == 0) {
+        return execute_cancel_route(client);
     }
     if (get_usage_allocation_uid_variant &&
         !usage_allocation_identifier_explicit && !usage_allocation_identifier_omitted) {

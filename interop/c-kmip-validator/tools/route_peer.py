@@ -271,6 +271,7 @@ def tree_digest(node):
 
 
 RECIPES = {
+    'test-op-cancel': ((25,), 'cancel'),
     'test-op-hash': ((39,), 'hash'),
     'test-crypto-hash-sha_256-0': ((39,), 'hash'),
     'test-op-rng-retrieve': ((37,), 'rng_retrieve'),
@@ -567,6 +568,14 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         raise ValueError('fixture_protocol_version_mismatch')
     if numbers(node, 0x42000D) != [len(expected)]:
         raise ValueError('fixture_batch_count_mismatch')
+    if selected_recipe[1] == 'cancel':
+        items = [item for item in node[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+        payloads = [child for child in items[0][2]
+                    if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+        correlation = [child for child in payloads[0][2]
+                       if child[0] == 0x420006 and child[1] == 8] if len(payloads) == 1 else []
+        if len(correlation) != 1 or correlation[0][2] != b'fixture-cancel-correlation':
+            raise ValueError('fixture_cancel_correlation_mismatch')
     if (case_id in {
             'test-norm-payload-client-add-attribute-request-20-002',
             'test-norm-payload-client-add-attribute-request-21-002'} and
@@ -912,6 +921,23 @@ def fixture_wire(node):
     tag, kind, value = node
     body = b''.join(fixture_wire(child) for child in value) if kind == 1 else value
     return tlv(tag, kind, body)
+
+
+def cancel_response(correlation: bytes, cancellation_result: int, protocol_minor: int) -> bytes:
+    """Build one successful Cancel response using KMIP §6.1.5 Table 177 fields."""
+    version = tlv(0x420069, 1,
+                  tlv(0x42006A, 2, (2).to_bytes(4, 'big')) +
+                  tlv(0x42006B, 2, protocol_minor.to_bytes(4, 'big')))
+    header = tlv(0x42007A, 1,
+                 version + tlv(0x420092, 9, int(dt.datetime.now(dt.timezone.utc).timestamp()).to_bytes(8, 'big', signed=True)) +
+                 tlv(0x42000D, 2, (1).to_bytes(4, 'big')))
+    payload = tlv(0x42007C, 1,
+                  tlv(0x420006, 8, correlation) +
+                  tlv(0x420012, 5, cancellation_result.to_bytes(4, 'big')))
+    item = tlv(0x42000F, 1,
+               tlv(0x42005C, 5, (25).to_bytes(4, 'big')) +
+               tlv(0x42007F, 5, (0).to_bytes(4, 'big')) + payload)
+    return tlv(0x42007B, 1, header + item)
 
 
 def read_back_attribute_fixture(case, catalog, version, attributes):
@@ -1573,11 +1599,28 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             if recipe[1] == 'rng_retrieve' else
                                             len(byte_string_values(request_tree, 0x4200C2)[0])
                                             if recipe[1] == 'rng_seed' else 16)
+                                        if recipe[1] == 'cancel':
+                                            response_wire = cancel_response(
+                                                b'fixture-cancel-correlation', 1, int(version[-1]))
                                         response_tree = parse(response_wire)
                                         if logout_recipe:
                                             verify_login_logout_response(response_tree, exchange_index)
                                         elif recipe[1] == 'interop':
                                             verify_interop_response(response_tree)
+                                        elif recipe[1] == 'cancel':
+                                            response_items = [item for item in response_tree[2]
+                                                              if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+                                            payloads = [child for child in response_items[0][2]
+                                                        if child[0] == RESPONSE_PAYLOAD_TAG and child[1] == 1] \
+                                                if len(response_items) == 1 else []
+                                            if (len(response_items) != 1 or
+                                                    numbers(response_items[0], 0x42005C) != [25] or
+                                                    numbers(response_items[0], 0x42007F) != [0] or
+                                                    len(payloads) != 1 or
+                                                    byte_string_values(payloads[0], 0x420006) !=
+                                                    [b'fixture-cancel-correlation'] or
+                                                    numbers(payloads[0], 0x420012) != [1]):
+                                                raise ValueError('fixture_cancel_response_mismatch')
                                         elif recipe[1] == 'batch_stop_on_first_failure':
                                             response_items = [item for item in response_tree[2]
                                                               if item[0] == BATCH_ITEM_TAG and item[1] == 1]
@@ -1903,7 +1946,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             (cell['action'] not in ('decode', 'encode') and
                                              not stop_continuation_constructor)):
                                         continue
-                                    if (cell['action'] == 'decode' and not cell['public_api_symbol'].startswith('kmipkit_client_batch_')):
+                                    if (cell['action'] == 'decode' and
+                                            not cell['public_api_symbol'].startswith('kmipkit_client_batch_') and
+                                            cell['public_api_symbol'] !=
+                                            'kmipkit_client_async_operation_outcome_cancel_response_v1'):
                                         continue
                                     if cell['action'] == 'encode' and cell['public_api_symbol'] not in {
                                             'kmipkit_add_attribute_request_to_ttlv_payload',
@@ -1913,8 +1959,11 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             'kmipkit_get_attribute_list_request_to_ttlv_payload'}:
                                         continue
                                 target = targets_by_id[cell['target_id']]
-                                response_accessor_route = cell['public_api_symbol'].startswith(
-                                    'kmipkit_client_batch_item_response_')
+                                response_accessor_route = (
+                                    cell['public_api_symbol'].startswith(
+                                        'kmipkit_client_batch_item_response_') or
+                                    cell['public_api_symbol'] ==
+                                    'kmipkit_client_async_operation_outcome_cancel_response_v1')
                                 if response_accessor_route:
                                     source_sections = {reference.get('section')
                                                       for reference in target.get('source_refs', [])}
