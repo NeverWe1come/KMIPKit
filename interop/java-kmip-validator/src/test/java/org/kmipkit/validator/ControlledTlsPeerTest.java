@@ -4285,8 +4285,7 @@ class ControlledTlsPeerTest {
                 assertRouteEventRecorded(events, fixture.caseId(), fixture.targetId(),
                         "java.generic-ttlv.ttlv_codec.decode", "decode", protocolVersion);
             }
-            StructureMemberValueFixture operationFixture = STRUCTURE_MEMBER_VALUE_FIXTURES.stream()
-                    .filter(fixture -> fixture.rawTag() == 0x42005c).findFirst().orElseThrow();
+            StructureMemberValueFixture operationFixture = structureMemberValueFixture(0x42005c);
             assertRouteEventRecorded(events, operationFixture.caseId(), operationFixture.targetId(),
                     "java.typed-protocol.function.client_async_operation_outcome_response_payload_ttlv",
                     "decode", protocolVersion);
@@ -4579,8 +4578,7 @@ class ControlledTlsPeerTest {
                     "decode", "2.1", null, null, treeHash);
         }
 
-        StructureMemberValueFixture operationFixture = STRUCTURE_MEMBER_VALUE_FIXTURES.stream()
-                .filter(fixture -> fixture.rawTag() == 0x42005c).findFirst().orElseThrow();
+        StructureMemberValueFixture operationFixture = structureMemberValueFixture(0x42005c);
         byte[] correlation = new byte[] {0x41, 0x53, 0x59, 0x4e, 0x43};
         SSLServerSocket listener = listener(certificate(serverCertificatePem),
                 privateKey(serverPrivateKeyPem), certificate(clientCertificatePem));
@@ -4613,9 +4611,9 @@ class ControlledTlsPeerTest {
                     assertEquals(TtlvItemType.ByteString, correlationField.itemType());
                     assertArrayEquals(correlation, correlationValue.bytes());
                 }
-                assertStructureMemberValue(requestFields.itemAt(1), operationFixture);
-                assertStructureMemberValue(requestFields.itemAt(2), STRUCTURE_MEMBER_VALUE_FIXTURES.get(1));
-                assertStructureMemberValue(requestFields.itemAt(3), STRUCTURE_MEMBER_VALUE_FIXTURES.get(2));
+                assertStructureMemberValue(requestFields, 1, operationFixture);
+                assertStructureMemberValue(requestFields, 2, structureMemberValueFixture(0x420175));
+                assertStructureMemberValue(requestFields, 3, structureMemberValueFixture(0x420174));
             }
             appendRouteEvent(events, operationFixture.caseId(),
                     "java.typed-protocol.function.client_async_operation_outcome_response_payload_ttlv",
@@ -4651,6 +4649,18 @@ class ControlledTlsPeerTest {
                     ? value.dateTimeExtended() : value.enumeration();
             assertEquals(fixture.value(), actual);
         }
+    }
+
+    private static void assertStructureMemberValue(TtlvStructureView fields, int index,
+            StructureMemberValueFixture fixture) throws Exception {
+        try (TtlvItemView view = fields.itemAt(index)) {
+            assertStructureMemberValue(view, fixture);
+        }
+    }
+
+    private static StructureMemberValueFixture structureMemberValueFixture(int rawTag) {
+        return STRUCTURE_MEMBER_VALUE_FIXTURES.stream()
+                .filter(fixture -> fixture.rawTag() == rawTag).findFirst().orElseThrow();
     }
 
     private static byte[] queryAsyncRequestsResponse(byte[] correlation, long operation,
