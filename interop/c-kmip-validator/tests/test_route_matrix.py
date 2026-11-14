@@ -789,6 +789,9 @@ class RouteMatrixTests(unittest.TestCase):
         self.assertEqual(sum(event['public_api_symbol'] ==
                              'kmipkit_client_execute_query_async_requests' and
                              event['action'] == 'send' for event in events), 6)
+        self.assertEqual(sum(event['public_api_symbol'] ==
+                             'kmipkit_client_batch_item_response_create' and
+                             event['action'] == 'decode' for event in events), 1)
 
     def test_async_poll_and_cancel_responses_do_not_recurse(self):
         """OASIS KMIP 2.1 §§6.1.5 and 6.1.38 keep Poll and Cancel terminal."""
