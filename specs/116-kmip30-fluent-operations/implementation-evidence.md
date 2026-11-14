@@ -129,6 +129,35 @@ is addressed.
   `python3 -B -m unittest tools.api_manifest.tests.test_manifest_v2 -v`
   completed with 156 tests in 337.105 seconds and exit code 0.
 
+## Supplemental protocol coverage and local native sanitizers
+
+The KMIP 3.0 typed protocol models gained tests for credential-alternative
+inference, result parsing and redaction, operation-specific accessors, and
+malformed KEM response shapes. These are test-only additions; the constructors
+and response behavior are unchanged.
+
+- `cargo test -p kmipkit-protocol --all-features` passed the complete protocol
+  package suite, including 1,460 unit tests and all integration and doc tests.
+- `CARGO_TARGET_DIR=/home/ramp1953/.codex/tmp/kmipkit-0116/coverage-target
+  TMPDIR=/home/ramp1953/.codex/tmp/kmipkit-0116 cargo llvm-cov --workspace
+  --all-features --locked --summary-only` passed with 91.13% line, 92.54%
+  branch, and 93.42% function coverage. The protocol package is at 90.11%
+  line coverage; `kmip30_operations.rs` is at 93.38% and `kem.rs` at 91.26%.
+- `CARGO_TARGET_DIR=/home/ramp1953/.codex/tmp/kmipkit-0116/coverage-target
+  TMPDIR=/home/ramp1953/.codex/tmp/kmipkit-0116 cargo llvm-cov
+  -p kmipkit-protocol --all-features --locked --summary-only` independently
+  confirmed 90.11% protocol-package line coverage.
+- The C sanitizer workflow commands were reproduced using the isolated
+  worktree-volume target. `cargo +nightly rustc --locked -p kmipkit-ffi
+  --lib -- -Zsanitizer=address`, followed by compiling and running
+  `bindings/c/tests/extension_registry.c` under AddressSanitizer, passed all
+  20 internal FFI harness cases with leak detection enabled.
+- `bindings/java/native/tests/zeroizing_bytes_test.cpp` compiled with
+  AddressSanitizer and UndefinedBehaviorSanitizer and ran with leak detection
+  and halt-on-error enabled; it exited 0 without diagnostics.
+- `cargo fmt --all --check` and `git diff --check` passed after the tests were
+  added.
+
 ## Manifest scope ruling
 
 Ruling: Keep the public `client_1_0` operation inventory at its 56 KMIP 2.1
@@ -156,6 +185,7 @@ capability and source edition.
 ## Draft pull request
 
 Draft PR [#213](https://github.com/NeverWe1come/KMIPKit/pull/213) is open with
-the required `[WIP]` title and is stacked on KMIPKIT-0115. Its initial pushed
-head was `c4f753197`; checks were pending when this evidence was recorded. Keep
-the WIP marker until all required checks on the current PR head are green.
+the required `[WIP]` title and is stacked on KMIPKIT-0115. Its last pushed
+head when this evidence was recorded was `2849e50ba`; the supplemental protocol
+coverage commit is pending. Keep the WIP marker until all required checks on
+the current PR head are green.
