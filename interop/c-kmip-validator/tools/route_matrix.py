@@ -39,13 +39,27 @@ REQUEST_HEADER_FIELD_FIXTURES = {
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-SERVER-CORRELATION-VALUE':
         ('Server Correlation Value', 7, b'server-correlation'),
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-TIME-STAMP': ('Time Stamp', 9, 1_760_000_000),
+    'KMIPKIT-ELEM-MESSAGE-FIELD-9-10-SERVER-CORRELATION-VALUE':
+        ('Server Correlation Value', 7, b'server-correlation'),
+    'KMIPKIT-ELEM-MESSAGE-FIELD-9-12-MAXIMUM-RESPONSE-SIZE': ('Maximum Response Size', 2, 1024),
+    'KMIPKIT-ELEM-MESSAGE-FIELD-9-2-ASYNCHRONOUS-INDICATOR': ('Asynchronous Indicator', 5, None),
+    'KMIPKIT-ELEM-MESSAGE-FIELD-9-3-ATTESTATION-CAPABLE-INDICATOR':
+        ('Attestation Capable Indicator', 6, 0),
+    'KMIPKIT-ELEM-MESSAGE-FIELD-9-20-TIME-STAMP': ('Time Stamp', 9, 1_760_000_000),
+    'KMIPKIT-ELEM-MESSAGE-FIELD-9-9-CLIENT-CORRELATION-VALUE':
+        ('Client Correlation Value', 7, b'client-correlation'),
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION':
         ('Batch Error Continuation Option', 5, None),
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION': ('Batch Order Option', 6, 1),
+    'KMIPKIT-ELEM-MESSAGE-FIELD-9-6-BATCH-ERROR-CONTINUATION-OPTION':
+        ('Batch Error Continuation Option', 5, None),
+    'KMIPKIT-ELEM-MESSAGE-FIELD-9-8-BATCH-ORDER-OPTION': ('Batch Order Option', 6, 1),
 }
 REQUEST_HEADER_MULTI_ITEM_OPTION_TARGETS = frozenset({
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ERROR-CONTINUATION-OPTION',
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-2-BATCH-ORDER-OPTION',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-9-6-BATCH-ERROR-CONTINUATION-OPTION',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-9-8-BATCH-ORDER-OPTION',
 })
 REQUEST_MESSAGE_CONTEXT_TARGETS = frozenset({
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-1-BATCH-ITEM',
@@ -57,6 +71,13 @@ REQUEST_MESSAGE_CONTEXT_TARGETS = frozenset({
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-3-OPERATION',
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-3-REQUEST-PAYLOAD',
     'KMIPKIT-ELEM-MESSAGE-FIELD-8-3-UNIQUE-BATCH-ITEM-ID',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-9-15-OPERATION',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-9-16-PROTOCOL-VERSION',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-9-16-PROTOCOL-VERSION-MAJOR',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-9-16-PROTOCOL-VERSION-MINOR',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-9-21-UNIQUE-BATCH-ITEM-ID',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-9-5-BATCH-COUNT',
+    'KMIPKIT-ELEM-MESSAGE-FIELD-9-7-BATCH-ITEM',
 })
 OUTPUT_ROOT = ROOT / 'interop/c-kmip-validator/build'
 
@@ -353,7 +374,10 @@ def generic_tree_fixtures(target: dict, catalog: dict, tags: dict[str, int],
         fixture = _request_message_fixture(protocol_version, tags, catalog)
         if fixture is None:
             return None
-        if target.get('target_id') == 'KMIPKIT-ELEM-MESSAGE-FIELD-8-3-UNIQUE-BATCH-ITEM-ID':
+        if target.get('target_id') in {
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-3-UNIQUE-BATCH-ITEM-ID',
+            'KMIPKIT-ELEM-MESSAGE-FIELD-9-21-UNIQUE-BATCH-ITEM-ID',
+        }:
             fixture = _request_message_with_batch_ids(fixture, tags, (b'route-batch-item',))
         return [fixture]
     header_field = _request_header_field_fixture(target, catalog, tags, protocol_version)
