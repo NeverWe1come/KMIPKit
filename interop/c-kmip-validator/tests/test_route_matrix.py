@@ -2352,13 +2352,11 @@ class RouteMatrixTests(unittest.TestCase):
                             check['peer_attribute_adjustment_tag'] == '420097' and
                             check['peer_adjustment_value_omitted'] is True and
                             check['peer_attribute_value_before'] == 0 and
-                            check['peer_attribute_value_after'] == 1
+                            check['peer_attribute_value_after'] == 1 and
+                            check['peer_response_unique_batch_item_ids'] ==
+                            ['interop-adjust-attribute']
                             for check in checks))
-        expected_symbols = {
-            'kmipkit_client_batch_item_adjust_attribute',
-            'kmipkit_client_batch_item_adjust_attribute_from_request',
-            'kmipkit_client_batch_item_response_adjust_attribute',
-        }
+        expected_response_symbol = 'kmipkit_client_batch_item_response_adjust_attribute'
         self.assertTrue(any(event['public_api_symbol'] ==
                             'kmipkit_client_batch_item_adjust_attribute' and
                             event['action'] == 'send' for event in events))
@@ -2369,7 +2367,11 @@ class RouteMatrixTests(unittest.TestCase):
                             'kmipkit_client_batch_item_response_adjust_attribute' and
                             event['action'] == 'decode' for event in events))
         for check in checks:
-            self.assertTrue(expected_symbols <= set(check['public_api_trace_symbols']))
+            expected_constructor = (
+                'kmipkit_client_batch_item_adjust_attribute' if check['constructor_variant'] == 'direct'
+                else 'kmipkit_client_batch_item_adjust_attribute_from_request')
+            self.assertIn(expected_constructor, check['public_api_trace_symbols'])
+            self.assertIn(expected_response_symbol, check['public_api_trace_symbols'])
         send_events = [event for event in events
                        if event['case_id'] == case_id and event['action'] == 'send']
         for version in ('2.0', '2.1'):

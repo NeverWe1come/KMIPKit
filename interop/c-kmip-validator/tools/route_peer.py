@@ -317,6 +317,7 @@ RECIPES = {
     'test-op-create': ((1, 20), 'create'),
     'test-op-register': ((3, 20), 'register'),
     'test-op-add-attribute': ((1, 13, 19, 20), 'add_attribute'),
+    'test-op-adjust-attribute': ((1, 48, 19, 20), 'adjust_attribute'),
     'test-norm-payload-client-add-attribute-request-20-002': ((1, 13, 19, 20), 'add_attribute'),
     'test-norm-payload-client-add-attribute-request-21-002': ((1, 13, 19, 20), 'add_attribute'),
     'test-op-modify-attribute': ((1, 13, 14, 19, 20), 'modify_attribute'),
@@ -1171,6 +1172,7 @@ class PeerState:
         } if existing_object else {}
         self.attributes = {'fixture-key-1': set()} if existing_object else {}
         self.attribute_values = {'fixture-key-1': {}} if existing_object else {}
+        self.numeric_attribute_values = {'fixture-key-1': {}} if existing_object else {}
         self.usage_allocation_ready = usage_allocation_ready
         self.usage_allocation_totals = {'fixture-key-1': 1000} if usage_allocation_ready else {}
         self.usage_allocation_counts = {'fixture-key-1': 0} if usage_allocation_ready else {}
@@ -1187,6 +1189,11 @@ class PeerState:
                 key: {f'{tag:06X}': digest for tag, digest in sorted(values.items())}
                 for key, values in self.attribute_values.items() if values
             }
+        if any(self.numeric_attribute_values.values()):
+            state_value['numeric_attribute_values'] = {
+                key: {f'{tag:06X}': value for tag, value in sorted(values.items())}
+                for key, values in self.numeric_attribute_values.items() if values
+            }
         if self.usage_allocation_counts:
             state_value['usage_allocation_counts'] = self.usage_allocation_counts
         if self.interop_sessions:
@@ -1199,6 +1206,7 @@ class PeerState:
                 rejection_status=1, rejection_reason=5):
         before = self.digest()
         effects, statuses, reasons = [], [], []
+        attribute_adjustments = []
         placeholder = None
         labels = {9: 'checked', 10: 'object_retrieved', 11: 'attributes_retrieved',
                   12: 'attribute_list_retrieved', 13: 'attribute_added',
@@ -1244,6 +1252,7 @@ class PeerState:
                 self.objects[identifier] = 'pre_active'
                 self.attributes[identifier] = set()
                 self.attribute_values[identifier] = {}
+                self.numeric_attribute_values[identifier] = {}
                 placeholder = identifier
                 effect = 'created'
             elif operation == 8:
@@ -1253,7 +1262,7 @@ class PeerState:
                 identifier = matching_identifiers[0]
                 placeholder = identifier
                 effect = 'located'
-            elif operation in (9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 20, 31, 32, 49, 56):
+            elif operation in (9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 20, 31, 32, 48, 49, 56):
                 state = self.objects.get(identifier)
                 if state is None:
                     status, reason, effect = 1, 55, 'object_not_found'
@@ -1292,6 +1301,7 @@ class PeerState:
                         del self.objects[identifier]
                         self.attributes.pop(identifier, None)
                         self.attribute_values.pop(identifier, None)
+                        self.numeric_attribute_values.pop(identifier, None)
                         effect = 'destroyed'
                 elif operation in (13, 49):
                     new_attribute = next((child for child in item[2]
@@ -1321,6 +1331,24 @@ class PeerState:
                         raise ValueError('fixture_modify_attribute_name_mismatch')
                     values[attribute_tag] = hashlib.sha256(new[1]).hexdigest()
                     effect = 'attribute_modified'
+                elif operation == 48:
+                    references = numbers(item, 0x42013B)
+                    adjustment_types = numbers(item, 0x420158)
+                    adjustment_values = list(descendants(item, 0x420162))
+                    if references != [0x420097] or adjustment_types != [1] or adjustment_values:
+                        raise ValueError('fixture_adjust_attribute_fields_mismatch')
+                    values = self.numeric_attribute_values.setdefault(identifier, {})
+                    previous = values.get(0x420097, 0)
+                    updated = previous + 1
+                    values[0x420097] = updated
+                    attribute_adjustments.append({
+                        'tag': 0x420097,
+                        'adjustment_type': 1,
+                        'adjustment_value_omitted': True,
+                        'before': previous,
+                        'after': updated,
+                    })
+                    effect = 'attribute_adjusted'
                 elif operation == 15:
                     references = numbers(item, 0x42013B)
                     if references != [0x4200FD]:
@@ -1345,6 +1373,7 @@ class PeerState:
             if stop_after_failure and status != 0:
                 break
         return {'effects': effects, 'statuses': statuses, 'reasons': reasons,
+                'attribute_adjustments': attribute_adjustments,
                 'peer_observed_state_before_sha256': before,
                 'peer_observed_state_after_sha256': self.digest()}
 
@@ -1534,6 +1563,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                          'test-norm-payload-client-add-attribute-request-20-002',
                                                          'test-norm-payload-client-add-attribute-request-21-002',
                                                          'test-op-add-attribute',
+                                                         'test-op-adjust-attribute',
                                                          'test-norm-payload-client-modify-attribute-request-20-002',
                                                          'test-norm-payload-client-modify-attribute-request-20-003',
                                                          'test-norm-payload-client-modify-attribute-response-20-001',
@@ -1584,12 +1614,13 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                             raise ValueError('fixture_cancel_result_unavailable')
                         placeholder_chain_recipe = recipe[1] == 'batch_placeholder_chain'
                         attribute_mutation_recipe = recipe[1] in (
-                            'add_attribute', 'modify_attribute', 'set_attribute', 'delete_attribute')
+                            'add_attribute', 'modify_attribute', 'set_attribute', 'delete_attribute',
+                            'adjust_attribute')
                         delete_attribute_recipe = recipe[1] == 'delete_attribute'
                         modify_attribute_recipe = recipe[1] == 'modify_attribute'
                         attribute_mutation_operation = {
                             'add_attribute': 13, 'modify_attribute': 14,
-                            'set_attribute': 49, 'delete_attribute': 15,
+                            'set_attribute': 49, 'delete_attribute': 15, 'adjust_attribute': 48,
                         }.get(recipe[1])
                         seeded_attribute_recipe = delete_attribute_recipe or modify_attribute_recipe
                         mutation_exchange_index = 2 if seeded_attribute_recipe else 1
@@ -1720,6 +1751,10 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 if exchange_index == 0 else
                                                 (b'interop-delete-attribute',)
                                                 if delete_attribute_recipe and
+                                                exchange_index == mutation_exchange_index and
+                                                not cleanup_exchange else
+                                                (b'interop-adjust-attribute',)
+                                                if recipe[1] == 'adjust_attribute' and
                                                 exchange_index == mutation_exchange_index and
                                                 not cleanup_exchange else
                                                 (b'interop-revoke', b'interop-destroy')
@@ -2109,6 +2144,26 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                         'peer_observed_state_before_sha256'] !=
                                                     observation[mutation_index][2][
                                                         'peer_observed_state_after_sha256'],
+                                                **({'peer_attribute_adjustment_type':
+                                                        observation[mutation_index][2][
+                                                            'attribute_adjustments'][0]['adjustment_type'],
+                                                    'peer_attribute_adjustment_tag':
+                                                        f"{observation[mutation_index][2]['attribute_adjustments'][0]['tag']:06X}",
+                                                    'peer_adjustment_value_omitted':
+                                                        observation[mutation_index][2][
+                                                            'attribute_adjustments'][0][
+                                                                'adjustment_value_omitted'],
+                                                    'peer_attribute_value_before':
+                                                        observation[mutation_index][2][
+                                                            'attribute_adjustments'][0]['before'],
+                                                    'peer_attribute_value_after':
+                                                        observation[mutation_index][2][
+                                                            'attribute_adjustments'][0]['after'],
+                                                    'peer_response_unique_batch_item_ids': [
+                                                        value.decode('utf-8') for value in
+                                                        byte_string_values(
+                                                            observation[mutation_index][1], 0x420093)]}
+                                                   if recipe[1] == 'adjust_attribute' else {}),
                                                 }
                                                if attribute_mutation_recipe and len(observation) ==
                                                (4 if seeded_attribute_recipe else 3) else {}),

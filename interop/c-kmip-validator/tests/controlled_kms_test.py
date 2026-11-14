@@ -134,7 +134,7 @@ def response(operations: tuple[int, ...], protocol_minor: int,
         elif operation == 32:
             payload_value = tlv(0x420094, 7, b"fixture-key-1") + tlv(
                 0x4200C2, 8, bytes.fromhex("00112233445566778899aabbccddeeff"))
-        elif operation in (13, 14, 15, 49):
+        elif operation in (13, 14, 15, 48, 49):
             payload_value = tlv(0x420094, 7, b"fixture-key-1")
         elif operation == 11:
             if selected_attribute_wire is not None:
@@ -168,6 +168,7 @@ def response(operations: tuple[int, ...], protocol_minor: int,
                                     13: b"interop-attributes",
                                     14: b"interop-attributes",
                                     15: b"interop-delete-attribute",
+                                    48: b"interop-adjust-attribute",
                                     49: b"interop-attributes",
                                     54: b"interop-set-defaults",
                                     55: b"interop-set-constraints",
@@ -339,6 +340,7 @@ def main() -> int:
     expected_operations += (37, 38, 39)
     expected_operations += (39, 37, 38)
     expected_operations += (1, 13, 19, 20)
+    expected_operations += (1, 48, 19, 20)
     expected_operations += (1, 49, 19, 20)
     expected_operations += (1, 17, 19, 20)
     if protocol_version == "2.1":
@@ -371,6 +373,7 @@ def main() -> int:
     expected_cases += ("test-batch-stop-on-first-failure",)
     expected_cases += ("test-neg-destroy-active-without-revoke",)
     expected_cases += ("test-op-add-attribute",)
+    expected_cases += ("test-op-adjust-attribute",)
     expected_cases += ("test-op-set-attribute",)
     expected_cases += ("test-op-get-usage-allocation",)
     if protocol_version == "2.1":
