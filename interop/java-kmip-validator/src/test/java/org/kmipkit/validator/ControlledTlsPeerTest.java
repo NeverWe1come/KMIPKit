@@ -680,6 +680,10 @@ class ControlledTlsPeerTest {
                                 QueryResponseField operation = typed.fieldAt(0);
                                 assertEquals(QueryResponseFieldKind.ENUMERATION, operation.kind());
                                 assertEquals(0x3bL, operation.enumeration().orElseThrow());
+                                // OASIS KMIP 2.0 §7.25 Table 345 and KMIP 2.1 §7.31 Table 383.
+                                List<TtlvItemView> profiles = typed.profileInformation();
+                                assertEquals(1, profiles.size(),
+                                        "The typed Query reader must expose the Profile Information structure.");
                             }
                         }
                     }
