@@ -1087,7 +1087,7 @@ def assert_sync_create_request(node, version, expected_indicator):
         raise ValueError('fixture_sync_create_key_attributes_mismatch')
 
 
-def verify_sync_default_create_response(response_tree):
+def verify_sync_create_response(response_tree):
     """Require one completed Create response without an asynchronous correlation."""
     items = [item for item in response_tree[2] if item[0] == BATCH_ITEM_TAG and item[1] == 1]
     payloads = [child for child in items[0][2]
@@ -1826,9 +1826,9 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                         elif recipe[1] == 'interop':
                                             verify_interop_response(response_tree)
                                         elif recipe[1] == 'async_create_sync_default' and exchange_index == 0:
-                                            verify_sync_default_create_response(response_tree)
+                                            verify_sync_create_response(response_tree)
                                         elif recipe[1] == 'async_create_optional_complete' and exchange_index == 0:
-                                            verify_sync_default_create_response(response_tree)
+                                            verify_sync_create_response(response_tree)
                                         elif recipe[1] in ('async_create_pending', 'cancel_async',
                                                            'cancel_poll_race') and exchange_index == 0:
                                             pending_items = [item for item in response_tree[2]
