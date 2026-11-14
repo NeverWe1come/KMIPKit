@@ -7093,6 +7093,13 @@ create_key_pair_cleanup:
                            metadata.operation == KMIPKIT_ENUMERATION_OPERATION_GET_ATTRIBUTE_LIST &&
                            metadata.result_status == KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS) {
                     attribute_list_matched = true;
+                    if (continue_after_failure_workflow) {
+                        attribute_list_matched = get_attribute_list_response_matches_key(
+                            *response_slot, &expected_allocation_identifier, &status);
+                        if (status == 0 && !attribute_list_matched) {
+                            status = KMIPKIT_ERROR_INVALID_INPUT;
+                        }
+                    }
                 } else {
                     status = KMIPKIT_ERROR_INVALID_INPUT;
                 }

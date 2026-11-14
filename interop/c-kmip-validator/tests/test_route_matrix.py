@@ -3612,9 +3612,9 @@ class RouteMatrixTests(unittest.TestCase):
             ('kmipkit_client_batch_item_response_raw_ttlv', 'decode',
              'KMIPKIT-ELEM-MESSAGE-FIELD-8-6-BATCH-ITEM', None),
             ('kmipkit_client_batch_item_response_get_attribute_list', 'decode',
-             'KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST', None),
+             'KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST', 1),
             ('kmipkit_client_batch_item_response_get_attribute_list_payload_ttlv', 'decode',
-             'KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST', None),
+             'KMIPKIT-ELEM-OP-C2S-GET-ATTRIBUTE-LIST', 1),
         }
         exercised_routes = {
             (event['public_api_symbol'], event['action'], event['target_id'],
