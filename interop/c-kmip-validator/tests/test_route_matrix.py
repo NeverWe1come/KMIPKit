@@ -55,6 +55,20 @@ class RouteMatrixTests(unittest.TestCase):
         import route_matrix
         self.runner = route_matrix
 
+    def test_catalog_hash_input_is_a_cmake_reconfigure_dependency(self):
+        """A changed catalog must refresh the validator's compiled provenance."""
+        from artifact_support import ROOT
+
+        cmake = (ROOT / 'interop/c-kmip-validator/CMakeLists.txt').read_text()
+
+        self.assertRegex(
+            cmake,
+            r'set_property\(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS\s+'
+            r'"\$\{KMIPKIT_C_CATALOG_PATH\}"\)',
+            'CMake must reconfigure when the catalog used for its SHA-256 changes',
+        )
+        self.assertIn('file(SHA256 "${KMIPKIT_C_CATALOG_PATH}"', cmake)
+
     def test_nonexistent_recipe_is_pending_and_never_library_unavailable(self):
         self.assertEqual(self.runner.pending_reason({'public_api_symbol': 'kmipkit_client_batch_item_sign'}),
                          'validator_recipe_pending')
