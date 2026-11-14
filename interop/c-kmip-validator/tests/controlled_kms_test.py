@@ -471,6 +471,7 @@ def main() -> int:
     expected_operations += (1, 13, 14, 19, 20)
     expected_operations += (1, 18, 12, 19, 20)
     expected_operations += (1, 18, 10, 19, 20)
+    expected_operations += (1, 18, 19, 20) * 2
     expected_operations += (1, 48, 19, 20)
     expected_operations += (52, 52, 52)
     expected_operations += (26,)
@@ -537,6 +538,10 @@ def main() -> int:
     expected_cases += ("test-batch-create-activate-destroy",)
     expected_cases += ("test-batch-placeholder-chain-resolves",)
     expected_cases += (
+        "test-batch-order-required-placeholder-resolution",
+        "test-batch-order-omitted-defaults-true",
+    )
+    expected_cases += (
         "test-batch-count-matches-items",
         "test-batch-count-mismatch-rejected",
         "test-batch-unique-item-id-response-correlation",
@@ -596,6 +601,7 @@ def main() -> int:
         handled = 0
         handled_operations: list[int] = []
         handled_batches: list[tuple[int, ...]] = []
+        ordered_placeholder_options: list[bool] = []
 
         def serve() -> None:
             nonlocal handled
@@ -645,6 +651,7 @@ def main() -> int:
                                     raise AssertionError("Interop function order or shared identifier mismatch")
                             two_read_batch = operations == (10, 12)
                             placeholder_chain = operations == (1, 18, 10)
+                            ordered_placeholder_batch = operations == (1, 18)
                             sign_lifecycle = operations == (1, 18, 33, 19, 20)
                             signature_verify_lifecycle = operations == (1, 18, 34, 19, 20)
                             placeholder_cleanup = operations == (19, 20) and \
@@ -743,6 +750,24 @@ def main() -> int:
                                             for item_id in expected_item_ids) or
                                         enumeration(0x42000E, 1) not in request):
                                     raise AssertionError("placeholder chain did not send two IDPlaceholder references")
+                                response_item_ids = expected_item_ids
+                            elif ordered_placeholder_batch:
+                                expected_item_ids = (
+                                    b"placeholder-create", b"placeholder-activate"
+                                )
+                                true_order_option = tlv(0x420010, 6, b"\x00\x00\x00\x00\x00\x00\x00\x01")
+                                false_order_option = tlv(0x420010, 6, bytes(8))
+                                order_option_present = true_order_option in request
+                                order_option_absent = true_order_option not in request and \
+                                    false_order_option not in request
+                                if (request.count(enumeration(0x420094, 1)) != 1 or
+                                        any(tlv(0x420093, 8, item_id) not in request
+                                            for item_id in expected_item_ids) or
+                                        not (order_option_present or order_option_absent)):
+                                    raise AssertionError(
+                                        "Create/Activate batch omitted ID Placeholder or invalid Batch Order Option"
+                                    )
+                                ordered_placeholder_options.append(order_option_present)
                                 response_item_ids = expected_item_ids
                             elif placeholder_cleanup:
                                 expected_cleanup_ids = (
@@ -1136,6 +1161,7 @@ def main() -> int:
                 f"stdout={run.stdout[:1200]!r}; stderr={run.stderr[-1200:]!r}"
             ) from server_errors[0]
         if (handled != len(expected_operations) or sorted(handled_operations) != sorted(expected_operations)
+                or sorted(ordered_placeholder_options) != [False, True]
                 or (1, 11, 20) not in handled_batches
                 or (1, 12, 20) not in handled_batches
                 or (1, 10, 20) not in handled_batches
@@ -1151,7 +1177,7 @@ def main() -> int:
             raise AssertionError(
                 f"controlled peer operation count mismatch; missing={dict(missing_operations)!r}; "
                 f"unexpected={dict(unexpected_operations)!r}; failed_cases={failed_cases!r}; "
-                f"batches={handled_batches!r}"
+                f"batches={handled_batches!r}; ordered_placeholder_options={ordered_placeholder_options!r}"
             )
         result = json.loads(result_path.read_text(encoding="utf-8"))
         try:
