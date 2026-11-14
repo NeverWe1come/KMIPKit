@@ -59,6 +59,89 @@ class Kmip30FluentManifestTests(unittest.TestCase):
 
         _validate_fluent_routes(operations, {"capabilities": [capability]})
 
+    def test_kmip30_fluent_mappings_name_real_builder_and_result_exports(self) -> None:
+        document = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        declarations = document["publicDeclarations"]
+        by_package_and_name = {
+            (row["packageId"], row["exportName"]): row for row in declarations
+        }
+
+        builder_routes = {
+            "kmipkit_create_credential_builder_create": (
+                "createCredential",
+                "create_credential",
+            ),
+            "kmipkit_create_group_builder_create": ("createGroup", "create_group"),
+            "kmipkit_create_user_builder_create": ("createUser", "create_user"),
+            "kmipkit_deactivate_builder_create": ("deactivate", "deactivate"),
+            "kmipkit_decapsulate_builder_create": ("decapsulate", "decapsulate"),
+            "kmipkit_encapsulate_builder_create": ("encapsulate", "encapsulate"),
+            "kmipkit_obliterate_builder_create": ("obliterate", "obliterate"),
+        }
+        for c_export, (java_method, python_method) in builder_routes.items():
+            declaration = by_package_and_name[("c-kmipkit", c_export)]
+            with self.subTest(c_export=c_export):
+                self.assertEqual(
+                    f"org.kmipkit.fluent.FluentRequest.{java_method}",
+                    declaration["languageMappings"]["java"]["name"],
+                )
+                self.assertEqual(
+                    f"kmipkit.fluent.Request.{python_method}",
+                    declaration["languageMappings"]["python"]["name"],
+                )
+
+        execute_routes = {
+            "CreateCredential": "kmipkit_client_create_credential_v1",
+            "CreateGroup": "kmipkit_client_create_group_v1",
+            "CreateUser": "kmipkit_client_create_user_v1",
+            "Deactivate": "kmipkit_client_deactivate_v1",
+            "Decapsulate": "kmipkit_client_decapsulate_v1",
+            "Encapsulate": "kmipkit_client_encapsulate_v1",
+            "Obliterate": "kmipkit_client_obliterate_v1",
+        }
+        for operation, c_export in execute_routes.items():
+            declaration = by_package_and_name[("c-kmipkit", c_export)]
+            with self.subTest(operation=operation):
+                self.assertEqual(
+                    "org.kmipkit.fluent.Kmip30BuilderBase.execute",
+                    declaration["languageMappings"]["java"]["name"],
+                )
+
+        for c_export, java_name, python_name in (
+            (
+                "kmipkit_create_credential_object_hashed_password",
+                "org.kmipkit.fluent.CreateCredentialObject.hashedPassword",
+                "kmipkit.fluent.CreateCredentialObject.hashed_password",
+            ),
+            (
+                "kmipkit_create_credential_object_one_time_password",
+                "org.kmipkit.fluent.CreateCredentialObject.oneTimePassword",
+                "kmipkit.fluent.CreateCredentialObject.one_time_password",
+            ),
+            (
+                "kmipkit_client_batch_item_response_encapsulate_data",
+                "org.kmipkit.extensions.ClientBatchItemResult.encapsulateData",
+                "kmipkit.client.BatchItemResult.encapsulate_data",
+            ),
+            (
+                "kmipkit_client_batch_item_response_kmip30_identifier",
+                "org.kmipkit.extensions.ClientBatchItemResult.kmip30Identifier",
+                "kmipkit.client.BatchItemResult.kmip30_identifier",
+            ),
+        ):
+            declaration = by_package_and_name[("c-kmipkit", c_export)]
+            with self.subTest(c_export=c_export):
+                self.assertEqual(java_name, declaration["languageMappings"]["java"]["name"])
+                self.assertEqual(python_name, declaration["languageMappings"]["python"]["name"])
+
+        for package_id, export_name in (
+            ("java-kmipkit", "org.kmipkit.fluent.CreateCredentialObject"),
+            ("python-kmipkit", "kmipkit.fluent.CreateCredentialObject"),
+        ):
+            declaration = by_package_and_name[(package_id, export_name)]
+            with self.subTest(package=package_id):
+                self.assertEqual("type", declaration["kind"])
+
     def test_kmip30_fluent_capability_maps_all_routes_without_changing_21_inventory(self) -> None:
         document = json.loads(MANIFEST.read_text(encoding="utf-8"))
         operations_21 = [
@@ -80,6 +163,31 @@ class Kmip30FluentManifestTests(unittest.TestCase):
         self.assertTrue(capability.get("parityEvidenceIds"))
         language_mappings = capability.get("mappings", {})
         self.assertEqual(set(language_mappings), {"rust", "c", "java", "python"})
+        self.assertEqual(
+            capability.get("parityEvidenceIds", []).count(
+                "bindings/java/src/test/java/org/kmipkit/Kmip30FluentExecutionTest.java"
+            ),
+            1,
+        )
+        types = {row.get("id"): row for row in document.get("types", [])}
+        self.assertEqual(types["CreateCredentialObject"].get("kind"), "enum")
+        self.assertEqual(
+            types["CreateCredentialObject"]["rust"]["name"],
+            "CreateCredentialObject",
+        )
+        opaque_builder = types["Kmip30OperationBuilder"]
+        self.assertEqual(opaque_builder["c"]["kind"], "opaque-handle")
+        self.assertNotIn("rust", opaque_builder)
+        self.assertNotIn("java", opaque_builder)
+        self.assertNotIn("python", opaque_builder)
+        c_handle_declaration = next(
+            row for row in document["publicDeclarations"]
+            if row.get("exportName") == "kmipkit_kmip30_operation_builder_t"
+        )
+        self.assertEqual(c_handle_declaration.get("parityScope"), "c-only")
+        self.assertEqual(set(c_handle_declaration.get("languageMappings", {})), {"c"})
+        self.assertNotIn("kmipkit_client::fluent::Kmip30OperationBuilder", language_mappings["rust"])
+        self.assertNotIn("kmipkit.fluent.Kmip30OperationBuilder", language_mappings["python"])
 
         draft = json.loads(KMIP30_DRAFT_API.read_text(encoding="utf-8"))
         routes = {row["operationCode"]: row for row in draft.get("operations", [])}
@@ -93,6 +201,16 @@ class Kmip30FluentManifestTests(unittest.TestCase):
                 for language, mapping in mappings.items():
                     self.assertIsInstance(mapping, str)
                     self.assertIn(mapping, language_mappings[language])
+        direct_c_routes = {
+            "kmipkit_client_create_credential_v1",
+            "kmipkit_client_create_group_v1",
+            "kmipkit_client_create_user_v1",
+            "kmipkit_client_deactivate_v1",
+            "kmipkit_client_decapsulate_v1",
+            "kmipkit_client_encapsulate_v1",
+            "kmipkit_client_obliterate_v1",
+        }
+        self.assertTrue(direct_c_routes.issubset(set(language_mappings["c"])))
 
 
 if __name__ == "__main__":
