@@ -3229,7 +3229,8 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                             'async_poll_cancel_no_recursion',
                                                 'async_poll_final_failure',
                                                 'async_poll_repeated_pending_to_success',
-                                                'async_process_then_poll_state') and
+                                            'async_process_then_poll_state',
+                                            'async_unknown_correlation_rejected') and
                                         cell['action'] == 'construct' and
                                         cell['public_api_symbol'] in {
                                             'kmipkit_poll_request_create',
