@@ -1588,3 +1588,55 @@ encoding/transport, and source-backed exclusion filters; every still-planned
 cell remains required. FR-002/FR-009 completeness still requires zero pending
 cells, while the Java selected-scope job and ledger comparison do not enforce
 global completion. This slice does not complete the matrix; the PR remains WIP.
+
+## KMIP 2.1 Constraint and Constraints operation structures
+
+KMIP 2.1 §7.6 Table 357 defines Constraint as a Structure with optional Object
+Types, Object Groups, and Attributes fields. KMIP 2.1 §7.7 Table 358 defines
+Constraints as a Structure with an optional, repeatable Constraint member. The
+fixtures invoke all six generic Structure/Item routes for each outer structure.
+The Constraint fixture includes Object Types (one assigned Symmetric Key) and
+Object Groups (one Text String), while omitting optional Attributes; an empty
+Constraint is also decoded. The Constraints fixture has two ordered Constraint
+children; an empty Constraints form verifies the repeated child may be absent.
+All nested tags, types, values, and field order are asserted after construction
+and decoding.
+
+Red commit `3e0aca24` requires both structures' six generic routes and fails on
+the missing Constraint `TtlvStructure.create` event. Green commit `c827cab6`
+constructs and decodes both structures, checks empty and populated branches,
+and emits all twelve route events. The Refactor commit updates the generated
+ledger and traceability documentation without changing planned applicability.
+
+Local verification used installed Java artifact
+`489fafc79ef89db2524eafa7a6c6482f5cf75d97` with SHA-256
+`830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e`:
+
+```sh
+TMPDIR="$PWD/build/native-test-tmp" \
+JAVA_TOOL_OPTIONS="-Djava.io.tmpdir=$PWD/build/native-test-tmp" \
+  bash ../../bindings/java/gradlew --no-daemon \
+  -PkmipkitMavenRepo="$PWD/build/maven-repository" test
+python3 ../../interop/shared/tools/validate_route_evidence.py --selected-scope \
+  --report build/route-execution-evidence.json \
+  --artifact-sha256 830db52367b5887fbd6e1e2ad6a927a1bb52aab318b04d22cef6e8ba9041813e \
+  --write-ledger
+python3 tools/compare_route_ledger.py --refresh-reference
+python3 tools/compare_route_ledger.py
+python3 -m unittest tools.normative_catalog.tests.test_feature_traceability \
+  scripts.tests.test_requirement_traceability
+```
+
+The focused test and full Java consumer suite pass; the suite reports 54 tests
+with zero failures, errors, or skips. The route validator accepts 22,833/22,833
+selected cells with zero failed cells. The full ledger records 71,463 planned,
+22,833 executed, and 48,630 pending cells across 1,291 case IDs. All pending
+cells remain `route_evidence_not_emitted` and therefore remain planned,
+applicable requirements with missing per-cell execution evidence. This reason
+means no validated invocation event exists for a cell; it is not an unsupported
+API or a non-applicability decision. The shared catalog and route-capability
+matrix apply protocol-version, route, encoding/transport, and source-backed
+exclusion rules before retaining these planned cells. FR-002/FR-009 require
+zero pending cells for matrix completeness; the Java selected-scope workflow
+and ledger comparison do not enforce the global requirement. This slice does
+not complete the Java matrix, and the PR remains WIP.
