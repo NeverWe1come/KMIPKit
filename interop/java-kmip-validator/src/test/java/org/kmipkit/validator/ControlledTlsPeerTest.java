@@ -88,6 +88,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ControlledTlsPeerTest {
     private static final List<String> KMIP_2_0_AND_2_1 = List.of("2.0", "2.1");
 
+    private record NewAttributeMutationFixture(String methodName, String title, String ordinal,
+            int operationValue) { }
+
+    private static final List<NewAttributeMutationFixture> NEW_ATTRIBUTE_MUTATION_FIXTURES = List.of(
+            new NewAttributeMutationFixture("addAttribute", "Add Attribute", "002", 0x0d),
+            new NewAttributeMutationFixture("modifyAttribute", "Modify Attribute", "003", 0x0e),
+            new NewAttributeMutationFixture("setAttribute", "Set Attribute", "002", 0x31));
+
     private record NormativeTarget(String caseId, String targetId) { }
 
     private static final String LOG_MESSAGE = "KMIPKit interoperability diagnostic";
@@ -3896,22 +3904,13 @@ class ControlledTlsPeerTest {
             byte[] serverCertificatePem, byte[] serverPrivateKeyPem,
             byte[] clientCertificatePem, byte[] clientPrivateKeyPem) throws Exception {
         int minor = "2.0".equals(protocolVersion) ? 0 : 1;
-        for (String operation : List.of("addAttribute", "modifyAttribute", "setAttribute")) {
-            String title = switch (operation) {
-                case "addAttribute" -> "Add Attribute";
-                case "modifyAttribute" -> "Modify Attribute";
-                case "setAttribute" -> "Set Attribute";
-                default -> throw new AssertionError("Unknown attribute mutation fixture.");
-            };
-            String suffix = switch (operation) {
-                case "addAttribute" -> "add-attribute-request";
-                case "modifyAttribute" -> "modify-attribute-request";
-                case "setAttribute" -> "set-attribute-request";
-                default -> throw new AssertionError("Unknown attribute mutation fixture.");
-            };
+        for (NewAttributeMutationFixture fixture : NEW_ATTRIBUTE_MUTATION_FIXTURES) {
+            String operation = fixture.methodName();
+            String title = fixture.title();
+            String suffix = title.toLowerCase(Locale.ROOT).replace(' ', '-') + "-request";
             String versionCode = "2.0".equals(protocolVersion) ? "20" : "21";
-            String ordinal = "modifyAttribute".equals(operation) ? "003" : "002";
-            String routeOperation = attributeMutationRouteName(operation);
+            String ordinal = fixture.ordinal();
+            String routeOperation = title.toLowerCase(Locale.ROOT).replace(' ', '_');
             String caseId = "test-norm-payload-client-" + suffix + "-" + versionCode + "-" + ordinal;
             String payloadTarget = "KMIPKIT-PAYLOAD-CLIENT-" + suffix.toUpperCase(Locale.ROOT)
                     + "-" + versionCode + "-" + ordinal;
@@ -3928,12 +3927,7 @@ class ControlledTlsPeerTest {
             String toPayloadSymbol = "org.kmipkit.extensions." + requestClass + ".toTtlvPayload";
             String responseRoute = "java.typed-protocol.function.client_batch_item_response_" + routeOperation;
             String responseSymbol = "org.kmipkit.extensions.ClientBatchItemResult." + operation + "Response";
-            int operationValue = switch (operation) {
-                case "addAttribute" -> 0x0d;
-                case "modifyAttribute" -> 0x0e;
-                case "setAttribute" -> 0x31;
-                default -> throw new AssertionError("Unknown attribute mutation fixture.");
-            };
+            int operationValue = fixture.operationValue();
 
             byte[] newAttributeWire = newAttributeStructureWire();
             String newAttributeHash = normalizedTreeSha256(newAttributeWire);
@@ -4173,15 +4167,6 @@ class ControlledTlsPeerTest {
         return structure(0x42007b, header, firstItem, secondItem);
     }
 
-    private static String attributeMutationRouteName(String operation) {
-        return switch (operation) {
-            case "addAttribute" -> "add_attribute";
-            case "modifyAttribute" -> "modify_attribute";
-            case "setAttribute" -> "set_attribute";
-            default -> throw new AssertionError("Unknown attribute mutation fixture.");
-        };
-    }
-
     private static void assertNewlyCataloguedLocalRoutesAreInvoked(ArrayNode events,
             String protocolVersion) {
         String ephemeralCase = "test-norm-message-field-message-field-8-3-ephemeral";
@@ -4199,21 +4184,12 @@ class ControlledTlsPeerTest {
                 "construct", protocolVersion);
 
         String versionCode = "2.0".equals(protocolVersion) ? "20" : "21";
-        for (String operation : List.of("addAttribute", "modifyAttribute", "setAttribute")) {
-            String title = switch (operation) {
-                case "addAttribute" -> "Add Attribute";
-                case "modifyAttribute" -> "Modify Attribute";
-                case "setAttribute" -> "Set Attribute";
-                default -> throw new AssertionError("Unknown attribute mutation fixture.");
-            };
-            String suffix = switch (operation) {
-                case "addAttribute" -> "add-attribute-request";
-                case "modifyAttribute" -> "modify-attribute-request";
-                case "setAttribute" -> "set-attribute-request";
-                default -> throw new AssertionError("Unknown attribute mutation fixture.");
-            };
-            String ordinal = "modifyAttribute".equals(operation) ? "003" : "002";
-            String routeOperation = attributeMutationRouteName(operation);
+        for (NewAttributeMutationFixture fixture : NEW_ATTRIBUTE_MUTATION_FIXTURES) {
+            String operation = fixture.methodName();
+            String title = fixture.title();
+            String suffix = title.toLowerCase(Locale.ROOT).replace(' ', '-') + "-request";
+            String ordinal = fixture.ordinal();
+            String routeOperation = title.toLowerCase(Locale.ROOT).replace(' ', '_');
             String caseId = "test-norm-payload-client-" + suffix + "-" + versionCode + "-" + ordinal;
             String payloadTarget = "KMIPKIT-PAYLOAD-CLIENT-" + suffix.toUpperCase(Locale.ROOT)
                     + "-" + versionCode + "-" + ordinal;
