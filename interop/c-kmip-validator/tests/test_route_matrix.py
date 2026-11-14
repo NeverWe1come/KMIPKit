@@ -285,6 +285,44 @@ class RouteMatrixTests(unittest.TestCase):
                     result = abi.roundtrip(encode(fixture))
                     self.assertIn('kmipkit_request_message_from_ttlv', result['invoked_symbols'])
 
+    def test_message_extension_fields_use_a_complete_typed_request_fixture(self):
+        """OASIS KMIP 2.0/2.1 §9.13 defines Message Extension fields (0092-FR-003)."""
+        from artifact_support import INSTALL, ROOT
+        from route_ttlv import TreeAbi, encode
+
+        catalog = json.loads((ROOT / 'interop/shared/catalog/kmipkit-1.0-test-catalog.json').read_text())
+        tags = self.runner.catalog_tag_values(catalog)
+        targets = {
+            'KMIPKIT-ELEM-MESSAGE-FIELD-8-3-MESSAGE-EXTENSION': 'Message Extension',
+            'KMIPKIT-ELEM-MESSAGE-FIELD-9-13-CRITICALITY-INDICATOR': 'Criticality Indicator',
+            'KMIPKIT-ELEM-MESSAGE-FIELD-9-13-MESSAGE-EXTENSION': 'Message Extension',
+            'KMIPKIT-ELEM-MESSAGE-FIELD-9-13-VENDOR-EXTENSION': 'Vendor Extension',
+            'KMIPKIT-ELEM-MESSAGE-FIELD-9-13-VENDOR-IDENTIFICATION': 'Vendor Identification',
+        }
+        target_by_id = {target['target_id']: target for target in catalog['normative_targets']
+                        if target['target_id'] in targets}
+        abi = TreeAbi(INSTALL / 'lib/libkmipkit_ffi.so')
+        for target_id, tag_name in targets.items():
+            for version in ('2.0', '2.1'):
+                with self.subTest(target_id=target_id, protocol_version=version):
+                    fixtures = self.runner.generic_tree_fixtures(
+                        target_by_id[target_id], catalog, tags, version)
+                    self.assertIsNotNone(fixtures)
+                    fixture = fixtures[0]
+                    self.assertEqual((fixture[0], fixture[1]), (tags['Request Message'], 1))
+                    pending = list(fixture[2])
+                    found = False
+                    while pending:
+                        tag, kind, value = pending.pop()
+                        if tag == tags[tag_name]:
+                            found = True
+                            break
+                        if kind == 1:
+                            pending.extend(value)
+                    self.assertTrue(found, f'{target_id} is absent from the request tree')
+                    result = abi.roundtrip(encode(fixture))
+                    self.assertIn('kmipkit_request_message_from_ttlv', result['invoked_symbols'])
+
     def test_get_usage_allocation_has_an_executable_controlled_peer_recipe(self):
         import route_peer
         from artifact_support import ROOT
