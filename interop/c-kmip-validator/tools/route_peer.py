@@ -631,6 +631,35 @@ def request_adjust_attribute_fields(batch_item):
             int.from_bytes(types[0][2], 'big'), adjustment_value)
 
 
+def discover_versions_offer(node):
+    """Return direct Protocol Version offers from one request payload."""
+    offers = []
+    for version in node[2]:
+        if version[0] != 0x420069:
+            continue
+        if version[1] != 1:
+            return None
+        major = [child[2] for child in version[2]
+                 if child[0] == 0x42006A and child[1] == 2]
+        minor = [child[2] for child in version[2]
+                 if child[0] == 0x42006B and child[1] == 2]
+        if len(major) != 1 or len(minor) != 1:
+            return None
+        offers.append((int.from_bytes(major[0], 'big', signed=True),
+                       int.from_bytes(minor[0], 'big', signed=True)))
+    return offers
+
+
+def assert_discover_versions_offer(node):
+    """Check the optional offer is structurally valid and preference-ordered."""
+    items = [child for child in node[2] if child[0] == BATCH_ITEM_TAG and child[1] == 1]
+    payloads = [child for child in items[0][2]
+                if child[0] == REQUEST_PAYLOAD_TAG and child[1] == 1] if len(items) == 1 else []
+    offers = discover_versions_offer(payloads[0]) if len(payloads) == 1 else None
+    if offers is None or offers != sorted(offers, reverse=True):
+        raise ValueError('fixture_discover_versions_offer_mismatch')
+
+
 def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
                   constructor_variant=None):
     selected_recipe = recipe or RECIPES[case_id]
@@ -646,6 +675,8 @@ def assert_recipe(node, case_id, version, recipe=None, attribute_fixture=None,
         raise ValueError('fixture_batch_count_mismatch')
     if selected_recipe[1] in ('cancel_async', 'cancel_poll_race'):
         assert_cancel_request(node)
+    if selected_recipe[1] == 'discover_versions':
+        assert_discover_versions_offer(node)
     if (case_id in {
             'test-norm-payload-client-add-attribute-request-20-002',
             'test-norm-payload-client-add-attribute-request-21-002'} and
@@ -2386,7 +2417,7 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                         mutation_exchange_index = 2 if seeded_attribute_recipe else 1
                         attribute_cleanup_exchange_index = 3 if seeded_attribute_recipe else 2
                         reject_case = peer_rejection is not None and peer_rejection.get('case_id') == case_id
-                        if version == '2.0' and case_id in ('test-op-discover-versions', 'test-op-login', 'test-op-logout', 'test-op-get-constraints', 'test-op-ping'):
+                        if version == '2.0' and case_id in ('test-op-login', 'test-op-logout', 'test-op-get-constraints', 'test-op-ping'):
                             continue
                         observation, errors = [], []
                         peer_state = PeerState(
@@ -2802,6 +2833,20 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 cancel_result,
                                                 int(version[-1]))
                                         else:
+                                            discover_versions_supported = None
+                                            if recipe[1] == 'discover_versions':
+                                                request_items = [item for item in request_tree[2]
+                                                                 if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+                                                request_payloads = [child for child in request_items[0][2]
+                                                                    if child[0] == REQUEST_PAYLOAD_TAG and
+                                                                    child[1] == 1] if len(request_items) == 1 else []
+                                                offered = (discover_versions_offer(request_payloads[0])
+                                                           if len(request_payloads) == 1 else None)
+                                                if offered is None:
+                                                    raise ValueError('fixture_discover_versions_offer_mismatch')
+                                                server_supported = ((2, int(version[-1])),)
+                                                discover_versions_supported = tuple(
+                                                    item for item in offered if item in server_supported)
                                             response_wire = response(
                                                 response_operations, int(version[-1]), selected_tag, object_type,
                                                 attribute_fixture['attribute_response_wire'] if attribute_fixture else None,
@@ -2809,9 +2854,20 @@ def execute_network_cells(binary, catalog, manifest, *, protocol_versions=('2.0'
                                                 rng_length=(numbers(request_tree, 0x4200C4) or [16])[0]
                                                 if recipe[1] == 'rng_retrieve' else
                                                 len(byte_string_values(request_tree, 0x4200C2)[0])
-                                                if recipe[1] == 'rng_seed' else 16)
+                                                if recipe[1] == 'rng_seed' else 16,
+                                                discover_versions=discover_versions_supported)
                                         response_tree = parse(response_wire)
-                                        if logout_recipe:
+                                        if recipe[1] == 'discover_versions':
+                                            response_items = [item for item in response_tree[2]
+                                                              if item[0] == BATCH_ITEM_TAG and item[1] == 1]
+                                            response_payloads = [child for child in response_items[0][2]
+                                                                 if child[0] == RESPONSE_PAYLOAD_TAG and
+                                                                 child[1] == 1] if len(response_items) == 1 else []
+                                            observed = (discover_versions_offer(response_payloads[0])
+                                                        if len(response_payloads) == 1 else None)
+                                            if observed != list(discover_versions_supported):
+                                                raise ValueError('fixture_discover_versions_response_mismatch')
+                                        elif logout_recipe:
                                             verify_login_logout_response(response_tree, exchange_index)
                                         elif recipe[1] == 'async_poll_cancel_no_recursion':
                                             if exchange_index == 0:

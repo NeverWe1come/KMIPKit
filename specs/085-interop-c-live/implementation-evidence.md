@@ -801,6 +801,38 @@ TTLV tree.
   pending recipe cells (27,423) and zero failed cells. The complete matrix is
   still open, and PR #170 remains WIP.
 
+### Discover Versions offer and installed C route matrix
+
+The controlled peer validates that a Discover Versions request's optional,
+repeated Protocol Version values are well-formed and ordered by decreasing
+preference. It does not require the offered versions to match the Request
+Header version: OASIS KMIP 2.0 §6.1.16 Table 196 and KMIP 2.1 §6.1.16 Table
+211 distinguish the message version from the list of versions supported by
+the client. The installed C constructor currently emits an offer of 2.1; the
+route is still exercised with both 2.0 and 2.1 message headers. The shared
+route manifest retains both versions for the C builder and typed supported-
+versions response accessor. The network test requires both public symbols in
+the invocation evidence for TTLV, JSON, and XML over raw TLS and HTTPS.
+These checks also follow KMIPKIT-0092-FR-001, FR-005, FR-006, and FR-009.
+
+- Review of the original offer assertion found that it incorrectly rejected a
+  2.0 offer solely because the Request Header used 2.1. New Red tests cover a
+  header/offer version mismatch that OASIS allows and reject an ascending offer
+  list as required by the preference-order rule.
+- The peer now checks the offer's structure and order without equating it to
+  the header version. The manifest keeps the request and response routes
+  enabled for both versions. Focused checks and the full installed C route
+  matrix pass: 12 Discover Versions exchanges and 148/148 route-matrix tests.
+  CTest passes 7/7; the shared route capability and coverage-matrix suites pass
+  93/93; and `route_capabilities.py --check` passes. For the controlled KMIP
+  2.0 peer, the offer/header mismatch yields an empty intersection as defined
+  by §6.1.16 and the typed accessor accepts the present empty Supported
+  Versions list. Exact-head CI run `43548278272` records 40,008/66,736 invoked
+  cells, zero failed, and 26,728 pending; all 42 Discover Versions cells passed
+  (21 for each message version) with none pending. The C matrix completeness
+  gate remains red on recipes for other operations, so PR #170 and the stacked
+  PR remain WIP.
+
 ### Async Cancel local payload routes
 
 The local C recipe invokes `kmipkit_cancel_request_create` and
@@ -1075,3 +1107,30 @@ preserving their server-issued correlations.
   The matching completeness validator now reports
   `test-async-unknown-correlation-rejected` as the next missing recipe; PR
   #170 remains WIP.
+### Discover Versions offer and installed C route matrix
+
+The controlled peer now checks the public C Discover Versions request's
+advertised Protocol Version list against the constructor's fixed KMIP 2.1
+offer. The route test executes the pinned installed consumer through TTLV,
+JSON, and XML over raw TLS and HTTPS, and requires both the Discover Versions
+builder and typed supported-versions response accessor in the invocation
+evidence. The shared route generator now limits the C request builder and its
+network route to KMIP 2.1 and records the KMIP 2.0 request Protocol Version
+field as a version-scoped source-backed limitation. The C response accessor
+remains available for both versions because it reads the server's Supported
+Versions list, which may include KMIP 2.0. These checks follow OASIS KMIP 2.0
+§6.1.16, Table 196; KMIP 2.1 §6.1.16, Tables 211–212; and KMIPKIT-0092-FR-001,
+FR-005, FR-006, and FR-009.
+
+- Red commit `24dfd7437` proved the peer accepted an incorrect KMIP 2.0 offer
+  under the Discover Versions case.
+- Green commit `d4564903d` rejects the incorrect offer and checks the fixed
+  KMIP 2.1 structure.
+- The installed route test passed all six encoding/transport combinations.
+  The focused checks passed 2/2, and the C route-matrix unit suite passed
+  141/141. The broader completeness matrix remains open; PR #170 remains WIP.
+- Red tests then exposed that route limitations were not version scoped. The
+  shared generator and matrix tests pass as part of the 93/93 route capability
+  and coverage-matrix suite. `route_capabilities.py --check` passes with the
+  regenerated manifest. The broader installed C route matrix still has
+  pending recipes, so the stacked PR remains WIP.
