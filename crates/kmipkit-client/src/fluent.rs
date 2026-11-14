@@ -8,13 +8,15 @@ use kmipkit_protocol::attribute::typed;
 use kmipkit_protocol::{
     ActivateRequest, AddAttributeRequest, AdjustAttributeRequest, AdjustmentType, ArchiveRequest,
     Attribute, AttributeDefinition, AttributeReference, AttributeSet, AttributeSetError,
-    CheckRequest, CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest,
-    CryptographicAlgorithm, CryptographicParameters, CurrentAttribute, DecryptRequest,
-    DeleteAttributeRequest, DestroyRequest, DiscoverVersionsRequest, EncryptRequest,
-    GetConstraintsRequest, GetRequest, GetUsageAllocationRequest, HashRequest, LocateRequest,
-    MacRequest, MacVerifyRequest, ManagedObject, ModifyAttributeRequest, NewAttribute,
-    ObjectGroupMember, ObjectType, ObtainLeaseRequest, OpaqueObjectContext, OperationData,
-    PingRequest, ProtocolVersion, QueryFunction, QueryRequest, RecertifyRequest, RecoverRequest,
+    CheckRequest, CreateCredentialObject, CreateCredentialRequest, CreateGroupRequest,
+    CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest, CreateUserRequest,
+    CryptographicAlgorithm, CryptographicParameters, CurrentAttribute, DeactivateRequest,
+    DecapsulateRequest, DecryptRequest, DeleteAttributeRequest, DestroyRequest,
+    DiscoverVersionsRequest, EncapsulateRequest, EncryptRequest, GetConstraintsRequest, GetRequest,
+    GetUsageAllocationRequest, HashRequest, LocateRequest, MacRequest, MacVerifyRequest,
+    ManagedObject, ModifyAttributeRequest, NewAttribute, ObjectGroupMember, ObjectType,
+    ObliterateRequest, ObtainLeaseRequest, OpaqueObjectContext, OperationData, PingRequest,
+    ProtocolVersion, QueryFunction, QueryRequest, RecertifyRequest, RecoverRequest,
     RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest,
     SecretBytes, SetAttributeRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
     StorageStatusMask, UniqueIdentifier, ValidateKmipRequest,
@@ -345,6 +347,62 @@ impl<'a> RequestBuilder<'a> {
     #[must_use]
     pub fn create_split_key(self) -> CreateSplitKeyBuilder<'a> {
         CreateSplitKeyBuilder::new(self.client)
+    }
+
+    /// Begins a KMIP 3.0 Create Credential builder using a typed credential
+    /// alternative. Its Credential Type is derived from the selected object.
+    /// The caller must explicitly select protocol version 3.0 on the client or
+    /// in exchange options before execution.
+    #[must_use]
+    pub fn create_credential(
+        self,
+        attributes: AttributeSet,
+        object: CreateCredentialObject,
+    ) -> CreateCredentialBuilder<'a> {
+        CreateCredentialBuilder::new(self.client, attributes, object)
+    }
+
+    /// Begins a KMIP 3.0 Create Group builder. Protocol version 3.0 remains an
+    /// explicit caller choice.
+    #[must_use]
+    pub fn create_group(self, attributes: AttributeSet) -> CreateGroupBuilder<'a> {
+        CreateGroupBuilder::new(self.client, attributes)
+    }
+
+    /// Begins a KMIP 3.0 Create User builder. Protocol version 3.0 remains an
+    /// explicit caller choice.
+    #[must_use]
+    pub fn create_user(self, attributes: AttributeSet) -> CreateUserBuilder<'a> {
+        CreateUserBuilder::new(self.client, attributes)
+    }
+
+    /// Begins a KMIP 3.0 Deactivate builder for a caller-supplied identifier.
+    #[must_use]
+    pub fn deactivate(self, unique_identifier: UniqueIdentifier) -> DeactivateBuilder<'a> {
+        DeactivateBuilder::new(self.client, unique_identifier)
+    }
+
+    /// Begins a KMIP 3.0 Decapsulate builder for a caller-supplied identifier
+    /// and encapsulated ciphertext.
+    #[must_use]
+    pub fn decapsulate(
+        self,
+        unique_identifier: UniqueIdentifier,
+        ciphertext: Vec<u8>,
+    ) -> DecapsulateBuilder<'a> {
+        DecapsulateBuilder::new(self.client, unique_identifier, ciphertext)
+    }
+
+    /// Begins a KMIP 3.0 Encapsulate builder for a caller-supplied identifier.
+    #[must_use]
+    pub fn encapsulate(self, unique_identifier: UniqueIdentifier) -> EncapsulateBuilder<'a> {
+        EncapsulateBuilder::new(self.client, unique_identifier)
+    }
+
+    /// Begins a KMIP 3.0 Obliterate builder for a caller-supplied identifier.
+    #[must_use]
+    pub fn obliterate(self, unique_identifier: UniqueIdentifier) -> ObliterateBuilder<'a> {
+        ObliterateBuilder::new(self.client, unique_identifier)
     }
 
     /// Begins constructing a typed Register request.
@@ -5620,6 +5678,355 @@ impl Client {
         RequestBuilder::new(self)
     }
 }
+
+struct Kmip30BuilderExecution<'a> {
+    client: &'a mut Client,
+    options: Option<RequestOptions>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl<'a> Kmip30BuilderExecution<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            client,
+            options: None,
+            asynchronous_indicator: None,
+        }
+    }
+
+    fn execute(
+        self,
+        request: ClientRequest,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        execute_fluent_request(
+            self.client,
+            request,
+            self.asynchronous_indicator,
+            self.options,
+            limits,
+        )
+    }
+}
+
+trait Kmip30BuilderParts<'a> {
+    fn into_parts(self) -> (Kmip30BuilderExecution<'a>, ClientRequest);
+    fn execution(&mut self) -> &mut Kmip30BuilderExecution<'a>;
+}
+
+macro_rules! impl_kmip30_builder_methods {
+    ($builder:ident) => {
+        impl<'a> $builder<'a> {
+            /// Sets one-exchange options, including a caller-selected protocol version.
+            #[must_use]
+            pub fn with_options(mut self, options: RequestOptions) -> Self {
+                self.execution().options = Some(options);
+                self
+            }
+
+            /// Sets the Request Header Asynchronous Indicator for this exchange.
+            #[must_use]
+            pub fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+                self.execution().asynchronous_indicator = Some(value);
+                self
+            }
+
+            /// Validates the semantic inputs held by the builder without sending.
+            /// The selected protocol version and typed request are checked again before transport.
+            ///
+            /// # Errors
+            ///
+            /// This operation currently has no local failure case because the
+            /// builder accepts only required, already typed request fields.
+            pub fn validate(&self) -> Result<(), FluentBuildError> {
+                Ok(())
+            }
+
+            /// Builds the existing typed request variant.
+            #[must_use]
+            pub fn build(self) -> ClientRequest {
+                self.into_parts().1
+            }
+
+            /// Converts the request to one typed batch item for explicit batching.
+            #[must_use]
+            pub fn to_batch_item(self) -> ClientBatchItem {
+                let (_, request) = self.into_parts();
+                ClientBatchItem::new(request)
+            }
+
+            /// Executes exactly one typed exchange.
+            ///
+            /// # Errors
+            /// Returns the existing local validation, version, transport, or response error.
+            pub fn execute(
+                self,
+                limits: &kmipkit_ttlv::codec::CodecLimits,
+            ) -> Result<ClientBatchItemResponse, ClientError> {
+                let (execution, request) = self.into_parts();
+                execution.execute(request, limits)
+            }
+        }
+    };
+}
+
+/// A KMIP 3.0 Create Credential fluent builder.
+pub struct CreateCredentialBuilder<'a> {
+    execution: Kmip30BuilderExecution<'a>,
+    attributes: AttributeSet,
+    object: CreateCredentialObject,
+}
+
+impl<'a> CreateCredentialBuilder<'a> {
+    fn new(
+        client: &'a mut Client,
+        attributes: AttributeSet,
+        object: CreateCredentialObject,
+    ) -> Self {
+        Self {
+            execution: Kmip30BuilderExecution::new(client),
+            attributes,
+            object,
+        }
+    }
+}
+impl<'a> Kmip30BuilderParts<'a> for CreateCredentialBuilder<'a> {
+    fn into_parts(self) -> (Kmip30BuilderExecution<'a>, ClientRequest) {
+        (
+            self.execution,
+            ClientRequest::create_credential(CreateCredentialRequest::new(
+                self.attributes,
+                self.object,
+            )),
+        )
+    }
+    fn execution(&mut self) -> &mut Kmip30BuilderExecution<'a> {
+        &mut self.execution
+    }
+}
+impl_kmip30_builder_methods!(CreateCredentialBuilder);
+
+/// A KMIP 3.0 Create Group fluent builder.
+pub struct CreateGroupBuilder<'a> {
+    execution: Kmip30BuilderExecution<'a>,
+    attributes: AttributeSet,
+}
+impl<'a> CreateGroupBuilder<'a> {
+    fn new(client: &'a mut Client, attributes: AttributeSet) -> Self {
+        Self {
+            execution: Kmip30BuilderExecution::new(client),
+            attributes,
+        }
+    }
+}
+impl<'a> Kmip30BuilderParts<'a> for CreateGroupBuilder<'a> {
+    fn into_parts(self) -> (Kmip30BuilderExecution<'a>, ClientRequest) {
+        (
+            self.execution,
+            ClientRequest::create_group(CreateGroupRequest::new(self.attributes)),
+        )
+    }
+    fn execution(&mut self) -> &mut Kmip30BuilderExecution<'a> {
+        &mut self.execution
+    }
+}
+impl_kmip30_builder_methods!(CreateGroupBuilder);
+
+/// A KMIP 3.0 Create User fluent builder.
+pub struct CreateUserBuilder<'a> {
+    execution: Kmip30BuilderExecution<'a>,
+    attributes: AttributeSet,
+}
+impl<'a> CreateUserBuilder<'a> {
+    fn new(client: &'a mut Client, attributes: AttributeSet) -> Self {
+        Self {
+            execution: Kmip30BuilderExecution::new(client),
+            attributes,
+        }
+    }
+}
+impl<'a> Kmip30BuilderParts<'a> for CreateUserBuilder<'a> {
+    fn into_parts(self) -> (Kmip30BuilderExecution<'a>, ClientRequest) {
+        (
+            self.execution,
+            ClientRequest::create_user(CreateUserRequest::new(self.attributes)),
+        )
+    }
+    fn execution(&mut self) -> &mut Kmip30BuilderExecution<'a> {
+        &mut self.execution
+    }
+}
+impl_kmip30_builder_methods!(CreateUserBuilder);
+
+/// A KMIP 3.0 Deactivate fluent builder.
+pub struct DeactivateBuilder<'a> {
+    execution: Kmip30BuilderExecution<'a>,
+    unique_identifier: UniqueIdentifier,
+    reason: Option<Structure>,
+    date: Option<i64>,
+}
+impl<'a> DeactivateBuilder<'a> {
+    fn new(client: &'a mut Client, unique_identifier: UniqueIdentifier) -> Self {
+        Self {
+            execution: Kmip30BuilderExecution::new(client),
+            unique_identifier,
+            reason: None,
+            date: None,
+        }
+    }
+    /// Sets the optional typed Deactivation Reason Structure.
+    #[must_use]
+    pub fn deactivation_reason(mut self, reason: Structure) -> Self {
+        self.reason = Some(reason);
+        self
+    }
+    /// Sets the optional Deactivation Date as seconds since the Unix epoch.
+    #[must_use]
+    pub const fn deactivation_date(mut self, unix_seconds: i64) -> Self {
+        self.date = Some(unix_seconds);
+        self
+    }
+}
+impl<'a> Kmip30BuilderParts<'a> for DeactivateBuilder<'a> {
+    fn into_parts(self) -> (Kmip30BuilderExecution<'a>, ClientRequest) {
+        let mut request = DeactivateRequest::new(self.unique_identifier);
+        if let Some(reason) = self.reason {
+            request = request.with_deactivation_reason(reason);
+        }
+        if let Some(date) = self.date {
+            request = request.with_deactivation_date(date);
+        }
+        (self.execution, ClientRequest::deactivate(request))
+    }
+    fn execution(&mut self) -> &mut Kmip30BuilderExecution<'a> {
+        &mut self.execution
+    }
+}
+impl_kmip30_builder_methods!(DeactivateBuilder);
+
+/// A KMIP 3.0 Decapsulate fluent builder.
+pub struct DecapsulateBuilder<'a> {
+    execution: Kmip30BuilderExecution<'a>,
+    unique_identifier: UniqueIdentifier,
+    ciphertext: Vec<u8>,
+    parameters: Option<CryptographicParameters>,
+    attributes: Option<AttributeSet>,
+}
+impl<'a> DecapsulateBuilder<'a> {
+    fn new(
+        client: &'a mut Client,
+        unique_identifier: UniqueIdentifier,
+        ciphertext: Vec<u8>,
+    ) -> Self {
+        Self {
+            execution: Kmip30BuilderExecution::new(client),
+            unique_identifier,
+            ciphertext,
+            parameters: None,
+            attributes: None,
+        }
+    }
+    /// Sets caller-selected typed Cryptographic Parameters.
+    #[must_use]
+    pub fn cryptographic_parameters(mut self, value: CryptographicParameters) -> Self {
+        self.parameters = Some(value);
+        self
+    }
+    /// Sets the optional prevalidated ordered Attribute Set.
+    #[must_use]
+    pub fn attributes(mut self, value: AttributeSet) -> Self {
+        self.attributes = Some(value);
+        self
+    }
+}
+impl<'a> Kmip30BuilderParts<'a> for DecapsulateBuilder<'a> {
+    fn into_parts(self) -> (Kmip30BuilderExecution<'a>, ClientRequest) {
+        let mut request = DecapsulateRequest::new(self.unique_identifier, self.ciphertext);
+        if let Some(value) = self.parameters {
+            request = request.with_typed_cryptographic_parameters(value);
+        }
+        if let Some(value) = self.attributes {
+            request = request.with_attributes(value);
+        }
+        (self.execution, ClientRequest::decapsulate(request))
+    }
+    fn execution(&mut self) -> &mut Kmip30BuilderExecution<'a> {
+        &mut self.execution
+    }
+}
+impl_kmip30_builder_methods!(DecapsulateBuilder);
+
+/// A KMIP 3.0 Encapsulate fluent builder.
+pub struct EncapsulateBuilder<'a> {
+    execution: Kmip30BuilderExecution<'a>,
+    unique_identifier: UniqueIdentifier,
+    parameters: Option<CryptographicParameters>,
+    attributes: Option<AttributeSet>,
+}
+impl<'a> EncapsulateBuilder<'a> {
+    fn new(client: &'a mut Client, unique_identifier: UniqueIdentifier) -> Self {
+        Self {
+            execution: Kmip30BuilderExecution::new(client),
+            unique_identifier,
+            parameters: None,
+            attributes: None,
+        }
+    }
+    /// Sets caller-selected typed Cryptographic Parameters.
+    #[must_use]
+    pub fn cryptographic_parameters(mut self, value: CryptographicParameters) -> Self {
+        self.parameters = Some(value);
+        self
+    }
+    /// Sets the optional prevalidated ordered Attribute Set.
+    #[must_use]
+    pub fn attributes(mut self, value: AttributeSet) -> Self {
+        self.attributes = Some(value);
+        self
+    }
+}
+impl<'a> Kmip30BuilderParts<'a> for EncapsulateBuilder<'a> {
+    fn into_parts(self) -> (Kmip30BuilderExecution<'a>, ClientRequest) {
+        let mut request = EncapsulateRequest::new(self.unique_identifier);
+        if let Some(value) = self.parameters {
+            request = request.with_typed_cryptographic_parameters(value);
+        }
+        if let Some(value) = self.attributes {
+            request = request.with_attributes(value);
+        }
+        (self.execution, ClientRequest::encapsulate(request))
+    }
+    fn execution(&mut self) -> &mut Kmip30BuilderExecution<'a> {
+        &mut self.execution
+    }
+}
+impl_kmip30_builder_methods!(EncapsulateBuilder);
+
+/// A KMIP 3.0 Obliterate fluent builder.
+pub struct ObliterateBuilder<'a> {
+    execution: Kmip30BuilderExecution<'a>,
+    unique_identifier: UniqueIdentifier,
+}
+impl<'a> ObliterateBuilder<'a> {
+    fn new(client: &'a mut Client, unique_identifier: UniqueIdentifier) -> Self {
+        Self {
+            execution: Kmip30BuilderExecution::new(client),
+            unique_identifier,
+        }
+    }
+}
+impl<'a> Kmip30BuilderParts<'a> for ObliterateBuilder<'a> {
+    fn into_parts(self) -> (Kmip30BuilderExecution<'a>, ClientRequest) {
+        (
+            self.execution,
+            ClientRequest::obliterate(ObliterateRequest::new(self.unique_identifier)),
+        )
+    }
+    fn execution(&mut self) -> &mut Kmip30BuilderExecution<'a> {
+        &mut self.execution
+    }
+}
+impl_kmip30_builder_methods!(ObliterateBuilder);
 
 impl From<AttributeSetError> for FluentBuildError {
     fn from(_: AttributeSetError) -> Self {

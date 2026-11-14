@@ -4,9 +4,10 @@
     "specification/catalog/kmip-2.1.json",
     "specification/catalog/kmip-versioned-values.json",
     "specification/api/public-api.json",
-    "specification/catalog/operation-matrix-evidence.json"
+    "specification/catalog/operation-matrix-evidence.json",
+    "specification/api/kmip-3.0-draft-api.json"
   ],
-  "versionMeaning": "Earliest directional availability in supported pinned source editions; route-version execution is not established by assignment or static evidence.",
+  "versionMeaning": "Earliest directional availability in supported pinned source editions; local client route verification is recorded separately from server capability.",
   "evidenceMeaning": "Existing executable test references, not recorded passing results or server capability claims.",
   "operations": [
     {
@@ -5564,11 +5565,23 @@
           "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::all_kmip30_operations_are_rejected_before_any_exchange_under_kmip21",
           "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::kmip30_typed_requests_have_explicit_validation_dispatch"
         ],
-        "parity": []
+        "parity": [
+          "bindings/java/src/test/java/org/kmipkit/Kmip30FluentExecutionTest.java",
+          "bindings/python/tests/test_fluent_kmip30.py",
+          "bindings/c/tests/fluent_kmip30_consumer.c",
+          "crates/kmipkit-client/tests/unit/fluent_request_tests.rs",
+          "tools/api_manifest/tests/test_0116_kmip30_fluent_manifest.py"
+        ]
       },
       "serverCapabilityClaim": false,
-      "publicApiScope": null,
-      "publicApiState": null,
+      "publicApiScope": "client_3_0_draft",
+      "publicApiState": "verified",
+      "publicApiMappings": {
+        "rust": "kmipkit_client::ClientRequest::create_group",
+        "c": "kmipkit_create_group_builder_create",
+        "java": "org.kmipkit.fluent.FluentRequest.createGroup",
+        "python": "kmipkit.fluent.Request.create_group"
+      },
       "clientSend": true,
       "listenerRoute": false
     },
@@ -5622,11 +5635,23 @@
           "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::all_kmip30_operations_are_rejected_before_any_exchange_under_kmip21",
           "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::kmip30_typed_requests_have_explicit_validation_dispatch"
         ],
-        "parity": []
+        "parity": [
+          "bindings/java/src/test/java/org/kmipkit/Kmip30FluentExecutionTest.java",
+          "bindings/python/tests/test_fluent_kmip30.py",
+          "bindings/c/tests/fluent_kmip30_consumer.c",
+          "crates/kmipkit-client/tests/unit/fluent_request_tests.rs",
+          "tools/api_manifest/tests/test_0116_kmip30_fluent_manifest.py"
+        ]
       },
       "serverCapabilityClaim": false,
-      "publicApiScope": null,
-      "publicApiState": null,
+      "publicApiScope": "client_3_0_draft",
+      "publicApiState": "verified",
+      "publicApiMappings": {
+        "rust": "kmipkit_client::ClientRequest::obliterate",
+        "c": "kmipkit_obliterate_builder_create",
+        "java": "org.kmipkit.fluent.FluentRequest.obliterate",
+        "python": "kmipkit.fluent.Request.obliterate"
+      },
       "clientSend": true,
       "listenerRoute": false
     },
@@ -5680,11 +5705,23 @@
           "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::all_kmip30_operations_are_rejected_before_any_exchange_under_kmip21",
           "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::kmip30_typed_requests_have_explicit_validation_dispatch"
         ],
-        "parity": []
+        "parity": [
+          "bindings/java/src/test/java/org/kmipkit/Kmip30FluentExecutionTest.java",
+          "bindings/python/tests/test_fluent_kmip30.py",
+          "bindings/c/tests/fluent_kmip30_consumer.c",
+          "crates/kmipkit-client/tests/unit/fluent_request_tests.rs",
+          "tools/api_manifest/tests/test_0116_kmip30_fluent_manifest.py"
+        ]
       },
       "serverCapabilityClaim": false,
-      "publicApiScope": null,
-      "publicApiState": null,
+      "publicApiScope": "client_3_0_draft",
+      "publicApiState": "verified",
+      "publicApiMappings": {
+        "rust": "kmipkit_client::ClientRequest::create_user",
+        "c": "kmipkit_create_user_builder_create",
+        "java": "org.kmipkit.fluent.FluentRequest.createUser",
+        "python": "kmipkit.fluent.Request.create_user"
+      },
       "clientSend": true,
       "listenerRoute": false
     },
@@ -5738,11 +5775,23 @@
           "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::all_kmip30_operations_are_rejected_before_any_exchange_under_kmip21",
           "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::kmip30_typed_requests_have_explicit_validation_dispatch"
         ],
-        "parity": []
+        "parity": [
+          "bindings/java/src/test/java/org/kmipkit/Kmip30FluentExecutionTest.java",
+          "bindings/python/tests/test_fluent_kmip30.py",
+          "bindings/c/tests/fluent_kmip30_consumer.c",
+          "crates/kmipkit-client/tests/unit/fluent_request_tests.rs",
+          "tools/api_manifest/tests/test_0116_kmip30_fluent_manifest.py"
+        ]
       },
       "serverCapabilityClaim": false,
-      "publicApiScope": null,
-      "publicApiState": null,
+      "publicApiScope": "client_3_0_draft",
+      "publicApiState": "verified",
+      "publicApiMappings": {
+        "rust": "kmipkit_client::ClientRequest::create_credential",
+        "c": "kmipkit_create_credential_builder_create",
+        "java": "org.kmipkit.fluent.FluentRequest.createCredential",
+        "python": "kmipkit.fluent.Request.create_credential"
+      },
       "clientSend": true,
       "listenerRoute": false
     },
@@ -5796,11 +5845,23 @@
           "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::all_kmip30_operations_are_rejected_before_any_exchange_under_kmip21",
           "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::kmip30_typed_requests_have_explicit_validation_dispatch"
         ],
-        "parity": []
+        "parity": [
+          "bindings/java/src/test/java/org/kmipkit/Kmip30FluentExecutionTest.java",
+          "bindings/python/tests/test_fluent_kmip30.py",
+          "bindings/c/tests/fluent_kmip30_consumer.c",
+          "crates/kmipkit-client/tests/unit/fluent_request_tests.rs",
+          "tools/api_manifest/tests/test_0116_kmip30_fluent_manifest.py"
+        ]
       },
       "serverCapabilityClaim": false,
-      "publicApiScope": null,
-      "publicApiState": null,
+      "publicApiScope": "client_3_0_draft",
+      "publicApiState": "verified",
+      "publicApiMappings": {
+        "rust": "kmipkit_client::ClientRequest::deactivate",
+        "c": "kmipkit_deactivate_builder_create",
+        "java": "org.kmipkit.fluent.FluentRequest.deactivate",
+        "python": "kmipkit.fluent.Request.deactivate"
+      },
       "clientSend": true,
       "listenerRoute": false
     },
@@ -5854,11 +5915,23 @@
           "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::all_kmip30_operations_are_rejected_before_any_exchange_under_kmip21",
           "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::kmip30_typed_requests_have_explicit_validation_dispatch"
         ],
-        "parity": []
+        "parity": [
+          "bindings/java/src/test/java/org/kmipkit/Kmip30FluentExecutionTest.java",
+          "bindings/python/tests/test_fluent_kmip30.py",
+          "bindings/c/tests/fluent_kmip30_consumer.c",
+          "crates/kmipkit-client/tests/unit/fluent_request_tests.rs",
+          "tools/api_manifest/tests/test_0116_kmip30_fluent_manifest.py"
+        ]
       },
       "serverCapabilityClaim": false,
-      "publicApiScope": null,
-      "publicApiState": null,
+      "publicApiScope": "client_3_0_draft",
+      "publicApiState": "verified",
+      "publicApiMappings": {
+        "rust": "kmipkit_client::ClientRequest::encapsulate",
+        "c": "kmipkit_encapsulate_builder_create",
+        "java": "org.kmipkit.fluent.FluentRequest.encapsulate",
+        "python": "kmipkit.fluent.Request.encapsulate"
+      },
       "clientSend": true,
       "listenerRoute": false
     },
@@ -5912,11 +5985,23 @@
           "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::all_kmip30_operations_are_rejected_before_any_exchange_under_kmip21",
           "crates/kmipkit-client/tests/unit/kmip30_operation_surface_tests.rs::kmip30_typed_requests_have_explicit_validation_dispatch"
         ],
-        "parity": []
+        "parity": [
+          "bindings/java/src/test/java/org/kmipkit/Kmip30FluentExecutionTest.java",
+          "bindings/python/tests/test_fluent_kmip30.py",
+          "bindings/c/tests/fluent_kmip30_consumer.c",
+          "crates/kmipkit-client/tests/unit/fluent_request_tests.rs",
+          "tools/api_manifest/tests/test_0116_kmip30_fluent_manifest.py"
+        ]
       },
       "serverCapabilityClaim": false,
-      "publicApiScope": null,
-      "publicApiState": null,
+      "publicApiScope": "client_3_0_draft",
+      "publicApiState": "verified",
+      "publicApiMappings": {
+        "rust": "kmipkit_client::ClientRequest::decapsulate",
+        "c": "kmipkit_decapsulate_builder_create",
+        "java": "org.kmipkit.fluent.FluentRequest.decapsulate",
+        "python": "kmipkit.fluent.Request.decapsulate"
+      },
       "clientSend": true,
       "listenerRoute": false
     }

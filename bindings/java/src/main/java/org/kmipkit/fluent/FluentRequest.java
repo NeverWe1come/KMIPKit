@@ -35,4 +35,26 @@ public final class FluentRequest {
     public MacBuilder mac() { return new MacBuilder(client); }
     public MacVerifyBuilder macVerify() { return new MacVerifyBuilder(client); }
     public HashBuilder hash() { return new HashBuilder(client); }
+    public CreateCredentialBuilder createCredential(
+            AttributeSet attributes, CreateCredentialObject object) {
+        return new CreateCredentialBuilder(client, attributes, object);
+    }
+    public CreateGroupBuilder createGroup(AttributeSet attributes) {
+        return new CreateGroupBuilder(client, attributes);
+    }
+    public CreateUserBuilder createUser(AttributeSet attributes) {
+        return new CreateUserBuilder(client, attributes);
+    }
+    public DeactivateBuilder deactivate(UniqueIdentifier identifier) {
+        return new DeactivateBuilder(client, identifier);
+    }
+    public DecapsulateBuilder decapsulate(UniqueIdentifier identifier, byte[] ciphertext) {
+        return new DecapsulateBuilder(client, identifier, ciphertext);
+    }
+    public EncapsulateBuilder encapsulate(UniqueIdentifier identifier) {
+        return new EncapsulateBuilder(client, identifier);
+    }
+    public ObliterateBuilder obliterate(UniqueIdentifier identifier) {
+        return new ObliterateBuilder(client, identifier);
+    }
 }

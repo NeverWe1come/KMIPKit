@@ -95,6 +95,7 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
             "generic_ttlv_model",
             "hashed_password_timestamp_sequence",
             "kmip30_draft_routes",
+            "kmip30_fluent_operations",
             "kmip_protocol_version_selection",
             "named_protocol_values",
             "nonce_ttlv_parity",
@@ -474,6 +475,7 @@ fn source_c_exports() -> Vec<(String, bool)> {
         include_str!("../../src/extension_registry/typed_attributes.rs"),
         include_str!("../../src/extension_registry/client_abi/fluent.rs"),
         include_str!("../../src/extension_registry/client_abi/fluent_crypto.rs"),
+        include_str!("../../src/extension_registry/client_abi/fluent_kmip30.rs"),
     ];
     assert_managed_object_helpers_are_guarded(sources[4]);
     let mut exports: Vec<(String, bool)> = sources

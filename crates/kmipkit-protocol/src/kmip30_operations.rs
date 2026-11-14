@@ -222,6 +222,16 @@ pub enum CreateCredentialObject {
 }
 
 impl CreateCredentialObject {
+    const fn credential_type(&self) -> CredentialType {
+        match self {
+            Self::Certificate(_) => CredentialType::Attestation,
+            Self::PasswordCredential(_) => CredentialType::UsernameAndPassword,
+            Self::DeviceCredential(_) => CredentialType::Device,
+            Self::HashedPasswordCredential(_) => CredentialType::HashedPassword,
+            Self::OneTimePasswordCredential(_) => CredentialType::OneTimePassword,
+        }
+    }
+
     fn into_item(self) -> Item {
         match self {
             Self::Certificate(value) => value.into_item(),
@@ -257,13 +267,11 @@ pub struct CreateCredentialRequest {
 }
 
 impl CreateCredentialRequest {
-    /// Creates a request with its required type, Attributes, and defined object alternative.
+    /// Creates a request with Attributes and a closed object alternative.
+    /// The required Credential Type is derived from the selected alternative.
     #[must_use]
-    pub const fn new(
-        credential_type: CredentialType,
-        attributes: AttributeSet,
-        object: CreateCredentialObject,
-    ) -> Self {
+    pub const fn new(attributes: AttributeSet, object: CreateCredentialObject) -> Self {
+        let credential_type = object.credential_type();
         Self {
             credential_type,
             attributes,
@@ -613,3 +621,7 @@ impl Default for ObliterateResponse {
         Self::new()
     }
 }
+
+#[cfg(test)]
+#[path = "../tests/support/kmip30_operations_unit.rs"]
+mod tests;

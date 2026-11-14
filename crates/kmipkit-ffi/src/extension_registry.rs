@@ -569,6 +569,8 @@ enum Kind {
     QueryAsyncRequestsRequest,
     SymmetricKeyBuilder,
     CryptoOperationBuilder,
+    Kmip30OperationBuilder,
+    CreateCredentialObject,
 }
 
 #[derive(Clone, Copy, Eq, PartialEq)]
@@ -649,6 +651,8 @@ enum HandleValue {
     BatchItem(Box<ClientBatchItem>),
     SymmetricKeyBuilder(Mutex<Option<kmipkit_client::fluent::CreateSymmetricKeyBuilder<'static>>>),
     CryptoOperationBuilder(Mutex<CryptoOperationBuilder>),
+    Kmip30OperationBuilder(Mutex<client_abi::fluent_kmip30::Kmip30OperationBuilder>),
+    CreateCredentialObject(Item),
     BatchItemReadback(ClientBatchItemReadback),
     RegisterRequest(Box<RegisterRequest>),
     AddAttributeRequest(Box<AddAttributeRequest>),

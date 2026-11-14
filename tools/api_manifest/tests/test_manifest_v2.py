@@ -333,19 +333,20 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             "public static org.kmipkit.extensions.ClientBatchItem joinSplitKey(long, "
             "java.util.List<org.kmipkit.extensions.SplitKeyReference>)",
         ]
-        manifest = copy.deepcopy(self.checked_in_manifest)
-        manifest["publicDeclarations"] = [declaration]
-        self.assertTrue(self.validator.is_valid(manifest))
+        declaration_validator = Draft202012Validator({
+            "$schema": self.schema["$schema"],
+            "$defs": self.schema["$defs"],
+            "$ref": "#/$defs/publicDeclaration",
+        })
+        self.assertTrue(declaration_validator.is_valid(declaration))
 
         malformed = copy.deepcopy(declaration)
         malformed["kind"] = "type"
-        manifest["publicDeclarations"] = [malformed]
-        self.assertFalse(self.validator.is_valid(manifest))
+        self.assertFalse(declaration_validator.is_valid(malformed))
 
         malformed = copy.deepcopy(declaration)
         malformed["javaSignatures"].append(malformed["javaSignatures"][0])
-        manifest["publicDeclarations"] = [malformed]
-        self.assertFalse(self.validator.is_valid(manifest))
+        self.assertFalse(declaration_validator.is_valid(malformed))
 
     def test_rust_type_schema_accepts_mutable_pointer_to_pointer_c_abi_output(self) -> None:
         validator = Draft202012Validator(self.schema["$defs"]["rustType"])
@@ -6325,7 +6326,9 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             if "core::any::Any" in row["exportName"]
             and "<'" in row["exportName"]
         ]
-        self.assertEqual(len(any_lifetime_rows), 67)
+        # The refreshed compiler inventory has 95 paths at 0115 plus the
+        # seven lifetime-bound KMIPKIT-0116 operation builders.
+        self.assertEqual(len(any_lifetime_rows), 102)
         for row in any_lifetime_rows:
             exclusion_key = (row["packageId"], _canonical_export_name(row["exportName"]))
             if exclusion_key in approved_exclusion_keys:
@@ -7681,17 +7684,22 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             generate._ordered_approved_c_type_layouts(manifest)
 
     def test_schema_rejects_identical_duplicate_declarations_and_exclusions(self) -> None:
-        manifest = json.loads(json.dumps(self.checked_in_manifest))
-        manifest["publicDeclarations"].append(
-            json.loads(json.dumps(manifest["publicDeclarations"][0]))
-        )
-        manifest["approvedExclusions"].append(
-            json.loads(json.dumps(manifest["approvedExclusions"][0]))
-        )
+        manifest = _valid_v2_manifest()
+        declaration = copy.deepcopy(self.checked_in_manifest["publicDeclarations"][0])
+        exclusion = copy.deepcopy(self.checked_in_manifest["approvedExclusions"][0])
+        manifest["publicDeclarations"] = [declaration, copy.deepcopy(declaration)]
+        manifest["approvedExclusions"] = [exclusion, copy.deepcopy(exclusion)]
 
         errors = list(self.validator.iter_errors(manifest))
 
-        self.assertTrue(errors)
+        duplicate_paths = {
+            tuple(context.absolute_path)
+            for error in errors
+            for context in error.context
+            if context.validator == "uniqueItems"
+        }
+        self.assertIn(("publicDeclarations",), duplicate_paths)
+        self.assertIn(("approvedExclusions",), duplicate_paths)
 
     def test_package_and_declaration_schema_reject_unknown_fields(self) -> None:
         for definition in ("publicPackage", "publicDeclaration", "approvedExclusion"):

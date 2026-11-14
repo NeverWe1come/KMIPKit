@@ -890,6 +890,26 @@ class PublicApiParityTests(unittest.TestCase):
                     "symmetric_key_builder_set_length",
                     "symmetric_key_builder_set_name",
                     "symmetric_key_builder_set_usage_mask",
+                    # KMIP 3.0 fluent execute is composed from a typed builder,
+                    # its inherited options/build methods, and the existing
+                    # client batch JNI bridge; it has no operation-specific JNI
+                    # entrypoint of its own.
+                    "client_create_credential_v1",
+                    "client_create_credential_with_options_v1",
+                    "client_create_group_v1",
+                    "client_create_group_with_options_v1",
+                    "client_create_user_v1",
+                    "client_create_user_with_options_v1",
+                    "client_deactivate_v1",
+                    "client_deactivate_with_options_v1",
+                    "client_decapsulate_v1",
+                    "client_decapsulate_with_options_v1",
+                    "client_encapsulate_v1",
+                    "client_encapsulate_with_options_v1",
+                    "client_obliterate_v1",
+                    "client_obliterate_with_options_v1",
+                    "kmip30_operation_builder_execute_v1",
+                    "kmip30_operation_builder_execute_with_options_v1",
                 } | CRYPTO_RESPONSE_TTLV_AGGREGATE_FUNCTIONS:
                     self.assertNotIn("jniSymbol", java)
                     if function["id"] == "client_batch_item_count":
@@ -948,10 +968,183 @@ class PublicApiParityTests(unittest.TestCase):
                     self.assertTrue(
                         all(row["java"]["package"] == "org.kmipkit.extensions" for row in aliases)
                     )
+                elif symbol == (
+                    "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderCreate"
+                ):
+                    self.assertEqual(
+                        {row["id"] for row in aliases},
+                        {
+                            "create_group_builder_create",
+                            "create_user_builder_create",
+                            "deactivate_builder_create",
+                            "decapsulate_builder_create",
+                            "encapsulate_builder_create",
+                            "obliterate_builder_create",
+                        },
+                    )
+                    self.assertTrue(
+                        all(row["java"]["package"] == "org.kmipkit.fluent" for row in aliases)
+                    )
+                    self.assertEqual(len(java_signatures), len(aliases))
                 else:
                     # Additive C ABI compatibility symbols can share one Java
                     # entrypoint only when they expose the same Java operation.
                     self.assertEqual(len(java_signatures), 1)
+
+    def test_kmip30_java_mappings_target_the_public_fluent_facade(self) -> None:
+        functions = {function["id"]: function for function in self.manifest["functions"]}
+        expected = {
+            "create_credential_builder_create": (
+                "FluentRequest", "createCredential",
+                [("attributes", "AttributeSet"), ("object", "CreateCredentialObject")],
+                "CreateCredentialBuilder",
+                "Java_org_kmipkit_NativeExtensionRegistry_kmip30CreateCredentialBuilderCreate",
+            ),
+            "create_group_builder_create": (
+                "FluentRequest", "createGroup", [("attributes", "AttributeSet")],
+                "CreateGroupBuilder",
+                "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderCreate",
+            ),
+            "create_user_builder_create": (
+                "FluentRequest", "createUser", [("attributes", "AttributeSet")],
+                "CreateUserBuilder",
+                "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderCreate",
+            ),
+            "deactivate_builder_create": (
+                "FluentRequest", "deactivate", [("identifier", "UniqueIdentifier")],
+                "DeactivateBuilder",
+                "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderCreate",
+            ),
+            "decapsulate_builder_create": (
+                "FluentRequest", "decapsulate",
+                [("identifier", "UniqueIdentifier"), ("ciphertext", "byte[]")],
+                "DecapsulateBuilder",
+                "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderCreate",
+            ),
+            "encapsulate_builder_create": (
+                "FluentRequest", "encapsulate", [("identifier", "UniqueIdentifier")],
+                "EncapsulateBuilder",
+                "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderCreate",
+            ),
+            "obliterate_builder_create": (
+                "FluentRequest", "obliterate", [("identifier", "UniqueIdentifier")],
+                "ObliterateBuilder",
+                "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderCreate",
+            ),
+            "kmip30_operation_builder_set_attributes": (
+                "DecapsulateBuilder", "attributes", [("value", "AttributeSet")],
+                "DecapsulateBuilder",
+                "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderSetAttributes",
+            ),
+            "kmip30_operation_builder_set_cryptographic_parameters": (
+                "DecapsulateBuilder", "cryptographicParameters",
+                [("value", "CryptographicParameters")], "DecapsulateBuilder",
+                "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderSetCryptographicParameters",
+            ),
+            "kmip30_operation_builder_set_deactivation_reason": (
+                "DeactivateBuilder", "deactivationReason", [("reason", "TtlvStructure")],
+                "DeactivateBuilder",
+                "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderSetDeactivationReason",
+            ),
+            "kmip30_operation_builder_set_deactivation_date": (
+                "DeactivateBuilder", "deactivationDate", [("unixSeconds", "long")],
+                "DeactivateBuilder",
+                "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderSetDeactivationDate",
+            ),
+            "kmip30_operation_builder_set_asynchronous_indicator": (
+                "Kmip30BuilderBase", "asynchronousIndicator", [("value", "long")], "T",
+                "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderSetAsynchronousIndicator",
+            ),
+            "kmip30_operation_builder_validate": (
+                "Kmip30BuilderBase", "validate", [], "void",
+                "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderValidate",
+            ),
+            "kmip30_operation_builder_build_batch_item": (
+                "Kmip30BuilderBase", "build", [], "ClientBatchItem",
+                "Java_org_kmipkit_NativeExtensionRegistry_kmip30OperationBuilderBuildBatchItem",
+            ),
+            "create_credential_object_certificate": (
+                "CreateCredentialObject", "certificate", [("certificate", "TtlvItem")],
+                "CreateCredentialObject",
+                "Java_org_kmipkit_NativeExtensionRegistry_createCredentialObjectCertificate",
+            ),
+            "create_credential_object_password": (
+                "CreateCredentialObject", "password",
+                [("password", "SecretText"), ("passwordSalt", "SecretBytes"),
+                 ("saltAlgorithm", "Long"), ("saltedPassword", "SecretBytes"),
+                 ("iterationCount", "Integer")],
+                "CreateCredentialObject",
+                "Java_org_kmipkit_NativeExtensionRegistry_createCredentialObjectPassword",
+            ),
+            "create_credential_object_device": (
+                "CreateCredentialObject", "device",
+                [("serial", "String"), ("identifier", "String"), ("network", "String"),
+                 ("machine", "String"), ("media", "String")],
+                "CreateCredentialObject",
+                "Java_org_kmipkit_NativeExtensionRegistry_createCredentialObjectDevice",
+            ),
+            "create_credential_object_hashed_password": (
+                "CreateCredentialObject", "hashedPassword",
+                [("hashedUsernamePassword", "SecretBytes"),
+                 ("hashedPasswordUsername", "SecretBytes"), ("hashingAlgorithm", "Long")],
+                "CreateCredentialObject",
+                "Java_org_kmipkit_NativeExtensionRegistry_createCredentialObjectHashedPassword",
+            ),
+            "create_credential_object_one_time_password": (
+                "CreateCredentialObject", "oneTimePassword",
+                [("algorithm", "long"), ("digest", "Long"), ("serial", "String"),
+                 ("seed", "SecretBytes"), ("interval", "Long"), ("digits", "Integer")],
+                "CreateCredentialObject",
+                "Java_org_kmipkit_NativeExtensionRegistry_createCredentialObjectOneTimePassword",
+            ),
+            "client_batch_item_response_kmip30_identifier": (
+                "ClientBatchItemResult", "kmip30Identifier", [], "Optional<UniqueIdentifier>",
+                "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseKmip30Identifier",
+            ),
+            "client_batch_item_response_encapsulate_data": (
+                "ClientBatchItemResult", "encapsulateData", [], "Optional<byte[]>",
+                "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseEncapsulateData",
+            ),
+        }
+        for function_id, (owner, method, parameters, result_type, jni_symbol) in expected.items():
+            with self.subTest(function=function_id):
+                java = functions[function_id]["java"]
+                self.assertEqual((java["class"], java["method"]), (owner, method))
+                self.assertEqual(
+                    [(item["name"], item["type"]) for item in java["parameters"]],
+                    parameters,
+                )
+                self.assertEqual(java["returnType"], result_type)
+                self.assertEqual(java["jniSymbol"], jni_symbol)
+
+        composite_methods = {
+            function_id
+            for function_id in functions
+            if function_id.startswith((
+                "client_create_credential_", "client_create_group_", "client_create_user_",
+                "client_deactivate_", "client_decapsulate_", "client_encapsulate_",
+                "client_obliterate_",
+            ))
+        } | {
+            "kmip30_operation_builder_execute_v1",
+            "kmip30_operation_builder_execute_with_options_v1",
+        }
+        for function_id in composite_methods:
+            with self.subTest(function=function_id):
+                java = functions[function_id]["java"]
+                with_options = function_id.endswith("with_options_v1")
+                self.assertEqual(java["package"], "org.kmipkit.fluent")
+                self.assertEqual(java["class"], "Kmip30BuilderBase")
+                self.assertEqual(java["method"], "withOptions" if with_options else "execute")
+                self.assertEqual(
+                    [(item["name"], item["type"]) for item in java["parameters"]],
+                    [("options", "RequestOptions")] if with_options
+                    else [("limits", "CodecLimits")],
+                )
+                self.assertEqual(
+                    java["returnType"], "T" if with_options else "ClientBatchResponse"
+                )
+                self.assertNotIn("jniSymbol", java)
 
     def test_t029_fixture_consumers_assert_runtime_values_for_only_core_shared_cases(self) -> None:
         """T029 parity is limited to shared capabilities, not operation-specific rows."""
