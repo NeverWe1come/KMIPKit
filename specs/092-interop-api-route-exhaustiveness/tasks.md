@@ -93,6 +93,34 @@ passing shared-contract job does not satisfy those language-level requirements.
 - Refactor/documentation commit: records the normative source and per-cell evidence in KMIPKIT-0085 implementation evidence and this traceability record.
 - Verification: the focused Process/Poll test passed; the complete CTest suite passed 7/7. The matching matrix recorded 40,931/66,736 invoked cells, all passed, and 25,805 pending recipes. The installed artifact SHA-256 is `c93eb8f7daa60d3b6832d297887e99cd2101e4f9baf2d04f55ce4042ba4bb7a2`. Completeness remains open at `test-async-query-outstanding-filter`; no pending recipe is classified as an API limitation.
 
+## Development evidence: C asynchronous Query outstanding filters
+
+- Normative scope: OASIS KMIP 2.1 §6.1.41 Tables 285–287 defines the Query
+  Asynchronous Requests filter fields and response structure; §7.2 Table 353
+  defines the returned Asynchronous Request structure. This implements
+  KMIPKIT-0092-FR-003 and FR-005 for
+  `test-async-query-outstanding-filter`.
+- Red commit `62e393db`: the focused route test failed because the installed C
+  consumer had no Query outstanding-filter recipe.
+- Green commit `31fb6298`: added asynchronous Create/Create/Get setup, completed
+  one Create before Query, intersecting operation/correlation filters,
+  controlled response assertions, terminal Polls, and authenticated cleanup
+  across all six KMIP 2.1 encoding/transport pairs.
+- Supplemental Red commit `8b250b0d`: the focused test failed because the
+  recipe did not invoke `kmipkit_client_batch_item_response_create` for Pending
+  Create responses.
+- Supplemental Green commit `42a26232`: the consumer now uses
+  `read_pending_create_correlation()` for those responses, checking the typed
+  Create accessor's absent result payload and the exact server correlation.
+- Verification: the focused test passed, including six controlled peer checks;
+  CTest passed 7/7. The full matrix recorded 40,971/66,736 invoked cells, all
+  passed, and 25,765 pending `validator_recipe_pending` cells. The installed
+  artifact SHA-256 is
+  `c93eb8f7daa60d3b6832d297887e99cd2101e4f9baf2d04f55ce4042ba4bb7a2`. The
+  completeness validator next reports
+  `test-async-unknown-correlation-rejected`; coverage remains incomplete and
+  no pending recipe is treated as an API limitation.
+
 ## Development evidence: release pin refresh after KMIPKIT-0120
 
 - The feature branch conflicted with the updated `release/1.0.0` after PR #204 (`KMIPKIT-0120`) merged as `489fafc79ef89db2524eafa7a6c6482f5cf75d97`. The release merge was preserved as a normal signed merge commit; two FFI coverage script conflicts were resolved by retaining both the isolated `--no-clean` run and the existing package-scoped report checks.
