@@ -4324,6 +4324,11 @@ class ControlledTlsPeerTest {
         for (ScalarOperationStructureFixture fixture : NEXT_SCALAR_OPERATION_STRUCTURE_FIXTURES) {
             assertScalarOperationStructureRouteEvents(events, fixture, protocolVersion);
         }
+        assertRouteEventRecorded(events,
+                "test-norm-operation-structure-operation-structure-7-8-correlation-value",
+                "KMIPKIT-ELEM-OPERATION-STRUCTURE-7-8-CORRELATION-VALUE",
+                "java.typed-protocol.function.client_batch_item_response_pending_correlation_value",
+                "decode", protocolVersion);
         if ("2.1".equals(protocolVersion)) {
             assertGenericStructureRouteEvents(events,
                     "test-norm-operation-structure-operation-structure-7-2-asynchronous-request",
