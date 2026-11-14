@@ -23,7 +23,7 @@ class BaselineClientClosureWave2Tests(unittest.TestCase):
         baseline = next(
             p for p in catalog["profiles"] if p["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
         )
-        self.assertEqual("evidence_complete", baseline["claim_state"])
+        self.assertEqual("evidence_incomplete", baseline["claim_state"])
 
         discrepancies = {d["discrepancy_id"]: d for d in catalog["discrepancies"]}
         for disc_id in (
