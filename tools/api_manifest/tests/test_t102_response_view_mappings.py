@@ -175,8 +175,9 @@ EXPECTED = (
 # the KMIPKIT-0103 C and KMIPKIT-0104 Java crypto facades, and KMIPKIT-0093
 # inventory reconciliation. It also includes the approved KMIPKIT-0096 Python
 # expert-position slice, KMIPKIT-0114 C lifecycle helpers, and KMIPKIT-0093-FR-008
-# traceability on typed operation result declarations and Locate aliases.
-UNCHANGED_DECLARATIONS_SHA256 = "4a7dcb193635ae90af12157403ee81d167c4bd233510b87d6d829e6542f7e0df"
+# traceability on typed operation result declarations and Locate aliases, plus
+# the approved KMIPKIT-0115 Java/Python lifecycle facade declarations.
+UNCHANGED_DECLARATIONS_SHA256 = "2fe1ee6cf7c47b035ab462364b768ee760c4a38946b676ea91c8d7b1b94bd858"
 UNCHANGED_OPERATIONS_SHA256 = "c40b5d97f1cec90d39b5ed051e23a3645a15309fcda3fe352f12c090f98d94e7"
 # T098's maintainer-approved reconciliation updates lifecycle approval evidence
 # and inherited requirement links outside the T102 declaration/operation rows.
@@ -187,9 +188,10 @@ UNCHANGED_OPERATIONS_SHA256 = "c40b5d97f1cec90d39b5ed051e23a3645a15309fcda3fe352
 # reconciliation, including the approved KMIPKIT-0096 Python expert-position
 # slice. R002's additive requirement links and C copy caveat are normalized in
 # the snapshot comparison below and tested by the dedicated 0093 contract suite.
-# The fingerprint also includes the additive Rust CreateBuilder inventory and
-# approved KMIPKIT-0114 C lifecycle capability/function declarations.
-OTHER_MANIFEST_SHA256 = "d250f41225be07099894a7d4f76a12be627d20455ddc78de2da592fddebfca2d"
+# The fingerprint also includes the additive Rust CreateBuilder inventory,
+# KMIPKIT-0114 C lifecycle declarations, and KMIPKIT-0115 Java/Python lifecycle
+# declarations.
+OTHER_MANIFEST_SHA256 = "8ce5853dad95d92e29fce21c5bd92697ab528d8949f760146fec8be877020644"
 EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",

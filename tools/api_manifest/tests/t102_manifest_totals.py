@@ -34,7 +34,8 @@ T102_BLOCKED_CANDIDATES = 0
 # KMIPKIT-0093 CreateBuilder adds 24 Rust declarations and 18 exclusions.
 # Update this full-manifest snapshot only when an approved feature intentionally
 # adds or removes declarations.
-T102_PUBLIC_DECLARATIONS = 16_433
+# KMIPKIT-0115 adds 62 Java/Python lifecycle facade declarations.
+T102_PUBLIC_DECLARATIONS = 16_495
 T102_KMIP30_DRAFT_ROUTE_DECLARATIONS = 36
 T102_APPROVED_EXCLUSIONS = 22_632
 T102_RUST_AUDIT_MANIFEST = 3_287

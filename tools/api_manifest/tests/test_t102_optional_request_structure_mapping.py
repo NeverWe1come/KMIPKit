@@ -196,9 +196,9 @@ PKCS11_REQUEST_SETTER_IDS = {
 # Register declarations, lifecycle declarations, KMIPKIT-0102 crypto builders,
 # the KMIPKIT-0103 C and KMIPKIT-0104 Java crypto facades, and KMIPKIT-0093
 # inventory reconciliation, Rust CreateBuilder surface, KMIPKIT-0114 C lifecycle helpers,
-# KMIPKIT-0093-FR-008 traceability on typed operation results, and Locate aliases
-# reconciled to their canonical Rust declarations.
-OTHER_DECLARATIONS_SHA256 = "1e035f6acb924ebc70bd39ace9c02e36781b3112232e960bbd96d51817069b16"
+# KMIPKIT-0093-FR-008 traceability on typed operation results, Locate aliases
+# reconciled to canonical Rust declarations, and KMIPKIT-0115 lifecycle facades.
+OTHER_DECLARATIONS_SHA256 = "e2460dfc38c81f495b0ff4bef4bd778f731d9ce2dec24f888c0ca45067bc5f3f"
 OTHER_OPERATIONS_SHA256 = "067db1d52284ca16014aabdc0090e9a5236560498d63f2acd77f1c17180aff6f"
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(

@@ -3309,6 +3309,70 @@ class Client(_ClientHandle):
         )
         return _execute_direct(self, fn, unique_identifier, limits, options)
 
+    def activate_by_id(
+        self, unique_identifier: extensions.UniqueIdentifier, limits: ttlv.CodecLimits,
+        *, options: RequestOptions | None = None,
+    ) -> BatchResult:
+        """Activate one object by its typed Unique Identifier."""
+        builder = self.request().activate(unique_identifier)
+        if options is not None:
+            builder.with_options(options)
+        return builder.execute(limits)
+
+    def archive_by_id(
+        self, unique_identifier: extensions.UniqueIdentifier, limits: ttlv.CodecLimits,
+        *, options: RequestOptions | None = None,
+    ) -> BatchResult:
+        """Archive one object by its typed Unique Identifier."""
+        builder = self.request().archive(unique_identifier)
+        if options is not None:
+            builder.with_options(options)
+        return builder.execute(limits)
+
+    def recover_by_id(
+        self, unique_identifier: extensions.UniqueIdentifier, limits: ttlv.CodecLimits,
+        *, options: RequestOptions | None = None,
+    ) -> BatchResult:
+        """Recover one object by its typed Unique Identifier."""
+        builder = self.request().recover(unique_identifier)
+        if options is not None:
+            builder.with_options(options)
+        return builder.execute(limits)
+
+    def locate(
+        self, attributes: Any, limits: ttlv.CodecLimits, *,
+        maximum_items: int | None = None, offset_items: int | None = None,
+        storage_status_mask: int | None = None, object_group_member: int | None = None,
+        options: RequestOptions | None = None,
+    ) -> BatchResult:
+        """Locate objects from a typed AttributeSet and explicit optional filters."""
+        builder = self.request().locate(attributes)
+        if maximum_items is not None:
+            builder.maximum_items(maximum_items)
+        if offset_items is not None:
+            builder.offset_items(offset_items)
+        if storage_status_mask is not None:
+            builder.storage_status_mask(storage_status_mask)
+        if object_group_member is not None:
+            builder.object_group_member(object_group_member)
+        if options is not None:
+            builder.with_options(options)
+        return builder.execute(limits)
+
+    def revoke_by_id(
+        self, unique_identifier: extensions.UniqueIdentifier,
+        reason: extensions.RevocationReason, limits: ttlv.CodecLimits, *,
+        compromise_occurrence_date: int | None = None,
+        options: RequestOptions | None = None,
+    ) -> BatchResult:
+        """Revoke one object with an explicit typed reason and optional date."""
+        builder = self.request().revoke(unique_identifier, reason)
+        if compromise_occurrence_date is not None:
+            builder.compromise_occurrence_date(compromise_occurrence_date)
+        if options is not None:
+            builder.with_options(options)
+        return builder.execute(limits)
+
     @classmethod
     def create(
         cls,
