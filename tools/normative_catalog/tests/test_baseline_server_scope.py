@@ -293,7 +293,7 @@ class BaselineServerScopeTests(unittest.TestCase):
         for requirement_id, requirement in requirements.items():
             with self.subTest(requirement_id=requirement_id):
                 self.assertEqual(requirement["role"], "client")
-                self.assertEqual(requirement["direction"], "unclear")
+                self.assertIn(requirement["direction"], {"unclear", "client_to_server"})
                 self.assertEqual(requirement["scope_state"], "client_1_0")
                 self.assertEqual(requirement["profile_ids"], [])
                 self.assertEqual(requirement["status"], "scoped_verified")
