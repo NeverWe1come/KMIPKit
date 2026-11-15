@@ -3,8 +3,9 @@ use kmipkit::{
     ClientRequest,
     client_config::ClientConfiguration,
     protocol::{
-        Attribute, Authentication, Credential, CryptographicParametersBuilder, KeyMaterial,
-        ManagedObject, OpaqueObject, OperationData, ResponseMessage, SecretBytes, attribute::typed,
+        Attribute, Authentication, Credential, CryptographicAlgorithm,
+        CryptographicParametersBuilder, KeyMaterial, ManagedObject, OpaqueObject, OperationData,
+        ResponseMessage, SecretBytes, attribute::typed,
     },
     transport_config::{
         CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, TransportConfig, TrustSource,
@@ -203,6 +204,72 @@ fn execute_fluent_lifecycle(
     Ok(())
 }
 
+fn execute_fluent_key_pair_signing(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let created = client
+        .request()
+        .create_key_pair()
+        .algorithm(CryptographicAlgorithm::from_raw(6))
+        .length(256)
+        .private_usage_mask(CryptographicUsageMask::SIGN)
+        .public_usage_mask(CryptographicUsageMask::VERIFY)
+        .private_name("fluent-private-key")
+        .public_name("fluent-public-key")
+        .execute(limits)?;
+    let (private_identifier, public_identifier) = match created.outcome() {
+        ClientBatchOutcome::CreateKeyPairCompleted(response)
+            if response.result().status().raw() == 0 => (
+                response
+                    .private_key_unique_identifier()
+                    .ok_or("Create Key Pair omitted its private identifier")?
+                    .clone(),
+                response
+                    .public_key_unique_identifier()
+                    .ok_or("Create Key Pair omitted its public identifier")?
+                    .clone(),
+            ),
+        outcome => return Err(format!("unexpected Create Key Pair outcome: {outcome:?}").into()),
+    };
+
+    let parameters = CryptographicParametersBuilder::new()
+        .with_hashing_algorithm(6)
+        .with_digital_signature_algorithm(0x0E)
+        .build()?;
+    let signed = client
+        .request()
+        .sign()
+        .unique_identifier(private_identifier.clone())
+        .cryptographic_parameters(parameters)
+        .data(b"fluent sign input".to_vec())
+        .execute(limits)?;
+    let signature = signed
+        .outcome()
+        .sign_response()
+        .ok_or("Sign did not return its typed outcome")?;
+    if signature.result().status().raw() != 0
+        || signature.unique_identifier() != Some(&private_identifier)
+        || !signature
+            .signature_data()
+            .is_some_and(|value| value.with_bytes(|actual| actual == b"fixture signature"))
+    {
+        return Err("Sign did not preserve the fixture's typed Signature Data".into());
+    }
+
+    for identifier in [private_identifier, public_identifier] {
+        let destroyed = client.request().destroy(identifier.clone()).execute(limits)?;
+        match destroyed.outcome() {
+            ClientBatchOutcome::Destroy(response)
+                if response.result().status().raw() == 0
+                    && response.unique_identifier() == Some(&identifier) => {}
+            outcome => return Err(format!("unexpected key-pair Destroy outcome: {outcome:?}").into()),
+        }
+    }
+    println!("rust: fluent ECDSA key pair, Sign, and Destroy verified over TLS 1.3/mTLS");
+    Ok(())
+}
+
 fn demonstrate_client_request() -> Result<(), Box<dyn std::error::Error>> {
     let request = ClientRequest::ping();
     let validation_report = request.validation_report();
@@ -272,5 +339,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     assert_eq!(raw.children().len(), 0);
     println!("rust: Ping result and raw TTLV verified");
     execute_fluent_lifecycle(&mut client, &limits)?;
+    execute_fluent_key_pair_signing(&mut client, &limits)?;
     Ok(())
 }

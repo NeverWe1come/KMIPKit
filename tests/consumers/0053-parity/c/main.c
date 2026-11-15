@@ -1,6 +1,7 @@
 #include "kmipkit.h"
 
 #include <stdint.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -215,7 +216,218 @@ static int32_t verify_fluent_aes_gcm(kmipkit_client_t *client,
     kmipkit_client_batch_response_release(response);
     kmipkit_crypto_operation_builder_release(builder);
     kmipkit_cryptographic_parameters_release(parameters);
-    if (status == 0) puts("c: fluent AES-GCM Create/Get/Encrypt/Decrypt/Destroy verified over TLS 1.3/mTLS");
+    if (status == 0) puts("c: fluent AES-GCM Encrypt/Decrypt verified over TLS 1.3/mTLS");
+    return status;
+}
+
+static int32_t destroy_key_pair_identifier(
+    kmipkit_client_t *client,
+    kmipkit_codec_limits_t *limits,
+    const kmipkit_unique_identifier_v1_t *identifier) {
+    kmipkit_client_batch_response_t *response = 0;
+    kmipkit_client_batch_item_response_t *item = 0;
+    kmipkit_client_batch_item_metadata_v1_t metadata = {0};
+    kmipkit_unique_identifier_v1_t response_identifier = {0};
+    uint8_t present = 0;
+    const char *failure_phase = "send Destroy request";
+    int32_t status = kmipkit_client_destroy_by_id_v1(client, identifier, limits, &response);
+    response_identifier.struct_size = (uint32_t)sizeof(response_identifier);
+    response_identifier.abi_version = UINT32_C(1);
+    if (status == 0) {
+        failure_phase = "read Destroy response item";
+        status = kmipkit_client_batch_response_item_at(response, UINT64_C(0), &item);
+    }
+    metadata.struct_size = (uint32_t)sizeof(metadata);
+    metadata.abi_version = UINT32_C(1);
+    if (status == 0) {
+        failure_phase = "read Destroy result status";
+        status = kmipkit_client_batch_item_response_metadata_v1(item, &metadata);
+    }
+    if (status == 0 && metadata.result_status != UINT32_C(0)) {
+        status = 4;
+        failure_phase = "validate Destroy result status";
+    }
+    if (status == 0) {
+        failure_phase = "read Destroy response identifier";
+        status = kmipkit_client_batch_item_response_destroy(
+            item, &present, &response_identifier);
+    }
+    if (status == 0 && (!present || response_identifier.kind != identifier->kind ||
+            response_identifier.text_length != identifier->text_length ||
+            memcmp(response_identifier.text_data, identifier->text_data,
+                   (size_t)identifier->text_length) != 0)) {
+        status = 4;
+        failure_phase = "validate Destroy response identifier";
+    }
+    kmipkit_client_batch_item_response_release(item);
+    kmipkit_client_batch_response_release(response);
+    if (status != 0) {
+        fprintf(stderr, "C Destroy-by-ID journey failed to %s (status=%" PRId32 ")\n",
+                failure_phase, status);
+    }
+    return status;
+}
+
+static int32_t verify_fluent_key_pair_signing(
+    kmipkit_client_t *client,
+    kmipkit_codec_limits_t *limits) {
+    static const uint8_t private_name[] = "fluent-private-key";
+    static const uint8_t public_name[] = "fluent-public-key";
+    static const uint8_t sign_input[] = "fluent sign input";
+    static const uint8_t expected_signature[] = "fixture signature";
+    kmipkit_create_key_pair_builder_t *pair_builder = 0;
+    kmipkit_client_batch_response_t *pair_response = 0;
+    kmipkit_client_batch_item_response_t *pair_item = 0;
+    kmipkit_unique_identifier_v1_t private_identifier = {0};
+    kmipkit_unique_identifier_v1_t public_identifier = {0};
+    kmipkit_cryptographic_parameters_fields_v1_t parameter_fields = {0};
+    kmipkit_cryptographic_parameters_t *parameters = 0;
+    kmipkit_crypto_operation_builder_t *sign_builder = 0;
+    kmipkit_client_batch_response_t *sign_response = 0;
+    kmipkit_client_batch_item_response_t *sign_item = 0;
+    kmipkit_client_batch_item_metadata_v1_t metadata = {0};
+    kmipkit_unique_identifier_v1_t sign_identifier = {0};
+    kmipkit_byte_span_v1_t input_span = {0};
+    kmipkit_byte_span_v1_t signature_span = {0};
+    uint8_t pair_present = 0;
+    uint8_t signature_present = 0;
+    uint8_t correlation_present = 0;
+    kmipkit_byte_span_v1_t correlation_span = {0};
+    const char *failure_phase = "configure Create Key Pair";
+    int32_t status = kmipkit_create_key_pair_builder_create(&pair_builder);
+
+    if (status == 0) status = kmipkit_create_key_pair_builder_set_algorithm(
+        pair_builder, KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_ECDSA);
+    if (status == 0) status = kmipkit_create_key_pair_builder_set_length(pair_builder, INT32_C(256));
+    if (status == 0) status = kmipkit_create_key_pair_builder_set_private_usage_mask(
+        pair_builder, (int32_t)KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_SIGN);
+    if (status == 0) status = kmipkit_create_key_pair_builder_set_public_usage_mask(
+        pair_builder, (int32_t)KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_VERIFY);
+    if (status == 0) status = kmipkit_create_key_pair_builder_set_private_name(
+        pair_builder, private_name, (uint64_t)(sizeof(private_name) - 1));
+    if (status == 0) status = kmipkit_create_key_pair_builder_set_public_name(
+        pair_builder, public_name, (uint64_t)(sizeof(public_name) - 1));
+    if (status == 0) {
+        failure_phase = "validate Create Key Pair";
+        status = kmipkit_create_key_pair_builder_validate(pair_builder);
+    }
+    private_identifier.struct_size = (uint32_t)sizeof(private_identifier);
+    private_identifier.abi_version = UINT32_C(1);
+    public_identifier.struct_size = (uint32_t)sizeof(public_identifier);
+    public_identifier.abi_version = UINT32_C(1);
+    if (status == 0) {
+        failure_phase = "execute Create Key Pair";
+        status = kmipkit_create_key_pair_builder_execute_v1(
+            pair_builder, client, limits, &pair_response);
+        if (status != 0) {
+            int32_t last_status = 0;
+            uint32_t category = 0;
+            uint32_t cause = 0;
+            uint32_t delivery = 0;
+            (void)kmipkit_last_error_get(&last_status, &category, &cause, &delivery);
+            fprintf(stderr, "C Create Key Pair ABI failure: status=%" PRId32
+                    " category=%" PRIu32 " cause=%" PRIu32 " delivery=%" PRIu32 "\n",
+                    last_status, category, cause, delivery);
+        }
+    }
+    if (status == 0) {
+        failure_phase = "read Create Key Pair response item";
+        status = kmipkit_client_batch_response_item_at(
+            pair_response, UINT64_C(0), &pair_item);
+    }
+    metadata.struct_size = (uint32_t)sizeof(metadata);
+    metadata.abi_version = UINT32_C(1);
+    if (status == 0) {
+        failure_phase = "read Create Key Pair result status";
+        status = kmipkit_client_batch_item_response_metadata_v1(pair_item, &metadata);
+    }
+    if (status == 0 && metadata.result_status != UINT32_C(0)) {
+        status = 4;
+        failure_phase = "validate Create Key Pair result status";
+    }
+    if (status == 0) {
+        failure_phase = "read typed Create Key Pair response";
+        status = kmipkit_client_batch_item_response_create_key_pair(
+            pair_item, &pair_present, &private_identifier, &public_identifier);
+    }
+    if (status == 0 && (!pair_present ||
+            private_identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
+            private_identifier.text_length != (uint64_t)(sizeof(private_name) - 1) ||
+            memcmp(private_identifier.text_data, private_name, sizeof(private_name) - 1) != 0 ||
+            public_identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
+            public_identifier.text_length != (uint64_t)(sizeof(public_name) - 1) ||
+            memcmp(public_identifier.text_data, public_name, sizeof(public_name) - 1) != 0)) {
+        status = 4;
+        failure_phase = "validate Create Key Pair identifiers";
+    }
+
+    parameter_fields.struct_size = (uint32_t)sizeof(parameter_fields);
+    parameter_fields.abi_version = UINT32_C(1);
+    parameter_fields.hashing_algorithm_present = UINT8_C(1);
+    parameter_fields.hashing_algorithm = KMIPKIT_ENUMERATION_HASHING_ALGORITHM_SHA_256;
+    parameter_fields.digital_signature_algorithm_present = UINT8_C(1);
+    parameter_fields.digital_signature_algorithm =
+        KMIPKIT_ENUMERATION_DIGITAL_SIGNATURE_ALGORITHM_ECDSA_WITH_SHA256;
+    if (status == 0) {
+        failure_phase = "configure Sign parameters";
+        status = kmipkit_cryptographic_parameters_from_fields_v1(
+            &parameter_fields, &parameters);
+    }
+    if (status == 0) status = kmipkit_sign_builder_create(&sign_builder);
+    if (status == 0) status = kmipkit_crypto_operation_builder_set_unique_identifier(
+        sign_builder, &private_identifier);
+    if (status == 0) status = kmipkit_crypto_operation_builder_set_cryptographic_parameters(
+        sign_builder, parameters);
+    input_span.data = sign_input;
+    input_span.length = (uint64_t)(sizeof(sign_input) - 1);
+    if (status == 0) status = kmipkit_crypto_operation_builder_set_data(sign_builder, &input_span);
+    if (status == 0) {
+        failure_phase = "execute Sign";
+        status = kmipkit_crypto_operation_builder_execute_v1(
+            sign_builder, client, limits, &sign_response);
+    }
+    sign_identifier.struct_size = (uint32_t)sizeof(sign_identifier);
+    sign_identifier.abi_version = UINT32_C(1);
+    if (status == 0) status = kmipkit_client_batch_response_item_at(
+        sign_response, UINT64_C(0), &sign_item);
+    metadata.struct_size = (uint32_t)sizeof(metadata);
+    metadata.abi_version = UINT32_C(1);
+    if (status == 0) status = kmipkit_client_batch_item_response_metadata_v1(sign_item, &metadata);
+    if (status == 0 && metadata.result_status != UINT32_C(0)) status = 4;
+    if (status == 0) status = kmipkit_client_batch_item_response_sign(
+        sign_item, &pair_present, &sign_identifier, &signature_present, &signature_span,
+        &correlation_present, &correlation_span);
+    if (status == 0 && (!pair_present || !signature_present ||
+            sign_identifier.kind != private_identifier.kind ||
+            sign_identifier.text_length != private_identifier.text_length ||
+            memcmp(sign_identifier.text_data, private_identifier.text_data,
+                   (size_t)private_identifier.text_length) != 0 ||
+            signature_span.length != (uint64_t)(sizeof(expected_signature) - 1) ||
+            memcmp(signature_span.data, expected_signature, sizeof(expected_signature) - 1) != 0)) {
+        status = 4;
+        failure_phase = "validate Sign response";
+    }
+    if (status == 0) {
+        failure_phase = "destroy private key";
+        status = destroy_key_pair_identifier(client, limits, &private_identifier);
+    }
+    if (status == 0) {
+        failure_phase = "destroy public key";
+        status = destroy_key_pair_identifier(client, limits, &public_identifier);
+    }
+
+    kmipkit_client_batch_item_response_release(sign_item);
+    kmipkit_client_batch_response_release(sign_response);
+    kmipkit_crypto_operation_builder_release(sign_builder);
+    kmipkit_cryptographic_parameters_release(parameters);
+    kmipkit_client_batch_item_response_release(pair_item);
+    kmipkit_client_batch_response_release(pair_response);
+    kmipkit_create_key_pair_builder_release(pair_builder);
+    if (status != 0) {
+        fprintf(stderr, "C key-pair signing journey failed during %s (status=%" PRId32 ")\n",
+                failure_phase, status);
+    }
+    if (status == 0) puts("c: fluent ECDSA key pair, Sign, and Destroy verified over TLS 1.3/mTLS");
     return status;
 }
 
@@ -531,7 +743,10 @@ int main(void) {
             memcmp(destroy_identifier.text_data, "fluent-key",
                    (size_t)destroy_identifier.text_length) != 0)) {
         status = 4;
+        fprintf(stderr, "C symmetric Destroy response did not preserve its Unique Identifier\n");
     }
+    if (status != 0) fprintf(stderr, "C symmetric Destroy failed (status=%" PRId32 ")\n", status);
+    if (status == 0) status = verify_fluent_key_pair_signing(client, limits);
     if (status == 0) puts("c: fluent Create/Get/Destroy verified over TLS 1.3/mTLS");
 
     kmipkit_ttlv_value_release(value);

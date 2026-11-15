@@ -4,8 +4,10 @@ import java.util.Arrays;
 import java.util.List;
 import org.kmipkit.client.KmipClient;
 import org.kmipkit.fluent.SymmetricKeyBuilder;
+import org.kmipkit.fluent.CreateKeyPairBuilder;
 import org.kmipkit.fluent.DecryptBuilder;
 import org.kmipkit.fluent.EncryptBuilder;
+import org.kmipkit.fluent.SignBuilder;
 import org.kmipkit.extensions.ClientBatchItemResult;
 import org.kmipkit.extensions.ClientBatchResponse;
 import org.kmipkit.extensions.ClientConfiguration;
@@ -264,6 +266,75 @@ public final class Consumer {
                     }
                 }
                 System.out.println("java: fluent AES-GCM lifecycle Success/Pending/Failure outcomes verified");
+
+                UniqueIdentifier privateIdentifier;
+                UniqueIdentifier publicIdentifier;
+                try (CreateKeyPairBuilder builder = kmipClient.request().createKeyPair()
+                                .algorithm(KmipValues.CryptographicAlgorithm.ECDSA)
+                                .length(256)
+                                .privateUsageMask((int) KmipValues.CryptographicUsageMask.SIGN)
+                                .publicUsageMask((int) KmipValues.CryptographicUsageMask.VERIFY)
+                                .privateName("fluent-private-key")
+                                .publicName("fluent-public-key");
+                        ClientBatchResponse paired = builder.execute(limits);
+                        ClientBatchItemResult itemResult = paired.itemAt(0)) {
+                    var response = itemResult.createKeyPairResponse().orElseThrow();
+                    if (!itemResult.outcomeKind().isCompleted() || itemResult.resultStatus() != 0) {
+                        throw new IllegalStateException("Create Key Pair did not complete successfully");
+                    }
+                    privateIdentifier = response.privateKeyUniqueIdentifier();
+                    publicIdentifier = response.publicKeyUniqueIdentifier();
+                    if (!privateIdentifier.text().equals("fluent-private-key")
+                            || !publicIdentifier.text().equals("fluent-public-key")) {
+                        throw new IllegalStateException("Create Key Pair identifiers did not match the fixture");
+                    }
+                }
+
+                byte[] signInput = "fluent sign input".getBytes(StandardCharsets.UTF_8);
+                try {
+                    try (CryptographicParameters signParameters = CryptographicParameters.builder()
+                                    .hashingAlgorithm(KmipValues.HashingAlgorithm.SHA_256)
+                                    .digitalSignatureAlgorithm(
+                                            KmipValues.DigitalSignatureAlgorithm.ECDSA_WITH_SHA256)
+                                    .build();
+                            SignBuilder builder = kmipClient.request().sign();
+                            ClientBatchResponse signed = builder.uniqueIdentifier(privateIdentifier)
+                                    .cryptographicParameters(signParameters)
+                                    .data(signInput)
+                                    .execute(limits);
+                            ClientBatchItemResult itemResult = signed.itemAt(0)) {
+                        var response = itemResult.signResponse().orElseThrow();
+                        try (TtlvStructure responseTtlv = response.responseTtlv()) {
+                            byte[] signature = response.signatureData().orElseThrow();
+                            try {
+                                if (!itemResult.outcomeKind().isCompleted() || itemResult.resultStatus() != 0
+                                        || !response.uniqueIdentifier().text().equals(privateIdentifier.text())
+                                        || !Arrays.equals(signature,
+                                                "fixture signature".getBytes(StandardCharsets.UTF_8))) {
+                                    throw new IllegalStateException("Sign did not preserve typed Signature Data");
+                                }
+                            } finally {
+                                Arrays.fill(signature, (byte) 0);
+                            }
+                        }
+                    }
+                } finally {
+                    Arrays.fill(signInput, (byte) 0);
+                }
+
+                for (UniqueIdentifier keyIdentifier : List.of(privateIdentifier, publicIdentifier)) {
+                    try (ClientBatchResponse destroyedKey = kmipClient.request().destroy(keyIdentifier)
+                                    .execute(limits);
+                            ClientBatchItemResult itemResult = destroyedKey.itemAt(0)) {
+                        if (!itemResult.outcomeKind().isCompleted() || itemResult.resultStatus() != 0
+                                || !itemResult.destroyResponse().orElseThrow().uniqueIdentifier()
+                                        .text().equals(keyIdentifier.text())) {
+                            throw new IllegalStateException("Destroy did not return a key-pair identifier");
+                        }
+                    }
+                }
+                System.out.println(
+                        "java: fluent ECDSA key pair, Sign, and Destroy verified over TLS 1.3/mTLS");
             }
         }
     }

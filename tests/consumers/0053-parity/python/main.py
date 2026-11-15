@@ -262,6 +262,78 @@ def main() -> None:
                 assert destroy_response is not None
                 assert destroy_response.unique_identifier == identifier
                 print("python: fluent AES-GCM Create/Get/Encrypt/Decrypt/Destroy verified over TLS 1.3/mTLS")
+
+                paired = (
+                    kmip_client.request()
+                    .create_key_pair()
+                    .algorithm(protocol_values.CryptographicAlgorithm.ECDSA)
+                    .length(256)
+                    .private_usage_mask(protocol_values.CryptographicUsageMask.SIGN)
+                    .public_usage_mask(protocol_values.CryptographicUsageMask.VERIFY)
+                    .private_name("fluent-private-key")
+                    .public_name("fluent-public-key")
+                    .execute(limits)
+                )
+                lifecycle_results.append(paired)
+                pair_item = paired.items[0]
+                assert pair_item.operation == protocol_values.Operation.CREATE_KEY_PAIR
+                assert pair_item.outcome is client.BatchOutcome.COMPLETED
+                assert pair_item.result_status == 0
+                private_identifier = pair_item.private_key_unique_identifier
+                public_identifier = pair_item.public_key_unique_identifier
+                assert private_identifier == extensions.UniqueIdentifier.text_string(
+                    "fluent-private-key"
+                )
+                assert public_identifier == extensions.UniqueIdentifier.text_string(
+                    "fluent-public-key"
+                )
+
+                with cryptographic_parameters.CryptographicParameters.builder() as builder:
+                    with builder.hashing_algorithm(
+                        protocol_values.HashingAlgorithm.SHA_256
+                    ).digital_signature_algorithm(
+                        protocol_values.DigitalSignatureAlgorithm.ECDSA_WITH_SHA256
+                    ).build() as parameters:
+                        signed = (
+                            kmip_client.request()
+                            .sign()
+                            .unique_identifier(private_identifier)
+                            .cryptographic_parameters(parameters)
+                            .data(b"fluent sign input")
+                            .execute(limits)
+                        )
+                lifecycle_results.append(signed)
+                sign_item = signed.items[0]
+                assert sign_item.operation == protocol_values.Operation.SIGN
+                assert sign_item.outcome is client.BatchOutcome.COMPLETED
+                assert sign_item.result_status == 0
+                sign_response = sign_item.sign_response
+                assert sign_response is not None
+                signature = bytearray()
+                try:
+                    signature = bytearray(sign_response.signature_data or b"")
+                    assert sign_response.unique_identifier == private_identifier
+                    assert signature == b"fixture signature"
+                finally:
+                    for offset in range(len(signature)):
+                        signature[offset] = 0
+                    sign_response.response_ttlv.close()
+
+                for key_identifier in (private_identifier, public_identifier):
+                    destroyed_key = (
+                        kmip_client.request().destroy(key_identifier).execute(limits)
+                    )
+                    lifecycle_results.append(destroyed_key)
+                    destroyed_item = destroyed_key.items[0]
+                    assert destroyed_item.operation == protocol_values.Operation.DESTROY
+                    assert destroyed_item.outcome is client.BatchOutcome.COMPLETED
+                    assert destroyed_item.result_status == 0
+                    destroy_response = destroyed_item.destroy_response
+                    assert destroy_response is not None
+                    assert destroy_response.unique_identifier == key_identifier
+                print(
+                    "python: fluent ECDSA key pair, Sign, and Destroy verified over TLS 1.3/mTLS"
+                )
             finally:
                 for lifecycle_result in lifecycle_results:
                     lifecycle_result.close()

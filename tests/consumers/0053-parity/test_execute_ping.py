@@ -44,7 +44,10 @@ class ExecutePingConsumerTests(unittest.TestCase):
         fields = [(0x420079, 1, request_payload[8:])]
         identifier = _requested_identifier(20, fields)
         response = _response(20, unique_identifier=identifier)
-        response_fields = _children(_children(response[8:])[1])
+        response_item = next(
+            value for tag, kind, value in _children(response[8:]) if tag == 0x42000F and kind == 1
+        )
+        response_fields = _children(response_item)
         response_payload = next(value for tag, kind, value in response_fields if tag == 0x42007C and kind == 1)
         echoed = [value for tag, kind, value in _children(response_payload) if tag == 0x420094 and kind == 7]
         self.assertEqual(echoed, [b"fluent-private-key"])

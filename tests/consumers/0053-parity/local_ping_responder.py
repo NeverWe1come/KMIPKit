@@ -30,7 +30,12 @@ def _structure(tag: int, *children: bytes) -> bytes:
     return _item(tag, 1, b"".join(children))
 
 
-def _response(operation: int, pending: bool = False, failed: bool = False) -> bytes:
+def _response(
+    operation: int,
+    pending: bool = False,
+    failed: bool = False,
+    unique_identifier: bytes | None = None,
+) -> bytes:
     version = _structure(
         0x420069,
         _item(0x42006A, 2, struct.pack(">i", 2)),
@@ -80,7 +85,10 @@ def _response(operation: int, pending: bool = False, failed: bool = False) -> by
             _structure(0x42008F),
         )
     elif operation == 20:
-        payload = _structure(0x42007C, _item(0x420094, 7, b"fluent-key"))
+        payload = _structure(
+            0x42007C,
+            _item(0x420094, 7, unique_identifier or b"fluent-key"),
+        )
     elif operation == 0x1F:
         payload = _structure(
             0x42007C,
@@ -187,6 +195,23 @@ def _request_operation(
     if len(operations) != 1 or len(operations[0]) != 4:
         raise RuntimeError("fixture could not read the typed KMIP operation")
     return int.from_bytes(operations[0], "big"), fields, _children(headers[0])
+
+
+def _requested_identifier(
+    operation: int,
+    fields: list[tuple[int, int, bytes]],
+) -> bytes | None:
+    if operation != 20:
+        return None
+    payloads = [value for tag, kind, value in fields if tag == 0x420079 and kind == 1]
+    if len(payloads) != 1:
+        raise RuntimeError("Destroy request must contain one Request Payload")
+    identifiers = [
+        value for tag, kind, value in _children(payloads[0]) if tag == 0x420094 and kind == 7
+    ]
+    if len(identifiers) != 1:
+        raise RuntimeError("Destroy request must contain one Unique Identifier")
+    return identifiers[0]
 
 
 def _validate_operation(
@@ -367,7 +392,14 @@ def main() -> None:
                     failed = asynchronous_destroy and async_destroy_count == 1
                     if asynchronous_destroy:
                         async_destroy_count += 1
-                    stream.sendall(_response(operation, pending, failed))
+                    stream.sendall(
+                        _response(
+                            operation,
+                            pending,
+                            failed,
+                            _requested_identifier(operation, fields),
+                        )
+                    )
         finally:
             args.pid_file.unlink(missing_ok=True)
 
