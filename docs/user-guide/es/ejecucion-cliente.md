@@ -998,10 +998,10 @@ Sign, Signature Verify, MAC y MAC Verify usan los constructores respectivos
 los campos de las requests tipadas, incluidos los datos ya resumidos, la firma
 o el MAC, y el framing multipart cuando corresponda. El resultado asíncrono
 `Pending` y su valor de correlación permanecen visibles; el cliente no ejecuta
-Poll ni reintentos automáticos. KMIPKIT-0102 añadió los builders de Rust.
-KMIPKIT-0103 añade builders específicos de operación para C para las siete
-operaciones. Las fachadas Java y Python se entregan en fases dependientes; esta
-incorporación a C todavía no implica paridad para esos bindings.
+Poll ni reintentos automáticos. KMIPKIT-0102 a KMIPKIT-0105 añaden las APIs de
+builders para Rust, C, Java y Python en entregas dependientes. Cada binding
+respeta las reglas de propiedad y resultados de su lenguaje y usa las mismas
+operaciones tipadas de Rust.
 
 ## Operaciones criptográficas fluidas en C
 
@@ -1071,6 +1071,53 @@ constantes con nombre de `kmipkit.h` y configura los timeouts de intercambio por
 separado mediante `kmipkit_request_options_v1_t`. El constructor mTLS conserva
 la versión de protocolo seleccionada en su configuración y rechaza versiones
 no soportadas antes de abrir una conexión.
+
+## Operaciones criptográficas fluidas en Python
+
+Python ofrece `request().encrypt()`, `decrypt()`, `sign()`,
+`signature_verify()`, `mac()`, `mac_verify()` y `hash()`. Cada método devuelve
+un builder específico de la operación, respaldado por la request tipada de
+Rust. Acepta `CryptographicParameters` tipados o una estructura TTLV explícita,
+valida los campos comprobables localmente y puede crear un elemento tipado de
+batch o ejecutar un intercambio. No realiza criptografía local ni elige
+algoritmos, modos, padding o uso de claves.
+
+Por ejemplo, con `kmip_client` y `limits` ya configurados, se puede ejecutar
+Hash seleccionando SHA-256 de forma explícita:
+
+```python
+from kmipkit import cryptographic_parameters, protocol_values
+
+parameters_builder = cryptographic_parameters.CryptographicParameters.builder()
+try:
+    parameters = parameters_builder.hashing_algorithm(
+        protocol_values.HashingAlgorithm.SHA_256
+    ).build()
+finally:
+    parameters_builder.close()
+
+try:
+    with kmip_client.request().hash() as request:
+        result = request.cryptographic_parameters(parameters).data(b"message").execute(limits)
+    try:
+        outcome = result.items[0]
+        # Comprueba el resultado tipado antes de consumir su salida.
+        result_status = outcome.result_status
+    finally:
+        result.close()
+finally:
+    parameters.close()
+```
+
+Usa `with_options()` para los timeouts del intercambio y
+`asynchronous_indicator()` para el campo de la cabecera Request Header. Las
+operaciones multipart también exponen `correlation_value()`, `init_indicator()`
+y `final_indicator()`; el validador de requests tipadas comprueba su
+combinación antes del envío. Python copia cada entrada bytes-like a un buffer
+mutable acotado para la llamada nativa síncrona y sobrescribe ese buffer
+propiedad del binding al terminar. El objeto Python original y otras copias del
+runtime siguen sujetos a la gestión de memoria de Python. El binding no ejecuta
+Poll ni reintentos.
 
 ## Extensiones de mensaje
 
