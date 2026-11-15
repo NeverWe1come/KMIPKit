@@ -15,6 +15,10 @@ _CIPHERTEXT = b"fixture ciphertext"
 _NONCE = b"nonce-12byte"
 _AAD = b"fluent context"
 _AUTH_TAG = b"fixture-auth-tag"
+_PAIR_PRIVATE_ID = b"fluent-private-key"
+_PAIR_PUBLIC_ID = b"fluent-public-key"
+_SIGN_INPUT = b"fluent sign input"
+_SIGNATURE = b"fixture signature"
 
 
 def _item(tag: int, item_type: int, value: bytes) -> bytes:
@@ -62,6 +66,12 @@ def _response(operation: int, pending: bool = False, failed: bool = False) -> by
             _item(0x420057, 5, struct.pack(">I", 2)),
             _item(0x420094, 7, b"fluent-key"),
         )
+    elif operation == 2:
+        payload = _structure(
+            0x42007C,
+            _item(0x420066, 7, _PAIR_PRIVATE_ID),
+            _item(0x42006F, 7, _PAIR_PUBLIC_ID),
+        )
     elif operation == 10:
         payload = _structure(
             0x42007C,
@@ -84,6 +94,12 @@ def _response(operation: int, pending: bool = False, failed: bool = False) -> by
             0x42007C,
             _item(0x420094, 7, _FLUENT_KEY_ID),
             _item(0x4200C2, 8, _PLAINTEXT),
+        )
+    elif operation == 0x21:
+        payload = _structure(
+            0x42007C,
+            _item(0x420094, 7, _PAIR_PRIVATE_ID),
+            _item(0x4200C3, 8, _SIGNATURE),
         )
     elif operation == 0x3B:
         payload = _structure(0x42007C)
@@ -179,9 +195,9 @@ def _validate_operation(
     header_fields: list[tuple[int, int, bytes]],
 ) -> None:
     payloads = [value for tag, kind, value in fields if tag == 0x420079 and kind == 1]
-    if operation in (1, 10, 20) and len(payloads) != 1:
+    if operation in (1, 2, 10, 20, 0x21) and len(payloads) != 1:
         raise RuntimeError(
-            "lifecycle request must contain one Request Payload; "
+            "key lifecycle or signing request must contain one Request Payload; "
             f"operation={operation} tags={[hex(tag) for tag, _kind, _value in fields]}"
         )
     if operation == 1:
@@ -199,11 +215,33 @@ def _validate_operation(
             raise RuntimeError("Create Cryptographic Length was not 256 bits")
         if values.get(0x42002C) != (2, struct.pack(">i", 12)):
             raise RuntimeError("Create Cryptographic Usage Mask was not explicit")
+    elif operation == 2:
+        payload = _children(payloads[0])
+        groups = {
+            tag: _children(value)
+            for tag, kind, value in payload
+            if kind == 1 and tag in (0x420126, 0x420127, 0x420128)
+        }
+        common = {tag: (kind, value) for tag, kind, value in groups.get(0x420126, [])}
+        private = {tag: (kind, value) for tag, kind, value in groups.get(0x420127, [])}
+        public = {tag: (kind, value) for tag, kind, value in groups.get(0x420128, [])}
+        if common.get(0x420028) != (5, struct.pack(">I", 6)):
+            raise RuntimeError("Create Key Pair did not select ECDSA")
+        if common.get(0x42002A) != (2, struct.pack(">i", 256)):
+            raise RuntimeError("Create Key Pair did not select a 256-bit key")
+        if private.get(0x42002C) != (2, struct.pack(">i", 1)):
+            raise RuntimeError("Create Key Pair did not select private Sign usage")
+        if public.get(0x42002C) != (2, struct.pack(">i", 2)):
+            raise RuntimeError("Create Key Pair did not select public Verify usage")
     elif operation in (10, 20):
         payload = _children(payloads[0])
         identifiers = [value for tag, kind, value in payload if tag == 0x420094 and kind == 7]
-        if identifiers != [b"fluent-key"]:
-            raise RuntimeError("Get or Destroy did not use the returned Unique Identifier")
+        if operation == 10 and identifiers != [b"fluent-key"]:
+            raise RuntimeError("Get did not use the returned Unique Identifier")
+        if operation == 20 and identifiers not in (
+            [b"fluent-key"], [_PAIR_PRIVATE_ID], [_PAIR_PUBLIC_ID]
+        ):
+            raise RuntimeError("Destroy did not use a returned Unique Identifier")
     elif operation in (0x1F, 0x20):
         payload = _children(payloads[0])
         identifiers = [value for tag, kind, value in payload if tag == 0x420094 and kind == 7]
@@ -236,6 +274,24 @@ def _validate_operation(
         tags = [value for tag, kind, value in payload if tag == 0x4200FF and kind == 8]
         if (operation == 0x1F and tags) or (operation == 0x20 and tags != [_AUTH_TAG]):
             raise RuntimeError("Encrypt or Decrypt has an invalid authenticated encryption tag")
+    elif operation == 0x21:
+        payload = _children(payloads[0])
+        identifiers = [value for tag, kind, value in payload if tag == 0x420094 and kind == 7]
+        data = [value for tag, kind, value in payload if tag == 0x4200C2 and kind == 8]
+        parameter_structures = [
+            value for tag, kind, value in payload if tag == 0x42002B and kind == 1
+        ]
+        if identifiers != [_PAIR_PRIVATE_ID] or data != [_SIGN_INPUT]:
+            raise RuntimeError("Sign did not use the returned private key and example input")
+        if len(parameter_structures) != 1:
+            raise RuntimeError("Sign omitted explicit Cryptographic Parameters")
+        parameters = {
+            tag: (kind, value) for tag, kind, value in _children(parameter_structures[0])
+        }
+        if parameters.get(0x420038) != (5, struct.pack(">I", 6)) or parameters.get(
+            0x4200AE
+        ) != (5, struct.pack(">I", 0x0E)):
+            raise RuntimeError("Sign did not select ECDSA with SHA-256")
     if operation in (10, 20):
         indicators = [value for tag, kind, value in header_fields if tag == 0x420007 and kind == 5]
         if operation == 10 and indicators not in ([], [struct.pack(">I", 1)]):
