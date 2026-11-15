@@ -49,6 +49,11 @@ if TYPE_CHECKING:
     from .attribute_operations import AttributeSet
     from .credentials import CredentialType
     from .cryptographic_parameters import CryptographicParameters
+else:
+    # Resolve public annotations at runtime without importing cyclic modules.
+    AttributeSet = Any
+    CredentialType = Any
+    CryptographicParameters = Any
 
 
 @dataclass(frozen=True, slots=True)
