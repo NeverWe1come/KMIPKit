@@ -103,6 +103,10 @@ int kmipkit_public_create_key_pair_builder_probe(void) {
     if (status != INT32_C(0) || builder == NULL) {
         return 1;
     }
+    if (kmipkit_create_key_pair_builder_validate(builder) != KMIPKIT_ERROR_INVALID_INPUT) {
+        kmipkit_create_key_pair_builder_release(builder);
+        return 2;
+    }
     if (kmipkit_create_key_pair_builder_set_algorithm(
             builder, KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_ECDSA) != INT32_C(0) ||
         kmipkit_create_key_pair_builder_set_length(builder, INT32_C(256)) != INT32_C(0) ||
@@ -115,7 +119,11 @@ int kmipkit_public_create_key_pair_builder_probe(void) {
         kmipkit_create_key_pair_builder_set_public_name(
             builder, public_name, (uint64_t)(sizeof(public_name) - 1)) != INT32_C(0)) {
         kmipkit_create_key_pair_builder_release(builder);
-        return 2;
+        return 3;
+    }
+    if (kmipkit_create_key_pair_builder_validate(builder) != INT32_C(0)) {
+        kmipkit_create_key_pair_builder_release(builder);
+        return 4;
     }
     status = kmipkit_create_key_pair_builder_build_batch_item(builder, &item);
     if (status != INT32_C(0) || item == NULL ||
@@ -123,7 +131,7 @@ int kmipkit_public_create_key_pair_builder_probe(void) {
         operation != KMIPKIT_ENUMERATION_OPERATION_CREATE_KEY_PAIR) {
         kmipkit_client_batch_item_release(item);
         kmipkit_create_key_pair_builder_release(builder);
-        return 3;
+        return 5;
     }
     kmipkit_client_batch_item_release(item);
     kmipkit_create_key_pair_builder_release(builder);
