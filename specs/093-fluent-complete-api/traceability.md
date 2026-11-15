@@ -2,7 +2,9 @@
 
 | Requirement | Pinned source and existing contract | Verification |
 |---|---|---|
-| FR-001–003 catalog | KMIP 2.1 §11.36 Table 470, §11.56 Table 487; KMIP 3.0 §11.37 Table 584, §11.58 Table 605; KMIPKIT-0047, -0069, -0071 | Exhaustive assigned-value and version/direction matrix; generator snapshot and negative unassigned-value tests |
+| FR-001 operation metadata | KMIP 2.0 §§6.1–6.2 and §11.36; KMIP 2.1 §§6.1–6.2 and §11.36 Table 470; KMIP 3.0 Working Draft (13 July 2026) §6.1 and §11.37 Table 584; KMIPKIT-0047, -0069, -0071 | `specification/catalog/operation-matrix-evidence.json` supplies reviewed directional source, typed model and route references. The broader attribute/field catalog remains owned by its respective slices. |
+| FR-002 reproducible matrix generation | Existing catalog and `specification/api/public-api.json`; existing four-language symbol generators remain authoritative | `tools/normative_catalog/generate_fluent_operation_inventory.py --check`; `test_generated_inventory_is_deterministic_and_current`; public manifest generation `--check`. No public symbols are added or renamed by the matrix. |
+| FR-003 versioned operation matrix | Exact edition/section/path per row in `specification/catalog/fluent-operation-inventory.json`; pinned KMIP 2.0/2.1/3.0 sources | `tools/normative_catalog/tests/test_fluent_operation_inventory.py`: exhaustive 66-code/69-directional-row reconciliation, directional earliest-version clauses, typed owner/route/test references, explicit unverified-route behavior, reserved-value and fabricated-evidence rejection. `testEvidence.focused` records exact existing executable tests per row; static references do not claim passing execution, route-version conformance or server capability. |
 | FR-004 operation wrappers | KMIP 2.1 §6.1 operation tables; KMIPKIT-0007, -0051, -0052, -0091 | Per-operation build, validation, batch conversion, and real TLS fixture tests |
 | FR-005 typed result conversion | KMIP 2.1 §8.6 Table 417 and §9.19; KMIPKIT-0007, -0014, -0043 | `ClientBatchOutcome` operation/result/response mappings; Success, Operation Pending, Operation Failed, unknown status, reason, and correlation tests; transport/protocol errors retain `RequestDeliveryState` |
 | FR-006 expert attributes | KMIP 2.1 §§4–5, §7.1, §11.56; KMIPKIT-0048, ADR-0012, ADR-0014 | Wrong type, unknown tag, vendor structure, order, version, reserved tag, redaction, and no-send negative tests |
@@ -21,6 +23,7 @@ rejects absent, empty, wrong-type and secp256k1 curve selections. The Java Sign
 and Signature Verify consumers close their native builders with
 try-with-resources, including failures during execution or response inspection.
 
-The next catalog slice expands this table to one row per assigned operation
-and one row per normative client requirement. A static count alone does not
-establish implementation or conformance.
+The generated operation matrix now records one row per assigned operation and
+direction. Full field-level and normative client requirement coverage remains
+owned by the corresponding implementation slices. A static count or test
+reference alone does not establish execution success or conformance.

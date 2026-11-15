@@ -130,3 +130,52 @@ verifies the pinned source checksum and merges these explicit assignments into
 the supported-version tag-allocation union. The union allows construction and
 decoding of assigned tags; it does not establish that a tag is valid for the
 effective protocol version or that the feature is otherwise supported.
+
+
+## Versioned fluent operation matrix
+
+[`fluent-operation-inventory.json`](fluent-operation-inventory.json) format 2
+joins the reviewed KMIP 2.1 inventory, versioned assignment supplement,
+[`operation-matrix-evidence.json`](operation-matrix-evidence.json), and existing
+public API manifest. Regenerate or verify it with:
+
+```sh
+python3 -B tools/normative_catalog/generate_fluent_operation_inventory.py --repo-root .
+python3 -B tools/normative_catalog/generate_fluent_operation_inventory.py --repo-root . --check
+python3 -B -m unittest tools.normative_catalog.tests.test_fluent_operation_inventory -v
+```
+
+The matrix has 66 assigned codes and 69 directional rows: 59 KMIP 2.1 values
+plus the seven KMIP 3.0 Working Draft assignments, with separate client and
+listener rows for shared values. Numeric completeness checks reject reserved
+values; they never generate public symbols from a range. The existing named
+value and public API generators retain ownership of all public exports.
+
+`version` identifies the catalog edition that supplied the row.
+`earliestSupportedVersion` identifies the earliest **directional operation
+clause** among the supported pinned source editions (2.0, 2.1, 3.0). It is not
+historical KMIP 1.x introduction, a verified execution-version span, or a server
+capability declaration. Each `versionSourceRefs` entry supplies an edition,
+pinned path, and exact operation section. The generator verifies all three
+source checksums and checks those headings and directions; it does not infer
+listener version availability from a shared operation number.
+
+`typedOwners` names the existing request and response model definitions and
+paths. `route` names the existing client execution entry point and typed request
+variant, or listener handler, incoming variant and dispatcher. Cancel, Poll,
+Process and Query Asynchronous Requests use their explicit asynchronous client
+entry points. `implemented` is static evidence that the route and typed model
+exist. `unverified` is representable without a fabricated owner or send route;
+`clientSend` and `listenerRoute` become false for an unverified route.
+`route.versionVerification: not_established` explicitly keeps execution under
+each protocol version unclaimed by this inventory.
+
+`testEvidence.focused` references registered Rust tests by exact path and name;
+`testEvidence.parity` preserves the client public manifest's evidence paths.
+Catalog implementation/verification references and payload tables remain
+separate from these reviewed route references, including empty catalog fields.
+The generator checks owner declarations, route and variant presence, test
+registration syntax, and evidence paths. These checks do not execute the Rust
+or binding suites and are not proof that all cited tests pass. Every row sets
+`serverCapabilityClaim: false`. Fixture, external server, profile and runtime
+version verification remain separate evidence obligations under KMIPKIT-0093.

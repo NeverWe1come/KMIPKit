@@ -36,6 +36,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.OptionalLong;
 import java.util.HexFormat;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -757,7 +758,33 @@ final class ClientFacadeTlsIntegrationTest {
             try (TtlvStructure ticket = logoutTicket()) {
                 batch.add(ClientBatchItem.logout(ticket).withUniqueBatchItemId(logoutId));
             }
-            try (ClientBatchResponse response = client.execute(batch, CodecLimits.defaults());
+            ClientBatchResponse batchResponse;
+            try {
+                batchResponse = client.execute(batch, CodecLimits.defaults());
+            } catch (ClientOperationException exception) {
+                String peerState = "pending";
+                if (peer.isDone()) {
+                    try {
+                        peer.get();
+                        peerState = "completed";
+                    } catch (ExecutionException peerFailure) {
+                        Throwable cause = peerFailure.getCause();
+                        peerState = "failed:"
+                                + (cause == null ? "unknown" : cause.getClass().getSimpleName());
+                    } catch (InterruptedException interrupted) {
+                        Thread.currentThread().interrupt();
+                        peerState = "interrupted";
+                    }
+                }
+                throw new AssertionError(
+                        "TLS fixture execution failed with native status=" + exception.statusCode()
+                                + ", category=" + exception.categoryCode()
+                                + ", cause=" + exception.causeCode()
+                                + ", delivery=" + exception.deliveryStateCode()
+                                + ", peer=" + peerState,
+                        exception);
+            }
+            try (ClientBatchResponse response = batchResponse;
                     ClientBatchItemResult pingResult = response.itemAt(0);
                     ClientBatchItemResult queryResult = response.itemAt(1);
                     ClientBatchItemResult logoutResult = response.itemAt(2)) {
