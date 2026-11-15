@@ -348,3 +348,24 @@
   journeys and the fixture's limits. The evidence remains limited to a
   controlled fixture and does not claim external-KMS interoperability.
 
+## PR #226 macOS HTTPS surplus-response CI follow-up
+
+### Red
+
+- Exact-head CI run `43758665557` failed on macOS stable in
+  `https_never_attributes_a_surplus_response_to_a_later_exchange`: the third
+  request received the server's extra response. The peer's completion signal
+  followed its local TLS flush, which did not prove the client had processed
+  those bytes before the test started the next exchange.
+
+### Green
+
+- Added a test-only observation of whether the retained HTTPS connection is
+  still reusable. The integration test now waits, with a bounded condition
+  wait, for the idle driver to reject the surplus input before sending the
+  third exchange. It also requires the third request to reach the peer on a
+  different connection and receive its own exact response body.
+- `cargo test -p kmipkit-transport --test https
+  https_never_attributes_a_surplus_response_to_a_later_exchange -- --exact`
+  passed 12 consecutive runs after the synchronization change.
+

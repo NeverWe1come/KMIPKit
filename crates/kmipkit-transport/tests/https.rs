@@ -1424,11 +1424,13 @@ fn https_never_attributes_a_surplus_response_to_a_later_exchange() {
         surplus_sent.recv_timeout(PEER_TIMEOUT).is_ok(),
         "the peer queued the unsolicited response after two completed exchanges"
     );
+    let surplus_rejected_while_idle = wait_until(PEER_TIMEOUT, || {
+        https::retained_connection_is_unusable_for_test(&adapter)
+    });
     let third = adapter.exchange(fixtures::REQUEST_SENTINEL, 64);
-    let third_avoids_surplus = match &third {
-        Ok(response) => response.as_bytes() != b"unsolicited",
-        Err(_) => true,
-    };
+    let third_has_its_own_response = third
+        .as_ref()
+        .is_ok_and(|response| response.as_bytes() == b"third");
     drop(adapter);
     let peer = peer.join().expect("the bounded reuse peer completes");
 
@@ -1448,13 +1450,35 @@ fn https_never_attributes_a_surplus_response_to_a_later_exchange() {
     if !peer.surplus_write_succeeded {
         failures.push("the unsolicited response could not be queued on the reused TLS connection");
     }
-    if !third_avoids_surplus {
-        failures.push("the third exchange was given the unsolicited response");
+    if !surplus_rejected_while_idle {
+        failures.push("the idle connection did not reject surplus input before the next exchange");
+    }
+    if peer.request_connection_ids.len() < 3 {
+        failures.push("the peer did not observe the third HTTPS request");
+    }
+    if peer.request_connection_ids.first() == peer.request_connection_ids.get(2) {
+        failures.push("the third exchange reused the connection that received surplus input");
+    }
+    if !third_has_its_own_response {
+        failures.push("the third exchange did not receive its own response");
     }
     assert!(
         failures.is_empty(),
         "reused HTTPS connections must discard surplus responses: {failures:?}"
     );
+}
+
+fn wait_until(timeout: Duration, mut condition: impl FnMut() -> bool) -> bool {
+    let deadline = Instant::now() + timeout;
+    loop {
+        if condition() {
+            return true;
+        }
+        if Instant::now() >= deadline {
+            return false;
+        }
+        thread::sleep(Duration::from_millis(1));
+    }
 }
 
 fn assert_request(

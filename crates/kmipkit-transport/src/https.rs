@@ -807,6 +807,14 @@ fn lock_https_connection(
         .unwrap_or_else(std::sync::PoisonError::into_inner)
 }
 
+#[cfg(test)]
+#[allow(dead_code)] // Used by the source-included HTTPS surplus-response test.
+pub(crate) fn retained_connection_is_unusable_for_test(transport: &HttpsTransport) -> bool {
+    lock_https_connection(&transport.connection)
+        .as_ref()
+        .is_some_and(|connection| !connection.is_reusable())
+}
+
 async fn connect_and_handshake(
     host: &str,
     port: u16,
