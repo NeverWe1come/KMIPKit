@@ -34,7 +34,9 @@ T102_BLOCKED_CANDIDATES = 0
 # KMIPKIT-0124 also records 11 exact internal Java JNI bridge exclusions.
 # Update this full-manifest snapshot only when an approved feature intentionally
 # adds or removes declarations.
-T102_PUBLIC_DECLARATIONS = 16_816
+# Refresh this snapshot with approved public API additions; the current
+# generated manifest contains 16,892 public declarations.
+T102_PUBLIC_DECLARATIONS = 16_892
 T102_KMIP30_DRAFT_ROUTE_DECLARATIONS = 36
 T102_APPROVED_EXCLUSIONS = 22_661
 T102_RUST_AUDIT_MANIFEST = 3_287
