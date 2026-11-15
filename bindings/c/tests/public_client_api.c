@@ -93,6 +93,43 @@ int kmipkit_public_fluent_builder_probe(void) {
     return 0;
 }
 
+int kmipkit_public_create_key_pair_builder_probe(void) {
+    static const uint8_t private_name[] = "primary signing key";
+    static const uint8_t public_name[] = "primary verification key";
+    kmipkit_create_key_pair_builder_t *builder = NULL;
+    kmipkit_client_batch_item_t *item = NULL;
+    uint32_t operation = UINT32_C(0);
+    int32_t status = kmipkit_create_key_pair_builder_create(&builder);
+    if (status != INT32_C(0) || builder == NULL) {
+        return 1;
+    }
+    if (kmipkit_create_key_pair_builder_set_algorithm(
+            builder, KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_ECDSA) != INT32_C(0) ||
+        kmipkit_create_key_pair_builder_set_length(builder, INT32_C(256)) != INT32_C(0) ||
+        kmipkit_create_key_pair_builder_set_private_usage_mask(
+            builder, KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_SIGN) != INT32_C(0) ||
+        kmipkit_create_key_pair_builder_set_public_usage_mask(
+            builder, KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_VERIFY) != INT32_C(0) ||
+        kmipkit_create_key_pair_builder_set_private_name(
+            builder, private_name, (uint64_t)(sizeof(private_name) - 1)) != INT32_C(0) ||
+        kmipkit_create_key_pair_builder_set_public_name(
+            builder, public_name, (uint64_t)(sizeof(public_name) - 1)) != INT32_C(0)) {
+        kmipkit_create_key_pair_builder_release(builder);
+        return 2;
+    }
+    status = kmipkit_create_key_pair_builder_build_batch_item(builder, &item);
+    if (status != INT32_C(0) || item == NULL ||
+        kmipkit_client_batch_item_operation(item, &operation) != INT32_C(0) ||
+        operation != KMIPKIT_ENUMERATION_OPERATION_CREATE_KEY_PAIR) {
+        kmipkit_client_batch_item_release(item);
+        kmipkit_create_key_pair_builder_release(builder);
+        return 3;
+    }
+    kmipkit_client_batch_item_release(item);
+    kmipkit_create_key_pair_builder_release(builder);
+    return 0;
+}
+
 int kmipkit_public_async_batch_items_probe(void) {
     static const uint8_t correlation[] = "async-request-id";
     kmipkit_cancel_request_t *cancel_request = NULL;

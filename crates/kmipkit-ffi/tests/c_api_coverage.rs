@@ -95,6 +95,7 @@ unsafe extern "C" {
         out_version_rejection_verified: *mut u8,
     ) -> i32;
     fn kmipkit_public_fluent_builder_probe() -> i32;
+    fn kmipkit_public_create_key_pair_builder_probe() -> i32;
     fn kmipkit_public_async_batch_items_probe() -> i32;
     fn kmipkit_public_kmip30_semantic_items_probe() -> i32;
     fn kmipkit_public_kmip30_credential_kem_probe() -> i32;
@@ -219,6 +220,16 @@ fn public_c_fluent_builder_constructs_a_typed_create_item_and_checks_versioned_i
     assert_eq!(
         status, 0,
         "public fluent C declarations and ABI calls must agree"
+    );
+}
+
+#[test]
+fn public_c_create_key_pair_builder_constructs_a_typed_create_key_pair_item() {
+    // SAFETY: The compiled C consumer releases its temporary builder and batch-item handles.
+    let status = unsafe { kmipkit_public_create_key_pair_builder_probe() };
+    assert_eq!(
+        status, 0,
+        "public C Create Key Pair builder declarations and ABI calls must agree"
     );
 }
 
