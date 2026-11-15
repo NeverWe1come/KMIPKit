@@ -553,6 +553,123 @@ static int32_t verify_fluent_expert_attributes(
     return status;
 }
 
+static int32_t verify_fluent_batch_placeholder(
+    kmipkit_client_t *client,
+    kmipkit_codec_limits_t *limits) {
+    static const uint8_t key_name[] = "fluent-batch-key";
+    static const uint8_t create_batch_id[] = "fluent-batch-create";
+    static const uint8_t get_batch_id[] = "fluent-batch-get";
+    kmipkit_symmetric_key_builder_t *builder = 0;
+    kmipkit_client_batch_item_t *create_request = 0;
+    kmipkit_client_batch_item_t *get_request = 0;
+    kmipkit_client_batch_t *batch = 0;
+    kmipkit_client_batch_response_t *response = 0;
+    kmipkit_client_batch_item_response_t *create_item = 0;
+    kmipkit_client_batch_item_response_t *get_item = 0;
+    kmipkit_client_batch_item_metadata_v1_t metadata = {0};
+    kmipkit_unique_identifier_v1_t created_identifier = {0};
+    kmipkit_unique_identifier_v1_t get_identifier = {0};
+    kmipkit_ttlv_structure_t *get_object = 0;
+    uint64_t response_count = 0;
+    uint8_t create_present = 0;
+    uint8_t get_present = 0;
+    uint8_t get_payload_present = 0;
+    uint32_t object_type = UINT32_MAX;
+    const char *failure_phase = "configure typed Create builder";
+    int32_t status = kmipkit_symmetric_key_builder_create(&builder);
+
+    if (status == 0) status = kmipkit_symmetric_key_builder_set_algorithm(
+        builder, KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES);
+    if (status == 0) status = kmipkit_symmetric_key_builder_set_length(builder, INT32_C(256));
+    if (status == 0) status = kmipkit_symmetric_key_builder_set_usage_mask(
+        builder, (int32_t)(KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_ENCRYPT |
+                           KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_DECRYPT));
+    if (status == 0) status = kmipkit_symmetric_key_builder_set_name(
+        builder, key_name, (uint64_t)(sizeof(key_name) - 1));
+    if (status == 0) status = kmipkit_symmetric_key_builder_build_batch_item(
+        builder, &create_request);
+
+    if (status == 0) status = kmipkit_client_batch_item_get(
+        0, UINT8_C(0), UINT32_C(0), UINT8_C(0), UINT32_C(0),
+        UINT8_C(0), UINT32_C(0), 0, &get_request);
+    if (status == 0) {
+        kmipkit_client_batch_item_t *identified = 0;
+        kmipkit_client_batch_item_t *unidentified = create_request;
+        create_request = 0;
+        status = kmipkit_client_batch_item_with_unique_batch_item_id(
+            unidentified, create_batch_id, (uint64_t)(sizeof(create_batch_id) - 1), &identified);
+        if (status == 0) create_request = identified;
+    }
+    if (status == 0) {
+        kmipkit_client_batch_item_t *identified = 0;
+        kmipkit_client_batch_item_t *unidentified = get_request;
+        get_request = 0;
+        status = kmipkit_client_batch_item_with_unique_batch_item_id(
+            unidentified, get_batch_id, (uint64_t)(sizeof(get_batch_id) - 1), &identified);
+        if (status == 0) get_request = identified;
+    }
+    if (status == 0) status = kmipkit_client_batch_create(&batch);
+    if (status == 0) status = kmipkit_client_batch_set_order_option(batch, UINT8_C(1));
+    if (status == 0) status = kmipkit_client_batch_add_item(batch, &create_request);
+    if (status == 0) status = kmipkit_client_batch_add_item(batch, &get_request);
+    if (status == 0) {
+        failure_phase = "execute ordered typed batch";
+        status = kmipkit_client_execute(client, &batch, limits, &response);
+    }
+    if (status == 0) status = kmipkit_client_batch_response_item_count(response, &response_count);
+    if (status == 0 && response_count != UINT64_C(2)) status = 4;
+    if (status == 0) status = kmipkit_client_batch_response_item_at(
+        response, UINT64_C(0), &create_item);
+    metadata.struct_size = (uint32_t)sizeof(metadata);
+    metadata.abi_version = UINT32_C(1);
+    if (status == 0) status = kmipkit_client_batch_item_response_metadata_v1(
+        create_item, &metadata);
+    if (status == 0 && metadata.result_status != UINT32_C(0)) status = 4;
+    created_identifier.struct_size = (uint32_t)sizeof(created_identifier);
+    created_identifier.abi_version = UINT32_C(1);
+    if (status == 0) status = kmipkit_client_batch_item_response_create(
+        create_item, &create_present, &object_type, &created_identifier);
+    if (status == 0 && (!create_present ||
+            object_type != KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY ||
+            created_identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
+            created_identifier.text_length != (uint64_t)(sizeof(key_name) - 1) ||
+            memcmp(created_identifier.text_data, key_name,
+                   (size_t)created_identifier.text_length) != 0)) status = 4;
+
+    if (status == 0) status = kmipkit_client_batch_response_item_at(
+        response, UINT64_C(1), &get_item);
+    if (status == 0) status = kmipkit_client_batch_item_response_metadata_v1(
+        get_item, &metadata);
+    if (status == 0 && metadata.result_status != UINT32_C(0)) status = 4;
+    get_identifier.struct_size = (uint32_t)sizeof(get_identifier);
+    get_identifier.abi_version = UINT32_C(1);
+    if (status == 0) status = kmipkit_client_batch_item_response_get(
+        get_item, &get_present, &get_payload_present, &object_type,
+        &get_identifier, &get_object);
+    if (status == 0 && (!get_present || !get_payload_present || get_object == 0 ||
+            object_type != KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY ||
+            get_identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
+            get_identifier.text_length != created_identifier.text_length ||
+            memcmp(get_identifier.text_data, created_identifier.text_data,
+                   (size_t)created_identifier.text_length) != 0)) status = 4;
+
+    if (status == 0) {
+        puts("c: fluent ordered batch Create/Get with ID Placeholder verified over TLS 1.3/mTLS");
+    } else {
+        fprintf(stderr, "C batch ID Placeholder journey failed during %s (status=%" PRId32 ")\n",
+                failure_phase, status);
+    }
+    kmipkit_ttlv_structure_release(get_object);
+    kmipkit_client_batch_item_response_release(get_item);
+    kmipkit_client_batch_item_response_release(create_item);
+    kmipkit_client_batch_response_release(response);
+    kmipkit_client_batch_release(batch);
+    kmipkit_client_batch_item_release(get_request);
+    kmipkit_client_batch_item_release(create_request);
+    kmipkit_symmetric_key_builder_release(builder);
+    return status;
+}
+
 int main(void) {
     static const uint8_t comment[] = "local example";
     static const uint8_t username[] = "demo-user";
@@ -870,6 +987,7 @@ int main(void) {
     if (status != 0) fprintf(stderr, "C symmetric Destroy failed (status=%" PRId32 ")\n", status);
     if (status == 0) status = verify_fluent_key_pair_signing(client, limits);
     if (status == 0) status = verify_fluent_expert_attributes(client, limits);
+    if (status == 0) status = verify_fluent_batch_placeholder(client, limits);
     if (status == 0) puts("c: fluent Create/Get/Destroy verified over TLS 1.3/mTLS");
 
     kmipkit_ttlv_value_release(value);

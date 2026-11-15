@@ -14,17 +14,44 @@ import unittest
 
 from local_ping_responder import (
     _children,
+    _batch_response,
     _item,
     _requested_identifier,
+    _requested_batch_item_id,
     _request_operation,
+    _request_message,
     _response,
     _structure,
     _validate_operation,
+    _validate_id_placeholder_batch,
     _parse_operations,
+    _uses_id_placeholder,
 )
 
 
 CONSUMER_ROOT = Path(__file__).resolve().parent
+
+
+def _named_create_item(batch_item_id: bytes = b"fluent-batch-create") -> bytes:
+    name_value = _structure(
+        0x42000B,
+        _item(0x420097, 5, struct.pack(">I", 1)),
+        _item(0x420098, 7, b"fluent-batch-key"),
+    )
+    name_attribute = _structure(
+        0x420008,
+        _item(0x42000A, 7, b"Name"),
+        name_value,
+    )
+    attributes = _structure(0x420125, name_attribute)
+    return _structure(
+        0x42000F,
+        _item(0x42005C, 5, struct.pack(">I", 1)),
+        _item(0x420093, 8, batch_item_id),
+        _structure(0x420079, attributes),
+    )
+
+
 EXPECTED_LINES = (
     "rust: Ping result and raw TTLV verified",
     "c: Ping result and raw TTLV verified",
@@ -33,6 +60,10 @@ EXPECTED_LINES = (
     "c: fluent Vendor Attribute Create/Get/Destroy verified over TLS 1.3/mTLS",
     "java: fluent Vendor Attribute Create/Get/Destroy verified over TLS 1.3/mTLS",
     "python: fluent Vendor Attribute Create/Get/Destroy verified over TLS 1.3/mTLS",
+    "rust: fluent ordered batch Create/Get with ID Placeholder verified over TLS 1.3/mTLS",
+    "c: fluent ordered batch Create/Get with ID Placeholder verified over TLS 1.3/mTLS",
+    "java: fluent ordered batch Create/Get with ID Placeholder verified over TLS 1.3/mTLS",
+    "python: fluent ordered batch Create/Get with ID Placeholder verified over TLS 1.3/mTLS",
     "rust: fluent ECDSA key pair, Sign, and Destroy verified over TLS 1.3/mTLS",
     "c: fluent ECDSA key pair, Sign, and Destroy verified over TLS 1.3/mTLS",
     "java: fluent ECDSA key pair, Sign, and Destroy verified over TLS 1.3/mTLS",
@@ -43,6 +74,63 @@ EXPECTED_LINES = (
 class ExecutePingConsumerTests(unittest.TestCase):
     def test_fixture_operation_sequence_can_describe_a_multi_item_batch(self) -> None:
         self.assertEqual(_parse_operations("1+10;20"), [[1, 10], [20]])
+
+    def test_fixture_parses_create_then_get_using_the_id_placeholder(self) -> None:
+        request_header = _structure(
+            0x420077,
+            _item(0x420010, 6, struct.pack(">Q", 1)),
+        )
+        create_item = _named_create_item()
+        get_payload = _structure(0x420079)
+        get_item = _structure(
+            0x42000F,
+            _item(0x42005C, 5, struct.pack(">I", 10)),
+            _item(0x420093, 8, b"fluent-batch-get"),
+            get_payload,
+        )
+        request = _structure(0x420078, request_header, create_item, get_item)
+
+        request_items, _header_fields = _request_message(request)
+
+        self.assertEqual([operation for operation, _fields in request_items], [1, 10])
+        self.assertTrue(_uses_id_placeholder(10, request_items[1][1]))
+        self.assertEqual(_requested_batch_item_id(request_items[0][1]), b"fluent-batch-create")
+        self.assertEqual(_requested_batch_item_id(request_items[1][1]), b"fluent-batch-get")
+        _validate_id_placeholder_batch(request_items, _children(request_header[8:]))
+
+    def test_fixture_rejects_placeholder_batch_without_batch_order_option(self) -> None:
+        create_item = _named_create_item()
+        get_item = _structure(
+            0x42000F,
+            _item(0x42005C, 5, struct.pack(">I", 10)),
+            _item(0x420093, 8, b"fluent-batch-get"),
+            _structure(0x420079),
+        )
+        request_items = [(1, _children(create_item[8:])), (10, _children(get_item[8:]))]
+
+        with self.assertRaisesRegex(RuntimeError, "Batch Order Option true"):
+            _validate_id_placeholder_batch(request_items, [])
+
+    def test_fixture_encodes_all_results_in_the_batch_response(self) -> None:
+        response = _batch_response([
+            (1, b"fluent-batch-key", b"fluent-batch-create"),
+            (10, b"fluent-batch-key", b"fluent-batch-get"),
+        ])
+        message_fields = _children(response[8:])
+        header = next(value for tag, kind, value in message_fields if tag == 0x42007A and kind == 1)
+        batch_count = [
+            value for tag, kind, value in _children(header) if tag == 0x42000D and kind == 2
+        ]
+        response_items = [
+            value for tag, kind, value in message_fields if tag == 0x42000F and kind == 1
+        ]
+        self.assertEqual(batch_count, [struct.pack(">i", 2)])
+        self.assertEqual(len(response_items), 2)
+        echoed_ids = [
+            [value for tag, kind, value in _children(response_item) if tag == 0x420093 and kind == 8]
+            for response_item in response_items
+        ]
+        self.assertEqual(echoed_ids, [[b"fluent-batch-create"], [b"fluent-batch-get"]])
 
     def test_fixture_echoes_destroyed_key_identifier(self) -> None:
         request_payload = _structure(

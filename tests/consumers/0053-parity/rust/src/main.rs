@@ -5,7 +5,7 @@ use kmipkit::{
     protocol::{
         Attribute, Authentication, Credential, CryptographicAlgorithm,
         CryptographicParametersBuilder, KeyMaterial, ManagedObject, OpaqueObject, OperationData,
-        ResponseMessage, SecretBytes, attribute::typed,
+        GetRequest, ResponseMessage, SecretBytes, UniqueIdentifier, attribute::typed,
     },
     transport_config::{
         CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, TransportConfig, TrustSource,
@@ -148,9 +148,9 @@ fn execute_fluent_lifecycle(
         || !encrypt_response
             .iv_counter_nonce()
             .is_some_and(|value| value.with_bytes(|actual| actual == FLUENT_NONCE))
-        || !encrypt_response.authenticated_encryption_tag().is_some_and(|value| {
-            value.with_bytes(|actual| actual == FLUENT_AUTH_TAG)
-        })
+        || !encrypt_response
+            .authenticated_encryption_tag()
+            .is_some_and(|value| value.with_bytes(|actual| actual == FLUENT_AUTH_TAG))
     {
         return Err("Encrypt response did not preserve the fixture's typed GCM fields".into());
     }
@@ -193,7 +193,10 @@ fn execute_fluent_lifecycle(
         return Err("Decrypt response did not preserve the fixture's typed plaintext".into());
     }
 
-    let destroyed = client.request().destroy(identifier.clone()).execute(limits)?;
+    let destroyed = client
+        .request()
+        .destroy(identifier.clone())
+        .execute(limits)?;
     match destroyed.outcome() {
         ClientBatchOutcome::Destroy(response)
             if response.result().status().raw() == 0
@@ -220,7 +223,9 @@ fn execute_fluent_key_pair_signing(
         .execute(limits)?;
     let (private_identifier, public_identifier) = match created.outcome() {
         ClientBatchOutcome::CreateKeyPairCompleted(response)
-            if response.result().status().raw() == 0 => (
+            if response.result().status().raw() == 0 =>
+        {
+            (
                 response
                     .private_key_unique_identifier()
                     .ok_or("Create Key Pair omitted its private identifier")?
@@ -229,7 +234,8 @@ fn execute_fluent_key_pair_signing(
                     .public_key_unique_identifier()
                     .ok_or("Create Key Pair omitted its public identifier")?
                     .clone(),
-            ),
+            )
+        }
         outcome => return Err(format!("unexpected Create Key Pair outcome: {outcome:?}").into()),
     };
 
@@ -258,12 +264,17 @@ fn execute_fluent_key_pair_signing(
     }
 
     for identifier in [private_identifier, public_identifier] {
-        let destroyed = client.request().destroy(identifier.clone()).execute(limits)?;
+        let destroyed = client
+            .request()
+            .destroy(identifier.clone())
+            .execute(limits)?;
         match destroyed.outcome() {
             ClientBatchOutcome::Destroy(response)
                 if response.result().status().raw() == 0
                     && response.unique_identifier() == Some(&identifier) => {}
-            outcome => return Err(format!("unexpected key-pair Destroy outcome: {outcome:?}").into()),
+            outcome => {
+                return Err(format!("unexpected key-pair Destroy outcome: {outcome:?}").into());
+            }
         }
     }
     println!("rust: fluent ECDSA key pair, Sign, and Destroy verified over TLS 1.3/mTLS");
@@ -288,11 +299,13 @@ fn execute_fluent_expert_attributes(
         .execute(limits)?;
     let identifier = match created.outcome() {
         ClientBatchOutcome::CreateCompleted(response)
-            if response.result().status().raw() == 0
-                && response.object_type().is_some() => response
-                    .unique_identifier()
-                    .ok_or("expert Create response omitted its identifier")?
-                    .clone(),
+            if response.result().status().raw() == 0 && response.object_type().is_some() =>
+        {
+            response
+                .unique_identifier()
+                .ok_or("expert Create response omitted its identifier")?
+                .clone()
+        }
         outcome => return Err(format!("unexpected expert Create outcome: {outcome:?}").into()),
     };
     if identifier != kmipkit::protocol::UniqueIdentifier::from("fluent-expert-key") {
@@ -308,7 +321,10 @@ fn execute_fluent_expert_attributes(
         outcome => return Err(format!("unexpected expert Get outcome: {outcome:?}").into()),
     }
 
-    let destroyed = client.request().destroy(identifier.clone()).execute(limits)?;
+    let destroyed = client
+        .request()
+        .destroy(identifier.clone())
+        .execute(limits)?;
     match destroyed.outcome() {
         ClientBatchOutcome::Destroy(response)
             if response.result().status().raw() == 0
@@ -316,6 +332,60 @@ fn execute_fluent_expert_attributes(
         outcome => return Err(format!("unexpected expert Destroy outcome: {outcome:?}").into()),
     }
     println!("rust: fluent Vendor Attribute Create/Get/Destroy verified over TLS 1.3/mTLS");
+    Ok(())
+}
+
+fn execute_fluent_batch_placeholder(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let create = client
+        .request()
+        .create_symmetric_key()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT | CryptographicUsageMask::DECRYPT)
+        .name("fluent-batch-key")
+        .to_batch_item()?
+        .with_unique_batch_item_id(b"fluent-batch-create".to_vec());
+    let get = ClientBatchItem::new(ClientRequest::Get(GetRequest::new()))
+        .with_unique_batch_item_id(b"fluent-batch-get".to_vec());
+    let batch = ClientBatch::from_items([create, get]).with_batch_order_option(true);
+    let responses = client.execute(batch, limits)?;
+    if responses.len() != 2 {
+        return Err(format!(
+            "batch returned {} response items, expected two",
+            responses.len()
+        )
+        .into());
+    }
+
+    let created = responses
+        .get(0)
+        .ok_or("batch Create response item is missing")?;
+    match created.outcome() {
+        ClientBatchOutcome::CreateCompleted(response)
+            if response.result().status().raw() == 0
+                && response.object_type().is_some()
+                && response.unique_identifier()
+                    == Some(&UniqueIdentifier::TextString("fluent-batch-key".to_owned())) => {}
+        outcome => return Err(format!("unexpected batch Create outcome: {outcome:?}").into()),
+    }
+
+    let retrieved = responses
+        .get(1)
+        .ok_or("batch Get response item is missing")?;
+    match retrieved.outcome() {
+        ClientBatchOutcome::GetCompleted(response)
+            if response.result().status().raw() == 0
+                && response.unique_identifier()
+                    == Some(&UniqueIdentifier::TextString("fluent-batch-key".to_owned()))
+                && response.object().is_some() => {}
+        outcome => return Err(format!("unexpected batch Get outcome: {outcome:?}").into()),
+    }
+
+    println!(
+        "rust: fluent ordered batch Create/Get with ID Placeholder verified over TLS 1.3/mTLS"
+    );
     Ok(())
 }
 
@@ -390,5 +460,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     execute_fluent_lifecycle(&mut client, &limits)?;
     execute_fluent_key_pair_signing(&mut client, &limits)?;
     execute_fluent_expert_attributes(&mut client, &limits)?;
+    execute_fluent_batch_placeholder(&mut client, &limits)?;
     Ok(())
 }

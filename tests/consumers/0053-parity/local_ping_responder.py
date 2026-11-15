@@ -40,6 +40,7 @@ def _response(
     pending: bool = False,
     failed: bool = False,
     unique_identifier: bytes | None = None,
+    unique_batch_item_id: bytes | None = None,
 ) -> bytes:
     version = _structure(
         0x420069,
@@ -118,13 +119,52 @@ def _response(
         payload = _structure(0x42007C)
     else:
         raise RuntimeError(f"fixture received unsupported KMIP operation {operation:#x}")
-    response_item = _structure(
-        0x42000F,
-        _item(0x42005C, 5, struct.pack(">I", operation)),
+    response_fields = [_item(0x42005C, 5, struct.pack(">I", operation))]
+    if unique_batch_item_id is not None:
+        response_fields.append(_item(0x420093, 8, unique_batch_item_id))
+    response_fields.extend([
         _item(0x42007F, 5, struct.pack(">I", 0)),
         payload,
-    )
+    ])
+    response_item = _structure(0x42000F, *response_fields)
     return _structure(0x42007B, header, response_item)
+
+
+def _batch_response(items: list[tuple[int, bytes | None, bytes]]) -> bytes:
+    responses = []
+    header_fields = None
+    for operation, unique_identifier, unique_batch_item_id in items:
+        encoded = _response(
+            operation,
+            unique_identifier=unique_identifier,
+            unique_batch_item_id=unique_batch_item_id,
+        )
+        message_fields = _children(encoded[8:])
+        header = next(value for tag, kind, value in message_fields if tag == 0x42007A and kind == 1)
+        if header_fields is None:
+            header_fields = _children(header)
+        response_value = next(
+            value for tag, kind, value in message_fields if tag == 0x42000F and kind == 1
+        )
+        responses.append(
+            _structure(
+                0x42000F,
+                *(_item(tag, kind, value) for tag, kind, value in _children(response_value)),
+            )
+        )
+    if not responses or header_fields is None:
+        raise RuntimeError("fixture batch response requires at least one response item")
+    encoded_header_fields = [
+        _item(tag, kind, value)
+        for tag, kind, value in header_fields
+        if tag != 0x42000D
+    ]
+    encoded_header_fields.append(_item(0x42000D, 2, struct.pack(">i", len(responses))))
+    return _structure(
+        0x42007B,
+        _structure(0x42007A, *encoded_header_fields),
+        *responses,
+    )
 
 
 def _read_exact(stream: ssl.SSLSocket, length: int) -> bytes:
@@ -172,9 +212,9 @@ def _flatten(items: list[tuple[int, int, bytes]]) -> list[tuple[int, int, bytes]
     return flattened
 
 
-def _request_operation(
+def _request_message(
     frame: bytes,
-) -> tuple[int, list[tuple[int, int, bytes]], list[tuple[int, int, bytes]]]:
+) -> tuple[list[tuple[int, list[tuple[int, int, bytes]]]], list[tuple[int, int, bytes]]]:
     if frame[:4] != bytes.fromhex("42007801"):
         raise RuntimeError("consumer sent an invalid Request Message")
     body_length = int.from_bytes(frame[4:8], "big")
@@ -187,19 +227,32 @@ def _request_operation(
     headers = [
         value for tag, item_type, value in top_level if tag == 0x420077 and item_type == 1
     ]
-    if len(batch_items) != 1:
-        raise RuntimeError("fixture expects one typed Batch Item per exchange")
+    if not batch_items:
+        raise RuntimeError("fixture expects at least one typed Batch Item per exchange")
     if len(headers) != 1:
         raise RuntimeError("fixture expects one Request Header")
-    fields = _children(batch_items[0])
-    operations = [
-        value
-        for tag, item_type, value in fields
-        if tag == 0x42005C and item_type == 5
-    ]
-    if len(operations) != 1 or len(operations[0]) != 4:
-        raise RuntimeError("fixture could not read the typed KMIP operation")
-    return int.from_bytes(operations[0], "big"), fields, _children(headers[0])
+    request_items = []
+    for batch_item in batch_items:
+        fields = _children(batch_item)
+        operations = [
+            value
+            for tag, item_type, value in fields
+            if tag == 0x42005C and item_type == 5
+        ]
+        if len(operations) != 1 or len(operations[0]) != 4:
+            raise RuntimeError("fixture could not read the typed KMIP operation")
+        request_items.append((int.from_bytes(operations[0], "big"), fields))
+    return request_items, _children(headers[0])
+
+
+def _request_operation(
+    frame: bytes,
+) -> tuple[int, list[tuple[int, int, bytes]], list[tuple[int, int, bytes]]]:
+    request_items, header_fields = _request_message(frame)
+    if len(request_items) != 1:
+        raise RuntimeError("fixture expected one operation for this single-item check")
+    operation, fields = request_items[0]
+    return operation, fields, header_fields
 
 
 def _requested_identifier(
@@ -234,6 +287,49 @@ def _requested_name(
         if tag == 0x420098 and kind == 7
     ]
     return names[0] if len(names) == 1 else None
+
+
+def _uses_id_placeholder(
+    operation: int,
+    fields: list[tuple[int, int, bytes]],
+) -> bool:
+    if operation not in (10, 20):
+        return False
+    payloads = [value for tag, kind, value in fields if tag == 0x420079 and kind == 1]
+    if len(payloads) != 1:
+        return False
+    identifiers = [tag for tag, _kind, _value in _children(payloads[0]) if tag == 0x420094]
+    return not identifiers
+
+
+def _requested_batch_item_id(fields: list[tuple[int, int, bytes]]) -> bytes:
+    identifiers = [
+        value for tag, kind, value in fields if tag == 0x420093 and kind == 8
+    ]
+    if len(identifiers) != 1 or not identifiers[0]:
+        raise RuntimeError("each batch request item must contain one non-empty Unique Batch Item ID")
+    return identifiers[0]
+
+
+def _validate_id_placeholder_batch(
+    request_items: list[tuple[int, list[tuple[int, int, bytes]]]],
+    header_fields: list[tuple[int, int, bytes]],
+) -> None:
+    operations = [operation for operation, _fields in request_items]
+    if operations != [1, 10]:
+        raise RuntimeError("fixture batch must contain Create followed by Get")
+    order_options = [
+        value for tag, kind, value in header_fields if tag == 0x420010 and kind == 6
+    ]
+    if order_options != [struct.pack(">Q", 1)]:
+        raise RuntimeError("fixture ID Placeholder batch requires Batch Order Option true")
+    batch_item_ids = [_requested_batch_item_id(fields) for _operation, fields in request_items]
+    if len(set(batch_item_ids)) != len(batch_item_ids):
+        raise RuntimeError("fixture ID Placeholder batch requires distinct Unique Batch Item IDs")
+    if not _requested_name(1, request_items[0][1]):
+        raise RuntimeError("fixture ID Placeholder producer must name the created key")
+    if not _uses_id_placeholder(10, request_items[1][1]):
+        raise RuntimeError("fixture ID Placeholder consumer must use Enumeration 1")
 
 
 def _validate_operation(
@@ -302,7 +398,8 @@ def _validate_operation(
         payload = _children(payloads[0])
         identifiers = [value for tag, kind, value in payload if tag == 0x420094 and kind == 7]
         if operation == 10 and identifiers not in ([b"fluent-key"], [_EXPERT_KEY_ID]):
-            raise RuntimeError("Get did not use the returned Unique Identifier")
+            if not _uses_id_placeholder(operation, fields):
+                raise RuntimeError("Get did not use a returned identifier or ID Placeholder")
         if operation == 20 and identifiers not in (
             [b"fluent-key"], [_PAIR_PRIVATE_ID], [_PAIR_PUBLIC_ID], [_EXPERT_KEY_ID]
         ):
@@ -369,12 +466,17 @@ def _has_async_indicator(header_fields: list[tuple[int, int, bytes]]) -> bool:
     return any(tag == 0x420007 and kind == 5 for tag, kind, _value in header_fields)
 
 
-def _parse_operations(value: str) -> list[int]:
+def _parse_operations(value: str) -> list[list[int]]:
     try:
-        operations = [int(token, 0) for token in value.split(",")]
+        operations = [
+            [int(token, 0) for token in group.split("+")]
+            for group in value.split(";")
+        ]
     except ValueError as error:
-        raise argparse.ArgumentTypeError("operations must be comma-separated integers") from error
-    if not operations:
+        raise argparse.ArgumentTypeError(
+            "expected operation groups must use semicolons and plus-separated batch items"
+        ) from error
+    if not operations or any(not group for group in operations):
         raise argparse.ArgumentTypeError("at least one expected operation is required")
     return operations
 
@@ -389,7 +491,7 @@ def main() -> None:
     parser.add_argument("--expected-operations", type=_parse_operations)
     args = parser.parse_args()
     if args.expected_operations is not None and len(args.expected_operations) != args.connections:
-        parser.error("--expected-operations must contain one operation for each connection")
+        parser.error("--expected-operations must contain one operation group for each connection")
 
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     context.minimum_version = ssl.TLSVersion.TLSv1_3
@@ -416,33 +518,50 @@ def main() -> None:
                     if stream.version() != "TLSv1.3" or not peer_cert:
                         raise RuntimeError("fixture requires an authenticated TLS 1.3 client")
                     request = _read_frame(stream)
-                    operation, fields, header_fields = _request_operation(request)
+                    request_items, header_fields = _request_message(request)
+                    operations = [operation for operation, _fields in request_items]
+                    if len(request_items) > 1:
+                        _validate_id_placeholder_batch(request_items, header_fields)
                     if (
                         args.expected_operations is not None
-                        and operation != args.expected_operations[connection_index]
+                        and operations != args.expected_operations[connection_index]
                     ):
                         expected = args.expected_operations[connection_index]
                         raise RuntimeError(
                             "fixture received an unexpected operation at connection "
-                            f"{connection_index + 1}: expected {expected:#x}, got {operation:#x}"
+                            f"{connection_index + 1}: expected {expected}, got {operations}"
                         )
-                    _validate_operation(operation, fields, header_fields)
-                    response_identifier = _requested_identifier(operation, fields)
-                    if operation == 1:
-                        response_identifier = _requested_name(operation, fields)
-                    asynchronous_destroy = operation == 20 and _has_async_indicator(header_fields)
+                    response_items = []
+                    placeholder_identifier = None
+                    for operation, fields in request_items:
+                        _validate_operation(operation, fields, header_fields)
+                        response_identifier = None
+                        if operation == 1:
+                            response_identifier = _requested_name(operation, fields)
+                            if response_identifier is not None:
+                                placeholder_identifier = response_identifier
+                        elif _uses_id_placeholder(operation, fields):
+                            if placeholder_identifier is None:
+                                raise RuntimeError("ID Placeholder consumer has no preceding producer")
+                            response_identifier = placeholder_identifier
+                        else:
+                            response_identifier = _requested_identifier(operation, fields)
+                        batch_item_id = (
+                            _requested_batch_item_id(fields) if len(request_items) > 1 else None
+                        )
+                        response_items.append((operation, response_identifier, batch_item_id))
+                    asynchronous_destroy = any(
+                        operation == 20 for operation in operations
+                    ) and _has_async_indicator(header_fields)
                     pending = asynchronous_destroy and async_destroy_count == 0
                     failed = asynchronous_destroy and async_destroy_count == 1
                     if asynchronous_destroy:
                         async_destroy_count += 1
-                    stream.sendall(
-                        _response(
-                            operation,
-                            pending,
-                            failed,
-                            response_identifier,
-                        )
-                    )
+                    if len(response_items) == 1:
+                        operation, response_identifier, _batch_item_id = response_items[0]
+                        stream.sendall(_response(operation, pending, failed, response_identifier))
+                    else:
+                        stream.sendall(_batch_response(response_items))
         finally:
             args.pid_file.unlink(missing_ok=True)
 

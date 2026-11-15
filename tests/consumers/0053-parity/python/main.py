@@ -391,6 +391,54 @@ def main() -> None:
                 print(
                     "python: fluent Vendor Attribute Create/Get/Destroy verified over TLS 1.3/mTLS"
                 )
+
+                with client.Batch.create() as batch:
+                    batch.set_ordered(True)
+                    with kmip_client.request().create_symmetric_key() as builder:
+                        batch.add_item(
+                            extensions.with_unique_batch_item_id(
+                                builder.aes_256()
+                                .usage_mask(
+                                    protocol_values.CryptographicUsageMask.ENCRYPT
+                                    | protocol_values.CryptographicUsageMask.DECRYPT
+                                )
+                                .name("fluent-batch-key")
+                                .build(),
+                                b"fluent-batch-create",
+                            )
+                        )
+                    batch.add_item(
+                        extensions.with_unique_batch_item_id(
+                            extensions.client_batch_item_get(), b"fluent-batch-get"
+                        )
+                    )
+                    batched = kmip_client.execute(batch, limits)
+                lifecycle_results.append(batched)
+
+                assert len(batched.items) == 2
+                batch_create_item, batch_get_item = batched.items
+                assert batch_create_item.operation == protocol_values.Operation.CREATE
+                assert batch_create_item.outcome is client.BatchOutcome.COMPLETED
+                assert batch_create_item.result_status == 0
+                assert batch_create_item.create_object_type == 2
+                batch_identifier = batch_create_item.unique_identifier
+                assert batch_identifier == extensions.UniqueIdentifier.text_string(
+                    "fluent-batch-key"
+                )
+
+                assert batch_get_item.operation == protocol_values.Operation.GET
+                assert batch_get_item.outcome is client.BatchOutcome.COMPLETED
+                assert batch_get_item.result_status == 0
+                batch_get_response = batch_get_item.get_response()
+                assert batch_get_response is not None
+                try:
+                    assert batch_get_response.unique_identifier == batch_identifier
+                    assert batch_get_response.object is not None
+                finally:
+                    batch_get_response.close()
+                print(
+                    "python: fluent ordered batch Create/Get with ID Placeholder verified over TLS 1.3/mTLS"
+                )
             finally:
                 for lifecycle_result in lifecycle_results:
                     lifecycle_result.close()

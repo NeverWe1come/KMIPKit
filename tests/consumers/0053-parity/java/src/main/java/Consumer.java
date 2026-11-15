@@ -383,6 +383,40 @@ public final class Consumer {
                 }
                 System.out.println(
                         "java: fluent Vendor Attribute Create/Get/Destroy verified over TLS 1.3/mTLS");
+
+                try (ClientBatch batch = ClientBatch.create().ordered(true);
+                        SymmetricKeyBuilder builder = kmipClient.request().createSymmetricKey()
+                                .aes256()
+                                .usageMask((int) (KmipValues.CryptographicUsageMask.ENCRYPT
+                                        | KmipValues.CryptographicUsageMask.DECRYPT))
+                                .name("fluent-batch-key");
+                        ClientBatchResponse response = kmipClient.execute(
+                                batch.add(builder.build().withUniqueBatchItemId(
+                                                "fluent-batch-create".getBytes(StandardCharsets.UTF_8)))
+                                        .add(ClientBatchItem.get(null, null, null, null, null)
+                                                .withUniqueBatchItemId(
+                                                        "fluent-batch-get".getBytes(StandardCharsets.UTF_8))),
+                                limits);
+                        ClientBatchItemResult createItem = response.itemAt(0);
+                        ClientBatchItemResult getItem = response.itemAt(1);
+                        var getResponse = getItem.getResponse().orElseThrow()) {
+                    var createResponse = createItem.createResponse().orElseThrow();
+                    String batchIdentifier = createResponse.uniqueIdentifier().text();
+                    getResponse.object().orElseThrow();
+                    if (response.itemCount() != 2
+                            || createItem.operation() != KmipValues.Operation.CREATE
+                            || !createItem.outcomeKind().isCompleted() || createItem.resultStatus() != 0
+                            || createResponse.objectType() != 2
+                            || !batchIdentifier.equals("fluent-batch-key")
+                            || getItem.operation() != KmipValues.Operation.GET
+                            || !getItem.outcomeKind().isCompleted() || getItem.resultStatus() != 0
+                            || !getResponse.uniqueIdentifier().orElseThrow().text().equals(batchIdentifier)) {
+                        throw new IllegalStateException(
+                                "ordered Create/Get did not resolve the typed ID Placeholder");
+                    }
+                }
+                System.out.println(
+                        "java: fluent ordered batch Create/Get with ID Placeholder verified over TLS 1.3/mTLS");
             }
         }
     }
