@@ -11,7 +11,7 @@ description = "Secure KMIP transports for KMIPKit"
 autotests = false
 
 [features]
-fuzzing = []
+test-support = []
 
 [dependencies]
 aws-lc-rs.workspace = true

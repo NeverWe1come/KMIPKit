@@ -1,8 +1,8 @@
 #![no_main]
 #![forbid(unsafe_code)]
 
-use kmipkit_client::__fuzz::wire_framing::TextDocumentFramer;
-use kmipkit_client::__fuzz::xml_codec;
+use kmipkit_client::test_support::xml;
+use kmipkit_transport::test_support::TextDocumentFramer;
 use kmipkit_transport::WireEncoding;
 use kmipkit_ttlv::codec::CodecLimits;
 use libfuzzer_sys::fuzz_target;
@@ -33,9 +33,9 @@ fuzz_target!(|data: &[u8]| {
         return;
     };
 
-    if let Ok(item) = xml_codec::decode(data, &limits) {
-        if let Ok(encoded) = xml_codec::encode(&item, &limits) {
-            let _ = xml_codec::decode(&encoded, &limits);
+    if let Ok(item) = xml::decode(data, &limits) {
+        if let Ok(encoded) = xml::encode(&item, &limits) {
+            let _ = xml::decode(&encoded, &limits);
         }
     }
 });

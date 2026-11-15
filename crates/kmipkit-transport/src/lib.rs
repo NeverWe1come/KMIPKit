@@ -275,12 +275,10 @@ mod resolver;
 #[allow(dead_code)]
 mod worker;
 
-#[cfg(feature = "fuzzing")]
+#[cfg(feature = "test-support")]
 #[doc(hidden)]
-pub mod __fuzz {
-    pub mod wire_framing {
-        pub use crate::raw_tls::wire_framing::TextDocumentFramer;
-    }
+pub mod test_support {
+    pub use crate::raw_tls::wire_framing::TextDocumentFramer;
 }
 
 pub use config::{

@@ -1,7 +1,7 @@
 #![no_main]
 #![forbid(unsafe_code)]
 
-use kmipkit_client::__fuzz::json_encoding;
+use kmipkit_client::test_support::json;
 use kmipkit_ttlv::codec::CodecLimits;
 use libfuzzer_sys::fuzz_target;
 
@@ -17,10 +17,10 @@ fuzz_target!(|data: &[u8]| {
         return;
     };
 
-    if let Ok(item) = json_encoding::decode(data, &limits) {
+    if let Ok(item) = json::decode(data, &limits) {
         // Test roundtrip invariant: if it decoded cleanly, re-encoding must succeed without panic
-        if let Ok(encoded) = json_encoding::encode(&item, &limits) {
-            let _ = json_encoding::decode(&encoded, &limits);
+        if let Ok(encoded) = json::encode(&item, &limits) {
+            let _ = json::decode(&encoded, &limits);
         }
     }
 });

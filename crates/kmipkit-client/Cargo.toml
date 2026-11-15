@@ -8,8 +8,7 @@ repository.workspace = true
 description = "KMIP client orchestration for KMIPKit"
 
 [features]
-fuzzing = ["kmipkit-transport/fuzzing"]
-test-support = []
+test-support = ["kmipkit-transport/test-support"]
 
 [dependencies]
 kmipkit-protocol.workspace = true

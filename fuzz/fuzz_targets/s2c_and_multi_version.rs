@@ -4,7 +4,7 @@
 #[path = "support/ttlv_clone.rs"]
 mod ttlv_clone;
 
-use kmipkit_client::server_to_client::IncomingServerBatch;
+use kmipkit_client::test_support::s2c;
 use kmipkit_protocol::{RequestMessage, ResponseMessage, VersionGate};
 use kmipkit_transport::WireEncoding;
 use kmipkit_ttlv::codec::{CodecLimits, decode_with_limits};
@@ -25,7 +25,7 @@ fuzz_target!(|data: &[u8]| {
 
     // 1. Fuzz Server-to-Client batch ingestion across all three supported encodings
     for encoding in [WireEncoding::Ttlv, WireEncoding::Json, WireEncoding::Xml] {
-        let _ = IncomingServerBatch::from_encoded_bytes(data, encoding, &limits);
+        let _ = s2c::decode_server_batch(data, encoding, &limits);
     }
 
     // 2. Fuzz ProtocolVersion and multi-version negotiation structures

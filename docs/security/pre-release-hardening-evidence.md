@@ -1,7 +1,7 @@
 # KMIPKit 1.0.0 Pre-Release Hardening Evidence Report
 
-- **Campaign Started:** 2026-11-15 12:40:55 UTC
-- **Campaign Completed:** 2026-11-15 12:42:06 UTC
+- **Campaign Started:** 2026-11-15 15:27:02 UTC
+- **Campaign Completed:** 2026-11-15 15:27:44 UTC
 - **Mode:** Smoke campaign
 - **Specification:** `specs/125-fuzz-miri-sanitizers-hardening/spec.md`
 - **Branch:** `feature/KMIPKIT-0125-fuzz-miri-sanitizers-hardening`

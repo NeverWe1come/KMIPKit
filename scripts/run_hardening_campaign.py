@@ -147,7 +147,6 @@ def main() -> int:
             "c++", "-std=c++17", "-Wall", "-Wextra", "-Werror", "-fsanitize=address,undefined", "-fno-omit-frame-pointer",
             "-Ibindings/c/include", "-Itests/fixtures/api/generated", "-Ibindings/java/native",
             str(test_file),
-            "-Ltarget/debug", f"-Wl,-rpath,{REPOSITORY_ROOT}/target/debug", "-lkmipkit_ffi",
             "-o", str(target_dir / test_name),
         ]
         code, out = run_command(compile_cmd)
