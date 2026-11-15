@@ -357,8 +357,8 @@ pub use execute::{
     ResponseEncodingError,
 };
 pub use fluent::{
-    CreateSymmetricKeyBuilder, CryptographicUsageMask, DestroyBuilder, FluentBuildError,
-    GetBuilder, RequestBuilder,
+    CreateSymmetricKeyBuilder, CryptographicUsageMask, DestroyBuilder, FluentAttributePosition,
+    FluentBuildError, GetBuilder, RequestBuilder,
 };
 pub use kmipkit_protocol::{
     ProfileObjectState, ProfileTransport, ProfileValidationContext, ProfileValidationError,

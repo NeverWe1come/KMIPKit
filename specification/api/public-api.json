@@ -394,6 +394,10 @@
     "KMIPKIT-0095-FR-003",
     "KMIPKIT-0095-FR-004",
     "KMIPKIT-0095-FR-005",
+    "KMIPKIT-0096-FR-001",
+    "KMIPKIT-0096-FR-002",
+    "KMIPKIT-0096-FR-003",
+    "KMIPKIT-0096-FR-004",
     "KMIPKIT-REQ-SPEC-4.16-001-001",
     "KMIPKIT-REQ-SPEC-4.16-001-002",
     "KMIPKIT-REQ-SPEC-4.16-002",
@@ -715075,6 +715079,68 @@
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0095",
       "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0096-attribute-position-module",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::fluent::FluentAttributePosition",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0096-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0096",
+      "blockedReason": "The Rust expert insertion path is implemented; equivalent C, Java, and Python mappings are scheduled in dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0096-attribute-position-root",
+      "packageId": "rust-kmipkit-client",
+      "kind": "type",
+      "exportName": "kmipkit_client::FluentAttributePosition",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0096-FR-002"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0096",
+      "blockedReason": "The Rust expert insertion path is implemented; equivalent C, Java, and Python mappings are scheduled in dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0096-attribute-at-module",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::fluent::CreateSymmetricKeyBuilder::attribute_at",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0096-FR-001",
+        "KMIPKIT-0096-FR-002",
+        "KMIPKIT-0096-FR-003",
+        "KMIPKIT-0096-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0096",
+      "blockedReason": "The Rust expert insertion path is implemented; equivalent C, Java, and Python mappings are scheduled in dependent binding specifications."
+    },
+    {
+      "declarationId": "rust-observed-kmipkit-0096-attribute-at-root",
+      "packageId": "rust-kmipkit-client",
+      "kind": "associated-item",
+      "exportName": "kmipkit_client::CreateSymmetricKeyBuilder::attribute_at",
+      "capabilityId": "fluent_dx_api",
+      "requirementIds": [
+        "KMIPKIT-0096-FR-001",
+        "KMIPKIT-0096-FR-002",
+        "KMIPKIT-0096-FR-003",
+        "KMIPKIT-0096-FR-004"
+      ],
+      "declarationState": "blocked",
+      "parityScope": "four-language",
+      "candidateSpecId": "KMIPKIT-0096",
+      "blockedReason": "The Rust expert insertion path is implemented; equivalent C, Java, and Python mappings are scheduled in dependent binding specifications."
     }
   ],
   "approvedExclusions": [
