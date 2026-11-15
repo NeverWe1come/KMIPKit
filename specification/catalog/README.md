@@ -130,3 +130,16 @@ verifies the pinned source checksum and merges these explicit assignments into
 the supported-version tag-allocation union. The union allows construction and
 decoding of assigned tags; it does not establish that a tag is valid for the
 effective protocol version or that the feature is otherwise supported.
+
+## Fluent operation matrix
+
+[`fluent-operation-model-owners.json`](fluent-operation-model-owners.json) is
+the reviewed project mapping from each assigned version/name/direction route
+to its typed Rust request and response owner and test evidence. It is kept
+separate from the OASIS assignment catalog because these are implementation
+references, not normative protocol data. The generated
+[`fluent-operation-inventory.json`](fluent-operation-inventory.json) includes
+those owners, test evidence, and earliest supported version for all 2.1 and 3.0 rows. Its generator requires the
+owner catalog to match the operation route set exactly and emits inventory
+format version 2; missing, duplicate, malformed, or extra owner entries block
+generation.

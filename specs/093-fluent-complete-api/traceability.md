@@ -2,7 +2,7 @@
 
 | Requirement | Pinned source and existing contract | Verification |
 |---|---|---|
-| FR-001–003 catalog | KMIP 2.1 §11.36 Table 470, §11.56 Table 487; KMIP 3.0 §11.37 Table 584, §11.58 Table 605; KMIPKIT-0047, -0069, -0071 | Exhaustive assigned-value and version/direction matrix; generator snapshot and negative unassigned-value tests |
+| FR-001–003 catalog | KMIP 2.1 §11.36 Table 470, §11.56 Table 487; KMIP 3.0 §11.37 Table 584, §11.58 Table 605; KMIPKIT-0047, -0069, -0071 | Exhaustive assigned-value, version/direction, earliest-version, typed Rust owner, route, and test-evidence matrix; generator rejects missing, duplicate, malformed, or extra owner rows; tests verify all KMIP 2.1 owner declarations and evidence paths |
 | FR-004 operation wrappers | KMIP 2.1 §6.1 operation tables; KMIPKIT-0007, -0051, -0052, -0091 | Per-operation build, validation, batch conversion, and real TLS fixture tests. The Create Key Pair builder is wired through the typed Rust request path and exposed in C, Java, and Python; all four consumers exercise Create Key Pair, Sign, and Destroy through the controlled TLS fixture. Other operation wrappers remain tracked by their feature tasks. |
 | FR-005 typed result conversion | KMIP 2.1 §8.6 Table 417 and §9.19; KMIPKIT-0007, -0014, -0043 | `ClientBatchOutcome` operation/result/response mappings; Success, Operation Pending, Operation Failed, unknown status, reason, and correlation tests; transport/protocol errors retain `RequestDeliveryState` |
 | FR-006 expert attributes | KMIP 2.1 §§4–5, §7.1, §11.56; KMIPKIT-0048, ADR-0012, ADR-0014 | Wrong type, unknown tag, vendor structure, order, version, reserved tag, redaction, and no-send negative tests |

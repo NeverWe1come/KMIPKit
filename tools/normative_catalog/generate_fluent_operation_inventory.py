@@ -40,6 +40,10 @@ def _read_json(root: Path, relative_path: str, *, max_bytes: int = MAX_BYTES) ->
     return json.loads(safe_read_bytes(root, relative_path, max_bytes=max_bytes))
 
 
+def _normalize_wire_value(raw: str) -> str:
+    return raw.removeprefix("0x").upper().zfill(8)
+
+
 def _v3_operations(document: dict[str, Any]) -> list[dict[str, Any]]:
     versions = document.get("versions")
     groups = versions.get("v3_0") if isinstance(versions, dict) else None
@@ -93,7 +97,7 @@ def build_inventory(
            for name, raw in v21_values.items()):
         raise ValueError("malformed KMIP 2.1 operation assignment")
     v21_values = {
-        name: raw.removeprefix("0x").upper().zfill(8)
+        name: _normalize_wire_value(raw)
         for name, raw in v21_values.items()
     }
     base_rows = [
@@ -162,7 +166,7 @@ def build_inventory(
         section = V3_OPERATION_SECTIONS.get(name)
         if section is None:
             raise ValueError(f"KMIP 3.0 operation has no reviewed source section: {name}")
-        wire_value = wire_value.removeprefix("0x").upper().zfill(8)
+        wire_value = _normalize_wire_value(wire_value)
         if wire_value in seen_values:
             raise ValueError(f"duplicate operation assignment across versions: {wire_value}")
         seen_values.add(wire_value)
