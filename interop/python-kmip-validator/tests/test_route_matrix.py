@@ -42,6 +42,8 @@ class RouteMatrixTests(unittest.TestCase):
     def assert_batch_stop_response(self, event, peer, encoding, case, response_count):
         self.assertEqual('passed', event['status'])
         self.assertNotIn('failure_code', event)
+        self.assertRegex(event['peer_observed_state_before_sha256'], r'^[0-9a-f]{64}$')
+        self.assertRegex(event['peer_observed_state_after_sha256'], r'^[0-9a-f]{64}$')
         self.assertEqual(response_count, event['peer_observed_response_count'])
         self.assertEqual([1] * response_count, event['peer_observed_result_status_codes'])
         self.assertEqual(['first_item_failed', 'second_item_not_executed'],
