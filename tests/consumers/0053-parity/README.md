@@ -1,13 +1,16 @@
 # KMIPKIT-0053 external consumers
 
-These four small applications are independent package consumers. Their only
-KMIPKit dependency is the public Rust, C, Java, or Python package respectively.
-Rust, C, and Python create and execute a Ping request through their public
-client APIs. Java exercises the fluent Create/Get/Destroy lifecycle and checks
-the typed identifiers, outcomes, options, and explicit asynchronous header.
-The runners start a loopback-only TLS 1.3/mTLS fixture responder using the
-repository's disposable test identities. It is a client-behavior fixture, not
-a KMIP server implementation or interoperability evidence.
+These four small applications are independent package consumers. They use the
+public Rust, C, Java, or Python packages respectively. The Rust consumer uses
+the `kmipkit` facade and the `kmipkit-client` crate for its fluent policy type.
+Each sends Ping and performs a Create/Get/Destroy lifecycle through its public
+client API. The lifecycle uses a server-returned identifier and checks typed
+responses. Java also checks pending and failure outcomes and an explicit
+asynchronous header. The runners start a loopback-only TLS 1.3/mTLS fixture
+responder using the repository's disposable test identities. It validates the
+decoded requests and returns encoded KMIP responses; it is a client-behavior
+fixture, not a KMIP server implementation or external interoperability
+evidence.
 
 Run all consumers on Windows with `./verify.ps1`, or on Linux/macOS with
 `./verify.sh`. The scripts build the native library, compile each consumer
