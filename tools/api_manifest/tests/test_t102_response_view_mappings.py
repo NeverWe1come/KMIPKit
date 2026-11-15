@@ -223,7 +223,7 @@ RECERTIFY_STRUCTURE_IDS = {
 JOIN_SPLIT_OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-JOIN-SPLIT-KEY"
 REKEY_KEY_PAIR_OPERATION_ID = "KMIPKIT-ELEM-OP-C2S-RE-KEY-KEY-PAIR"
 REQUEST_BUILDER_BATCH_EVIDENCE = {
-    "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+    "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
     "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
     "tools/api_manifest/tests/test_t102_join_split_key_secret_data_type_mapping.py",
     "tools/api_manifest/tests/test_t102_rekey_key_pair_structure_mapping.py",

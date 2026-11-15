@@ -14,7 +14,7 @@ MANIFEST = ROOT / "specification" / "api" / "public-api.json"
 OASIS_HTML = ROOT / "specification" / "oasis" / "kmip-2.1" / "upstream" / "kmip-spec-v2.1-os.html"
 T102_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 NEW_EVIDENCE = {
-    "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+    "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
     "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
     "tools/api_manifest/tests/test_t102_request_builder_mapping_batch.py",
 }

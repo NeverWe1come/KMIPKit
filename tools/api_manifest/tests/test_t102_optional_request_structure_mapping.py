@@ -32,7 +32,7 @@ MASK_WIRE_FIXTURE_SOURCES = (
     "bindings/python/tests/test_rekey_native_integration.py",
     "bindings/python/tests/test_recertify_operation.py",
     "bindings/python/tests/test_join_split_key_operation.py",
-    "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+    "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
     "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
     "crates/kmipkit-protocol/tests/unit/rekey_key_pair_operation_tests.rs",
     "crates/kmipkit-protocol/tests/unit/register_operation_tests.rs",
@@ -56,7 +56,7 @@ TARGETS = (
         "python": "kmipkit.extensions.client_batch_item_rekey",
         "evidence": {
             "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
-            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
             "bindings/c/tests/client_abi_consumer.c",
             "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
             "bindings/python/tests/test_rekey_native_integration.py",
@@ -75,7 +75,7 @@ TARGETS = (
         "python": "kmipkit.extensions.client_batch_item_rekey",
         "evidence": {
             "crates/kmipkit-protocol/tests/unit/rekey_operation_tests.rs",
-            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
             "bindings/c/tests/client_abi_consumer.c",
             "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
             "bindings/python/tests/test_rekey_native_integration.py",
@@ -93,7 +93,7 @@ TARGETS = (
         "java": "org.kmipkit.extensions.ClientBatchItem.joinSplitKey",
         "python": "kmipkit.extensions.client_batch_item_join_split_key",
         "evidence": {
-            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
             "bindings/c/tests/client_abi_consumer.c",
             "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
             "bindings/python/tests/test_join_split_key_operation.py",
@@ -112,7 +112,7 @@ TARGETS = (
         "python": "kmipkit.extensions.client_batch_item_join_split_key",
         "evidence": {
             "crates/kmipkit-protocol/tests/unit/join_split_key_operation_tests.rs",
-            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
             "bindings/c/tests/client_abi_consumer.c",
             "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
             "bindings/python/tests/test_join_split_key_operation.py",
@@ -131,7 +131,7 @@ TARGETS = (
         "python": "kmipkit.extensions.client_batch_item_recertify",
         "evidence": {
             "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
-            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
             "bindings/c/tests/client_abi_consumer.c",
             "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
             "bindings/python/tests/test_recertify_operation.py",
@@ -150,7 +150,7 @@ TARGETS = (
         "python": "kmipkit.extensions.client_batch_item_recertify",
         "evidence": {
             "crates/kmipkit-protocol/tests/unit/recertify_operation_tests.rs",
-            "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
             "bindings/c/tests/client_abi_consumer.c",
             "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
             "bindings/python/tests/test_recertify_operation.py",

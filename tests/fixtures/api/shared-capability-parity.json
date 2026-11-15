@@ -64,7 +64,7 @@
           "supportingTests": [
             {
               "language": "rust",
-              "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+              "testFile": "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
               "test": "generated_public_client_abi_consumer_compiles_and_runs",
               "assertions": [
                 "fixture-driven-api-level-values",
@@ -156,7 +156,7 @@
           "supportingTests": [
             {
               "language": "rust",
-              "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+              "testFile": "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
               "test": "c_abi_consumer_matches_shared_registry_cleanup_fixture",
               "assertions": [
                 "fixture-identities-and-counts-passed-to-compiled-c",
@@ -215,7 +215,7 @@
           "supportingTests": [
             {
               "language": "rust",
-              "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+              "testFile": "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
               "test": "c_abi_consumer_redacts_shared_fixture_diagnostic_marker",
               "assertions": [
                 "fixture-marker-passed-to-compiled-c",
@@ -319,7 +319,7 @@
           "supportingTests": [
             {
               "language": "rust",
-              "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+              "testFile": "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
               "test": "generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls",
               "assertions": [
                 "fixture-driven-batch-ids-statuses-correlation-and-count",
@@ -427,7 +427,7 @@
           "supportingTests": [
             {
               "language": "rust",
-              "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+              "testFile": "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
               "test": "generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls",
               "assertions": [
                 "fixture-driven-supported-versions-response"
@@ -507,7 +507,7 @@
           "supportingTests": [
             {
               "language": "rust",
-              "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+              "testFile": "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
               "test": "c_abi_consumer_preserves_shared_ttlv_fixture_values_and_order",
               "assertions": [
                 "open-enumeration",
@@ -577,7 +577,7 @@
           "supportingTests": [
             {
               "language": "rust",
-              "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+              "testFile": "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
               "test": "existing_c_consumer_exercises_the_exported_abi_in_the_coverage_process",
               "assertions": [
                 "recognized-and-unknown-cases",
@@ -664,7 +664,7 @@
           "supportingTests": [
             {
               "language": "rust",
-              "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+              "testFile": "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
               "test": "generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls",
               "assertions": [
                 "fixture-response-object-type-and-signed-integer-identifier",
@@ -772,7 +772,7 @@
         "supportingTests": [
           {
             "language": "rust",
-            "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+            "testFile": "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
             "test": "generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls",
             "assertions": [
               "fixture-key-pair-request-preserves-attribute-groups-and-mask-absence",
@@ -909,7 +909,7 @@
           "supportingTests": [
             {
               "language": "rust",
-              "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+              "testFile": "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
               "test": "generated_public_client_abi_consumer_maps_split_key_fixture_success_and_pending_over_mtls",
               "assertions": [
                 "ordered-mixed-wire-identifiers",
@@ -983,7 +983,7 @@
           "supportingTests": [
             {
               "language": "rust",
-              "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+              "testFile": "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
               "test": "generated_public_client_abi_consumer_executes_a_typed_batch_over_mtls",
               "assertions": [
                 "fixture-derived-result-message-is-returned-by-C"
@@ -1069,7 +1069,7 @@
           "supportingTests": [
             {
               "language": "rust",
-              "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+              "testFile": "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
               "test": "c_abi_consumer_matches_the_shared_codec_limits_fixture",
               "assertions": [
                 "fixture-default-limits",
@@ -1265,7 +1265,7 @@
           "supportingTests": [
             {
               "language": "rust",
-              "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+              "testFile": "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
               "test": "c_abi_consumer_decodes_ttlv_and_reports_safe_errors",
               "assertions": [
                 "root-item-view-retains-owner",
@@ -1563,7 +1563,7 @@
           "supportingTests": [
             {
               "language": "rust",
-              "testFile": "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+              "testFile": "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
               "test": "compiled_c_consumer_matches_hashed_password_timestamp_sequence_fixture",
               "assertions": [
                 "fixture-values-passed-to-compiled-c-consumer",

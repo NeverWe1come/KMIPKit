@@ -72,7 +72,7 @@
 - [x] T046 [US5] Audit C operation/option/result routes; the executable 56-operation matrix found no additional C routes to add.
 - [x] T047 [US5] Audit Java operation/options/response/async accessors; the executable 56-operation matrix found no additional Java routes to add.
 - [x] T048 [US5] Audit Python operation/options/response/async accessors; the executable 56-operation matrix found no additional Python routes to add.
-- [x] T049 [US5] Verify all 56 operations, delivery/async behavior, KMIPKIT-0052 raw semantics, and nested vendor TTLV in `crates/kmipkit-ffi/tests/operation_parity_0053.rs`, `crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs`, `crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs`, `bindings/java/src/test/`, and `bindings/python/tests/`.
+- [x] T049 [US5] Verify all 56 operations, delivery/async behavior, KMIPKIT-0052 raw semantics, and nested vendor TTLV in `crates/kmipkit-ffi/tests/support/operation_parity_0053_tests.rs`, `crates/kmipkit-ffi/tests/support/async_operation_abi_tests.rs`, `crates/kmipkit-ffi/tests/support/query_ping_abi_tests.rs`, `bindings/java/src/test/`, and `bindings/python/tests/`.
 - [x] T050 [US5] Derive operation fixtures from the reviewed normative catalog and rerun the four-language operation matrices.
 
 ## Phase 7: US6 package docs and closure

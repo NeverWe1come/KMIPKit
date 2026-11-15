@@ -22,7 +22,7 @@ REQUIRED_EVIDENCE = {
     "bindings/java/src/test/java/org/kmipkit/extensions/GetUsageAllocationResponseMappingTest.java",
     "bindings/python/tests/test_get_usage_allocation_operation.py",
     "crates/kmipkit-client/tests/unit/get_usage_allocation_execution_tests.rs",
-    "crates/kmipkit-ffi/tests/c_api_coverage.rs",
+    "crates/kmipkit-ffi/tests/support/c_api_coverage_tests.rs",
     "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
     "crates/kmipkit-ffi/tests/support/get_usage_allocation_abi_tests.rs",
     "crates/kmipkit-protocol/tests/unit/get_usage_allocation_tests.rs",
