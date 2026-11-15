@@ -93,6 +93,81 @@ int kmipkit_public_fluent_builder_probe(void) {
     return 0;
 }
 
+int kmipkit_public_async_batch_items_probe(void) {
+    static const uint8_t correlation[] = "async-request-id";
+    kmipkit_cancel_request_t *cancel_request = NULL;
+    kmipkit_poll_request_t *poll_request = NULL;
+    kmipkit_process_request_t *process_request = NULL;
+    kmipkit_query_async_requests_request_t *query_request = NULL;
+    kmipkit_client_batch_item_t *item = NULL;
+    uint32_t operation = UINT32_C(0);
+    int32_t status;
+
+    status = kmipkit_cancel_request_create(
+        correlation, (uint64_t)(sizeof(correlation) - 1), &cancel_request);
+    if (status != INT32_C(0) || cancel_request == NULL) {
+        return 1;
+    }
+    status = kmipkit_client_batch_item_cancel_from_request(cancel_request, &item);
+    if (status != INT32_C(0) || item == NULL ||
+        kmipkit_client_batch_item_operation(item, &operation) != INT32_C(0) ||
+        operation != KMIPKIT_ENUMERATION_OPERATION_CANCEL) {
+        kmipkit_client_batch_item_release(item);
+        kmipkit_cancel_request_release(cancel_request);
+        return 2;
+    }
+    kmipkit_client_batch_item_release(item);
+    kmipkit_cancel_request_release(cancel_request);
+
+    status = kmipkit_poll_request_create(
+        correlation, (uint64_t)(sizeof(correlation) - 1), &poll_request);
+    if (status != INT32_C(0) || poll_request == NULL) {
+        return 3;
+    }
+    status = kmipkit_client_batch_item_poll_from_request(poll_request, &item);
+    if (status != INT32_C(0) || item == NULL ||
+        kmipkit_client_batch_item_operation(item, &operation) != INT32_C(0) ||
+        operation != KMIPKIT_ENUMERATION_OPERATION_POLL) {
+        kmipkit_client_batch_item_release(item);
+        kmipkit_poll_request_release(poll_request);
+        return 4;
+    }
+    kmipkit_client_batch_item_release(item);
+    kmipkit_poll_request_release(poll_request);
+
+    status = kmipkit_process_request_create(
+        correlation, (uint64_t)(sizeof(correlation) - 1), &process_request);
+    if (status != INT32_C(0) || process_request == NULL) {
+        return 5;
+    }
+    status = kmipkit_client_batch_item_process_from_request(process_request, &item);
+    if (status != INT32_C(0) || item == NULL ||
+        kmipkit_client_batch_item_operation(item, &operation) != INT32_C(0) ||
+        operation != KMIPKIT_ENUMERATION_OPERATION_PROCESS) {
+        kmipkit_client_batch_item_release(item);
+        kmipkit_process_request_release(process_request);
+        return 6;
+    }
+    kmipkit_client_batch_item_release(item);
+    kmipkit_process_request_release(process_request);
+
+    status = kmipkit_query_async_requests_request_create(&query_request);
+    if (status != INT32_C(0) || query_request == NULL) {
+        return 7;
+    }
+    status = kmipkit_client_batch_item_query_async_requests_from_request(query_request, &item);
+    if (status != INT32_C(0) || item == NULL ||
+        kmipkit_client_batch_item_operation(item, &operation) != INT32_C(0) ||
+        operation != KMIPKIT_ENUMERATION_OPERATION_QUERY_ASYNCHRONOUS_REQUESTS) {
+        kmipkit_client_batch_item_release(item);
+        kmipkit_query_async_requests_request_release(query_request);
+        return 8;
+    }
+    kmipkit_client_batch_item_release(item);
+    kmipkit_query_async_requests_request_release(query_request);
+    return 0;
+}
+
 int kmipkit_public_fluent_validation_probe(void) {
     static const uint8_t description[] = "managed without TTLV tags";
     static const uint8_t unknown_value[] = "expert value";
