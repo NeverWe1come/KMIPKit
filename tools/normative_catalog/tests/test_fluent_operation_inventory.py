@@ -17,7 +17,7 @@ class FluentOperationInventoryTests(unittest.TestCase):
         base = json.loads(BASE_CATALOG.read_text(encoding="utf-8"))
         versioned = json.loads(VERSIONED_VALUES.read_text(encoding="utf-8"))
         inventory = json.loads(OUTPUT.read_text(encoding="utf-8"))
-        self.assertEqual(inventory["formatVersion"], 1)
+        self.assertEqual(inventory["formatVersion"], 2)
         operations = inventory["operations"]
         self.assertEqual(len(operations), 69)
         keys = [(row["version"], row["wireValue"], row["direction"]) for row in operations]
@@ -79,6 +79,28 @@ class FluentOperationInventoryTests(unittest.TestCase):
         self.assertEqual(len(server_rows), 5)
         self.assertTrue(all(row["clientSend"] is False for row in server_rows))
         self.assertTrue(all(row["listenerRoute"] is True for row in server_rows))
+
+    def test_every_operation_row_names_its_typed_request_and_response_owner(self) -> None:
+        inventory = json.loads(OUTPUT.read_text(encoding="utf-8"))
+        for row in inventory["operations"]:
+            with self.subTest(version=row["version"], name=row["name"], direction=row["direction"]):
+                for key in ("typedRequestOwner", "typedResponseOwner"):
+                    owner = row[key]
+                    self.assertEqual(set(owner), {"path", "type"})
+                    self.assertRegex(
+                        owner["path"],
+                        r"^crates/kmipkit-protocol/src/[a-z0-9_]+\.rs$",
+                    )
+                    self.assertRegex(owner["type"], r"^[A-Za-z][A-Za-z0-9]*$")
+
+                if row["version"] == "2.1":
+                    for key in ("typedRequestOwner", "typedResponseOwner"):
+                        owner = row[key]
+                        source = (ROOT / owner["path"]).read_text(encoding="utf-8")
+                        self.assertRegex(
+                            source,
+                            rf"pub (?:struct|enum|type) {owner['type']}\b",
+                        )
 
 
 if __name__ == "__main__":
