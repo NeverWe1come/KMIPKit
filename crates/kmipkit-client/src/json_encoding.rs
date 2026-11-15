@@ -34,10 +34,7 @@ pub fn decode(bytes: &[u8], limits: &CodecLimits) -> Result<Item, WireCodecError
     read_item(input, limits)
 }
 
-pub fn encode(
-    item: &Item,
-    limits: &CodecLimits,
-) -> Result<Zeroizing<Vec<u8>>, WireCodecError> {
+pub fn encode(item: &Item, limits: &CodecLimits) -> Result<Zeroizing<Vec<u8>>, WireCodecError> {
     let mut count = Writer {
         output: None,
         length: 0,

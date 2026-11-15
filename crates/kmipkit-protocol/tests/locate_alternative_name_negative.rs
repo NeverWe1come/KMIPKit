@@ -9,9 +9,7 @@
 //! prohibition is the Tape Library application's responsibility. They make no
 //! Tape Library profile-conformance claim.
 
-use kmipkit_protocol::{
-    AttributeSet, LocateRequest, ObjectGroupMember, StorageStatusMask,
-};
+use kmipkit_protocol::{AttributeSet, LocateRequest, ObjectGroupMember, StorageStatusMask};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
 
 const ALTERNATIVE_NAME: u32 = 0x0042_00BF;
@@ -48,7 +46,10 @@ fn given_empty_criteria_when_locate_payload_is_built_then_no_alternative_name_is
     let children = payload_children(LocateRequest::new(AttributeSet::new()));
 
     assert!(!contains_tag(&children, ALTERNATIVE_NAME));
-    assert!(contains_tag(&children, ATTRIBUTES), "Attributes Structure stays required");
+    assert!(
+        contains_tag(&children, ATTRIBUTES),
+        "Attributes Structure stays required"
+    );
 }
 
 #[test]

@@ -141,11 +141,8 @@ fn hostile_xml_with_entity_expansion_and_dtd_is_safely_rejected() {
     for hostile in hostile_inputs {
         let listener = LoopbackTcpListener::bind().expect("listener binds");
         let port = listener.local_addr().port();
-        let peer = spawn_peer_raw_responder(
-            listener.into_inner(),
-            server_configuration(&pki),
-            hostile,
-        );
+        let peer =
+            spawn_peer_raw_responder(listener.into_inner(), server_configuration(&pki), hostile);
         let mut client = Client::new(
             empty_client_configuration(WireEncoding::Xml),
             transport_configuration(&pki, port),
@@ -196,11 +193,8 @@ fn malformed_json_with_bad_hex_and_corrupt_numbers_is_safely_rejected() {
     for malformed in malformed_inputs {
         let listener = LoopbackTcpListener::bind().expect("listener binds");
         let port = listener.local_addr().port();
-        let peer = spawn_peer_raw_responder(
-            listener.into_inner(),
-            server_configuration(&pki),
-            malformed,
-        );
+        let peer =
+            spawn_peer_raw_responder(listener.into_inner(), server_configuration(&pki), malformed);
         let mut client = Client::new(
             empty_client_configuration(WireEncoding::Json),
             transport_configuration(&pki, port),
@@ -238,13 +232,29 @@ fn truncated_stream_responses_produce_safe_delivery_evidence() {
     let truncated_cases = [
         // Empty response: server closes connection without writing any response octet.
         // The client transmitted the request, so delivery is PossiblySent.
-        (WireEncoding::Ttlv, vec![], RequestDeliveryState::PossiblySent),
+        (
+            WireEncoding::Ttlv,
+            vec![],
+            RequestDeliveryState::PossiblySent,
+        ),
         // Truncated TTLV header (4 bytes received before EOF) -> ResponseStarted
-        (WireEncoding::Ttlv, vec![0x42, 0x00, 0x7A, 0x01], RequestDeliveryState::ResponseStarted),
+        (
+            WireEncoding::Ttlv,
+            vec![0x42, 0x00, 0x7A, 0x01],
+            RequestDeliveryState::ResponseStarted,
+        ),
         // Truncated JSON stream (bytes received before EOF) -> ResponseStarted
-        (WireEncoding::Json, br#"{"tag":"ResponseMessage""#.to_vec(), RequestDeliveryState::ResponseStarted),
+        (
+            WireEncoding::Json,
+            br#"{"tag":"ResponseMessage""#.to_vec(),
+            RequestDeliveryState::ResponseStarted,
+        ),
         // Truncated XML stream (bytes received before EOF) -> ResponseStarted
-        (WireEncoding::Xml, b"<ResponseMessage><ResponseHeader>".to_vec(), RequestDeliveryState::ResponseStarted),
+        (
+            WireEncoding::Xml,
+            b"<ResponseMessage><ResponseHeader>".to_vec(),
+            RequestDeliveryState::ResponseStarted,
+        ),
     ];
 
     for (encoding, truncated_bytes, expected_state) in truncated_cases {
