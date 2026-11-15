@@ -88,6 +88,137 @@ static int32_t build_synthetic_ping_response(kmipkit_codec_limits_t *limits,
     return status;
 }
 
+static int32_t verify_fluent_aes_gcm(kmipkit_client_t *client,
+                                     kmipkit_codec_limits_t *limits,
+                                     const kmipkit_unique_identifier_v1_t *identifier) {
+    static const uint8_t plaintext[] = "fluent plaintext";
+    static const uint8_t ciphertext[] = "fixture ciphertext";
+    static const uint8_t nonce[] = "nonce-12byte";
+    static const uint8_t additional_data[] = "fluent context";
+    static const uint8_t authentication_tag[] = "fixture-auth-tag";
+    kmipkit_cryptographic_parameters_fields_v1_t parameter_fields = {0};
+    kmipkit_cryptographic_parameters_t *parameters = 0;
+    kmipkit_crypto_operation_builder_t *builder = 0;
+    kmipkit_client_batch_response_t *response = 0;
+    kmipkit_client_batch_item_response_t *item = 0;
+    kmipkit_unique_identifier_v1_t response_identifier = {0};
+    kmipkit_byte_span_v1_t data_span = {0};
+    kmipkit_byte_span_v1_t nonce_span = {0};
+    kmipkit_byte_span_v1_t additional_data_span = {0};
+    kmipkit_byte_span_v1_t authentication_tag_span = {0};
+    uint8_t response_present = 0;
+    uint8_t data_present = 0;
+    uint8_t nonce_present = 0;
+    uint8_t correlation_present = 0;
+    uint8_t authentication_tag_present = 0;
+    kmipkit_byte_span_v1_t response_data = {0};
+    kmipkit_byte_span_v1_t response_nonce = {0};
+    kmipkit_byte_span_v1_t response_correlation = {0};
+    kmipkit_byte_span_v1_t response_authentication_tag = {0};
+    int32_t status;
+
+    parameter_fields.struct_size = (uint32_t)sizeof(parameter_fields);
+    parameter_fields.abi_version = UINT32_C(1);
+    parameter_fields.block_cipher_mode_present = UINT8_C(1);
+    parameter_fields.block_cipher_mode = KMIPKIT_ENUMERATION_BLOCK_CIPHER_MODE_GCM;
+    parameter_fields.cryptographic_algorithm_present = UINT8_C(1);
+    parameter_fields.cryptographic_algorithm = KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES;
+    parameter_fields.iv_length_present = UINT8_C(1);
+    parameter_fields.iv_length = INT32_C(96);
+    parameter_fields.tag_length_present = UINT8_C(1);
+    parameter_fields.tag_length = INT32_C(16);
+    status = kmipkit_cryptographic_parameters_from_fields_v1(&parameter_fields, &parameters);
+
+    data_span.data = plaintext;
+    data_span.length = (uint64_t)(sizeof(plaintext) - 1);
+    nonce_span.data = nonce;
+    nonce_span.length = (uint64_t)(sizeof(nonce) - 1);
+    additional_data_span.data = additional_data;
+    additional_data_span.length = (uint64_t)(sizeof(additional_data) - 1);
+    status = status == 0 ? kmipkit_encrypt_builder_create(&builder) : status;
+    status = status == 0 ? kmipkit_crypto_operation_builder_set_unique_identifier(builder, identifier) : status;
+    status = status == 0 ? kmipkit_crypto_operation_builder_set_cryptographic_parameters(builder, parameters) : status;
+    status = status == 0 ? kmipkit_crypto_operation_builder_set_data(builder, &data_span) : status;
+    status = status == 0 ? kmipkit_crypto_operation_builder_set_iv_counter_nonce(builder, &nonce_span) : status;
+    status = status == 0 ? kmipkit_crypto_operation_builder_set_authenticated_encryption_additional_data(
+        builder, &additional_data_span) : status;
+    status = status == 0 ? kmipkit_crypto_operation_builder_execute_v1(
+        builder, client, limits, &response) : status;
+    status = status == 0 ? kmipkit_client_batch_response_item_at(response, UINT64_C(0), &item) : status;
+    response_identifier.struct_size = (uint32_t)sizeof(response_identifier);
+    response_identifier.abi_version = UINT32_C(1);
+    if (status == 0) {
+        status = kmipkit_client_batch_item_response_encrypt(
+            item, &response_present, &response_identifier, &data_present, &response_data,
+            &nonce_present, &response_nonce, &correlation_present, &response_correlation,
+            &authentication_tag_present, &response_authentication_tag);
+    }
+    if (status == 0 && (!response_present || !data_present || !nonce_present ||
+            !authentication_tag_present ||
+            response_identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
+            response_identifier.text_length != sizeof("fluent-key") - 1 ||
+            memcmp(response_identifier.text_data, "fluent-key", sizeof("fluent-key") - 1) != 0 ||
+            response_data.length != sizeof(ciphertext) - 1 ||
+            memcmp(response_data.data, ciphertext, sizeof(ciphertext) - 1) != 0 ||
+            response_nonce.length != sizeof(nonce) - 1 ||
+            memcmp(response_nonce.data, nonce, sizeof(nonce) - 1) != 0 ||
+            response_authentication_tag.length != sizeof(authentication_tag) - 1 ||
+            memcmp(response_authentication_tag.data, authentication_tag,
+                   sizeof(authentication_tag) - 1) != 0)) {
+        status = 4;
+    }
+    kmipkit_crypto_operation_builder_release(builder);
+    builder = 0;
+
+    data_span.data = response_data.data;
+    data_span.length = response_data.length;
+    nonce_span.data = response_nonce.data;
+    nonce_span.length = response_nonce.length;
+    additional_data_span.data = additional_data;
+    additional_data_span.length = (uint64_t)(sizeof(additional_data) - 1);
+    authentication_tag_span.data = response_authentication_tag.data;
+    authentication_tag_span.length = response_authentication_tag.length;
+    status = status == 0 ? kmipkit_decrypt_builder_create(&builder) : status;
+    status = status == 0 ? kmipkit_crypto_operation_builder_set_unique_identifier(builder, identifier) : status;
+    status = status == 0 ? kmipkit_crypto_operation_builder_set_cryptographic_parameters(builder, parameters) : status;
+    status = status == 0 ? kmipkit_crypto_operation_builder_set_data(builder, &data_span) : status;
+    status = status == 0 ? kmipkit_crypto_operation_builder_set_iv_counter_nonce(builder, &nonce_span) : status;
+    status = status == 0 ? kmipkit_crypto_operation_builder_set_authenticated_encryption_additional_data(
+        builder, &additional_data_span) : status;
+    status = status == 0 ? kmipkit_crypto_operation_builder_set_authenticated_encryption_tag(
+        builder, &authentication_tag_span) : status;
+    kmipkit_client_batch_item_response_release(item);
+    kmipkit_client_batch_response_release(response);
+    item = 0;
+    response = 0;
+    status = status == 0 ? kmipkit_crypto_operation_builder_execute_v1(
+        builder, client, limits, &response) : status;
+    status = status == 0 ? kmipkit_client_batch_response_item_at(response, UINT64_C(0), &item) : status;
+    response_identifier.struct_size = (uint32_t)sizeof(response_identifier);
+    response_identifier.abi_version = UINT32_C(1);
+    response_present = UINT8_C(0);
+    data_present = UINT8_C(0);
+    if (status == 0) {
+        status = kmipkit_client_batch_item_response_decrypt(
+            item, &response_present, &response_identifier, &data_present, &response_data,
+            &correlation_present, &response_correlation);
+    }
+    if (status == 0 && (!response_present || !data_present ||
+            response_identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
+            response_identifier.text_length != sizeof("fluent-key") - 1 ||
+            memcmp(response_identifier.text_data, "fluent-key", sizeof("fluent-key") - 1) != 0 ||
+            response_data.length != sizeof(plaintext) - 1 ||
+            memcmp(response_data.data, plaintext, sizeof(plaintext) - 1) != 0)) {
+        status = 4;
+    }
+    kmipkit_client_batch_item_response_release(item);
+    kmipkit_client_batch_response_release(response);
+    kmipkit_crypto_operation_builder_release(builder);
+    kmipkit_cryptographic_parameters_release(parameters);
+    if (status == 0) puts("c: fluent AES-GCM Create/Get/Encrypt/Decrypt/Destroy verified over TLS 1.3/mTLS");
+    return status;
+}
+
 int main(void) {
     static const uint8_t comment[] = "local example";
     static const uint8_t username[] = "demo-user";
@@ -380,6 +511,7 @@ int main(void) {
             object_type != KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY || get_object == 0)) {
         status = 4;
     }
+    if (status == 0) status = verify_fluent_aes_gcm(client, limits, &identifier);
     if (status == 0) {
         status = kmipkit_client_destroy_by_id_v1(client, &identifier, limits, &destroy_response);
     }

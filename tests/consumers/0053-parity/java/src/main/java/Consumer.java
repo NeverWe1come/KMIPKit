@@ -1,8 +1,11 @@
 import java.nio.file.Path;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import org.kmipkit.client.KmipClient;
 import org.kmipkit.fluent.SymmetricKeyBuilder;
+import org.kmipkit.fluent.DecryptBuilder;
+import org.kmipkit.fluent.EncryptBuilder;
 import org.kmipkit.extensions.ClientBatchItemResult;
 import org.kmipkit.extensions.ClientBatchResponse;
 import org.kmipkit.extensions.ClientConfiguration;
@@ -31,6 +34,16 @@ import org.kmipkit.ttlv.TypedAttribute;
 
 public final class Consumer {
     private Consumer() {}
+
+    private static CryptographicParameters aesGcmParameters() {
+        try (CryptographicParameters.Builder builder = CryptographicParameters.builder()) {
+            return builder.cryptographicAlgorithm(KmipValues.CryptographicAlgorithm.AES)
+                    .blockCipherMode(KmipValues.BlockCipherMode.GCM)
+                    .ivLength(96)
+                    .tagLength(16)
+                    .build();
+        }
+    }
 
     private static TtlvItem item(int rawTag, TtlvValue value, CodecLimits limits) {
         try (RawTag raw = RawTag.fromRaw(rawTag); Tag tag = raw.checked()) {
@@ -155,6 +168,70 @@ public final class Consumer {
                         throw new IllegalStateException("Get did not return the created object");
                     }
                 }
+
+                byte[] plaintext = "fluent plaintext".getBytes(StandardCharsets.UTF_8);
+                byte[] nonce = "nonce-12byte".getBytes(StandardCharsets.UTF_8);
+                byte[] additionalData = "fluent context".getBytes(StandardCharsets.UTF_8);
+                byte[] ciphertext = null;
+                byte[] responseNonce = null;
+                byte[] authenticationTag = null;
+                try {
+                    try (CryptographicParameters aesParameters = aesGcmParameters();
+                            EncryptBuilder builder = kmipClient.request().encrypt();
+                            ClientBatchResponse encrypted = builder.uniqueIdentifier(identifier)
+                                    .cryptographicParameters(aesParameters)
+                                    .data(plaintext)
+                                    .ivCounterNonce(nonce)
+                                    .authenticatedEncryptionAdditionalData(additionalData)
+                                    .execute(limits);
+                            ClientBatchItemResult itemResult = encrypted.itemAt(0);
+                            ClientBatchItemResult.EncryptResponse response =
+                                    itemResult.encryptResponse().orElseThrow()) {
+                        if (!itemResult.outcomeKind().isCompleted() || itemResult.resultStatus() != 0
+                                || !response.uniqueIdentifier().text().equals(identifier.text())) {
+                            throw new IllegalStateException("Encrypt did not return a successful typed response");
+                        }
+                        ciphertext = response.data().orElseThrow();
+                        responseNonce = response.ivCounterNonce().orElseThrow();
+                        authenticationTag = response.authenticatedEncryptionTag().orElseThrow();
+                        if (!Arrays.equals(ciphertext, "fixture ciphertext".getBytes(StandardCharsets.UTF_8))
+                                || !Arrays.equals(responseNonce, nonce)
+                                || !Arrays.equals(authenticationTag, "fixture-auth-tag".getBytes(StandardCharsets.UTF_8))) {
+                            throw new IllegalStateException("Encrypt response did not preserve the AES-GCM fields");
+                        }
+                    }
+                    try (CryptographicParameters decryptParameters = aesGcmParameters();
+                            DecryptBuilder builder = kmipClient.request().decrypt();
+                            ClientBatchResponse decrypted = builder.uniqueIdentifier(identifier)
+                                    .cryptographicParameters(decryptParameters)
+                                    .data(ciphertext)
+                                    .ivCounterNonce(responseNonce)
+                                    .authenticatedEncryptionAdditionalData(additionalData)
+                                    .authenticatedEncryptionTag(authenticationTag)
+                                    .execute(limits);
+                            ClientBatchItemResult itemResult = decrypted.itemAt(0);
+                            ClientBatchItemResult.DecryptResponse response =
+                                    itemResult.decryptResponse().orElseThrow()) {
+                        byte[] recovered = response.data().orElseThrow();
+                        try {
+                            if (!itemResult.outcomeKind().isCompleted() || itemResult.resultStatus() != 0
+                                    || !response.uniqueIdentifier().text().equals(identifier.text())
+                                    || !Arrays.equals(recovered, plaintext)) {
+                                throw new IllegalStateException("Decrypt did not recover the fixture plaintext");
+                            }
+                        } finally {
+                            Arrays.fill(recovered, (byte) 0);
+                        }
+                    }
+                } finally {
+                    Arrays.fill(plaintext, (byte) 0);
+                    Arrays.fill(nonce, (byte) 0);
+                    Arrays.fill(additionalData, (byte) 0);
+                    if (ciphertext != null) Arrays.fill(ciphertext, (byte) 0);
+                    if (responseNonce != null) Arrays.fill(responseNonce, (byte) 0);
+                    if (authenticationTag != null) Arrays.fill(authenticationTag, (byte) 0);
+                }
+
                 try (ClientBatchResponse destroyed = kmipClient.destroyById(
                                 identifier, limits, RequestOptions.defaults());
                         ClientBatchItemResult itemResult = destroyed.itemAt(0)) {
@@ -186,7 +263,7 @@ public final class Consumer {
                         throw new IllegalStateException("Failure outcome was not preserved");
                     }
                 }
-                System.out.println("java: fluent lifecycle Success/Pending/Failure outcomes verified");
+                System.out.println("java: fluent AES-GCM lifecycle Success/Pending/Failure outcomes verified");
             }
         }
     }

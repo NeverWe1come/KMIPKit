@@ -4,7 +4,7 @@ use kmipkit::{
     client_config::ClientConfiguration,
     protocol::{
         Attribute, Authentication, Credential, CryptographicParametersBuilder, KeyMaterial,
-        ManagedObject, OpaqueObject, ResponseMessage, attribute::typed,
+        ManagedObject, OpaqueObject, OperationData, ResponseMessage, SecretBytes, attribute::typed,
     },
     transport_config::{
         CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, TransportConfig, TrustSource,
@@ -12,6 +12,12 @@ use kmipkit::{
     ttlv::{Item, RawTag, Structure, Value, codec::CodecLimits},
 };
 use kmipkit_client::fluent::CryptographicUsageMask;
+
+const FLUENT_PLAINTEXT: &[u8] = b"fluent plaintext";
+const FLUENT_CIPHERTEXT: &[u8] = b"fixture ciphertext";
+const FLUENT_NONCE: &[u8] = b"nonce-12byte";
+const FLUENT_AAD: &[u8] = b"fluent context";
+const FLUENT_AUTH_TAG: &[u8] = b"fixture-auth-tag";
 
 const RESPONSE_HEADER: u32 = 0x0042_007A;
 const PROTOCOL_VERSION: u32 = 0x0042_0069;
@@ -108,6 +114,84 @@ fn execute_fluent_lifecycle(
         outcome => return Err(format!("unexpected Get outcome: {outcome:?}").into()),
     }
 
+    let aes_gcm_parameters = || {
+        CryptographicParametersBuilder::new()
+            .with_cryptographic_algorithm(
+                kmipkit::protocol::named_values_generated::values::enumeration::cryptographic_algorithm::AES,
+            )
+            .with_block_cipher_mode(
+                kmipkit::protocol::named_values_generated::values::enumeration::block_cipher_mode::GCM,
+            )
+            .with_iv_length(96)
+            .with_tag_length(16)
+            .build()
+    };
+    let encrypted = client
+        .request()
+        .encrypt()
+        .unique_identifier(identifier.clone())
+        .cryptographic_parameters(aes_gcm_parameters()?)
+        .data(FLUENT_PLAINTEXT.to_vec())
+        .iv_counter_nonce(FLUENT_NONCE.to_vec())
+        .authenticated_encryption_additional_data(FLUENT_AAD.to_vec())
+        .execute(limits)?;
+    let encrypt_response = encrypted
+        .outcome()
+        .encrypt_response()
+        .ok_or("Encrypt response did not have its typed outcome")?;
+    if encrypt_response.result().status().raw() != 0
+        || encrypt_response.unique_identifier() != Some(&identifier)
+        || !encrypt_response
+            .data()
+            .is_some_and(|value| value.with_bytes(|actual| actual == FLUENT_CIPHERTEXT))
+        || !encrypt_response
+            .iv_counter_nonce()
+            .is_some_and(|value| value.with_bytes(|actual| actual == FLUENT_NONCE))
+        || !encrypt_response.authenticated_encryption_tag().is_some_and(|value| {
+            value.with_bytes(|actual| actual == FLUENT_AUTH_TAG)
+        })
+    {
+        return Err("Encrypt response did not preserve the fixture's typed GCM fields".into());
+    }
+
+    let decrypted = client
+        .request()
+        .decrypt()
+        .unique_identifier(identifier.clone())
+        .cryptographic_parameters(aes_gcm_parameters()?)
+        .data_value(OperationData::ByteString(
+            encrypt_response
+                .data()
+                .ok_or("Encrypt response omitted ciphertext")?
+                .with_bytes(|value| SecretBytes::new(value.to_vec())),
+        ))
+        .iv_counter_nonce(
+            encrypt_response
+                .iv_counter_nonce()
+                .ok_or("Encrypt response omitted its nonce")?
+                .with_bytes(<[u8]>::to_vec),
+        )
+        .authenticated_encryption_additional_data(FLUENT_AAD.to_vec())
+        .authenticated_encryption_tag(
+            encrypt_response
+                .authenticated_encryption_tag()
+                .ok_or("Encrypt response omitted its authentication tag")?
+                .with_bytes(<[u8]>::to_vec),
+        )
+        .execute(limits)?;
+    let decrypt_response = decrypted
+        .outcome()
+        .decrypt_response()
+        .ok_or("Decrypt response did not have its typed outcome")?;
+    if decrypt_response.result().status().raw() != 0
+        || decrypt_response.unique_identifier() != Some(&identifier)
+        || !decrypt_response
+            .data()
+            .is_some_and(|value| value.with_bytes(|actual| actual == FLUENT_PLAINTEXT))
+    {
+        return Err("Decrypt response did not preserve the fixture's typed plaintext".into());
+    }
+
     let destroyed = client.request().destroy(identifier.clone()).execute(limits)?;
     match destroyed.outcome() {
         ClientBatchOutcome::Destroy(response)
@@ -115,7 +199,7 @@ fn execute_fluent_lifecycle(
                 && response.unique_identifier() == Some(&identifier) => {}
         outcome => return Err(format!("unexpected Destroy outcome: {outcome:?}").into()),
     }
-    println!("rust: fluent Create/Get/Destroy verified over TLS 1.3/mTLS");
+    println!("rust: fluent AES-GCM Create/Get/Encrypt/Decrypt/Destroy verified over TLS 1.3/mTLS");
     Ok(())
 }
 

@@ -63,6 +63,20 @@ def _demo_authentication(limits: ttlv.CodecLimits) -> credentials.Authentication
     return credentials.Authentication.create([credentials.Credential.from_ttlv(envelope)])
 
 
+def _aes_gcm_parameters() -> cryptographic_parameters.CryptographicParameters:
+    builder = cryptographic_parameters.CryptographicParameters.builder()
+    try:
+        return (
+            builder.cryptographic_algorithm(protocol_values.CryptographicAlgorithm.AES)
+            .block_cipher_mode(protocol_values.BlockCipherMode.GCM)
+            .iv_length(96)
+            .tag_length(16)
+            .build()
+        )
+    finally:
+        builder.close()
+
+
 def main() -> None:
     limits = ttlv.codec_limits_defaults()
     with limits:
@@ -169,7 +183,7 @@ def main() -> None:
                 )
                 lifecycle_results.append(created)
                 create_item = created.items[0]
-                assert create_item.operation == 1
+                assert create_item.operation == protocol_values.Operation.CREATE
                 assert create_item.outcome is client.BatchOutcome.COMPLETED
                 assert create_item.result_status == 0
                 assert create_item.create_object_type == 2
@@ -179,7 +193,7 @@ def main() -> None:
                 retrieved = kmip_client.request().get(identifier).execute(limits)
                 lifecycle_results.append(retrieved)
                 get_item = retrieved.items[0]
-                assert get_item.operation == 10
+                assert get_item.operation == protocol_values.Operation.GET
                 assert get_item.outcome is client.BatchOutcome.COMPLETED
                 assert get_item.result_status == 0
                 get_response = get_item.get_response()
@@ -187,16 +201,67 @@ def main() -> None:
                 assert get_response.unique_identifier == identifier
                 assert get_response.object is not None
 
+                plaintext = b"fluent plaintext"
+                nonce = b"nonce-12byte"
+                additional_data = b"fluent context"
+                with _aes_gcm_parameters() as parameters:
+                    encrypted = (
+                        kmip_client.request()
+                        .encrypt()
+                        .unique_identifier(identifier)
+                        .cryptographic_parameters(parameters)
+                        .data(plaintext)
+                        .iv_counter_nonce(nonce)
+                        .authenticated_encryption_additional_data(additional_data)
+                        .execute(limits)
+                    )
+                lifecycle_results.append(encrypted)
+                encrypt_item = encrypted.items[0]
+                assert encrypt_item.operation == protocol_values.Operation.ENCRYPT
+                assert encrypt_item.outcome is client.BatchOutcome.COMPLETED
+                assert encrypt_item.result_status == 0
+                encrypt_response = encrypt_item.encrypt_response
+                assert encrypt_response is not None
+                assert encrypt_response.unique_identifier == identifier
+                ciphertext = encrypt_response.data
+                response_nonce = encrypt_response.iv_counter_nonce
+                authentication_tag = encrypt_response.authenticated_encryption_tag
+                assert ciphertext == b"fixture ciphertext"
+                assert response_nonce == nonce
+                assert authentication_tag == b"fixture-auth-tag"
+
+                with _aes_gcm_parameters() as parameters:
+                    decrypted = (
+                        kmip_client.request()
+                        .decrypt()
+                        .unique_identifier(identifier)
+                        .cryptographic_parameters(parameters)
+                        .data(ciphertext)
+                        .iv_counter_nonce(response_nonce)
+                        .authenticated_encryption_additional_data(additional_data)
+                        .authenticated_encryption_tag(authentication_tag)
+                        .execute(limits)
+                    )
+                lifecycle_results.append(decrypted)
+                decrypt_item = decrypted.items[0]
+                assert decrypt_item.operation == protocol_values.Operation.DECRYPT
+                assert decrypt_item.outcome is client.BatchOutcome.COMPLETED
+                assert decrypt_item.result_status == 0
+                decrypt_response = decrypt_item.decrypt_response
+                assert decrypt_response is not None
+                assert decrypt_response.unique_identifier == identifier
+                assert decrypt_response.data == plaintext
+
                 destroyed = kmip_client.request().destroy(identifier).execute(limits)
                 lifecycle_results.append(destroyed)
                 destroy_item = destroyed.items[0]
-                assert destroy_item.operation == 20
+                assert destroy_item.operation == protocol_values.Operation.DESTROY
                 assert destroy_item.outcome is client.BatchOutcome.COMPLETED
                 assert destroy_item.result_status == 0
                 destroy_response = destroy_item.destroy_response
                 assert destroy_response is not None
                 assert destroy_response.unique_identifier == identifier
-                print("python: fluent Create/Get/Destroy verified over TLS 1.3/mTLS")
+                print("python: fluent AES-GCM Create/Get/Encrypt/Decrypt/Destroy verified over TLS 1.3/mTLS")
             finally:
                 for lifecycle_result in lifecycle_results:
                     lifecycle_result.close()

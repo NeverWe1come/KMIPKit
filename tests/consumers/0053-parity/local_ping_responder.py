@@ -1,4 +1,4 @@
-"""Loopback-only TLS 1.3/mTLS fixture for the four external Ping consumers."""
+"""Loopback-only TLS 1.3/mTLS fixture for four external fluent API consumers."""
 
 from __future__ import annotations
 
@@ -8,6 +8,13 @@ from pathlib import Path
 import socket
 import ssl
 import struct
+
+_FLUENT_KEY_ID = b"fluent-key"
+_PLAINTEXT = b"fluent plaintext"
+_CIPHERTEXT = b"fixture ciphertext"
+_NONCE = b"nonce-12byte"
+_AAD = b"fluent context"
+_AUTH_TAG = b"fixture-auth-tag"
 
 
 def _item(tag: int, item_type: int, value: bytes) -> bytes:
@@ -64,6 +71,20 @@ def _response(operation: int, pending: bool = False, failed: bool = False) -> by
         )
     elif operation == 20:
         payload = _structure(0x42007C, _item(0x420094, 7, b"fluent-key"))
+    elif operation == 0x1F:
+        payload = _structure(
+            0x42007C,
+            _item(0x420094, 7, _FLUENT_KEY_ID),
+            _item(0x4200C2, 8, _CIPHERTEXT),
+            _item(0x42003D, 8, _NONCE),
+            _item(0x4200FF, 8, _AUTH_TAG),
+        )
+    elif operation == 0x20:
+        payload = _structure(
+            0x42007C,
+            _item(0x420094, 7, _FLUENT_KEY_ID),
+            _item(0x4200C2, 8, _PLAINTEXT),
+        )
     elif operation == 0x3B:
         payload = _structure(0x42007C)
     else:
@@ -183,6 +204,38 @@ def _validate_operation(
         identifiers = [value for tag, kind, value in payload if tag == 0x420094 and kind == 7]
         if identifiers != [b"fluent-key"]:
             raise RuntimeError("Get or Destroy did not use the returned Unique Identifier")
+    elif operation in (0x1F, 0x20):
+        payload = _children(payloads[0])
+        identifiers = [value for tag, kind, value in payload if tag == 0x420094 and kind == 7]
+        if identifiers != [_FLUENT_KEY_ID]:
+            raise RuntimeError("Encrypt or Decrypt did not use the returned Unique Identifier")
+        data = [value for tag, kind, value in payload if tag == 0x4200C2 and kind == 8]
+        expected_data = _PLAINTEXT if operation == 0x1F else _CIPHERTEXT
+        if data != [expected_data]:
+            raise RuntimeError("Encrypt or Decrypt used unexpected input Data")
+        nonces = [value for tag, kind, value in payload if tag == 0x42003D and kind == 8]
+        additional_data = [
+            value for tag, kind, value in payload if tag == 0x4200FE and kind == 8
+        ]
+        if nonces != [_NONCE] or additional_data != [_AAD]:
+            raise RuntimeError("Encrypt or Decrypt omitted the selected GCM nonce or AAD")
+        parameter_structures = [
+            value for tag, kind, value in payload if tag == 0x42002B and kind == 1
+        ]
+        if len(parameter_structures) != 1:
+            raise RuntimeError("Encrypt or Decrypt omitted Cryptographic Parameters")
+        parameters = {tag: (kind, value) for tag, kind, value in _children(parameter_structures[0])}
+        expected_parameters = {
+            0x420011: (5, struct.pack(">I", 9)),
+            0x420028: (5, struct.pack(">I", 3)),
+            0x4200CD: (2, struct.pack(">i", 96)),
+            0x4200CE: (2, struct.pack(">i", 16)),
+        }
+        if any(parameters.get(tag) != value for tag, value in expected_parameters.items()):
+            raise RuntimeError("Encrypt or Decrypt did not select explicit AES-GCM parameters")
+        tags = [value for tag, kind, value in payload if tag == 0x4200FF and kind == 8]
+        if (operation == 0x1F and tags) or (operation == 0x20 and tags != [_AUTH_TAG]):
+            raise RuntimeError("Encrypt or Decrypt has an invalid authenticated encryption tag")
     if operation in (10, 20):
         indicators = [value for tag, kind, value in header_fields if tag == 0x420007 and kind == 5]
         if operation == 10 and indicators not in ([], [struct.pack(">I", 1)]):
