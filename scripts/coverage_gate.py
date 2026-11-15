@@ -74,11 +74,11 @@ class SourceScanResult:
         self.complete = complete
 
 
-# JaCoCo has no executable line records for generated API metadata, package-info
-# declarations, compile-time constant holders, or JNI-only method declarations.
-# Keep one exact path inventory for source eligibility and JaCoCo parsing so the
-# gate excludes metadata without weakening executable-source coverage.
-_JAVA_METADATA_ONLY_SOURCE_EXCLUSIONS = frozenset(
+# JaCoCo has no executable line records for generated API metadata,
+# compile-time constant holders, native-only method declarations, or abstract
+# callback declarations. Keep one exact path inventory for source eligibility
+# and JaCoCo parsing so only non-executable declarations are excluded.
+_JAVA_NON_EXECUTABLE_SOURCE_EXCLUSIONS = frozenset(
     {
         # Generated API manifests contain metadata, not handwritten behavior.
         "bindings/java/src/main/java/org/kmipkit/generated/ExtensionRegistryApi.java",
@@ -88,6 +88,13 @@ _JAVA_METADATA_ONLY_SOURCE_EXCLUSIONS = frozenset(
         "bindings/java/src/main/java/org/kmipkit/extensions/NativeAttributeRequests.java",
         "bindings/java/src/main/java/org/kmipkit/ttlv/NativeTtlvCodec.java",
         "bindings/java/src/main/java/org/kmipkit/ttlv/TtlvDecodeErrorKind.java",
+        # This interface only declares the callback supplied by the application;
+        # JaCoCo has no executable source line for an abstract method declaration.
+        "bindings/java/src/main/java/org/kmipkit/server/ServerRequestHandler.java",
+    }
+)
+_JAVA_PACKAGE_INFO_SOURCE_EXCLUSIONS = frozenset(
+    {
         # These package declarations apply the NullMarked default only.
         "bindings/java/src/main/java/org/kmipkit/package-info.java",
         "bindings/java/src/main/java/org/kmipkit/internal/package-info.java",
@@ -95,6 +102,7 @@ _JAVA_METADATA_ONLY_SOURCE_EXCLUSIONS = frozenset(
         "bindings/java/src/main/java/org/kmipkit/generated/package-info.java",
         "bindings/java/src/main/java/org/kmipkit/extensions/package-info.java",
         "bindings/java/src/main/java/org/kmipkit/message/package-info.java",
+        "bindings/java/src/main/java/org/kmipkit/server/package-info.java",
     }
 )
 
@@ -138,7 +146,8 @@ _CATALOG_GENERATED_ATTRIBUTE_EXCLUSIONS = frozenset(
     }
 )
 _COVERAGE_SOURCE_EXCLUSIONS = (
-    _JAVA_METADATA_ONLY_SOURCE_EXCLUSIONS
+    _JAVA_NON_EXECUTABLE_SOURCE_EXCLUSIONS
+    | _JAVA_PACKAGE_INFO_SOURCE_EXCLUSIONS
     | _PYTHON_GENERATED_SOURCE_EXCLUSIONS
     | _RUST_METADATA_ONLY_SOURCE_EXCLUSIONS
     | _CATALOG_GENERATED_NAMED_VALUE_EXCLUSIONS

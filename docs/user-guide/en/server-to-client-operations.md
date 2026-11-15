@@ -24,9 +24,65 @@ batch and send it with `send_response`. Use the operation-specific models and
 the KMIP 2.1 specification to apply application policy; receiving a valid
 request does not mean the application must accept its effect.
 
-The C, Java, and Python bindings expose corresponding listener, dispatcher,
-and typed request access. Use the published API manifest and each language's
-reference docs for exact ownership and cleanup rules.
+### Java
+
+`org.kmipkit.server` provides an `AutoCloseable` facade. Configure the listener
+identity and trusted peer certificates, bind with `ServerListener.bindRawTls`
+or `bindHttps`, accept with an explicit `Duration`, and receive with
+`CodecLimits`. `ServerRequestBatch.items()` returns operation-specific request
+types. Build success responses with each response type's `forRequest` factory,
+or use `ServerReply.failure` for an explicit KMIP failure; the
+`ServerResponseBuilder` rejects a response paired with a different request.
+`NotifyRequest.attributes()` returns an independently owned `AttributeSet` for
+the optional changed attributes; close it when finished. Send the built
+response explicitly on the accepted `ServerConnection`.
+
+```java
+try (ServerListenerConfiguration config = ServerListenerConfiguration.builder()
+        .bindHost("127.0.0.1").bindPort(5696)
+        .listenerCertificateChain(List.of(serverCertificatePem))
+        .listenerPrivateKey(serverPrivateKeyPem)
+        .trustCertificates(List.of(clientCaPem)).build();
+     ServerListener listener = ServerListener.bindRawTls(config);
+     ServerConnection connection = listener.accept(Duration.ofSeconds(5));
+     ServerRequestBatch batch = connection.receive(CodecLimits.defaults(), Duration.ofSeconds(5));
+     ServerResponseMessage response = batch.respond(request -> {
+         if (request instanceof DiscoverVersionsRequest discover) {
+             return ServerReply.success(DiscoverVersionsResponse.forRequest(
+                     discover, List.of(new ProtocolVersion(2, 1))));
+         }
+         return ServerReply.failure(ServerResultStatus.OPERATION_FAILED,
+                 ServerResultReason.OPERATION_NOT_SUPPORTED, "unsupported operation");
+     })) {
+    connection.send(response, Duration.ofSeconds(5));
+}
+```
+
+### Python
+
+`kmipkit.server` exposes the same explicit receive/respond/send flow through
+context managers. The listener configuration accepts certificate material as
+bytes, and the private-key staging copy is overwritten after native
+configuration. `NotifyRequest.attributes` returns a validated `AttributeSet`
+copy that can be closed or used as a context manager. Python runtime copies
+cannot be reliably zeroized.
+
+```python
+with ServerListenerConfiguration(
+    bind_host="127.0.0.1",
+    bind_port=5696,
+    listener_certificate_chain=(server_certificate_pem,),
+    listener_private_key=server_private_key_pem,
+    trust_certificates=(client_ca_pem,),
+) as config, ServerListener.bind(config) as listener:
+    with listener.accept(timeout=5) as connection:
+        connection.serve_once(handler, ttlv.CodecLimits.defaults(), timeout=5)
+```
+
+The C binding remains the low-level ABI route with explicit opaque handles and
+fixed-width status codes. All four bindings receive and answer typed server
+requests; none adds a client-side `send()` operation to these request types.
+See each language's reference for ownership and release rules.
 
 In C, respond to the received Set Endpoint Role request first, then call
 `kmipkit_server_connection_into_role_reversed_session`. The connection handle

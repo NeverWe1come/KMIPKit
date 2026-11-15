@@ -170,9 +170,9 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
 # cryptographic operation builders; KMIPKIT-0095 adds response rendering and
 # KMIPKIT-0108 adds attribute-read declarations; this inventory also includes
 # the approved KMIPKIT-0093 reconciliation, KMIPKIT-0106 C listener surface,
-# the five KMIPKIT-0093 C role-reversed session declarations, and narrowed T101
-# mappings.
-DECLARATIONS_SHA256 = "5464a82d329c1b0ed2396a149a2ee9f7e2ded8bb4aef21ba921e24d7fab919c4"
+# the five KMIPKIT-0093 C role-reversed session declarations, and KMIPKIT-0112
+# Java/Python listener facades, with narrowed T101 mappings.
+DECLARATIONS_SHA256 = "39fcaa6996c1a6cd9035986f2616338b4fb33a16958c61edd5613adccd8e6afc"
 # The C role-reversal harness moved to support/c_api_coverage_tests.rs.
 OPERATIONS_SHA256 = "c8aae7faf64c0ddba9b3c73a9819b94e18b95d5b2eca18e9e49c3801974be4e0"
 
@@ -467,6 +467,14 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
                 ]
                 self.assertEqual(count, len(typed_rows))
         other_declarations = without_0047_versioned_values(other_declarations)
+        other_declaration_ids = {row["declarationId"] for row in other_declarations}
+        self.assertTrue(
+            {
+                "KMIPKIT-0112:org.kmipkit.server.ServerConnection",
+                "KMIPKIT-0112:org.kmipkit.server.ServerListener",
+            }.issubset(other_declaration_ids),
+            "the server listener facade declarations remain included in the non-target snapshot",
+        )
         self.assertEqual(DECLARATIONS_SHA256, canonical_sha256(other_declarations))
         other_operations = copy.deepcopy(self.manifest["operations"])
         for operation in other_operations:
