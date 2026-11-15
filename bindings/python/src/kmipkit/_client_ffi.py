@@ -1456,6 +1456,39 @@ ffi.cdef(
     int32_t kmipkit_client_batch_item_decapsulate(
         kmipkit_ttlv_structure_t *payload,
         kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_create_group_from_attributes(
+        kmipkit_attribute_set_t *attributes,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_create_user_from_attributes(
+        kmipkit_attribute_set_t *attributes,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_obliterate_from_identifier(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_deactivate_from_fields(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
+        kmipkit_ttlv_structure_t *deactivation_reason,
+        uint8_t has_deactivation_date,
+        int64_t deactivation_date,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_create_credential_from_fields(
+        uint32_t credential_type_raw,
+        uint32_t object_type_raw,
+        kmipkit_attribute_set_t *attributes,
+        kmipkit_ttlv_item_t *object,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_encapsulate_from_fields(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
+        kmipkit_cryptographic_parameters_t *cryptographic_parameters,
+        kmipkit_attribute_set_t *attributes,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_decapsulate_from_fields(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
+        const uint8_t *ciphertext,
+        uint64_t ciphertext_length,
+        kmipkit_cryptographic_parameters_t *cryptographic_parameters,
+        kmipkit_attribute_set_t *attributes,
+        kmipkit_client_batch_item_t **out_item);
     int32_t kmipkit_client_batch_item_query(
         const uint32_t *functions,
         uint64_t function_count,
@@ -1575,6 +1608,18 @@ ffi.cdef(
         kmipkit_register_request_t **out_request);
     int32_t kmipkit_client_batch_item_register(
         kmipkit_register_request_t *request,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_cancel_from_request(
+        kmipkit_cancel_request_t *request,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_poll_from_request(
+        kmipkit_poll_request_t *request,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_process_from_request(
+        kmipkit_process_request_t *request,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_query_async_requests_from_request(
+        kmipkit_query_async_requests_request_t *request,
         kmipkit_client_batch_item_t **out_item);
     void kmipkit_register_request_release(kmipkit_register_request_t *handle);
     int32_t kmipkit_client_batch_item_with_unique_batch_item_id(

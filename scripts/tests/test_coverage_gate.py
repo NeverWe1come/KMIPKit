@@ -722,9 +722,13 @@ trait Example { fn declaration(&self); }
     def test_catalog_generated_typed_attribute_code_is_excluded_but_runtime_api_is_not(self) -> None:
         self.require_gate()
         generated = "crates/kmipkit-protocol/src/typed_attributes_generated.rs"
+        types_generated = "crates/kmipkit-protocol/src/attribute_types_generated.rs"
+        ffi_generated = "crates/kmipkit-ffi/src/extension_registry/typed_attributes_catalog_generated.rs"
         handwritten = "crates/kmipkit-protocol/src/typed_attributes.rs"
 
         self.assertFalse(GATE.is_coverage_source_path(generated))
+        self.assertFalse(GATE.is_coverage_source_path(types_generated))
+        self.assertFalse(GATE.is_coverage_source_path(ffi_generated))
         self.assertTrue(GATE.is_coverage_source_path(handwritten))
 
     def test_unreadable_or_invalid_utf8_source_is_eligible(self) -> None:

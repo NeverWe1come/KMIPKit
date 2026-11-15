@@ -75,6 +75,10 @@ public final class QueryAsyncRequestsRequest implements AutoCloseable {
                 NativeExtensionRegistry.queryAsyncRequestsRequestToTtlvPayload(value), this));
     }
 
+    NativeHandle nativeHandleOwner() {
+        return handle;
+    }
+
     @Override
     public void close() {
         handle.close();

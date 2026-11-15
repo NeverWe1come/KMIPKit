@@ -58,6 +58,23 @@ EXPECTED_0091_FLUENT_BRIDGE_MEMBERS = frozenset(
 )
 
 
+EXPECTED_0124_BATCH_BRIDGE_MEMBERS = frozenset(
+    {
+        "clientBatchItemCancelFromRequest",
+        "clientBatchItemCreateCredentialFromFields",
+        "clientBatchItemCreateGroupFromAttributes",
+        "clientBatchItemCreateUserFromAttributes",
+        "clientBatchItemDeactivateFromFields",
+        "clientBatchItemDecapsulateFromFields",
+        "clientBatchItemEncapsulateFromFields",
+        "clientBatchItemObliterateFromIdentifier",
+        "clientBatchItemPollFromRequest",
+        "clientBatchItemProcessFromRequest",
+        "clientBatchItemQueryAsyncRequestsFromRequest",
+    }
+)
+
+
 MODULE_PATH = Path(__file__).resolve().parents[1] / "audit_binding_exports.py"
 SPEC = importlib.util.spec_from_file_location("audit_binding_exports", MODULE_PATH)
 assert SPEC is not None and SPEC.loader is not None
@@ -1219,6 +1236,7 @@ class BindingExportAuditTests(unittest.TestCase):
         native_members.update(EXPECTED_VENDOR_EXTENSION_BRIDGE_MEMBERS)
         native_members.update(EXPECTED_0053_PARITY_BRIDGE_MEMBERS)
         native_members.update(EXPECTED_0091_FLUENT_BRIDGE_MEMBERS)
+        native_members.update(EXPECTED_0124_BATCH_BRIDGE_MEMBERS)
         native_members.update(
             export_name.removeprefix("org.kmipkit.NativeExtensionRegistry.")
             for export_name in EXPECTED_PROFILE_VALIDATION_BRIDGE_EXPORTS
@@ -1314,6 +1332,7 @@ class BindingExportAuditTests(unittest.TestCase):
                     "KMIPKIT-0043-FR-004/005/010/021/022",
                     "KMIPKIT-0052-FR-006",
                     "KMIPKIT-0052-FR-007",
+                    "KMIPKIT-0093-FR-011",
                 )
             )
             self.assertTrue(

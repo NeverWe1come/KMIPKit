@@ -196,8 +196,10 @@ PKCS11_REQUEST_SETTER_IDS = {
 # Register declarations, lifecycle declarations, KMIPKIT-0102 Rust, KMIPKIT-0103
 # C, KMIPKIT-0104 Java, and KMIPKIT-0105 Python crypto facades; KMIPKIT-0095
 # response views; KMIPKIT-0096 expert attributes; KMIPKIT-0093 reconciliation;
-# and KMIPKIT-0108/0109 attribute operations and bindings.
-OTHER_DECLARATIONS_SHA256 = "5c988e5cd9f72a696118e11413a3d48a555b621ceda73179e5764cf763271862"
+# and KMIPKIT-0108/0109 attribute operations and bindings. KMIPKIT-0124 adds
+# 28 KMIP 3.0 fluent and 16 asynchronous batch declarations, which also map
+# asynchronous constructors onto four existing operation rows.
+OTHER_DECLARATIONS_SHA256 = "2b273eaa642065b0a98763be540c703dcf38255703260043a67b8f01b1663b97"
 OTHER_OPERATIONS_SHA256 = "2ea94003f2877d0e6d84271d67d9add6f48a5c5b7a837c48b22fe40f41022d39"
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(
@@ -443,7 +445,7 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
                     if evidence_id not in RECERTIFY_OPERATION_ADDED_EVIDENCE
                 ]
         self.assertEqual(
-            "a1e58fe7e76de32113a53d5ad14e6c40ca822a8e51a6cc53deb99f67b5486663",
+            "327bd4ccc9eb3c600fe49eed482a9f47840d555c4066560a39af67520dcf5b9a",
             canonical_sha256(other_operations),
         )
 

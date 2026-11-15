@@ -135,6 +135,8 @@ _CATALOG_GENERATED_NAMED_VALUE_EXCLUSIONS = frozenset(
 _CATALOG_GENERATED_ATTRIBUTE_EXCLUSIONS = frozenset(
     {
         "crates/kmipkit-protocol/src/typed_attributes_generated.rs",
+        "crates/kmipkit-protocol/src/attribute_types_generated.rs",
+        "crates/kmipkit-ffi/src/extension_registry/typed_attributes_catalog_generated.rs",
     }
 )
 _COVERAGE_SOURCE_EXCLUSIONS = (

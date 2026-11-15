@@ -246,7 +246,9 @@ pub use query::{
     QueryError, QueryFunction, QueryRequest, QueryResponse, QueryResponseField,
     QueryResponseFieldKind,
 };
-pub use query_async_requests::{QueryAsyncRequestsRequest, QueryAsyncRequestsResponse};
+pub use query_async_requests::{
+    AsynchronousRequestEntry, QueryAsyncRequestsRequest, QueryAsyncRequestsResponse,
+};
 pub use recertify::{RecertifyError, RecertifyRequest, RecertifyResponse};
 pub use recover::{RecoverError, RecoverRequest, RecoverResponse};
 pub use register::{OpaqueObjectContext, RegisterError, RegisterRequest, RegisterResponse};
