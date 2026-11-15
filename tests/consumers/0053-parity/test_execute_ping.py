@@ -15,6 +15,7 @@ import unittest
 from local_ping_responder import (
     _children,
     _item,
+    _requested_identifier,
     _request_operation,
     _response,
     _structure,
@@ -35,6 +36,19 @@ EXPECTED_LINES = (
 
 
 class ExecutePingConsumerTests(unittest.TestCase):
+    def test_fixture_echoes_destroyed_key_identifier(self) -> None:
+        request_payload = _structure(
+            0x420079,
+            _item(0x420094, 7, b"fluent-private-key"),
+        )
+        fields = [(0x420079, 1, request_payload[8:])]
+        identifier = _requested_identifier(20, fields)
+        response = _response(20, unique_identifier=identifier)
+        response_fields = _children(_children(response[8:])[1])
+        response_payload = next(value for tag, kind, value in response_fields if tag == 0x42007C and kind == 1)
+        echoed = [value for tag, kind, value in _children(response_payload) if tag == 0x420094 and kind == 7]
+        self.assertEqual(echoed, [b"fluent-private-key"])
+
     def test_fixture_returns_distinct_identifiers_for_create_key_pair(self) -> None:
         root = _children(_response(0x02)[8:])
         response_items = [value for tag, kind, value in root if tag == 0x42000F and kind == 1]
