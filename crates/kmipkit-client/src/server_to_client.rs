@@ -163,7 +163,7 @@ impl IncomingServerBatch {
     ///
     /// Returns [`ClientError`] if decoding or validation fails.
     #[allow(clippy::too_many_lines)]
-    pub(crate) fn from_encoded_bytes(
+    pub fn from_encoded_bytes(
         bytes: &[u8],
         encoding: WireEncoding,
         limits: &CodecLimits,
