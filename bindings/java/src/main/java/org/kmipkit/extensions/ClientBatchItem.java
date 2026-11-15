@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.LongUnaryOperator;
 
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
@@ -294,27 +295,25 @@ public final class ClientBatchItem implements AutoCloseable {
 
     /** Creates a typed KMIP 3.0 Create Group item from copied semantic Attributes. */
     public static ClientBatchItem createGroup(AttributeSet attributes) {
-        if (attributes == null) {
-            throw new InvalidInputException("Create Group Attributes are required");
-        }
-        NativeExtensionRegistry.ensureLoaded();
-        long value = NativeHandle.withNativeHandles(() -> NativeHandle.withValues(
-                new NativeHandle[] {attributes.nativeHandleOwner()},
-                handles -> NativeExtensionRegistry.clientBatchItemCreateGroupFromAttributes(
-                        handles[0])));
-        return new ClientBatchItem(value, List.of());
+        return systemObjectFromAttributes(
+                attributes, "Create Group", NativeExtensionRegistry::clientBatchItemCreateGroupFromAttributes);
     }
 
     /** Creates a typed KMIP 3.0 Create User item from copied semantic Attributes. */
     public static ClientBatchItem createUser(AttributeSet attributes) {
+        return systemObjectFromAttributes(
+                attributes, "Create User", NativeExtensionRegistry::clientBatchItemCreateUserFromAttributes);
+    }
+
+    private static ClientBatchItem systemObjectFromAttributes(
+            AttributeSet attributes, String operation, LongUnaryOperator constructor) {
         if (attributes == null) {
-            throw new InvalidInputException("Create User Attributes are required");
+            throw new InvalidInputException(operation + " Attributes are required");
         }
         NativeExtensionRegistry.ensureLoaded();
         long value = NativeHandle.withNativeHandles(() -> NativeHandle.withValues(
                 new NativeHandle[] {attributes.nativeHandleOwner()},
-                handles -> NativeExtensionRegistry.clientBatchItemCreateUserFromAttributes(
-                        handles[0])));
+                handles -> constructor.applyAsLong(handles[0])));
         return new ClientBatchItem(value, List.of());
     }
 

@@ -1861,8 +1861,9 @@ def client_batch_item_decapsulate(payload: ttlv.Structure) -> ClientBatchItem:
     return _client_batch_item_kmip30_draft("decapsulate", payload)
 
 
-def client_batch_item_create_group_from_attributes(attributes: AttributeSet) -> ClientBatchItem:
-    """Create a typed KMIP 3.0 Create Group item from a copied AttributeSet."""
+def _client_batch_item_from_attributes(
+    attributes: AttributeSet, function_name: str
+) -> ClientBatchItem:
     from .attribute_operations import AttributeSet
 
     if not isinstance(attributes, AttributeSet):
@@ -1870,25 +1871,24 @@ def client_batch_item_create_group_from_attributes(attributes: AttributeSet) -> 
     with _NATIVE_CALL_LOCK:
         handle = _make_handle(
             "kmipkit_client_batch_item_t",
-            "kmipkit_client_batch_item_create_group_from_attributes",
+            function_name,
             (attributes._native_attribute_set(),),
         )
     return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_create_group_from_attributes(attributes: AttributeSet) -> ClientBatchItem:
+    """Create a typed KMIP 3.0 Create Group item from a copied AttributeSet."""
+    return _client_batch_item_from_attributes(
+        attributes, "kmipkit_client_batch_item_create_group_from_attributes"
+    )
 
 
 def client_batch_item_create_user_from_attributes(attributes: AttributeSet) -> ClientBatchItem:
     """Create a typed KMIP 3.0 Create User item from a copied AttributeSet."""
-    from .attribute_operations import AttributeSet
-
-    if not isinstance(attributes, AttributeSet):
-        errors.raise_for_status(4)
-    with _NATIVE_CALL_LOCK:
-        handle = _make_handle(
-            "kmipkit_client_batch_item_t",
-            "kmipkit_client_batch_item_create_user_from_attributes",
-            (attributes._native_attribute_set(),),
-        )
-    return _wrap_owned_handle(ClientBatchItem, handle)
+    return _client_batch_item_from_attributes(
+        attributes, "kmipkit_client_batch_item_create_user_from_attributes"
+    )
 
 
 def client_batch_item_obliterate_from_identifier(
