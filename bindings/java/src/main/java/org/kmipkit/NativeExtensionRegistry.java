@@ -92,6 +92,7 @@ public final class NativeExtensionRegistry {
     public static final int HASHED_PASSWORD_TIMESTAMP_SEQUENCE = 68;
     public static final int CRYPTOGRAPHIC_PARAMETERS = 69;
     public static final int VALIDATION_REPORT = 70;
+    public static final int SYMMETRIC_KEY_BUILDER = 71;
 
     public static final int ATTRIBUTE_OPERATION_ADD = 0;
     public static final int ATTRIBUTE_OPERATION_ADJUST = 1;
@@ -253,6 +254,16 @@ public final class NativeExtensionRegistry {
     public static native long clientBatchItemDiscoverVersions();
     public static native long clientBatchItemOperation(long item);
     public static native long clientBatchItemPing();
+    public static native long symmetricKeyBuilderCreate();
+    public static native void symmetricKeyBuilderSetAlgorithm(long builder, long algorithm);
+    public static native void symmetricKeyBuilderSetLength(long builder, int length);
+    public static native void symmetricKeyBuilderSetUsageMask(long builder, int usageMask);
+    public static native void symmetricKeyBuilderSetName(long builder, String name);
+    public static native long symmetricKeyBuilderBuildBatchItem(long builder);
+    public static native void symmetricKeyBuilderAddAttributeItem(long builder, long item);
+    public static native void symmetricKeyBuilderAddCataloguedAttribute(long builder, int tag, long value);
+    public static native void symmetricKeyBuilderAddVendorAttribute(
+            long builder, String vendor, String name, long valueItem);
     public static native long clientBatchItemQuery(int[] functions, @Nullable byte[][] objectGroups);
     public static native long clientBatchItemQueryWithLimits(
             int[] functions, @Nullable byte[][] objectGroups, long[] codecLimits);
