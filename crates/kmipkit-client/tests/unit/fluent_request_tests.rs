@@ -66,6 +66,30 @@ fn set_attribute_builder_constructs_the_existing_typed_request() {
     )));
 }
 
+#[test]
+fn set_attribute_builder_rejects_missing_and_wrong_type_attributes_before_exchange() {
+    let mut client = failed_request_client();
+    assert_eq!(
+        client.request().set_attribute().validate(),
+        Err(FluentBuildError::MissingSetAttributeAttribute)
+    );
+
+    let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let error = client
+        .request()
+        .set_attribute()
+        .unique_identifier("key-42")
+        .attribute_item(item(typed::Description::TAG, Value::integer(17)))
+        .execute(&CodecLimits::defaults())
+        .expect_err("a catalogued attribute with the wrong TTLV type is rejected locally");
+
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert_eq!(fake.borrow().exchange_count(), 0);
+}
+
 fn response_bytes(operation: u32, status: u32, correlation: Option<&[u8]>) -> Vec<u8> {
     let mut item_fields = vec![
         test_item(0x0042_005C, Value::enumeration(operation)),
