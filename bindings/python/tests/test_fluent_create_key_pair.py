@@ -25,4 +25,3 @@ def test_create_key_pair_builder_validates_explicit_choices_and_builds_typed_ite
 
 def test_request_namespace_exposes_create_key_pair_builder() -> None:
     assert fluent.Request.create_key_pair.__annotations__["return"] == "CreateKeyPairBuilder"
-
