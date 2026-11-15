@@ -195,8 +195,8 @@ PKCS11_REQUEST_SETTER_IDS = {
 # It also includes approved KMIPKIT-0099 Create Split Key and KMIPKIT-0100
 # Register declarations, lifecycle declarations, KMIPKIT-0102 crypto builders,
 # the KMIPKIT-0103 C and KMIPKIT-0104 Java crypto facades, and KMIPKIT-0093
-# inventory reconciliation.
-OTHER_DECLARATIONS_SHA256 = "33e0f5035ab73ce9df6a5c2c170d4bc629d64a20858b105f1271b9c2f2fc3900"
+# inventory reconciliation and Rust CreateBuilder surface.
+OTHER_DECLARATIONS_SHA256 = "f6a99db75e5335eb27d07f8d8ef74d2c63589a57b47e9420357a271b63002e4b"
 OTHER_OPERATIONS_SHA256 = "2ea94003f2877d0e6d84271d67d9add6f48a5c5b7a837c48b22fe40f41022d39"
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(

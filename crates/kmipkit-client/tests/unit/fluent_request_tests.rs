@@ -1,5 +1,10 @@
 use kmipkit_protocol::attribute::typed;
-use kmipkit_protocol::{Attribute, AttributeDefinition, CreateRequest, UniqueIdentifier};
+use kmipkit_protocol::{
+    AdjustmentType, Attribute, AttributeDefinition, AttributeReference, AttributeSet, CheckRequest,
+    CreateRequest, CurrentAttribute, DiscoverVersionsRequest, GetConstraintsRequest,
+    GetUsageAllocationRequest, NewAttribute, ObjectType, ObtainLeaseRequest, PingRequest,
+    ProtocolVersion, QueryFunction, QueryRequest, UniqueIdentifier,
+};
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestOptions;
 use kmipkit_ttlv::codec::CodecLimits;
@@ -7,10 +12,19 @@ use kmipkit_ttlv::{Item, ItemType, RawTag, Structure, Value, ValueView};
 
 use crate::asynchronous_execution_test_support::client_for;
 use crate::execute::{ClientBatchOutcome, ClientOperation, encode_message_for_test};
-use crate::execute_test_support::{test_item, test_structure};
+use crate::execute_test_support::{asynchronous_response_bytes, test_item, test_structure};
 use crate::fluent::{
-    CreateSymmetricKeyBuilder, CryptographicUsageMask, FluentAttributePosition, FluentBuildError,
+    AttributeAdjustmentValue, CreateSymmetricKeyBuilder, CryptographicUsageMask,
+    FluentAttributePosition, FluentBuildError,
 };
+
+const PING_OPERATION: u32 = 0x0000_003b;
+const DISCOVER_VERSIONS_OPERATION: u32 = 0x0000_001e;
+const QUERY_OPERATION: u32 = 0x0000_0018;
+const CHECK_OPERATION: u32 = 0x0000_0009;
+const GET_CONSTRAINTS_OPERATION: u32 = 0x0000_0038;
+const GET_USAGE_ALLOCATION_OPERATION: u32 = 0x0000_0011;
+const OBTAIN_LEASE_OPERATION: u32 = 0x0000_0010;
 
 fn item(raw_tag: u32, value: Value) -> Item {
     Item::new(
@@ -87,6 +101,40 @@ fn response_bytes(operation: u32, status: u32, correlation: Option<&[u8]>) -> Ve
         .expect("fixture response is valid TTLV")
 }
 
+fn attribute_success_response_bytes(operation: u32) -> Vec<u8> {
+    let mut payload = Structure::new();
+    payload
+        .try_push(test_item(
+            0x0042_0094,
+            Value::text_string("key-42".to_owned()),
+        ))
+        .expect("attribute operation response identifier fits");
+    let mut message = vec![test_item(
+        0x0042_007A,
+        Value::structure(test_structure([
+            test_item(
+                0x0042_0069,
+                Value::structure(test_structure([
+                    test_item(0x0042_006A, Value::integer(2)),
+                    test_item(0x0042_006B, Value::integer(1)),
+                ])),
+            ),
+            test_item(0x0042_0092, Value::date_time(1)),
+            test_item(0x0042_000D, Value::integer(1)),
+        ])),
+    )];
+    message.push(test_item(
+        0x0042_000F,
+        Value::structure(test_structure([
+            test_item(0x0042_005C, Value::enumeration(operation)),
+            test_item(0x0042_007F, Value::enumeration(0)),
+            test_item(0x0042_007C, Value::structure(payload)),
+        ])),
+    ));
+    encode_message_for_test(test_structure(message), &CodecLimits::defaults())
+        .expect("attribute operation fixture response is valid TTLV")
+}
+
 #[test]
 fn symmetric_key_builder_requires_algorithm_length_and_usage_mask() {
     let mut client = failed_request_client();
@@ -134,6 +182,34 @@ fn fluent_build_errors_have_stable_user_facing_messages() {
         (
             FluentBuildError::InvalidAttributeValue,
             "fluent Object Attribute value is invalid",
+        ),
+        (
+            FluentBuildError::InvalidProtocolVersions,
+            "fluent Discover Versions offers are empty or unsupported",
+        ),
+        (
+            FluentBuildError::MissingGetUsageAllocationCount,
+            "Get Usage Allocation requires a Usage Limits Count",
+        ),
+        (
+            FluentBuildError::MissingAddAttributeValue,
+            "Add Attribute requires a New Attribute",
+        ),
+        (
+            FluentBuildError::MissingModifyAttributeValue,
+            "Modify Attribute requires a New Attribute",
+        ),
+        (
+            FluentBuildError::MissingSetAttributeValue,
+            "Set Attribute requires a New Attribute",
+        ),
+        (
+            FluentBuildError::MissingAdjustAttributeReference,
+            "Adjust Attribute requires an Attribute Reference",
+        ),
+        (
+            FluentBuildError::MissingAdjustAttributeType,
+            "Adjust Attribute requires an Adjustment Type",
         ),
         (
             FluentBuildError::MessageExtensionTagNotObjectAttribute,
@@ -579,6 +655,613 @@ fn execute_uses_typed_create_and_returns_the_existing_create_outcome() {
 }
 
 #[test]
+fn ping_fluent_builder_builds_the_existing_typed_request_and_executes_once() {
+    let request = failed_request_client()
+        .request()
+        .ping()
+        .build_request()
+        .expect("Ping's empty payload is a valid typed request");
+    assert_eq!(request, PingRequest::new());
+    let batch_item = failed_request_client()
+        .request()
+        .ping()
+        .to_batch_item()
+        .expect("Ping converts to the existing typed batch item");
+    assert_eq!(batch_item.operation(), PING_OPERATION);
+
+    let response =
+        asynchronous_response_bytes(PING_OPERATION, 0, None, None, Some(test_structure([])));
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: vec![2, 5],
+    });
+    let result = client
+        .request()
+        .ping()
+        .execute(&CodecLimits::defaults())
+        .expect("the scripted Ping response is valid");
+
+    assert_eq!(
+        result.outcome().operation(),
+        crate::execute::ClientOperation::Ping
+    );
+    assert_eq!(result.outcome().result().status().raw(), 0);
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn discover_versions_builder_preserves_offers_and_executes_once() {
+    let request = failed_request_client()
+        .request()
+        .discover_versions()
+        .protocol_versions(vec![ProtocolVersion::V2_0, ProtocolVersion::V2_1])
+        .build_request()
+        .expect("catalogued protocol offers build a typed Discover Versions request");
+    assert_eq!(
+        request.protocol_versions(),
+        &[ProtocolVersion::V2_0, ProtocolVersion::V2_1]
+    );
+    assert_eq!(
+        DiscoverVersionsRequest::new().protocol_versions(),
+        &[ProtocolVersion::V2_1]
+    );
+    let batch_item = failed_request_client()
+        .request()
+        .discover_versions()
+        .to_batch_item()
+        .expect("Discover Versions converts to the existing typed batch item");
+    assert_eq!(batch_item.operation(), DISCOVER_VERSIONS_OPERATION);
+
+    let response = asynchronous_response_bytes(
+        DISCOVER_VERSIONS_OPERATION,
+        0,
+        None,
+        None,
+        Some(test_structure([])),
+    );
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: vec![2, 5],
+    });
+    let result = client
+        .request()
+        .discover_versions()
+        .execute(&CodecLimits::defaults())
+        .expect("the scripted empty Discover Versions result is valid");
+
+    assert_eq!(
+        result.outcome().operation(),
+        crate::execute::ClientOperation::DiscoverVersions
+    );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn discover_versions_builder_rejects_invalid_offers_before_transport() {
+    assert_eq!(
+        failed_request_client()
+            .request()
+            .discover_versions()
+            .protocol_versions(Vec::new())
+            .build_request()
+            .expect_err("an explicit empty offer is invalid"),
+        FluentBuildError::InvalidProtocolVersions
+    );
+    assert_eq!(
+        failed_request_client()
+            .request()
+            .discover_versions()
+            .protocol_versions(vec![ProtocolVersion::from_raw(1, 4)])
+            .validate()
+            .expect_err("an uncatalogued version cannot be offered"),
+        FluentBuildError::InvalidProtocolVersions
+    );
+
+    let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let error = client
+        .request()
+        .discover_versions()
+        .protocol_versions(Vec::new())
+        .execute(&CodecLimits::defaults())
+        .expect_err("invalid offers fail before transport");
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert_eq!(transport.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn query_builder_preserves_functions_and_groups_and_executes_once() {
+    let request = failed_request_client()
+        .request()
+        .query()
+        .functions(vec![QueryFunction::OPERATIONS, QueryFunction::OBJECTS])
+        .object_groups(vec!["group-b".to_owned(), "group-a".to_owned()])
+        .build_request()
+        .expect("explicit Query functions form a typed request");
+    assert_eq!(
+        request.functions(),
+        &[QueryFunction::OPERATIONS, QueryFunction::OBJECTS]
+    );
+    assert_eq!(
+        request.object_groups(),
+        Some(["group-b".to_owned(), "group-a".to_owned()].as_slice())
+    );
+    let _: QueryRequest = request;
+    let batch_item = failed_request_client()
+        .request()
+        .query()
+        .functions(vec![QueryFunction::OPERATIONS])
+        .to_batch_item()
+        .expect("Query converts to the existing typed batch item");
+    assert_eq!(batch_item.operation(), QUERY_OPERATION);
+
+    let response = asynchronous_response_bytes(
+        QUERY_OPERATION,
+        0,
+        None,
+        None,
+        Some(test_structure([test_item(
+            0x0042_015f,
+            Value::structure(test_structure([])),
+        )])),
+    );
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: vec![2, 5],
+    });
+    let result = client
+        .request()
+        .query()
+        .functions(vec![QueryFunction::OPERATIONS])
+        .execute(&CodecLimits::defaults())
+        .expect("the scripted Query response is valid");
+
+    assert_eq!(
+        result.outcome().operation(),
+        crate::execute::ClientOperation::Query
+    );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn query_builder_rejects_empty_functions_before_transport() {
+    assert_eq!(
+        failed_request_client()
+            .request()
+            .query()
+            .build_request()
+            .expect_err("Query requires at least one function"),
+        FluentBuildError::InvalidRequest
+    );
+
+    let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let error = client
+        .request()
+        .query()
+        .execute(&CodecLimits::defaults())
+        .expect_err("an empty Query is rejected before transport");
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert_eq!(transport.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn check_builder_builds_typed_policy_request_and_executes_once() {
+    let identifier = UniqueIdentifier::TextString("checked-key".to_owned());
+    let request = failed_request_client()
+        .request()
+        .check()
+        .unique_identifier(identifier.clone())
+        .usage_limits_count(3)
+        .cryptographic_usage_mask(2)
+        .lease_time(60)
+        .build_request()
+        .expect("explicit Check policy fields build a typed request");
+    assert_eq!(request.unique_identifier(), Some(&identifier));
+    let _: CheckRequest = request;
+    let batch_item = failed_request_client()
+        .request()
+        .check()
+        .to_batch_item()
+        .expect("Check converts to the existing typed batch item");
+    assert_eq!(batch_item.operation(), CHECK_OPERATION);
+
+    let response = asynchronous_response_bytes(
+        CHECK_OPERATION,
+        0,
+        None,
+        None,
+        Some(test_structure([test_item(
+            0x0042_0094,
+            Value::text_string("checked-key".to_owned()),
+        )])),
+    );
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: vec![2, 5],
+    });
+    let result = client
+        .request()
+        .check()
+        .unique_identifier(identifier)
+        .execute(&CodecLimits::defaults())
+        .expect("the scripted Check result is valid");
+
+    assert_eq!(
+        result.outcome().operation(),
+        crate::execute::ClientOperation::Check
+    );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn fluent_builders_validate_typed_requests_without_sending() {
+    let mut client = failed_request_client();
+
+    assert_eq!(
+        client.request().check().usage_limits_count(2).validate(),
+        Ok(())
+    );
+    assert_eq!(
+        client
+            .request()
+            .query()
+            .functions(vec![QueryFunction::OPERATIONS])
+            .validate(),
+        Ok(())
+    );
+    assert_eq!(
+        client
+            .request()
+            .discover_versions()
+            .protocol_versions(vec![ProtocolVersion::V2_1])
+            .validate(),
+        Ok(())
+    );
+    assert_eq!(client.request().ping().validate(), Ok(()));
+
+    let comment = || {
+        Attribute::<typed::Comment>::new("validated-comment".to_owned())
+            .expect("Comment is a catalogued Text String")
+    };
+    assert_eq!(
+        client
+            .request()
+            .add_attribute()
+            .new_attribute(NewAttribute::from_typed(comment()))
+            .validate(),
+        Ok(())
+    );
+    assert_eq!(
+        client
+            .request()
+            .set_attribute()
+            .new_attribute(NewAttribute::from_typed(comment()))
+            .validate(),
+        Ok(())
+    );
+    assert_eq!(
+        client
+            .request()
+            .modify_attribute()
+            .current_attribute(CurrentAttribute::from_typed(comment()))
+            .new_attribute(NewAttribute::from_typed(comment()))
+            .validate(),
+        Ok(())
+    );
+    assert_eq!(
+        client
+            .request()
+            .delete_attribute()
+            .current_attribute(CurrentAttribute::from_typed(comment()))
+            .validate(),
+        Ok(())
+    );
+    assert_eq!(
+        client
+            .request()
+            .adjust_attribute()
+            .attribute_reference(AttributeReference::tag(typed::UsageLimits::TAG))
+            .adjustment_type(AdjustmentType::INCREMENT)
+            .adjustment_value(AttributeAdjustmentValue::integer(1))
+            .validate(),
+        Ok(())
+    );
+}
+
+#[test]
+fn fluent_attribute_mutation_validation_reports_missing_required_values() {
+    let mut client = failed_request_client();
+
+    assert_eq!(
+        client
+            .request()
+            .add_attribute()
+            .validate()
+            .expect_err("Add Attribute requires a New Attribute"),
+        FluentBuildError::MissingAddAttributeValue
+    );
+    assert_eq!(
+        client
+            .request()
+            .modify_attribute()
+            .validate()
+            .expect_err("Modify Attribute requires a New Attribute"),
+        FluentBuildError::MissingModifyAttributeValue
+    );
+    assert_eq!(
+        client
+            .request()
+            .set_attribute()
+            .validate()
+            .expect_err("Set Attribute requires a New Attribute"),
+        FluentBuildError::MissingSetAttributeValue
+    );
+    assert_eq!(
+        client
+            .request()
+            .adjust_attribute()
+            .validate()
+            .expect_err("Adjust Attribute requires an Attribute Reference"),
+        FluentBuildError::MissingAdjustAttributeReference
+    );
+    assert_eq!(
+        client
+            .request()
+            .adjust_attribute()
+            .attribute_reference(AttributeReference::tag(typed::UsageLimits::TAG))
+            .validate()
+            .expect_err("Adjust Attribute requires an Adjustment Type"),
+        FluentBuildError::MissingAdjustAttributeType
+    );
+}
+
+#[test]
+fn adjust_attribute_value_constructors_preserve_explicit_ttlv_types() {
+    let values = [
+        (
+            AttributeAdjustmentValue::long_integer(-7),
+            ItemType::LongInteger,
+        ),
+        (
+            AttributeAdjustmentValue::enumeration(u32::MAX),
+            ItemType::Enumeration,
+        ),
+        (AttributeAdjustmentValue::boolean(true), ItemType::Boolean),
+        (
+            AttributeAdjustmentValue::text_string("exact value".to_owned()),
+            ItemType::TextString,
+        ),
+        (AttributeAdjustmentValue::date_time(-11), ItemType::DateTime),
+        (
+            AttributeAdjustmentValue::interval(u32::MAX),
+            ItemType::Interval,
+        ),
+        (
+            AttributeAdjustmentValue::date_time_extended(-13),
+            ItemType::DateTimeExtended,
+        ),
+    ];
+    let mut client = failed_request_client();
+
+    for (value, expected_type) in values {
+        let builder = client
+            .request()
+            .adjust_attribute()
+            .attribute_reference(AttributeReference::tag(typed::UsageLimits::TAG))
+            .adjustment_type(AdjustmentType::INCREMENT)
+            .adjustment_value(value);
+        assert_eq!(builder.validate(), Ok(()));
+        let request = builder
+            .build_request()
+            .expect("an explicit Adjustment Value is retained");
+        assert_eq!(
+            request
+                .adjustment_value()
+                .expect("the caller supplied an Adjustment Value")
+                .item_type(),
+            expected_type
+        );
+    }
+}
+
+#[test]
+fn get_constraints_builder_builds_typed_request_and_executes_once() {
+    failed_request_client()
+        .request()
+        .get_constraints()
+        .validate()
+        .expect("the empty typed Get Constraints request is valid");
+    let request = failed_request_client()
+        .request()
+        .get_constraints()
+        .build_request()
+        .expect("Get Constraints is an empty typed request");
+    assert_eq!(request, GetConstraintsRequest::new());
+    let batch_item = failed_request_client()
+        .request()
+        .get_constraints()
+        .to_batch_item()
+        .expect("Get Constraints converts to the existing typed batch item");
+    assert_eq!(batch_item.operation(), GET_CONSTRAINTS_OPERATION);
+
+    let response = asynchronous_response_bytes(
+        GET_CONSTRAINTS_OPERATION,
+        0,
+        None,
+        None,
+        Some(test_structure([test_item(
+            0x0042_0168,
+            Value::structure(test_structure([])),
+        )])),
+    );
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: vec![2, 5],
+    });
+    let result = client
+        .request()
+        .get_constraints()
+        .execute(&CodecLimits::defaults())
+        .expect("the scripted Get Constraints response is valid");
+
+    assert_eq!(
+        result.outcome().operation(),
+        crate::execute::ClientOperation::GetConstraints
+    );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn get_usage_allocation_builder_requires_count_and_executes_typed_request() {
+    assert_eq!(
+        failed_request_client()
+            .request()
+            .get_usage_allocation()
+            .build_request()
+            .expect_err("Get Usage Allocation requires its requested count"),
+        FluentBuildError::MissingGetUsageAllocationCount
+    );
+    failed_request_client()
+        .request()
+        .get_usage_allocation()
+        .usage_limits_count(3)
+        .validate()
+        .expect("a supplied Usage Limits Count validates locally");
+
+    let identifier = UniqueIdentifier::TextString("limited-key".to_owned());
+    let request = failed_request_client()
+        .request()
+        .get_usage_allocation()
+        .usage_limits_count(3)
+        .unique_identifier(identifier.clone())
+        .build_request()
+        .expect("an explicit count forms a typed request");
+    assert_eq!(request.usage_limits_count(), 3);
+    assert_eq!(request.unique_identifier(), Some(&identifier));
+    let _: GetUsageAllocationRequest = request;
+
+    let batch_item = failed_request_client()
+        .request()
+        .get_usage_allocation()
+        .usage_limits_count(3)
+        .to_batch_item()
+        .expect("Get Usage Allocation converts to the existing typed batch item");
+    assert_eq!(batch_item.operation(), GET_USAGE_ALLOCATION_OPERATION);
+
+    let response = asynchronous_response_bytes(
+        GET_USAGE_ALLOCATION_OPERATION,
+        0,
+        None,
+        None,
+        Some(test_structure([test_item(
+            0x0042_0094,
+            Value::text_string("limited-key".to_owned()),
+        )])),
+    );
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: vec![2, 5],
+    });
+    let result = client
+        .request()
+        .get_usage_allocation()
+        .usage_limits_count(3)
+        .unique_identifier(UniqueIdentifier::TextString("limited-key".to_owned()))
+        .execute(&CodecLimits::defaults())
+        .expect("the scripted usage allocation response is valid");
+
+    assert_eq!(
+        result.outcome().operation(),
+        crate::execute::ClientOperation::GetUsageAllocation
+    );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn obtain_lease_builder_preserves_identifier_and_executes_once() {
+    let identifier = UniqueIdentifier::TextString("leased-key".to_owned());
+    let request = failed_request_client()
+        .request()
+        .obtain_lease()
+        .unique_identifier(identifier.clone())
+        .build_request()
+        .expect("the optional explicit object identifier is a typed request field");
+    assert_eq!(request.unique_identifier(), Some(&identifier));
+    let _: ObtainLeaseRequest = request;
+
+    let batch_item = failed_request_client()
+        .request()
+        .obtain_lease()
+        .unique_identifier(identifier.clone())
+        .to_batch_item()
+        .expect("Obtain Lease converts to the existing typed batch item");
+    assert_eq!(batch_item.operation(), OBTAIN_LEASE_OPERATION);
+
+    let response = asynchronous_response_bytes(
+        OBTAIN_LEASE_OPERATION,
+        0,
+        None,
+        None,
+        Some(test_structure([
+            test_item(0x0042_0094, Value::text_string("leased-key".to_owned())),
+            test_item(0x0042_0049, Value::interval(60)),
+            test_item(0x0042_0048, Value::date_time(1)),
+        ])),
+    );
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: vec![2, 5],
+    });
+    let result = client
+        .request()
+        .obtain_lease()
+        .unique_identifier(identifier)
+        .execute(&CodecLimits::defaults())
+        .expect("the scripted Obtain Lease result is valid");
+
+    assert_eq!(
+        result.outcome().operation(),
+        crate::execute::ClientOperation::ObtainLease
+    );
+    assert_eq!(transport.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn obtain_lease_builder_validates_placeholder_request_without_sending() {
+    let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+
+    client
+        .request()
+        .obtain_lease()
+        .validate()
+        .expect("an omitted identifier is valid for an ID Placeholder batch item");
+
+    assert_eq!(transport.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn obtain_lease_execute_requires_an_identifier_before_sending() {
+    let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+
+    let error = client
+        .request()
+        .obtain_lease()
+        .execute(&CodecLimits::defaults())
+        .expect_err("single-request execution has no preceding ID Placeholder");
+
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert_eq!(transport.borrow().exchange_count(), 0);
+}
+
+#[test]
 fn execute_exposes_pending_correlation_without_polling() {
     let response = response_bytes(1, 2, Some(b"pending-correlation"));
     let (mut client, fake, _) = client_for(ExchangeScript::Success {
@@ -720,4 +1403,521 @@ fn create_get_and_destroy_execute_with_exchange_options() {
             .delivery_state(),
         Some(kmipkit_transport::RequestDeliveryState::NotSent)
     );
+}
+
+#[test]
+fn attribute_value_mutation_builders_preserve_typed_selectors_and_existing_requests() {
+    let mut client = failed_request_client();
+    let add = client
+        .request()
+        .add_attribute()
+        .unique_identifier("key-42")
+        .new_attribute(NewAttribute::from_typed(
+            Attribute::<typed::Comment>::new("new-comment".to_owned())
+                .expect("Comment is a catalogued Text String"),
+        ))
+        .build_request()
+        .expect("Add Attribute has its required New Attribute");
+    assert_eq!(add.unique_identifier(), Some("key-42"));
+    assert_eq!(add.new_attribute().item().tag().raw(), typed::Comment::TAG);
+    assert_eq!(
+        client
+            .request()
+            .add_attribute()
+            .new_attribute(NewAttribute::from_typed(
+                Attribute::<typed::Comment>::new("batch-comment".to_owned())
+                    .expect("Comment is a catalogued Text String"),
+            ))
+            .to_batch_item()
+            .expect("Add Attribute converts to the existing batch item")
+            .operation(),
+        13
+    );
+
+    let modify = client
+        .request()
+        .modify_attribute()
+        .unique_identifier("key-42")
+        .current_attribute(CurrentAttribute::from_typed(
+            Attribute::<typed::Comment>::new("old-comment".to_owned())
+                .expect("Comment is a catalogued Text String"),
+        ))
+        .new_attribute(NewAttribute::from_typed(
+            Attribute::<typed::Comment>::new("updated-comment".to_owned())
+                .expect("Comment is a catalogued Text String"),
+        ))
+        .build_request()
+        .expect("Modify Attribute has its required New Attribute");
+    assert_eq!(modify.unique_identifier(), Some("key-42"));
+    assert_eq!(
+        modify
+            .current_attribute()
+            .expect("the optional current selector is preserved")
+            .item()
+            .tag()
+            .raw(),
+        typed::Comment::TAG
+    );
+    assert_eq!(
+        modify.new_attribute().item().tag().raw(),
+        typed::Comment::TAG
+    );
+    assert_eq!(
+        client
+            .request()
+            .modify_attribute()
+            .new_attribute(NewAttribute::from_typed(
+                Attribute::<typed::Comment>::new("batch-update".to_owned())
+                    .expect("Comment is a catalogued Text String"),
+            ))
+            .to_batch_item()
+            .expect("Modify Attribute converts to the existing batch item")
+            .operation(),
+        14
+    );
+
+    let set = client
+        .request()
+        .set_attribute()
+        .unique_identifier("key-42")
+        .new_attribute(NewAttribute::from_typed(
+            Attribute::<typed::Comment>::new("replacement-comment".to_owned())
+                .expect("Comment is a catalogued Text String"),
+        ))
+        .build_request()
+        .expect("Set Attribute has its required New Attribute");
+    assert_eq!(set.unique_identifier(), Some("key-42"));
+    assert_eq!(set.new_attribute().item().tag().raw(), typed::Comment::TAG);
+    assert_eq!(
+        client
+            .request()
+            .set_attribute()
+            .new_attribute(NewAttribute::from_typed(
+                Attribute::<typed::Comment>::new("batch-replacement".to_owned())
+                    .expect("Comment is a catalogued Text String"),
+            ))
+            .to_batch_item()
+            .expect("Set Attribute converts to the existing batch item")
+            .operation(),
+        49
+    );
+}
+
+#[test]
+fn attribute_selector_mutation_builders_preserve_explicit_values_and_requests() {
+    let mut client = failed_request_client();
+    let delete = client
+        .request()
+        .delete_attribute()
+        .unique_identifier("key-42")
+        .current_attribute(CurrentAttribute::from_typed(
+            Attribute::<typed::Comment>::new("old-comment".to_owned())
+                .expect("Comment is a catalogued Text String"),
+        ))
+        .build_request()
+        .expect("Delete Attribute selectors form a valid typed request");
+    assert_eq!(delete.unique_identifier(), Some("key-42"));
+    assert_eq!(
+        delete
+            .current_attribute()
+            .expect("the selected current value is preserved")
+            .item()
+            .tag()
+            .raw(),
+        typed::Comment::TAG
+    );
+    assert_eq!(
+        client
+            .request()
+            .delete_attribute()
+            .unique_identifier("key-42")
+            .attribute_reference(AttributeReference::tag(typed::Comment::TAG))
+            .to_batch_item()
+            .expect("Delete Attribute converts to the existing batch item")
+            .operation(),
+        15
+    );
+
+    let adjust = client
+        .request()
+        .adjust_attribute()
+        .unique_identifier("key-42")
+        .attribute_reference(AttributeReference::tag(typed::UsageLimits::TAG))
+        .adjustment_type(AdjustmentType::INCREMENT)
+        .adjustment_value(AttributeAdjustmentValue::integer(1))
+        .build_request()
+        .expect("Adjust Attribute retains the selected type and caller value");
+    assert_eq!(adjust.unique_identifier(), Some("key-42"));
+    assert_eq!(
+        adjust.attribute_reference().tag_value(),
+        Some(typed::UsageLimits::TAG)
+    );
+    assert_eq!(adjust.adjustment_type(), AdjustmentType::INCREMENT);
+    assert!(adjust.adjustment_value().is_some());
+    assert_eq!(
+        client
+            .request()
+            .adjust_attribute()
+            .attribute_reference(AttributeReference::tag(typed::UsageLimits::TAG))
+            .adjustment_type(AdjustmentType::INCREMENT)
+            .adjustment_value(AttributeAdjustmentValue::integer(1))
+            .to_batch_item()
+            .expect("Adjust Attribute converts to the existing batch item")
+            .operation(),
+        48
+    );
+}
+
+#[test]
+fn invalid_attribute_mutation_is_rejected_without_sending() {
+    let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let error = client
+        .request()
+        .add_attribute()
+        .new_attribute(NewAttribute::new(item(
+            typed::CryptographicLength::TAG,
+            Value::text_string("wrong-ttlv-type".to_owned()),
+        )))
+        .execute(&CodecLimits::defaults())
+        .expect_err("a catalogued attribute with the wrong TTLV type is rejected locally");
+
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert_eq!(fake.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn adjust_attribute_requires_explicit_reference_and_type_before_sending() {
+    let mut client = failed_request_client();
+    assert_eq!(
+        client
+            .request()
+            .adjust_attribute()
+            .build_request()
+            .expect_err("the reference is required"),
+        FluentBuildError::MissingAdjustAttributeReference
+    );
+
+    let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let error = client
+        .request()
+        .adjust_attribute()
+        .attribute_reference(AttributeReference::tag(typed::UsageLimits::TAG))
+        .execute(&CodecLimits::defaults())
+        .expect_err("an explicit adjustment type is required before transport");
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert_eq!(fake.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn attribute_mutation_builders_execute_the_matching_typed_route_once() {
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: attribute_success_response_bytes(13),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .request()
+        .add_attribute()
+        .unique_identifier("key-42")
+        .new_attribute(NewAttribute::from_typed(
+            Attribute::<typed::Comment>::new("added".to_owned())
+                .expect("Comment is a catalogued Text String"),
+        ))
+        .execute(&CodecLimits::defaults())
+        .expect("Add Attribute uses its existing typed client route");
+    assert_eq!(
+        response.outcome().operation(),
+        crate::execute::ClientOperation::AddAttribute
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: attribute_success_response_bytes(14),
+        request_write_chunks: Vec::new(),
+    });
+    let builder = client
+        .request()
+        .modify_attribute()
+        .unique_identifier("key-42")
+        .current_attribute(CurrentAttribute::from_typed(
+            Attribute::<typed::Comment>::new("before-modify".to_owned())
+                .expect("Comment is a catalogued Text String"),
+        ))
+        .new_attribute(NewAttribute::from_typed(
+            Attribute::<typed::Comment>::new("modified".to_owned())
+                .expect("Comment is a catalogued Text String"),
+        ));
+    assert_eq!(builder.validate(), Ok(()));
+    let response = builder
+        .execute(&CodecLimits::defaults())
+        .expect("Modify Attribute uses its existing typed client route");
+    assert_eq!(
+        response.outcome().operation(),
+        crate::execute::ClientOperation::ModifyAttribute
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: attribute_success_response_bytes(49),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .request()
+        .set_attribute()
+        .unique_identifier("key-42")
+        .new_attribute(NewAttribute::from_typed(
+            Attribute::<typed::Comment>::new("set".to_owned())
+                .expect("Comment is a catalogued Text String"),
+        ))
+        .execute(&CodecLimits::defaults())
+        .expect("Set Attribute uses its existing typed client route");
+    assert_eq!(
+        response.outcome().operation(),
+        crate::execute::ClientOperation::SetAttribute
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: attribute_success_response_bytes(15),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .request()
+        .delete_attribute()
+        .unique_identifier("key-42")
+        .attribute_reference(AttributeReference::tag(typed::Comment::TAG))
+        .execute(&CodecLimits::defaults())
+        .expect("Delete Attribute uses its existing typed client route");
+    assert_eq!(
+        response.outcome().operation(),
+        crate::execute::ClientOperation::DeleteAttribute
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response: attribute_success_response_bytes(48),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .request()
+        .adjust_attribute()
+        .unique_identifier("key-42")
+        .attribute_reference(AttributeReference::tag(typed::UsageLimits::TAG))
+        .adjustment_type(AdjustmentType::INCREMENT)
+        .adjustment_value(AttributeAdjustmentValue::integer(1))
+        .execute(&CodecLimits::defaults())
+        .expect("Adjust Attribute uses its existing typed client route");
+    assert_eq!(
+        response.outcome().operation(),
+        crate::execute::ClientOperation::AdjustAttribute
+    );
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+// KMIPKIT-0093-FR-004 through FR-007, FR-011; OASIS KMIP v2.1
+// §6.1.8, Tables 186–187: retain actual Create fields and reuse typed execution.
+#[test]
+fn generic_create_builder_preserves_explicit_fields() {
+    let mut client = failed_request_client();
+    let attributes = AttributeSet::try_new([item(
+        typed::ObjectGroup::TAG,
+        Value::text_string("explicit-group".to_owned()),
+    )])
+    .unwrap();
+    let masks = test_structure([item(0x0042_0159, Value::integer(3))]);
+    let builder = client
+        .request()
+        .create()
+        .object_type(ObjectType::from_raw(2))
+        .attributes(attributes)
+        .protection_storage_masks(masks);
+    assert_eq!(builder.validate(), Ok(()));
+    let request = builder.build_request().unwrap();
+    assert_eq!(request.object_type(), ObjectType::from_raw(2));
+    assert_eq!(request.attributes().len(), 1);
+    let attribute = &request.attributes().as_items()[0];
+    assert_eq!(attribute.tag().raw(), typed::ObjectGroup::TAG);
+    assert!(attribute.with_value(|value| matches!(value,
+        ValueView::TextString(value) if value == "explicit-group")));
+    let masks = request.protection_storage_masks().unwrap().view();
+    assert_eq!(masks.children().len(), 1);
+    assert_eq!(masks.children()[0].tag().raw(), 0x0042_0159);
+    assert_eq!(read_integer(&masks.children()[0]), Some(3));
+}
+
+#[test]
+fn generic_create_builder_requires_object_type_before_transport() {
+    let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let builder = client.request().create();
+    assert_eq!(
+        builder.validate(),
+        Err(FluentBuildError::MissingCreateObjectType)
+    );
+    assert_eq!(
+        builder.build_request().err(),
+        Some(FluentBuildError::MissingCreateObjectType)
+    );
+    let error = builder.execute(&CodecLimits::defaults()).unwrap_err();
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert_eq!(transport.borrow().exchange_count(), 0);
+    assert_eq!(
+        FluentBuildError::MissingCreateObjectType.to_string(),
+        "Create requires Object Type"
+    );
+}
+
+#[test]
+fn generic_create_builder_defaults_only_to_empty_attributes() {
+    let mut client = failed_request_client();
+    let builder = client
+        .request()
+        .create()
+        .object_type(ObjectType::from_raw(0xf000_0002));
+    let request = builder.build_request().unwrap();
+    assert_eq!(request.object_type().raw(), 0xf000_0002);
+    assert!(request.attributes().is_empty());
+    assert!(request.protection_storage_masks().is_none());
+    assert_eq!(builder.validate(), Ok(()));
+    assert_eq!(builder.to_batch_item().unwrap().operation(), 1);
+}
+
+#[test]
+fn generic_create_builder_preserves_unknown_attribute_order_and_values() {
+    let mut client = failed_request_client();
+    let attributes = AttributeSet::try_new([
+        item(0x0054_0001, Value::enumeration(0xf000_0001)),
+        item(
+            typed::ObjectGroup::TAG,
+            Value::text_string("group".to_owned()),
+        ),
+        item(0x0054_0002, Value::integer(17)),
+    ])
+    .unwrap();
+    let request = client
+        .request()
+        .create()
+        .object_type(ObjectType::from_raw(2))
+        .attributes(attributes)
+        .build_request()
+        .unwrap();
+    let attributes = request.attributes().as_items();
+    assert_eq!(
+        attributes
+            .iter()
+            .map(|attribute| attribute.tag().raw())
+            .collect::<Vec<_>>(),
+        [0x0054_0001, typed::ObjectGroup::TAG, 0x0054_0002]
+    );
+    assert_eq!(read_enumeration(&attributes[0]), Some(0xf000_0001));
+    assert_eq!(read_integer(&attributes[2]), Some(17));
+}
+
+#[test]
+fn generic_create_builder_rejects_invalid_cardinality_with_redacted_not_sent_error() {
+    let (mut client, transport, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let attributes = AttributeSet::try_new([
+        item(
+            typed::ContactInformation::TAG,
+            Value::text_string("PRIVATE_SENTINEL".to_owned()),
+        ),
+        item(
+            typed::ContactInformation::TAG,
+            Value::text_string("PRIVATE_SENTINEL".to_owned()),
+        ),
+    ])
+    .unwrap();
+    let builder = client
+        .request()
+        .create()
+        .object_type(ObjectType::from_raw(2))
+        .attributes(attributes);
+    assert_eq!(builder.validate(), Err(FluentBuildError::InvalidRequest));
+    assert_eq!(
+        builder.build_request().err(),
+        Some(FluentBuildError::InvalidRequest)
+    );
+    let error = builder.execute(&CodecLimits::defaults()).unwrap_err();
+    assert_eq!(
+        error.delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
+    );
+    assert!(!format!("{error:?} {error}").contains("PRIVATE_SENTINEL"));
+    assert_eq!(transport.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn generic_create_builder_executes_one_typed_exchange_with_explicit_options() {
+    use crate::asynchronous_execution_test_support::client_for_with_options_observer;
+    use std::cell::RefCell;
+    use std::rc::Rc;
+    let options = RequestOptions::default()
+        .with_wire_encoding(kmipkit_transport::WireEncoding::Ttlv)
+        .with_read(kmipkit_transport::TimeoutLimit::Bounded(
+            std::time::Duration::from_secs(4),
+        ));
+    let observed = Rc::new(RefCell::new(Vec::new()));
+    let (mut client, transport, captured) = client_for_with_options_observer(
+        ExchangeScript::Success {
+            response: response_bytes(1, 0, None),
+            request_write_chunks: Vec::new(),
+        },
+        Rc::clone(&observed),
+    );
+    let response = client
+        .request()
+        .create()
+        .object_type(ObjectType::from_raw(2))
+        .with_options(options)
+        .with_asynchronous_indicator(1)
+        .execute(&CodecLimits::defaults())
+        .unwrap();
+    assert_eq!(response.outcome().operation(), ClientOperation::Create);
+    assert_eq!(response.outcome().result().status().raw(), 0);
+    assert_eq!(transport.borrow().exchange_count(), 1);
+    assert_eq!(&*observed.borrow(), &[options]);
+    let captured = captured.borrow();
+    let root = kmipkit_ttlv::codec::decode_with_limits(
+        captured.as_ref().unwrap(),
+        &CodecLimits::defaults(),
+    )
+    .unwrap();
+    let message = kmipkit_protocol::RequestMessage::try_from_ttlv(
+        root.as_structure().unwrap().try_clone().unwrap(),
+    )
+    .unwrap();
+    assert_eq!(message.header().protocol_version(), ProtocolVersion::V2_1);
+    assert_eq!(message.header().asynchronous_indicator(), Some(1));
+    assert_eq!(message.batch_items().len(), 1);
+}
+
+#[test]
+fn generic_create_builder_preserves_pending_without_follow_up() {
+    let (mut client, transport, _) = client_for(ExchangeScript::Success {
+        response: response_bytes(1, 2, Some(b"create-correlation")),
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .request()
+        .create()
+        .object_type(ObjectType::from_raw(2))
+        .with_asynchronous_indicator(1)
+        .execute(&CodecLimits::defaults())
+        .unwrap();
+    let ClientBatchOutcome::Pending(pending) = response.outcome() else {
+        panic!("expected Pending")
+    };
+    assert_eq!(pending.operation(), ClientOperation::Create);
+    assert_eq!(
+        pending.asynchronous_correlation_value(),
+        b"create-correlation"
+    );
+    assert_eq!(transport.borrow().exchange_count(), 1);
 }

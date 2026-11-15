@@ -175,7 +175,7 @@ EXPECTED = (
 # the KMIPKIT-0103 C and KMIPKIT-0104 Java crypto facades, and KMIPKIT-0093
 # inventory reconciliation. It also includes the approved KMIPKIT-0096 Python
 # expert-position slice; the previous fingerprint predated those declaration updates.
-UNCHANGED_DECLARATIONS_SHA256 = "8413d5b71db408ee4f6baad7851e7fe83ebfc9b111aeb40a566f5cd489b3cf0f"
+UNCHANGED_DECLARATIONS_SHA256 = "66a957bc8d8cf3a841158c6a7b82a0c027c331928fb5ceaac93141014ae66626"
 UNCHANGED_OPERATIONS_SHA256 = "9ee0f7c51c05a8abd96af7f6d3017f3ffb780c4262f231eaf3cb8c01a38147c7"
 # T098's maintainer-approved reconciliation updates lifecycle approval evidence
 # and inherited requirement links outside the T102 declaration/operation rows.
@@ -186,7 +186,8 @@ UNCHANGED_OPERATIONS_SHA256 = "9ee0f7c51c05a8abd96af7f6d3017f3ffb780c4262f231eaf
 # reconciliation, including the approved KMIPKIT-0096 Python expert-position
 # slice. R002's additive requirement links and C copy caveat are normalized in
 # the snapshot comparison below and tested by the dedicated 0093 contract suite.
-OTHER_MANIFEST_SHA256 = "ca813ff1e1ebbece6749597c8cb979d7e551f9c4f82dc912dc7d1ef399abe23d"
+# The fingerprint also includes the additive Rust CreateBuilder inventory.
+OTHER_MANIFEST_SHA256 = "ccd78dc7b171da7dbddaf76d3125a6972728e0e8b4ff6d3aa40a4c7ab6fda505"
 EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",
