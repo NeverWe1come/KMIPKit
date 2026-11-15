@@ -26,3 +26,10 @@
 - `python3 -B -m unittest tools.api_manifest.tests.test_c_api_docs -v` passes
   all 4 tests. Regenerating the inventory with the documented `--check`
   command also passes without changing the checked-in report.
+
+### Refactor
+
+- Extracted the shared manifest-to-package declaration grouping used by both
+  report assertions, keeping the blocked C declaration rule in one place.
+- Re-ran `python3 -B -m unittest tools.api_manifest.tests.test_c_api_docs -v`;
+  all 4 tests pass.
