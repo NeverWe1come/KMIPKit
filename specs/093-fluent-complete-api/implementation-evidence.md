@@ -90,6 +90,11 @@
   additional operation-result declarations; each paired response view has
   that requirement and no other requirement-set difference. Reproduction:
   `python3 -B -m unittest tools.api_manifest.tests.test_t102_operation_result_mappings -v`.
+- The full T102 run also found one historical non-target manifest fingerprint
+  that must include KMIPKIT-0124's 44 approved declarations and the response
+  traceability corrections. It fails
+  `test_all_non_target_declarations_and_operations_match_the_pinned_snapshot`
+  in `test_t102_optional_request_structure_mapping.py`.
 
 ### Green
 
