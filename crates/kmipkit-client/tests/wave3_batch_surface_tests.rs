@@ -98,6 +98,21 @@ fn typed_kmip30_batch_outcome_and_response_readers_exist() {
     assert!(outcome.encapsulate_response().is_none());
     assert!(outcome.decapsulate_response().is_none());
 
+    let user_resp = CreateUserResponse::new(UniqueIdentifier::TextString("user-1".to_owned()));
+    let user_outcome = ClientBatchOutcome::Kmip30(Kmip30OperationResponse::CreateUser(user_resp));
+    assert!(user_outcome.create_user_response().is_some());
+
+    let cred_resp =
+        CreateCredentialResponse::new(UniqueIdentifier::TextString("cred-1".to_owned()));
+    let cred_outcome =
+        ClientBatchOutcome::Kmip30(Kmip30OperationResponse::CreateCredential(cred_resp));
+    assert!(cred_outcome.create_credential_response().is_some());
+
+    let deact_resp = DeactivateResponse::new(UniqueIdentifier::TextString("deact-1".to_owned()));
+    let deact_outcome =
+        ClientBatchOutcome::Kmip30(Kmip30OperationResponse::Deactivate(deact_resp));
+    assert!(deact_outcome.deactivate_response().is_some());
+
     let oblit_outcome =
         ClientBatchOutcome::Kmip30(Kmip30OperationResponse::Obliterate(ObliterateResponse::new()));
     assert!(oblit_outcome.obliterate_response().is_some());

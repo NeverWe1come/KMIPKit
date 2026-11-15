@@ -3082,6 +3082,69 @@ impl<'a> ClientResponseView<'a> {
             _ => None,
         }
     }
+
+    /// Returns the typed Create Group response when this view represents it.
+    #[must_use]
+    pub const fn create_group(&self) -> Option<&'a CreateGroupResponse> {
+        match self.kmip30() {
+            Some(Kmip30OperationResponse::CreateGroup(response)) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Obliterate response when this view represents it.
+    #[must_use]
+    pub const fn obliterate(&self) -> Option<&'a ObliterateResponse> {
+        match self.kmip30() {
+            Some(Kmip30OperationResponse::Obliterate(response)) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Create User response when this view represents it.
+    #[must_use]
+    pub const fn create_user(&self) -> Option<&'a CreateUserResponse> {
+        match self.kmip30() {
+            Some(Kmip30OperationResponse::CreateUser(response)) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Create Credential response when this view represents it.
+    #[must_use]
+    pub const fn create_credential(&self) -> Option<&'a CreateCredentialResponse> {
+        match self.kmip30() {
+            Some(Kmip30OperationResponse::CreateCredential(response)) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Deactivate response when this view represents it.
+    #[must_use]
+    pub const fn deactivate(&self) -> Option<&'a DeactivateResponse> {
+        match self.kmip30() {
+            Some(Kmip30OperationResponse::Deactivate(response)) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Encapsulate response when this view represents it.
+    #[must_use]
+    pub const fn encapsulate(&self) -> Option<&'a EncapsulateResponse> {
+        match self.kmip30() {
+            Some(Kmip30OperationResponse::Encapsulate(response)) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Decapsulate response when this view represents it.
+    #[must_use]
+    pub const fn decapsulate(&self) -> Option<&'a DecapsulateResponse> {
+        match self.kmip30() {
+            Some(Kmip30OperationResponse::Decapsulate(response)) => Some(response),
+            _ => None,
+        }
+    }
 }
 
 fn debug_response<T>(formatter: &mut fmt::Formatter<'_>, name: &str, _response: &T) -> fmt::Result {
@@ -3271,6 +3334,69 @@ impl Kmip30OperationResponse {
             Self::Deactivate(_) => ClientOperation::Deactivate,
             Self::Encapsulate(_) => ClientOperation::Encapsulate,
             Self::Decapsulate(_) => ClientOperation::Decapsulate,
+        }
+    }
+
+    /// Returns the typed Create Group response when this item contains one.
+    #[must_use]
+    pub const fn create_group(&self) -> Option<&CreateGroupResponse> {
+        match self {
+            Self::CreateGroup(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Obliterate response when this item contains one.
+    #[must_use]
+    pub const fn obliterate(&self) -> Option<&ObliterateResponse> {
+        match self {
+            Self::Obliterate(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Create User response when this item contains one.
+    #[must_use]
+    pub const fn create_user(&self) -> Option<&CreateUserResponse> {
+        match self {
+            Self::CreateUser(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Create Credential response when this item contains one.
+    #[must_use]
+    pub const fn create_credential(&self) -> Option<&CreateCredentialResponse> {
+        match self {
+            Self::CreateCredential(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Deactivate response when this item contains one.
+    #[must_use]
+    pub const fn deactivate(&self) -> Option<&DeactivateResponse> {
+        match self {
+            Self::Deactivate(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Encapsulate response when this item contains one.
+    #[must_use]
+    pub const fn encapsulate(&self) -> Option<&EncapsulateResponse> {
+        match self {
+            Self::Encapsulate(response) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Decapsulate response when this item contains one.
+    #[must_use]
+    pub const fn decapsulate(&self) -> Option<&DecapsulateResponse> {
+        match self {
+            Self::Decapsulate(response) => Some(response),
+            _ => None,
         }
     }
 }
@@ -4055,6 +4181,69 @@ impl ClientBatchOutcome {
         }
     }
 
+    /// Returns the typed Create Group response, including for a Pending result.
+    #[must_use]
+    pub const fn create_group_response(&self) -> Option<&CreateGroupResponse> {
+        match self.kmip30_response() {
+            Some(Kmip30OperationResponse::CreateGroup(response)) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Obliterate response, including for a Pending result.
+    #[must_use]
+    pub const fn obliterate_response(&self) -> Option<&ObliterateResponse> {
+        match self.kmip30_response() {
+            Some(Kmip30OperationResponse::Obliterate(response)) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Create User response, including for a Pending result.
+    #[must_use]
+    pub const fn create_user_response(&self) -> Option<&CreateUserResponse> {
+        match self.kmip30_response() {
+            Some(Kmip30OperationResponse::CreateUser(response)) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Create Credential response, including for a Pending result.
+    #[must_use]
+    pub const fn create_credential_response(&self) -> Option<&CreateCredentialResponse> {
+        match self.kmip30_response() {
+            Some(Kmip30OperationResponse::CreateCredential(response)) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Deactivate response, including for a Pending result.
+    #[must_use]
+    pub const fn deactivate_response(&self) -> Option<&DeactivateResponse> {
+        match self.kmip30_response() {
+            Some(Kmip30OperationResponse::Deactivate(response)) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Encapsulate response, including for a Pending result.
+    #[must_use]
+    pub const fn encapsulate_response(&self) -> Option<&EncapsulateResponse> {
+        match self.kmip30_response() {
+            Some(Kmip30OperationResponse::Encapsulate(response)) => Some(response),
+            _ => None,
+        }
+    }
+
+    /// Returns the typed Decapsulate response, including for a Pending result.
+    #[must_use]
+    pub const fn decapsulate_response(&self) -> Option<&DecapsulateResponse> {
+        match self.kmip30_response() {
+            Some(Kmip30OperationResponse::Decapsulate(response)) => Some(response),
+            _ => None,
+        }
+    }
+
     /// Returns a borrowed view of the typed operation response.
     ///
     /// Existing Discover Versions result access remains available through
@@ -4694,6 +4883,48 @@ impl ClientBatchItemResponse {
     #[must_use]
     pub const fn kmip30_response(&self) -> Option<&Kmip30OperationResponse> {
         self.outcome.kmip30_response()
+    }
+
+    /// Returns the typed Create Group response when this item contains one.
+    #[must_use]
+    pub const fn create_group_response(&self) -> Option<&CreateGroupResponse> {
+        self.outcome.create_group_response()
+    }
+
+    /// Returns the typed Obliterate response when this item contains one.
+    #[must_use]
+    pub const fn obliterate_response(&self) -> Option<&ObliterateResponse> {
+        self.outcome.obliterate_response()
+    }
+
+    /// Returns the typed Create User response when this item contains one.
+    #[must_use]
+    pub const fn create_user_response(&self) -> Option<&CreateUserResponse> {
+        self.outcome.create_user_response()
+    }
+
+    /// Returns the typed Create Credential response when this item contains one.
+    #[must_use]
+    pub const fn create_credential_response(&self) -> Option<&CreateCredentialResponse> {
+        self.outcome.create_credential_response()
+    }
+
+    /// Returns the typed Deactivate response when this item contains one.
+    #[must_use]
+    pub const fn deactivate_response(&self) -> Option<&DeactivateResponse> {
+        self.outcome.deactivate_response()
+    }
+
+    /// Returns the typed Encapsulate response when this item contains one.
+    #[must_use]
+    pub const fn encapsulate_response(&self) -> Option<&EncapsulateResponse> {
+        self.outcome.encapsulate_response()
+    }
+
+    /// Returns the typed Decapsulate response when this item contains one.
+    #[must_use]
+    pub const fn decapsulate_response(&self) -> Option<&DecapsulateResponse> {
+        self.outcome.decapsulate_response()
     }
 
     /// Returns the typed Cancel response when this item is Cancel.

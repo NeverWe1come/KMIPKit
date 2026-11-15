@@ -72,11 +72,9 @@ from the typed client. Direct users may call each adapter's bounded byte API.
 
 KMIPKIT-0007 provides synchronous Rust `Client::execute` over an ordered
 `ClientBatch` with a closed typed request set. The complete Rust typed request
-set currently contains 52 variants, covering 52 of the 56 `client_1_0`
-operation types. It excludes the four explicit asynchronous follow-up
-operations Cancel, Poll, Process, and Query Asynchronous Requests from batch
-items; these operations have verified four-language API mappings under the
-approved KMIPKIT-0009 scope and use dedicated one-shot methods. This API status
+set covers all 56 `client_1_0` operation types, including explicit asynchronous
+follow-up operations (Cancel, Poll, Process, and Query Asynchronous Requests) as
+typed batch items, with verified four-language API mappings. This API status
 does not establish conformance. The Query Asynchronous Requests response
 remains available as a generic TTLV response under KMIPKIT-DEC-015.
 Variants: Discover Versions,
