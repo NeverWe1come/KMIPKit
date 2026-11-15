@@ -11,264 +11,764 @@
       {
         "name": "Certificate Link",
         "wire_value": "0x420190",
-        "attribute_section": "4.35.1"
+        "attribute_section": "4.35.1",
+        "introduced_in": "3.0",
+        "source_encoding": "Unique Identifier",
+        "is_object_attribute": true,
+        "source_multiplicity": "Yes",
+        "source_modifiable_by_client": "Yes",
+        "source_deletable_by_client": "Yes",
+        "source_initially_set_by": "Client or Server"
       },
       {
         "name": "Child Link",
         "wire_value": "0x420191",
-        "attribute_section": "4.35.3"
+        "attribute_section": "4.35.3",
+        "introduced_in": "3.0",
+        "source_encoding": "Unique Identifier",
+        "is_object_attribute": true,
+        "source_multiplicity": "No",
+        "source_modifiable_by_client": "Yes",
+        "source_deletable_by_client": "Yes",
+        "source_initially_set_by": "Client or Server"
       },
       {
         "name": "Derivation Base Object Link",
         "wire_value": "0x420192",
-        "attribute_section": "4.35.5"
+        "attribute_section": "4.35.5",
+        "introduced_in": "3.0",
+        "source_encoding": "Unique Identifier",
+        "is_object_attribute": true,
+        "source_multiplicity": "Yes",
+        "source_modifiable_by_client": "Yes",
+        "source_deletable_by_client": "Yes",
+        "source_initially_set_by": "Client or Server"
       },
       {
         "name": "Derived Object Link",
         "wire_value": "0x420193",
-        "attribute_section": "4.35.6"
+        "attribute_section": "4.35.6",
+        "introduced_in": "3.0",
+        "source_encoding": "Unique Identifier",
+        "is_object_attribute": true,
+        "source_multiplicity": "Yes",
+        "source_modifiable_by_client": "Yes",
+        "source_deletable_by_client": "Yes",
+        "source_initially_set_by": "Client or Server"
       },
       {
         "name": "Next Link",
         "wire_value": "0x420194",
-        "attribute_section": "4.35.9"
+        "attribute_section": "4.35.9",
+        "introduced_in": "3.0",
+        "source_encoding": "Unique Identifier",
+        "is_object_attribute": true,
+        "source_multiplicity": "No",
+        "source_modifiable_by_client": "Yes",
+        "source_deletable_by_client": "Yes",
+        "source_initially_set_by": "Client or Server"
       },
       {
         "name": "Parent Link",
         "wire_value": "0x420195",
-        "attribute_section": "4.35.10"
+        "attribute_section": "4.35.10",
+        "introduced_in": "3.0",
+        "source_encoding": "Unique Identifier",
+        "is_object_attribute": true,
+        "source_multiplicity": "Yes",
+        "source_modifiable_by_client": "Yes",
+        "source_deletable_by_client": "Yes",
+        "source_initially_set_by": "Client or Server"
       },
       {
         "name": "PKCS#12 Certificate Link",
         "wire_value": "0x420196",
-        "attribute_section": "4.35.12"
+        "attribute_section": "4.35.12",
+        "introduced_in": "3.0",
+        "source_encoding": "Unique Identifier",
+        "is_object_attribute": true,
+        "source_multiplicity": "No",
+        "source_modifiable_by_client": "Yes",
+        "source_deletable_by_client": "Yes",
+        "source_initially_set_by": "Client or Server"
       },
       {
         "name": "PKCS#12 Password Link",
         "wire_value": "0x420197",
-        "attribute_section": "4.35.13"
+        "attribute_section": "4.35.13",
+        "introduced_in": "3.0",
+        "source_encoding": "Unique Identifier",
+        "is_object_attribute": true,
+        "source_multiplicity": "No",
+        "source_modifiable_by_client": "Yes",
+        "source_deletable_by_client": "Yes",
+        "source_initially_set_by": "Client or Server"
       },
       {
         "name": "Previous Link",
         "wire_value": "0x420198",
-        "attribute_section": "4.35.14"
+        "attribute_section": "4.35.14",
+        "introduced_in": "3.0",
+        "source_encoding": "Unique Identifier",
+        "is_object_attribute": true,
+        "source_multiplicity": "No",
+        "source_modifiable_by_client": "Yes",
+        "source_deletable_by_client": "Yes",
+        "source_initially_set_by": "Client or Server"
       },
       {
         "name": "Private Key Link",
         "wire_value": "0x420199",
-        "attribute_section": "4.35.15"
+        "attribute_section": "4.35.15",
+        "introduced_in": "3.0",
+        "source_encoding": "Unique Identifier",
+        "is_object_attribute": true,
+        "source_multiplicity": "No",
+        "source_modifiable_by_client": "Yes",
+        "source_deletable_by_client": "Yes",
+        "source_initially_set_by": "Client or Server"
       },
       {
         "name": "Public Key Link",
         "wire_value": "0x42019A",
-        "attribute_section": "4.35.16"
+        "attribute_section": "4.35.16",
+        "introduced_in": "3.0",
+        "source_encoding": "Unique Identifier",
+        "is_object_attribute": true,
+        "source_multiplicity": "No",
+        "source_modifiable_by_client": "Yes",
+        "source_deletable_by_client": "Yes",
+        "source_initially_set_by": "Client or Server"
       },
       {
         "name": "Replaced Object Link",
         "wire_value": "0x42019B",
-        "attribute_section": "4.35.17"
+        "attribute_section": "4.35.17",
+        "introduced_in": "3.0",
+        "source_encoding": "Unique Identifier",
+        "is_object_attribute": true,
+        "source_multiplicity": "No",
+        "source_modifiable_by_client": "Yes",
+        "source_deletable_by_client": "Yes",
+        "source_initially_set_by": "Client or Server"
       },
       {
         "name": "Replacement Object Link",
         "wire_value": "0x42019C",
-        "attribute_section": "4.35.18"
+        "attribute_section": "4.35.18",
+        "introduced_in": "3.0",
+        "source_encoding": "Unique Identifier",
+        "is_object_attribute": true,
+        "source_multiplicity": "No",
+        "source_modifiable_by_client": "Yes",
+        "source_deletable_by_client": "Yes",
+        "source_initially_set_by": "Client or Server"
       },
       {
         "name": "Wrapping Key Link",
         "wire_value": "0x42019D",
-        "attribute_section": "4.35.20"
+        "attribute_section": "4.35.20",
+        "introduced_in": "3.0",
+        "source_encoding": "Unique Identifier",
+        "is_object_attribute": true,
+        "source_multiplicity": "No",
+        "source_modifiable_by_client": "Yes",
+        "source_deletable_by_client": "Yes",
+        "source_initially_set_by": "Client or Server"
       },
       {
         "name": "Object Class",
-        "wire_value": "0x42019E"
+        "wire_value": "0x42019E",
+        "introduced_in": "3.0",
+        "source_encoding": "Enumeration",
+        "is_object_attribute": true,
+        "attribute_section": "4.40",
+        "source_multiplicity": "No",
+        "source_modifiable_by_client": "No",
+        "source_deletable_by_client": "No",
+        "source_initially_set_by": "Client or Server",
+        "enumeration_family": "Object Class"
       },
       {
         "name": "Object Class Mask",
-        "wire_value": "0x42019F"
+        "wire_value": "0x42019F",
+        "introduced_in": "3.0",
+        "source_encoding": "Integer",
+        "is_object_attribute": false,
+        "bitmask_family": "Object Class Mask"
       },
       {
         "name": "Credential Link",
         "wire_value": "0x4201A0",
-        "attribute_section": "4.35.4"
+        "attribute_section": "4.35.4",
+        "introduced_in": "3.0",
+        "source_encoding": "Unique Identifier",
+        "is_object_attribute": true,
+        "source_multiplicity": "Yes",
+        "source_modifiable_by_client": "Yes",
+        "source_deletable_by_client": "Yes",
+        "source_initially_set_by": "Client or Server"
       },
       {
         "name": "Password Credential",
-        "wire_value": "0x4201A1"
+        "wire_value": "0x4201A1",
+        "introduced_in": "3.0",
+        "source_encoding": "Structure",
+        "is_object_attribute": false
       },
       {
         "name": "Password Salt",
-        "wire_value": "0x4201A2"
+        "wire_value": "0x4201A2",
+        "introduced_in": "3.0",
+        "source_encoding": "Byte String",
+        "is_object_attribute": false
       },
       {
         "name": "Password Salt Algorithm",
-        "wire_value": "0x4201A3"
+        "wire_value": "0x4201A3",
+        "introduced_in": "3.0",
+        "source_encoding": "Enumeration",
+        "is_object_attribute": false,
+        "enumeration_family": "Cryptographic Algorithm"
       },
       {
         "name": "Salted Password",
-        "wire_value": "0x4201A4"
+        "wire_value": "0x4201A4",
+        "introduced_in": "3.0",
+        "source_encoding": "Byte String",
+        "is_object_attribute": false
       },
       {
         "name": "Password Link",
         "wire_value": "0x4201A5",
-        "attribute_section": "4.35.11"
+        "attribute_section": "4.35.11",
+        "introduced_in": "3.0",
+        "source_encoding": "Unique Identifier",
+        "is_object_attribute": true,
+        "source_multiplicity": "Yes",
+        "source_modifiable_by_client": "Yes",
+        "source_deletable_by_client": "Yes",
+        "source_initially_set_by": "Client or Server"
       },
       {
         "name": "Device Credential",
-        "wire_value": "0x4201A6"
+        "wire_value": "0x4201A6",
+        "introduced_in": "3.0",
+        "source_encoding": "Structure",
+        "is_object_attribute": false
       },
       {
         "name": "OTP Credential",
-        "wire_value": "0x4201A7"
+        "wire_value": "0x4201A7",
+        "introduced_in": "3.0",
+        "source_encoding": "Structure",
+        "is_object_attribute": false
       },
       {
         "name": "OTP Algorithm",
-        "wire_value": "0x4201A8"
+        "wire_value": "0x4201A8",
+        "introduced_in": "3.0",
+        "source_encoding": "Enumeration",
+        "is_object_attribute": false,
+        "enumeration_family": "OTP Algorithm"
       },
       {
         "name": "OTP Digest",
-        "wire_value": "0x4201A9"
+        "wire_value": "0x4201A9",
+        "introduced_in": "3.0",
+        "source_encoding": "Enumeration",
+        "is_object_attribute": false,
+        "enumeration_family": "Cryptographic Algorithm"
       },
       {
         "name": "OTP Serial",
-        "wire_value": "0x4201AA"
+        "wire_value": "0x4201AA",
+        "introduced_in": "3.0",
+        "source_encoding": "Text String",
+        "is_object_attribute": false
       },
       {
         "name": "OTP Seed",
-        "wire_value": "0x4201AB"
+        "wire_value": "0x4201AB",
+        "introduced_in": "3.0",
+        "source_encoding": "Byte String",
+        "is_object_attribute": false
       },
       {
         "name": "OTP Interval",
-        "wire_value": "0x4201AC"
+        "wire_value": "0x4201AC",
+        "introduced_in": "3.0",
+        "source_encoding": "Interval",
+        "is_object_attribute": false
       },
       {
         "name": "OTP Digits",
-        "wire_value": "0x4201AD"
+        "wire_value": "0x4201AD",
+        "introduced_in": "3.0",
+        "source_encoding": "Integer",
+        "is_object_attribute": false
       },
       {
         "name": "OTP Counter",
-        "wire_value": "0x4201AE"
+        "wire_value": "0x4201AE",
+        "introduced_in": "3.0",
+        "source_encoding": "Byte String",
+        "is_object_attribute": true,
+        "attribute_section": "4.44",
+        "source_multiplicity": "No",
+        "source_modifiable_by_client": "No",
+        "source_deletable_by_client": "No",
+        "source_initially_set_by": "Server"
       },
       {
         "name": "Hashed Password Credential",
-        "wire_value": "0x4201AF"
+        "wire_value": "0x4201AF",
+        "introduced_in": "3.0",
+        "source_encoding": "Structure",
+        "is_object_attribute": false
       },
       {
         "name": "Hashed Username Password",
-        "wire_value": "0x4201B0"
+        "wire_value": "0x4201B0",
+        "introduced_in": "3.0",
+        "source_encoding": "Byte String",
+        "is_object_attribute": false
       },
       {
         "name": "Hashed Password Username",
-        "wire_value": "0x4201B1"
+        "wire_value": "0x4201B1",
+        "introduced_in": "3.0",
+        "source_encoding": "Byte String",
+        "is_object_attribute": false
       },
       {
         "name": "Credential Information",
-        "wire_value": "0x4201B2"
+        "wire_value": "0x4201B2",
+        "introduced_in": "3.0",
+        "source_encoding": "Structure",
+        "is_object_attribute": false
       },
       {
         "name": "Group Link",
         "wire_value": "0x4201B3",
-        "attribute_section": "4.35.7"
+        "attribute_section": "4.35.7",
+        "introduced_in": "3.0",
+        "source_encoding": "Unique Identifier",
+        "is_object_attribute": true,
+        "source_multiplicity": "Yes",
+        "source_modifiable_by_client": "Yes",
+        "source_deletable_by_client": "Yes",
+        "source_initially_set_by": "Client or Server"
       },
       {
         "name": "Split Key Base Link",
         "wire_value": "0x4201B4",
-        "attribute_section": "4.35.19"
+        "attribute_section": "4.35.19",
+        "introduced_in": "3.0",
+        "source_encoding": "Unique Identifier",
+        "is_object_attribute": true,
+        "source_multiplicity": "Yes",
+        "source_modifiable_by_client": "Yes",
+        "source_deletable_by_client": "Yes",
+        "source_initially_set_by": "Client or Server"
       },
       {
         "name": "Joined Split Key Parts Link",
         "wire_value": "0x4201B5",
-        "attribute_section": "4.35.8"
+        "attribute_section": "4.35.8",
+        "introduced_in": "3.0",
+        "source_encoding": "Unique Identifier",
+        "is_object_attribute": true,
+        "source_multiplicity": "Yes",
+        "source_modifiable_by_client": "Yes",
+        "source_deletable_by_client": "Yes",
+        "source_initially_set_by": "Client or Server"
       },
       {
         "name": "Split Key Polynomial",
-        "wire_value": "0x4201B6"
+        "wire_value": "0x4201B6",
+        "introduced_in": "3.0",
+        "source_encoding": "Enumeration",
+        "is_object_attribute": true,
+        "attribute_section": "4.63",
+        "source_multiplicity": "No",
+        "source_modifiable_by_client": "No",
+        "source_deletable_by_client": "No",
+        "source_initially_set_by": "Client"
       },
       {
         "name": "Deactivation Message",
-        "wire_value": "0x4201B7"
+        "wire_value": "0x4201B7",
+        "introduced_in": "3.0",
+        "source_encoding": "Text String",
+        "is_object_attribute": false
       },
       {
         "name": "Deactivation Reason",
-        "wire_value": "0x4201B8"
+        "wire_value": "0x4201B8",
+        "introduced_in": "3.0",
+        "source_encoding": "Structure",
+        "is_object_attribute": true,
+        "attribute_section": "4.21",
+        "source_multiplicity": "No",
+        "source_modifiable_by_client": "No",
+        "source_deletable_by_client": "No",
+        "source_initially_set_by": "Client or Server"
       },
       {
         "name": "Deactivation Reason Code",
-        "wire_value": "0x4201B9"
+        "wire_value": "0x4201B9",
+        "introduced_in": "3.0",
+        "source_encoding": "Enumeration",
+        "is_object_attribute": false,
+        "enumeration_family": "Deactivation Reason Code"
       },
       {
         "name": "Certificate Subject DN",
-        "wire_value": "0x4201BA"
+        "wire_value": "0x4201BA",
+        "introduced_in": "3.0",
+        "source_encoding": "Text String",
+        "is_object_attribute": true,
+        "attribute_section": "4.7",
+        "source_multiplicity": "No",
+        "source_modifiable_by_client": "No",
+        "source_deletable_by_client": "No",
+        "source_initially_set_by": "Server"
       },
       {
         "name": "Certificate Issuer DN",
-        "wire_value": "0x4201BB"
+        "wire_value": "0x4201BB",
+        "introduced_in": "3.0",
+        "source_encoding": "Text String",
+        "is_object_attribute": true,
+        "attribute_section": "4.7",
+        "source_multiplicity": "No",
+        "source_modifiable_by_client": "No",
+        "source_deletable_by_client": "No",
+        "source_initially_set_by": "Server"
       },
       {
         "name": "Certificate Request Link",
         "wire_value": "0x4201BC",
-        "attribute_section": "4.35.2"
+        "attribute_section": "4.35.2",
+        "introduced_in": "3.0",
+        "source_encoding": "Unique Identifier",
+        "is_object_attribute": true,
+        "source_multiplicity": "Yes",
+        "source_modifiable_by_client": "Yes",
+        "source_deletable_by_client": "Yes",
+        "source_initially_set_by": "Client or Server"
       },
       {
         "name": "Certify Counter",
-        "wire_value": "0x4201BD"
+        "wire_value": "0x4201BD",
+        "introduced_in": "3.0",
+        "source_encoding": "Long Integer",
+        "is_object_attribute": true,
+        "attribute_section": "4.13.1",
+        "source_multiplicity": "No",
+        "source_modifiable_by_client": "No",
+        "source_deletable_by_client": "No",
+        "source_initially_set_by": "Server"
       },
       {
         "name": "Decrypt Counter",
-        "wire_value": "0x4201BE"
+        "wire_value": "0x4201BE",
+        "introduced_in": "3.0",
+        "source_encoding": "Long Integer",
+        "is_object_attribute": true,
+        "attribute_section": "4.13.2",
+        "source_multiplicity": "No",
+        "source_modifiable_by_client": "No",
+        "source_deletable_by_client": "No",
+        "source_initially_set_by": "Server"
       },
       {
         "name": "Encrypt Counter",
-        "wire_value": "0x4201BF"
+        "wire_value": "0x4201BF",
+        "introduced_in": "3.0",
+        "source_encoding": "Long Integer",
+        "is_object_attribute": true,
+        "attribute_section": "4.13.3",
+        "source_multiplicity": "No",
+        "source_modifiable_by_client": "No",
+        "source_deletable_by_client": "No",
+        "source_initially_set_by": "Server"
       },
       {
         "name": "Sign Counter",
-        "wire_value": "0x4201C0"
+        "wire_value": "0x4201C0",
+        "introduced_in": "3.0",
+        "source_encoding": "Long Integer",
+        "is_object_attribute": true,
+        "attribute_section": "4.13.4",
+        "source_multiplicity": "No",
+        "source_modifiable_by_client": "No",
+        "source_deletable_by_client": "No",
+        "source_initially_set_by": "Server"
       },
       {
         "name": "Signature Verify Counter",
-        "wire_value": "0x4201C1"
+        "wire_value": "0x4201C1",
+        "introduced_in": "3.0",
+        "source_encoding": "Long Integer",
+        "is_object_attribute": true,
+        "attribute_section": "4.13.5",
+        "source_multiplicity": "No",
+        "source_modifiable_by_client": "No",
+        "source_deletable_by_client": "No",
+        "source_initially_set_by": "Server"
       },
       {
         "name": "NIST Security Category",
-        "wire_value": "0x4201C2"
+        "wire_value": "0x4201C2",
+        "introduced_in": "3.0",
+        "source_encoding": "Integer",
+        "is_object_attribute": true,
+        "attribute_section": "4.39",
+        "source_multiplicity": "No",
+        "source_modifiable_by_client": "No",
+        "source_deletable_by_client": "No",
+        "source_initially_set_by": "Client or Server"
       },
       {
         "name": "KEM Algorithm",
-        "wire_value": "0x4201C3"
+        "wire_value": "0x4201C3",
+        "introduced_in": "3.0",
+        "source_encoding": "Enumeration",
+        "is_object_attribute": false,
+        "enumeration_family": "KEM Algorithm"
       },
       {
         "name": "Deterministic",
-        "wire_value": "0x4201C4"
+        "wire_value": "0x4201C4",
+        "introduced_in": "3.0",
+        "source_encoding": "Boolean",
+        "is_object_attribute": false
       },
       {
         "name": "Context String",
-        "wire_value": "0x4201C5"
+        "wire_value": "0x4201C5",
+        "introduced_in": "3.0",
+        "source_encoding": "Byte String",
+        "is_object_attribute": false
       },
       {
         "name": "Seed",
-        "wire_value": "0x4201C6"
+        "wire_value": "0x4201C6",
+        "introduced_in": "3.0",
+        "source_encoding": "Byte String",
+        "is_object_attribute": false
       },
       {
         "name": "Input Key Material",
-        "wire_value": "0x4201C7"
+        "wire_value": "0x4201C7",
+        "introduced_in": "3.0",
+        "source_encoding": "Byte String",
+        "is_object_attribute": false
       },
       {
         "name": "Internal",
-        "wire_value": "0x4201C8"
+        "wire_value": "0x4201C8",
+        "introduced_in": "3.0",
+        "source_encoding": "Boolean",
+        "is_object_attribute": false
       },
       {
         "name": "External Mu",
-        "wire_value": "0x4201C9"
+        "wire_value": "0x4201C9",
+        "introduced_in": "3.0",
+        "source_encoding": "Boolean",
+        "is_object_attribute": false
       },
       {
         "name": "Random",
-        "wire_value": "0x4201CA"
+        "wire_value": "0x4201CA",
+        "introduced_in": "3.0",
+        "source_encoding": "Byte String",
+        "is_object_attribute": false
       },
       {
         "name": "Performs CRL Checks",
-        "wire_value": "0x4201CB"
+        "wire_value": "0x4201CB",
+        "introduced_in": "3.0",
+        "source_encoding": "Boolean",
+        "is_object_attribute": false
       }
     ],
     "table": 605
-  }
+  },
+  "v2_1_tags": [
+    {
+      "name": "Default",
+      "wire_value": "0x420166",
+      "introduced_in": "2.1"
+    },
+    {
+      "name": "Defaults Information",
+      "wire_value": "0x420167",
+      "introduced_in": "2.1"
+    },
+    {
+      "name": "Deferral",
+      "wire_value": "0x420168",
+      "introduced_in": "2.1"
+    },
+    {
+      "name": "Ephemeral",
+      "wire_value": "0x420169",
+      "introduced_in": "2.1"
+    },
+    {
+      "name": "Object Defaults",
+      "wire_value": "0x42016A",
+      "introduced_in": "2.1"
+    },
+    {
+      "name": "Offset",
+      "wire_value": "0x42016B",
+      "introduced_in": "2.1"
+    },
+    {
+      "name": "Popup",
+      "wire_value": "0x42016C",
+      "introduced_in": "2.1"
+    },
+    {
+      "name": "Process",
+      "wire_value": "0x42016D",
+      "introduced_in": "2.1"
+    },
+    {
+      "name": "Rotate Automatic",
+      "wire_value": "0x42016E",
+      "introduced_in": "2.1",
+      "is_object_attribute": true
+    },
+    {
+      "name": "Rotate Date",
+      "wire_value": "0x42016F",
+      "introduced_in": "2.1",
+      "is_object_attribute": true
+    },
+    {
+      "name": "Rotate Generation",
+      "wire_value": "0x420170",
+      "introduced_in": "2.1",
+      "is_object_attribute": true
+    },
+    {
+      "name": "Rotate Interval",
+      "wire_value": "0x420171",
+      "introduced_in": "2.1",
+      "is_object_attribute": true
+    },
+    {
+      "name": "Rotate Latest",
+      "wire_value": "0x420172",
+      "introduced_in": "2.1",
+      "is_object_attribute": true
+    },
+    {
+      "name": "Rotate Name",
+      "wire_value": "0x420173",
+      "introduced_in": "2.1",
+      "is_object_attribute": true
+    },
+    {
+      "name": "Rotate Offset",
+      "wire_value": "0x420174",
+      "introduced_in": "2.1",
+      "is_object_attribute": true
+    },
+    {
+      "name": "Submission Date",
+      "wire_value": "0x420175",
+      "introduced_in": "2.1"
+    },
+    {
+      "name": "Processing Stage",
+      "wire_value": "0x420176",
+      "introduced_in": "2.1"
+    }
+  ],
+  "v3_0_promoted_attributes": [
+    {
+      "name": "Credential Type",
+      "wire_value": "0x420024",
+      "introduced_in": "3.0",
+      "attribute_section": "4.14",
+      "source_encoding": "Enumeration",
+      "source_multiplicity": "No",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_initially_set_by": "Server"
+    },
+    {
+      "name": "Key Part Identifier",
+      "wire_value": "0x420044",
+      "introduced_in": "3.0",
+      "attribute_section": "4.30",
+      "source_encoding": "Integer",
+      "source_multiplicity": "No",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_initially_set_by": "Client"
+    },
+    {
+      "name": "Split Key Method",
+      "wire_value": "0x42008A",
+      "introduced_in": "3.0",
+      "attribute_section": "4.64",
+      "source_encoding": "Enumeration",
+      "source_multiplicity": "No",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_initially_set_by": "Client"
+    },
+    {
+      "name": "Split Key Parts",
+      "wire_value": "0x42008B",
+      "introduced_in": "3.0",
+      "attribute_section": "4.65",
+      "source_encoding": "Integer",
+      "source_multiplicity": "No",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_initially_set_by": "Client"
+    },
+    {
+      "name": "Split Key Threshold",
+      "wire_value": "0x42008C",
+      "introduced_in": "3.0",
+      "attribute_section": "4.66",
+      "source_encoding": "Integer",
+      "source_multiplicity": "No",
+      "source_modifiable_by_client": "No",
+      "source_deletable_by_client": "No",
+      "source_initially_set_by": "Client"
+    }
+  ],
+  "v3_0_deprecated_attributes": [
+    {
+      "name": "Link",
+      "wire_value": "0x42004A",
+      "deprecated_in": "3.0"
+    },
+    {
+      "name": "X.509 Certificate Identifier",
+      "wire_value": "0x4200B5",
+      "deprecated_in": "3.0"
+    },
+    {
+      "name": "X.509 Certificate Issuer",
+      "wire_value": "0x4200B6",
+      "deprecated_in": "3.0"
+    },
+    {
+      "name": "X.509 Certificate Subject",
+      "wire_value": "0x4200B7",
+      "deprecated_in": "3.0"
+    }
+  ]
 }

@@ -79,5 +79,6 @@ pub(super) const RESULT_REASONS: &[(ResultReason, &str)] = &[
     (ResultReason::from_raw(0x0000_004A), "Unknown Object Group"),
     (ResultReason::from_raw(0x0000_004B), "Constraint Violation"),
     (ResultReason::from_raw(0x0000_004C), "Duplicate Process Request"),
+    (ResultReason::from_raw(0x0000_004D), "Circular Link Error"),
     (ResultReason::from_raw(0x0000_0100), "General Failure"),
 ];
