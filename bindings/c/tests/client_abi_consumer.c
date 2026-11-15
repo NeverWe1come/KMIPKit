@@ -11155,3 +11155,47 @@ cleanup:
     kmipkit_ttlv_structure_release(payload);
     return result == 1 ? 1 : -failure_stage;
 }
+
+/* KMIPKIT-0095-FR-001..005; KMIP 2.1 §§8.4–8.6 full response inspection. */
+struct response_view_probe { uint64_t length; int root_present; };
+static void inspect_response_view(const uint8_t *data, uint64_t length, void *context) {
+    struct response_view_probe *probe = context;
+    probe->length = length;
+    probe->root_present = data != NULL && length > 6;
+}
+int kmipkit_client_abi_c_consumer_response_views(kmipkit_client_batch_item_response_t *item) {
+    typedef int32_t (*renderer)(kmipkit_client_batch_item_response_t *,
+            kmipkit_codec_limits_t *, kmipkit_secret_bytes_t **);
+    const renderer renderers[] = {kmipkit_client_batch_item_response_ttlv_hex,
+        kmipkit_client_batch_item_response_json, kmipkit_client_batch_item_response_xml};
+    kmipkit_codec_limits_t *limits = NULL;
+    kmipkit_codec_limits_t *restricted = NULL;
+    if (kmipkit_codec_limits_defaults(&limits) != 0 ||
+            kmipkit_codec_limits_create(32, 64, 100000, &restricted) != 0) return 0;
+    int valid = 1;
+    for (size_t index = 0; index < sizeof(renderers) / sizeof(renderers[0]); ++index) {
+        kmipkit_secret_bytes_t *owner = NULL;
+        struct response_view_probe probe = {0, 0};
+        if (renderers[index](item, limits, &owner) != 0 || owner == NULL ||
+                kmipkit_secret_bytes_with_bytes(owner, inspect_response_view, &probe) != 0 ||
+                !probe.root_present || probe.length == 0) valid = 0;
+        if (index == 0 && probe.length > 0) {
+            kmipkit_codec_limits_t *binary_only = NULL;
+            kmipkit_secret_bytes_t *oversized = NULL;
+            if (kmipkit_codec_limits_create(probe.length / 2, 64, 100000, &binary_only) != 0 ||
+                    renderers[index](item, binary_only, &oversized) != KMIPKIT_ERROR_RESOURCE_LIMIT ||
+                    oversized != NULL) valid = 0;
+            kmipkit_secret_bytes_release(oversized);
+            kmipkit_codec_limits_release(binary_only);
+        }
+        kmipkit_secret_bytes_release(owner);
+        owner = (kmipkit_secret_bytes_t *)(uintptr_t)1;
+        if (renderers[index](item, restricted, &owner) != KMIPKIT_ERROR_RESOURCE_LIMIT || owner != NULL) valid = 0;
+        if (renderers[index](NULL, limits, &owner) != KMIPKIT_ERROR_INVALID_INPUT || owner != NULL) valid = 0;
+        if (renderers[index](item, NULL, &owner) != KMIPKIT_ERROR_INVALID_INPUT || owner != NULL) valid = 0;
+        if (renderers[index](item, limits, NULL) != KMIPKIT_ERROR_INVALID_INPUT) valid = 0;
+    }
+    kmipkit_codec_limits_release(limits);
+    kmipkit_codec_limits_release(restricted);
+    return valid;
+}

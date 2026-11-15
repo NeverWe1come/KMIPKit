@@ -38,6 +38,7 @@ use rustls::server::WebPkiClientVerifier;
 use rustls::{RootCertStore, ServerConfig, ServerConnection, StreamOwned};
 
 use super::*;
+use crate::extension_registry::credential_secrets::kmipkit_secret_bytes_release;
 use crate::kmipkit_byte_span_v1_t;
 
 fn coverage_authentication_handle() -> *mut kmipkit_authentication_t {
@@ -6723,6 +6724,9 @@ fn ffi_usage_allocation_ttlv_getter_fails_closed_for_invalid_and_unrelated_items
 
 #[link(name = "kmipkit_client_abi_c_consumer", kind = "static")]
 unsafe extern "C" {
+    fn kmipkit_client_abi_c_consumer_response_views(
+        item: *mut kmipkit_client_batch_item_response_t,
+    ) -> i32;
     fn kmipkit_client_abi_c_consumer_reads_async_response_v1(
         outcome: *mut kmipkit_client_async_operation_outcome_t,
         expected_operation: u32,
@@ -11472,6 +11476,37 @@ fn pkcs11_correlation_span_distinguishes_absence_from_present_empty() {
     assert_eq!(span.length, 0);
 }
 
+fn assert_response_view_encodings(item: *mut kmipkit_client_batch_item_response_t) {
+    // SAFETY: The fixture item remains live throughout the synchronous compiled C consumer.
+    assert_eq!(
+        unsafe { kmipkit_client_abi_c_consumer_response_views(item) },
+        1
+    );
+    // KMIPKIT-0095-FR-001..005; KMIP 2.1 §§8.4–8.6 and §9.13.
+    let limits = make_handle(
+        Kind::CodecLimits,
+        HandleValue::CodecLimits(Arc::new(CodecLimits::defaults())),
+    );
+    for render in [
+        kmipkit_client_batch_item_response_ttlv_hex,
+        kmipkit_client_batch_item_response_json,
+        kmipkit_client_batch_item_response_xml,
+    ] {
+        let mut output = ptr::null_mut();
+        assert_eq!(render(item, limits, &raw mut output), SUCCESS);
+        let owner = reference_handle(output, Kind::SecretBytes).expect("rendered owner is live");
+        let HandleValue::SecretBytes(secret) = &owner.value else {
+            panic!("wrong owner");
+        };
+        secret.with_bytes(|bytes| {
+            let text = std::str::from_utf8(bytes).expect("render is UTF-8");
+            assert!(text.starts_with("42007B") || text.contains("ResponseMessage"));
+        });
+        kmipkit_secret_bytes_release(output);
+    }
+    kmipkit_codec_limits_release(limits);
+}
+
 #[test]
 // KMIP 2.1 §9.13, Table 418: retain the ordered generic response extension.
 fn client_response_extension_abi_returns_ordered_generic_ttlv_copy() {
@@ -11521,7 +11556,6 @@ fn client_response_extension_abi_returns_ordered_generic_ttlv_copy() {
             ),
         ],
     );
-    kmipkit_ttlv::codec::decode(&response).expect("the fixture response is valid TTLV");
     let response = execute_single_abi_response(
         ClientRequest::CreateKeyPair(CreateKeyPairRequest::new()),
         b"key-pair",
@@ -11529,6 +11563,7 @@ fn client_response_extension_abi_returns_ordered_generic_ttlv_copy() {
     )
     .expect("a non-critical response extension is preserved");
     let item = client_batch_item_response_from(response);
+    assert_response_view_encodings(item);
     let mut count = u64::MAX;
     assert_eq!(
         kmipkit_client_batch_item_response_extension_count(item, &raw mut count),
@@ -11586,4 +11621,80 @@ fn successful_response_ttlv_absence_is_an_internal_error() {
         super::require_success_response_ttlv::<()>(None::<Result<(), i32>>),
         Err(ERROR_INTERNAL)
     );
+}
+
+#[test]
+fn response_views_keep_independent_owners_and_reject_dead_handles() {
+    // KMIPKIT-0095-FR-003/005; KMIP 2.1 §§8.4–8.6 retained response ownership.
+    let item = successful_pkcs11_response_item();
+    let limits = make_handle(
+        Kind::CodecLimits,
+        HandleValue::CodecLimits(Arc::new(CodecLimits::defaults())),
+    );
+    let mut output = ptr::null_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_json(item, limits, &raw mut output),
+        SUCCESS
+    );
+    kmipkit_client_batch_item_response_release(item);
+    kmipkit_codec_limits_release(limits);
+    let owner = reference_handle(output, Kind::SecretBytes).expect("independent render owner");
+    let HandleValue::SecretBytes(secret) = &owner.value else {
+        panic!("wrong owner");
+    };
+    secret.with_bytes(|bytes| {
+        assert!(
+            bytes
+                .windows(b"ResponseMessage".len())
+                .any(|word| word == b"ResponseMessage")
+        );
+    });
+    kmipkit_secret_bytes_release(output);
+    assert!(reference_handle(output, Kind::SecretBytes).is_err());
+    let mut absent = ptr::dangling_mut();
+    assert_eq!(
+        kmipkit_client_batch_item_response_json(item, limits, &raw mut absent),
+        ERROR_INVALID_INPUT
+    );
+    assert!(absent.is_null());
+}
+
+#[test]
+fn response_view_rejects_wrong_codec_limits_handle_kind() {
+    let item = successful_pkcs11_response_item();
+    let wrong_limits = make_handle(
+        Kind::CodecLimits,
+        HandleValue::Configuration(empty_client_configuration()),
+    );
+    let mut output = ptr::null_mut();
+
+    assert_eq!(
+        kmipkit_client_batch_item_response_json(item, wrong_limits, &raw mut output),
+        ERROR_INVALID_INPUT
+    );
+    assert!(output.is_null());
+
+    kmipkit_client_batch_item_response_release(item);
+    release(wrong_limits, Kind::CodecLimits);
+}
+
+#[test]
+fn response_view_error_categories_are_stable_and_payload_free() {
+    use kmipkit_client::ResponseEncodingError;
+    for (error, status) in [
+        (
+            ResponseEncodingError::InvalidResponseTree,
+            ERROR_INVALID_INPUT,
+        ),
+        (ResponseEncodingError::LimitExceeded, ERROR_RESOURCE_LIMIT),
+        (
+            ResponseEncodingError::AllocationFailed,
+            ERROR_RESOURCE_LIMIT,
+        ),
+        (ResponseEncodingError::EncodingFailed, ERROR_INTERNAL),
+    ] {
+        assert_eq!(response_view_error_status(error), status);
+        assert!(!format!("{error:?}: {error}").contains("fixture-v1"));
+        assert!(std::error::Error::source(&error).is_none());
+    }
 }

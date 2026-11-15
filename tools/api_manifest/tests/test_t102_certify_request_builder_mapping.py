@@ -161,9 +161,9 @@ BLOCKED_AFTER = 221
 # The snapshot includes approved KMIPKIT-0099 Create Split Key and KMIPKIT-0100
 # Register declarations, KMIPKIT-0101 lifecycle declarations, and KMIPKIT-0102
 # Rust plus KMIPKIT-0103 C, KMIPKIT-0104 Java, and KMIPKIT-0105 Python fluent
-# cryptographic operation builders. Includes the approved KMIPKIT-0093
-# inventory reconciliation.
-DECLARATIONS_SHA256 = "fc4fd19d9e768a325eade73d23ab709a02886ac365f23125b9dbb6ae2c4d2116"
+# cryptographic operation builders; KMIPKIT-0095 adds response rendering.
+# Includes the approved KMIPKIT-0093 inventory reconciliation.
+DECLARATIONS_SHA256 = "eb93c010d543229309e75ccc0f857130cfecc7bc68432b635697880729ac9fef"
 OPERATIONS_SHA256 = "2a6eb9fb6823b3456b3fb10b6d4af8477be9f1a1f68c06c252bb4873b272f3bc"
 
 

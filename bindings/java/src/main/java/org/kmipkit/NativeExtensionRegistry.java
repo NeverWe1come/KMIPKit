@@ -603,6 +603,9 @@ public final class NativeExtensionRegistry {
     public static native Object[] clientBatchItemResponseQueryTtlv(long itemResponse);
     public static native long[] clientBatchItemResponseQueryFieldCount(long itemResponse);
     public static native long[] clientBatchItemResponseQueryFieldAt(long itemResponse, long index);
+    public static native org.kmipkit.credentials.SecretBytes clientBatchItemResponseTtlvHex(long itemResponse, long[] limits);
+    public static native org.kmipkit.credentials.SecretBytes clientBatchItemResponseJson(long itemResponse, long[] limits);
+    public static native org.kmipkit.credentials.SecretBytes clientBatchItemResponseXml(long itemResponse, long[] limits);
     public static native Object[] clientBatchItemResponseRawTtlv(long itemResponse);
     public static native long clientBatchItemResponseHeaderTtlv(long itemResponse);
     public static native Object[] clientBatchItemResponseInterop(long itemResponse);

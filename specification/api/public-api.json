@@ -54777,6 +54777,312 @@
       },
       "ordering": "not-applicable",
       "legacyRegistry": false
+    },
+    {
+      "id": "client_batch_item_response_ttlv_hex",
+      "requirementIds": [
+        "KMIPKIT-0095-FR-001",
+        "KMIPKIT-0095-FR-002",
+        "KMIPKIT-0095-FR-003",
+        "KMIPKIT-0095-FR-004",
+        "KMIPKIT-0095-FR-005"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry::client_abi",
+        "name": "kmipkit_client_batch_item_response_ttlv_hex",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "*mut kmipkit_client_batch_item_response_t"
+          },
+          {
+            "name": "limits",
+            "type": "*mut kmipkit_codec_limits_t"
+          },
+          {
+            "name": "out_rendered",
+            "type": "*mut *mut kmipkit_secret_bytes_t"
+          }
+        ],
+        "returnType": "i32"
+      },
+      "c": {
+        "symbol": "kmipkit_client_batch_item_response_ttlv_hex",
+        "documentation": [
+          "Renders the complete retained ResponseMessage, including header and ordered batch, under caller codec limits.",
+          "Returns independently owned zeroizing UTF-8 bytes. Use kmipkit_secret_bytes_with_bytes for scoped access and kmipkit_secret_bytes_release to release them.",
+          "Output is null on failure. Errors contain no body. This inspection path never sends data."
+        ],
+        "parameters": [
+          {
+            "name": "item",
+            "kind": "handle",
+            "type": "kmipkit_client_batch_item_response_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_rendered",
+            "kind": "output",
+            "type": "kmipkit_secret_bytes_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "ClientBatchItemResult",
+        "method": "ttlvHex",
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseTtlvHex",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "SecretBytes"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "kmipkit.client.BatchItemResult.ttlv_hex",
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_batch_item_response_ttlv_hex",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "credentials.SecretBytes"
+      },
+      "ordering": "preserves-response-field-wire-order"
+    },
+    {
+      "id": "client_batch_item_response_json",
+      "requirementIds": [
+        "KMIPKIT-0095-FR-001",
+        "KMIPKIT-0095-FR-002",
+        "KMIPKIT-0095-FR-003",
+        "KMIPKIT-0095-FR-004",
+        "KMIPKIT-0095-FR-005"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry::client_abi",
+        "name": "kmipkit_client_batch_item_response_json",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "*mut kmipkit_client_batch_item_response_t"
+          },
+          {
+            "name": "limits",
+            "type": "*mut kmipkit_codec_limits_t"
+          },
+          {
+            "name": "out_rendered",
+            "type": "*mut *mut kmipkit_secret_bytes_t"
+          }
+        ],
+        "returnType": "i32"
+      },
+      "c": {
+        "symbol": "kmipkit_client_batch_item_response_json",
+        "documentation": [
+          "Renders the complete retained ResponseMessage, including header and ordered batch, under caller codec limits.",
+          "Returns independently owned zeroizing UTF-8 bytes. Use kmipkit_secret_bytes_with_bytes for scoped access and kmipkit_secret_bytes_release to release them.",
+          "Output is null on failure. Errors contain no body. This inspection path never sends data."
+        ],
+        "parameters": [
+          {
+            "name": "item",
+            "kind": "handle",
+            "type": "kmipkit_client_batch_item_response_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_rendered",
+            "kind": "output",
+            "type": "kmipkit_secret_bytes_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "ClientBatchItemResult",
+        "method": "json",
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseJson",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "SecretBytes"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "kmipkit.client.BatchItemResult.json",
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_batch_item_response_json",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "credentials.SecretBytes"
+      },
+      "ordering": "preserves-response-field-wire-order"
+    },
+    {
+      "id": "client_batch_item_response_xml",
+      "requirementIds": [
+        "KMIPKIT-0095-FR-001",
+        "KMIPKIT-0095-FR-002",
+        "KMIPKIT-0095-FR-003",
+        "KMIPKIT-0095-FR-004",
+        "KMIPKIT-0095-FR-005"
+      ],
+      "rust": {
+        "module": "kmipkit_ffi::extension_registry::client_abi",
+        "name": "kmipkit_client_batch_item_response_xml",
+        "owner": "ffi",
+        "requestBoundary": "not-applicable",
+        "parameters": [
+          {
+            "name": "item",
+            "type": "*mut kmipkit_client_batch_item_response_t"
+          },
+          {
+            "name": "limits",
+            "type": "*mut kmipkit_codec_limits_t"
+          },
+          {
+            "name": "out_rendered",
+            "type": "*mut *mut kmipkit_secret_bytes_t"
+          }
+        ],
+        "returnType": "i32"
+      },
+      "c": {
+        "symbol": "kmipkit_client_batch_item_response_xml",
+        "documentation": [
+          "Renders the complete retained ResponseMessage, including header and ordered batch, under caller codec limits.",
+          "Returns independently owned zeroizing UTF-8 bytes. Use kmipkit_secret_bytes_with_bytes for scoped access and kmipkit_secret_bytes_release to release them.",
+          "Output is null on failure. Errors contain no body. This inspection path never sends data."
+        ],
+        "parameters": [
+          {
+            "name": "item",
+            "kind": "handle",
+            "type": "kmipkit_client_batch_item_response_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_rendered",
+            "kind": "output",
+            "type": "kmipkit_secret_bytes_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ]
+      },
+      "java": {
+        "package": "org.kmipkit.extensions",
+        "class": "ClientBatchItemResult",
+        "method": "xml",
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "jniSymbol": "Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemResponseXml",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "SecretBytes"
+      },
+      "python": {
+        "module": "kmipkit.client",
+        "function": "kmipkit.client.BatchItemResult.xml",
+        "parameters": [
+          {
+            "name": "limits",
+            "type": "CodecLimits"
+          }
+        ],
+        "cffiSymbol": "kmipkit_client_batch_item_response_xml",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal"
+        ],
+        "returnType": "credentials.SecretBytes"
+      },
+      "ordering": "preserves-response-field-wire-order"
     }
   ],
   "errorCategories": [
@@ -714847,10 +715153,41 @@
         "KMIPKIT-0095-FR-004",
         "KMIPKIT-0095-FR-005"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation."
+      },
       "candidateSpecId": "KMIPKIT-0095",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::ClientBatchItemResponse::json"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_json"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.json"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.json"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ResponseViewsTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_views.py",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
     },
     {
       "declarationId": "rust-observed-50721bfeed3db00f2879",
@@ -714865,10 +715202,41 @@
         "KMIPKIT-0095-FR-004",
         "KMIPKIT-0095-FR-005"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation."
+      },
       "candidateSpecId": "KMIPKIT-0095",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::ClientBatchItemResponse::ttlv_hex"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_ttlv_hex"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.ttlvHex"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.ttlv_hex"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ResponseViewsTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_views.py",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
     },
     {
       "declarationId": "rust-observed-6621590fbc07ede71db2",
@@ -714883,10 +715251,41 @@
         "KMIPKIT-0095-FR-004",
         "KMIPKIT-0095-FR-005"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation."
+      },
       "candidateSpecId": "KMIPKIT-0095",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::ClientBatchItemResponse::xml"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_xml"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.xml"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.xml"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ResponseViewsTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_views.py",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
     },
     {
       "declarationId": "rust-observed-8ce7f848667287618924",
@@ -714901,10 +715300,41 @@
         "KMIPKIT-0095-FR-004",
         "KMIPKIT-0095-FR-005"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation."
+      },
       "candidateSpecId": "KMIPKIT-0095",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItemResponse::json"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_json"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.json"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.json"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ResponseViewsTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_views.py",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
     },
     {
       "declarationId": "rust-observed-bd31dedc5f1b947880a2",
@@ -714919,10 +715349,41 @@
         "KMIPKIT-0095-FR-004",
         "KMIPKIT-0095-FR-005"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation."
+      },
       "candidateSpecId": "KMIPKIT-0095",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItemResponse::ttlv_hex"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_ttlv_hex"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.ttlvHex"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.ttlv_hex"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ResponseViewsTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_views.py",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
     },
     {
       "declarationId": "rust-observed-6b35c1c5b42080462bfa",
@@ -714937,10 +715398,41 @@
         "KMIPKIT-0095-FR-004",
         "KMIPKIT-0095-FR-005"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation."
+      },
       "candidateSpecId": "KMIPKIT-0095",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItemResponse::xml"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_xml"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.xml"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.xml"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ResponseViewsTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_views.py",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
     },
     {
       "declarationId": "rust-observed-b30c28caa8c16c628350",
@@ -714955,10 +715447,41 @@
         "KMIPKIT-0095-FR-004",
         "KMIPKIT-0095-FR-005"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0095",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation."
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ResponseViewsTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_views.py",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ResponseEncodingError"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_json"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.json"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.json"
+        }
+      },
+      "candidateSpecId": "KMIPKIT-0095"
     },
     {
       "declarationId": "rust-observed-91c9d4ad8344905ab07c",
@@ -714973,10 +715496,41 @@
         "KMIPKIT-0095-FR-004",
         "KMIPKIT-0095-FR-005"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0095",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation."
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ResponseViewsTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_views.py",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ResponseEncodingError::AllocationFailed"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_RESOURCE_LIMIT"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ResourceLimitException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.ResourceLimitError"
+        }
+      },
+      "candidateSpecId": "KMIPKIT-0095"
     },
     {
       "declarationId": "rust-observed-9b8d2cb573ff70c316fe",
@@ -714991,10 +715545,41 @@
         "KMIPKIT-0095-FR-004",
         "KMIPKIT-0095-FR-005"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0095",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation."
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ResponseViewsTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_views.py",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ResponseEncodingError::EncodingFailed"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_json"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.json"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.json"
+        }
+      },
+      "candidateSpecId": "KMIPKIT-0095"
     },
     {
       "declarationId": "rust-observed-614853835dc02285d70d",
@@ -715009,10 +715594,41 @@
         "KMIPKIT-0095-FR-004",
         "KMIPKIT-0095-FR-005"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0095",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation."
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ResponseViewsTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_views.py",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ResponseEncodingError::InvalidResponseTree"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_INVALID_INPUT"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.InvalidInputException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.InvalidInputError"
+        }
+      },
+      "candidateSpecId": "KMIPKIT-0095"
     },
     {
       "declarationId": "rust-observed-bec26d33cfb564ec9df2",
@@ -715027,10 +715643,41 @@
         "KMIPKIT-0095-FR-004",
         "KMIPKIT-0095-FR-005"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0095",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation."
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ResponseViewsTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_views.py",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ResponseEncodingError::LimitExceeded"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_RESOURCE_LIMIT"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ResourceLimitException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.ResourceLimitError"
+        }
+      },
+      "candidateSpecId": "KMIPKIT-0095"
     },
     {
       "declarationId": "rust-observed-542f0f669a0b17e9b818",
@@ -715045,10 +715692,41 @@
         "KMIPKIT-0095-FR-004",
         "KMIPKIT-0095-FR-005"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0095",
-      "blockedReason": "The public Rust declaration has no resolved owner in the approved dependency inventory; assign an owner before advertising it."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation."
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ResponseViewsTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_views.py",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::ResponseEncodingError"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_json"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.json"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.json"
+        }
+      },
+      "candidateSpecId": "KMIPKIT-0095"
     },
     {
       "declarationId": "rust-observed-1bd88044722c8a867719",
@@ -715063,10 +715741,41 @@
         "KMIPKIT-0095-FR-004",
         "KMIPKIT-0095-FR-005"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0095",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation."
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ResponseViewsTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_views.py",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::ResponseEncodingError::AllocationFailed"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_RESOURCE_LIMIT"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ResourceLimitException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.ResourceLimitError"
+        }
+      },
+      "candidateSpecId": "KMIPKIT-0095"
     },
     {
       "declarationId": "rust-observed-9824290ccc6f31623de2",
@@ -715081,10 +715790,41 @@
         "KMIPKIT-0095-FR-004",
         "KMIPKIT-0095-FR-005"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0095",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation."
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ResponseViewsTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_views.py",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::ResponseEncodingError::EncodingFailed"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_json"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.json"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.json"
+        }
+      },
+      "candidateSpecId": "KMIPKIT-0095"
     },
     {
       "declarationId": "rust-observed-7a4da7a0df48c74e4197",
@@ -715099,10 +715839,41 @@
         "KMIPKIT-0095-FR-004",
         "KMIPKIT-0095-FR-005"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0095",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation."
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ResponseViewsTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_views.py",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::ResponseEncodingError::InvalidResponseTree"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_INVALID_INPUT"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.InvalidInputException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.InvalidInputError"
+        }
+      },
+      "candidateSpecId": "KMIPKIT-0095"
     },
     {
       "declarationId": "rust-observed-2174331666329c4a52c2",
@@ -715117,10 +715888,41 @@
         "KMIPKIT-0095-FR-004",
         "KMIPKIT-0095-FR-005"
       ],
-      "declarationState": "blocked",
+      "declarationState": "verified",
       "parityScope": "four-language",
-      "candidateSpecId": "KMIPKIT-0095",
-      "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation."
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ResponseViewsTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_views.py",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ],
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit",
+          "name": "kmipkit::ResponseEncodingError::LimitExceeded"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "KMIPKIT_ERROR_RESOURCE_LIMIT"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.ResourceLimitException"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.errors.ResourceLimitError"
+        }
+      },
+      "candidateSpecId": "KMIPKIT-0095"
     },
     {
       "declarationId": "rust-observed-kmipkit-0096-attribute-position-module",
@@ -763096,6 +763898,447 @@
           "name": "kmipkit.fluent.HashBuilder.with_options"
         }
       }
+    },
+    {
+      "declarationId": "kmipkit-0095-ttlv_hex-c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_item_response_ttlv_hex",
+      "capabilityId": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0095-FR-001",
+        "KMIPKIT-0095-FR-002",
+        "KMIPKIT-0095-FR-003",
+        "KMIPKIT-0095-FR-004",
+        "KMIPKIT-0095-FR-005"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation."
+      },
+      "candidateSpecId": "KMIPKIT-0095",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItemResponse::ttlv_hex"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_ttlv_hex"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.ttlvHex"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.ttlv_hex"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ResponseViewsTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_views.py",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0095-ttlv_hex-java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.ttlvHex",
+      "capabilityId": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0095-FR-001",
+        "KMIPKIT-0095-FR-002",
+        "KMIPKIT-0095-FR-003",
+        "KMIPKIT-0095-FR-004",
+        "KMIPKIT-0095-FR-005"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation."
+      },
+      "candidateSpecId": "KMIPKIT-0095",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItemResponse::ttlv_hex"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_ttlv_hex"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.ttlvHex"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.ttlv_hex"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ResponseViewsTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_views.py",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0095-ttlv_hex-python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.BatchItemResult.ttlv_hex",
+      "capabilityId": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0095-FR-001",
+        "KMIPKIT-0095-FR-002",
+        "KMIPKIT-0095-FR-003",
+        "KMIPKIT-0095-FR-004",
+        "KMIPKIT-0095-FR-005"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation."
+      },
+      "candidateSpecId": "KMIPKIT-0095",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItemResponse::ttlv_hex"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_ttlv_hex"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.ttlvHex"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.ttlv_hex"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ResponseViewsTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_views.py",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0095-json-c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_item_response_json",
+      "capabilityId": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0095-FR-001",
+        "KMIPKIT-0095-FR-002",
+        "KMIPKIT-0095-FR-003",
+        "KMIPKIT-0095-FR-004",
+        "KMIPKIT-0095-FR-005"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation."
+      },
+      "candidateSpecId": "KMIPKIT-0095",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItemResponse::json"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_json"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.json"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.json"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ResponseViewsTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_views.py",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0095-json-java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.json",
+      "capabilityId": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0095-FR-001",
+        "KMIPKIT-0095-FR-002",
+        "KMIPKIT-0095-FR-003",
+        "KMIPKIT-0095-FR-004",
+        "KMIPKIT-0095-FR-005"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation."
+      },
+      "candidateSpecId": "KMIPKIT-0095",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItemResponse::json"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_json"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.json"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.json"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ResponseViewsTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_views.py",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0095-json-python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.BatchItemResult.json",
+      "capabilityId": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0095-FR-001",
+        "KMIPKIT-0095-FR-002",
+        "KMIPKIT-0095-FR-003",
+        "KMIPKIT-0095-FR-004",
+        "KMIPKIT-0095-FR-005"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation."
+      },
+      "candidateSpecId": "KMIPKIT-0095",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItemResponse::json"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_json"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.json"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.json"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ResponseViewsTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_views.py",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0095-xml-c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_batch_item_response_xml",
+      "capabilityId": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0095-FR-001",
+        "KMIPKIT-0095-FR-002",
+        "KMIPKIT-0095-FR-003",
+        "KMIPKIT-0095-FR-004",
+        "KMIPKIT-0095-FR-005"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation."
+      },
+      "candidateSpecId": "KMIPKIT-0095",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItemResponse::xml"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_xml"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.xml"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.xml"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ResponseViewsTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_views.py",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0095-xml-java",
+      "packageId": "java-kmipkit",
+      "kind": "java-member",
+      "exportName": "org.kmipkit.extensions.ClientBatchItemResult.xml",
+      "capabilityId": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0095-FR-001",
+        "KMIPKIT-0095-FR-002",
+        "KMIPKIT-0095-FR-003",
+        "KMIPKIT-0095-FR-004",
+        "KMIPKIT-0095-FR-005"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation."
+      },
+      "candidateSpecId": "KMIPKIT-0095",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItemResponse::xml"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_xml"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.xml"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.xml"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ResponseViewsTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_views.py",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
+    },
+    {
+      "declarationId": "kmipkit-0095-xml-python",
+      "packageId": "python-kmipkit",
+      "kind": "python-export",
+      "exportName": "kmipkit.client.BatchItemResult.xml",
+      "capabilityId": "client_execution",
+      "requirementIds": [
+        "KMIPKIT-0095-FR-001",
+        "KMIPKIT-0095-FR-002",
+        "KMIPKIT-0095-FR-003",
+        "KMIPKIT-0095-FR-004",
+        "KMIPKIT-0095-FR-005"
+      ],
+      "declarationState": "verified",
+      "parityScope": "four-language",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation."
+      },
+      "candidateSpecId": "KMIPKIT-0095",
+      "languageMappings": {
+        "rust": {
+          "packageId": "rust-kmipkit-client",
+          "name": "kmipkit_client::ClientBatchItemResponse::xml"
+        },
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_batch_item_response_xml"
+        },
+        "java": {
+          "packageId": "java-kmipkit",
+          "name": "org.kmipkit.extensions.ClientBatchItemResult.xml"
+        },
+        "python": {
+          "packageId": "python-kmipkit",
+          "name": "kmipkit.client.BatchItemResult.xml"
+        }
+      },
+      "parityEvidenceIds": [
+        "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
+        "bindings/c/tests/client_abi_consumer.c",
+        "bindings/java/src/test/java/org/kmipkit/extensions/ResponseViewsTest.java",
+        "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java",
+        "bindings/python/tests/test_response_views.py",
+        "bindings/python/tests/test_response_raw_navigation.py"
+      ]
     }
   ],
   "approvedExclusions": [
@@ -1069256,6 +1070499,42 @@
         "evidence": "**Status**: Approved — design PR #10 was merged into `release/1.0.0` at `3638c6c7929992e8ced59a3903a0a6640f847069`; the required KMIPKIT-0003 implementation was merged at `b52df30648312f8c7703f511afe80a412cda66cd`."
       },
       "evidence": "The helper is explicitly documented for language bindings and used as internal adapter plumbing. The four-language owned value constructors and lifecycle APIs represent the product capability."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseTtlvHex",
+      "reason": "JNI plumbing for the typed response renderer; no independent product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation."
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and KMIPKIT-0095-FR-003. Applications use ClientBatchItemResult.ttlvHex(CodecLimits), returning an AutoCloseable native zeroizing owner."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseJson",
+      "reason": "JNI plumbing for the typed response renderer; no independent product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation."
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and KMIPKIT-0095-FR-003. Applications use ClientBatchItemResult.json(CodecLimits), returning an AutoCloseable native zeroizing owner."
+    },
+    {
+      "packageId": "java-kmipkit",
+      "exportName": "org.kmipkit.NativeExtensionRegistry.clientBatchItemResponseXml",
+      "reason": "JNI plumbing for the typed response renderer; no independent product capability.",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/095-fluent-response-views/spec.md",
+        "status": "Approved",
+        "evidence": "**Status**: Approved for implementation."
+      },
+      "evidence": "Reviewed against KMIPKIT-0043-FR-021 and KMIPKIT-0095-FR-003. Applications use ClientBatchItemResult.xml(CodecLimits), returning an AutoCloseable native zeroizing owner."
     }
   ],
   "apiLevels": [
@@ -1075035,7 +1076314,9 @@
           "org.kmipkit.ClientOperationException.causeCode",
           "org.kmipkit.ClientOperationException.deliveryStateCode",
           "org.kmipkit.ClientOperationException.statusCode",
+          "org.kmipkit.InvalidInputException",
           "org.kmipkit.ProtocolException",
+          "org.kmipkit.ResourceLimitException",
           "org.kmipkit.ServerResultException",
           "org.kmipkit.TransportException",
           "org.kmipkit.extensions.AsyncOperationOutcome.extensionCount",
@@ -1075053,13 +1076334,16 @@
           "org.kmipkit.extensions.ClientBatchItemResult",
           "org.kmipkit.extensions.ClientBatchItemResult.extensionCount",
           "org.kmipkit.extensions.ClientBatchItemResult.extensionTtlvAt",
+          "org.kmipkit.extensions.ClientBatchItemResult.json",
           "org.kmipkit.extensions.ClientBatchItemResult.metadata",
           "org.kmipkit.extensions.ClientBatchItemResult.outcomeKind",
           "org.kmipkit.extensions.ClientBatchItemResult.pendingCorrelationValue",
           "org.kmipkit.extensions.ClientBatchItemResult.resultReason",
           "org.kmipkit.extensions.ClientBatchItemResult.resultStatus",
           "org.kmipkit.extensions.ClientBatchItemResult.supportedVersions",
+          "org.kmipkit.extensions.ClientBatchItemResult.ttlvHex",
           "org.kmipkit.extensions.ClientBatchItemResult.uniqueBatchItemId",
+          "org.kmipkit.extensions.ClientBatchItemResult.xml",
           "org.kmipkit.extensions.ClientBatchResponse",
           "org.kmipkit.extensions.ClientBatchResponse.close",
           "org.kmipkit.extensions.ClientBatchResponse.itemAt",
@@ -1075075,7 +1076359,9 @@
           "org.kmipkit.ttlv.TtlvStructure"
         ],
         "c": [
+          "KMIPKIT_ERROR_INVALID_INPUT",
           "KMIPKIT_ERROR_PROTOCOL",
+          "KMIPKIT_ERROR_RESOURCE_LIMIT",
           "KMIPKIT_ERROR_SERVER_RESULT",
           "KMIPKIT_ERROR_TRANSPORT",
           "kmipkit_client_async_operation_outcome_extension_count",
@@ -1075088,10 +1076374,13 @@
           "kmipkit_client_batch_item_response_discover_versions_supported_versions",
           "kmipkit_client_batch_item_response_extension_count",
           "kmipkit_client_batch_item_response_extension_ttlv_at",
+          "kmipkit_client_batch_item_response_json",
           "kmipkit_client_batch_item_response_metadata_v1",
           "kmipkit_client_batch_item_response_pending_correlation_value",
           "kmipkit_client_batch_item_response_t",
+          "kmipkit_client_batch_item_response_ttlv_hex",
           "kmipkit_client_batch_item_response_unique_batch_item_id",
+          "kmipkit_client_batch_item_response_xml",
           "kmipkit_client_batch_response_item_at",
           "kmipkit_client_batch_response_item_count",
           "kmipkit_client_batch_response_release",
@@ -1075115,8 +1076404,11 @@
           "kmipkit::ClientBatchItemResponse",
           "kmipkit::ClientBatchItemResponse::discover_versions_supported_versions",
           "kmipkit::ClientBatchItemResponse::extensions",
+          "kmipkit::ClientBatchItemResponse::json",
           "kmipkit::ClientBatchItemResponse::outcome",
+          "kmipkit::ClientBatchItemResponse::ttlv_hex",
           "kmipkit::ClientBatchItemResponse::unique_batch_item_id",
+          "kmipkit::ClientBatchItemResponse::xml",
           "kmipkit::ClientBatchOutcome",
           "kmipkit::ClientBatchOutcome::Completed",
           "kmipkit::ClientBatchOutcome::Completed::0",
@@ -1075169,6 +1076461,11 @@
           "kmipkit::PendingOutcome",
           "kmipkit::PendingOutcome::asynchronous_correlation_value",
           "kmipkit::PendingOutcome::response",
+          "kmipkit::ResponseEncodingError",
+          "kmipkit::ResponseEncodingError::AllocationFailed",
+          "kmipkit::ResponseEncodingError::EncodingFailed",
+          "kmipkit::ResponseEncodingError::InvalidResponseTree",
+          "kmipkit::ResponseEncodingError::LimitExceeded",
           "kmipkit::protocol::KmipOperationResult",
           "kmipkit::protocol::KmipOperationResult::reason",
           "kmipkit::protocol::KmipOperationResult::status",
@@ -1075183,8 +1076480,11 @@
           "kmipkit_client::ClientBatchItemResponse",
           "kmipkit_client::ClientBatchItemResponse::discover_versions_supported_versions",
           "kmipkit_client::ClientBatchItemResponse::extensions",
+          "kmipkit_client::ClientBatchItemResponse::json",
           "kmipkit_client::ClientBatchItemResponse::outcome",
+          "kmipkit_client::ClientBatchItemResponse::ttlv_hex",
           "kmipkit_client::ClientBatchItemResponse::unique_batch_item_id",
+          "kmipkit_client::ClientBatchItemResponse::xml",
           "kmipkit_client::ClientBatchOutcome",
           "kmipkit_client::ClientBatchOutcome::Completed",
           "kmipkit_client::ClientBatchOutcome::Completed::0",
@@ -1075235,6 +1076535,11 @@
           "kmipkit_client::PendingOutcome",
           "kmipkit_client::PendingOutcome::asynchronous_correlation_value",
           "kmipkit_client::PendingOutcome::response",
+          "kmipkit_client::ResponseEncodingError",
+          "kmipkit_client::ResponseEncodingError::AllocationFailed",
+          "kmipkit_client::ResponseEncodingError::EncodingFailed",
+          "kmipkit_client::ResponseEncodingError::InvalidResponseTree",
+          "kmipkit_client::ResponseEncodingError::LimitExceeded",
           "kmipkit_protocol::KmipOperationResult",
           "kmipkit_protocol::KmipOperationResult::reason",
           "kmipkit_protocol::KmipOperationResult::status",
@@ -1075249,13 +1076554,16 @@
           "kmipkit.client.BatchItemResult",
           "kmipkit.client.BatchItemResult.extension_count",
           "kmipkit.client.BatchItemResult.extension_ttlv_at",
+          "kmipkit.client.BatchItemResult.json",
           "kmipkit.client.BatchItemResult.metadata",
           "kmipkit.client.BatchItemResult.outcome",
           "kmipkit.client.BatchItemResult.pending_correlation_value",
           "kmipkit.client.BatchItemResult.result_reason",
           "kmipkit.client.BatchItemResult.result_status",
           "kmipkit.client.BatchItemResult.supported_versions",
+          "kmipkit.client.BatchItemResult.ttlv_hex",
           "kmipkit.client.BatchItemResult.unique_batch_item_id",
+          "kmipkit.client.BatchItemResult.xml",
           "kmipkit.client.BatchOutcome",
           "kmipkit.client.BatchOutcome.COMPLETED",
           "kmipkit.client.BatchOutcome.PENDING",
@@ -1075301,6 +1076609,8 @@
           "kmipkit.errors.DeliveryState.NOT_SENT",
           "kmipkit.errors.DeliveryState.POSSIBLY_SENT",
           "kmipkit.errors.DeliveryState.RESPONSE_STARTED",
+          "kmipkit.errors.InvalidInputError",
+          "kmipkit.errors.ResourceLimitError",
           "kmipkit.ttlv.Structure"
         ]
       }
