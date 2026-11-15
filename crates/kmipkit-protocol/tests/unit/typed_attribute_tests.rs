@@ -322,4 +322,5 @@ fn long_integer_encoding_exercises_roundtrip() {
     let view = LongIntegerEncoding::value_view(ValueView::LongInteger(&value)).expect("valid view");
     assert_eq!(view, value);
     assert_eq!(encoded.item_type(), kmipkit_ttlv::ItemType::LongInteger);
+    assert!(LongIntegerEncoding::value_view(ValueView::Integer(&42)).is_err());
 }
