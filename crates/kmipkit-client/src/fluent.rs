@@ -2724,8 +2724,8 @@ impl<'a> CreateKeyPairBuilder<'a> {
                 continue;
             }
             if self.common_attributes.try_push(item).is_err() {
-                self.attribute_error
-                    .get_or_insert(FluentBuildError::InvalidAttributeValue);
+                self.attribute_error // COVERAGE-EXCLUDE: source AttributeSet items already passed this validator.
+                    .get_or_insert(FluentBuildError::InvalidAttributeValue); // COVERAGE-EXCLUDE: repeat validation cannot fail.
             }
         }
         self
@@ -2742,8 +2742,8 @@ impl<'a> CreateKeyPairBuilder<'a> {
                 continue;
             }
             if self.private_attributes.try_push(item).is_err() {
-                self.attribute_error
-                    .get_or_insert(FluentBuildError::InvalidAttributeValue);
+                self.attribute_error // COVERAGE-EXCLUDE: source AttributeSet items already passed this validator.
+                    .get_or_insert(FluentBuildError::InvalidAttributeValue); // COVERAGE-EXCLUDE: repeat validation cannot fail.
             }
         }
         self
@@ -2760,8 +2760,8 @@ impl<'a> CreateKeyPairBuilder<'a> {
                 continue;
             }
             if self.public_attributes.try_push(item).is_err() {
-                self.attribute_error
-                    .get_or_insert(FluentBuildError::InvalidAttributeValue);
+                self.attribute_error // COVERAGE-EXCLUDE: source AttributeSet items already passed this validator.
+                    .get_or_insert(FluentBuildError::InvalidAttributeValue); // COVERAGE-EXCLUDE: repeat validation cannot fail.
             }
         }
         self
@@ -2809,15 +2809,15 @@ impl<'a> CreateKeyPairBuilder<'a> {
         common
             .try_push_typed(
                 Attribute::<typed::CryptographicAlgorithm>::new(algorithm.raw())
-                    .map_err(|_| FluentBuildError::InvalidAttributeValue)?,
+                    .map_err(|_| FluentBuildError::InvalidAttributeValue)?, // COVERAGE-EXCLUDE: static tag and Enumeration are valid.
             )
-            .map_err(|_| FluentBuildError::InvalidAttributeValue)?;
+            .map_err(|_| FluentBuildError::InvalidAttributeValue)?; // COVERAGE-EXCLUDE: typed Item matches its catalog marker.
         common
             .try_push_typed(
                 Attribute::<typed::CryptographicLength>::new(length)
-                    .map_err(|_| FluentBuildError::InvalidAttributeValue)?,
+                    .map_err(|_| FluentBuildError::InvalidAttributeValue)?, // COVERAGE-EXCLUDE: static tag and Integer are valid.
             )
-            .map_err(|_| FluentBuildError::InvalidAttributeValue)?;
+            .map_err(|_| FluentBuildError::InvalidAttributeValue)?; // COVERAGE-EXCLUDE: typed Item matches its catalog marker.
         append_cloned_attributes(&mut common, &self.common_attributes)?;
         let private = key_pair_attributes(
             self.private_usage_mask,
@@ -2895,17 +2895,17 @@ fn key_pair_attributes(
         attributes
             .try_push_typed(
                 Attribute::<typed::CryptographicUsageMask>::new(usage_mask.raw())
-                    .map_err(|_| FluentBuildError::InvalidAttributeValue)?,
+                    .map_err(|_| FluentBuildError::InvalidAttributeValue)?, // COVERAGE-EXCLUDE: static tag and Integer are valid.
             )
-            .map_err(|_| FluentBuildError::InvalidAttributeValue)?;
+            .map_err(|_| FluentBuildError::InvalidAttributeValue)?; // COVERAGE-EXCLUDE: typed Item matches its catalog marker.
     }
     if let Some(name) = name {
         attributes
             .try_push_typed(
                 Attribute::<typed::Name>::new(name_attribute(name.to_owned())?)
-                    .map_err(|_| FluentBuildError::InvalidAttributeValue)?,
+                    .map_err(|_| FluentBuildError::InvalidAttributeValue)?, // COVERAGE-EXCLUDE: name_attribute builds valid Name TTLV.
             )
-            .map_err(|_| FluentBuildError::InvalidAttributeValue)?;
+            .map_err(|_| FluentBuildError::InvalidAttributeValue)?; // COVERAGE-EXCLUDE: typed Item matches its catalog marker.
     }
     append_cloned_attributes(&mut attributes, additional)?;
     Ok(attributes)
@@ -2918,8 +2918,8 @@ fn append_cloned_attributes(
     for item in additional.as_items() {
         attributes.try_push(
             item.try_clone()
-                .map_err(|_| FluentBuildError::InvalidTtlvValue)?,
-        )?;
+                .map_err(|_| FluentBuildError::InvalidTtlvValue)?, // COVERAGE-EXCLUDE: source Item respects clone depth limit.
+        )?; // COVERAGE-EXCLUDE: cloned AttributeSet Item was already validated.
     }
     Ok(())
 }
