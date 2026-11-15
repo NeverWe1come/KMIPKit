@@ -442,3 +442,24 @@
   manifest requirement registry. Added the existing approved requirement ID
   before regeneration; full manifest validation and generation then passed.
 
+### T102 snapshot follow-up
+
+#### Red
+
+- The exact-head CI for PR #231 failed
+  `test_non_target_declarations_and_operation_rows_match_snapshot` because
+  the new Set Attribute builder declarations were included in an unrelated
+  Certify non-target fingerprint. The focused test reproduced the mismatch:
+  expected `cd0161cb...`, observed `1ee37489...`.
+
+#### Green
+
+- Excluded only the KMIPKIT-0093 Set Attribute builder paths from the Certify
+  non-target fingerprint. The dedicated Set Attribute manifest test continues
+  to assert the complete exact public Rust path set and the explicit binding
+  parity gap.
+- `python3 -B -m unittest
+  tools.api_manifest.tests.test_t102_certify_request_builder_mapping
+  tools.api_manifest.tests.test_0093_set_attribute_builder_manifest -v`
+  passes all 9 tests, and `git diff --check` passes.
+

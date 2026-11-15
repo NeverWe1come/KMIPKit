@@ -386,6 +386,18 @@ class T102CertifyRequestBuilderMappingTests(unittest.TestCase):
         } | PKCS11_REQUEST_EXTENSION_IDS | {
             target["id"] for target in REQUEST_CONSTRUCTION_TARGETS
         } | KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS
+        # Set Attribute has its own exact-surface contract in the dedicated
+        # KMIPKIT-0093 test. Keep those declarations out of this unrelated
+        # Certify non-target snapshot as the fluent builder is introduced.
+        target_ids |= {
+            row["declarationId"]
+            for row in self.manifest["publicDeclarations"]
+            if row.get("candidateSpecId") == "KMIPKIT-0093"
+            and (
+                "SetAttributeBuilder" in row["exportName"]
+                or "RequestBuilder<'a>::set_attribute" in row["exportName"]
+            )
+        }
         other_declarations = copy.deepcopy([
             row for row in self.manifest["publicDeclarations"] if row["declarationId"] not in target_ids
         ])
