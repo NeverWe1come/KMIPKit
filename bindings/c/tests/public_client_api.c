@@ -100,6 +100,7 @@ int kmipkit_public_async_batch_items_probe(void) {
     kmipkit_process_request_t *process_request = NULL;
     kmipkit_query_async_requests_request_t *query_request = NULL;
     kmipkit_client_batch_item_t *item = NULL;
+    kmipkit_ttlv_structure_t *payload = NULL;
     uint32_t operation = UINT32_C(0);
     int32_t status;
 
@@ -111,12 +112,17 @@ int kmipkit_public_async_batch_items_probe(void) {
     status = kmipkit_client_batch_item_cancel_from_request(cancel_request, &item);
     if (status != INT32_C(0) || item == NULL ||
         kmipkit_client_batch_item_operation(item, &operation) != INT32_C(0) ||
-        operation != KMIPKIT_ENUMERATION_OPERATION_CANCEL) {
+        operation != KMIPKIT_ENUMERATION_OPERATION_CANCEL ||
+        kmipkit_cancel_request_to_ttlv_payload(cancel_request, &payload) != INT32_C(0) ||
+        payload == NULL) {
         kmipkit_client_batch_item_release(item);
+        kmipkit_ttlv_structure_release(payload);
         kmipkit_cancel_request_release(cancel_request);
         return 2;
     }
     kmipkit_client_batch_item_release(item);
+    kmipkit_ttlv_structure_release(payload);
+    payload = NULL;
     kmipkit_cancel_request_release(cancel_request);
 
     status = kmipkit_poll_request_create(
@@ -127,12 +133,17 @@ int kmipkit_public_async_batch_items_probe(void) {
     status = kmipkit_client_batch_item_poll_from_request(poll_request, &item);
     if (status != INT32_C(0) || item == NULL ||
         kmipkit_client_batch_item_operation(item, &operation) != INT32_C(0) ||
-        operation != KMIPKIT_ENUMERATION_OPERATION_POLL) {
+        operation != KMIPKIT_ENUMERATION_OPERATION_POLL ||
+        kmipkit_poll_request_to_ttlv_payload(poll_request, &payload) != INT32_C(0) ||
+        payload == NULL) {
         kmipkit_client_batch_item_release(item);
+        kmipkit_ttlv_structure_release(payload);
         kmipkit_poll_request_release(poll_request);
         return 4;
     }
     kmipkit_client_batch_item_release(item);
+    kmipkit_ttlv_structure_release(payload);
+    payload = NULL;
     kmipkit_poll_request_release(poll_request);
 
     status = kmipkit_process_request_create(
@@ -143,12 +154,17 @@ int kmipkit_public_async_batch_items_probe(void) {
     status = kmipkit_client_batch_item_process_from_request(process_request, &item);
     if (status != INT32_C(0) || item == NULL ||
         kmipkit_client_batch_item_operation(item, &operation) != INT32_C(0) ||
-        operation != KMIPKIT_ENUMERATION_OPERATION_PROCESS) {
+        operation != KMIPKIT_ENUMERATION_OPERATION_PROCESS ||
+        kmipkit_process_request_to_ttlv_payload(process_request, &payload) != INT32_C(0) ||
+        payload == NULL) {
         kmipkit_client_batch_item_release(item);
+        kmipkit_ttlv_structure_release(payload);
         kmipkit_process_request_release(process_request);
         return 6;
     }
     kmipkit_client_batch_item_release(item);
+    kmipkit_ttlv_structure_release(payload);
+    payload = NULL;
     kmipkit_process_request_release(process_request);
 
     status = kmipkit_query_async_requests_request_create(&query_request);
@@ -160,10 +176,19 @@ int kmipkit_public_async_batch_items_probe(void) {
         kmipkit_client_batch_item_operation(item, &operation) != INT32_C(0) ||
         operation != KMIPKIT_ENUMERATION_OPERATION_QUERY_ASYNCHRONOUS_REQUESTS) {
         kmipkit_client_batch_item_release(item);
+        kmipkit_ttlv_structure_release(payload);
         kmipkit_query_async_requests_request_release(query_request);
         return 8;
     }
+    if (kmipkit_query_async_requests_request_to_ttlv_payload(query_request, &payload) != INT32_C(0) ||
+        payload == NULL) {
+        kmipkit_client_batch_item_release(item);
+        kmipkit_ttlv_structure_release(payload);
+        kmipkit_query_async_requests_request_release(query_request);
+        return 9;
+    }
     kmipkit_client_batch_item_release(item);
+    kmipkit_ttlv_structure_release(payload);
     kmipkit_query_async_requests_request_release(query_request);
     return 0;
 }

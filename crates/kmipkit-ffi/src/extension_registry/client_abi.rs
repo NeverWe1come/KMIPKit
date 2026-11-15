@@ -2734,6 +2734,82 @@ pub extern "C" fn kmipkit_query_async_requests_request_to_ttlv_payload(
     })
 }
 
+/// Creates an independent typed Cancel batch item from a borrowed request model.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_cancel_from_request(
+    request: *mut crate::kmipkit_cancel_request_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let request = read_handle!(request, CancelRequest);
+        let HandleValue::CancelRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = try_ffi!(batch_item_handle(ClientRequest::cancel(
+            request.as_ref().clone(),
+        )));
+        SUCCESS
+    })
+}
+
+/// Creates an independent typed Poll batch item from a borrowed request model.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_poll_from_request(
+    request: *mut crate::kmipkit_poll_request_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let request = read_handle!(request, PollRequest);
+        let HandleValue::PollRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = try_ffi!(batch_item_handle(ClientRequest::poll(
+            request.as_ref().clone(),
+        )));
+        SUCCESS
+    })
+}
+
+/// Creates an independent typed Process batch item from a borrowed request model.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_process_from_request(
+    request: *mut crate::kmipkit_process_request_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let request = read_handle!(request, ProcessRequest);
+        let HandleValue::ProcessRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = try_ffi!(batch_item_handle(ClientRequest::process(
+            request.as_ref().clone(),
+        )));
+        SUCCESS
+    })
+}
+
+/// Creates an independent typed Query Asynchronous Requests item from a borrowed model.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_query_async_requests_from_request(
+    request: *mut crate::kmipkit_query_async_requests_request_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let request = read_handle!(request, QueryAsyncRequestsRequest);
+        let HandleValue::QueryAsyncRequestsRequest(request) = &request.value else {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        };
+        *out = try_ffi!(batch_item_handle(ClientRequest::query_async_requests(
+            request.as_ref().clone(),
+        )));
+        SUCCESS
+    })
+}
+
 /// Executes exactly one KMIP 2.1 Poll request with the caller's opaque correlation bytes.
 ///
 /// The outcome is caller-owned and must be released with

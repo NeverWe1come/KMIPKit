@@ -1576,6 +1576,18 @@ ffi.cdef(
     int32_t kmipkit_client_batch_item_register(
         kmipkit_register_request_t *request,
         kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_cancel_from_request(
+        kmipkit_cancel_request_t *request,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_poll_from_request(
+        kmipkit_poll_request_t *request,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_process_from_request(
+        kmipkit_process_request_t *request,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_query_async_requests_from_request(
+        kmipkit_query_async_requests_request_t *request,
+        kmipkit_client_batch_item_t **out_item);
     void kmipkit_register_request_release(kmipkit_register_request_t *handle);
     int32_t kmipkit_client_batch_item_with_unique_batch_item_id(
         kmipkit_client_batch_item_t *item, const uint8_t *id_data,

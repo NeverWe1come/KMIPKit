@@ -4954,6 +4954,46 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
     });
 }
 
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemCancelFromRequest(
+        JNIEnv* env, jclass, jlong raw_request) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_cancel_from_request(
+                    from_java_handle<kmipkit_cancel_request_t>(raw_request), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemPollFromRequest(
+        JNIEnv* env, jclass, jlong raw_request) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_poll_from_request(
+                    from_java_handle<kmipkit_poll_request_t>(raw_request), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemProcessFromRequest(
+        JNIEnv* env, jclass, jlong raw_request) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_process_from_request(
+                    from_java_handle<kmipkit_process_request_t>(raw_request), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemQueryAsyncRequestsFromRequest(
+        JNIEnv* env, jclass, jlong raw_request) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_query_async_requests_from_request(
+                    from_java_handle<kmipkit_query_async_requests_request_t>(raw_request), output);
+        });
+    });
+}
+
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_revocationReasonCreate(
         JNIEnv* env, jclass, jlong raw_code, jbyteArray raw_message) {
     return guarded<jlong>(env, 0, [&] {

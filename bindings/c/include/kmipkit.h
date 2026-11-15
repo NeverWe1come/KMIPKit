@@ -3298,6 +3298,22 @@ int32_t kmipkit_client_get_attributes_v1(kmipkit_client_t * client, const kmipki
  * invalid_input when a NULL array has a nonzero count. */
 /* KMIPKIT-0109-FR-001, KMIPKIT-0109-FR-002, KMIPKIT-0109-FR-003, KMIPKIT-0109-FR-004, KMIPKIT-0109-FR-005, KMIPKIT-0109-FR-006 */
 int32_t kmipkit_client_get_attributes_with_options_v1(kmipkit_client_t * client, const kmipkit_unique_identifier_v1_t * unique_identifier, const kmipkit_attribute_reference_v1_t * attribute_references, uint64_t attribute_reference_count, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);
+/* Creates an independent typed Cancel batch item from a borrowed request model (§6.1.5); the request remains caller-owned.
+ */
+/* KMIPKIT-0009-FR-001, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-011, KMIPKIT-0093-FR-012 */
+int32_t kmipkit_client_batch_item_cancel_from_request(kmipkit_cancel_request_t * request, kmipkit_client_batch_item_t ** out_item);
+/* Creates an independent typed Poll batch item from a borrowed request model (§6.1.38); the request remains caller-owned.
+ */
+/* KMIPKIT-0009-FR-001, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-011, KMIPKIT-0093-FR-012 */
+int32_t kmipkit_client_batch_item_poll_from_request(kmipkit_poll_request_t * request, kmipkit_client_batch_item_t ** out_item);
+/* Creates an independent typed Process batch item from a borrowed request model (§6.1.39); the request remains caller-owned.
+ */
+/* KMIPKIT-0009-FR-001, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-011, KMIPKIT-0093-FR-012 */
+int32_t kmipkit_client_batch_item_process_from_request(kmipkit_process_request_t * request, kmipkit_client_batch_item_t ** out_item);
+/* Creates an independent typed Query Asynchronous Requests batch item from a borrowed request model (§6.1.41); the request remains caller-owned.
+ */
+/* KMIPKIT-0009-FR-001, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-011, KMIPKIT-0093-FR-012 */
+int32_t kmipkit_client_batch_item_query_async_requests_from_request(kmipkit_query_async_requests_request_t * request, kmipkit_client_batch_item_t ** out_item);
 /* KMIPKIT-0006-FR-021, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_message_extension_view_ttlv(kmipkit_message_extension_view_t * extension, kmipkit_ttlv_structure_t ** out_structure);
 /* KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */

@@ -38082,4 +38082,24 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "rust-kmipkit-protocol",
         "kmipkit_protocol::named_values_generated::values::versions::v3_0::enumeration::result_reason::name",
     ),
+    (
+        "KMIPKIT-0093:async-batch-item:cancel:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItem::cancel",
+    ),
+    (
+        "KMIPKIT-0093:async-batch-item:poll:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItem::poll",
+    ),
+    (
+        "KMIPKIT-0093:async-batch-item:process:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItem::process",
+    ),
+    (
+        "KMIPKIT-0093:async-batch-item:query_async_requests:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItem::query_async_requests",
+    ),
 ];

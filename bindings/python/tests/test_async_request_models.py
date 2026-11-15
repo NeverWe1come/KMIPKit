@@ -13,6 +13,7 @@ from kmipkit.async_operations import (
     ProcessRequest,
     QueryAsyncRequestsRequest,
 )
+from kmipkit.protocol_values import Operation
 
 
 CORRELATION_VALUE_TAG = 0x00420006
@@ -85,13 +86,13 @@ def test_cancel_poll_and_process_build_payloads_without_executing_operations() -
 def test_async_request_models_convert_to_matching_batch_items() -> None:
     correlation = b"\x00\xff\x41"
     conversions = (
-        (CancelRequest, extensions.client_batch_item_cancel_from_request, 0x19),
-        (PollRequest, extensions.client_batch_item_poll_from_request, 0x1A),
-        (ProcessRequest, extensions.client_batch_item_process_from_request, 0x1B),
+        (CancelRequest, extensions.client_batch_item_cancel_from_request, Operation.CANCEL),
+        (PollRequest, extensions.client_batch_item_poll_from_request, Operation.POLL),
+        (ProcessRequest, extensions.client_batch_item_process_from_request, Operation.PROCESS),
         (
             QueryAsyncRequestsRequest,
             extensions.client_batch_item_query_async_requests_from_request,
-            0x39,
+            Operation.QUERY_ASYNCHRONOUS_REQUESTS,
         ),
     )
     for request_type, to_batch_item, expected_operation in conversions:

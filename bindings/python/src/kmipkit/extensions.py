@@ -38,6 +38,12 @@ from ._handles import (
 )
 from .validation import ValidationReport
 from ._protocol_version import ProtocolVersion
+from .async_operations import (
+    CancelRequest,
+    PollRequest,
+    ProcessRequest,
+    QueryAsyncRequestsRequest,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -143,6 +149,10 @@ _CLIENT_ABI_HANDLE_FUNCTIONS = frozenset(
         "kmipkit_client_batch_item_deactivate",
         "kmipkit_client_batch_item_encapsulate",
         "kmipkit_client_batch_item_decapsulate",
+        "kmipkit_client_batch_item_cancel_from_request",
+        "kmipkit_client_batch_item_poll_from_request",
+        "kmipkit_client_batch_item_process_from_request",
+        "kmipkit_client_batch_item_query_async_requests_from_request",
     }
 )
 
@@ -2065,6 +2075,65 @@ def client_batch_item_revoke(request: RevokeRequest) -> ClientBatchItem:
     return _wrap_owned_handle(ClientBatchItem, handle)
 
 
+def _client_batch_item_from_async_request(
+    request: NativeHandle,
+    request_type: type[NativeHandle],
+    native_request_type: str,
+    function_name: str,
+) -> ClientBatchItem:
+    if not isinstance(request, request_type):
+        errors.raise_for_status(4)
+    with _NATIVE_CALL_LOCK:
+        address = int(ffi.cast("uintptr_t", request._pointer()))
+        native_request = _client_ffi.cast(f"{native_request_type} *", address)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t", function_name, (native_request,)
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_cancel_from_request(request: CancelRequest) -> ClientBatchItem:
+    """Create an independent Cancel item while keeping the request caller-owned."""
+    return _client_batch_item_from_async_request(
+        request,
+        CancelRequest,
+        "kmipkit_cancel_request_t",
+        "kmipkit_client_batch_item_cancel_from_request",
+    )
+
+
+def client_batch_item_poll_from_request(request: PollRequest) -> ClientBatchItem:
+    """Create an independent Poll item while keeping the request caller-owned."""
+    return _client_batch_item_from_async_request(
+        request,
+        PollRequest,
+        "kmipkit_poll_request_t",
+        "kmipkit_client_batch_item_poll_from_request",
+    )
+
+
+def client_batch_item_process_from_request(request: ProcessRequest) -> ClientBatchItem:
+    """Create an independent Process item while keeping the request caller-owned."""
+    return _client_batch_item_from_async_request(
+        request,
+        ProcessRequest,
+        "kmipkit_process_request_t",
+        "kmipkit_client_batch_item_process_from_request",
+    )
+
+
+def client_batch_item_query_async_requests_from_request(
+    request: QueryAsyncRequestsRequest,
+) -> ClientBatchItem:
+    """Create an independent Query Asynchronous Requests item and retain the model."""
+    return _client_batch_item_from_async_request(
+        request,
+        QueryAsyncRequestsRequest,
+        "kmipkit_query_async_requests_request_t",
+        "kmipkit_client_batch_item_query_async_requests_from_request",
+    )
+
+
 def _native_structure(value: ttlv.Structure | None, *, required: bool = False) -> Any:
     if value is None:
         if required:
@@ -3814,6 +3883,10 @@ __all__ = [
     "client_batch_item_signature_verify",
     "client_batch_item_register",
     "client_batch_item_revoke",
+    "client_batch_item_cancel_from_request",
+    "client_batch_item_poll_from_request",
+    "client_batch_item_process_from_request",
+    "client_batch_item_query_async_requests_from_request",
     "client_batch_item_create",
     "client_batch_item_create_key_pair",
     "client_batch_item_create_split_key",

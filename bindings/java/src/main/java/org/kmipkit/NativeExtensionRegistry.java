@@ -422,6 +422,10 @@ public final class NativeExtensionRegistry {
     public static native long registerRequestWithOpaqueObjectContext(long request, int context);
     public static native long registerRequestWithProtectionStorageMasks(long request, long masks);
     public static native long clientBatchItemRegister(long request);
+    public static native long clientBatchItemCancelFromRequest(long request);
+    public static native long clientBatchItemPollFromRequest(long request);
+    public static native long clientBatchItemProcessFromRequest(long request);
+    public static native long clientBatchItemQueryAsyncRequestsFromRequest(long request);
     public static native long cancelRequestCreate(byte[] correlationValue);
     public static native boolean withCancelRequestCorrelationValue(
             long request, Consumer<ByteBuffer> callback);
