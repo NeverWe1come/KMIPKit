@@ -167,9 +167,10 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
 # The snapshot includes approved KMIPKIT-0099 Create Split Key and KMIPKIT-0100
 # Register declarations, KMIPKIT-0101 lifecycle declarations, and KMIPKIT-0102
 # Rust plus KMIPKIT-0103 C, KMIPKIT-0104 Java, and KMIPKIT-0105 Python fluent
-# cryptographic operation builders; KMIPKIT-0095 adds response rendering.
-# Includes the approved KMIPKIT-0093 inventory reconciliation.
-DECLARATIONS_SHA256 = "c806948eb352f4c613ef183e9c2d57cd203e779425e5114718192ab7ee67677c"
+# cryptographic operation builders; KMIPKIT-0095 adds response rendering and
+# KMIPKIT-0108 adds attribute-read declarations; this inventory also includes
+# the approved KMIPKIT-0093 reconciliation and narrowed T101 mappings.
+DECLARATIONS_SHA256 = "6de945965f8a0ba4b0f659da7ac63c8fcca623fb1787ab7a6d1ab8883ff5ffc4"
 OPERATIONS_SHA256 = "2a6eb9fb6823b3456b3fb10b6d4af8477be9f1a1f68c06c252bb4873b272f3bc"
 
 

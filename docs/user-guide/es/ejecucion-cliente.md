@@ -952,6 +952,49 @@ con su tipo; Revoke rechaza Compromise Occurrence Date si el motivo no es Key
 Compromise o CA Compromise. `RequestOptions` de intercambio se configura por
 separado del Asynchronous Indicator de la cabecera.
 
+## Lectura fluida de atributos en Rust
+
+KMIPKIT-0108 añade los builders `get_attributes()` y
+`get_attribute_list()`. Conservan los contratos de las requests y responses
+tipadas existentes, incluido el orden de Attribute References, el rechazo de
+referencias duplicadas, la diferencia entre Attributes ausente y presente pero
+vacío, y los resultados Pending/Failure.
+
+```rust,kmipkit-test
+use kmipkit_client::Client;
+use kmipkit_protocol::AttributeReference;
+use kmipkit_ttlv::codec::CodecLimits;
+
+#[allow(dead_code)]
+fn fluent_attribute_reads(client: &mut Client) -> Result<(), Box<dyn std::error::Error>> {
+    let limits = CodecLimits::defaults();
+    let attributes = client.request().get_attributes()
+        .unique_identifier("existing-key")
+        .attribute_reference(AttributeReference::tag(0x0042_002F))
+        .execute(&limits)?;
+    let _typed_attributes = attributes.outcome().response().get_attributes();
+
+    let names = client.request().get_attribute_list()
+        .unique_identifier("existing-key")
+        .execute(&limits)?;
+    let _typed_names = names.outcome().response().get_attribute_list();
+
+    let placeholder = client.request().get_attribute_list().to_batch_item()?;
+    let _ = placeholder;
+    Ok(())
+}
+
+fn main() {
+    let _ = fluent_attribute_reads;
+}
+```
+
+`execute()` envía una operación independiente, por lo que requiere el
+identificador. Puede omitirse al convertir a elemento de batch si un mensaje
+anterior proporciona el KMIP ID Placeholder. La vista específica de cada
+operación conserva los campos presentes en la respuesta; no solicita atributos
+ausentes ni reintenta.
+
 ## Peticiones criptográficas fluidas en Rust
 
 KMIPKIT-0102 añade builders de Rust para Encrypt, Decrypt, Sign, Signature

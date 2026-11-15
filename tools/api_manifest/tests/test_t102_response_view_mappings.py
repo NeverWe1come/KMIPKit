@@ -171,22 +171,22 @@ EXPECTED = (
 # They also include the 0047 release stack and reconciled 0048/0049/0050 inventories.
 # The snapshot includes the approved KMIPKIT-0052 async typed-reader routes.
 # It also includes the approved KMIPKIT-0099 Create Split Key and KMIPKIT-0100
-# Register declarations, lifecycle declarations, KMIPKIT-0102 crypto builders,
-# the KMIPKIT-0103 C and KMIPKIT-0104 Java crypto facades, and KMIPKIT-0093
-# inventory reconciliation. It also includes the approved KMIPKIT-0096 Python
-# expert-position slice; the previous fingerprint predated those declaration updates.
-UNCHANGED_DECLARATIONS_SHA256 = "8413d5b71db408ee4f6baad7851e7fe83ebfc9b111aeb40a566f5cd489b3cf0f"
+# Register declarations, lifecycle declarations, KMIPKIT-0102 Rust, KMIPKIT-0103
+# C, KMIPKIT-0104 Java, and KMIPKIT-0105 Python crypto facades; KMIPKIT-0093
+# reconciliation; KMIPKIT-0096 Python expert attributes; and KMIPKIT-0108
+# attribute operations. The previous fingerprint predates those additions.
+UNCHANGED_DECLARATIONS_SHA256 = "022261c3ccd0643e1a3f575b86566912257c0232997e783f3d92cf87ead06e5d"
 UNCHANGED_OPERATIONS_SHA256 = "9ee0f7c51c05a8abd96af7f6d3017f3ffb780c4262f231eaf3cb8c01a38147c7"
 # T098's maintainer-approved reconciliation updates lifecycle approval evidence
 # and inherited requirement links outside the T102 declaration/operation rows.
 # The test separately pins those T098 records; this fingerprint covers the
 # resulting manifest baseline after the explicit T102 normalizations below.
 # The non-target snapshot includes the async reader routes, exact Python adapter
-# exclusions, KMIPKIT-0101/0102/0103/0104 declarations, and KMIPKIT-0093
-# reconciliation, including the approved KMIPKIT-0096 Python expert-position
-# slice. R002's additive requirement links and C copy caveat are normalized in
-# the snapshot comparison below and tested by the dedicated 0093 contract suite.
-OTHER_MANIFEST_SHA256 = "ca813ff1e1ebbece6749597c8cb979d7e551f9c4f82dc912dc7d1ef399abe23d"
+# exclusions, KMIPKIT-0101 through KMIPKIT-0105 declarations, and KMIPKIT-0093
+# reconciliation, including KMIPKIT-0096 expert attributes and KMIPKIT-0108
+# attribute operations. R002's additive requirement links and C copy caveat are
+# normalized in the snapshot comparison below and tested by the 0093 suite.
+OTHER_MANIFEST_SHA256 = "4421848ea2e40a5eaa6b1061fb578a297c1e6d88fa26c2954c110387612ac7b6"
 EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",

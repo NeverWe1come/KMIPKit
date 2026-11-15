@@ -6,14 +6,15 @@ use std::ops::BitOr;
 
 use kmipkit_protocol::attribute::typed;
 use kmipkit_protocol::{
-    ActivateRequest, ArchiveRequest, Attribute, AttributeDefinition, AttributeSet,
-    AttributeSetError, CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest,
+    ActivateRequest, ArchiveRequest, Attribute, AttributeDefinition, AttributeReference,
+    AttributeSet, AttributeSetError, CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest,
     CryptographicAlgorithm, CryptographicParameters, DecryptRequest, DestroyRequest,
-    EncryptRequest, GetRequest, HashRequest, LocateRequest, MacRequest, MacVerifyRequest,
-    ManagedObject, ObjectGroupMember, ObjectType, OpaqueObjectContext, OperationData,
-    RecertifyRequest, RecoverRequest, RegisterRequest, RekeyKeyPairRequest, RekeyRequest,
-    RevocationReason, RevokeRequest, SecretBytes, SignRequest, SignatureVerifyRequest,
-    SplitKeyMethod, StorageStatusMask, UniqueIdentifier, ValidateKmipRequest,
+    EncryptRequest, GetAttributeListRequest, GetAttributesRequest, GetRequest, HashRequest,
+    LocateRequest, MacRequest, MacVerifyRequest, ManagedObject, ObjectGroupMember, ObjectType,
+    OpaqueObjectContext, OperationData, RecertifyRequest, RecoverRequest, RegisterRequest,
+    RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest, SecretBytes, SignRequest,
+    SignatureVerifyRequest, SplitKeyMethod, StorageStatusMask, UniqueIdentifier,
+    ValidateKmipRequest,
 };
 use kmipkit_transport::{RequestDeliveryState, RequestOptions};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
@@ -220,6 +221,25 @@ impl<'a> RequestBuilder<'a> {
             options: None,
             asynchronous_indicator: None,
         }
+    }
+
+    /// Begins a typed Get Attributes request with no Attribute References.
+    ///
+    /// With no references, the server returns all attributes. A text Unique
+    /// Identifier can be added with [`GetAttributesBuilder::unique_identifier`].
+    #[must_use]
+    pub fn get_attributes(self) -> GetAttributesBuilder<'a> {
+        GetAttributesBuilder::new(self.client)
+    }
+
+    /// Begins a typed Get Attribute List request with its Unique Identifier
+    /// omitted.
+    ///
+    /// The server resolves the KMIP ID Placeholder when this builder is used
+    /// in a batch that contains a preceding operation.
+    #[must_use]
+    pub fn get_attribute_list(self) -> GetAttributeListBuilder<'a> {
+        GetAttributeListBuilder::new(self.client)
     }
 
     /// Begins constructing a typed Destroy request for an explicit identifier.
@@ -2833,6 +2853,227 @@ pub struct DestroyBuilder<'a> {
     request: DestroyRequest,
     options: Option<RequestOptions>,
     asynchronous_indicator: Option<u32>,
+}
+
+/// A fluent builder for the existing typed Get Attributes request.
+pub struct GetAttributesBuilder<'a> {
+    client: &'a mut Client,
+    unique_identifier: Option<String>,
+    attribute_references: Vec<AttributeReference>,
+    options: Option<RequestOptions>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl<'a> GetAttributesBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            client,
+            unique_identifier: None,
+            attribute_references: Vec::new(),
+            options: None,
+            asynchronous_indicator: None,
+        }
+    }
+
+    /// Selects a text Unique Identifier. Omit this method to preserve the
+    /// protocol's optional identifier or batch placeholder behavior.
+    #[must_use]
+    pub fn unique_identifier(mut self, value: &str) -> Self {
+        self.unique_identifier = Some(value.to_owned());
+        self
+    }
+
+    /// Appends an Attribute Reference, preserving caller order.
+    #[must_use]
+    pub fn attribute_reference(mut self, value: AttributeReference) -> Self {
+        self.attribute_references.push(value);
+        self
+    }
+
+    /// Sets exchange-local transport options.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.options = Some(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.asynchronous_indicator = Some(value);
+        self
+    }
+
+    fn construct_request(&self) -> Result<GetAttributesRequest, FluentBuildError> {
+        let request = GetAttributesRequest::try_new(
+            self.unique_identifier.clone(),
+            self.attribute_references.iter().cloned(),
+        )
+        .map_err(|_| FluentBuildError::InvalidRequest)?;
+        validate_fluent_request(&request)?;
+        Ok(request)
+    }
+
+    /// Validates the complete typed request without transport or consumption.
+    ///
+    /// # Errors
+    /// Returns an error if the typed request is invalid.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        self.construct_request().map(|_| ())
+    }
+
+    /// Builds the existing typed Get Attributes request.
+    ///
+    /// # Errors
+    /// Returns an error if the typed request is invalid.
+    pub fn build_request(&self) -> Result<GetAttributesRequest, FluentBuildError> {
+        self.construct_request()
+    }
+
+    /// Builds the existing typed Get Attributes request without sending it.
+    ///
+    /// # Errors
+    /// Returns an error if the typed request is invalid.
+    pub fn build(self) -> Result<GetAttributesRequest, FluentBuildError> {
+        self.construct_request()
+    }
+
+    /// Converts the request to the existing typed batch item.
+    ///
+    /// # Errors
+    /// Returns an error if the typed request is invalid.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        Ok(ClientBatchItem::new(ClientRequest::GetAttributes(
+            self.construct_request()?,
+        )))
+    }
+
+    /// Executes one typed Get Attributes exchange and returns its operation-
+    /// specific response view.
+    ///
+    /// # Errors
+    ///
+    /// Returns a payload-free local validation error with `NotSent`, or the
+    /// existing protocol or transport error with its delivery state.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let request = self
+            .construct_request()
+            .map_err(fluent_client_validation_error)?;
+        execute_fluent_request(
+            self.client,
+            ClientRequest::GetAttributes(request),
+            self.asynchronous_indicator,
+            self.options,
+            limits,
+        )
+    }
+}
+
+/// A fluent builder for the existing typed Get Attribute List request.
+pub struct GetAttributeListBuilder<'a> {
+    client: &'a mut Client,
+    unique_identifier: Option<String>,
+    options: Option<RequestOptions>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl<'a> GetAttributeListBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            client,
+            unique_identifier: None,
+            options: None,
+            asynchronous_indicator: None,
+        }
+    }
+
+    /// Selects a text Unique Identifier. Omit this method to preserve the
+    /// protocol's optional identifier or batch placeholder behavior.
+    #[must_use]
+    pub fn unique_identifier(mut self, value: &str) -> Self {
+        self.unique_identifier = Some(value.to_owned());
+        self
+    }
+
+    /// Sets exchange-local transport options.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.options = Some(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.asynchronous_indicator = Some(value);
+        self
+    }
+
+    fn construct_request(&self) -> Result<GetAttributeListRequest, FluentBuildError> {
+        let request = GetAttributeListRequest::new(self.unique_identifier.clone());
+        validate_fluent_request(&request)?;
+        Ok(request)
+    }
+
+    /// Validates the complete typed request without transport or consumption.
+    ///
+    /// # Errors
+    /// Returns an error if the typed request is invalid.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        self.construct_request().map(|_| ())
+    }
+
+    /// Builds the existing typed Get Attribute List request.
+    ///
+    /// # Errors
+    /// Returns an error if the typed request is invalid.
+    pub fn build_request(&self) -> Result<GetAttributeListRequest, FluentBuildError> {
+        self.construct_request()
+    }
+
+    /// Builds the existing typed Get Attribute List request without sending it.
+    ///
+    /// # Errors
+    /// Returns an error if the typed request is invalid.
+    pub fn build(self) -> Result<GetAttributeListRequest, FluentBuildError> {
+        self.construct_request()
+    }
+
+    /// Converts the request to the existing typed batch item.
+    ///
+    /// # Errors
+    /// Returns an error if the typed request is invalid.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        Ok(ClientBatchItem::new(ClientRequest::GetAttributeList(
+            self.construct_request()?,
+        )))
+    }
+
+    /// Executes one typed Get Attribute List exchange and returns its
+    /// operation-specific response view.
+    ///
+    /// # Errors
+    ///
+    /// Returns a payload-free local validation error with `NotSent`, or the
+    /// existing protocol or transport error with its delivery state.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let request = self
+            .construct_request()
+            .map_err(fluent_client_validation_error)?;
+        execute_fluent_request(
+            self.client,
+            ClientRequest::GetAttributeList(request),
+            self.asynchronous_indicator,
+            self.options,
+            limits,
+        )
+    }
 }
 
 impl DestroyBuilder<'_> {
