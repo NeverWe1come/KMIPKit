@@ -16,6 +16,11 @@ import org.kmipkit.ttlv.TtlvValue;
 
 /** Rust-backed builder for a typed KMIP Create Symmetric Key request. */
 public final class SymmetricKeyBuilder implements AutoCloseable {
+    @FunctionalInterface
+    private interface AttributeItemAction {
+        void apply(long builder, long item);
+    }
+
     private final NativeHandle handle;
     private final KmipClient client;
     private RequestOptions options;
@@ -83,12 +88,24 @@ public final class SymmetricKeyBuilder implements AutoCloseable {
 
     /** Adds an explicit generic item; Rust validates known tags and rejects message extensions. */
     public SymmetricKeyBuilder attributeItem(TtlvItem item) {
+        return withAttributeItem(item, NativeExtensionRegistry::symmetricKeyBuilderAddAttributeItem);
+    }
+
+    private SymmetricKeyBuilder withAttributeItem(TtlvItem item, AttributeItemAction action) {
         if (item == null) throw new InvalidInputException("attribute item is invalid");
         NativeHandle.withValues(new NativeHandle[] {handle, item.nativeHandleOwner()}, values -> {
-            NativeExtensionRegistry.symmetricKeyBuilderAddAttributeItem(values[0], values[1]);
+            action.apply(values[0], values[1]);
             return null;
         });
         return this;
+    }
+
+    /** Inserts an explicit expert item at its zero-based position in final Object Attributes. */
+    public SymmetricKeyBuilder attributeItemAt(int index, TtlvItem item) {
+        if (index < 0) throw new InvalidInputException("attribute position is invalid");
+        return withAttributeItem(item, (builder, rawItem) ->
+                NativeFluentRegistry.symmetricKeyBuilderInsertAttributeItem(
+                        builder, index, rawItem));
     }
 
     /** Adds a Vendor Attribute whose required structure is assembled and checked in Rust. */
