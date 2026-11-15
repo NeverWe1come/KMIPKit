@@ -891,6 +891,29 @@ class PublicApiParityTests(unittest.TestCase):
                     "symmetric_key_builder_set_length",
                     "symmetric_key_builder_set_name",
                     "symmetric_key_builder_set_usage_mask",
+                    # The Java Create Key Pair facade owns the C ABI calls;
+                    # these C declarations do not map one-to-one to JNI symbols.
+                    "create_key_pair_builder_add_common_attribute_item",
+                    "create_key_pair_builder_add_common_catalogued_attribute",
+                    "create_key_pair_builder_add_common_vendor_attribute",
+                    "create_key_pair_builder_add_private_attribute_item",
+                    "create_key_pair_builder_add_private_catalogued_attribute",
+                    "create_key_pair_builder_add_private_vendor_attribute",
+                    "create_key_pair_builder_add_public_attribute_item",
+                    "create_key_pair_builder_add_public_catalogued_attribute",
+                    "create_key_pair_builder_add_public_vendor_attribute",
+                    "create_key_pair_builder_build_batch_item",
+                    "create_key_pair_builder_create",
+                    "create_key_pair_builder_execute_v1",
+                    "create_key_pair_builder_execute_with_options_v1",
+                    "create_key_pair_builder_set_algorithm",
+                    "create_key_pair_builder_set_asynchronous_indicator",
+                    "create_key_pair_builder_set_length",
+                    "create_key_pair_builder_set_private_name",
+                    "create_key_pair_builder_set_private_usage_mask",
+                    "create_key_pair_builder_set_public_name",
+                    "create_key_pair_builder_set_public_usage_mask",
+                    "create_key_pair_builder_validate",
                 } | CRYPTO_RESPONSE_TTLV_AGGREGATE_FUNCTIONS:
                     self.assertNotIn("jniSymbol", java)
                     if function["id"] == "client_batch_item_count":

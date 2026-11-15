@@ -11,6 +11,10 @@ const BLOCKED_C_SYMBOLS: [&str; 0] = [];
 fn starts_at_or_delegates_to_shared_panic_boundary(body: &str) -> bool {
     let body = body.trim_start();
     body.starts_with("ffi_entrypoint(||")
+        || body.starts_with("set_key_pair_name(")
+        || body.starts_with("add_key_pair_attribute_item(")
+        || body.starts_with("add_key_pair_catalogued_attribute(")
+        || body.starts_with("add_key_pair_vendor_attribute(")
         || body.starts_with("typed_fields_to_item(")
         || body.starts_with("managed_object_from_fields_impl(")
         || body.starts_with("convert_typed_item(")
@@ -90,6 +94,7 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
             "crypto_response_ttlv",
             "discover_versions_request_item",
             "ffi_runtime_metadata",
+            "fluent_create_key_pair_parity",
             "fluent_dx_api",
             "generic_ttlv_model",
             "hashed_password_timestamp_sequence",
