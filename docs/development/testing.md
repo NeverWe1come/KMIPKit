@@ -107,23 +107,45 @@ shrinking to retain minimal failures. Property tests begin in the foundation;
 coverage-guided fuzzing complements them for parser and extension-schema
 validation.
 
-### Extension schema fuzzing
+### Extension schema and codec fuzzing
 
-The `extension_schema` libFuzzer target decodes at most 4 KiB of input with a
-64-Structure and 512-Item limit, then validates any decoded root Structure
-against a fixed nested extension schema. Schema mismatches are expected; a
-panic, partial value, or limit bypass is not. Run it with the repository's
-nightly toolchain and pinned `cargo-fuzz` 0.13.2 installed:
+The repository maintains five coverage-guided libFuzzer targets in the `fuzz/`
+workspace:
+- `extension_schema`: decodes and validates nested extension schemas against arbitrary TTLV.
+- `ttlv_decode`: exercises raw TTLV parser boundaries, recursion limits, and type validation.
+- `json_codec`: exercises JSON framing, structural parsing, numbers, and hex decoders.
+- `wire_and_xml_preflight`: exercises raw TLS stream framing and preflight XML parsing against malformed entities and DTDs.
+- `s2c_and_multi_version`: exercises server-to-client dispatch and multi-version negotiation against arbitrary TTLV, JSON, and XML payloads.
+
+Run them with the repository's nightly toolchain and pinned `cargo-fuzz` 0.13.2 installed:
 
 ```text
 cargo +nightly install cargo-fuzz --version 0.13.2 --locked
-cargo +nightly fuzz run extension_schema -- -runs=1000 -max_len=4096 -timeout=5
+cargo +nightly fuzz run <target_name> -- -runs=1000 -max_len=4096 -timeout=5
 ```
 
-Pull-request CI runs the same bounded smoke campaign in `fuzz-smoke`. Keep
-minimized crashes under `fuzz/artifacts/extension_schema/` for triage, and
+Pull-request CI runs the same bounded smoke campaign across all five targets in `fuzz-smoke`.
+Keep minimized crashes under `fuzz/artifacts/<target_name>/` for triage, and
 promote any regression input into a deterministic protocol test before fixing
 it.
+
+### Pre-release hardening campaign runner
+
+For complete pre-release hardening verification (Miri strict-provenance checks,
+extended negative tests, AddressSanitizer and UndefinedBehaviorSanitizer sweeps
+for C and JNI native bindings, and coverage-guided fuzzing), use the automated
+campaign runner script:
+
+```bash
+# Fast smoke verification across all 4 hardening pillars:
+python3 scripts/run_hardening_campaign.py --smoke
+
+# Full extended campaign:
+python3 scripts/run_hardening_campaign.py --runs 50000 --max-time 120
+```
+
+The campaign execution produces a signed-off evidence summary in
+`docs/security/pre-release-hardening-evidence.md`.
 
 ### Client tests
 

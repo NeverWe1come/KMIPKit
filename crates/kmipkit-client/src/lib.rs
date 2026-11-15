@@ -100,6 +100,76 @@ pub mod test_support {
     pub fn encoded_batch_item_operation(item: ClientBatchItem) -> Result<u32, ProtocolError> {
         crate::execute::encoded_batch_item_operation_for_test(item)
     }
+
+    pub mod json {
+        use kmipkit_ttlv::Item;
+        use kmipkit_ttlv::codec::CodecLimits;
+        use zeroize::Zeroizing;
+
+        /// Decodes a JSON byte slice into a TTLV item under the provided limits.
+        ///
+        /// # Errors
+        ///
+        /// Returns an error string if JSON decoding fails.
+        pub fn decode(bytes: &[u8], limits: &CodecLimits) -> Result<Item, String> {
+            crate::json_encoding::decode(bytes, limits).map_err(|e| format!("{e:?}"))
+        }
+
+        /// Encodes a TTLV item into JSON bytes under the provided limits.
+        ///
+        /// # Errors
+        ///
+        /// Returns an error string if JSON encoding fails.
+        pub fn encode(item: &Item, limits: &CodecLimits) -> Result<Zeroizing<Vec<u8>>, String> {
+            crate::json_encoding::encode(item, limits).map_err(|e| format!("{e:?}"))
+        }
+    }
+
+    pub mod xml {
+        use kmipkit_ttlv::Item;
+        use kmipkit_ttlv::codec::CodecLimits;
+        use zeroize::Zeroizing;
+
+        /// Decodes an XML byte slice into a TTLV item under the provided limits.
+        ///
+        /// # Errors
+        ///
+        /// Returns an error string if XML decoding fails.
+        pub fn decode(bytes: &[u8], limits: &CodecLimits) -> Result<Item, String> {
+            crate::xml_codec::decode(bytes, limits).map_err(|e| format!("{e:?}"))
+        }
+
+        /// Encodes a TTLV item into XML bytes under the provided limits.
+        ///
+        /// # Errors
+        ///
+        /// Returns an error string if XML encoding fails.
+        pub fn encode(item: &Item, limits: &CodecLimits) -> Result<Zeroizing<Vec<u8>>, String> {
+            crate::xml_codec::encode(item, limits).map_err(|e| format!("{e:?}"))
+        }
+    }
+
+    pub mod s2c {
+        use kmipkit_transport::WireEncoding;
+        use kmipkit_ttlv::codec::CodecLimits;
+
+        /// Decodes an incoming server batch from encoded bytes under the provided limits.
+        ///
+        /// # Errors
+        ///
+        /// Returns an error string if batch decoding fails.
+        pub fn decode_server_batch(
+            bytes: &[u8],
+            encoding: WireEncoding,
+            limits: &CodecLimits,
+        ) -> Result<(), String> {
+            crate::server_to_client::IncomingServerBatch::from_encoded_bytes(
+                bytes, encoding, limits,
+            )
+            .map(|_| ())
+            .map_err(|e| format!("{e:?}"))
+        }
+    }
 }
 
 #[cfg(test)]
@@ -432,3 +502,7 @@ mod server_to_client_tests;
 #[cfg(test)]
 #[path = "../tests/unit/set_endpoint_role_execution_tests.rs"]
 mod set_endpoint_role_execution_tests;
+
+#[cfg(test)]
+#[path = "../tests/unit/test_support_tests.rs"]
+mod test_support_tests;
