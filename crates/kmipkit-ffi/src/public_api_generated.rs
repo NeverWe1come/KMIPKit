@@ -36018,6 +36018,16 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "kmipkit::ResponseEncodingError::LimitExceeded",
     ),
     (
+        "rust-observed-kmipkit-0096-attribute-at-module",
+        "rust-kmipkit-client",
+        "kmipkit_client::fluent::CreateSymmetricKeyBuilder::attribute_at",
+    ),
+    (
+        "rust-observed-kmipkit-0096-attribute-at-root",
+        "rust-kmipkit-client",
+        "kmipkit_client::CreateSymmetricKeyBuilder::attribute_at",
+    ),
+    (
         "T091:fluent-rust-map:b032afc80e7f963c",
         "rust-kmipkit-client",
         "kmipkit_client::fluent::CreateSymmetricKeyBuilder::attribute_item",

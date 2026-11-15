@@ -5,6 +5,22 @@ use std::sync::Arc;
 
 type SymmetricBuilder = kmipkit_client::fluent::CreateSymmetricKeyBuilder<'static>;
 
+fn symmetric_builder_validation_status(operation: impl FnOnce() -> i32) -> i32 {
+    let status = operation();
+    if status != SUCCESS {
+        LAST_ERROR.with(|last_error| {
+            let mut error = last_error.get();
+            // These two local builder calls cannot reach transport. Preserve
+            // the generic recorder for other operations and error categories.
+            if error.status == status && error.category == ERROR_CATEGORY_VALIDATION {
+                error.delivery = DELIVERY_STATE_NOT_SENT;
+                last_error.set(error);
+            }
+        });
+    }
+    status
+}
+
 fn inherited_timeout() -> kmipkit_timeout_limit_v1_t {
     kmipkit_timeout_limit_v1_t {
         kind: 0,
@@ -566,17 +582,19 @@ pub extern "C" fn kmipkit_symmetric_key_builder_insert_attribute_item(
     item: *mut kmipkit_ttlv_item_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        let item = try_ffi!(validated_expert_attribute_item(item));
-        let Ok(index) = usize::try_from(index) else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        try_ffi!(update_symmetric_builder(builder, |builder| {
-            builder.attribute_at(
-                kmipkit_client::fluent::FluentAttributePosition::ObjectAttributes { index },
-                item,
-            )
-        }));
-        SUCCESS
+        symmetric_builder_validation_status(|| {
+            let item = try_ffi!(validated_expert_attribute_item(item));
+            let Ok(index) = usize::try_from(index) else {
+                return record_ffi_error(ERROR_INVALID_INPUT); // COVERAGE-EXCLUDE: The guard is unreachable on tested 64-bit targets.
+            };
+            try_ffi!(update_symmetric_builder(builder, |builder| {
+                builder.attribute_at(
+                    kmipkit_client::fluent::FluentAttributePosition::ObjectAttributes { index },
+                    item,
+                )
+            }));
+            SUCCESS
+        })
     })
 }
 
@@ -619,27 +637,29 @@ pub extern "C" fn kmipkit_symmetric_key_builder_build_batch_item(
     out_item: *mut *mut kmipkit_client_batch_item_t,
 ) -> i32 {
     ffi_entrypoint(|| {
-        let out = out_slot!(out_item);
-        let handle = read_handle!(builder, SymmetricKeyBuilder);
-        let HandleValue::SymmetricKeyBuilder(builder) = &handle.value else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Ok(builder) = builder.lock() else {
-            return record_ffi_error(ERROR_INTERNAL);
-        };
-        let Some(builder) = builder.as_ref() else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        let Ok(request) = builder.build_request() else {
-            return record_ffi_error(ERROR_INVALID_INPUT);
-        };
-        *out = try_ffi!(try_make_handle(
-            Kind::BatchItem,
-            HandleValue::BatchItem(Box::new(ClientBatchItem::new(ClientRequest::Create(
-                request,
-            )))),
-        ));
-        SUCCESS
+        symmetric_builder_validation_status(|| {
+            let out = out_slot!(out_item);
+            let handle = read_handle!(builder, SymmetricKeyBuilder);
+            let HandleValue::SymmetricKeyBuilder(builder) = &handle.value else {
+                return record_ffi_error(ERROR_INVALID_INPUT);
+            };
+            let Ok(builder) = builder.lock() else {
+                return record_ffi_error(ERROR_INTERNAL);
+            };
+            let Some(builder) = builder.as_ref() else {
+                return record_ffi_error(ERROR_INVALID_INPUT);
+            };
+            let Ok(request) = builder.build_request() else {
+                return record_ffi_error(ERROR_INVALID_INPUT);
+            };
+            *out = try_ffi!(try_make_handle(
+                Kind::BatchItem,
+                HandleValue::BatchItem(Box::new(ClientBatchItem::new(ClientRequest::Create(
+                    request,
+                )))),
+            ));
+            SUCCESS
+        })
     })
 }
 

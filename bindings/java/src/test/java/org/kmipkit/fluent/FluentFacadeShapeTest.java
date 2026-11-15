@@ -3,9 +3,12 @@ package org.kmipkit.fluent;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.SocketTimeoutException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -76,9 +79,9 @@ final class FluentFacadeShapeTest {
     @Test
     void createBuilderUsesRustValidationAndProducesTypedCreateItem() {
         try (SymmetricKeyBuilder builder = new SymmetricKeyBuilder(null)) {
-            assertThrows(InvalidInputException.class, builder::build);
-            assertThrows(InvalidInputException.class,
-                    () -> builder.aes256().build());
+            assertUnsentValidation(assertThrows(ClientOperationException.class, builder::build), 4);
+            assertUnsentValidation(assertThrows(ClientOperationException.class,
+                    () -> builder.aes256().build()), 4);
             assertThrows(InvalidInputException.class, () -> builder.algorithm(-1));
             assertThrows(InvalidInputException.class, () -> builder.name(null));
             assertThrows(InvalidInputException.class, () -> builder.withOptions(null));
@@ -95,6 +98,67 @@ final class FluentFacadeShapeTest {
             builder.close();
             assertThrows(InvalidInputException.class, builder::build);
         }
+    }
+
+    @Test
+    void expertPositionValidationIsTypedAndNotSentBeforeAnyConnection() throws Exception {
+        // KMIPKIT-0096-FR-003; KMIP v2.1 sections 4-5 and ADR-0012.
+        try (ServerSocket listener = new ServerSocket(0);
+                ClientExtensionRegistry registry = ClientExtensionRegistry.create(
+                        List.of(), ExtensionRegistryLimits.defaults());
+                ClientConfiguration configuration = ClientConfiguration.create(registry);
+                TransportConfiguration transport = TransportConfiguration.builder()
+                        .rawTls("127.0.0.1", listener.getLocalPort())
+                        .clientIdentityPem(new byte[][] {fixture("client-cert.pem")}, fixture("client-key.pem"))
+                        .trustCertificatesPem(new byte[][] {fixture("server-cert.pem")}).build();
+                KmipClient client = KmipClient.create(configuration, transport);
+                RawTag raw = RawTag.fromRaw(0x540001);
+                Tag tag = raw.checked();
+                TtlvValue value = TtlvValue.TextString(
+                        "position-private-value".getBytes(java.nio.charset.StandardCharsets.UTF_8), CodecLimits.defaults());
+                TtlvItem item = TtlvItem.create(tag, value, CodecLimits.defaults())) {
+            listener.setSoTimeout(100);
+            for (int[] positions : new int[][] {{99}, {0, 0}}) {
+                try (SymmetricKeyBuilder builder = client.request().createSymmetricKey()) {
+                    builder.aes256().usageMask((int) CryptographicUsageMask.ENCRYPT);
+                    for (int position : positions) builder.attributeItemAt(position, item);
+                    assertUnsentValidation(assertThrows(ClientOperationException.class, builder::build), 4);
+                    assertUnsentValidation(assertThrows(ClientOperationException.class,
+                            () -> builder.execute(CodecLimits.defaults())), 4);
+                    assertThrows(SocketTimeoutException.class, listener::accept);
+                }
+            }
+        }
+    }
+
+    @Test
+    void expertInsertionReportsNativeTypedValidationAndPreservesOtherArgumentErrors() {
+        // Catalogued Cryptographic Algorithm requires Enumeration, not TextString.
+        CodecLimits limits = CodecLimits.defaults();
+        try (RawTag raw = RawTag.fromRaw(0x420028);
+                Tag tag = raw.checked();
+                TtlvValue value = TtlvValue.TextString(
+                        "position-private-value".getBytes(java.nio.charset.StandardCharsets.UTF_8), limits);
+                TtlvItem item = TtlvItem.create(tag, value, limits);
+                SymmetricKeyBuilder builder = new SymmetricKeyBuilder(null)) {
+            assertUnsentValidation(assertThrows(ClientOperationException.class,
+                    () -> builder.attributeItemAt(0, item)), 13);
+            assertThrows(InvalidInputException.class,
+                    () -> NativeFluentRegistry.symmetricKeyBuilderInsertAttributeItem(0, -1, 0));
+            assertThrows(InvalidInputException.class,
+                    () -> org.kmipkit.NativeExtensionRegistry.symmetricKeyBuilderSetAlgorithm(0, 3));
+            assertThrows(InvalidInputException.class, () -> builder.attributeItemAt(-1, item));
+            assertThrows(InvalidInputException.class, () -> builder.attributeItemAt(0, null));
+        }
+    }
+
+    private static void assertUnsentValidation(ClientOperationException failure, int status) {
+        assertEquals(status, failure.statusCode());
+        assertEquals(1, failure.categoryCode());
+        assertEquals(1, failure.causeCode());
+        assertEquals(1, failure.deliveryStateCode());
+        assertNull(failure.getCause());
+        assertFalse(failure.toString().contains("position-private-value"));
     }
 
     @Test
@@ -157,7 +221,7 @@ final class FluentFacadeShapeTest {
             builder.aes256()
                     .usageMask((int) CryptographicUsageMask.ENCRYPT)
                     .attributeItemAt(99, item);
-            assertThrows(InvalidInputException.class, builder::build);
+            assertUnsentValidation(assertThrows(ClientOperationException.class, builder::build), 4);
         }
     }
 

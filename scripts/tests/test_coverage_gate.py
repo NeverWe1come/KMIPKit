@@ -1050,6 +1050,48 @@ trait Example { fn declaration(&self); }
         self.assertEqual(3, increased_baseline)
         self.assertEqual(4, unrelated_source)
 
+    def test_fluent_ffi_unreachable_guards_have_exact_coverage_reasons(self) -> None:
+        self.require_gate()
+        cases = (
+            (
+                "bindings/java/native/kmipkit_jni.cpp",
+                "Java_org_kmipkit_NativeExtensionRegistry_symmetricKeyBuilderBuildBatchItem(",
+                "if (output == nullptr) {",
+                ("throw_invalid_input(env);", "return static_cast<jlong>(0);"),
+            ),
+            (
+                "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs",
+                "fn kmipkit_symmetric_key_builder_insert_attribute_item(",
+                "let Ok(index) = usize::try_from(index) else {",
+                ("return record_ffi_error(ERROR_INVALID_INPUT);",),
+            ),
+        )
+        for relative, function, branch, statements in cases:
+            source = REPOSITORY_ROOT / relative
+            source_lines = source.read_text(encoding="utf-8").splitlines()
+            function_line = next(
+                index for index, line in enumerate(source_lines) if function in line
+            )
+            branch_line = next(
+                index
+                for index, line in enumerate(source_lines[function_line:], function_line)
+                if branch in line
+            )
+            for statement in statements:
+                with self.subTest(source=relative, statement=statement):
+                    line = next(
+                        index
+                        for index, source_line in enumerate(source_lines[branch_line:], branch_line)
+                        if statement in source_line
+                    )
+                    self.assertFalse(
+                        GATE._is_executable_changed_line(
+                            REPOSITORY_ROOT, relative, line + 1, {}
+                        ),
+                        f"{relative}:{line + 1} needs a documented unreachable-state reason",
+                    )
+
+
     def test_changed_coverage_requires_a_reason_for_each_exact_exclusion(self) -> None:
         self.require_gate()
         with tempfile.TemporaryDirectory() as directory:

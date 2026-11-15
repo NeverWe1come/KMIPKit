@@ -326,7 +326,23 @@ int kmipkit_public_crypto_builders_probe(void) {
     return 0;
 }
 
+/* KMIPKIT-0096-FR-003; KMIP v2.1 sections 4-5; ADR-0012 pre-send validation. */
+static int validation_error_has_delivery(int32_t expected_status, uint32_t expected_delivery) {
+    int32_t status = 0;
+    uint32_t category = 0;
+    uint32_t cause = 0;
+    uint32_t delivery = 0;
+    return kmipkit_last_error_get(&status, &category, &cause, &delivery) == INT32_C(0) &&
+        status == expected_status && category == UINT32_C(1) && cause == UINT32_C(1) &&
+        delivery == expected_delivery;
+}
+
 int kmipkit_public_positioned_attribute_probe(void) {
+    static const uint8_t wrong_algorithm[] = {
+        0x42, 0x00, 0x28, 0x07, 0x00, 0x00, 0x00, 0x07,
+        'p', 'r', 'i', 'v', 'a', 't', 'e', 0x00
+    };
+    kmipkit_ttlv_decode_error_v1_t decode_error = {0};
     kmipkit_raw_tag_t *raw_tag = NULL;
     kmipkit_tag_t *tag = NULL;
     kmipkit_ttlv_value_t *value = NULL;
@@ -368,8 +384,54 @@ int kmipkit_public_positioned_attribute_probe(void) {
             INT32_C(0) ||
         kmipkit_symmetric_key_builder_build_batch_item(builder, &batch_item) !=
             KMIPKIT_ERROR_INVALID_INPUT ||
-        batch_item != NULL) {
+        batch_item != NULL ||
+        !validation_error_has_delivery(KMIPKIT_ERROR_INVALID_INPUT, UINT32_C(1))) {
         result = 2;
+        goto cleanup;
+    }
+    if (kmipkit_symmetric_key_builder_insert_attribute_item(builder, UINT64_C(0), NULL) !=
+            KMIPKIT_ERROR_INVALID_INPUT ||
+        !validation_error_has_delivery(KMIPKIT_ERROR_INVALID_INPUT, UINT32_C(1)) ||
+        kmipkit_symmetric_key_builder_build_batch_item(builder, NULL) !=
+            KMIPKIT_ERROR_INVALID_INPUT ||
+        !validation_error_has_delivery(KMIPKIT_ERROR_INVALID_INPUT, UINT32_C(1))) {
+        result = 3;
+        goto cleanup;
+    }
+    /* The generic ABI error recorder must not inherit the builder's delivery state. */
+    if (kmipkit_client_batch_create(NULL) != KMIPKIT_ERROR_INVALID_INPUT ||
+        !validation_error_has_delivery(KMIPKIT_ERROR_INVALID_INPUT, UINT32_C(0))) {
+        result = 4;
+        goto cleanup;
+    }
+    kmipkit_symmetric_key_builder_release(builder);
+    builder = NULL;
+    if (kmipkit_symmetric_key_builder_create(&builder) != INT32_C(0) ||
+        kmipkit_symmetric_key_builder_set_algorithm(
+            builder, KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES) != INT32_C(0) ||
+        kmipkit_symmetric_key_builder_set_length(builder, INT32_C(256)) != INT32_C(0) ||
+        kmipkit_symmetric_key_builder_set_usage_mask(builder, INT32_C(4)) != INT32_C(0) ||
+        kmipkit_symmetric_key_builder_insert_attribute_item(builder, UINT64_C(0), item) !=
+            INT32_C(0) ||
+        kmipkit_symmetric_key_builder_insert_attribute_item(builder, UINT64_C(0), item) !=
+            INT32_C(0) ||
+        kmipkit_symmetric_key_builder_build_batch_item(builder, &batch_item) !=
+            KMIPKIT_ERROR_INVALID_INPUT || batch_item != NULL ||
+        !validation_error_has_delivery(KMIPKIT_ERROR_INVALID_INPUT, UINT32_C(1))) {
+        result = 5;
+        goto cleanup;
+    }
+    kmipkit_ttlv_item_release(item);
+    item = NULL;
+    decode_error.struct_size = (uint32_t)sizeof(decode_error);
+    decode_error.abi_version = UINT32_C(1);
+    if (kmipkit_ttlv_decode(wrong_algorithm, sizeof(wrong_algorithm), &decode_error, &item) !=
+            INT32_C(0) ||
+        kmipkit_symmetric_key_builder_insert_attribute_item(builder, UINT64_C(0), item) !=
+            KMIPKIT_ERROR_TYPED_ATTRIBUTE_VALUE_TYPE_MISMATCH ||
+        !validation_error_has_delivery(
+            KMIPKIT_ERROR_TYPED_ATTRIBUTE_VALUE_TYPE_MISMATCH, UINT32_C(1))) {
+        result = 6;
     }
 
 cleanup:
