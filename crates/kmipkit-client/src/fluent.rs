@@ -230,7 +230,7 @@ impl<'a> RequestBuilder<'a> {
     /// omitted.
     #[must_use]
     pub fn set_attribute(self) -> SetAttributeBuilder<'a> {
-        SetAttributeBuilder::new(self.client)
+        SetAttributeBuilder::new(Some(self.client))
     }
 
     /// Begins a typed Get Attributes request with no Attribute References.
@@ -2884,7 +2884,7 @@ pub struct DestroyBuilder<'a> {
 
 /// A fluent builder for the existing typed Set Attribute request.
 pub struct SetAttributeBuilder<'a> {
-    client: &'a mut Client,
+    client: Option<&'a mut Client>,
     unique_identifier: Option<String>,
     new_attribute: Option<Item>,
     attribute_error: Option<FluentBuildError>,
@@ -2893,7 +2893,7 @@ pub struct SetAttributeBuilder<'a> {
 }
 
 impl<'a> SetAttributeBuilder<'a> {
-    fn new(client: &'a mut Client) -> Self {
+    fn new(client: Option<&'a mut Client>) -> Self {
         Self {
             client,
             unique_identifier: None,
@@ -2902,6 +2902,16 @@ impl<'a> SetAttributeBuilder<'a> {
             options: None,
             asynchronous_indicator: None,
         }
+    }
+
+    /// Creates a builder that can construct typed requests and batch items
+    /// without attaching a client.
+    ///
+    /// Calling [`Self::execute`] on a detached builder returns a local
+    /// `NotSent` error because no client is attached.
+    #[must_use]
+    pub fn detached() -> Self {
+        Self::new(None)
     }
 
     /// Selects an optional exact text Unique Identifier.
@@ -3029,8 +3039,13 @@ impl<'a> SetAttributeBuilder<'a> {
         let request = self
             .construct_request()
             .map_err(fluent_client_validation_error)?;
+        let Some(client) = self.client else {
+            return Err(fluent_client_validation_error(
+                FluentBuildError::MissingClientForExecution,
+            ));
+        };
         execute_fluent_request(
-            self.client,
+            client,
             ClientRequest::SetAttribute(request),
             self.asynchronous_indicator,
             self.options,
