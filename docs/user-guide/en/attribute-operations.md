@@ -161,3 +161,13 @@ fn set_comment(client: &mut Client) -> Result<String, Box<dyn Error>> {
 ```
 
 The builder validates the catalogued value and operation payload locally, supports `build`, `validate`, and `to_batch_item` when the caller needs explicit control, and exposes `attribute_item` for an explicitly typed TTLV Item. Use `vendor_attribute` to construct a KMIP Vendor Attribute structure from its vendor identifier, name, and value. The request executes through the existing client in one exchange and does not poll or retry.
+
+The same task-oriented builder is available from each binding's fluent request facade:
+
+| Language | Start the request | Catalogued attribute | Expert TTLV or vendor attribute | Submit and release |
+| --- | --- | --- | --- | --- |
+| C | `kmipkit_set_attribute_builder_create` | `kmipkit_set_attribute_builder_add_catalogued_attribute(..., KMIPKIT_STANDARD_ATTRIBUTE_DESCRIPTION, value)` | `..._add_attribute_item` or `..._add_vendor_attribute` | `..._execute_v1` or `..._build_batch_item`; release the builder and response |
+| Java | `new FluentRequest(client).setAttribute()` | `cataloguedAttribute(StandardAttribute.DESCRIPTION, value)` | `attributeItem` or `vendorAttribute` | `execute(limits)` or `build`; close the builder and owned results |
+| Python | `fluent.Request(client).set_attribute()` | `catalogued_attribute(StandardAttribute.DESCRIPTION, value)` | `attribute_item` or `vendor_attribute` | `execute(limits)` or `build`; use the builder as a context manager |
+
+Catalogued values are checked against the attribute's TTLV type. Unknown tags require an explicitly typed Item. The vendor helper constructs the protocol's Vendor Attribute Structure; a vendor tag alone is not treated as that structure. The C consumer, Java builder, and Python builder tests compile and validate these construction paths.
