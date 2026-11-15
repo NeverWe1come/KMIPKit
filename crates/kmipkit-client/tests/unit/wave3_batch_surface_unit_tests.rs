@@ -17,8 +17,8 @@ use crate::execute_test_support::{
     test_structure,
 };
 use crate::{
-    ClientBatch, ClientBatchItem, ClientBatchOutcome, ClientOperation, ClientRequest,
-    RequestOptions,
+    ClientBatch, ClientBatchItem, ClientBatchItemResponse, ClientBatchOutcome, ClientOperation,
+    ClientRequest, RequestOptions,
 };
 
 const CANCEL: u32 = 0x0000_0019;
@@ -29,6 +29,26 @@ const PROCESS: u32 = 0x0000_003A;
 const ASYNC_CORRELATION_TAG: u32 = 0x0042_0006;
 const CANCELLATION_RESULT_TAG: u32 = 0x0042_0012;
 const ASYNCHRONOUS_CORRELATION_VALUES: u32 = 0x0042_0176;
+
+fn assert_async_outcome_rendering(item: &ClientBatchItemResponse, label: &str) {
+    let outcome = item.outcome();
+    let expected_prefix = format!("{label}(");
+    assert!(format!("{outcome:?}").starts_with(&expected_prefix));
+    assert!(outcome.to_string().starts_with(&expected_prefix));
+
+    let response = outcome.response();
+    assert_eq!(response.result(), outcome.result());
+    assert!(format!("{response:?}").contains("AsyncResult"));
+}
+
+fn assert_pending_async_response(item: &ClientBatchItemResponse, operation: ClientOperation) {
+    let ClientBatchOutcome::Pending(pending) = item.outcome() else {
+        panic!("expected a pending asynchronous outcome");
+    };
+    let response = pending.response();
+    assert_eq!(pending.operation(), operation);
+    assert!(format!("{response:?}").contains("AsyncResult"));
+}
 
 #[test]
 fn async_requests_methods_to_payload_and_debug() {
@@ -101,6 +121,7 @@ fn async_batch_item_cancel_roundtrip() {
 
     let item = outcome.get(0).expect("one response item");
     assert_eq!(item.outcome().operation(), ClientOperation::Cancel);
+    assert_async_outcome_rendering(item, "Cancel");
     let cancel_resp = item.cancel_response().expect("typed Cancel response");
     assert_eq!(
         cancel_resp.cancellation_result(),
@@ -131,6 +152,7 @@ fn async_batch_item_poll_success_and_pending() {
 
     let item = outcome.get(0).expect("one response item");
     assert_eq!(item.outcome().operation(), ClientOperation::Poll);
+    assert_async_outcome_rendering(item, "Poll");
     assert!(item.poll_response().is_some());
     assert!(item.cancel_response().is_none());
 
@@ -149,10 +171,9 @@ fn async_batch_item_poll_success_and_pending() {
             &RequestOptions::default(),
         )
         .expect("successful Poll pending response");
-    assert!(matches!(
-        outcome_pending.get(0).expect("item").outcome(),
-        ClientBatchOutcome::Pending(_)
-    ));
+    let pending_item = outcome_pending.get(0).expect("item");
+    assert!(matches!(pending_item.outcome(), ClientBatchOutcome::Pending(_)));
+    assert_pending_async_response(pending_item, ClientOperation::Poll);
 }
 
 #[test]
@@ -171,6 +192,7 @@ fn async_batch_item_process_success_and_pending() {
 
     let item = outcome.get(0).expect("one response item");
     assert_eq!(item.outcome().operation(), ClientOperation::Process);
+    assert_async_outcome_rendering(item, "Process");
     assert!(item.process_response().is_some());
     assert!(item.cancel_response().is_none());
 
@@ -190,10 +212,9 @@ fn async_batch_item_process_success_and_pending() {
             &RequestOptions::default(),
         )
         .expect("successful Process pending response");
-    assert!(matches!(
-        outcome_pending.get(0).expect("item").outcome(),
-        ClientBatchOutcome::Pending(_)
-    ));
+    let pending_item = outcome_pending.get(0).expect("item");
+    assert!(matches!(pending_item.outcome(), ClientBatchOutcome::Pending(_)));
+    assert_pending_async_response(pending_item, ClientOperation::Process);
 }
 
 #[test]
@@ -223,6 +244,7 @@ fn async_batch_item_query_async_success_and_pending() {
         item.outcome().operation(),
         ClientOperation::QueryAsyncRequests
     );
+    assert_async_outcome_rendering(item, "QueryAsyncRequests");
     assert!(item.query_async_requests_response().is_some());
     assert!(item.cancel_response().is_none());
 
@@ -249,10 +271,9 @@ fn async_batch_item_query_async_success_and_pending() {
             &RequestOptions::default(),
         )
         .expect("successful QueryAsync pending response");
-    assert!(matches!(
-        outcome_pending.get(0).expect("item").outcome(),
-        ClientBatchOutcome::Pending(_)
-    ));
+    let pending_item = outcome_pending.get(0).expect("item");
+    assert!(matches!(pending_item.outcome(), ClientBatchOutcome::Pending(_)));
+    assert_pending_async_response(pending_item, ClientOperation::QueryAsyncRequests);
 }
 
 #[test]

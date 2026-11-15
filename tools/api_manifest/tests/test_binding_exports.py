@@ -1332,6 +1332,7 @@ class BindingExportAuditTests(unittest.TestCase):
                     "KMIPKIT-0043-FR-004/005/010/021/022",
                     "KMIPKIT-0052-FR-006",
                     "KMIPKIT-0052-FR-007",
+                    "KMIPKIT-0093-FR-011",
                 )
             )
             self.assertTrue(

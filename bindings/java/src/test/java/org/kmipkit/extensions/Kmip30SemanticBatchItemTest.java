@@ -68,4 +68,30 @@ final class Kmip30SemanticBatchItemTest {
             assertEquals(KmipValues.V3_0_OPERATION_DECAPSULATE, decapsulate.operation());
         }
     }
+
+    @Test
+    void rejectsMissingSemanticInputsBeforeLoadingNativeBridge() {
+        assertEquals("Cancel request is invalid", assertThrows(
+                InvalidInputException.class, () -> ClientBatchItem.cancel(null)).getMessage());
+        assertEquals("Create Group Attributes are required", assertThrows(
+                InvalidInputException.class, () -> ClientBatchItem.createGroupFromAttributes(null))
+                .getMessage());
+        assertEquals("Obliterate Unique Identifier is required", assertThrows(
+                InvalidInputException.class, () -> ClientBatchItem.obliterateFromIdentifier(null))
+                .getMessage());
+        assertEquals("Deactivate Unique Identifier is required", assertThrows(
+                InvalidInputException.class, () -> ClientBatchItem.deactivateFromFields(null, null, null))
+                .getMessage());
+        assertEquals("Create Credential inputs are invalid", assertThrows(
+                InvalidInputException.class, () ->
+                        ClientBatchItem.createCredentialFromFields(null, 1, null, null))
+                .getMessage());
+        assertEquals("Encapsulate Unique Identifier is required", assertThrows(
+                InvalidInputException.class, () -> ClientBatchItem.encapsulateFromFields(null, null, null))
+                .getMessage());
+        assertEquals("Decapsulate inputs are invalid", assertThrows(
+                InvalidInputException.class, () -> ClientBatchItem.decapsulateFromFields(
+                        UniqueIdentifier.textString("kem-key"), null, null, null))
+                .getMessage());
+    }
 }
