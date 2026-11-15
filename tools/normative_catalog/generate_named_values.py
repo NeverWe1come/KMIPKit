@@ -161,13 +161,7 @@ def _wire_integer(element: dict[str, Any]) -> int:
     return value
 
 
-def load_versioned_values(root: Path) -> VersionedCatalog:
-    """Load version deltas only after verifying their pinned local sources."""
-    raw = safe_read_bytes(root, VERSIONED_CATALOG_PATH, max_bytes=MAX_BYTES)
-    document = json.loads(raw)
-    if not isinstance(document, dict) or document.get("formatVersion") != 1:
-        raise ValueError("versioned values catalog has an unsupported format")
-    sources = document.get("sources")
+def _verify_versioned_value_sources(root: Path, sources: Any) -> None:
     if not isinstance(sources, dict) or set(sources) != set(PINNED_VERSION_SOURCES):
         raise ValueError("versioned values catalog source inventory is incomplete")
     for source_id, (expected_path, expected_hash) in PINNED_VERSION_SOURCES.items():
@@ -179,6 +173,15 @@ def load_versioned_values(root: Path) -> VersionedCatalog:
         source_bytes = safe_read_bytes(root, expected_path, max_bytes=VERSIONED_SOURCE_MAX_BYTES)
         if hashlib.sha256(source_bytes).hexdigest() != expected_hash:
             raise ValueError(f"pinned source checksum does not match for {source_id}")
+
+
+def load_versioned_values(root: Path) -> VersionedCatalog:
+    """Load version deltas only after verifying their pinned local sources."""
+    raw = safe_read_bytes(root, VERSIONED_CATALOG_PATH, max_bytes=MAX_BYTES)
+    document = json.loads(raw)
+    if not isinstance(document, dict) or document.get("formatVersion") != 1:
+        raise ValueError("versioned values catalog has an unsupported format")
+    _verify_versioned_value_sources(root, document.get("sources"))
 
     versions = document.get("versions")
     if not isinstance(versions, dict) or set(versions) != {"v2_0", "v2_1", "v3_0"}:
