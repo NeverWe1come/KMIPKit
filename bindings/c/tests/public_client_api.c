@@ -193,6 +193,77 @@ int kmipkit_public_async_batch_items_probe(void) {
     return 0;
 }
 
+int kmipkit_public_kmip30_semantic_items_probe(void) {
+    static const uint8_t identifier_text[] = "system-object";
+    kmipkit_ttlv_structure_t *items = NULL;
+    kmipkit_attribute_set_t *attributes = NULL;
+    kmipkit_client_batch_item_t *item = NULL;
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    uint32_t operation = 0;
+    uint64_t attribute_count = 0;
+    int32_t status;
+
+    status = kmipkit_ttlv_structure_create(&items);
+    if (status != INT32_C(0) || items == NULL) {
+        return 1;
+    }
+    status = kmipkit_attribute_set_create(items, &attributes);
+    kmipkit_ttlv_structure_release(items);
+    if (status != INT32_C(0) || attributes == NULL) {
+        return 2;
+    }
+
+    status = kmipkit_client_batch_item_create_group_from_attributes(attributes, &item);
+    if (status != INT32_C(0) || item == NULL ||
+        kmipkit_client_batch_item_operation(item, &operation) != INT32_C(0) ||
+        operation != KMIPKIT_V3_0_OPERATION_CREATE_GROUP ||
+        kmipkit_attribute_set_len(attributes, &attribute_count) != INT32_C(0) ||
+        attribute_count != UINT64_C(0)) {
+        kmipkit_client_batch_item_release(item);
+        kmipkit_attribute_set_release(attributes);
+        return 3;
+    }
+    kmipkit_client_batch_item_release(item);
+    item = NULL;
+
+    status = kmipkit_client_batch_item_create_user_from_attributes(attributes, &item);
+    if (status != INT32_C(0) || item == NULL ||
+        kmipkit_client_batch_item_operation(item, &operation) != INT32_C(0) ||
+        operation != KMIPKIT_V3_0_OPERATION_CREATE_USER) {
+        kmipkit_client_batch_item_release(item);
+        kmipkit_attribute_set_release(attributes);
+        return 4;
+    }
+    kmipkit_client_batch_item_release(item);
+    kmipkit_attribute_set_release(attributes);
+
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = 1;
+    identifier.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+    identifier.text_data = identifier_text;
+    identifier.text_length = (uint64_t)(sizeof(identifier_text) - 1);
+    status = kmipkit_client_batch_item_obliterate_from_identifier(&identifier, &item);
+    if (status != INT32_C(0) || item == NULL ||
+        kmipkit_client_batch_item_operation(item, &operation) != INT32_C(0) ||
+        operation != KMIPKIT_V3_0_OPERATION_OBLITERATE) {
+        kmipkit_client_batch_item_release(item);
+        return 5;
+    }
+    kmipkit_client_batch_item_release(item);
+    item = NULL;
+
+    status = kmipkit_client_batch_item_deactivate_from_fields(
+        &identifier, NULL, UINT8_C(0), INT64_C(0), &item);
+    if (status != INT32_C(0) || item == NULL ||
+        kmipkit_client_batch_item_operation(item, &operation) != INT32_C(0) ||
+        operation != KMIPKIT_V3_0_OPERATION_DEACTIVATE) {
+        kmipkit_client_batch_item_release(item);
+        return 6;
+    }
+    kmipkit_client_batch_item_release(item);
+    return 0;
+}
+
 int kmipkit_public_fluent_validation_probe(void) {
     static const uint8_t description[] = "managed without TTLV tags";
     static const uint8_t unknown_value[] = "expert value";
