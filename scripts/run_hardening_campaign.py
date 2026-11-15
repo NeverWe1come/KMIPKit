@@ -2,7 +2,7 @@
 """Run pre-release hardening campaign: Fuzzing, Miri, Sanitizers, and Extended Negatives.
 
 Usage:
-    python3 scripts/run_hardening_campaign.py [--smoke] [--report <path>]
+    python3 scripts/run_hardening_campaign.py [--smoke]
 """
 
 import argparse
@@ -13,6 +13,7 @@ import time
 from pathlib import Path
 
 REPOSITORY_ROOT = Path(__file__).resolve().parent.parent
+REPORT_PATH = REPOSITORY_ROOT / "docs" / "security" / "pre-release-hardening-evidence.md"
 
 
 def run_command(command: list[str], cwd: Path | None = None, env: dict[str, str] | None = None) -> tuple[int, str]:
@@ -38,12 +39,6 @@ def run_command(command: list[str], cwd: Path | None = None, env: dict[str, str]
 def main() -> int:
     parser = argparse.ArgumentParser(description="Pre-release hardening campaign runner")
     parser.add_argument("--smoke", action="store_true", help="Run smoke iterations for fast verification")
-    parser.add_argument(
-        "--report",
-        type=Path,
-        default=REPOSITORY_ROOT / "docs" / "security" / "pre-release-hardening-evidence.md",
-        help="Output path for markdown evidence report",
-    )
     args = parser.parse_args()
 
     runs = 1000 if args.smoke else 10000
@@ -195,7 +190,7 @@ def main() -> int:
 
     # Render Evidence Report Markdown
     end_time = time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime())
-    args.report.parent.mkdir(parents=True, exist_ok=True)
+    REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
     report_lines = [
         "# KMIPKit 1.0.0 Pre-Release Hardening Evidence Report",
         "",
@@ -228,8 +223,8 @@ def main() -> int:
         "The hardening gates for KMIPKit 1.0.0 pre-release closure are fully satisfied.",
     ])
 
-    args.report.write_text("\n".join(report_lines) + "\n", encoding="utf-8")
-    print(f"\nHardening campaign completed successfully. Evidence report written to:\n  {args.report}")
+    REPORT_PATH.write_text("\n".join(report_lines) + "\n", encoding="utf-8")
+    print(f"\nHardening campaign completed successfully. Evidence report written to:\n  {REPORT_PATH}")
     return 0
 
 
