@@ -1052,6 +1052,12 @@ jobs:
         id: verify-generated-named-protocol-values
         run: python3 -B tools/normative_catalog/generate_named_values.py --repo-root . --check
 
+      - name: Verify fluent operation inventory
+        id: verify-fluent-operation-inventory
+        run: |
+          python3 -B tools/normative_catalog/generate_fluent_operation_inventory.py --repo-root . --check
+          python3 -B -m unittest tools.normative_catalog.tests.test_fluent_operation_inventory -v
+
       - name: Set up Python 3.12 for normative generator coverage
         id: set-up-python-3-12-for-normative-generator-coverage
         uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # astral-sh/setup-uv v9.0.0
