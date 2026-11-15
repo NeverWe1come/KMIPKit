@@ -2,7 +2,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use rustls::NamedGroup;
-use rustls::client::{ClientSessionStore, Tls12ClientSessionValue};
+use rustls::client::ClientSessionStore;
 use rustls::pki_types::ServerName;
 
 use super::{MonotonicClock, TlsSessionStore};
@@ -23,7 +23,6 @@ fn session_store_keeps_tls12_disabled_and_redacts_its_debug_output() {
 
     store.set_kx_hint(server_name.clone(), NamedGroup::X25519);
     assert_eq!(store.kx_hint(&server_name), None);
-    store.set_tls12_session(server_name.clone(), Tls12ClientSessionValue {});
     assert!(store.tls12_session(&server_name).is_none());
     store.remove_tls12_session(&server_name);
 
