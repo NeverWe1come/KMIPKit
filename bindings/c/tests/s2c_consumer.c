@@ -167,6 +167,30 @@ int32_t kmipkit_s2c_consumer_receives_put_and_sends_response(
             status = 158; goto cleanup;
         }
     }
+    status = kmipkit_server_put_object_field_read(key_block, 0x00420042u, KMIPKIT_SERVER_PUT_READ_TYPE,
+        &present, &item_type, NULL, NULL, NULL, NULL, NULL);
+    if (status != 0 || present != 1u || item_type != 5u) { status = 159; goto cleanup; }
+    status = kmipkit_server_put_object_field_read(key_block, 0x00420042u, KMIPKIT_SERVER_PUT_READ_PRESENT,
+        &present, NULL, NULL, NULL, NULL, NULL, NULL);
+    if (status != 0 || present != 1u) { status = 160; goto cleanup; }
+    status = kmipkit_server_put_object_field_read(key_block, 0x0042FFFFu, KMIPKIT_SERVER_PUT_READ_PRESENT,
+        &absent_present, NULL, NULL, NULL, NULL, NULL, NULL);
+    if (status != 0 || absent_present != 0u) { status = 161; goto cleanup; }
+    status = kmipkit_server_put_object_field_read(key_block, 0x0042FFFFu, KMIPKIT_SERVER_PUT_READ_TYPE,
+        &absent_present, &item_type, NULL, NULL, NULL, NULL, NULL);
+    if (status != KMIPKIT_ERROR_INVALID_INPUT || absent_present != 0u || item_type != 0u) {
+        status = 162; goto cleanup;
+    }
+    present = UINT8_MAX;
+    status = kmipkit_server_put_object_field_read(key_block, 0x00420042u, UINT32_MAX,
+        &present, NULL, NULL, NULL, NULL, NULL, NULL);
+    if (status != KMIPKIT_ERROR_INVALID_INPUT || present != UINT8_MAX) { status = 163; goto cleanup; }
+    status = kmipkit_server_put_object_field_read(key_block, 0x00420042u, KMIPKIT_SERVER_PUT_READ_PRESENT,
+        NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+    if (status != KMIPKIT_ERROR_INVALID_INPUT) { status = 164; goto cleanup; }
+    status = kmipkit_server_put_object_field_read(NULL, 0x00420042u, KMIPKIT_SERVER_PUT_READ_PRESENT,
+        &present, NULL, NULL, NULL, NULL, NULL, NULL);
+    if (status != KMIPKIT_ERROR_INVALID_INPUT || present != 0u) { status = 165; goto cleanup; }
     kmipkit_server_put_object_release(key_value);
     key_value = NULL;
     kmipkit_server_put_object_release(key_block);
