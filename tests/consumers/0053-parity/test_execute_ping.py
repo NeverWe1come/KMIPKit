@@ -12,7 +12,14 @@ import tempfile
 import time
 import unittest
 
-from local_ping_responder import _children, _item, _request_operation, _response, _structure
+from local_ping_responder import (
+    _children,
+    _item,
+    _request_operation,
+    _response,
+    _structure,
+    _validate_operation,
+)
 
 
 CONSUMER_ROOT = Path(__file__).resolve().parent
@@ -43,6 +50,16 @@ class ExecutePingConsumerTests(unittest.TestCase):
             identifiers,
             {0x420066: b"fluent-private-key", 0x42006F: b"fluent-public-key"},
         )
+
+    def test_fixture_rejects_key_pair_with_unexpected_algorithm(self) -> None:
+        common_attributes = _structure(
+            0x420126,
+            _item(0x420028, 5, struct.pack(">I", 4)),
+            _item(0x42002A, 2, struct.pack(">i", 256)),
+        )
+        payload = _structure(0x420079, common_attributes)
+        with self.assertRaisesRegex(RuntimeError, "Create Key Pair did not select ECDSA"):
+            _validate_operation(2, [(0x420079, 1, payload[8:])], [])
 
     def test_fixture_parses_ping_from_a_request_message(self) -> None:
         operation = _item(0x42005C, 5, struct.pack(">I", 0x3B))
