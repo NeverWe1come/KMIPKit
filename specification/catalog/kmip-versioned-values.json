@@ -449,6 +449,144 @@
             "wire_value": "0x00000002"
           }
         ]
+      },
+      {
+        "kind": "enumeration",
+        "name": "Credential Type",
+        "sourceId": "kmip-3.0",
+        "section": "11.11",
+        "table": "551",
+        "values": [
+          {
+            "name": "Password",
+            "wire_value": "0x00000007"
+          },
+          {
+            "name": "Certificate",
+            "wire_value": "0x00000008"
+          }
+        ]
+      },
+      {
+        "kind": "enumeration",
+        "name": "Item Type",
+        "sourceId": "kmip-3.0",
+        "section": "11.25",
+        "table": "568",
+        "values": [
+          {
+            "name": "Identifier",
+            "wire_value": "0x0000000C"
+          },
+          {
+            "name": "Reference",
+            "wire_value": "0x0000000D"
+          },
+          {
+            "name": "Name Reference",
+            "wire_value": "0x0000000E"
+          }
+        ]
+      },
+      {
+        "kind": "enumeration",
+        "name": "Query Function",
+        "sourceId": "kmip-3.0",
+        "section": "11.46",
+        "table": "591",
+        "values": [
+          {
+            "name": "Query Credential Information",
+            "wire_value": "0x0000000F"
+          }
+        ]
+      },
+      {
+        "kind": "enumeration",
+        "name": "Recommended Curve",
+        "sourceId": "kmip-3.0",
+        "section": "11.47",
+        "table": "592",
+        "values": [
+          {
+            "name": "ANSIX9C2PNB176W1",
+            "wire_value": "0x00000047"
+          },
+          {
+            "name": "ANSIX9C2TNB191V4",
+            "wire_value": "0x00000048"
+          },
+          {
+            "name": "ANSIX9C2TNB191V5",
+            "wire_value": "0x00000049"
+          },
+          {
+            "name": "ANSIX9C2TNB239V4",
+            "wire_value": "0x0000004A"
+          },
+          {
+            "name": "ANSIX9C2TNB239V5",
+            "wire_value": "0x0000004B"
+          },
+          {
+            "name": "CURVE25519PH",
+            "wire_value": "0x0000004C"
+          },
+          {
+            "name": "CURVE448PH",
+            "wire_value": "0x0000004D"
+          },
+          {
+            "name": "OpenPGP Ed25519",
+            "wire_value": "0x0000004E"
+          },
+          {
+            "name": "OpenPGP Curve25519",
+            "wire_value": "0x0000004F"
+          }
+        ]
+      },
+      {
+        "kind": "enumeration",
+        "name": "Revocation Reason Code",
+        "sourceId": "kmip-3.0",
+        "section": "11.50",
+        "table": "595",
+        "values": [
+          {
+            "name": "Certificate Hold",
+            "wire_value": "0x00000008"
+          },
+          {
+            "name": "Remove From CRL",
+            "wire_value": "0x00000009"
+          },
+          {
+            "name": "AA Compromise",
+            "wire_value": "0x0000000A"
+          }
+        ]
+      },
+      {
+        "kind": "enumeration",
+        "name": "Unique Identifier",
+        "sourceId": "kmip-3.0",
+        "section": "11.60",
+        "table": "607",
+        "values": [
+          {
+            "name": "Create User",
+            "wire_value": "0x00000013"
+          },
+          {
+            "name": "Create Group",
+            "wire_value": "0x00000014"
+          },
+          {
+            "name": "Create Credential",
+            "wire_value": "0x00000015"
+          }
+        ]
       }
     ]
   }

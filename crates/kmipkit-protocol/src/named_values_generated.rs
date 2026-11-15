@@ -3170,6 +3170,129 @@ pub mod values {
                         }
                     }
                 }
+                /// KMIP Credential Type values from §11.11, Table 551.
+                pub mod credential_type {
+                    /// `Password`; kmip-3.0 §11.11, Table 551.
+                    pub const PASSWORD: u32 = 0x0000_0007;
+                    /// `Certificate`; kmip-3.0 §11.11, Table 551.
+                    pub const CERTIFICATE: u32 = 0x0000_0008;
+                    /// Returns the assigned name for a known value.
+                    #[must_use]
+                    pub const fn name(raw: u32) -> Option<&'static str> {
+                        match raw {
+                            0x0000_0007 => Some("Password"),
+                            0x0000_0008 => Some("Certificate"),
+                            _ => None,
+                        }
+                    }
+                }
+                /// KMIP Item Type values from §11.25, Table 568.
+                pub mod item_type {
+                    /// `Identifier`; kmip-3.0 §11.25, Table 568.
+                    pub const IDENTIFIER: u32 = 0x0000_000C;
+                    /// `Reference`; kmip-3.0 §11.25, Table 568.
+                    pub const REFERENCE: u32 = 0x0000_000D;
+                    /// `Name Reference`; kmip-3.0 §11.25, Table 568.
+                    pub const NAME_REFERENCE: u32 = 0x0000_000E;
+                    /// Returns the assigned name for a known value.
+                    #[must_use]
+                    pub const fn name(raw: u32) -> Option<&'static str> {
+                        match raw {
+                            0x0000_000C => Some("Identifier"),
+                            0x0000_000D => Some("Reference"),
+                            0x0000_000E => Some("Name Reference"),
+                            _ => None,
+                        }
+                    }
+                }
+                /// KMIP Query Function values from §11.46, Table 591.
+                pub mod query_function {
+                    /// `Query Credential Information`; kmip-3.0 §11.46, Table 591.
+                    pub const QUERY_CREDENTIAL_INFORMATION: u32 = 0x0000_000F;
+                    /// Returns the assigned name for a known value.
+                    #[must_use]
+                    pub const fn name(raw: u32) -> Option<&'static str> {
+                        match raw {
+                            0x0000_000F => Some("Query Credential Information"),
+                            _ => None,
+                        }
+                    }
+                }
+                /// KMIP Recommended Curve values from §11.47, Table 592.
+                pub mod recommended_curve {
+                    /// `ANSIX9C2PNB176W1`; kmip-3.0 §11.47, Table 592.
+                    pub const ANSIX9C2PNB176W1: u32 = 0x0000_0047;
+                    /// `ANSIX9C2TNB191V4`; kmip-3.0 §11.47, Table 592.
+                    pub const ANSIX9C2TNB191V4: u32 = 0x0000_0048;
+                    /// `ANSIX9C2TNB191V5`; kmip-3.0 §11.47, Table 592.
+                    pub const ANSIX9C2TNB191V5: u32 = 0x0000_0049;
+                    /// `ANSIX9C2TNB239V4`; kmip-3.0 §11.47, Table 592.
+                    pub const ANSIX9C2TNB239V4: u32 = 0x0000_004A;
+                    /// `ANSIX9C2TNB239V5`; kmip-3.0 §11.47, Table 592.
+                    pub const ANSIX9C2TNB239V5: u32 = 0x0000_004B;
+                    /// `CURVE25519PH`; kmip-3.0 §11.47, Table 592.
+                    pub const CURVE25519PH: u32 = 0x0000_004C;
+                    /// `CURVE448PH`; kmip-3.0 §11.47, Table 592.
+                    pub const CURVE448PH: u32 = 0x0000_004D;
+                    /// `OpenPGP Ed25519`; kmip-3.0 §11.47, Table 592.
+                    pub const OPENPGP_ED25519: u32 = 0x0000_004E;
+                    /// `OpenPGP Curve25519`; kmip-3.0 §11.47, Table 592.
+                    pub const OPENPGP_CURVE25519: u32 = 0x0000_004F;
+                    /// Returns the assigned name for a known value.
+                    #[must_use]
+                    pub const fn name(raw: u32) -> Option<&'static str> {
+                        match raw {
+                            0x0000_0047 => Some("ANSIX9C2PNB176W1"),
+                            0x0000_0048 => Some("ANSIX9C2TNB191V4"),
+                            0x0000_0049 => Some("ANSIX9C2TNB191V5"),
+                            0x0000_004A => Some("ANSIX9C2TNB239V4"),
+                            0x0000_004B => Some("ANSIX9C2TNB239V5"),
+                            0x0000_004C => Some("CURVE25519PH"),
+                            0x0000_004D => Some("CURVE448PH"),
+                            0x0000_004E => Some("OpenPGP Ed25519"),
+                            0x0000_004F => Some("OpenPGP Curve25519"),
+                            _ => None,
+                        }
+                    }
+                }
+                /// KMIP Revocation Reason Code values from §11.50, Table 595.
+                pub mod revocation_reason_code {
+                    /// `Certificate Hold`; kmip-3.0 §11.50, Table 595.
+                    pub const CERTIFICATE_HOLD: u32 = 0x0000_0008;
+                    /// `Remove From CRL`; kmip-3.0 §11.50, Table 595.
+                    pub const REMOVE_FROM_CRL: u32 = 0x0000_0009;
+                    /// `AA Compromise`; kmip-3.0 §11.50, Table 595.
+                    pub const AA_COMPROMISE: u32 = 0x0000_000A;
+                    /// Returns the assigned name for a known value.
+                    #[must_use]
+                    pub const fn name(raw: u32) -> Option<&'static str> {
+                        match raw {
+                            0x0000_0008 => Some("Certificate Hold"),
+                            0x0000_0009 => Some("Remove From CRL"),
+                            0x0000_000A => Some("AA Compromise"),
+                            _ => None,
+                        }
+                    }
+                }
+                /// KMIP Unique Identifier values from §11.60, Table 607.
+                pub mod unique_identifier {
+                    /// `Create User`; kmip-3.0 §11.60, Table 607.
+                    pub const CREATE_USER: u32 = 0x0000_0013;
+                    /// `Create Group`; kmip-3.0 §11.60, Table 607.
+                    pub const CREATE_GROUP: u32 = 0x0000_0014;
+                    /// `Create Credential`; kmip-3.0 §11.60, Table 607.
+                    pub const CREATE_CREDENTIAL: u32 = 0x0000_0015;
+                    /// Returns the assigned name for a known value.
+                    #[must_use]
+                    pub const fn name(raw: u32) -> Option<&'static str> {
+                        match raw {
+                            0x0000_0013 => Some("Create User"),
+                            0x0000_0014 => Some("Create Group"),
+                            0x0000_0015 => Some("Create Credential"),
+                            _ => None,
+                        }
+                    }
+                }
             }
             pub mod bitmask {
                 /// KMIP Object Class Mask bits from §12.2, Table 616.

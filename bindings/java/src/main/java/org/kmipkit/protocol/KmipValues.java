@@ -3175,4 +3175,109 @@ public final class KmipValues {
             default -> null;
         };
     }
+    /** Password; kmip-3.0 §11.11, Table 551. */
+    public static final long V3_0_CREDENTIAL_TYPE_PASSWORD = 0x00000007L;
+    /** Certificate; kmip-3.0 §11.11, Table 551. */
+    public static final long V3_0_CREDENTIAL_TYPE_CERTIFICATE = 0x00000008L;
+    /** Returns the KMIP v3.0 Credential Type name, or null for an unassigned value. */
+    public static String v3_0CredentialTypeName(long raw) {
+        if (raw < 0 || raw > 0xFFFF_FFFFL) return null;
+        return switch ((int) raw) {
+            case 0x00000007 -> "Password";
+            case 0x00000008 -> "Certificate";
+            default -> null;
+        };
+    }
+    /** Identifier; kmip-3.0 §11.25, Table 568. */
+    public static final long V3_0_ITEM_TYPE_IDENTIFIER = 0x0000000CL;
+    /** Reference; kmip-3.0 §11.25, Table 568. */
+    public static final long V3_0_ITEM_TYPE_REFERENCE = 0x0000000DL;
+    /** Name Reference; kmip-3.0 §11.25, Table 568. */
+    public static final long V3_0_ITEM_TYPE_NAME_REFERENCE = 0x0000000EL;
+    /** Returns the KMIP v3.0 Item Type name, or null for an unassigned value. */
+    public static String v3_0ItemTypeName(long raw) {
+        if (raw < 0 || raw > 0xFFFF_FFFFL) return null;
+        return switch ((int) raw) {
+            case 0x0000000C -> "Identifier";
+            case 0x0000000D -> "Reference";
+            case 0x0000000E -> "Name Reference";
+            default -> null;
+        };
+    }
+    /** Query Credential Information; kmip-3.0 §11.46, Table 591. */
+    public static final long V3_0_QUERY_FUNCTION_QUERY_CREDENTIAL_INFORMATION = 0x0000000FL;
+    /** Returns the KMIP v3.0 Query Function name, or null for an unassigned value. */
+    public static String v3_0QueryFunctionName(long raw) {
+        if (raw < 0 || raw > 0xFFFF_FFFFL) return null;
+        return switch ((int) raw) {
+            case 0x0000000F -> "Query Credential Information";
+            default -> null;
+        };
+    }
+    /** ANSIX9C2PNB176W1; kmip-3.0 §11.47, Table 592. */
+    public static final long V3_0_RECOMMENDED_CURVE_ANSIX9C2PNB176W1 = 0x00000047L;
+    /** ANSIX9C2TNB191V4; kmip-3.0 §11.47, Table 592. */
+    public static final long V3_0_RECOMMENDED_CURVE_ANSIX9C2TNB191V4 = 0x00000048L;
+    /** ANSIX9C2TNB191V5; kmip-3.0 §11.47, Table 592. */
+    public static final long V3_0_RECOMMENDED_CURVE_ANSIX9C2TNB191V5 = 0x00000049L;
+    /** ANSIX9C2TNB239V4; kmip-3.0 §11.47, Table 592. */
+    public static final long V3_0_RECOMMENDED_CURVE_ANSIX9C2TNB239V4 = 0x0000004AL;
+    /** ANSIX9C2TNB239V5; kmip-3.0 §11.47, Table 592. */
+    public static final long V3_0_RECOMMENDED_CURVE_ANSIX9C2TNB239V5 = 0x0000004BL;
+    /** CURVE25519PH; kmip-3.0 §11.47, Table 592. */
+    public static final long V3_0_RECOMMENDED_CURVE_CURVE25519PH = 0x0000004CL;
+    /** CURVE448PH; kmip-3.0 §11.47, Table 592. */
+    public static final long V3_0_RECOMMENDED_CURVE_CURVE448PH = 0x0000004DL;
+    /** OpenPGP Ed25519; kmip-3.0 §11.47, Table 592. */
+    public static final long V3_0_RECOMMENDED_CURVE_OPENPGP_ED25519 = 0x0000004EL;
+    /** OpenPGP Curve25519; kmip-3.0 §11.47, Table 592. */
+    public static final long V3_0_RECOMMENDED_CURVE_OPENPGP_CURVE25519 = 0x0000004FL;
+    /** Returns the KMIP v3.0 Recommended Curve name, or null for an unassigned value. */
+    public static String v3_0RecommendedCurveName(long raw) {
+        if (raw < 0 || raw > 0xFFFF_FFFFL) return null;
+        return switch ((int) raw) {
+            case 0x00000047 -> "ANSIX9C2PNB176W1";
+            case 0x00000048 -> "ANSIX9C2TNB191V4";
+            case 0x00000049 -> "ANSIX9C2TNB191V5";
+            case 0x0000004A -> "ANSIX9C2TNB239V4";
+            case 0x0000004B -> "ANSIX9C2TNB239V5";
+            case 0x0000004C -> "CURVE25519PH";
+            case 0x0000004D -> "CURVE448PH";
+            case 0x0000004E -> "OpenPGP Ed25519";
+            case 0x0000004F -> "OpenPGP Curve25519";
+            default -> null;
+        };
+    }
+    /** Certificate Hold; kmip-3.0 §11.50, Table 595. */
+    public static final long V3_0_REVOCATION_REASON_CODE_CERTIFICATE_HOLD = 0x00000008L;
+    /** Remove From CRL; kmip-3.0 §11.50, Table 595. */
+    public static final long V3_0_REVOCATION_REASON_CODE_REMOVE_FROM_CRL = 0x00000009L;
+    /** AA Compromise; kmip-3.0 §11.50, Table 595. */
+    public static final long V3_0_REVOCATION_REASON_CODE_AA_COMPROMISE = 0x0000000AL;
+    /** Returns the KMIP v3.0 Revocation Reason Code name, or null for an unassigned value. */
+    public static String v3_0RevocationReasonCodeName(long raw) {
+        if (raw < 0 || raw > 0xFFFF_FFFFL) return null;
+        return switch ((int) raw) {
+            case 0x00000008 -> "Certificate Hold";
+            case 0x00000009 -> "Remove From CRL";
+            case 0x0000000A -> "AA Compromise";
+            default -> null;
+        };
+    }
+    /** Create User; kmip-3.0 §11.60, Table 607. */
+    public static final long V3_0_UNIQUE_IDENTIFIER_CREATE_USER = 0x00000013L;
+    /** Create Group; kmip-3.0 §11.60, Table 607. */
+    public static final long V3_0_UNIQUE_IDENTIFIER_CREATE_GROUP = 0x00000014L;
+    /** Create Credential; kmip-3.0 §11.60, Table 607. */
+    public static final long V3_0_UNIQUE_IDENTIFIER_CREATE_CREDENTIAL = 0x00000015L;
+    /** Returns the KMIP v3.0 Unique Identifier name, or null for an unassigned value. */
+    public static String v3_0UniqueIdentifierName(long raw) {
+        if (raw < 0 || raw > 0xFFFF_FFFFL) return null;
+        return switch ((int) raw) {
+            case 0x00000013 -> "Create User";
+            case 0x00000014 -> "Create Group";
+            case 0x00000015 -> "Create Credential";
+            default -> null;
+        };
+    }
 }
