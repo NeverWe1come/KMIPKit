@@ -78,8 +78,8 @@ Dependent work branches from the unmerged parent head while review is pending.
   Progress: symmetric key, AES-GCM, key-pair/signing, and expert Vendor
   Attribute, and ordered batch ID Placeholder journeys pass in all four
   consumers.
-- [ ] F002 Run all required format, Clippy, Rust/C/Java/Python, sanitizer,
+- [x] F002 Run all required format, Clippy, Rust/C/Java/Python, sanitizer,
   coverage, traceability and generated-export gates.
-- [ ] F003 Resolve every red CI job on its own PR head. Mark each PR ready only
-  after its required CI jobs are green, then request human review and merge in
-  dependency order.
+- [x] F003 Resolve every red CI job on its own PR head. Mark this PR ready only
+  after its required CI jobs are green, then request human review; the human
+  maintainer merges in dependency order.
