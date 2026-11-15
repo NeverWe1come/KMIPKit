@@ -5,8 +5,10 @@
 
 #[test]
 fn fuzzing_feature_is_disabled_by_default() {
-    assert!(
-        !cfg!(feature = "fuzzing"),
-        "The fuzzing cargo feature must be strictly off by default in production crates"
-    );
+    const {
+        assert!(
+            !cfg!(feature = "fuzzing"),
+            "The fuzzing cargo feature must be strictly off by default in production crates"
+        );
+    }
 }

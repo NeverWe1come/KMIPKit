@@ -12,6 +12,11 @@ mod names;
 mod preflight;
 mod values;
 
+/// Decodes an XML byte slice into a TTLV item under the provided limits.
+///
+/// # Errors
+///
+/// Returns a [`WireCodecError`] if the XML document is malformed or exceeds limits.
 pub fn decode(
     bytes: &[u8],
     limits: &kmipkit_ttlv::codec::CodecLimits,
@@ -19,6 +24,11 @@ pub fn decode(
     decoder::decode(bytes, limits)
 }
 
+/// Encodes a TTLV item into XML bytes under the provided limits.
+///
+/// # Errors
+///
+/// Returns a [`WireCodecError`] if the item exceeds limits or cannot be serialized.
 pub fn encode(
     item: &kmipkit_ttlv::Item,
     limits: &kmipkit_ttlv::codec::CodecLimits,

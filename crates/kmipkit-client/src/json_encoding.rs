@@ -19,6 +19,11 @@ const fn error(kind: WireCodecErrorKind) -> WireCodecError {
     WireCodecError::new(kind)
 }
 
+/// Decodes a JSON byte slice into a TTLV item under the provided limits.
+///
+/// # Errors
+///
+/// Returns a [`WireCodecError`] if the JSON is malformed, exceeds limits, or cannot be allocated.
 pub fn decode(bytes: &[u8], limits: &CodecLimits) -> Result<Item, WireCodecError> {
     if bytes.len() > limits.max_message_bytes() {
         return Err(error(WireCodecErrorKind::LimitExceeded));
@@ -34,6 +39,11 @@ pub fn decode(bytes: &[u8], limits: &CodecLimits) -> Result<Item, WireCodecError
     read_item(input, limits)
 }
 
+/// Encodes a TTLV item into JSON bytes under the provided limits.
+///
+/// # Errors
+///
+/// Returns a [`WireCodecError`] if the item exceeds limits or cannot be allocated.
 pub fn encode(item: &Item, limits: &CodecLimits) -> Result<Zeroizing<Vec<u8>>, WireCodecError> {
     let mut count = Writer {
         output: None,

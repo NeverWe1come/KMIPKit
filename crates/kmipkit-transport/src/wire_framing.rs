@@ -19,6 +19,11 @@ enum TextDocumentState {
 }
 
 impl TextDocumentFramer {
+    /// Creates a new text document framer for the given wire encoding.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`io::Error`] if the encoding is not a text document format (such as TTLV).
     pub fn new(encoding: WireEncoding) -> io::Result<Self> {
         match encoding {
             WireEncoding::Json => Ok(Self {
@@ -31,6 +36,11 @@ impl TextDocumentFramer {
         }
     }
 
+    /// Feeds a single byte into the stream framer.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`io::Error`] if the input byte violates framing constraints.
     pub fn feed(&mut self, byte: u8) -> io::Result<()> {
         match &mut self.state {
             TextDocumentState::Json(framer) => framer.feed(byte),
@@ -38,6 +48,8 @@ impl TextDocumentFramer {
         }
     }
 
+    /// Returns `true` if a full text document has been framed.
+    #[must_use]
     pub fn is_complete(&self) -> bool {
         match &self.state {
             TextDocumentState::Json(framer) => framer.is_complete(),
