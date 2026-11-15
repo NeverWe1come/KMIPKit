@@ -97,6 +97,7 @@ unsafe extern "C" {
     fn kmipkit_public_fluent_builder_probe() -> i32;
     fn kmipkit_public_async_batch_items_probe() -> i32;
     fn kmipkit_public_kmip30_semantic_items_probe() -> i32;
+    fn kmipkit_public_kmip30_credential_kem_probe() -> i32;
     fn kmipkit_public_fluent_validation_probe() -> i32;
     fn kmipkit_public_fluent_lifecycle_probe(
         port: u16,
@@ -238,6 +239,16 @@ fn public_c_kmip30_semantic_inputs_build_typed_batch_items() {
     assert_eq!(
         status, 0,
         "KMIP 3.0 semantic C constructors must emit their typed operation variants"
+    );
+}
+
+#[test]
+fn public_c_kmip30_credential_and_kem_inputs_build_typed_batch_items() {
+    // SAFETY: The compiled C consumer releases the copied item and all owned handles.
+    let status = unsafe { kmipkit_public_kmip30_credential_kem_probe() };
+    assert_eq!(
+        status, 0,
+        "KMIP 3.0 credential and KEM semantic constructors must emit typed operations"
     );
 }
 

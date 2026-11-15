@@ -298,6 +298,86 @@ int kmipkit_public_kmip30_semantic_items_probe(void) {
     return 0;
 }
 
+int kmipkit_public_kmip30_credential_kem_probe(void) {
+    static const uint8_t identifier_text[] = "kem-key";
+    static const uint8_t ciphertext[] = {UINT8_C(0x31), UINT8_C(0x32)};
+    kmipkit_codec_limits_t *limits = NULL;
+    kmipkit_ttlv_structure_t *fields = NULL;
+    kmipkit_ttlv_value_t *value = NULL;
+    kmipkit_raw_tag_t *raw_tag = NULL;
+    kmipkit_tag_t *tag = NULL;
+    kmipkit_ttlv_item_t *object = NULL;
+    kmipkit_ttlv_structure_t *attribute_items = NULL;
+    kmipkit_attribute_set_t *attributes = NULL;
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    kmipkit_client_batch_item_t *item = NULL;
+    uint32_t operation = 0;
+    int32_t status;
+
+    status = kmipkit_codec_limits_defaults(&limits);
+    if (status != INT32_C(0) || limits == NULL ||
+        kmipkit_ttlv_structure_create(&fields) != INT32_C(0) || fields == NULL ||
+        kmipkit_ttlv_raw_tag_create(UINT32_C(0x004201A6), &raw_tag) != INT32_C(0) ||
+        raw_tag == NULL || kmipkit_ttlv_raw_tag_try_checked(raw_tag, &tag) != INT32_C(0) ||
+        tag == NULL || kmipkit_ttlv_value_structure(fields, limits, &value) != INT32_C(0) ||
+        value == NULL) {
+        return 1;
+    }
+    fields = NULL;
+    status = kmipkit_ttlv_item_create(tag, value, limits, &object);
+    if (status != INT32_C(0) || object == NULL ||
+        kmipkit_ttlv_structure_create(&attribute_items) != INT32_C(0) ||
+        attribute_items == NULL ||
+        kmipkit_attribute_set_create(attribute_items, &attributes) != INT32_C(0) ||
+        attributes == NULL) {
+        return 2;
+    }
+    value = NULL;
+    tag = NULL;
+    attribute_items = NULL;
+
+    status = kmipkit_client_batch_item_create_credential_from_fields(
+        KMIPKIT_ENUMERATION_CREDENTIAL_TYPE_DEVICE,
+        KMIPKIT_V3_0_OBJECT_TYPE_DEVICE_CREDENTIAL,
+        attributes, object, &item);
+    if (status != INT32_C(0) || item == NULL ||
+        kmipkit_client_batch_item_operation(item, &operation) != INT32_C(0) ||
+        operation != KMIPKIT_V3_0_OPERATION_CREATE_CREDENTIAL) {
+        return 3;
+    }
+    kmipkit_client_batch_item_release(item);
+    item = NULL;
+
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = 1;
+    identifier.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+    identifier.text_data = identifier_text;
+    identifier.text_length = (uint64_t)(sizeof(identifier_text) - 1);
+    status = kmipkit_client_batch_item_encapsulate_from_fields(
+        &identifier, NULL, NULL, &item);
+    if (status != INT32_C(0) || item == NULL ||
+        kmipkit_client_batch_item_operation(item, &operation) != INT32_C(0) ||
+        operation != KMIPKIT_V3_0_OPERATION_ENCAPSULATE) {
+        return 4;
+    }
+    kmipkit_client_batch_item_release(item);
+    item = NULL;
+
+    status = kmipkit_client_batch_item_decapsulate_from_fields(
+        &identifier, ciphertext, (uint64_t)sizeof(ciphertext), NULL, NULL, &item);
+    if (status != INT32_C(0) || item == NULL ||
+        kmipkit_client_batch_item_operation(item, &operation) != INT32_C(0) ||
+        operation != KMIPKIT_V3_0_OPERATION_DECAPSULATE) {
+        return 5;
+    }
+    kmipkit_client_batch_item_release(item);
+    kmipkit_attribute_set_release(attributes);
+    kmipkit_ttlv_item_release(object);
+    kmipkit_raw_tag_release(raw_tag);
+    kmipkit_codec_limits_release(limits);
+    return 0;
+}
+
 int kmipkit_public_fluent_validation_probe(void) {
     static const uint8_t description[] = "managed without TTLV tags";
     static const uint8_t unknown_value[] = "expert value";
