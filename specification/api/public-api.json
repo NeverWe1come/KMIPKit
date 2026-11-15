@@ -453,6 +453,11 @@
     "KMIPKIT-0105-FR-005",
     "KMIPKIT-0105-FR-006",
     "KMIPKIT-0105-FR-007",
+    "KMIPKIT-0114-FR-001",
+    "KMIPKIT-0114-FR-002",
+    "KMIPKIT-0114-FR-003",
+    "KMIPKIT-0114-FR-004",
+    "KMIPKIT-0114-FR-005",
     "KMIPKIT-REQ-SPEC-4.16-001-001",
     "KMIPKIT-REQ-SPEC-4.16-001-002",
     "KMIPKIT-REQ-SPEC-4.16-002",
@@ -161736,7 +161741,8 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -165126,7 +165132,8 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -166573,7 +166580,8 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -167221,6 +167229,7 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.50-001"
       ],
       "declarationState": "verified",
@@ -191811,7 +191820,8 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -194059,6 +194069,7 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.6-001",
         "KMIPKIT-REQ-SPEC-6.1.6-002-001",
         "KMIPKIT-REQ-SPEC-6.1.6-002-002",
@@ -195560,6 +195571,7 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.7-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-001",
         "KMIPKIT-REQ-SPEC-6.1.7-002-002",
@@ -197404,7 +197416,8 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -199076,6 +199089,7 @@
         "KMIPKIT-0037-FR-008",
         "KMIPKIT-0043-FR-010",
         "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.14-001-001",
         "KMIPKIT-REQ-SPEC-6.1.14-001-002",
         "KMIPKIT-REQ-SPEC-6.1.14-001-003",
@@ -200481,7 +200495,8 @@
         "KMIPKIT-0037-FR-007",
         "KMIPKIT-0037-FR-008",
         "KMIPKIT-0043-FR-010",
-        "KMIPKIT-0043-FR-021"
+        "KMIPKIT-0043-FR-021",
+        "KMIPKIT-0093-FR-008"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -203450,6 +203465,7 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.19-001",
         "KMIPKIT-REQ-SPEC-6.1.19-002"
       ],
@@ -206129,6 +206145,7 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.25-001",
         "KMIPKIT-REQ-SPEC-6.1.25-004",
         "KMIPKIT-REQ-SPEC-6.1.25-006"
@@ -208690,6 +208707,7 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.27-001",
         "KMIPKIT-REQ-SPEC-6.1.27-002-001",
         "KMIPKIT-REQ-SPEC-6.1.27-002-002",
@@ -210936,6 +210954,7 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.28-001",
         "KMIPKIT-REQ-SPEC-6.1.28-002",
         "KMIPKIT-REQ-SPEC-6.1.28-013-001",
@@ -213112,7 +213131,8 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -215332,6 +215352,7 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.35-001-001",
         "KMIPKIT-REQ-SPEC-6.1.35-001-002",
         "KMIPKIT-REQ-SPEC-6.1.35-002",
@@ -216707,7 +216728,8 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -218167,6 +218189,7 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.48-001",
         "KMIPKIT-REQ-SPEC-6.1.48-004",
         "KMIPKIT-REQ-SPEC-6.1.48-006"
@@ -219548,7 +219571,8 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -220591,6 +220615,7 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.43-001",
         "KMIPKIT-REQ-SPEC-6.1.43-005",
         "KMIPKIT-REQ-SPEC-6.1.43-007",
@@ -222658,6 +222683,7 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.47-001",
         "KMIPKIT-REQ-SPEC-6.1.47-004-001"
       ],
@@ -223447,6 +223473,7 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.46-001",
         "KMIPKIT-REQ-SPEC-6.1.46-004-001"
       ],
@@ -225447,6 +225474,7 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.44-001",
         "KMIPKIT-REQ-SPEC-6.1.44-003-001",
         "KMIPKIT-REQ-SPEC-6.1.44-003-002"
@@ -226173,7 +226201,8 @@
         "KMIPKIT-0043-FR-017",
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
-        "KMIPKIT-0043-FR-022"
+        "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008"
       ],
       "declarationState": "verified",
       "parityScope": "four-language",
@@ -226821,6 +226850,7 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.50-001"
       ],
       "declarationState": "verified",
@@ -409178,6 +409208,7 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.28-001",
         "KMIPKIT-REQ-SPEC-6.1.28-002",
         "KMIPKIT-REQ-SPEC-6.1.28-013-001",
@@ -409254,6 +409285,8 @@
         "KMIPKIT-0043-FR-018",
         "KMIPKIT-0043-FR-021",
         "KMIPKIT-0043-FR-022",
+        "KMIPKIT-0093-FR-005",
+        "KMIPKIT-0093-FR-008",
         "KMIPKIT-REQ-SPEC-6.1.28-001",
         "KMIPKIT-REQ-SPEC-6.1.28-002",
         "KMIPKIT-REQ-SPEC-6.1.28-013-001",
@@ -767853,6 +767886,731 @@
       "parityScope": "four-language",
       "candidateSpecId": "KMIPKIT-0093",
       "blockedReason": "The observed Rust declaration lacks a reviewed four-language mapping in the public API manifest."
+    },
+    {
+      "declarationId": "client_activate_by_id_v1:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_activate_by_id_v1",
+      "capabilityId": "fluent_c_lifecycle_facade",
+      "requirementIds": [
+        "KMIPKIT-0114-FR-001",
+        "KMIPKIT-0114-FR-002",
+        "KMIPKIT-0114-FR-003",
+        "KMIPKIT-0114-FR-004",
+        "KMIPKIT-0114-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/114-c-lifecycle-facade/spec.md",
+        "status": "Approved",
+        "evidence": "KMIPKIT-0114 C Lifecycle Direct Helpers"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_activate_by_id_v1"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "client",
+            "kind": "handle",
+            "type": "kmipkit_client_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "unique_identifier",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_unique_identifier_v1_t *",
+            "ownership": "borrowed",
+            "direction": "input"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_response",
+            "kind": "output",
+            "type": "kmipkit_client_batch_response_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ]
+      }
+    },
+    {
+      "declarationId": "client_activate_by_id_with_options_v1:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_activate_by_id_with_options_v1",
+      "capabilityId": "fluent_c_lifecycle_facade",
+      "requirementIds": [
+        "KMIPKIT-0114-FR-001",
+        "KMIPKIT-0114-FR-002",
+        "KMIPKIT-0114-FR-003",
+        "KMIPKIT-0114-FR-004",
+        "KMIPKIT-0114-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/114-c-lifecycle-facade/spec.md",
+        "status": "Approved",
+        "evidence": "KMIPKIT-0114 C Lifecycle Direct Helpers"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_activate_by_id_with_options_v1"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "client",
+            "kind": "handle",
+            "type": "kmipkit_client_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "unique_identifier",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_unique_identifier_v1_t *",
+            "ownership": "borrowed",
+            "direction": "input"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "options",
+            "kind": "input-value-pointer",
+            "type": "const kmipkit_request_options_v1_t *",
+            "valueType": "kmipkit_request_options_v1_t",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_response",
+            "kind": "output",
+            "type": "kmipkit_client_batch_response_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ]
+      }
+    },
+    {
+      "declarationId": "client_archive_by_id_v1:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_archive_by_id_v1",
+      "capabilityId": "fluent_c_lifecycle_facade",
+      "requirementIds": [
+        "KMIPKIT-0114-FR-001",
+        "KMIPKIT-0114-FR-002",
+        "KMIPKIT-0114-FR-003",
+        "KMIPKIT-0114-FR-004",
+        "KMIPKIT-0114-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/114-c-lifecycle-facade/spec.md",
+        "status": "Approved",
+        "evidence": "KMIPKIT-0114 C Lifecycle Direct Helpers"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_archive_by_id_v1"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "client",
+            "kind": "handle",
+            "type": "kmipkit_client_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "unique_identifier",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_unique_identifier_v1_t *",
+            "ownership": "borrowed",
+            "direction": "input"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_response",
+            "kind": "output",
+            "type": "kmipkit_client_batch_response_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ]
+      }
+    },
+    {
+      "declarationId": "client_archive_by_id_with_options_v1:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_archive_by_id_with_options_v1",
+      "capabilityId": "fluent_c_lifecycle_facade",
+      "requirementIds": [
+        "KMIPKIT-0114-FR-001",
+        "KMIPKIT-0114-FR-002",
+        "KMIPKIT-0114-FR-003",
+        "KMIPKIT-0114-FR-004",
+        "KMIPKIT-0114-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/114-c-lifecycle-facade/spec.md",
+        "status": "Approved",
+        "evidence": "KMIPKIT-0114 C Lifecycle Direct Helpers"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_archive_by_id_with_options_v1"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "client",
+            "kind": "handle",
+            "type": "kmipkit_client_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "unique_identifier",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_unique_identifier_v1_t *",
+            "ownership": "borrowed",
+            "direction": "input"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "options",
+            "kind": "input-value-pointer",
+            "type": "const kmipkit_request_options_v1_t *",
+            "valueType": "kmipkit_request_options_v1_t",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_response",
+            "kind": "output",
+            "type": "kmipkit_client_batch_response_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ]
+      }
+    },
+    {
+      "declarationId": "client_locate_v1:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_locate_v1",
+      "capabilityId": "fluent_c_lifecycle_facade",
+      "requirementIds": [
+        "KMIPKIT-0114-FR-001",
+        "KMIPKIT-0114-FR-002",
+        "KMIPKIT-0114-FR-003",
+        "KMIPKIT-0114-FR-004",
+        "KMIPKIT-0114-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/114-c-lifecycle-facade/spec.md",
+        "status": "Approved",
+        "evidence": "KMIPKIT-0114 C Lifecycle Direct Helpers"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_locate_v1"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "client",
+            "kind": "handle",
+            "type": "kmipkit_client_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "attributes",
+            "kind": "handle",
+            "type": "kmipkit_attribute_set_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_response",
+            "kind": "output",
+            "type": "kmipkit_client_batch_response_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ]
+      }
+    },
+    {
+      "declarationId": "client_locate_with_options_v1:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_locate_with_options_v1",
+      "capabilityId": "fluent_c_lifecycle_facade",
+      "requirementIds": [
+        "KMIPKIT-0114-FR-001",
+        "KMIPKIT-0114-FR-002",
+        "KMIPKIT-0114-FR-003",
+        "KMIPKIT-0114-FR-004",
+        "KMIPKIT-0114-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/114-c-lifecycle-facade/spec.md",
+        "status": "Approved",
+        "evidence": "KMIPKIT-0114 C Lifecycle Direct Helpers"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_locate_with_options_v1"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "client",
+            "kind": "handle",
+            "type": "kmipkit_client_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "attributes",
+            "kind": "handle",
+            "type": "kmipkit_attribute_set_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "options",
+            "kind": "input-value-pointer",
+            "type": "const kmipkit_request_options_v1_t *",
+            "valueType": "kmipkit_request_options_v1_t",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_response",
+            "kind": "output",
+            "type": "kmipkit_client_batch_response_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ]
+      }
+    },
+    {
+      "declarationId": "client_recover_by_id_v1:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_recover_by_id_v1",
+      "capabilityId": "fluent_c_lifecycle_facade",
+      "requirementIds": [
+        "KMIPKIT-0114-FR-001",
+        "KMIPKIT-0114-FR-002",
+        "KMIPKIT-0114-FR-003",
+        "KMIPKIT-0114-FR-004",
+        "KMIPKIT-0114-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/114-c-lifecycle-facade/spec.md",
+        "status": "Approved",
+        "evidence": "KMIPKIT-0114 C Lifecycle Direct Helpers"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_recover_by_id_v1"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "client",
+            "kind": "handle",
+            "type": "kmipkit_client_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "unique_identifier",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_unique_identifier_v1_t *",
+            "ownership": "borrowed",
+            "direction": "input"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_response",
+            "kind": "output",
+            "type": "kmipkit_client_batch_response_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ]
+      }
+    },
+    {
+      "declarationId": "client_recover_by_id_with_options_v1:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_recover_by_id_with_options_v1",
+      "capabilityId": "fluent_c_lifecycle_facade",
+      "requirementIds": [
+        "KMIPKIT-0114-FR-001",
+        "KMIPKIT-0114-FR-002",
+        "KMIPKIT-0114-FR-003",
+        "KMIPKIT-0114-FR-004",
+        "KMIPKIT-0114-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/114-c-lifecycle-facade/spec.md",
+        "status": "Approved",
+        "evidence": "KMIPKIT-0114 C Lifecycle Direct Helpers"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_recover_by_id_with_options_v1"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "client",
+            "kind": "handle",
+            "type": "kmipkit_client_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "unique_identifier",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_unique_identifier_v1_t *",
+            "ownership": "borrowed",
+            "direction": "input"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "options",
+            "kind": "input-value-pointer",
+            "type": "const kmipkit_request_options_v1_t *",
+            "valueType": "kmipkit_request_options_v1_t",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_response",
+            "kind": "output",
+            "type": "kmipkit_client_batch_response_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ]
+      }
+    },
+    {
+      "declarationId": "client_revoke_by_id_v1:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_revoke_by_id_v1",
+      "capabilityId": "fluent_c_lifecycle_facade",
+      "requirementIds": [
+        "KMIPKIT-0114-FR-001",
+        "KMIPKIT-0114-FR-002",
+        "KMIPKIT-0114-FR-003",
+        "KMIPKIT-0114-FR-004",
+        "KMIPKIT-0114-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/114-c-lifecycle-facade/spec.md",
+        "status": "Approved",
+        "evidence": "KMIPKIT-0114 C Lifecycle Direct Helpers"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_revoke_by_id_v1"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "client",
+            "kind": "handle",
+            "type": "kmipkit_client_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "unique_identifier",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_unique_identifier_v1_t *",
+            "ownership": "borrowed",
+            "direction": "input"
+          },
+          {
+            "name": "revocation_reason",
+            "kind": "handle",
+            "type": "kmipkit_revocation_reason_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "has_compromise_occurrence_date",
+            "kind": "scalar",
+            "type": "uint8_t"
+          },
+          {
+            "name": "compromise_occurrence_date",
+            "kind": "scalar",
+            "type": "int64_t"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_response",
+            "kind": "output",
+            "type": "kmipkit_client_batch_response_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ]
+      }
+    },
+    {
+      "declarationId": "client_revoke_by_id_with_options_v1:c",
+      "packageId": "c-kmipkit",
+      "kind": "c-symbol",
+      "exportName": "kmipkit_client_revoke_by_id_with_options_v1",
+      "capabilityId": "fluent_c_lifecycle_facade",
+      "requirementIds": [
+        "KMIPKIT-0114-FR-001",
+        "KMIPKIT-0114-FR-002",
+        "KMIPKIT-0114-FR-003",
+        "KMIPKIT-0114-FR-004",
+        "KMIPKIT-0114-FR-005"
+      ],
+      "declarationState": "declared",
+      "parityScope": "c-only",
+      "approvalSource": {
+        "kind": "feature-specification",
+        "path": "specs/114-c-lifecycle-facade/spec.md",
+        "status": "Approved",
+        "evidence": "KMIPKIT-0114 C Lifecycle Direct Helpers"
+      },
+      "languageMappings": {
+        "c": {
+          "packageId": "c-kmipkit",
+          "name": "kmipkit_client_revoke_by_id_with_options_v1"
+        }
+      },
+      "cSignature": {
+        "parameters": [
+          {
+            "name": "client",
+            "kind": "handle",
+            "type": "kmipkit_client_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "unique_identifier",
+            "kind": "versioned-value-pointer",
+            "type": "const kmipkit_unique_identifier_v1_t *",
+            "ownership": "borrowed",
+            "direction": "input"
+          },
+          {
+            "name": "revocation_reason",
+            "kind": "handle",
+            "type": "kmipkit_revocation_reason_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "has_compromise_occurrence_date",
+            "kind": "scalar",
+            "type": "uint8_t"
+          },
+          {
+            "name": "compromise_occurrence_date",
+            "kind": "scalar",
+            "type": "int64_t"
+          },
+          {
+            "name": "limits",
+            "kind": "handle",
+            "type": "kmipkit_codec_limits_t *",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "options",
+            "kind": "input-value-pointer",
+            "type": "const kmipkit_request_options_v1_t *",
+            "valueType": "kmipkit_request_options_v1_t",
+            "ownership": "borrowed"
+          },
+          {
+            "name": "out_response",
+            "kind": "output",
+            "type": "kmipkit_client_batch_response_t **",
+            "ownership": "library-owned",
+            "nullable": false
+          }
+        ],
+        "returnType": "int32_t",
+        "errorCategories": [
+          "invalid_input",
+          "resource_limit",
+          "internal",
+          "protocol",
+          "transport"
+        ]
+      }
     }
   ],
   "approvedExclusions": [
@@ -1074318,7 +1075076,9 @@
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-ffi/tests/support/lifecycle_operation_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/activate_operation_tests.rs",
-        "tools/api_manifest/tests/test_lifecycle_parity_manifest.py"
+        "tools/api_manifest/tests/test_lifecycle_parity_manifest.py",
+        "bindings/c/tests/public_client_api.c",
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs"
       ],
       "declarations": {
         "rust": [
@@ -1074366,7 +1075126,9 @@
         ],
         "c": [
           "T039:activate:constructor:c",
-          "T039:activate:response:c"
+          "T039:activate:response:c",
+          "client_activate_by_id_v1:c",
+          "client_activate_by_id_with_options_v1:c"
         ],
         "java": [
           "T039:activate:constructor:java",
@@ -1074560,7 +1075322,9 @@
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-ffi/tests/support/lifecycle_operation_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/archive_operation_tests.rs",
-        "tools/api_manifest/tests/test_lifecycle_parity_manifest.py"
+        "tools/api_manifest/tests/test_lifecycle_parity_manifest.py",
+        "bindings/c/tests/public_client_api.c",
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs"
       ],
       "declarations": {
         "rust": [
@@ -1074608,7 +1075372,9 @@
         ],
         "c": [
           "T039:archive:constructor:c",
-          "T039:archive:response:c"
+          "T039:archive:response:c",
+          "client_archive_by_id_v1:c",
+          "client_archive_by_id_with_options_v1:c"
         ],
         "java": [
           "T039:archive:constructor:java",
@@ -1076860,7 +1077626,9 @@
         "c": [
           "T038:locate:c:request:01",
           "T038:locate:c:response:02",
-          "T038:locate:c:unique_identifiers:03"
+          "T038:locate:c:unique_identifiers:03",
+          "client_locate_v1:c",
+          "client_locate_with_options_v1:c"
         ],
         "java": [
           "T038:locate:java:located_items:04",
@@ -1076887,7 +1077655,9 @@
         "crates/kmipkit-protocol/tests/unit/locate_tests.rs",
         "tools/api_manifest/tests/test_get_locate_parity_manifest.py",
         "tools/api_manifest/tests/test_t102_import_locate_request_member_mapping.py",
-        "tools/api_manifest/tests/test_t102_locate_request_builder_mapping.py"
+        "tools/api_manifest/tests/test_t102_locate_request_builder_mapping.py",
+        "bindings/c/tests/public_client_api.c",
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs"
       ]
     },
     {
@@ -1077884,7 +1078654,9 @@
         "crates/kmipkit-ffi/tests/support/client_abi_tests.rs",
         "crates/kmipkit-ffi/tests/support/lifecycle_operation_abi_tests.rs",
         "crates/kmipkit-protocol/tests/unit/recover_operation_tests.rs",
-        "tools/api_manifest/tests/test_lifecycle_parity_manifest.py"
+        "tools/api_manifest/tests/test_lifecycle_parity_manifest.py",
+        "bindings/c/tests/public_client_api.c",
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs"
       ],
       "declarations": {
         "rust": [
@@ -1077932,7 +1078704,9 @@
         ],
         "c": [
           "T039:recover:constructor:c",
-          "T039:recover:response:c"
+          "T039:recover:response:c",
+          "client_recover_by_id_v1:c",
+          "client_recover_by_id_with_options_v1:c"
         ],
         "java": [
           "T039:recover:constructor:java",
@@ -1078086,7 +1078860,9 @@
         "crates/kmipkit-protocol/tests/unit/revoke_operation_tests.rs",
         "tools/api_manifest/tests/test_revoke_parity_manifest.py",
         "tools/api_manifest/tests/test_t102_lifecycle_request_serializer_mapping.py",
-        "tools/api_manifest/tests/test_t102_revoke_request_member_mapping.py"
+        "tools/api_manifest/tests/test_t102_revoke_request_member_mapping.py",
+        "bindings/c/tests/public_client_api.c",
+        "crates/kmipkit-ffi/src/extension_registry/client_abi/fluent.rs"
       ],
       "declarations": {
         "rust": [
@@ -1078242,7 +1079018,9 @@
           "rust-observed-b336c6087c9618deb2cc",
           "rust-observed-d14ce26fbd9f064c6f09",
           "rust-observed-e132783701cd4df7cbc2",
-          "rust-observed-f19f81aab2684aa6250a"
+          "rust-observed-f19f81aab2684aa6250a",
+          "client_revoke_by_id_v1:c",
+          "client_revoke_by_id_with_options_v1:c"
         ],
         "java": [
           "T063:revoke:client-revoke:c",
@@ -1092161,6 +1092939,39 @@
           "kmipkit_create_key_pair_request_v1_t.reserved_0",
           "kmipkit_create_key_pair_request_v1_t.reserved_1",
           "kmipkit_create_key_pair_request_v1_t.struct_size"
+        ]
+      }
+    },
+    {
+      "capabilityId": "fluent_c_lifecycle_facade",
+      "requirementIds": [
+        "KMIPKIT-0114-FR-001",
+        "KMIPKIT-0114-FR-002",
+        "KMIPKIT-0114-FR-003",
+        "KMIPKIT-0114-FR-004",
+        "KMIPKIT-0114-FR-005"
+      ],
+      "capabilityState": "declared",
+      "parityScope": "c-only",
+      "ownerSpecId": "KMIPKIT-0114",
+      "approvalEvidence": {
+        "kind": "feature-specification",
+        "path": "specs/114-c-lifecycle-facade/spec.md",
+        "status": "Approved",
+        "evidence": "KMIPKIT-0114 C Lifecycle Direct Helpers"
+      },
+      "mappings": {
+        "c": [
+          "kmipkit_client_activate_by_id_v1",
+          "kmipkit_client_activate_by_id_with_options_v1",
+          "kmipkit_client_archive_by_id_v1",
+          "kmipkit_client_archive_by_id_with_options_v1",
+          "kmipkit_client_locate_v1",
+          "kmipkit_client_locate_with_options_v1",
+          "kmipkit_client_recover_by_id_v1",
+          "kmipkit_client_recover_by_id_with_options_v1",
+          "kmipkit_client_revoke_by_id_v1",
+          "kmipkit_client_revoke_by_id_with_options_v1"
         ]
       }
     }

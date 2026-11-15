@@ -168,9 +168,11 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
 # Register declarations, KMIPKIT-0101 lifecycle declarations, and KMIPKIT-0102
 # fluent cryptographic operation builders.
 # Includes the approved KMIPKIT-0093 inventory reconciliation and Rust
-# CreateBuilder surface.
-DECLARATIONS_SHA256 = "523fc02245a3daf6103764c04ecc647f53f5ebfb38f581bfc270a6e9c9984cba"
-OPERATIONS_SHA256 = "2a6eb9fb6823b3456b3fb10b6d4af8477be9f1a1f68c06c252bb4873b272f3bc"
+# CreateBuilder surface, KMIPKIT-0114 C lifecycle helpers, and KMIPKIT-0093-FR-008
+# traceability on typed operation result declarations and their Locate aliases.
+DECLARATIONS_SHA256 = "5283b8603254b6a92a8a2dacb39f4b75828e4c376c5f411a694ce4c9db8fa9a1"
+# The approved KMIPKIT-0114 C lifecycle helpers extend five operation rows.
+OPERATIONS_SHA256 = "574b163b50c24b128219f644956cc21c990879c1a5174486cd5b8b9d609597ff"
 
 
 def canonical_sha256(value: object) -> str:

@@ -174,9 +174,10 @@ EXPECTED = (
 # Register declarations, lifecycle declarations, KMIPKIT-0102 crypto builders,
 # the KMIPKIT-0103 C and KMIPKIT-0104 Java crypto facades, and KMIPKIT-0093
 # inventory reconciliation. It also includes the approved KMIPKIT-0096 Python
-# expert-position slice; the previous fingerprint predated those declaration updates.
-UNCHANGED_DECLARATIONS_SHA256 = "66a957bc8d8cf3a841158c6a7b82a0c027c331928fb5ceaac93141014ae66626"
-UNCHANGED_OPERATIONS_SHA256 = "9ee0f7c51c05a8abd96af7f6d3017f3ffb780c4262f231eaf3cb8c01a38147c7"
+# expert-position slice, KMIPKIT-0114 C lifecycle helpers, and KMIPKIT-0093-FR-008
+# traceability on typed operation result declarations and Locate aliases.
+UNCHANGED_DECLARATIONS_SHA256 = "4a7dcb193635ae90af12157403ee81d167c4bd233510b87d6d829e6542f7e0df"
+UNCHANGED_OPERATIONS_SHA256 = "c40b5d97f1cec90d39b5ed051e23a3645a15309fcda3fe352f12c090f98d94e7"
 # T098's maintainer-approved reconciliation updates lifecycle approval evidence
 # and inherited requirement links outside the T102 declaration/operation rows.
 # The test separately pins those T098 records; this fingerprint covers the
@@ -186,8 +187,9 @@ UNCHANGED_OPERATIONS_SHA256 = "9ee0f7c51c05a8abd96af7f6d3017f3ffb780c4262f231eaf
 # reconciliation, including the approved KMIPKIT-0096 Python expert-position
 # slice. R002's additive requirement links and C copy caveat are normalized in
 # the snapshot comparison below and tested by the dedicated 0093 contract suite.
-# The fingerprint also includes the additive Rust CreateBuilder inventory.
-OTHER_MANIFEST_SHA256 = "ccd78dc7b171da7dbddaf76d3125a6972728e0e8b4ff6d3aa40a4c7ab6fda505"
+# The fingerprint also includes the additive Rust CreateBuilder inventory and
+# approved KMIPKIT-0114 C lifecycle capability/function declarations.
+OTHER_MANIFEST_SHA256 = "d250f41225be07099894a7d4f76a12be627d20455ddc78de2da592fddebfca2d"
 EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",
@@ -621,7 +623,7 @@ class T102ResponseViewMappingTests(unittest.TestCase):
                         != "bindings/java/src/test/java/org/kmipkit/ClientFacadeTlsIntegrationTest.java"
                     ]
         self.assertEqual(
-            "4a2ad98111beb45f4ef1e249c27b4405d29dedc96840cfb127a3fcdf4f88fbdf",
+            UNCHANGED_OPERATIONS_SHA256,
             canonical_sha256(normalized_operations),
         )
         other_manifest = {

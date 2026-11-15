@@ -195,9 +195,11 @@ PKCS11_REQUEST_SETTER_IDS = {
 # It also includes approved KMIPKIT-0099 Create Split Key and KMIPKIT-0100
 # Register declarations, lifecycle declarations, KMIPKIT-0102 crypto builders,
 # the KMIPKIT-0103 C and KMIPKIT-0104 Java crypto facades, and KMIPKIT-0093
-# inventory reconciliation and Rust CreateBuilder surface.
-OTHER_DECLARATIONS_SHA256 = "f6a99db75e5335eb27d07f8d8ef74d2c63589a57b47e9420357a271b63002e4b"
-OTHER_OPERATIONS_SHA256 = "2ea94003f2877d0e6d84271d67d9add6f48a5c5b7a837c48b22fe40f41022d39"
+# inventory reconciliation, Rust CreateBuilder surface, KMIPKIT-0114 C lifecycle helpers,
+# KMIPKIT-0093-FR-008 traceability on typed operation results, and Locate aliases
+# reconciled to their canonical Rust declarations.
+OTHER_DECLARATIONS_SHA256 = "1e035f6acb924ebc70bd39ace9c02e36781b3112232e960bbd96d51817069b16"
+OTHER_OPERATIONS_SHA256 = "067db1d52284ca16014aabdc0090e9a5236560498d63f2acd77f1c17180aff6f"
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(
         value,
@@ -442,7 +444,7 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
                     if evidence_id not in RECERTIFY_OPERATION_ADDED_EVIDENCE
                 ]
         self.assertEqual(
-            "a1e58fe7e76de32113a53d5ad14e6c40ca822a8e51a6cc53deb99f67b5486663",
+            OTHER_OPERATIONS_SHA256,
             canonical_sha256(other_operations),
         )
 

@@ -3505,6 +3505,26 @@ int32_t kmipkit_signature_verify_builder_create(kmipkit_crypto_operation_builder
  */
 /* KMIPKIT-0096-FR-002, KMIPKIT-0096-FR-003, KMIPKIT-0096-FR-004 */
 int32_t kmipkit_symmetric_key_builder_insert_attribute_item(kmipkit_symmetric_key_builder_t * builder, uint64_t index, kmipkit_ttlv_item_t * item);
+/* KMIPKIT-0114-FR-001, KMIPKIT-0114-FR-002, KMIPKIT-0114-FR-003, KMIPKIT-0114-FR-004, KMIPKIT-0114-FR-005 */
+int32_t kmipkit_client_activate_by_id_v1(kmipkit_client_t * client, const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
+/* KMIPKIT-0114-FR-001, KMIPKIT-0114-FR-002, KMIPKIT-0114-FR-003, KMIPKIT-0114-FR-004, KMIPKIT-0114-FR-005 */
+int32_t kmipkit_client_activate_by_id_with_options_v1(kmipkit_client_t * client, const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);
+/* KMIPKIT-0114-FR-001, KMIPKIT-0114-FR-002, KMIPKIT-0114-FR-003, KMIPKIT-0114-FR-004, KMIPKIT-0114-FR-005 */
+int32_t kmipkit_client_archive_by_id_v1(kmipkit_client_t * client, const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
+/* KMIPKIT-0114-FR-001, KMIPKIT-0114-FR-002, KMIPKIT-0114-FR-003, KMIPKIT-0114-FR-004, KMIPKIT-0114-FR-005 */
+int32_t kmipkit_client_archive_by_id_with_options_v1(kmipkit_client_t * client, const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);
+/* KMIPKIT-0114-FR-001, KMIPKIT-0114-FR-002, KMIPKIT-0114-FR-003, KMIPKIT-0114-FR-004, KMIPKIT-0114-FR-005 */
+int32_t kmipkit_client_locate_v1(kmipkit_client_t * client, kmipkit_attribute_set_t * attributes, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
+/* KMIPKIT-0114-FR-001, KMIPKIT-0114-FR-002, KMIPKIT-0114-FR-003, KMIPKIT-0114-FR-004, KMIPKIT-0114-FR-005 */
+int32_t kmipkit_client_locate_with_options_v1(kmipkit_client_t * client, kmipkit_attribute_set_t * attributes, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);
+/* KMIPKIT-0114-FR-001, KMIPKIT-0114-FR-002, KMIPKIT-0114-FR-003, KMIPKIT-0114-FR-004, KMIPKIT-0114-FR-005 */
+int32_t kmipkit_client_recover_by_id_v1(kmipkit_client_t * client, const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
+/* KMIPKIT-0114-FR-001, KMIPKIT-0114-FR-002, KMIPKIT-0114-FR-003, KMIPKIT-0114-FR-004, KMIPKIT-0114-FR-005 */
+int32_t kmipkit_client_recover_by_id_with_options_v1(kmipkit_client_t * client, const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);
+/* KMIPKIT-0114-FR-001, KMIPKIT-0114-FR-002, KMIPKIT-0114-FR-003, KMIPKIT-0114-FR-004, KMIPKIT-0114-FR-005 */
+int32_t kmipkit_client_revoke_by_id_v1(kmipkit_client_t * client, const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_revocation_reason_t * revocation_reason, uint8_t has_compromise_occurrence_date, int64_t compromise_occurrence_date, kmipkit_codec_limits_t * limits, kmipkit_client_batch_response_t ** out_response);
+/* KMIPKIT-0114-FR-001, KMIPKIT-0114-FR-002, KMIPKIT-0114-FR-003, KMIPKIT-0114-FR-004, KMIPKIT-0114-FR-005 */
+int32_t kmipkit_client_revoke_by_id_with_options_v1(kmipkit_client_t * client, const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_revocation_reason_t * revocation_reason, uint8_t has_compromise_occurrence_date, int64_t compromise_occurrence_date, kmipkit_codec_limits_t * limits, const kmipkit_request_options_v1_t * options, kmipkit_client_batch_response_t ** out_response);
 /* Executes one KMIP batch and returns an owned generic ResponseMessage TTLV only for an approved missing, repeated, or malformed Unique Identifier in a successful MAC, MAC Verify, Sign, or Signature Verify response.
  * The caller owns and must release out_error_response_ttlv when it is non-null; it remains null for all other failures and successful execution.
  * The generic response is preserved without placing raw response bytes in diagnostics.
