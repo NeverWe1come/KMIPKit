@@ -171,6 +171,21 @@ class FluentOperationInventoryTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "KMIP 2.1 operation delta has no matching assigned value"):
             build_inventory(base, versioned, manifest, owners)
 
+    def test_generator_rejects_one_wire_value_assigned_to_different_operations(self) -> None:
+        base = json.loads(BASE_CATALOG.read_text(encoding="utf-8"))
+        versioned = json.loads(VERSIONED_VALUES.read_text(encoding="utf-8"))
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        owners = json.loads(MODEL_OWNERS.read_text(encoding="utf-8"))
+        create_value = next(
+            element for element in base["elements"]
+            if element.get("kind") == "enumeration_value"
+            and element.get("name") == "Create"
+            and "KMIPKIT-ELEM-ENUMERATION-OPERATION" in element.get("parent_element_ids", [])
+        )
+        create_value["wire_value"] = "00000002"
+        with self.assertRaisesRegex(ValueError, "duplicate KMIP 2.1 operation wire value"):
+            build_inventory(base, versioned, manifest, owners)
+
 
 if __name__ == "__main__":
     unittest.main()
