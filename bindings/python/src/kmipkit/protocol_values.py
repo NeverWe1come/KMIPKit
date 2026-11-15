@@ -2901,3 +2901,13 @@ def v3_0_object_class_mask_name(raw: int) -> str | None:
         0x00000001: 'User',
         0x00000002: 'System',
     }.get(raw)
+
+V3_0_SPLIT_KEY_POLYNOMIAL_POLYNOMIAL_283 = 0x00000001  # kmip-3.0 §11.56, Table 603
+V3_0_SPLIT_KEY_POLYNOMIAL_POLYNOMIAL_285 = 0x00000002  # kmip-3.0 §11.56, Table 603
+
+def v3_0_split_key_polynomial_name(raw: int) -> str | None:
+    """Return the assigned KMIP v3.0 Split Key Polynomial name."""
+    return {
+        0x00000001: 'Polynomial-283',
+        0x00000002: 'Polynomial-285',
+    }.get(raw)

@@ -1446,4 +1446,11 @@ static inline const char *KMIPKIT_V3_0_OBJECT_CLASS_MASK_name(uint32_t raw) {
     default: return 0;
     }
 }
+static inline const char *KMIPKIT_V3_0_SPLIT_KEY_POLYNOMIAL_name(uint32_t raw) {
+    switch (raw) {
+    case UINT32_C(0x00000001): return "Polynomial-283";
+    case UINT32_C(0x00000002): return "Polynomial-285";
+    default: return 0;
+    }
+}
 #endif

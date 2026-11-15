@@ -3154,6 +3154,22 @@ pub mod values {
                         }
                     }
                 }
+                /// KMIP Split Key Polynomial values from §11.56, Table 603.
+                pub mod split_key_polynomial {
+                    /// `Polynomial-283`; kmip-3.0 §11.56, Table 603.
+                    pub const POLYNOMIAL_283: u32 = 0x0000_0001;
+                    /// `Polynomial-285`; kmip-3.0 §11.56, Table 603.
+                    pub const POLYNOMIAL_285: u32 = 0x0000_0002;
+                    /// Returns the assigned name for a known value.
+                    #[must_use]
+                    pub const fn name(raw: u32) -> Option<&'static str> {
+                        match raw {
+                            0x0000_0001 => Some("Polynomial-283"),
+                            0x0000_0002 => Some("Polynomial-285"),
+                            _ => None,
+                        }
+                    }
+                }
             }
             pub mod bitmask {
                 /// KMIP Object Class Mask bits from §12.2, Table 616.

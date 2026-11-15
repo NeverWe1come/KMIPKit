@@ -503,6 +503,26 @@
           "wireValue": "0x00000002"
         }
       ]
+    },
+    {
+      "version": "v3_0",
+      "kind": "enumeration",
+      "name": "Split Key Polynomial",
+      "sourceId": "kmip-3.0",
+      "section": "11.56",
+      "table": "603",
+      "assignedValues": [
+        {
+          "name": "Polynomial-283",
+          "identifier": "POLYNOMIAL_283",
+          "wireValue": "0x00000001"
+        },
+        {
+          "name": "Polynomial-285",
+          "identifier": "POLYNOMIAL_285",
+          "wireValue": "0x00000002"
+        }
+      ]
     }
   ],
   "groups": [

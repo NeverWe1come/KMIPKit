@@ -481,6 +481,7 @@ F	42019E	Object Class
 F	4201A3	Cryptographic Algorithm
 F	4201A8	OTP Algorithm
 F	4201A9	Cryptographic Algorithm
+F	4201B6	Split Key Polynomial
 F	4201B9	Deactivation Reason Code
 F	4201C3	KEM Algorithm
 E	Adjustment Type	00000001	Increment
@@ -1147,6 +1148,8 @@ E	Split Key Method	00000001	XOR
 E	Split Key Method	00000002	Polynomial Sharing GF (2¹⁶)
 E	Split Key Method	00000003	Polynomial Sharing Prime Field
 E	Split Key Method	00000004	Polynomial Sharing GF (2⁸)
+E	Split Key Polynomial	00000001	Polynomial-283
+E	Split Key Polynomial	00000002	Polynomial-285
 E	State	00000001	Pre-Active
 E	State	00000002	Active
 E	State	00000003	Deactivated

@@ -3162,4 +3162,17 @@ public final class KmipValues {
             default -> null;
         };
     }
+    /** Polynomial-283; kmip-3.0 §11.56, Table 603. */
+    public static final long V3_0_SPLIT_KEY_POLYNOMIAL_POLYNOMIAL_283 = 0x00000001L;
+    /** Polynomial-285; kmip-3.0 §11.56, Table 603. */
+    public static final long V3_0_SPLIT_KEY_POLYNOMIAL_POLYNOMIAL_285 = 0x00000002L;
+    /** Returns the KMIP v3.0 Split Key Polynomial name, or null for an unassigned value. */
+    public static String v3_0SplitKeyPolynomialName(long raw) {
+        if (raw < 0 || raw > 0xFFFF_FFFFL) return null;
+        return switch ((int) raw) {
+            case 0x00000001 -> "Polynomial-283";
+            case 0x00000002 -> "Polynomial-285";
+            default -> null;
+        };
+    }
 }
