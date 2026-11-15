@@ -56,8 +56,8 @@ use crate::{
     kmipkit_client_batch_item_response_t, kmipkit_client_batch_item_t,
     kmipkit_client_batch_response_t, kmipkit_client_batch_t, kmipkit_client_configuration_t,
     kmipkit_client_extension_registry_t, kmipkit_client_request_message_extension_t,
-    kmipkit_client_t, kmipkit_codec_limits_t, kmipkit_credential_t,
-    kmipkit_credential_validation_error_v1_t, kmipkit_credential_value_t,
+    kmipkit_client_t, kmipkit_codec_limits_t, kmipkit_create_key_pair_builder_t,
+    kmipkit_credential_t, kmipkit_credential_validation_error_v1_t, kmipkit_credential_value_t,
     kmipkit_credential_view_t, kmipkit_crypto_operation_builder_t,
     kmipkit_cryptographic_parameters_fields_v1_t, kmipkit_cryptographic_parameters_t,
     kmipkit_delete_attribute_request_t, kmipkit_device_credential_t,
@@ -570,6 +570,7 @@ enum Kind {
     ProcessRequest,
     QueryAsyncRequestsRequest,
     SymmetricKeyBuilder,
+    CreateKeyPairBuilder,
     CryptoOperationBuilder,
 }
 
@@ -604,6 +605,11 @@ struct CryptoOperationBuilder {
     correlation_value: Option<Zeroizing<Vec<u8>>>,
     init_indicator: Option<bool>,
     final_indicator: Option<bool>,
+    asynchronous_indicator: Option<u32>,
+}
+
+struct CreateKeyPairBuilderState {
+    builder: kmipkit_client::fluent::CreateKeyPairBuilder<'static>,
     asynchronous_indicator: Option<u32>,
 }
 
@@ -650,6 +656,7 @@ enum HandleValue {
     AttributeSet(Mutex<AttributeSet>),
     BatchItem(Box<ClientBatchItem>),
     SymmetricKeyBuilder(Mutex<Option<kmipkit_client::fluent::CreateSymmetricKeyBuilder<'static>>>),
+    CreateKeyPairBuilder(Mutex<Option<CreateKeyPairBuilderState>>),
     CryptoOperationBuilder(Mutex<CryptoOperationBuilder>),
     BatchItemReadback(ClientBatchItemReadback),
     RegisterRequest(Box<RegisterRequest>),

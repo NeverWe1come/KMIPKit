@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
-import org.kmipkit.InvalidInputException;
+import org.kmipkit.ClientOperationException;
 import org.kmipkit.extensions.ClientBatchItem;
 import org.kmipkit.protocol.KmipValues;
 
@@ -21,7 +21,7 @@ final class CreateKeyPairBuilderTest {
     @Test
     void builderRejectsMissingCryptoChoicesAndBuildsTypedBatchItem() {
         try (CreateKeyPairBuilder builder = new CreateKeyPairBuilder(null)) {
-            assertThrows(InvalidInputException.class, builder::build);
+            assertThrows(ClientOperationException.class, builder::build);
             builder.algorithm(KmipValues.CryptographicAlgorithm.RSA)
                     .length(2048)
                     .privateUsageMask((int) KmipValues.CryptographicUsageMask.SIGN)

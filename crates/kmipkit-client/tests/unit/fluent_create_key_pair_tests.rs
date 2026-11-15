@@ -107,6 +107,22 @@ fn key_pair_builder_requires_distinct_explicit_algorithm_and_length_values() {
 }
 
 #[test]
+fn detached_key_pair_builder_builds_without_a_client_and_never_sends() {
+    let builder = CreateKeyPairBuilder::detached()
+        .algorithm(CryptographicAlgorithm::from_raw(RSA))
+        .length(2048)
+        .private_usage_mask(CryptographicUsageMask::SIGN)
+        .public_usage_mask(CryptographicUsageMask::VERIFY);
+
+    assert!(builder.validate().is_ok());
+    let error = builder
+        .execute(&CodecLimits::defaults())
+        .expect_err("a detached request builder has no client to execute through");
+    assert_eq!(error.delivery_state(), Some(RequestDeliveryState::NotSent));
+    assert!(!format!("{error:?} {error}").contains(PRIVATE_SENTINEL));
+}
+
+#[test]
 fn key_pair_builder_places_semantic_attributes_in_their_exact_key_groups() {
     let (mut client, _, _) = client_for(ExchangeScript::FailBeforeWrite);
     let request: CreateKeyPairRequest = client

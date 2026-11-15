@@ -40,6 +40,17 @@ def _client_abi_pointer(c_type: str, pointer: Any) -> Any:
     return ffi.cast(c_type, address)
 
 
+def _signed_i32_bits(value: int) -> int:
+    """Accept signed integers or raw uint32 bit patterns for KMIP bitmasks."""
+    if not isinstance(value, int) or isinstance(value, bool):
+        errors.raise_for_status(4)
+    if -(1 << 31) <= value <= (1 << 31) - 1:
+        return value
+    if 0 <= value <= 0xFFFF_FFFF:
+        return value - (1 << 32) if value >= (1 << 31) else value
+    errors.raise_for_status(4)
+
+
 def _identifier(value: extensions.UniqueIdentifier) -> Any:
     if not isinstance(value, extensions.UniqueIdentifier):
         errors.raise_for_status(4)
@@ -189,6 +200,9 @@ class Request:
 
     def create_symmetric_key(self) -> SymmetricKeyBuilder:
         return SymmetricKeyBuilder(client=self._client)
+
+    def create_key_pair(self) -> CreateKeyPairBuilder:
+        return CreateKeyPairBuilder(client=self._client)
 
     def get(self, unique_identifier: extensions.UniqueIdentifier) -> Operation:
         return Operation(self._client, "get", unique_identifier)
@@ -545,6 +559,241 @@ class SymmetricKeyBuilder:
             pass
 
 
+class CreateKeyPairBuilder:
+    """Owns a native builder for a typed KMIP Create Key Pair request."""
+
+    def __init__(self, *, client: Client | None = None) -> None:
+        output = ffi.new("kmipkit_create_key_pair_builder_t **")
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_create_key_pair_builder_create(output))
+        if output[0] == ffi.NULL:
+            errors.raise_for_status(7)
+        self._handle = output[0]
+        self._client = client
+        self._options: RequestOptions | None = None
+        self._asynchronous_indicator: int | None = None
+
+    def _set(self, native_function: Any, value: int) -> CreateKeyPairBuilder:
+        self._ensure_open()
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(native_function(self._handle, value))
+        return self
+
+    def algorithm(self, value: int) -> CreateKeyPairBuilder:
+        return self._set(
+            lib.kmipkit_create_key_pair_builder_set_algorithm, _unsigned(value, 32)
+        )
+
+    def length(self, bits: int) -> CreateKeyPairBuilder:
+        if (not isinstance(bits, int) or isinstance(bits, bool)
+                or not -(1 << 31) <= bits < (1 << 31)):
+            errors.raise_for_status(4)
+        return self._set(lib.kmipkit_create_key_pair_builder_set_length, bits)
+
+    def private_usage_mask(self, value: int) -> CreateKeyPairBuilder:
+        return self._set(
+            lib.kmipkit_create_key_pair_builder_set_private_usage_mask,
+            _signed_i32_bits(value),
+        )
+
+    def public_usage_mask(self, value: int) -> CreateKeyPairBuilder:
+        return self._set(
+            lib.kmipkit_create_key_pair_builder_set_public_usage_mask,
+            _signed_i32_bits(value),
+        )
+
+    def _set_name(self, function: Any, value: str) -> CreateKeyPairBuilder:
+        self._ensure_open()
+        if not isinstance(value, str):
+            errors.raise_for_status(4)
+        encoded = value.encode("utf-8")
+        staged = ffi.new("uint8_t[]", encoded)
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(function(self._handle, staged, len(encoded)))
+        return self
+
+    def private_name(self, value: str) -> CreateKeyPairBuilder:
+        return self._set_name(lib.kmipkit_create_key_pair_builder_set_private_name, value)
+
+    def public_name(self, value: str) -> CreateKeyPairBuilder:
+        return self._set_name(lib.kmipkit_create_key_pair_builder_set_public_name, value)
+
+    def _add_item(self, function: Any, item: ttlv.TtlvItem) -> CreateKeyPairBuilder:
+        self._ensure_open()
+        if not isinstance(item, ttlv.TtlvItem):
+            errors.raise_for_status(4)
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(function(
+                self._handle, ffi.cast("kmipkit_ttlv_item_t *", item._pointer())
+            ))
+        return self
+
+    def add_common_attribute_item(self, item: ttlv.TtlvItem) -> CreateKeyPairBuilder:
+        return self._add_item(
+            lib.kmipkit_create_key_pair_builder_add_common_attribute_item, item
+        )
+
+    def add_private_attribute_item(self, item: ttlv.TtlvItem) -> CreateKeyPairBuilder:
+        return self._add_item(
+            lib.kmipkit_create_key_pair_builder_add_private_attribute_item, item
+        )
+
+    def add_public_attribute_item(self, item: ttlv.TtlvItem) -> CreateKeyPairBuilder:
+        return self._add_item(
+            lib.kmipkit_create_key_pair_builder_add_public_attribute_item, item
+        )
+
+    def _add_catalogued_attribute(
+        self, function: Any, attribute: StandardAttribute, value: ttlv.Value,
+    ) -> CreateKeyPairBuilder:
+        self._ensure_open()
+        if not isinstance(attribute, StandardAttribute) or not isinstance(value, ttlv.Value):
+            errors.raise_for_status(4)
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(function(
+                self._handle, _unsigned(attribute.tag, 32),
+                ffi.cast("kmipkit_ttlv_value_t *", value._pointer()),
+            ))
+        return self
+
+    def add_common_catalogued_attribute(
+        self, attribute: StandardAttribute, value: ttlv.Value,
+    ) -> CreateKeyPairBuilder:
+        return self._add_catalogued_attribute(
+            lib.kmipkit_create_key_pair_builder_add_common_catalogued_attribute,
+            attribute, value,
+        )
+
+    def add_private_catalogued_attribute(
+        self, attribute: StandardAttribute, value: ttlv.Value,
+    ) -> CreateKeyPairBuilder:
+        return self._add_catalogued_attribute(
+            lib.kmipkit_create_key_pair_builder_add_private_catalogued_attribute,
+            attribute, value,
+        )
+
+    def add_public_catalogued_attribute(
+        self, attribute: StandardAttribute, value: ttlv.Value,
+    ) -> CreateKeyPairBuilder:
+        return self._add_catalogued_attribute(
+            lib.kmipkit_create_key_pair_builder_add_public_catalogued_attribute,
+            attribute, value,
+        )
+
+    def _add_vendor_attribute(
+        self, function: Any, vendor: str, name: str, value: ttlv.TtlvItem,
+    ) -> CreateKeyPairBuilder:
+        self._ensure_open()
+        if (not isinstance(vendor, str) or not isinstance(name, str)
+                or not isinstance(value, ttlv.TtlvItem)):
+            errors.raise_for_status(4)
+        vendor_bytes = vendor.encode("utf-8")
+        name_bytes = name.encode("utf-8")
+        vendor_owner = ffi.new("uint8_t[]", vendor_bytes)
+        name_owner = ffi.new("uint8_t[]", name_bytes)
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(function(
+                self._handle, vendor_owner, len(vendor_bytes), name_owner, len(name_bytes),
+                ffi.cast("kmipkit_ttlv_item_t *", value._pointer()),
+            ))
+        return self
+
+    def add_common_vendor_attribute(
+        self, vendor: str, name: str, value: ttlv.TtlvItem,
+    ) -> CreateKeyPairBuilder:
+        return self._add_vendor_attribute(
+            lib.kmipkit_create_key_pair_builder_add_common_vendor_attribute,
+            vendor, name, value,
+        )
+
+    def add_private_vendor_attribute(
+        self, vendor: str, name: str, value: ttlv.TtlvItem,
+    ) -> CreateKeyPairBuilder:
+        return self._add_vendor_attribute(
+            lib.kmipkit_create_key_pair_builder_add_private_vendor_attribute,
+            vendor, name, value,
+        )
+
+    def add_public_vendor_attribute(
+        self, vendor: str, name: str, value: ttlv.TtlvItem,
+    ) -> CreateKeyPairBuilder:
+        return self._add_vendor_attribute(
+            lib.kmipkit_create_key_pair_builder_add_public_vendor_attribute,
+            vendor, name, value,
+        )
+
+    def with_options(self, options: RequestOptions) -> CreateKeyPairBuilder:
+        self._ensure_open()
+        if not isinstance(options, RequestOptions):
+            errors.raise_for_status(4)
+        self._options = options
+        return self
+
+    def asynchronous_indicator(self, value: int) -> CreateKeyPairBuilder:
+        self._ensure_open()
+        self._asynchronous_indicator = _unsigned(value, 32)
+        return self
+
+    def validate(self) -> None:
+        self._ensure_open()
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_create_key_pair_builder_validate(self._handle))
+
+    def build(self) -> extensions.ClientBatchItem:
+        self._ensure_open()
+        output = ffi.new("kmipkit_client_batch_item_t **")
+        with _NATIVE_CALL_LOCK:
+            _raise_client_status(lib.kmipkit_create_key_pair_builder_build_batch_item(
+                self._handle, output
+            ))
+        if output[0] == ffi.NULL:
+            errors.raise_for_status(7)
+        handle = _base_ffi.cast(
+            "kmipkit_client_batch_item_t *", int(ffi.cast("uintptr_t", output[0]))
+        )
+        return _wrap_owned_handle(extensions.ClientBatchItem, handle)
+
+    to_batch_item = build
+
+    def execute(self, limits: ttlv.CodecLimits, client: Client | None = None) -> BatchResult:
+        self._ensure_open()
+        target = client or self._client
+        if not isinstance(target, Client) or not isinstance(limits, ttlv.CodecLimits):
+            errors.raise_for_status(4)
+        batch = Batch.create()
+        try:
+            batch.add_item(self.build())
+            if self._asynchronous_indicator is not None:
+                batch.set_asynchronous_indicator(self._asynchronous_indicator)
+            if self._options is None:
+                return target.execute(batch, limits)
+            return target.execute_with_options(batch, limits, self._options)
+        finally:
+            batch.close()
+
+    def close(self) -> None:
+        if self._handle != ffi.NULL:
+            with _NATIVE_CALL_LOCK:
+                lib.kmipkit_create_key_pair_builder_release(self._handle)
+            self._handle = ffi.NULL
+
+    def _ensure_open(self) -> None:
+        if self._handle == ffi.NULL:
+            raise RuntimeError("fluent builder is closed")
+
+    def __enter__(self) -> CreateKeyPairBuilder:
+        return self
+
+    def __exit__(self, *_: object) -> None:
+        self.close()
+
+    def __del__(self) -> None:
+        try:
+            self.close()
+        except Exception:  # noqa: BLE001 - finalizers must not raise during shutdown.
+            pass
+
+
 def _stage_crypto_bytes(value: bytes | bytearray | memoryview) -> tuple[bytearray, Any]:
     if not isinstance(value, (bytes, bytearray, memoryview)):
         errors.raise_for_status(4)
@@ -853,6 +1102,7 @@ class HashBuilder(_CryptoOperationBuilder):
 
 
 __all__ = [
+    "CreateKeyPairBuilder",
     "DecryptBuilder",
     "EncryptBuilder",
     "GetAttributeListBuilder",

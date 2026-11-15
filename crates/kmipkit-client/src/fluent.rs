@@ -197,7 +197,7 @@ impl<'a> RequestBuilder<'a> {
     /// Begins constructing a typed Create Key Pair request.
     #[must_use]
     pub fn create_key_pair(self) -> CreateKeyPairBuilder<'a> {
-        CreateKeyPairBuilder::new(self.client)
+        CreateKeyPairBuilder::new(Some(self.client))
     }
 
     /// Begins constructing a typed Create Split Key request.
@@ -2463,7 +2463,7 @@ impl<'a> CreateSplitKeyBuilder<'a> {
 
 /// A Create Key Pair builder with independent common and key-specific attributes.
 pub struct CreateKeyPairBuilder<'a> {
-    client: &'a mut Client,
+    client: Option<&'a mut Client>,
     algorithm: Option<CryptographicAlgorithm>,
     length: Option<i32>,
     private_usage_mask: Option<CryptographicUsageMask>,
@@ -2479,7 +2479,7 @@ pub struct CreateKeyPairBuilder<'a> {
 }
 
 impl<'a> CreateKeyPairBuilder<'a> {
-    fn new(client: &'a mut Client) -> Self {
+    fn new(client: Option<&'a mut Client>) -> Self {
         Self {
             client,
             algorithm: None,
@@ -2495,6 +2495,16 @@ impl<'a> CreateKeyPairBuilder<'a> {
             options: None,
             asynchronous_indicator: None,
         }
+    }
+
+    /// Creates a reusable builder without binding it to a client.
+    ///
+    /// A detached builder can construct typed requests and batch items for a
+    /// later exchange. Calling [`Self::execute`] on it returns a local
+    /// `NotSent` error because no client is attached.
+    #[must_use]
+    pub fn detached() -> Self {
+        Self::new(None)
     }
 
     /// Selects an explicit common KMIP Cryptographic Algorithm.
@@ -2736,7 +2746,14 @@ impl<'a> CreateKeyPairBuilder<'a> {
                 error,
             )
         })?;
-        self.client.execute_one_typed_request_with_async_indicator(
+        let Some(client) = self.client else {
+            return Err(ClientError::validation(
+                ClientCauseCategory::InvalidInput,
+                RequestDeliveryState::NotSent,
+                FluentBuildError::MissingClientForExecution,
+            ));
+        };
+        client.execute_one_typed_request_with_async_indicator(
             ClientRequest::CreateKeyPair(request),
             self.asynchronous_indicator,
             limits,
