@@ -173,6 +173,9 @@ to the following requests. This proves the client path and typed exchange
 against the fixture, not interoperability with an external KMS. Pending remains
 an explicit outcome; the client does not poll or retry automatically.
 
+For the five runnable cross-language examples, including the ordered batch
+ID Placeholder flow, see the [Fluent API journeys](fluent-api-journeys.md).
+
 ## Fluent Create Key Pair in Rust
 
 KMIPKIT-0097 adds `client.request().create_key_pair()` over the existing typed

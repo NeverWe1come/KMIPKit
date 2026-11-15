@@ -277,6 +277,57 @@ def execute_expert_attribute_journey(
     print("python: fluent catalogued expert-attribute journey verified")
 
 
+def execute_batch_id_placeholder_journey(
+    kmip_client: client.Client, limits: ttlv.CodecLimits
+) -> None:
+    create_batch_item_id = b"create-placeholder-source"
+    get_batch_item_id = b"get-placeholder-target"
+    with kmip_client.request().create_symmetric_key() as builder:
+        create_item = (
+            builder.aes_256()
+            .usage_mask(
+                protocol_values.CryptographicUsageMask.ENCRYPT
+                | protocol_values.CryptographicUsageMask.DECRYPT
+            )
+            .name("fluent-batch-placeholder")
+            .to_batch_item()
+        )
+    create_item = extensions.with_unique_batch_item_id(
+        create_item, create_batch_item_id
+    )
+    get_item = extensions.with_unique_batch_item_id(
+        kmip_client.request()
+        .get(extensions.UniqueIdentifier.enumeration(1))
+        .to_batch_item(),
+        get_batch_item_id,
+    )
+    with client.Batch.create() as batch:
+        batch.set_ordered(True).add_item(create_item).add_item(get_item)
+        response = kmip_client.execute(batch, limits)
+    try:
+        assert len(response.items) == 2
+        create_result, get_result = response.items
+        assert create_result.operation == protocol_values.Operation.CREATE
+        assert create_result.unique_batch_item_id == create_batch_item_id
+        assert create_result.outcome is client.BatchOutcome.COMPLETED
+        assert create_result.result_status == 0
+        identifier = create_result.unique_identifier
+        assert identifier == extensions.UniqueIdentifier.text_string(
+            "server-created-batch-key"
+        )
+        assert get_result.operation == protocol_values.Operation.GET
+        assert get_result.unique_batch_item_id == get_batch_item_id
+        assert get_result.outcome is client.BatchOutcome.COMPLETED
+        assert get_result.result_status == 0
+        get_response = get_result.get_response()
+        assert get_response is not None
+        assert get_response.unique_identifier == identifier
+        assert get_response.object is not None
+    finally:
+        response.close()
+    print("python: fluent Create/Get batch ID Placeholder journey verified")
+
+
 def main() -> None:
     port = int(os.environ["KMIPKIT_CONSUMER_TEST_PORT"])
     fixtures = Path(os.environ["KMIPKIT_CONSUMER_TEST_FIXTURES"])
@@ -352,6 +403,7 @@ def main() -> None:
             execute_aes_gcm_journey(kmip_client, limits)
             execute_key_pair_signature_journey(kmip_client, limits)
             execute_expert_attribute_journey(kmip_client, limits)
+            execute_batch_id_placeholder_journey(kmip_client, limits)
 
 
 if __name__ == "__main__":

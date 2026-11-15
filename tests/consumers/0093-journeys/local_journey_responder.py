@@ -19,11 +19,17 @@ _CONSUMER_JOURNEY_OPERATIONS = (
     + _EXPERT_ATTRIBUTE_JOURNEY_OPERATIONS
 )
 EXPECTED_CONSUMER_OPERATIONS = _CONSUMER_JOURNEY_OPERATIONS * 4
+_EXPECTED_PER_CONSUMER_REQUESTS = tuple(
+    (operation,) for operation in _CONSUMER_JOURNEY_OPERATIONS
+) + ((1, 10),)
+EXPECTED_CONSUMER_REQUESTS = _EXPECTED_PER_CONSUMER_REQUESTS * 4
 LIFECYCLE_IDENTIFIER = b"fluent-key"
 AES_GCM_IDENTIFIER = b"fluent-aes-gcm-key"
 PRIVATE_KEY_IDENTIFIER = b"fluent-signing-private"
 PUBLIC_KEY_IDENTIFIER = b"fluent-verification-public"
 EXPERT_ATTRIBUTE_IDENTIFIER = b"fluent-expert-attributes"
+BATCH_PLACEHOLDER_NAME = b"fluent-batch-placeholder"
+BATCH_PLACEHOLDER_IDENTIFIER = b"server-created-batch-key"
 AES_GCM_PLAINTEXT = bytes.fromhex("4b4d49504b6974204145532d47434d206a6f75726e6579")
 AES_GCM_CIPHERTEXT = bytes.fromhex("0c4f9f4b8e8cb63bcc04c4a6f6aa354de9b9f2469e1e26")
 AES_GCM_IV = bytes.fromhex("000102030405060708090a0b")
@@ -112,6 +118,46 @@ def _response(operation: int, identifier: bytes) -> bytes:
     return _structure(0x42007B, header, response_item)
 
 
+def _response_batch(
+    items: tuple[tuple[int, bytes], ...], identifier: bytes
+) -> bytes:
+    if not items:
+        raise RuntimeError("fixture cannot return an empty response batch")
+    first_response = _children(_response(items[0][0], identifier)[8:])
+    original_header = next(
+        value for tag, kind, value in first_response if tag == 0x42007A and kind == 1
+    )
+    header_fields = [
+        (tag, kind, value)
+        for tag, kind, value in _children(original_header)
+        if tag != 0x42000D
+    ]
+    header = _structure(
+        0x42007A,
+        *(_item(tag, kind, value) for tag, kind, value in header_fields),
+        _item(0x42000D, 2, struct.pack(">i", len(items))),
+    )
+    response_items = []
+    for operation, unique_batch_item_id in items:
+        fields = _children(
+            next(
+                value
+                for tag, kind, value in _children(_response(operation, identifier)[8:])
+                if tag == 0x42000F and kind == 1
+            )
+        )
+        if not fields or fields[0][:2] != (0x42005C, 5):
+            raise RuntimeError("fixture response batch item must begin with Operation")
+        fields.insert(1, (0x420093, 8, unique_batch_item_id))
+        response_items.append(
+            _structure(
+                0x42000F,
+                *(_item(tag, kind, value) for tag, kind, value in fields),
+            )
+        )
+    return _structure(0x42007B, header, *response_items)
+
+
 def _read_exact(stream: ssl.SSLSocket, length: int) -> bytes:
     data = bytearray()
     while len(data) < length:
@@ -157,9 +203,12 @@ def _flatten(items: list[tuple[int, int, bytes]]) -> list[tuple[int, int, bytes]
     return flattened
 
 
-def _request_operation(
+def _request_batch(
     frame: bytes,
-) -> tuple[int, list[tuple[int, int, bytes]], list[tuple[int, int, bytes]]]:
+) -> tuple[
+    list[tuple[int, list[tuple[int, int, bytes]]]],
+    list[tuple[int, int, bytes]],
+]:
     if frame[:4] != bytes.fromhex("42007801"):
         raise RuntimeError("consumer sent an invalid Request Message")
     body_length = int.from_bytes(frame[4:8], "big")
@@ -172,19 +221,93 @@ def _request_operation(
     headers = [
         value for tag, item_type, value in top_level if tag == 0x420077 and item_type == 1
     ]
-    if len(batch_items) != 1:
-        raise RuntimeError("fixture expects one typed Batch Item per exchange")
+    if not batch_items:
+        raise RuntimeError("fixture expects at least one typed Batch Item per exchange")
     if len(headers) != 1:
         raise RuntimeError("fixture expects one Request Header")
-    fields = _children(batch_items[0])
-    operations = [
-        value
-        for tag, item_type, value in fields
-        if tag == 0x42005C and item_type == 5
+    header_fields = _children(headers[0])
+    declared_counts = [
+        value for tag, kind, value in header_fields if tag == 0x42000D and kind == 2
     ]
-    if len(operations) != 1 or len(operations[0]) != 4:
-        raise RuntimeError("fixture could not read the typed KMIP operation")
-    return int.from_bytes(operations[0], "big"), fields, _children(headers[0])
+    if declared_counts != [struct.pack(">i", len(batch_items))]:
+        raise RuntimeError("Request Header Batch Count does not match the received batch items")
+
+    items: list[tuple[int, list[tuple[int, int, bytes]]]] = []
+    for encoded_item in batch_items:
+        fields = _children(encoded_item)
+        operations = [
+            value
+            for tag, item_type, value in fields
+            if tag == 0x42005C and item_type == 5
+        ]
+        if len(operations) != 1 or len(operations[0]) != 4:
+            raise RuntimeError("fixture could not read a typed KMIP operation")
+        items.append((int.from_bytes(operations[0], "big"), fields))
+    return items, header_fields
+
+
+def _request_operation(
+    frame: bytes,
+) -> tuple[int, list[tuple[int, int, bytes]], list[tuple[int, int, bytes]]]:
+    items, header_fields = _request_batch(frame)
+    if len(items) != 1:
+        raise RuntimeError("fixture expects one typed Batch Item for this journey exchange")
+    operation, fields = items[0]
+    return operation, fields, header_fields
+
+
+def _validate_placeholder_batch(
+    items: list[tuple[int, list[tuple[int, int, bytes]]]],
+    header_fields: list[tuple[int, int, bytes]],
+) -> None:
+    if len(items) != 2 or [operation for operation, _fields in items] != [1, 10]:
+        raise RuntimeError("ID Placeholder batch must order Create before Get")
+    unique_batch_item_ids = []
+    for _operation, fields in items:
+        values = [
+            value for tag, kind, value in fields if tag == 0x420093 and kind == 8
+        ]
+        if len(values) != 1 or not values[0]:
+            raise RuntimeError("each batch item requires a Unique Batch Item ID")
+        unique_batch_item_ids.append(values[0])
+    if unique_batch_item_ids != [
+        b"create-placeholder-source",
+        b"get-placeholder-target",
+    ]:
+        raise RuntimeError("Unique Batch Item IDs must be distinct and ordered with their requests")
+    ordered = [value for tag, kind, value in header_fields if tag == 0x420010 and kind == 6]
+    if ordered != [struct.pack(">Q", 1)]:
+        raise RuntimeError("ID Placeholder batch requires Batch Order Option true")
+
+    create_payloads = [
+        value for tag, kind, value in items[0][1] if tag == 0x420079 and kind == 1
+    ]
+    get_payloads = [
+        value for tag, kind, value in items[1][1] if tag == 0x420079 and kind == 1
+    ]
+    if len(create_payloads) != 1 or len(get_payloads) != 1:
+        raise RuntimeError("Create and Get must each carry one Request Payload")
+
+    create_values = _flatten(_children(create_payloads[0]))
+    if any(tag == 0x420094 for tag, _kind, _value in create_values):
+        raise RuntimeError("Create must not supply a guessed Unique Identifier")
+    values = {tag: (kind, value) for tag, kind, value in create_values}
+    if values.get(0x420057) != (5, struct.pack(">I", 2)):
+        raise RuntimeError("ID Placeholder producer must Create a Symmetric Key")
+    if values.get(0x420098) != (7, BATCH_PLACEHOLDER_NAME):
+        raise RuntimeError("ID Placeholder Create name did not match the fixture journey")
+    if values.get(0x420028) != (5, struct.pack(">I", 3)):
+        raise RuntimeError("ID Placeholder Create must explicitly select AES")
+    if values.get(0x42002A) != (2, struct.pack(">i", 256)):
+        raise RuntimeError("ID Placeholder Create must explicitly select 256-bit AES")
+
+    get_values = [
+        (kind, value)
+        for tag, kind, value in _flatten(_children(get_payloads[0]))
+        if tag == 0x420094
+    ]
+    if get_values != [(5, struct.pack(">I", 1))]:
+        raise RuntimeError("Get must use the KMIP ID Placeholder enumeration")
 
 
 def _validate_operation(
@@ -318,9 +441,9 @@ def main() -> None:
     parser.add_argument("--ready-file", type=Path, required=True)
     parser.add_argument("--pid-file", type=Path, required=True)
     parser.add_argument("--fixture-dir", type=Path, required=True)
-    parser.add_argument("--connections", type=int, default=len(EXPECTED_CONSUMER_OPERATIONS))
+    parser.add_argument("--connections", type=int, default=len(EXPECTED_CONSUMER_REQUESTS))
     args = parser.parse_args()
-    if args.connections != len(EXPECTED_CONSUMER_OPERATIONS):
+    if args.connections != len(EXPECTED_CONSUMER_REQUESTS):
         raise RuntimeError("the parity fixture requires the complete four-language journey sequence")
 
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
@@ -339,7 +462,7 @@ def main() -> None:
         args.pid_file.write_text(str(os.getpid()), encoding="ascii")
         args.ready_file.write_text(str(listener.getsockname()[1]), encoding="ascii")
         try:
-            for connection_index, expected_operation in enumerate(EXPECTED_CONSUMER_OPERATIONS):
+            for connection_index, expected_operations in enumerate(EXPECTED_CONSUMER_REQUESTS):
                 raw, _address = listener.accept()
                 raw.settimeout(10)
                 with raw, context.wrap_socket(raw, server_side=True) as stream:
@@ -347,14 +470,34 @@ def main() -> None:
                     if stream.version() != "TLSv1.3" or not peer_cert:
                         raise RuntimeError("fixture requires an authenticated TLS 1.3 client")
                     request = _read_frame(stream)
-                    operation, fields, header_fields = _request_operation(request)
-                    if operation != expected_operation:
+                    items, header_fields = _request_batch(request)
+                    operations = tuple(operation for operation, _fields in items)
+                    if operations != expected_operations:
                         raise RuntimeError(
                             "consumer journey operation order mismatch; "
-                            f"index={connection_index} expected={expected_operation:#x} "
-                            f"received={operation:#x}"
+                            f"index={connection_index} expected={expected_operations!r} "
+                            f"received={operations!r}"
                         )
-                    journey_offset = connection_index % len(_CONSUMER_JOURNEY_OPERATIONS)
+                    if operations == (1, 10):
+                        _validate_placeholder_batch(items, header_fields)
+                        response_items = tuple(
+                            (
+                                operation,
+                                next(
+                                    value
+                                    for tag, kind, value in fields
+                                    if tag == 0x420093 and kind == 8
+                                ),
+                            )
+                            for operation, fields in items
+                        )
+                        stream.sendall(
+                            _response_batch(response_items, BATCH_PLACEHOLDER_IDENTIFIER)
+                        )
+                        continue
+
+                    operation, fields = items[0]
+                    journey_offset = connection_index % len(_EXPECTED_PER_CONSUMER_REQUESTS)
                     expected_identifier = (
                         AES_GCM_IDENTIFIER if 3 <= journey_offset < 7
                         else EXPERT_ATTRIBUTE_IDENTIFIER if journey_offset >= 10

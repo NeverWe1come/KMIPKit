@@ -675,6 +675,165 @@ cleanup:
     return status;
 }
 
+static int32_t execute_batch_id_placeholder_journey(
+    kmipkit_client_t *client, kmipkit_codec_limits_t *limits) {
+    static const uint8_t name[] = "fluent-batch-placeholder";
+    static const uint8_t server_identifier[] = "server-created-batch-key";
+    static const uint8_t create_batch_id[] = "create-placeholder-source";
+    static const uint8_t get_batch_id[] = "get-placeholder-target";
+    kmipkit_symmetric_key_builder_t *builder = NULL;
+    kmipkit_client_batch_item_t *create_item = NULL;
+    kmipkit_client_batch_item_t *get_item = NULL;
+    kmipkit_client_batch_t *batch = NULL;
+    kmipkit_client_batch_response_t *response = NULL;
+    kmipkit_client_batch_item_response_t *create_result = NULL;
+    kmipkit_client_batch_item_response_t *get_result = NULL;
+    kmipkit_client_batch_item_t *identified_item = NULL;
+    kmipkit_ttlv_structure_t *get_object = NULL;
+    kmipkit_unique_identifier_v1_t placeholder = {0};
+    kmipkit_unique_identifier_v1_t created_identifier = {0};
+    kmipkit_unique_identifier_v1_t get_identifier = {0};
+    kmipkit_client_batch_item_metadata_v1_t metadata = {0};
+    kmipkit_byte_span_v1_t create_response_batch_id = {0};
+    kmipkit_byte_span_v1_t get_response_batch_id = {0};
+    uint64_t response_count = 0;
+    uint32_t create_object_type = 0;
+    uint32_t get_object_type = 0;
+    uint8_t create_present = 0;
+    uint8_t get_present = 0;
+    uint8_t get_payload_present = 0;
+    uint8_t create_batch_id_present = 0;
+    uint8_t get_batch_id_present = 0;
+    int32_t status = 1;
+
+    status = kmipkit_symmetric_key_builder_create(&builder);
+    if (status != 0 || builder == NULL ||
+        kmipkit_symmetric_key_builder_set_algorithm(
+            builder, KMIPKIT_ENUMERATION_CRYPTOGRAPHIC_ALGORITHM_AES) != 0 ||
+        kmipkit_symmetric_key_builder_set_length(builder, INT32_C(256)) != 0 ||
+        kmipkit_symmetric_key_builder_set_usage_mask(
+            builder, (int32_t)(KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_ENCRYPT |
+                               KMIPKIT_BITMASK_CRYPTOGRAPHIC_USAGE_MASK_DECRYPT)) != 0 ||
+        kmipkit_symmetric_key_builder_set_name(builder, name, sizeof(name) - 1) != 0 ||
+        kmipkit_symmetric_key_builder_build_batch_item(builder, &create_item) != 0 ||
+        create_item == NULL) {
+        status = 101;
+        goto cleanup;
+    }
+
+    {
+        kmipkit_client_batch_item_t *untagged_item = create_item;
+        create_item = NULL;
+        if (kmipkit_client_batch_item_with_unique_batch_item_id(
+                untagged_item, create_batch_id, sizeof(create_batch_id) - 1,
+                &identified_item) != 0 || identified_item == NULL) {
+            status = 102;
+            goto cleanup;
+        }
+        create_item = identified_item;
+        identified_item = NULL;
+    }
+
+    initialize_identifier_v1(&placeholder);
+    placeholder.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_ENUMERATION;
+    placeholder.enumeration_value = KMIPKIT_ENUMERATION_UNIQUE_IDENTIFIER_ID_PLACEHOLDER;
+    if (kmipkit_client_batch_item_get(
+            &placeholder, UINT8_C(0), 0, UINT8_C(0), 0, UINT8_C(0), 0, NULL,
+            &get_item) != 0 || get_item == NULL ||
+        kmipkit_client_batch_create(&batch) != 0 || batch == NULL) {
+        status = 103;
+        goto cleanup;
+    }
+    {
+        kmipkit_client_batch_item_t *untagged_item = get_item;
+        get_item = NULL;
+        if (kmipkit_client_batch_item_with_unique_batch_item_id(
+                untagged_item, get_batch_id, sizeof(get_batch_id) - 1,
+                &identified_item) != 0 || identified_item == NULL) {
+            status = 104;
+            goto cleanup;
+        }
+        get_item = identified_item;
+        identified_item = NULL;
+    }
+    if (kmipkit_client_batch_set_order_option(batch, UINT8_C(1)) != 0 ||
+        kmipkit_client_batch_add_item(batch, &create_item) != 0 || create_item != NULL ||
+        kmipkit_client_batch_add_item(batch, &get_item) != 0 || get_item != NULL) {
+        status = 105;
+        goto cleanup;
+    }
+    status = kmipkit_client_execute(client, &batch, limits, &response);
+    if (status != 0 || response == NULL ||
+        kmipkit_client_batch_response_item_count(response, &response_count) != 0 ||
+        response_count != UINT64_C(2) ||
+        kmipkit_client_batch_response_item_at(response, UINT64_C(0), &create_result) != 0 ||
+        create_result == NULL ||
+        kmipkit_client_batch_response_item_at(response, UINT64_C(1), &get_result) != 0 ||
+        get_result == NULL) {
+        status = 106;
+        goto cleanup;
+    }
+
+    metadata.struct_size = (uint32_t)sizeof(metadata);
+    metadata.abi_version = UINT32_C(1);
+    initialize_identifier_v1(&created_identifier);
+    if (kmipkit_client_batch_item_response_metadata_v1(create_result, &metadata) != 0 ||
+        metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS ||
+        kmipkit_client_batch_item_response_create(
+            create_result, &create_present, &create_object_type, &created_identifier) != 0 ||
+        kmipkit_client_batch_item_response_unique_batch_item_id(
+            create_result, &create_batch_id_present, &create_response_batch_id) != 0 ||
+        !create_batch_id_present || create_response_batch_id.data == NULL ||
+        create_response_batch_id.length != sizeof(create_batch_id) - 1 ||
+        memcmp(create_response_batch_id.data, create_batch_id, sizeof(create_batch_id) - 1) != 0 ||
+        !create_present || create_object_type != KMIPKIT_ENUMERATION_OBJECT_TYPE_SYMMETRIC_KEY ||
+        created_identifier.kind != KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING ||
+        created_identifier.text_data == NULL ||
+        created_identifier.text_length != sizeof(server_identifier) - 1 ||
+        memcmp(created_identifier.text_data, server_identifier, sizeof(server_identifier) - 1) != 0) {
+        status = 107;
+        goto cleanup;
+    }
+
+    metadata = (kmipkit_client_batch_item_metadata_v1_t){0};
+    metadata.struct_size = (uint32_t)sizeof(metadata);
+    metadata.abi_version = UINT32_C(1);
+    initialize_identifier_v1(&get_identifier);
+    if (kmipkit_client_batch_item_response_metadata_v1(get_result, &metadata) != 0 ||
+        metadata.result_status != KMIPKIT_ENUMERATION_RESULT_STATUS_SUCCESS ||
+        kmipkit_client_batch_item_response_get(
+            get_result, &get_present, &get_payload_present, &get_object_type,
+            &get_identifier, &get_object) != 0 ||
+        kmipkit_client_batch_item_response_unique_batch_item_id(
+            get_result, &get_batch_id_present, &get_response_batch_id) != 0 ||
+        !get_batch_id_present || get_response_batch_id.data == NULL ||
+        get_response_batch_id.length != sizeof(get_batch_id) - 1 ||
+        memcmp(get_response_batch_id.data, get_batch_id, sizeof(get_batch_id) - 1) != 0 ||
+        !get_present || !get_payload_present || get_object_type != create_object_type ||
+        get_identifier.kind != created_identifier.kind ||
+        get_identifier.text_length != created_identifier.text_length ||
+        get_identifier.text_data == NULL || get_object == NULL ||
+        memcmp(get_identifier.text_data, created_identifier.text_data,
+               (size_t)created_identifier.text_length) != 0) {
+        status = 108;
+        goto cleanup;
+    }
+    status = 0;
+
+cleanup:
+    kmipkit_ttlv_structure_release(get_object);
+    kmipkit_client_batch_item_release(identified_item);
+    kmipkit_client_batch_item_response_release(get_result);
+    kmipkit_client_batch_item_response_release(create_result);
+    kmipkit_client_batch_response_release(response);
+    kmipkit_client_batch_release(batch);
+    kmipkit_client_batch_item_release(get_item);
+    kmipkit_client_batch_item_release(create_item);
+    kmipkit_symmetric_key_builder_release(builder);
+    if (status == 0) puts("c: fluent Create/Get batch ID Placeholder journey verified");
+    return status;
+}
+
 int main(void) {
     kmipkit_codec_limits_t *limits = 0;
     kmipkit_extension_registry_limits_v1_t registry_limits = {0};
@@ -763,6 +922,7 @@ int main(void) {
     if (status == 0) status = execute_aes_gcm_journey(client, limits);
     if (status == 0) status = execute_key_pair_signature_journey(client, limits);
     if (status == 0) status = execute_expert_attribute_journey(client, limits);
+    if (status == 0) status = execute_batch_id_placeholder_journey(client, limits);
 
     kmipkit_client_release(client);
     kmipkit_transport_config_release(transport_configuration);

@@ -185,6 +185,10 @@ intercambio tipado contra el fixture, no la interoperabilidad con un KMS
 externo. Pending sigue siendo un resultado explícito; el cliente no ejecuta
 Poll ni reintenta automáticamente.
 
+Consulta [Recorridos de la API fluida](recorridos-api-fluida.md) para ver los
+cinco ejemplos ejecutables en todos los lenguajes, incluido el uso de ID
+Placeholder en un batch ordenado.
+
 ## Create Key Pair fluido en Rust
 
 KMIPKIT-0097 añade `client.request().create_key_pair()` sobre la petición tipada

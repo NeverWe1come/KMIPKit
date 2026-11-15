@@ -62,7 +62,7 @@ Dependent work branches from the unmerged parent head while review is pending.
 
 ## End-to-end and closeout PR
 
-- [ ] F001 Add five progressive TLS 1.3/mTLS journeys in each language and
+- [x] F001 Add five progressive TLS 1.3/mTLS journeys in each language and
   assert the fixture's decoded request and encoded response.
   - [x] F001.1 Lifecycle: Create → Get → Destroy in Rust, C, Java and Python.
   - [x] F001.2 AES-GCM: explicit Create, Encrypt, Decrypt and Destroy in all
@@ -72,7 +72,10 @@ Dependent work branches from the unmerged parent head while review is pending.
   - [x] F001.4 Expert attributes in all four consumers; fixture validates the
     catalogued Object Group Text String and the wrong-type path fails before
     transport.
-  - [ ] F001.5 Batch ID Placeholder in all four consumers.
+  - [x] F001.5 Batch ID Placeholder in all four consumers. Create → Get runs
+    as an ordered two-item request; the fixture checks the ID Placeholder,
+    distinct per-item IDs, and both echoed IDs in the encoded response.
+    `tests/consumers/0093-journeys/verify.sh` passes all 52 connections.
 - [ ] F002 Run all required format, Clippy, Rust/C/Java/Python, sanitizer,
   coverage, traceability and generated-export gates.
 - [ ] F003 Resolve every red CI job on its own PR head. Mark each PR ready only
