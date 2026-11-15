@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import pytest
+from typing import get_type_hints
 
 from kmipkit import errors, extensions, ttlv
 from kmipkit.attribute_operations import AttributeSet
@@ -86,3 +87,12 @@ def test_credential_and_kem_operations_accept_semantic_inputs() -> None:
                     identifier, b"12", attributes=attributes
                 ) as item:
                     assert item.operation == V3_0_OPERATION_DECAPSULATE
+
+
+def test_kmip30_semantic_binding_annotations_are_resolvable() -> None:
+    for function_name in (
+        "client_batch_item_create_credential_from_fields",
+        "client_batch_item_encapsulate_from_fields",
+        "client_batch_item_decapsulate_from_fields",
+    ):
+        get_type_hints(getattr(extensions, function_name))
