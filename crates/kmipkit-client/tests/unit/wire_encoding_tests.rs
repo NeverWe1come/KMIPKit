@@ -141,6 +141,90 @@ fn default_configuration_keeps_ttlv_and_exposes_resolved_selection_to_transport(
 }
 
 #[test]
+fn stop_and_undo_batches_accept_omitted_unprocessed_response_items() {
+    let limits = CodecLimits::defaults();
+    for continuation in [2, 3] {
+        let first_id = b"first-batch-item".to_vec();
+        let second_id = b"second-batch-item".to_vec();
+        let third_id = b"third-batch-item".to_vec();
+        let batch = ClientBatch::from_items(vec![
+            ClientBatchItem::new(ClientRequest::discover_versions())
+                .with_unique_batch_item_id(first_id.clone()),
+            ClientBatchItem::new(ClientRequest::discover_versions())
+                .with_unique_batch_item_id(second_id.clone()),
+            ClientBatchItem::new(ClientRequest::discover_versions())
+                .with_unique_batch_item_id(third_id),
+        ])
+        .with_batch_error_continuation_option(continuation)
+        .with_batch_order_option(false);
+        let mut first_response = ResponseItemFixture::success(Some(&first_id));
+        if continuation == 3 {
+            first_response.result_status = 3;
+        }
+        let wire_response = response_bytes(
+            (2, 1),
+            &[
+                ResponseItemFixture::failure(Some(&second_id)),
+                first_response,
+            ],
+        );
+        let (fake, _) = OneShotFakeTransport::new(wire_response);
+        let mut client = Client::for_test_with_configuration(fake, configuration());
+
+        let response = client
+            .execute(batch, &limits)
+            .expect("Stop and Undo may omit unprocessed batch item responses");
+
+        assert_eq!(response.len(), 2);
+        assert_eq!(
+            response.get(0).and_then(|item| item.unique_batch_item_id()),
+            Some(first_id.as_slice())
+        );
+        assert_eq!(
+            response.get(1).and_then(|item| item.unique_batch_item_id()),
+            Some(second_id.as_slice())
+        );
+        assert!(response.get(2).is_none());
+    }
+}
+
+#[test]
+fn continue_batches_still_require_a_response_for_each_request_item() {
+    let limits = CodecLimits::defaults();
+    let first_id = b"first-batch-item".to_vec();
+    let batch = ClientBatch::from_items(vec![
+        ClientBatchItem::new(ClientRequest::discover_versions())
+            .with_unique_batch_item_id(first_id.clone()),
+        ClientBatchItem::new(ClientRequest::discover_versions())
+            .with_unique_batch_item_id(b"second-batch-item".to_vec()),
+    ])
+    .with_batch_error_continuation_option(1);
+    let wire_response = response_bytes((2, 1), &[ResponseItemFixture::failure(Some(&first_id))]);
+    let (fake, _) = OneShotFakeTransport::new(wire_response);
+    let mut client = Client::for_test_with_configuration(fake, configuration());
+
+    assert!(client.execute(batch, &limits).is_err());
+}
+
+#[test]
+fn stop_batches_require_a_failure_before_accepting_partial_responses() {
+    let limits = CodecLimits::defaults();
+    let first_id = b"first-batch-item".to_vec();
+    let batch = ClientBatch::from_items(vec![
+        ClientBatchItem::new(ClientRequest::discover_versions())
+            .with_unique_batch_item_id(first_id.clone()),
+        ClientBatchItem::new(ClientRequest::discover_versions())
+            .with_unique_batch_item_id(b"second-batch-item".to_vec()),
+    ])
+    .with_batch_error_continuation_option(2);
+    let wire_response = response_bytes((2, 1), &[ResponseItemFixture::success(Some(&first_id))]);
+    let (fake, _) = OneShotFakeTransport::new(wire_response);
+    let mut client = Client::for_test_with_configuration(fake, configuration());
+
+    assert!(client.execute(batch, &limits).is_err());
+}
+
+#[test]
 fn configured_json_and_xml_defaults_encode_and_decode_the_same_selected_format() {
     for encoding in [WireEncoding::Json, WireEncoding::Xml] {
         let limits = CodecLimits::defaults();

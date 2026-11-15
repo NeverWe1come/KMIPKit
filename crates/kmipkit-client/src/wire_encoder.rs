@@ -534,17 +534,17 @@ pub(super) fn render_for_inspection(
             let bytes = match encoding {
                 WireEncoding::Json => crate::json_encoding::encode(item, limits),
                 WireEncoding::Xml => crate::xml_codec::encode(item, limits),
-                _ => return Err(EncodeError::UnsupportedValueType),
+                _ => return Err(EncodeError::UnsupportedValueType), // COVERAGE-EXCLUDE: WireEncoding is non-exhaustive externally; no current variant reaches this fallback.
             }
             .map_err(EncodeError::WireCodec)?;
             let text = std::str::from_utf8(bytes.as_slice())
-                .map_err(|_| EncodeError::UnsupportedValueType)?;
+                .map_err(|_| EncodeError::UnsupportedValueType)?; // COVERAGE-EXCLUDE: JSON and XML encoders return UTF-8 wire text.
             rendered
                 .try_reserve_exact(text.len())
                 .map_err(EncodeError::AllocationFailed)?;
             rendered.push_str(text);
         }
-        _ => return Err(EncodeError::UnsupportedValueType),
+        _ => return Err(EncodeError::UnsupportedValueType), // COVERAGE-EXCLUDE: WireEncoding is non-exhaustive externally; no current variant reaches this fallback.
     }
     Ok(rendered)
 }
