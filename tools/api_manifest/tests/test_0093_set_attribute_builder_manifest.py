@@ -59,6 +59,28 @@ class FluentSetAttributeBuilderManifestTests(unittest.TestCase):
                 )
                 self.assertNotIn("blockedReason", row)
 
+    def test_python_builder_lifecycle_exports_are_mapped(self) -> None:
+        expected = {
+            "kmipkit.fluent.SetAttributeBuilder.__enter__",
+            "kmipkit.fluent.SetAttributeBuilder.__exit__",
+            "kmipkit.fluent.SetAttributeBuilder.__init__",
+        }
+        rows = [
+            row
+            for row in self.manifest["publicDeclarations"]
+            if row.get("packageId") == "python-kmipkit"
+            and row.get("exportName") in expected
+        ]
+        self.assertEqual(expected, {row["exportName"] for row in rows})
+        for row in rows:
+            with self.subTest(export=row["exportName"]):
+                self.assertEqual("fluent_set_attribute_parity", row["capabilityId"])
+                self.assertEqual("declared", row["declarationState"])
+                self.assertEqual(
+                    {"rust", "c", "java", "python"},
+                    set(row["languageMappings"]),
+                )
+
     def test_fluent_builder_operations_are_declared_in_all_four_languages(self) -> None:
         functions = [
             row
