@@ -350,15 +350,15 @@ fn profile_context_parser_rejects_invalid_abi_records_and_state_values() {
 
 #[test]
 fn c_profile_selection_resolution_fails_closed_with_redacted_profile_details() {
-    const BASELINE: &[u8] = b"KMIPKIT-PROFILE-BASELINE-CLIENT";
+    const INCOMPLETE_PROFILE: &[u8] = b"KMIPKIT-PROFILE-HTTPS-CLIENT";
     let offsets = [0_u64];
-    let lengths = [BASELINE.len() as u64];
+    let lengths = [INCOMPLETE_PROFILE.len() as u64];
     let selection = kmipkit_profile_validation_selection_v1_t {
         struct_size: u32::try_from(size_of::<kmipkit_profile_validation_selection_v1_t>())
             .expect("C ABI selection size fits u32"),
         abi_version: 1,
-        profile_id_data: BASELINE.as_ptr(),
-        profile_id_data_length: BASELINE.len() as u64,
+        profile_id_data: INCOMPLETE_PROFILE.as_ptr(),
+        profile_id_data_length: INCOMPLETE_PROFILE.len() as u64,
         profile_id_offsets: offsets.as_ptr(),
         profile_id_lengths: lengths.as_ptr(),
         profile_id_count: 1,
@@ -379,17 +379,14 @@ fn c_profile_selection_resolution_fails_closed_with_redacted_profile_details() {
     let (error, view) = last_profile_validation_view();
     assert_eq!(
         span_text(view.error_code_data, view.error_code_length),
-        "profile_unavailable"
+        "conditional_profile_unsatisfied"
     );
     assert_eq!(
         span_text(view.profile_id_data, view.profile_id_length),
-        "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        "KMIPKIT-PROFILE-HTTPS-CLIENT"
     );
-    assert_eq!(view.source_kind, PROFILE_ERROR_SOURCE_CLAUSE);
-    assert_eq!(
-        span_text(view.requirement_id_data, view.requirement_id_length),
-        "KMIPKIT-REQ-SPEC-14.1-001"
-    );
+    assert_eq!(view.source_kind, PROFILE_ERROR_SOURCE_NONE);
+    assert_eq!(view.requirement_id_length, 0);
     kmipkit_profile_validation_error_release(error);
 }
 
@@ -972,9 +969,9 @@ fn compiled_c_consumer_exercises_ordered_ids_transport_and_redacted_rule_failure
 
 #[test]
 fn profile_validation_details_remain_owned_after_last_error_changes() {
-    let validation_error = ProfileValidationSelection::new(["KMIPKIT-PROFILE-BASELINE-CLIENT"])
+    let validation_error = ProfileValidationSelection::new(["KMIPKIT-PROFILE-HTTPS-CLIENT"])
         .validate()
-        .expect_err("incomplete Baseline evidence fails closed");
+        .expect_err("unclaimed HTTPS Client profile fails closed");
     let error = ClientError::profile_validation(validation_error, RequestDeliveryState::NotSent);
     assert_eq!(record_client_error(&error), ERROR_INVALID_INPUT);
 
@@ -1010,24 +1007,18 @@ fn profile_validation_details_remain_owned_after_last_error_changes() {
         unsafe { kmipkit_profile_validation_error_view_get_v1(handle, &raw mut view) },
         SUCCESS
     );
-    assert_eq!(view.source_kind, PROFILE_ERROR_SOURCE_CLAUSE);
+    assert_eq!(view.source_kind, PROFILE_ERROR_SOURCE_NONE);
     assert_eq!(view.batch_item_index_present, 0);
     assert_eq!(
         span_text(view.error_code_data, view.error_code_length),
-        "profile_unavailable"
+        "conditional_profile_unsatisfied"
     );
     assert_eq!(
         span_text(view.profile_id_data, view.profile_id_length),
-        "KMIPKIT-PROFILE-BASELINE-CLIENT"
+        "KMIPKIT-PROFILE-HTTPS-CLIENT"
     );
-    assert_eq!(
-        span_text(view.requirement_id_data, view.requirement_id_length),
-        "KMIPKIT-REQ-SPEC-14.1-001"
-    );
-    assert_eq!(
-        span_text(view.source_id_data, view.source_id_length),
-        "KMIPKIT-CLAUSE-SPEC-14.1-001"
-    );
+    assert_eq!(view.requirement_id_length, 0);
+    assert_eq!(view.source_id_length, 0);
     assert_eq!(view.source_locator_length, 0);
     kmipkit_profile_validation_error_release(handle);
 }

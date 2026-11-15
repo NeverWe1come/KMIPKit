@@ -200,31 +200,37 @@ fn batch_item_operation_readback_and_encoded_probe_validate_handle_state() {
     );
     release(wrong_value, Kind::BatchItem);
 
-    let valid_item = make_handle(
-        Kind::BatchItem,
-        HandleValue::BatchItem(Box::new(ClientBatchItem::ping())),
-    );
-    let mut encoded_operation = 0;
-    let mut encoded_item = valid_item;
-    assert_eq!(
-        kmipkit_test_client_batch_item_encoded_operation(
-            &raw mut encoded_item,
-            &raw mut encoded_operation,
-        ),
-        SUCCESS
-    );
-    assert!(encoded_item.is_null());
-    assert_eq!(encoded_operation, operation_for_ping());
+    #[cfg(feature = "coverage-c-consumer")]
+    {
+        let valid_item = make_handle(
+            Kind::BatchItem,
+            HandleValue::BatchItem(Box::new(ClientBatchItem::ping())),
+        );
+        let mut encoded_operation = 0;
+        let mut encoded_item = valid_item;
+        assert_eq!(
+            kmipkit_test_client_batch_item_encoded_operation(
+                &raw mut encoded_item,
+                &raw mut encoded_operation,
+            ),
+            SUCCESS
+        );
+        assert!(encoded_item.is_null());
+        assert_eq!(encoded_operation, operation_for_ping());
 
-    assert_eq!(
-        kmipkit_test_client_batch_item_encoded_operation(ptr::null_mut(), &raw mut operation),
-        ERROR_INVALID_INPUT
-    );
-    let mut empty_item = ptr::null_mut();
-    assert_eq!(
-        kmipkit_test_client_batch_item_encoded_operation(&raw mut empty_item, &raw mut operation,),
-        ERROR_INVALID_INPUT
-    );
+        assert_eq!(
+            kmipkit_test_client_batch_item_encoded_operation(ptr::null_mut(), &raw mut operation),
+            ERROR_INVALID_INPUT
+        );
+        let mut empty_item = ptr::null_mut();
+        assert_eq!(
+            kmipkit_test_client_batch_item_encoded_operation(
+                &raw mut empty_item,
+                &raw mut operation,
+            ),
+            ERROR_INVALID_INPUT
+        );
+    }
 }
 
 #[cfg(feature = "coverage-c-consumer")]
