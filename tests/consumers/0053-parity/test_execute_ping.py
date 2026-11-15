@@ -26,8 +26,11 @@ CONSUMER_ROOT = Path(__file__).resolve().parent
 EXPECTED_LINES = (
     "rust: Ping result and raw TTLV verified",
     "c: Ping result and raw TTLV verified",
-    "java: Ping result and raw TTLV verified",
     "python: Ping result and raw TTLV verified",
+    "rust: fluent ECDSA key pair, Sign, and Destroy verified over TLS 1.3/mTLS",
+    "c: fluent ECDSA key pair, Sign, and Destroy verified over TLS 1.3/mTLS",
+    "java: fluent ECDSA key pair, Sign, and Destroy verified over TLS 1.3/mTLS",
+    "python: fluent ECDSA key pair, Sign, and Destroy verified over TLS 1.3/mTLS",
 )
 
 
@@ -117,7 +120,7 @@ class ExecutePingConsumerTests(unittest.TestCase):
                 if process.stderr is not None:
                     process.stderr.close()
 
-    def test_all_external_consumers_execute_ping_and_inspect_raw_ttlv(self) -> None:
+    def test_all_external_consumers_execute_fluent_journeys_and_inspect_raw_ttlv(self) -> None:
         if os.name == "nt":
             shell = shutil.which("pwsh") or shutil.which("powershell")
             self.assertIsNotNone(shell, "PowerShell is required for the Windows consumer runner")
