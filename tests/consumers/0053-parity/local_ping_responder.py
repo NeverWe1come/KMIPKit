@@ -195,6 +195,16 @@ def _has_async_indicator(header_fields: list[tuple[int, int, bytes]]) -> bool:
     return any(tag == 0x420007 and kind == 5 for tag, kind, _value in header_fields)
 
 
+def _parse_operations(value: str) -> list[int]:
+    try:
+        operations = [int(token, 0) for token in value.split(",")]
+    except ValueError as error:
+        raise argparse.ArgumentTypeError("operations must be comma-separated integers") from error
+    if not operations:
+        raise argparse.ArgumentTypeError("at least one expected operation is required")
+    return operations
+
+
 
 def main() -> None:
     parser = argparse.ArgumentParser()
@@ -202,7 +212,10 @@ def main() -> None:
     parser.add_argument("--pid-file", type=Path, required=True)
     parser.add_argument("--fixture-dir", type=Path, required=True)
     parser.add_argument("--connections", type=int, default=8)
+    parser.add_argument("--expected-operations", type=_parse_operations)
     args = parser.parse_args()
+    if args.expected_operations is not None and len(args.expected_operations) != args.connections:
+        parser.error("--expected-operations must contain one operation for each connection")
 
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     context.minimum_version = ssl.TLSVersion.TLSv1_3
@@ -230,6 +243,15 @@ def main() -> None:
                         raise RuntimeError("fixture requires an authenticated TLS 1.3 client")
                     request = _read_frame(stream)
                     operation, fields, header_fields = _request_operation(request)
+                    if (
+                        args.expected_operations is not None
+                        and operation != args.expected_operations[connection_index]
+                    ):
+                        expected = args.expected_operations[connection_index]
+                        raise RuntimeError(
+                            "fixture received an unexpected operation at connection "
+                            f"{connection_index + 1}: expected {expected:#x}, got {operation:#x}"
+                        )
                     _validate_operation(operation, fields, header_fields)
                     asynchronous_destroy = operation == 20 and _has_async_indicator(header_fields)
                     pending = asynchronous_destroy and async_destroy_count == 0
