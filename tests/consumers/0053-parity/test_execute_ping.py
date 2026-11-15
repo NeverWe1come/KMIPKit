@@ -81,6 +81,41 @@ class ExecutePingConsumerTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "Create Key Pair did not select ECDSA"):
             _validate_operation(2, [(0x420079, 1, payload[8:])], [])
 
+    def test_fixture_requires_the_expert_vendor_attribute_on_the_named_key(self) -> None:
+        name = _structure(
+            0x420053,
+            _item(0x420097, 5, struct.pack(">I", 1)),
+            _item(0x420098, 7, b"fluent-expert-key"),
+        )
+        payload = _structure(
+            0x420079,
+            _item(0x420057, 5, struct.pack(">I", 2)),
+            _item(0x420028, 5, struct.pack(">I", 3)),
+            _item(0x42002A, 2, struct.pack(">i", 256)),
+            _item(0x42002C, 2, struct.pack(">i", 12)),
+            name,
+        )
+
+        with self.assertRaisesRegex(RuntimeError, "expert Create omitted the expected Vendor Attribute"):
+            _validate_operation(1, [(0x420079, 1, payload[8:])], [])
+
+        vendor_attribute = _structure(
+            0x420008,
+            _item(0x42009D, 7, b"KMIPKit.Example"),
+            _item(0x42000A, 7, b"purpose"),
+            _item(0x42000B, 7, b"fluent expert journey"),
+        )
+        valid_payload = _structure(
+            0x420079,
+            _item(0x420057, 5, struct.pack(">I", 2)),
+            _item(0x420028, 5, struct.pack(">I", 3)),
+            _item(0x42002A, 2, struct.pack(">i", 256)),
+            _item(0x42002C, 2, struct.pack(">i", 12)),
+            name,
+            vendor_attribute,
+        )
+        _validate_operation(1, [(0x420079, 1, valid_payload[8:])], [])
+
     def test_fixture_parses_ping_from_a_request_message(self) -> None:
         operation = _item(0x42005C, 5, struct.pack(">I", 0x3B))
         ping_item = _structure(
