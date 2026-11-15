@@ -68,6 +68,33 @@ fn copy_optional_cryptographic_parameters_structure(
         .map(Some)
 }
 
+fn create_credential_object_from_item(
+    object_type_raw: u32,
+    item: Item,
+) -> FfiResult<CreateCredentialObject> {
+    let object = ManagedObject::try_from_item(ObjectType::from_raw(object_type_raw), item)
+        .map_err(|error| match error {
+            ManagedObjectError::TtlvModelLimit => ERROR_RESOURCE_LIMIT,
+            _ => ERROR_INVALID_INPUT,
+        })?;
+    match object {
+        ManagedObject::Certificate(value) => Ok(CreateCredentialObject::Certificate(value)),
+        ManagedObject::PasswordCredential(value) => {
+            Ok(CreateCredentialObject::PasswordCredential(value))
+        }
+        ManagedObject::DeviceCredential(value) => {
+            Ok(CreateCredentialObject::DeviceCredential(value))
+        }
+        ManagedObject::HashedPasswordCredential(value) => {
+            Ok(CreateCredentialObject::HashedPasswordCredential(value))
+        }
+        ManagedObject::OneTimePasswordCredential(value) => {
+            Ok(CreateCredentialObject::OneTimePasswordCredential(value))
+        }
+        _ => Err(ERROR_INVALID_INPUT),
+    }
+}
+
 fn require_success_response_ttlv<T>(response_ttlv: Option<FfiResult<T>>) -> FfiResult<T> {
     match response_ttlv {
         Some(response_ttlv) => response_ttlv,
@@ -2942,30 +2969,7 @@ pub extern "C" fn kmipkit_client_batch_item_create_credential_from_fields(
         let out = out_slot!(out_item);
         let attributes = try_ffi!(copy_attribute_set_model(attributes));
         let object = try_ffi!(copy_required_item_handle(object));
-        let object = try_ffi!(
-            ManagedObject::try_from_item(ObjectType::from_raw(object_type_raw), object,).map_err(
-                |error| match error {
-                    ManagedObjectError::TtlvModelLimit => ERROR_RESOURCE_LIMIT,
-                    _ => ERROR_INVALID_INPUT,
-                }
-            )
-        );
-        let object = match object {
-            ManagedObject::Certificate(value) => CreateCredentialObject::Certificate(value),
-            ManagedObject::PasswordCredential(value) => {
-                CreateCredentialObject::PasswordCredential(value)
-            }
-            ManagedObject::DeviceCredential(value) => {
-                CreateCredentialObject::DeviceCredential(value)
-            }
-            ManagedObject::HashedPasswordCredential(value) => {
-                CreateCredentialObject::HashedPasswordCredential(value)
-            }
-            ManagedObject::OneTimePasswordCredential(value) => {
-                CreateCredentialObject::OneTimePasswordCredential(value)
-            }
-            _ => return record_ffi_error(ERROR_INVALID_INPUT),
-        };
+        let object = try_ffi!(create_credential_object_from_item(object_type_raw, object));
         let request = CreateCredentialRequest::new(
             CredentialType::from_raw(credential_type_raw),
             attributes,
