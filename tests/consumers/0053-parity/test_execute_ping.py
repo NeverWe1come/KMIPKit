@@ -20,6 +20,7 @@ from local_ping_responder import (
     _response,
     _structure,
     _validate_operation,
+    _parse_operations,
 )
 
 
@@ -40,6 +41,9 @@ EXPECTED_LINES = (
 
 
 class ExecutePingConsumerTests(unittest.TestCase):
+    def test_fixture_operation_sequence_can_describe_a_multi_item_batch(self) -> None:
+        self.assertEqual(_parse_operations("1+10;20"), [[1, 10], [20]])
+
     def test_fixture_echoes_destroyed_key_identifier(self) -> None:
         request_payload = _structure(
             0x420079,
