@@ -902,7 +902,7 @@ jobs:
             test_name=$(basename "$test_file" .cpp)
             c++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined -fno-omit-frame-pointer \
               -Ibindings/c/include -Itests/fixtures/api/generated -Ibindings/java/native \
-              "$test_file" -Ltarget/debug -Wl,-rpath,"$GITHUB_WORKSPACE/target/debug" -lkmipkit_ffi \
+              "$test_file" \
               -o "target/sanitizers/$test_name"
             "target/sanitizers/$test_name"
           done
