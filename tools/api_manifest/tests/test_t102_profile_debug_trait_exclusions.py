@@ -165,7 +165,7 @@ class T102ProfileDebugTraitExclusionTests(unittest.TestCase):
             for row in self.catalog["profiles"]
             if row["profile_id"] == "KMIPKIT-PROFILE-BASELINE-CLIENT"
         )
-        self.assertEqual(baseline["claim_state"], "evidence_incomplete")
+        self.assertEqual(baseline["claim_state"], "evidence_complete")
 
     def test_manifest_totals_reflect_the_debug_and_profile_state_exclusions(self) -> None:
         candidates = sum(

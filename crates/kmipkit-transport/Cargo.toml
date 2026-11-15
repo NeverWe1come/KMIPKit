@@ -10,6 +10,9 @@ description = "Secure KMIP transports for KMIPKit"
 # its state machine without turning those tests into a public integration API.
 autotests = false
 
+[features]
+test-support = []
+
 [dependencies]
 aws-lc-rs.workspace = true
 bytes.workspace = true

@@ -3,6 +3,7 @@ package org.kmipkit.fluent;
 import org.kmipkit.extensions.UniqueIdentifier;
 import org.kmipkit.extensions.AttributeSet;
 import org.kmipkit.extensions.RevocationReason;
+import java.util.List;
 
 /** Entry point for one task-oriented, typed client operation. */
 public final class FluentRequest {
@@ -27,6 +28,17 @@ public final class FluentRequest {
     public LocateBuilder locate(AttributeSet attributes) { return new LocateBuilder(client, attributes); }
     public RevokeBuilder revoke(UniqueIdentifier id, RevocationReason reason) {
         return new RevokeBuilder(client, id, reason);
+    public OperationBuilder get(UniqueIdentifier id) { return new OperationBuilder(client, id, false); }
+    public OperationBuilder destroy(UniqueIdentifier id) { return new OperationBuilder(client, id, true); }
+    public GetAttributesBuilder getAttributes(
+            UniqueIdentifier id, List<org.kmipkit.extensions.AttributeReference> references) {
+        return new GetAttributesBuilder(client, id, references);
+    }
+    public GetAttributeListBuilder getAttributeList() {
+        return new GetAttributeListBuilder(client, null);
+    }
+    public GetAttributeListBuilder getAttributeList(UniqueIdentifier id) {
+        return new GetAttributeListBuilder(client, id);
     }
     public EncryptBuilder encrypt() { return new EncryptBuilder(client); }
     public DecryptBuilder decrypt() { return new DecryptBuilder(client); }

@@ -448,6 +448,25 @@ public final class NativeExtensionRegistry {
     public static native long registerRequestWithOpaqueObjectContext(long request, int context);
     public static native long registerRequestWithProtectionStorageMasks(long request, long masks);
     public static native long clientBatchItemRegister(long request);
+    public static native long clientBatchItemCancelFromRequest(long request);
+    public static native long clientBatchItemPollFromRequest(long request);
+    public static native long clientBatchItemProcessFromRequest(long request);
+    public static native long clientBatchItemQueryAsyncRequestsFromRequest(long request);
+    public static native long clientBatchItemCreateGroupFromAttributes(long attributes);
+    public static native long clientBatchItemCreateUserFromAttributes(long attributes);
+    public static native long clientBatchItemObliterateFromIdentifier(
+            int identifierKind, @Nullable byte[] identifierText, long identifierNumber);
+    public static native long clientBatchItemDeactivateFromFields(
+            int identifierKind, @Nullable byte[] identifierText, long identifierNumber,
+            long deactivationReason, boolean hasDeactivationDate, long deactivationDate);
+    public static native long clientBatchItemCreateCredentialFromFields(
+            int credentialType, long objectType, long attributes, long credentialObject);
+    public static native long clientBatchItemEncapsulateFromFields(
+            int identifierKind, @Nullable byte[] identifierText, long identifierNumber,
+            long cryptographicParameters, long attributes);
+    public static native long clientBatchItemDecapsulateFromFields(
+            int identifierKind, @Nullable byte[] identifierText, long identifierNumber,
+            byte[] ciphertext, long cryptographicParameters, long attributes);
     public static native long cancelRequestCreate(byte[] correlationValue);
     public static native boolean withCancelRequestCorrelationValue(
             long request, Consumer<ByteBuffer> callback);

@@ -8,7 +8,7 @@ use std::io;
 use crate::config::WireEncoding;
 
 #[derive(Debug)]
-pub(super) struct TextDocumentFramer {
+pub struct TextDocumentFramer {
     state: TextDocumentState,
 }
 
@@ -19,7 +19,12 @@ enum TextDocumentState {
 }
 
 impl TextDocumentFramer {
-    pub(super) fn new(encoding: WireEncoding) -> io::Result<Self> {
+    /// Creates a new text document framer for the given wire encoding.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`io::Error`] if the encoding is not a text document format (such as TTLV).
+    pub fn new(encoding: WireEncoding) -> io::Result<Self> {
         match encoding {
             WireEncoding::Json => Ok(Self {
                 state: TextDocumentState::Json(JsonDocumentFramer::default()),
@@ -31,14 +36,21 @@ impl TextDocumentFramer {
         }
     }
 
-    pub(super) fn feed(&mut self, byte: u8) -> io::Result<()> {
+    /// Feeds a single byte into the stream framer.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`io::Error`] if the input byte violates framing constraints.
+    pub fn feed(&mut self, byte: u8) -> io::Result<()> {
         match &mut self.state {
             TextDocumentState::Json(framer) => framer.feed(byte),
             TextDocumentState::Xml(framer) => framer.feed(byte),
         }
     }
 
-    pub(super) fn is_complete(&self) -> bool {
+    /// Returns `true` if a full text document has been framed.
+    #[must_use]
+    pub fn is_complete(&self) -> bool {
         match &self.state {
             TextDocumentState::Json(framer) => framer.is_complete(),
             TextDocumentState::Xml(framer) => framer.is_complete(),

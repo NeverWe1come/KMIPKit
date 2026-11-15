@@ -176,6 +176,15 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
 DECLARATIONS_SHA256 = "623e1f3bbdadefee605b795a3037a446238de4a0686967326ff01e10b9c44835"
 # The approved KMIPKIT-0114 C lifecycle helpers extend five operation rows.
 OPERATIONS_SHA256 = "574b163b50c24b128219f644956cc21c990879c1a5174486cd5b8b9d609597ff"
+# Rust plus KMIPKIT-0103 C, KMIPKIT-0104 Java, and KMIPKIT-0105 Python fluent
+# cryptographic operation builders; KMIPKIT-0095 adds response rendering and
+# KMIPKIT-0108 attribute-read declarations and KMIPKIT-0109 attribute builders;
+# this inventory also includes the approved KMIPKIT-0093 reconciliation and
+# narrowed T101 mappings. KMIPKIT-0124 adds 28 KMIP 3.0 fluent and 16 async
+# batch declarations to this non-target snapshot; the async request constructors
+# add four-language mappings to the existing operation rows.
+DECLARATIONS_SHA256 = "fa7e93c2270750b7c32e283c7bff199aea5d2a79fb9b4697282b0ec314779559"
+OPERATIONS_SHA256 = "9ab6c670787f07c9faa301744d1654fdd071ceffc3b43936e6cb12add59094e2"
 
 
 def canonical_sha256(value: object) -> str:

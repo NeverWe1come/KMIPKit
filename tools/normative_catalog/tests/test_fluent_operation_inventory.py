@@ -8,6 +8,8 @@ import io
 import json
 import unittest
 from unittest.mock import patch
+import json
+import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -66,6 +68,7 @@ class FluentOperationInventoryTests(unittest.TestCase):
         versioned = json.loads(VERSIONED_VALUES.read_text(encoding="utf-8"))
         inventory = json.loads(OUTPUT.read_text(encoding="utf-8"))
         self.assertEqual(inventory["formatVersion"], 2)
+        self.assertEqual(inventory["formatVersion"], 1)
         operations = inventory["operations"]
         self.assertEqual(len(operations), 69)
         keys = [(row["version"], row["wireValue"], row["direction"]) for row in operations]

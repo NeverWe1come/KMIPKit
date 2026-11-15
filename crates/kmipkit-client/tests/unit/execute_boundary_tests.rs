@@ -1027,6 +1027,22 @@ impl BoundaryAudit {
         let fluent_root_scope = self.is_source_root(Path::new("fluent.rs"));
         let fluent_kmip30_ciphertext =
             is_exact_fluent_kmip30_ciphertext(fluent_root_scope, impl_type, signature);
+        let registry_value_validation = is_exact_registry_value_validation(
+            self.is_source_root(Path::new("extension_registry.rs")),
+            impl_type,
+            signature,
+        );
+        let registry_inspect = is_exact_registry_inspect(
+            self.is_source_root(Path::new("extension_registry.rs")),
+            impl_type,
+            signature,
+        );
+        let registry_generic_accessor = is_exact_registry_generic_accessor(
+            self.is_source_root(Path::new("extension_registry.rs")),
+            impl_type,
+            signature,
+        );
+        let fluent_root_scope = self.is_source_root(Path::new("fluent.rs"));
         let fluent_catalogued_attribute =
             is_exact_fluent_catalogued_attribute(fluent_root_scope, impl_type, signature);
         let fluent_explicit_attribute_item =
@@ -2587,6 +2603,7 @@ fn is_exact_fluent_builder_explicit_value(
             Some("CreateBuilder" | "RegisterBuilder"),
             "protection_storage_masks"
         ) | (Some("DeactivateBuilder"), "deactivation_reason")
+        ) | (Some("RegisterBuilder"), "protection_storage_masks")
     );
     if !fluent_root_scope
         || !supported_method
@@ -2633,6 +2650,9 @@ fn is_exact_fluent_builder_explicit_value(
                 impl_type,
                 Some("CreateBuilder" | "CreateSplitKeyBuilder" | "RegisterBuilder")
             ) && is_plain_type_path(&argument.ty, "Structure")
+        "protection_storage_masks" => {
+            matches!(impl_type, Some("CreateSplitKeyBuilder" | "RegisterBuilder"))
+                && is_plain_type_path(&argument.ty, "Structure")
         }
         _ => false,
     }

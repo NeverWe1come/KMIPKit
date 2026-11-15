@@ -1,4 +1,5 @@
 """Pin the journey-supported key-pair subset and remaining parity gaps."""
+"""Pin the Rust-only KMIPKIT-0097 surface without claiming binding parity."""
 
 import json
 import unittest
@@ -27,6 +28,7 @@ class FluentCreateKeyPairManifestTests(unittest.TestCase):
         )
 
     def test_exact_public_paths_preserve_supported_and_blocked_subsets(self) -> None:
+    def test_exact_public_paths_remain_owned_and_blocked_for_binding_parity(self) -> None:
         expected = {}
         for prefix in ("kmipkit_client::", "kmipkit_client::fluent::"):
             expected[f"{prefix}CreateKeyPairBuilder"] = "type"
@@ -37,6 +39,7 @@ class FluentCreateKeyPairManifestTests(unittest.TestCase):
                 expected[f"{prefix}FluentBuildError::{variant}"] = "variant"
         rows = [row for row in self.manifest["publicDeclarations"]
                 if row.get("exportName") in expected]
+                if row.get("candidateSpecId") == "KMIPKIT-0097"]
         self.assertEqual(expected, {row["exportName"]: row["kind"] for row in rows})
         self.assertEqual(len(rows), 46)
         for row in rows:
@@ -60,6 +63,10 @@ class FluentCreateKeyPairManifestTests(unittest.TestCase):
                 self.assertEqual(row["candidateSpecId"], "KMIPKIT-0097")
                 self.assertEqual(row["declarationState"], "blocked")
                 self.assertEqual(row["capabilityId"], "fluent_dx_api")
+                self.assertEqual(row["declarationState"], "blocked")
+                self.assertEqual(row["parityScope"], "four-language")
+                self.assertEqual(row["capabilityId"], "fluent_dx_api")
+                self.assertIn("KMIPKIT-0097-FR-005", row["requirementIds"])
                 self.assertTrue(all(value.startswith("KMIPKIT-0097-FR-")
                                     for value in row["requirementIds"]))
                 self.assertTrue(row["blockedReason"])
@@ -106,6 +113,9 @@ class FluentCreateKeyPairManifestTests(unittest.TestCase):
     def test_local_validation_and_prebuilt_sets_have_exact_requirement_owners(self) -> None:
         for row in self.manifest["publicDeclarations"]:
             if "KMIPKIT-0097-FR-005" not in row.get("requirementIds", []):
+    def test_local_validation_and_prebuilt_sets_have_exact_requirement_owners(self) -> None:
+        for row in self.manifest["publicDeclarations"]:
+            if row.get("candidateSpecId") != "KMIPKIT-0097":
                 continue
             method = row["exportName"].rsplit("::", 1)[-1]
             if method == "validate":

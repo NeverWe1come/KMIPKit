@@ -275,6 +275,12 @@ mod resolver;
 #[allow(dead_code)]
 mod worker;
 
+#[cfg(feature = "test-support")]
+#[doc(hidden)]
+pub mod test_support {
+    pub use crate::raw_tls::wire_framing::TextDocumentFramer;
+}
+
 pub use config::{
     CertificateInput, ClientIdentity, Endpoint, PrivateKeyInput, RequestOptions,
     RevocationListInput, TimeoutLimit, TimeoutPolicy, TlsVersionPolicy, TransportConfig,

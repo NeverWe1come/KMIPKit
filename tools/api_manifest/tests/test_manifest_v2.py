@@ -34,6 +34,13 @@ REGISTRY_FIXTURE_PATH = ROOT / "tools" / "api_manifest" / "tests" / "fixtures" /
 CATALOG_PATH = ROOT / "specification" / "catalog" / "kmip-2.1.json"
 RUST_EXPORT_REPORT_DIR = ROOT / "specs" / "043-public-api-bindings" / "reports"
 RUST_EXPORT_REPORT_PATH = ROOT / "specs/051-pre-send-validation/reports/rust-export-report-2026-11-11.json"
+RUST_EXPORT_REPORT_PATH = (
+    ROOT
+    / "specs"
+    / "051-pre-send-validation"
+    / "reports"
+    / "rust-export-report-2026-11-12.json"
+)
 
 EXPECTED_PACKAGES = {
     "rust-kmipkit-ttlv",
@@ -4751,7 +4758,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         )
 
         self.assertEqual("declared", capability["capabilityState"])
-        self.assertEqual("evidence_incomplete", baseline["claim_state"])
+        self.assertEqual("evidence_complete", baseline["claim_state"])
         for method in methods:
             with self.subTest(method=method):
                 client_name = f"kmipkit_client::Client::{method}"
@@ -6329,6 +6336,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         # The refreshed compiler inventory has 95 paths at 0115 plus the
         # seven lifetime-bound KMIPKIT-0116 operation builders.
         self.assertEqual(len(any_lifetime_rows), 102)
+        self.assertEqual(len(any_lifetime_rows), 85)
         for row in any_lifetime_rows:
             exclusion_key = (row["packageId"], _canonical_export_name(row["exportName"]))
             if exclusion_key in approved_exclusion_keys:
@@ -7085,6 +7093,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
         header_versioned_macros = set(
             re.findall(
                 r"^#define (KMIPKIT_V(?:2_1|3_0)_(?:OPERATION|OBJECT_TYPE|OBJECT_CLASS|CREDENTIAL_TYPE)_\w+)",
+                r"^#define (KMIPKIT_V(?:2_1|3_0)_(?:OPERATION|OBJECT_TYPE|OBJECT_CLASS)_\w+)",
                 header,
                 re.MULTILINE,
             )

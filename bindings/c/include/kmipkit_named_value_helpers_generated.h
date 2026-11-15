@@ -1307,6 +1307,12 @@ static inline uint32_t KMIPKIT_BITMASK_STORAGE_STATUS_MASK_names(uint32_t raw, c
 }
 
 /* Exact assigned values added by later KMIP editions. */
+static inline const char *KMIPKIT_V2_0_RESULT_REASON_name(uint32_t raw) {
+    switch (raw) {
+    case UINT32_C(0x00000001): return "Item Not Found";
+    default: return 0;
+    }
+}
 static inline const char *KMIPKIT_V2_1_OPERATION_name(uint32_t raw) {
     switch (raw) {
     case UINT32_C(0x00000036): return "Set Defaults";
@@ -1352,6 +1358,95 @@ static inline const char *KMIPKIT_V3_0_CREDENTIAL_TYPE_name(uint32_t raw) {
     switch (raw) {
     case UINT32_C(0x00000007): return "Password";
     case UINT32_C(0x00000008): return "Certificate";
+static inline const char *KMIPKIT_V3_0_CRYPTOGRAPHIC_ALGORITHM_name(uint32_t raw) {
+    switch (raw) {
+    case UINT32_C(0x00000039): return "ML-KEM-512";
+    case UINT32_C(0x0000003A): return "ML-KEM-768";
+    case UINT32_C(0x0000003B): return "ML-KEM-1024";
+    case UINT32_C(0x0000003C): return "ML-DSA-44";
+    case UINT32_C(0x0000003D): return "ML-DSA-65";
+    case UINT32_C(0x0000003E): return "ML-DSA-87";
+    case UINT32_C(0x0000003F): return "SLH-DSA-SHA2-128s";
+    case UINT32_C(0x00000040): return "SLH-DSA-SHA2-128f";
+    case UINT32_C(0x00000041): return "SLH-DSA-SHA2-192s";
+    case UINT32_C(0x00000042): return "SLH-DSA-SHA2-192f";
+    case UINT32_C(0x00000043): return "SLH-DSA-SHA2-256s";
+    case UINT32_C(0x00000044): return "SLH-DSA-SHA2-256f";
+    case UINT32_C(0x00000045): return "SLH-DSA-SHAKE-128s";
+    case UINT32_C(0x00000046): return "SLH-DSA-SHAKE-128f";
+    case UINT32_C(0x00000047): return "SLH-DSA-SHAKE-192s";
+    case UINT32_C(0x00000048): return "SLH-DSA-SHAKE-192f";
+    case UINT32_C(0x00000049): return "SLH-DSA-SHAKE-256s";
+    case UINT32_C(0x0000004A): return "SLH-DSA-SHAKE-256f";
+    case UINT32_C(0x0000004B): return "Hash-SLH-DSA-SHA2-128s-with-SHA256";
+    case UINT32_C(0x0000004C): return "Hash-SLH-DSA-SHA2-128f-with-SHA256";
+    case UINT32_C(0x0000004D): return "Hash-SLH-DSA-SHA2-192s-with-SHA512";
+    case UINT32_C(0x0000004E): return "Hash-SLH-DSA-SHA2-192f-with-SHA512";
+    case UINT32_C(0x0000004F): return "Hash-SLH-DSA-SHA2-256s-with-SHA512";
+    case UINT32_C(0x00000050): return "Hash-SLH-DSA-SHA2-256f-with-SHA512";
+    case UINT32_C(0x00000051): return "Hash-SLH-DSA-SHAKE-128s-with-SHAKE128";
+    case UINT32_C(0x00000052): return "Hash-SLH-DSA-SHAKE-128f-with-SHAKE128";
+    case UINT32_C(0x00000053): return "Hash-SLH-DSA-SHAKE-192s-with-SHAKE256";
+    case UINT32_C(0x00000054): return "Hash-SLH-DSA-SHAKE-192f-with-SHAKE256";
+    case UINT32_C(0x00000055): return "Hash-SLH-DSA-SHAKE-256s-with-SHAKE256";
+    case UINT32_C(0x00000056): return "Hash-SLH-DSA-SHAKE-256f-with-SHAKE256";
+    case UINT32_C(0x00000057): return "Hash-ML-DSA-44-with-SHA512";
+    case UINT32_C(0x00000058): return "Hash-ML-DSA-65-with-SHA512";
+    case UINT32_C(0x00000059): return "Hash-ML-DSA-87-with-SHA512";
+    case UINT32_C(0x0000005A): return "X25519";
+    case UINT32_C(0x0000005B): return "X448";
+    case UINT32_C(0x0000005C): return "X25519MLKEM768";
+    case UINT32_C(0x0000005D): return "SECP256R1MLKEM768";
+    default: return 0;
+    }
+}
+static inline const char *KMIPKIT_V3_0_DATA_name(uint32_t raw) {
+    switch (raw) {
+    case UINT32_C(0x00000008): return "Encapsulate";
+    case UINT32_C(0x00000009): return "Decapsulate";
+    default: return 0;
+    }
+}
+static inline const char *KMIPKIT_V3_0_DEACTIVATION_REASON_CODE_name(uint32_t raw) {
+    switch (raw) {
+    case UINT32_C(0x00000001): return "Unspecified";
+    case UINT32_C(0x00000002): return "Deactivation Date";
+    case UINT32_C(0x00000003): return "Protect Stop Date";
+    case UINT32_C(0x00000004): return "Usage Limit";
+    default: return 0;
+    }
+}
+static inline const char *KMIPKIT_V3_0_KEM_ALGORITHM_name(uint32_t raw) {
+    switch (raw) {
+    case UINT32_C(0x00000001): return "RSASVE";
+    case UINT32_C(0x00000002): return "DHKEM";
+    case UINT32_C(0x00000003): return "MLKEM";
+    default: return 0;
+    }
+}
+static inline const char *KMIPKIT_V3_0_KEY_FORMAT_TYPE_name(uint32_t raw) {
+    switch (raw) {
+    case UINT32_C(0x00000018): return "Seed Private Key";
+    default: return 0;
+    }
+}
+static inline const char *KMIPKIT_V3_0_OTP_ALGORITHM_name(uint32_t raw) {
+    switch (raw) {
+    case UINT32_C(0x00000001): return "HOTP";
+    case UINT32_C(0x00000002): return "TOTP";
+    default: return 0;
+    }
+}
+static inline const char *KMIPKIT_V3_0_RESULT_REASON_name(uint32_t raw) {
+    switch (raw) {
+    case UINT32_C(0x0000004D): return "Circular Link Error";
+    default: return 0;
+    }
+}
+static inline const char *KMIPKIT_V3_0_OBJECT_CLASS_MASK_name(uint32_t raw) {
+    switch (raw) {
+    case UINT32_C(0x00000001): return "User";
+    case UINT32_C(0x00000002): return "System";
     default: return 0;
     }
 }

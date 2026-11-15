@@ -468,9 +468,9 @@ cleanup:
 
 static int baseline_profile_fails_closed_before_c_transport_write(
     kmipkit_client_t *client, kmipkit_codec_limits_t *limits) {
-    static const uint8_t baseline_profile[] = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    static const uint8_t unavailable_profile[] = "KMIPKIT-PROFILE-HTTPS-CLIENT";
     static const uint64_t profile_id_offsets[] = {0};
-    static const uint64_t profile_id_lengths[] = {sizeof(baseline_profile) - 1};
+    static const uint64_t profile_id_lengths[] = {sizeof(unavailable_profile) - 1};
     kmipkit_profile_validation_selection_v1_t selection = {0};
     kmipkit_client_batch_t *batch = 0;
     kmipkit_client_batch_item_t *item = 0;
@@ -487,8 +487,8 @@ static int baseline_profile_fails_closed_before_c_transport_write(
 
     selection.struct_size = (uint32_t)sizeof(selection);
     selection.abi_version = 1;
-    selection.profile_id_data = baseline_profile;
-    selection.profile_id_data_length = sizeof(baseline_profile) - 1;
+    selection.profile_id_data = unavailable_profile;
+    selection.profile_id_data_length = sizeof(unavailable_profile) - 1;
     selection.profile_id_offsets = profile_id_offsets;
     selection.profile_id_lengths = profile_id_lengths;
     selection.profile_id_count = 1;
@@ -515,19 +515,15 @@ static int baseline_profile_fails_closed_before_c_transport_write(
         goto cleanup;
     }
     result = error_status == status && error_category == 1 && error_delivery == 1 &&
-        profile_view.source_kind == 1 && profile_view.batch_item_index_present == 0 &&
-        profile_view.error_code_length == sizeof("profile_unavailable") - 1 &&
-        memcmp(profile_view.error_code_data, "profile_unavailable",
+        profile_view.source_kind == 0 && profile_view.batch_item_index_present == 0 &&
+        profile_view.error_code_length == sizeof("conditional_profile_unsatisfied") - 1 &&
+        memcmp(profile_view.error_code_data, "conditional_profile_unsatisfied",
                profile_view.error_code_length) == 0 &&
-        profile_view.profile_id_length == sizeof(baseline_profile) - 1 &&
-        memcmp(profile_view.profile_id_data, baseline_profile,
+        profile_view.profile_id_length == sizeof(unavailable_profile) - 1 &&
+        memcmp(profile_view.profile_id_data, unavailable_profile,
                profile_view.profile_id_length) == 0 &&
-        profile_view.requirement_id_length == sizeof("KMIPKIT-REQ-SPEC-14.1-001") - 1 &&
-        memcmp(profile_view.requirement_id_data, "KMIPKIT-REQ-SPEC-14.1-001",
-               profile_view.requirement_id_length) == 0 &&
-        profile_view.source_id_length == sizeof("KMIPKIT-CLAUSE-SPEC-14.1-001") - 1 &&
-        memcmp(profile_view.source_id_data, "KMIPKIT-CLAUSE-SPEC-14.1-001",
-               profile_view.source_id_length) == 0 &&
+        profile_view.requirement_id_length == 0 &&
+        profile_view.source_id_length == 0 &&
         profile_view.source_locator_length == 0;
 
 cleanup:
@@ -8624,6 +8620,137 @@ int kmipkit_client_abi_c_consumer_build_get_attribute_list_request(void) {
     return 1;
 }
 
+int kmipkit_client_abi_c_consumer_checks_fluent_attribute_read_entrypoints(void) {
+    static const uint8_t identifier_bytes[] = "attribute-read-key";
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    kmipkit_attribute_reference_v1_t reference = {0};
+    kmipkit_request_options_v1_t options = {0};
+    kmipkit_client_batch_response_t *response = 0;
+    if (kmipkit_client_get_attributes_v1(0, 0, 0, 0, 0, &response) == 0 || response != 0) {
+        return 0;
+    }
+    if (kmipkit_client_get_attribute_list_v1(0, 0, 0, &response) == 0 || response != 0) {
+        return 0;
+    }
+    kmipkit_attribute_reference_v1_t duplicate_references[2] = {{0}};
+    for (uint32_t index = 0; index < UINT32_C(2); ++index) {
+        duplicate_references[index].struct_size =
+            (uint32_t)sizeof(kmipkit_attribute_reference_v1_t);
+        duplicate_references[index].abi_version = UINT32_C(1);
+        duplicate_references[index].kind = KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG;
+        duplicate_references[index].tag_value = UINT32_C(0x0042002a);
+    }
+    if (kmipkit_client_get_attributes_v1(
+            0, 0, duplicate_references, UINT64_C(2), 0, &response) == 0 || response != 0) {
+        return 0;
+    }
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = UINT32_C(1);
+    identifier.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+    identifier.text_data = identifier_bytes;
+    identifier.text_length = (uint64_t)(sizeof(identifier_bytes) - 1U);
+    reference.struct_size = (uint32_t)sizeof(reference);
+    reference.abi_version = UINT32_C(1);
+    reference.kind = KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG;
+    reference.tag_value = UINT32_C(0x0042002a);
+    if (kmipkit_client_get_attributes_v1(
+            0, &identifier, &reference, UINT64_C(1), 0, &response) == 0 || response != 0) {
+        return 0;
+    }
+    if (kmipkit_client_get_attributes_with_options_v1(
+            0, 0, 0, 0, 0, 0, &response) == 0 || response != 0 ||
+        kmipkit_client_get_attribute_list_with_options_v1(
+            0, 0, 0, 0, &response) == 0 || response != 0) {
+        return 0;
+    }
+    options.struct_size = (uint32_t)sizeof(options);
+    options.abi_version = UINT32_C(1);
+    if (kmipkit_client_get_attributes_with_options_v1(
+            0, 0, 0, 0, 0, &options, &response) == 0 || response != 0 ||
+        kmipkit_client_get_attribute_list_with_options_v1(
+            0, 0, 0, &options, &response) == 0 || response != 0) {
+        return 0;
+    }
+    return 1;
+}
+
+int kmipkit_client_abi_c_consumer_executes_fluent_attribute_reads(
+    kmipkit_client_t *client, kmipkit_codec_limits_t *limits) {
+    static const uint8_t identifier_bytes[] = "attribute-read-key";
+    kmipkit_unique_identifier_v1_t identifier = {0};
+    kmipkit_attribute_reference_v1_t references[2] = {{0}};
+    kmipkit_request_options_v1_t options = {0};
+    kmipkit_client_batch_response_t *response = 0;
+    uint64_t response_count = 0;
+    int result = 0;
+
+    identifier.struct_size = (uint32_t)sizeof(identifier);
+    identifier.abi_version = UINT32_C(1);
+    identifier.kind = KMIPKIT_UNIQUE_IDENTIFIER_KIND_TEXT_STRING;
+    identifier.text_data = identifier_bytes;
+    identifier.text_length = (uint64_t)(sizeof(identifier_bytes) - 1U);
+    if (kmipkit_client_get_attributes_v1(
+            client, 0, 0, 0, limits, &response) == 0 || response != 0 ||
+        kmipkit_client_get_attribute_list_v1(
+            client, 0, limits, &response) == 0 || response != 0) {
+        goto cleanup;
+    }
+    references[0].struct_size = (uint32_t)sizeof(references[0]);
+    references[0].abi_version = UINT32_C(1);
+    references[0].kind = KMIPKIT_ATTRIBUTE_REFERENCE_KIND_TAG;
+    references[0].tag_value = UINT32_C(0x0042002a);
+    references[1].struct_size = (uint32_t)sizeof(references[1]);
+    references[1].abi_version = UINT32_C(1);
+    references[1].kind = KMIPKIT_ATTRIBUTE_REFERENCE_KIND_NAME;
+    references[1].vendor_identification_data = (const uint8_t *)"KMIPKit";
+    references[1].vendor_identification_length = UINT64_C(7);
+    references[1].attribute_name_data = (const uint8_t *)"Comment";
+    references[1].attribute_name_length = UINT64_C(7);
+
+    if (kmipkit_client_get_attributes_v1(
+            client, &identifier, references, UINT64_C(2), limits, &response) != 0 ||
+        response == 0 ||
+        kmipkit_client_batch_response_item_count(response, &response_count) != 0 ||
+        response_count != UINT64_C(1)) {
+        goto cleanup;
+    }
+    kmipkit_client_batch_response_release(response);
+    response = 0;
+    response_count = 0;
+    options.struct_size = (uint32_t)sizeof(options);
+    options.abi_version = UINT32_C(1);
+    if (kmipkit_client_get_attributes_with_options_v1(
+            client, &identifier, references, UINT64_C(2), limits, &options,
+            &response) != 0 || response == 0 ||
+        kmipkit_client_batch_response_item_count(response, &response_count) != 0 ||
+        response_count != UINT64_C(1)) {
+        goto cleanup;
+    }
+    kmipkit_client_batch_response_release(response);
+    response = 0;
+    response_count = 0;
+    if (kmipkit_client_get_attribute_list_v1(
+            client, &identifier, limits, &response) != 0 || response == 0 ||
+        kmipkit_client_batch_response_item_count(response, &response_count) != 0 ||
+        response_count != UINT64_C(1)) {
+        goto cleanup;
+    }
+    kmipkit_client_batch_response_release(response);
+    response = 0;
+    response_count = 0;
+    if (kmipkit_client_get_attribute_list_with_options_v1(
+            client, &identifier, limits, &options, &response) != 0 || response == 0 ||
+        kmipkit_client_batch_response_item_count(response, &response_count) != 0 ||
+        response_count != UINT64_C(1)) {
+        goto cleanup;
+    }
+    result = 1;
+
+cleanup:
+    kmipkit_client_batch_response_release(response);
+    return result;
+}
+
 int kmipkit_client_abi_c_consumer_validate_get_attribute_list_response(
     kmipkit_client_batch_item_response_t *item,
     uint8_t expected_present) {
@@ -9881,9 +10008,9 @@ static int profile_span_equals(kmipkit_byte_span_v1_t span, const char *expected
 }
 
 int kmipkit_client_abi_c_consumer_profile_validation_result_contract(void) {
-    static const uint8_t baseline[] = "KMIPKIT-PROFILE-BASELINE-CLIENT";
+    static const uint8_t unavailable_profile[] = "KMIPKIT-PROFILE-HTTPS-CLIENT";
     static const uint64_t profile_id_offsets[] = {0};
-    static const uint64_t profile_id_lengths[] = {sizeof(baseline) - 1};
+    static const uint64_t profile_id_lengths[] = {sizeof(unavailable_profile) - 1};
     kmipkit_profile_validation_selection_v1_t selection = {0};
     kmipkit_profile_validation_result_t *result =
         (kmipkit_profile_validation_result_t *)(uintptr_t)1;
@@ -9894,8 +10021,8 @@ int kmipkit_client_abi_c_consumer_profile_validation_result_contract(void) {
 
     selection.struct_size = (uint32_t)sizeof(selection);
     selection.abi_version = 1;
-    selection.profile_id_data = baseline;
-    selection.profile_id_data_length = sizeof(baseline) - 1;
+    selection.profile_id_data = unavailable_profile;
+    selection.profile_id_data_length = sizeof(unavailable_profile) - 1;
     selection.profile_id_offsets = profile_id_offsets;
     selection.profile_id_lengths = profile_id_lengths;
     selection.profile_id_count = 1;
@@ -9906,13 +10033,13 @@ int kmipkit_client_abi_c_consumer_profile_validation_result_contract(void) {
             T076_ERROR_INVALID_INPUT || result != 0 ||
         kmipkit_last_error_profile_validation_error_get_v1(&error) != 0 || error == 0 ||
         kmipkit_profile_validation_error_view_get_v1(error, &error_view) != 0 ||
-        error_view.source_kind != 1 ||
+        error_view.source_kind != 0 ||
         !profile_span_equals(
             (kmipkit_byte_span_v1_t){error_view.error_code_data, error_view.error_code_length},
-            "profile_unavailable") ||
+            "conditional_profile_unsatisfied") ||
         !profile_span_equals(
             (kmipkit_byte_span_v1_t){error_view.profile_id_data, error_view.profile_id_length},
-            "KMIPKIT-PROFILE-BASELINE-CLIENT")) {
+            "KMIPKIT-PROFILE-HTTPS-CLIENT")) {
         kmipkit_profile_validation_error_release(error);
         return 0;
     }
@@ -10020,7 +10147,7 @@ int kmipkit_client_abi_c_consumer_profile_readiness_contract(void) {
         kmipkit_profile_readiness_view_get_v1(readiness, &readiness_view) != 0 ||
         !profile_span_equals(readiness_view.profile_id, "KMIPKIT-PROFILE-BASELINE-CLIENT") ||
         !profile_span_equals(readiness_view.effective_state, "evidence_incomplete") ||
-        readiness_view.target_selected != 1 || readiness_view.runtime_validation_available != 0 ||
+        readiness_view.target_selected != 1 || readiness_view.runtime_validation_available != 1 ||
         readiness_view.published_claim != 0 || readiness_view.blocker_count == 0 ||
         kmipkit_profile_readiness_blocker_at_v1(
             readiness, readiness_view.blocker_count, &blocker) != T076_ERROR_INVALID_INPUT ||
@@ -10033,7 +10160,7 @@ int kmipkit_client_abi_c_consumer_profile_readiness_contract(void) {
         kmipkit_profile_catalog_row_at_v1(
             KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES, 2, &row) != 0 ||
         !profile_span_equals(row.profile_id, "KMIPKIT-PROFILE-BASELINE-CLIENT") ||
-        !profile_span_equals(row.claim_state, "evidence_incomplete") || row.selected_target != 1 ||
+        !profile_span_equals(row.claim_state, "evidence_complete") || row.selected_target != 1 ||
         kmipkit_profile_catalog_relation_count_v1(
             KMIPKIT_PROFILE_CATALOG_TABLE_CLIENT_PROFILES, 2,
             KMIPKIT_PROFILE_CATALOG_RELATION_REQUIREMENT_IDS, &baseline_requirement_count) != 0 ||

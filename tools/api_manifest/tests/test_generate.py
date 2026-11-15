@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import copy
+import base64
 import errno
+import gzip
 import json
 import os
 import shutil
@@ -280,6 +282,20 @@ def _apply_input_array_contract(manifest: dict[str, object]) -> None:
 
 
 class ManifestGeneratorCliTests(unittest.TestCase):
+    def test_feature_directory_resolves_four_digit_spec_folder_ids(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            spec = root / "specs" / "0108-fluent-attribute-reads"
+            spec.mkdir(parents=True)
+            (spec / "spec.md").write_text(
+                "# Feature Specification\n\n**Owning identifier**: KMIPKIT-0108\n",
+                encoding="utf-8",
+            )
+
+            resolved = generate._resolve_feature_directory(root.resolve(), "KMIPKIT-0108")
+
+            self.assertEqual(spec.resolve(), resolved)
+
     def test_temporary_repository_copies_candidate_spec_sources(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = _create_repo(Path(directory))
@@ -312,6 +328,23 @@ class ManifestGeneratorCliTests(unittest.TestCase):
         self.assertLessEqual(len(set(before) - set(after)), 2)
         self.assertLessEqual(len(set(after) - set(before)), 3)
         self.assertTrue(all(len(chunk) <= 8_000 for chunk in after))
+
+        compressed_before = generate._compressed_java_parity_chunks(before)
+        compressed_after = generate._compressed_java_parity_chunks(after)
+        self.assertLessEqual(len(set(compressed_before) - set(compressed_after)), 2)
+        self.assertLessEqual(len(set(compressed_after) - set(compressed_before)), 3)
+        decoded = [
+            gzip.decompress(base64.b64decode(chunk)).decode("utf-8")
+            for chunk in compressed_after
+        ]
+        self.assertEqual("".join(after), "".join(decoded))
+
+    def test_java_parity_gzip_header_is_platform_independent(self) -> None:
+        compressed = base64.b64decode(
+            generate._compressed_java_parity_chunks(["stable parity data"])[0]
+        )
+
+        self.assertEqual(b"\x1f\x8b\x08\x00\x00\x00\x00\x00\x02\xff", compressed[:10])
 
     def test_generation_fixture_starts_without_generated_outputs(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -2283,10 +2316,18 @@ class ManifestGeneratorCliTests(unittest.TestCase):
                 shutil.rmtree(bindings)
             self._assert_symlink_creation_or_skip(bindings, external_directory, directory=True)
 
+            with self.assertRaisesRegex(
+                generate.PathSecurityError, "symbolic link or reparse point"
+            ):
+                generate._safe_destination(root, "bindings/c/include/kmipkit.h")
+
             result = self._run_generator(root, "--write")
 
             self.assertNotEqual(result.returncode, 0)
-            self.assertIn("symbolic link or reparse point", result.stderr)
+            self.assertEqual(
+                "registry API generation failed: manifest or path validation failed\n",
+                result.stderr,
+            )
             external_outputs = (
                 external_directory / Path(path).relative_to("bindings")
                 for path in V2_GENERATED_OUTPUTS

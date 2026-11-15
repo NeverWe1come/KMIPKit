@@ -179,6 +179,12 @@ EXPECTED = (
 # the approved KMIPKIT-0115 Java/Python lifecycle facade declarations.
 UNCHANGED_DECLARATIONS_SHA256 = "2fe1ee6cf7c47b035ab462364b768ee760c4a38946b676ea91c8d7b1b94bd858"
 UNCHANGED_OPERATIONS_SHA256 = "c40b5d97f1cec90d39b5ed051e23a3645a15309fcda3fe352f12c090f98d94e7"
+# Register declarations, lifecycle declarations, KMIPKIT-0102 Rust, KMIPKIT-0103
+# C, KMIPKIT-0104 Java, and KMIPKIT-0105 Python crypto facades; KMIPKIT-0093
+# reconciliation; KMIPKIT-0096 Python expert attributes; and KMIPKIT-0108/0109
+# attribute reads and bindings. The prior fingerprint predates those additions.
+UNCHANGED_DECLARATIONS_SHA256 = "f0b363bd47c26a53d9e8f92b8415aacf98d3a19ea4038553f989e883edda83a4"
+UNCHANGED_OPERATIONS_SHA256 = "9ee0f7c51c05a8abd96af7f6d3017f3ffb780c4262f231eaf3cb8c01a38147c7"
 # T098's maintainer-approved reconciliation updates lifecycle approval evidence
 # and inherited requirement links outside the T102 declaration/operation rows.
 # The test separately pins those T098 records; this fingerprint covers the
@@ -192,6 +198,11 @@ UNCHANGED_OPERATIONS_SHA256 = "c40b5d97f1cec90d39b5ed051e23a3645a15309fcda3fe352
 # KMIPKIT-0114 C lifecycle declarations, and KMIPKIT-0115 Java/Python lifecycle
 # declarations.
 OTHER_MANIFEST_SHA256 = "8ce5853dad95d92e29fce21c5bd92697ab528d8949f760146fec8be877020644"
+# exclusions, KMIPKIT-0101 through KMIPKIT-0105 declarations, and KMIPKIT-0093
+# reconciliation, including KMIPKIT-0096 expert attributes and KMIPKIT-0108/0109
+# attribute operations and bindings. R002's additive requirement links and C
+# copy caveat are normalized below and tested by the 0093 suite.
+OTHER_MANIFEST_SHA256 = "03c2de7b4aac4a0556b2a64965d704884166222bca8cf1e48ce9f610e6692069"
 EXPECTED_BLOCKED_CANDIDATES_AFTER_BATCH = T102_BLOCKED_CANDIDATES
 LOCATE_REQUEST_BUILDER_IDS = {
     "rust-observed-e07fce825be9d33278e1",

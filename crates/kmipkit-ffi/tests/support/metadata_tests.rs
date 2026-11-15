@@ -79,6 +79,7 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
             "client_asynchronous_operations",
             "client_batch_model",
             "client_execution",
+            "client_kmip30_typed_operations",
             "client_operation_identity",
             "client_profile_readiness",
             "client_profile_validation",

@@ -5,6 +5,7 @@ use kmipkit_protocol::{
     GetUsageAllocationRequest, NewAttribute, ObjectType, ObtainLeaseRequest, PingRequest,
     ProtocolVersion, QueryFunction, QueryRequest, UniqueIdentifier,
 };
+use kmipkit_protocol::{Attribute, AttributeDefinition, CreateRequest, UniqueIdentifier};
 use kmipkit_test_support::ExchangeScript;
 use kmipkit_transport::RequestOptions;
 use kmipkit_ttlv::codec::CodecLimits;
@@ -25,6 +26,11 @@ const CHECK_OPERATION: u32 = 0x0000_0009;
 const GET_CONSTRAINTS_OPERATION: u32 = 0x0000_0038;
 const GET_USAGE_ALLOCATION_OPERATION: u32 = 0x0000_0011;
 const OBTAIN_LEASE_OPERATION: u32 = 0x0000_0010;
+
+use crate::execute_test_support::{test_item, test_structure};
+use crate::fluent::{
+    CreateSymmetricKeyBuilder, CryptographicUsageMask, FluentAttributePosition, FluentBuildError,
+};
 
 fn item(raw_tag: u32, value: Value) -> Item {
     Item::new(
@@ -764,6 +770,43 @@ fn discover_versions_builder_rejects_invalid_offers_before_transport() {
         .protocol_versions(Vec::new())
         .execute(&CodecLimits::defaults())
         .expect_err("invalid offers fail before transport");
+fn execute_exposes_pending_correlation_without_polling() {
+    let response = response_bytes(1, 2, Some(b"pending-correlation"));
+    let (mut client, fake, _) = client_for(ExchangeScript::Success {
+        response,
+        request_write_chunks: Vec::new(),
+    });
+    let response = client
+        .request()
+        .create_symmetric_key()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT)
+        .with_asynchronous_indicator(1)
+        .execute(&CodecLimits::defaults())
+        .expect("Pending remains an explicit typed outcome");
+
+    assert_eq!(response.outcome().operation(), ClientOperation::Create);
+    match response.outcome() {
+        ClientBatchOutcome::Pending(pending) => {
+            assert_eq!(
+                pending.asynchronous_correlation_value(),
+                b"pending-correlation"
+            );
+        }
+        outcome => panic!("expected Pending, got {outcome:?}"),
+    }
+    assert_eq!(fake.borrow().exchange_count(), 1);
+}
+
+#[test]
+fn invalid_fluent_create_execution_keeps_not_sent_delivery_state() {
+    let (mut client, fake, _) = client_for(ExchangeScript::FailBeforeWrite);
+    let error = client
+        .request()
+        .create_symmetric_key()
+        .execute(&CodecLimits::defaults())
+        .expect_err("required fluent fields are validated before transport");
+
     assert_eq!(
         error.delivery_state(),
         Some(kmipkit_transport::RequestDeliveryState::NotSent)
@@ -970,6 +1013,61 @@ fn fluent_builders_validate_typed_requests_without_sending() {
             .adjustment_value(AttributeAdjustmentValue::integer(1))
             .validate(),
         Ok(())
+    assert_eq!(fake.borrow().exchange_count(), 0);
+}
+
+#[test]
+fn every_key_preset_builds_a_typed_request_and_batch_item() {
+    for (builder, expected_algorithm, expected_length) in [
+        (
+            CreateSymmetricKeyBuilder::detached().aes_128(),
+            kmipkit_protocol::named_values_generated::values::enumeration::cryptographic_algorithm::AES,
+            128,
+        ),
+        (
+            CreateSymmetricKeyBuilder::detached().aes_192(),
+            kmipkit_protocol::named_values_generated::values::enumeration::cryptographic_algorithm::AES,
+            192,
+        ),
+        (
+            CreateSymmetricKeyBuilder::detached().hmac_sha256_256(),
+            kmipkit_protocol::named_values_generated::values::enumeration::cryptographic_algorithm::HMAC_SHA256,
+            256,
+        ),
+    ] {
+        let request = builder
+            .usage_mask(CryptographicUsageMask::MAC_GENERATE)
+            .build_request()
+            .expect("presets fill only algorithm and length");
+        let attributes = request.attributes().as_items();
+        assert_eq!(read_enumeration(&attributes[0]), Some(expected_algorithm));
+        assert_eq!(read_integer(&attributes[1]), Some(expected_length));
+    }
+
+    let item = CreateSymmetricKeyBuilder::detached()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT)
+        .to_batch_item()
+        .expect("a valid fluent request converts to a batch item");
+    assert_eq!(item.operation(), 1);
+
+    let mut client = failed_request_client();
+    assert_eq!(
+        client
+            .request()
+            .get(UniqueIdentifier::from("key-42"))
+            .to_batch_item()
+            .operation(),
+        10
+    );
+    let mut client = failed_request_client();
+    assert_eq!(
+        client
+            .request()
+            .destroy(UniqueIdentifier::from("key-42"))
+            .to_batch_item()
+            .operation(),
+        20
     );
 }
 
@@ -1362,6 +1460,32 @@ fn every_key_preset_builds_a_typed_request_and_batch_item() {
 }
 
 #[test]
+fn create_get_and_destroy_execute_with_exchange_options() {
+    let (mut client, _, _) = client_for(ExchangeScript::Success {
+        response: response_bytes(1, 0, None),
+        request_write_chunks: Vec::new(),
+    });
+    let create = client
+        .request()
+        .create_symmetric_key()
+        .aes_256()
+        .usage_mask(CryptographicUsageMask::ENCRYPT)
+        .with_options(RequestOptions::default())
+        .execute(&CodecLimits::defaults())
+        .expect("Create accepts exchange-local options");
+    assert_eq!(create.outcome().operation(), ClientOperation::Create);
+
+    let mut client = failed_request_client();
+    let get = client
+        .request()
+        .get(UniqueIdentifier::from("key-42"))
+        .with_options(RequestOptions::default())
+        .with_asynchronous_indicator(0)
+        .execute(&CodecLimits::defaults());
+    assert_eq!(
+        get.expect_err("Get reaches the scripted transport")
+            .delivery_state(),
+        Some(kmipkit_transport::RequestDeliveryState::NotSent)
 fn create_get_and_destroy_execute_with_exchange_options() {
     let (mut client, _, _) = client_for(ExchangeScript::Success {
         response: response_bytes(1, 0, None),

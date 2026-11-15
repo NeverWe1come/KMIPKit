@@ -19,6 +19,10 @@ public final class AttributeSet implements AutoCloseable {
         handle = NativeHandle.owned(nativeHandle, NativeExtensionRegistry.ATTRIBUTE_SET);
     }
 
+    NativeHandle nativeHandleOwner() {
+        return handle;
+    }
+
     /** Copies and validates the direct Items in a generic Structure. */
     public static AttributeSet tryNew(TtlvStructure items) {
         if (items == null) {

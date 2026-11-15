@@ -200,6 +200,14 @@ PKCS11_REQUEST_SETTER_IDS = {
 # reconciled to canonical Rust declarations, and KMIPKIT-0115 lifecycle facades.
 OTHER_DECLARATIONS_SHA256 = "e2460dfc38c81f495b0ff4bef4bd778f731d9ce2dec24f888c0ca45067bc5f3f"
 OTHER_OPERATIONS_SHA256 = "067db1d52284ca16014aabdc0090e9a5236560498d63f2acd77f1c17180aff6f"
+# Register declarations, lifecycle declarations, KMIPKIT-0102 Rust, KMIPKIT-0103
+# C, KMIPKIT-0104 Java, and KMIPKIT-0105 Python crypto facades; KMIPKIT-0095
+# response views; KMIPKIT-0096 expert attributes; KMIPKIT-0093 reconciliation;
+# and KMIPKIT-0108/0109 attribute operations and bindings. KMIPKIT-0124 adds
+# 28 KMIP 3.0 fluent and 16 asynchronous batch declarations, which also map
+# asynchronous constructors onto four existing operation rows.
+OTHER_DECLARATIONS_SHA256 = "2b273eaa642065b0a98763be540c703dcf38255703260043a67b8f01b1663b97"
+OTHER_OPERATIONS_SHA256 = "2ea94003f2877d0e6d84271d67d9add6f48a5c5b7a837c48b22fe40f41022d39"
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(
         value,
@@ -445,6 +453,7 @@ class T102OptionalRequestStructureMappingTests(unittest.TestCase):
                 ]
         self.assertEqual(
             OTHER_OPERATIONS_SHA256,
+            "327bd4ccc9eb3c600fe49eed482a9f47840d555c4066560a39af67520dcf5b9a",
             canonical_sha256(other_operations),
         )
 

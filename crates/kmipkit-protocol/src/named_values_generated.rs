@@ -2805,6 +2805,24 @@ pub mod values {
     }
     /// Exact assigned values added by later KMIP editions.
     pub mod versions {
+        /// Values assigned in KMIP v2.0.
+        pub mod v2_0 {
+            pub mod enumeration {
+                /// KMIP Result Reason values from §11.45, Table 457.
+                pub mod result_reason {
+                    /// `Item Not Found`; kmip-2.0 §11.45, Table 457.
+                    pub const ITEM_NOT_FOUND: u32 = 0x0000_0001;
+                    /// Returns the assigned name for a known value.
+                    #[must_use]
+                    pub const fn name(raw: u32) -> Option<&'static str> {
+                        match raw {
+                            0x0000_0001 => Some("Item Not Found"),
+                            _ => None,
+                        }
+                    }
+                }
+            }
+        }
         /// Values assigned in KMIP v2.1.
         pub mod v2_1 {
             pub mod enumeration {
@@ -2928,6 +2946,246 @@ pub mod values {
                         match raw {
                             0x0000_0007 => Some("Password"),
                             0x0000_0008 => Some("Certificate"),
+                            _ => None,
+                        }
+                    }
+                }
+                /// KMIP Cryptographic Algorithm values from §11.12, Table 552.
+                pub mod cryptographic_algorithm {
+                    /// `ML-KEM-512`; kmip-3.0 §11.12, Table 552.
+                    pub const ML_KEM_512: u32 = 0x0000_0039;
+                    /// `ML-KEM-768`; kmip-3.0 §11.12, Table 552.
+                    pub const ML_KEM_768: u32 = 0x0000_003A;
+                    /// `ML-KEM-1024`; kmip-3.0 §11.12, Table 552.
+                    pub const ML_KEM_1024: u32 = 0x0000_003B;
+                    /// `ML-DSA-44`; kmip-3.0 §11.12, Table 552.
+                    pub const ML_DSA_44: u32 = 0x0000_003C;
+                    /// `ML-DSA-65`; kmip-3.0 §11.12, Table 552.
+                    pub const ML_DSA_65: u32 = 0x0000_003D;
+                    /// `ML-DSA-87`; kmip-3.0 §11.12, Table 552.
+                    pub const ML_DSA_87: u32 = 0x0000_003E;
+                    /// `SLH-DSA-SHA2-128s`; kmip-3.0 §11.12, Table 552.
+                    pub const SLH_DSA_SHA2_128S: u32 = 0x0000_003F;
+                    /// `SLH-DSA-SHA2-128f`; kmip-3.0 §11.12, Table 552.
+                    pub const SLH_DSA_SHA2_128F: u32 = 0x0000_0040;
+                    /// `SLH-DSA-SHA2-192s`; kmip-3.0 §11.12, Table 552.
+                    pub const SLH_DSA_SHA2_192S: u32 = 0x0000_0041;
+                    /// `SLH-DSA-SHA2-192f`; kmip-3.0 §11.12, Table 552.
+                    pub const SLH_DSA_SHA2_192F: u32 = 0x0000_0042;
+                    /// `SLH-DSA-SHA2-256s`; kmip-3.0 §11.12, Table 552.
+                    pub const SLH_DSA_SHA2_256S: u32 = 0x0000_0043;
+                    /// `SLH-DSA-SHA2-256f`; kmip-3.0 §11.12, Table 552.
+                    pub const SLH_DSA_SHA2_256F: u32 = 0x0000_0044;
+                    /// `SLH-DSA-SHAKE-128s`; kmip-3.0 §11.12, Table 552.
+                    pub const SLH_DSA_SHAKE_128S: u32 = 0x0000_0045;
+                    /// `SLH-DSA-SHAKE-128f`; kmip-3.0 §11.12, Table 552.
+                    pub const SLH_DSA_SHAKE_128F: u32 = 0x0000_0046;
+                    /// `SLH-DSA-SHAKE-192s`; kmip-3.0 §11.12, Table 552.
+                    pub const SLH_DSA_SHAKE_192S: u32 = 0x0000_0047;
+                    /// `SLH-DSA-SHAKE-192f`; kmip-3.0 §11.12, Table 552.
+                    pub const SLH_DSA_SHAKE_192F: u32 = 0x0000_0048;
+                    /// `SLH-DSA-SHAKE-256s`; kmip-3.0 §11.12, Table 552.
+                    pub const SLH_DSA_SHAKE_256S: u32 = 0x0000_0049;
+                    /// `SLH-DSA-SHAKE-256f`; kmip-3.0 §11.12, Table 552.
+                    pub const SLH_DSA_SHAKE_256F: u32 = 0x0000_004A;
+                    /// `Hash-SLH-DSA-SHA2-128s-with-SHA256`; kmip-3.0 §11.12, Table 552.
+                    pub const HASH_SLH_DSA_SHA2_128S_WITH_SHA256: u32 = 0x0000_004B;
+                    /// `Hash-SLH-DSA-SHA2-128f-with-SHA256`; kmip-3.0 §11.12, Table 552.
+                    pub const HASH_SLH_DSA_SHA2_128F_WITH_SHA256: u32 = 0x0000_004C;
+                    /// `Hash-SLH-DSA-SHA2-192s-with-SHA512`; kmip-3.0 §11.12, Table 552.
+                    pub const HASH_SLH_DSA_SHA2_192S_WITH_SHA512: u32 = 0x0000_004D;
+                    /// `Hash-SLH-DSA-SHA2-192f-with-SHA512`; kmip-3.0 §11.12, Table 552.
+                    pub const HASH_SLH_DSA_SHA2_192F_WITH_SHA512: u32 = 0x0000_004E;
+                    /// `Hash-SLH-DSA-SHA2-256s-with-SHA512`; kmip-3.0 §11.12, Table 552.
+                    pub const HASH_SLH_DSA_SHA2_256S_WITH_SHA512: u32 = 0x0000_004F;
+                    /// `Hash-SLH-DSA-SHA2-256f-with-SHA512`; kmip-3.0 §11.12, Table 552.
+                    pub const HASH_SLH_DSA_SHA2_256F_WITH_SHA512: u32 = 0x0000_0050;
+                    /// `Hash-SLH-DSA-SHAKE-128s-with-SHAKE128`; kmip-3.0 §11.12, Table 552.
+                    pub const HASH_SLH_DSA_SHAKE_128S_WITH_SHAKE128: u32 = 0x0000_0051;
+                    /// `Hash-SLH-DSA-SHAKE-128f-with-SHAKE128`; kmip-3.0 §11.12, Table 552.
+                    pub const HASH_SLH_DSA_SHAKE_128F_WITH_SHAKE128: u32 = 0x0000_0052;
+                    /// `Hash-SLH-DSA-SHAKE-192s-with-SHAKE256`; kmip-3.0 §11.12, Table 552.
+                    pub const HASH_SLH_DSA_SHAKE_192S_WITH_SHAKE256: u32 = 0x0000_0053;
+                    /// `Hash-SLH-DSA-SHAKE-192f-with-SHAKE256`; kmip-3.0 §11.12, Table 552.
+                    pub const HASH_SLH_DSA_SHAKE_192F_WITH_SHAKE256: u32 = 0x0000_0054;
+                    /// `Hash-SLH-DSA-SHAKE-256s-with-SHAKE256`; kmip-3.0 §11.12, Table 552.
+                    pub const HASH_SLH_DSA_SHAKE_256S_WITH_SHAKE256: u32 = 0x0000_0055;
+                    /// `Hash-SLH-DSA-SHAKE-256f-with-SHAKE256`; kmip-3.0 §11.12, Table 552.
+                    pub const HASH_SLH_DSA_SHAKE_256F_WITH_SHAKE256: u32 = 0x0000_0056;
+                    /// `Hash-ML-DSA-44-with-SHA512`; kmip-3.0 §11.12, Table 552.
+                    pub const HASH_ML_DSA_44_WITH_SHA512: u32 = 0x0000_0057;
+                    /// `Hash-ML-DSA-65-with-SHA512`; kmip-3.0 §11.12, Table 552.
+                    pub const HASH_ML_DSA_65_WITH_SHA512: u32 = 0x0000_0058;
+                    /// `Hash-ML-DSA-87-with-SHA512`; kmip-3.0 §11.12, Table 552.
+                    pub const HASH_ML_DSA_87_WITH_SHA512: u32 = 0x0000_0059;
+                    /// `X25519`; kmip-3.0 §11.12, Table 552.
+                    pub const X25519: u32 = 0x0000_005A;
+                    /// `X448`; kmip-3.0 §11.12, Table 552.
+                    pub const X448: u32 = 0x0000_005B;
+                    /// `X25519MLKEM768`; kmip-3.0 §11.12, Table 552.
+                    pub const X25519MLKEM768: u32 = 0x0000_005C;
+                    /// `SECP256R1MLKEM768`; kmip-3.0 §11.12, Table 552.
+                    pub const SECP256R1MLKEM768: u32 = 0x0000_005D;
+                    /// Returns the assigned name for a known value.
+                    #[must_use]
+                    pub const fn name(raw: u32) -> Option<&'static str> {
+                        match raw {
+                            0x0000_0007 => Some("Password"),
+                            0x0000_0008 => Some("Certificate"),
+                            0x0000_0039 => Some("ML-KEM-512"),
+                            0x0000_003A => Some("ML-KEM-768"),
+                            0x0000_003B => Some("ML-KEM-1024"),
+                            0x0000_003C => Some("ML-DSA-44"),
+                            0x0000_003D => Some("ML-DSA-65"),
+                            0x0000_003E => Some("ML-DSA-87"),
+                            0x0000_003F => Some("SLH-DSA-SHA2-128s"),
+                            0x0000_0040 => Some("SLH-DSA-SHA2-128f"),
+                            0x0000_0041 => Some("SLH-DSA-SHA2-192s"),
+                            0x0000_0042 => Some("SLH-DSA-SHA2-192f"),
+                            0x0000_0043 => Some("SLH-DSA-SHA2-256s"),
+                            0x0000_0044 => Some("SLH-DSA-SHA2-256f"),
+                            0x0000_0045 => Some("SLH-DSA-SHAKE-128s"),
+                            0x0000_0046 => Some("SLH-DSA-SHAKE-128f"),
+                            0x0000_0047 => Some("SLH-DSA-SHAKE-192s"),
+                            0x0000_0048 => Some("SLH-DSA-SHAKE-192f"),
+                            0x0000_0049 => Some("SLH-DSA-SHAKE-256s"),
+                            0x0000_004A => Some("SLH-DSA-SHAKE-256f"),
+                            0x0000_004B => Some("Hash-SLH-DSA-SHA2-128s-with-SHA256"),
+                            0x0000_004C => Some("Hash-SLH-DSA-SHA2-128f-with-SHA256"),
+                            0x0000_004D => Some("Hash-SLH-DSA-SHA2-192s-with-SHA512"),
+                            0x0000_004E => Some("Hash-SLH-DSA-SHA2-192f-with-SHA512"),
+                            0x0000_004F => Some("Hash-SLH-DSA-SHA2-256s-with-SHA512"),
+                            0x0000_0050 => Some("Hash-SLH-DSA-SHA2-256f-with-SHA512"),
+                            0x0000_0051 => Some("Hash-SLH-DSA-SHAKE-128s-with-SHAKE128"),
+                            0x0000_0052 => Some("Hash-SLH-DSA-SHAKE-128f-with-SHAKE128"),
+                            0x0000_0053 => Some("Hash-SLH-DSA-SHAKE-192s-with-SHAKE256"),
+                            0x0000_0054 => Some("Hash-SLH-DSA-SHAKE-192f-with-SHAKE256"),
+                            0x0000_0055 => Some("Hash-SLH-DSA-SHAKE-256s-with-SHAKE256"),
+                            0x0000_0056 => Some("Hash-SLH-DSA-SHAKE-256f-with-SHAKE256"),
+                            0x0000_0057 => Some("Hash-ML-DSA-44-with-SHA512"),
+                            0x0000_0058 => Some("Hash-ML-DSA-65-with-SHA512"),
+                            0x0000_0059 => Some("Hash-ML-DSA-87-with-SHA512"),
+                            0x0000_005A => Some("X25519"),
+                            0x0000_005B => Some("X448"),
+                            0x0000_005C => Some("X25519MLKEM768"),
+                            0x0000_005D => Some("SECP256R1MLKEM768"),
+                            _ => None,
+                        }
+                    }
+                }
+                /// KMIP Data values from §11.13, Table 553.
+                pub mod data {
+                    /// `Encapsulate`; kmip-3.0 §11.13, Table 553.
+                    pub const ENCAPSULATE: u32 = 0x0000_0008;
+                    /// `Decapsulate`; kmip-3.0 §11.13, Table 553.
+                    pub const DECAPSULATE: u32 = 0x0000_0009;
+                    /// Returns the assigned name for a known value.
+                    #[must_use]
+                    pub const fn name(raw: u32) -> Option<&'static str> {
+                        match raw {
+                            0x0000_0008 => Some("Encapsulate"),
+                            0x0000_0009 => Some("Decapsulate"),
+                            _ => None,
+                        }
+                    }
+                }
+                /// KMIP Deactivation Reason Code values from §11.14, Table 554.
+                pub mod deactivation_reason_code {
+                    /// `Unspecified`; kmip-3.0 §11.14, Table 554.
+                    pub const UNSPECIFIED: u32 = 0x0000_0001;
+                    /// `Deactivation Date`; kmip-3.0 §11.14, Table 554.
+                    pub const DEACTIVATION_DATE: u32 = 0x0000_0002;
+                    /// `Protect Stop Date`; kmip-3.0 §11.14, Table 554.
+                    pub const PROTECT_STOP_DATE: u32 = 0x0000_0003;
+                    /// `Usage Limit`; kmip-3.0 §11.14, Table 554.
+                    pub const USAGE_LIMIT: u32 = 0x0000_0004;
+                    /// Returns the assigned name for a known value.
+                    #[must_use]
+                    pub const fn name(raw: u32) -> Option<&'static str> {
+                        match raw {
+                            0x0000_0001 => Some("Unspecified"),
+                            0x0000_0002 => Some("Deactivation Date"),
+                            0x0000_0003 => Some("Protect Stop Date"),
+                            0x0000_0004 => Some("Usage Limit"),
+                            _ => None,
+                        }
+                    }
+                }
+                /// KMIP KEM Algorithm values from §11.26, Table 572.
+                pub mod kem_algorithm {
+                    /// `RSASVE`; kmip-3.0 §11.26, Table 572.
+                    pub const RSASVE: u32 = 0x0000_0001;
+                    /// `DHKEM`; kmip-3.0 §11.26, Table 572.
+                    pub const DHKEM: u32 = 0x0000_0002;
+                    /// `MLKEM`; kmip-3.0 §11.26, Table 572.
+                    pub const MLKEM: u32 = 0x0000_0003;
+                    /// Returns the assigned name for a known value.
+                    #[must_use]
+                    pub const fn name(raw: u32) -> Option<&'static str> {
+                        match raw {
+                            0x0000_0001 => Some("RSASVE"),
+                            0x0000_0002 => Some("DHKEM"),
+                            0x0000_0003 => Some("MLKEM"),
+                            _ => None,
+                        }
+                    }
+                }
+                /// KMIP Key Format Type values from §11.28, Table 575.
+                pub mod key_format_type {
+                    /// `Seed Private Key`; kmip-3.0 §11.28, Table 575.
+                    pub const SEED_PRIVATE_KEY: u32 = 0x0000_0018;
+                    /// Returns the assigned name for a known value.
+                    #[must_use]
+                    pub const fn name(raw: u32) -> Option<&'static str> {
+                        match raw {
+                            0x0000_0018 => Some("Seed Private Key"),
+                            _ => None,
+                        }
+                    }
+                }
+                /// KMIP OTP Algorithm values from §11.38, Table 586.
+                pub mod otp_algorithm {
+                    /// `HOTP`; kmip-3.0 §11.38, Table 586.
+                    pub const HOTP: u32 = 0x0000_0001;
+                    /// `TOTP`; kmip-3.0 §11.38, Table 586.
+                    pub const TOTP: u32 = 0x0000_0002;
+                    /// Returns the assigned name for a known value.
+                    #[must_use]
+                    pub const fn name(raw: u32) -> Option<&'static str> {
+                        match raw {
+                            0x0000_0001 => Some("HOTP"),
+                            0x0000_0002 => Some("TOTP"),
+                            _ => None,
+                        }
+                    }
+                }
+                /// KMIP Result Reason values from §11.48, Table 594.
+                pub mod result_reason {
+                    /// `Circular Link Error`; kmip-3.0 §11.48, Table 594.
+                    pub const CIRCULAR_LINK_ERROR: u32 = 0x0000_004D;
+                    /// Returns the assigned name for a known value.
+                    #[must_use]
+                    pub const fn name(raw: u32) -> Option<&'static str> {
+                        match raw {
+                            0x0000_004D => Some("Circular Link Error"),
+                            _ => None,
+                        }
+                    }
+                }
+            }
+            pub mod bitmask {
+                /// KMIP Object Class Mask bits from §12.2, Table 616.
+                pub mod object_class_mask {
+                    /// `User`; kmip-3.0 §12.2, Table 616.
+                    pub const USER: u32 = 0x0000_0001;
+                    /// `System`; kmip-3.0 §12.2, Table 616.
+                    pub const SYSTEM: u32 = 0x0000_0002;
+                    /// Returns the assigned name for a known bit.
+                    #[must_use]
+                    pub const fn name(raw: u32) -> Option<&'static str> {
+                        match raw {
+                            0x0000_0001 => Some("User"),
+                            0x0000_0002 => Some("System"),
                             _ => None,
                         }
                     }

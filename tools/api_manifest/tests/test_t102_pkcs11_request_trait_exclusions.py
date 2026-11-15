@@ -305,6 +305,8 @@ class T102Pkcs11RequestTraitExclusionTests(unittest.TestCase):
         )
         self.assertEqual(len(self.manifest["publicDeclarations"]), T102_PUBLIC_DECLARATIONS)
         self.assertEqual(len(self.manifest["approvedExclusions"]), T102_APPROVED_EXCLUSIONS)
+
+    def test_t102_historical_rust_audit_snapshot_remains_consistent(self) -> None:
         self.assertEqual(self.rust_report["counts"]["manifest"], T102_RUST_AUDIT_MANIFEST)
         self.assertEqual(self.rust_report["counts"]["excluded"], T102_RUST_AUDIT_EXCLUDED)
         self.assertEqual(self.rust_report["counts"]["observed"], T102_RUST_AUDIT_OBSERVED)
