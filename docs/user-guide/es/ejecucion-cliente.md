@@ -255,6 +255,59 @@ los builders equivalentes de C, Java y Python siguen bloqueados en el manifiesto
 hasta sus especificaciones de bindings.
 
 
+## Create Split Key fluido en Rust
+
+KMIPKIT-0099 añade `client.request().create_split_key()` sobre la operación
+tipada Create Split Key existente. El programador selecciona explícitamente el
+tipo de objeto, el método de división, el número de partes y el umbral:
+
+```rust,kmipkit-test
+use kmipkit_client::{Client, ClientBatchOutcome, ClientBatchItemResponse, ClientError};
+use kmipkit_protocol::{ObjectType, SplitKeyMethod};
+use kmipkit_protocol::named_values_generated::values::enumeration::object_type;
+use kmipkit_ttlv::codec::CodecLimits;
+
+#[allow(dead_code)]
+fn split_key(
+    client: &mut Client,
+    limits: &CodecLimits,
+) -> Result<ClientBatchItemResponse, ClientError> {
+    let response = client.request().create_split_key()
+        .object_type(ObjectType::from_raw(object_type::SYMMETRIC_KEY))
+        .method(SplitKeyMethod::XOR)
+        .parts(3)
+        .threshold(2)
+        .execute(limits)?;
+    if let ClientBatchOutcome::CreateSplitKeyCompleted(completed) = response.outcome() {
+        let identifiers = completed.unique_identifiers();
+        let _ = identifiers;
+    }
+    Ok(response)
+}
+
+fn main() {}
+```
+
+La respuesta expone todos los identificadores únicos devueltos, en el orden
+del mensaje. El builder no genera el material dividido ni elige sus parámetros.
+El identificador de entrada, Prime Field Size, Protection Storage Masks y los
+atributos del objeto son opcionales y solo se añaden si se proporcionan. El
+método Polynomial Sharing Prime Field requiere un Prime Field Size explícito;
+el validador de la petición tipada rechaza su ausencia antes del envío. La
+estructura Attributes permanece presente aunque esté vacía, como exige KMIP.
+
+`attribute(Attribute<D>)`, `attribute_item(Item)` y `attributes(AttributeSet)`
+admiten atributos tipados y expertos y conservan su orden. `vendor_attribute(...)`
+construye una estructura KMIP Vendor Attribute válida; los tags Message
+Extension se rechazan como atributos del objeto. `validate()` y `build_request()`
+validan localmente sin usar el transporte, y `to_batch_item()` crea el elemento
+tipado existente. `execute()` realiza como máximo un intercambio tipado.
+Success, Failure, Pending, la correlación y el estado de entrega siguen siendo
+explícitos; no hay reintento ni Poll automático. El cliente conserva la versión
+de protocolo configurada y las opciones del intercambio se pasan por separado
+con `with_options`.
+
+
 ## Métodos directos y opciones por intercambio
 
 `Client` ofrece un método directo tipado para cada una de las 56 operaciones
