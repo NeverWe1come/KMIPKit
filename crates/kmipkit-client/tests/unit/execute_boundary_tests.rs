@@ -2267,12 +2267,11 @@ fn is_exact_fluent_catalogued_attribute(
         Some("CreateSymmetricKeyBuilder" | "CreateSplitKeyBuilder") => {
             signature.ident == "attribute"
         }
-        Some("RegisterBuilder") => signature.ident == "attribute",
+        Some("RegisterBuilder" | "SetAttributeBuilder") => signature.ident == "attribute",
         Some("CreateKeyPairBuilder") => matches!(
             signature.ident.to_string().as_str(),
             "common_attribute" | "private_attribute" | "public_attribute"
         ),
-        Some("SetAttributeBuilder") => signature.ident == "attribute",
         _ => false,
     };
     if !fluent_root_scope
