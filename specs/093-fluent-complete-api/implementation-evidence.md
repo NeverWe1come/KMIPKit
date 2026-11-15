@@ -48,6 +48,18 @@
   fluent operations and 16 asynchronous batch bindings. The inherited T102
   public-declaration total had not been refreshed for those approved additions.
 
+## KMIPKIT-0124 binding audit report regeneration
+
+### Red
+
+- After rebasing PR #223 on updated PR #221 at local head
+  `adf5eaecc3a3c4554a8906d340fc353726fe7f1f`, ran:
+  `python3 -B -m unittest tools.api_manifest.tests.test_c_api_docs -v`
+- The four tests failed because the inherited report contains the KMIPKIT-0122
+  base counts but omits 11 KMIPKIT-0124 declarations in each binding package:
+  C `2,075` versus `2,064`, Java `2,479` versus `2,468`, and Python `2,690`
+  versus `2,679`.
+
 ### Green
 
 - Updated the shared T102 declaration snapshot to 16,816 and recorded the
