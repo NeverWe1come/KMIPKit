@@ -135,3 +135,13 @@
 - `git diff --check` passes. The full T102 discovery run was interrupted before
   it returned a result; it is not counted as passing evidence.
 
+### Refactor
+
+- Reviewed the Java semantic factories and manifest renderer after the green
+  run. The factories already share `systemObjectFromAttributes`, and the
+  renderer remains the single source for generated outputs, so no additional
+  production refactor was warranted.
+- Re-ran the 17 focused T102/manifest regression tests, the six binding report
+  tests, and the focused Java semantic batch-item test after that review; all
+  pass.
+
