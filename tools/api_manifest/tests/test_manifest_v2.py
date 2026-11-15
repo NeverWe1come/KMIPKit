@@ -33,7 +33,13 @@ CHECKED_IN_MANIFEST_PATH = ROOT / "specification" / "api" / "public-api.json"
 REGISTRY_FIXTURE_PATH = ROOT / "tools" / "api_manifest" / "tests" / "fixtures" / "public-api-v1.json"
 CATALOG_PATH = ROOT / "specification" / "catalog" / "kmip-2.1.json"
 RUST_EXPORT_REPORT_DIR = ROOT / "specs" / "043-public-api-bindings" / "reports"
-RUST_EXPORT_REPORT_PATH = ROOT / "specs/051-pre-send-validation/reports/rust-export-report-2026-11-11.json"
+RUST_EXPORT_REPORT_PATH = (
+    ROOT
+    / "specs"
+    / "051-pre-send-validation"
+    / "reports"
+    / "rust-export-report-2026-11-12.json"
+)
 
 EXPECTED_PACKAGES = {
     "rust-kmipkit-ttlv",
@@ -6325,7 +6331,7 @@ class PublicApiManifestV2SchemaTests(unittest.TestCase):
             if "core::any::Any" in row["exportName"]
             and "<'" in row["exportName"]
         ]
-        self.assertEqual(len(any_lifetime_rows), 67)
+        self.assertEqual(len(any_lifetime_rows), 85)
         for row in any_lifetime_rows:
             exclusion_key = (row["packageId"], _canonical_export_name(row["exportName"]))
             if exclusion_key in approved_exclusion_keys:

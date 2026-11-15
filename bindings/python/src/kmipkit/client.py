@@ -3309,6 +3309,38 @@ class Client(_ClientHandle):
         )
         return _execute_direct(self, fn, unique_identifier, limits, options)
 
+    def get_attributes(
+        self,
+        unique_identifier: extensions.UniqueIdentifier,
+        attribute_references: Sequence[extensions.AttributeReference],
+        limits: ttlv.CodecLimits,
+        *,
+        options: RequestOptions | None = None,
+    ) -> BatchResult:
+        """Get ordered attributes in one exchange using named typed inputs."""
+        from .fluent import _execute_direct_attributes
+
+        return _execute_direct_attributes(
+            self, unique_identifier, attribute_references, limits, options
+        )
+
+    def get_attribute_list(
+        self,
+        unique_identifier: extensions.UniqueIdentifier,
+        limits: ttlv.CodecLimits,
+        *,
+        options: RequestOptions | None = None,
+    ) -> BatchResult:
+        """Get an object's attribute names in one typed exchange."""
+        from .fluent import _execute_direct
+
+        function = (
+            lib.kmipkit_client_get_attribute_list_with_options_v1
+            if options is not None
+            else lib.kmipkit_client_get_attribute_list_v1
+        )
+        return _execute_direct(self, function, unique_identifier, limits, options)
+
     @classmethod
     def create(
         cls,

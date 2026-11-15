@@ -887,6 +887,60 @@ ID Placeholder after a preceding operation. The returned operation-specific
 response view preserves fields actually present on the wire; it does not fetch
 missing attributes or retry.
 
+### Attribute reads in C, Java, and Python
+
+KMIPKIT-0109 adds task-oriented entry points in the three bindings. They use
+the typed Get Attributes and Get Attribute List requests, preserve ordered
+references, and execute one exchange. Standalone calls require a text object
+identifier. Builders can omit it when producing a batch item that follows an
+ID Placeholder producer. Failure, Pending, and delivery metadata remain on the
+existing batch result; no builder polls or retries.
+
+In C, use the direct functions instead of assembling a batch:
+
+```c
+kmipkit_client_get_attributes_v1(
+    client, &key_id, references, reference_count, limits, &response);
+kmipkit_client_get_attribute_list_v1(client, &key_id, limits, &response);
+```
+
+The `_with_options_v1` variants accept exchange-local timeouts. The functions
+copy their versioned inputs synchronously and return an owned batch response;
+release the response with `kmipkit_client_batch_response_release`.
+
+Java and Python expose the same operations through their request namespaces:
+
+```java
+try (ClientBatchResponse response = client.request()
+        .getAttributes(keyId, references).execute(limits);
+        ClientBatchItemResult item = response.itemAt(0);
+        ClientBatchItemResult.GetAttributesResponse attributes =
+                item.getAttributesResponse().orElseThrow()) {
+    String resolvedId = attributes.uniqueIdentifier();
+}
+```
+
+```python
+result = kmip_client.request().get_attributes(
+    unique_identifier=key_id,
+    attribute_references=[AttributeReference.tag(0x0042002A)],
+).execute(limits)
+try:
+    resolved_id = result.items[0].get_attributes_response.unique_identifier
+finally:
+    result.close()
+```
+
+Python also exposes direct single-exchange methods when a batch is unnecessary:
+
+```python
+result = kmip_client.get_attribute_list(unique_identifier=key_id, limits=limits)
+```
+
+Use `getAttributeList()` or `get_attribute_list()` with no identifier when
+building a placeholder-aware batch item. Direct C and Python methods require
+an identifier because a standalone exchange cannot resolve an ID Placeholder.
+
 ## Fluent cryptographic requests in Rust
 
 KMIPKIT-0102 adds Rust builders for Encrypt, Decrypt, Sign, Signature Verify,

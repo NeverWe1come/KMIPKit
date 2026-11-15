@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-import struct
 import queue
 import socket
 import ssl
+import struct
 import threading
 from pathlib import Path
 
 import pytest
-
 from _test_support import (
     mtls_transport_config,
     read_ttlv_frame,
@@ -139,6 +138,21 @@ def _lifecycle_response(operation: int, identifier: bytes) -> bytes:
         ]
     elif operation == 20:
         payload_fields = [_item(0x420094, 7, identifier)]
+    elif operation == 11:
+        payload_fields = [
+            _item(0x420094, 7, identifier),
+            _structure(0x420125, _item(0x42002A, 2, struct.pack(">i", 256))),
+        ]
+    elif operation == 12:
+        payload_fields = [
+            _item(0x420094, 7, identifier),
+            _item(0x42013B, 5, struct.pack(">I", 0x42002A)),
+            _structure(
+                0x42013B,
+                _item(0x42009D, 7, b"KMIPKit"),
+                _item(0x42000A, 7, b"Comment"),
+            ),
+        ]
     else:
         raise AssertionError(f"unexpected fluent operation {operation}")
     response_item = _structure(
@@ -154,13 +168,14 @@ def _start_lifecycle_peer(
     expected_operations: tuple[int, ...],
     *,
     expected_asynchronous_indicator: int | None = None,
-) -> tuple[int, list[tuple[int, bytes | None]], queue.Queue[BaseException], threading.Thread]:
+    expected_indicators_by_operation: dict[int, int] | None = None,
+) -> tuple[int, list[tuple[int, bytes | None, bytes]], queue.Queue[BaseException], threading.Thread]:
     listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     listener.bind(("127.0.0.1", 0))
     listener.listen(3)
     listener.settimeout(12)
     port = listener.getsockname()[1]
-    observations: list[tuple[int, bytes | None]] = []
+    observations: list[tuple[int, bytes | None, bytes]] = []
     failures: queue.Queue[BaseException] = queue.Queue()
 
     def serve() -> None:
@@ -176,17 +191,20 @@ def _start_lifecycle_peer(
                 with raw, context.wrap_socket(raw, server_side=True) as stream:
                     require_tls13_mtls_peer(stream)
                     request = read_ttlv_frame(stream)
-                    if expected_asynchronous_indicator is not None:
+                    expected_indicator = (expected_indicators_by_operation or {}).get(
+                        expected_operation, expected_asynchronous_indicator
+                    )
+                    if expected_indicator is not None:
                         actual_indicator = _request_header_indicator(request)
-                        if actual_indicator != expected_asynchronous_indicator:
+                        if actual_indicator != expected_indicator:
                             raise AssertionError(
                                 "expected asynchronous indicator "
-                                f"{expected_asynchronous_indicator}, got {actual_indicator}"
+                                f"{expected_indicator}, got {actual_indicator}"
                             )
                     operation, request_identifier = _request_operation_and_identifier(request)
                     if operation != expected_operation:
                         raise AssertionError(f"expected operation {expected_operation}, got {operation}")
-                    observations.append((operation, request_identifier))
+                    observations.append((operation, request_identifier, request))
                     response_identifier = request_identifier or b"fluent-created-id"
                     stream.sendall(_lifecycle_response(operation, response_identifier))
         except BaseException as error:  # noqa: BLE001 - make peer failures visible in the test.
@@ -252,7 +270,7 @@ def test_fluent_operation_and_symmetric_builder_execute_with_and_without_options
         assert not peer.is_alive()
         assert peer_failures.empty()
         assert [result.items[0].operation for result in results] == [10, 20, 1, 1]
-        assert [operation for operation, _ in observations] == [10, 20, 1, 1]
+        assert [operation for operation, _, _ in observations] == [10, 20, 1, 1]
     finally:
         for result in results:
             result.close()
@@ -267,6 +285,268 @@ def test_destroy_operation_builds_typed_batch_item() -> None:
     )
     with operation.to_batch_item() as item:
         assert item.operation == 20
+
+
+def test_request_exposes_named_attribute_read_builders() -> None:
+    request = fluent.Request(object())
+    unique_identifier = extensions.UniqueIdentifier.text_string("key-1")
+    references = [extensions.AttributeReference.tag(0x0042_002F)]
+
+    get_attributes = request.get_attributes(
+        unique_identifier=unique_identifier,
+        attribute_references=references,
+    )
+    get_attribute_list = request.get_attribute_list(unique_identifier=None)
+
+    with get_attributes.build() as attributes_item:
+        assert attributes_item.operation == 11
+    with get_attribute_list.build() as list_item:
+        assert list_item.operation == 12
+
+
+def test_attribute_read_builders_execute_single_mtls_exchanges_and_preserve_order() -> None:
+    port, observations, peer_failures, peer = _start_lifecycle_peer(
+        (11, 12), expected_indicators_by_operation={12: 2}
+    )
+    registry = extensions.create_client_extension_registry(
+        (), extensions.default_extension_registry_limits()
+    )
+    configuration = extensions.create_client_configuration(registry)
+    results: list[client.BatchResult] = []
+    identifier = extensions.UniqueIdentifier.text_string("attribute-read-key")
+    references = (
+        extensions.AttributeReference.tag(0x42002A),
+        extensions.AttributeReference.name("KMIPKit", "Comment"),
+    )
+    try:
+        with configuration, client.Client.create(
+            configuration, mtls_transport_config(port, _FIXTURES)
+        ) as kmip_client, ttlv.codec_limits_defaults() as limits:
+            read_attributes = kmip_client.request().get_attributes(
+                unique_identifier=identifier, attribute_references=references
+            ).with_options(client.RequestOptions())
+            list_attributes = kmip_client.request().get_attribute_list(
+                unique_identifier=identifier
+            ).asynchronous_indicator(2)
+            results.append(read_attributes.execute(limits))
+            results.append(list_attributes.execute(limits))
+        peer.join(timeout=12)
+        assert not peer.is_alive()
+        assert peer_failures.empty()
+        assert [result.items[0].operation for result in results] == [11, 12]
+        assert [operation for operation, _, _ in observations] == [11, 12]
+        assert [observed_id for _, observed_id, _ in observations] == [
+            b"attribute-read-key", b"attribute-read-key"
+        ]
+        requests = [request for _, _, request in observations]
+        tag_reference = _item(0x42013B, 5, struct.pack(">I", 0x42002A))
+        name_reference = _structure(
+            0x42013B,
+            _item(0x42009D, 7, b"KMIPKit"),
+            _item(0x42000A, 7, b"Comment"),
+        )
+        assert requests[0].index(tag_reference) < requests[0].index(name_reference)
+        assert _request_header_indicator(requests[1]) == 2
+        assert results[0].items[0].get_attributes_response is not None
+        assert results[0].items[0].get_attributes_response.unique_identifier == "attribute-read-key"
+        assert results[1].items[0].get_attribute_list_response is not None
+        assert results[1].items[0].get_attribute_list_response.attribute_references == references
+    finally:
+        for result in results:
+            result.close()
+        peer.join(timeout=12)
+        if not peer_failures.empty():
+            raise peer_failures.get()
+
+
+def test_python_direct_attribute_read_methods_execute_single_mtls_exchanges() -> None:
+    port, observations, peer_failures, peer = _start_lifecycle_peer((11, 12))
+    registry = extensions.create_client_extension_registry(
+        (), extensions.default_extension_registry_limits()
+    )
+    configuration = extensions.create_client_configuration(registry)
+    results: list[client.BatchResult] = []
+    identifier = extensions.UniqueIdentifier.text_string("direct-attribute-read-key")
+    references = (
+        extensions.AttributeReference.tag(0x42002A),
+        extensions.AttributeReference.name("KMIPKit", "Comment"),
+    )
+    try:
+        with configuration, client.Client.create(
+            configuration, mtls_transport_config(port, _FIXTURES)
+        ) as kmip_client, ttlv.codec_limits_defaults() as limits:
+            with pytest.raises(errors.KmipKitError):
+                kmip_client.get_attributes(
+                    unique_identifier=None,
+                    attribute_references=references,
+                    limits=limits,
+                )
+            with pytest.raises(errors.KmipKitError):
+                kmip_client.get_attribute_list(
+                    unique_identifier=None, limits=limits
+                )
+            results.append(
+                kmip_client.get_attributes(
+                    unique_identifier=identifier,
+                    attribute_references=references,
+                    limits=limits,
+                    options=client.RequestOptions(),
+                )
+            )
+            results.append(
+                kmip_client.get_attribute_list(
+                    unique_identifier=identifier, limits=limits
+                )
+            )
+        peer.join(timeout=12)
+        assert not peer.is_alive()
+        assert peer_failures.empty()
+        assert [result.items[0].operation for result in results] == [11, 12]
+        assert [operation for operation, _, _ in observations] == [11, 12]
+        assert [observed_id for _, observed_id, _ in observations] == [
+            b"direct-attribute-read-key", b"direct-attribute-read-key"
+        ]
+        requests = [request for _, _, request in observations]
+        tag_reference = _item(0x42013B, 5, struct.pack(">I", 0x42002A))
+        name_reference = _structure(
+            0x42013B,
+            _item(0x42009D, 7, b"KMIPKit"),
+            _item(0x42000A, 7, b"Comment"),
+        )
+        assert requests[0].index(tag_reference) < requests[0].index(name_reference)
+        assert results[0].items[0].get_attributes_response is not None
+        assert results[1].items[0].get_attribute_list_response is not None
+    finally:
+        for result in results:
+            result.close()
+        peer.join(timeout=12)
+        if not peer_failures.empty():
+            raise peer_failures.get()
+
+
+def test_attribute_read_builders_preserve_omitted_identifier_and_reject_duplicates() -> None:
+    request = fluent.Request(object())
+    list_builder = request.get_attribute_list()
+    with list_builder.build() as item:
+        assert item.operation == 12
+    attributes_builder = request.get_attributes(
+        attribute_references=[extensions.AttributeReference.tag(0x42002A)]
+    )
+    with attributes_builder.build() as item:
+        assert item.operation == 11
+    duplicate = extensions.AttributeReference.tag(0x42002A)
+    with pytest.raises(errors.KmipKitError):
+        request.get_attributes(attribute_references=[duplicate, duplicate]).build()
+
+
+def test_attribute_read_builders_validate_and_expose_typed_batch_items() -> None:
+    request = fluent.Request(object())
+    identifier = extensions.UniqueIdentifier.text_string("attribute-read-key")
+    reference = extensions.AttributeReference.tag(0x42002A)
+    builder = request.get_attributes(
+        unique_identifier=identifier, attribute_references=[reference]
+    )
+    builder.validate()
+    with builder.to_batch_item() as item:
+        assert item.operation == 11
+
+    list_builder = request.get_attribute_list()
+    list_builder.validate()
+    with list_builder.to_batch_item() as item:
+        assert item.operation == 12
+
+    with pytest.raises(errors.KmipKitError):
+        builder.with_options(object())  # type: ignore[arg-type]
+    with pytest.raises(errors.KmipKitError):
+        builder.execute(object())  # type: ignore[arg-type]
+    with pytest.raises(errors.KmipKitError):
+        request.get_attributes(
+            unique_identifier=extensions.UniqueIdentifier.integer(-1),
+            attribute_references=[reference],
+        )
+    with pytest.raises(errors.KmipKitError):
+        request.get_attribute_list(
+            unique_identifier=extensions.UniqueIdentifier.integer(-1)
+        )
+
+    with pytest.raises(errors.KmipKitError):
+        request.get_attributes(attribute_references=object())  # type: ignore[arg-type]
+    with pytest.raises(errors.KmipKitError):
+        request.get_attributes(attribute_references=[object()])  # type: ignore[list-item]
+    with pytest.raises(errors.KmipKitError):
+        request.get_attributes(attribute_references=[reference] * 100_001)
+
+
+def test_direct_attributes_maps_native_call_failures_and_null_outputs(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class FakeClient:
+        def _pointer(self) -> object:
+            return fluent.ffi.NULL
+
+    class FakeLimits:
+        def _pointer(self) -> object:
+            return fluent.ffi.NULL
+
+    class FakeLibrary:
+        def __init__(self, function: object) -> None:
+            self.kmipkit_client_get_attributes_v1 = function
+
+    monkeypatch.setattr(fluent, "Client", FakeClient)
+    monkeypatch.setattr(fluent.ttlv, "CodecLimits", FakeLimits)
+    kmip_client = FakeClient()
+    limits = FakeLimits()
+    identifier = extensions.UniqueIdentifier.text_string("attribute-read-key")
+    references = (extensions.AttributeReference.tag(0x42002A),)
+
+    def raise_type_error(*_arguments: object) -> int:
+        raise TypeError("invalid native argument")
+
+    monkeypatch.setattr(fluent, "lib", FakeLibrary(raise_type_error))
+    with pytest.raises(errors.KmipKitError):
+        fluent._execute_direct_attributes(
+            kmip_client, identifier, references, limits, None
+        )
+
+    def return_without_response(*_arguments: object) -> int:
+        return 0
+
+    monkeypatch.setattr(fluent, "lib", FakeLibrary(return_without_response))
+    with pytest.raises(errors.KmipKitError):
+        fluent._execute_direct_attributes(
+            kmip_client, identifier, references, limits, None
+        )
+
+
+def test_direct_attributes_rejects_invalid_arguments_before_native_call(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class FakeClient:
+        def _pointer(self) -> object:
+            return fluent.ffi.NULL
+
+    class FakeLimits:
+        def _pointer(self) -> object:
+            return fluent.ffi.NULL
+
+    monkeypatch.setattr(fluent, "Client", FakeClient)
+    monkeypatch.setattr(fluent.ttlv, "CodecLimits", FakeLimits)
+    identifier = extensions.UniqueIdentifier.text_string("attribute-read-key")
+    reference = extensions.AttributeReference.tag(0x42002A)
+
+    invalid_inputs = (
+        (object(), FakeLimits(), identifier, (reference,), None),
+        (FakeClient(), object(), identifier, (reference,), None),
+        (FakeClient(), FakeLimits(), identifier, (reference,), object()),
+        (FakeClient(), FakeLimits(), extensions.UniqueIdentifier.integer(-1), (reference,), None),
+        (FakeClient(), FakeLimits(), identifier, object(), None),
+        (FakeClient(), FakeLimits(), identifier, (object(),), None),
+    )
+    for kmip_client, limits, unique_identifier, references, options in invalid_inputs:
+        with pytest.raises(errors.KmipKitError):
+            fluent._execute_direct_attributes(
+                kmip_client, unique_identifier, references, limits, options
+            )
 
 
 def test_operation_sets_batch_level_asynchronous_indicator() -> None:
@@ -437,7 +717,7 @@ def test_fluent_create_get_destroy_uses_server_created_identifier() -> None:
         peer.join(timeout=12)
         assert not peer.is_alive()
         assert peer_failures.empty()
-        assert observations == [
+        assert [observation[:2] for observation in observations] == [
             (1, None),
             (10, b"fluent-created-id"),
             (20, b"fluent-created-id"),
@@ -481,7 +761,7 @@ def test_direct_client_helpers_create_get_and_destroy_with_exchange_options() ->
         assert not peer.is_alive()
         assert peer_failures.empty()
         assert [result.items[0].operation for result in results] == [1, 10, 20]
-        assert [operation for operation, _ in observations] == [1, 10, 20]
+        assert [operation for operation, _, _ in observations] == [1, 10, 20]
     finally:
         for result in results:
             result.close()

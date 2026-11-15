@@ -10,7 +10,8 @@ import unittest
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 MODULE_PATH = REPO_ROOT / "tools" / "api_manifest" / "audit_shared_rust_inventory.py"
-RUST_REPORT_PATH = REPO_ROOT / "specs/051-pre-send-validation/reports/rust-export-report-2026-11-11.json"
+REPORTS_DIR = REPO_ROOT / "specs" / "051-pre-send-validation" / "reports"
+RUST_REPORT_PATH = REPORTS_DIR / "rust-export-report-2026-11-12.json"
 EXPECTED_RUST_ONLY_DECLARATIONS = {
     "kmipkit_transport::HttpsTransport",
     "kmipkit_transport::HttpsTransport::new",
@@ -80,6 +81,12 @@ class SharedRustInventoryTests(unittest.TestCase):
         self.assertIn("KMIPKIT-0044-FR-001", owner_requirements)
         self.assertIn("KMIPKIT-0044-FR-007", owner_requirements)
 
+    def test_approved_implementation_spec_local_requirement_ids_are_recognized(self) -> None:
+        owner_requirements = AUDIT._read_approved_owner("KMIPKIT-0095", REPO_ROOT)
+
+        self.assertIn("KMIPKIT-0095-FR-001", owner_requirements)
+        self.assertIn("KMIPKIT-0095-FR-005", owner_requirements)
+
     def test_direct_maintainer_approval_record_authorizes_approved_implementation_scope(self) -> None:
         owner_requirements = AUDIT._read_approved_owner(
             "KMIPKIT-0053",
@@ -109,7 +116,7 @@ class SharedRustInventoryTests(unittest.TestCase):
 
     def test_shared_inventory_report_names_the_rust_audit_it_reads(self) -> None:
         expected_source = (
-            "specs/051-pre-send-validation/reports/rust-export-report-2026-11-11.json"
+            "specs/051-pre-send-validation/reports/rust-export-report-2026-11-12.json"
         )
         generated = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
         checked_in = json.loads(
@@ -122,10 +129,10 @@ class SharedRustInventoryTests(unittest.TestCase):
     def test_inventory_accounts_for_exact_approved_rust_exclusions_separately(self) -> None:
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
-        self.assertEqual(inventory["approvedExcludedRustDeclarationCount"], 20717)
+        self.assertEqual(inventory["approvedExcludedRustDeclarationCount"], 20879)
         self.assertEqual(
             sum(record["excludedDeclarationCount"] for record in inventory["crates"]),
-            20717,
+            20879,
         )
         self.assertEqual(
             sum(record["blockedDeclarationCount"] for record in inventory["crates"]),
@@ -146,11 +153,11 @@ class SharedRustInventoryTests(unittest.TestCase):
         inventory = AUDIT.build_inventory(self.manifest, self.rust_report, REPO_ROOT)
 
         rust_counts = self.rust_report["counts"]
-        self.assertEqual(inventory["observedRustDeclarationCount"], 29862)
-        self.assertEqual(inventory["mappedRustDeclarationCount"], 4759)
-        self.assertEqual(rust_counts["observed"], 29862)
-        self.assertEqual(rust_counts["matched"], 9145)
-        self.assertEqual(rust_counts["excluded"], 20717)
+        self.assertEqual(inventory["observedRustDeclarationCount"], 30294)
+        self.assertEqual(inventory["mappedRustDeclarationCount"], 5041)
+        self.assertEqual(rust_counts["observed"], 30294)
+        self.assertEqual(rust_counts["matched"], 9415)
+        self.assertEqual(rust_counts["excluded"], 20879)
         self.assertEqual(rust_counts["observed"], rust_counts["matched"] + rust_counts["excluded"])
         self.assertEqual(
             inventory["approvedExcludedRustDeclarationCount"],
