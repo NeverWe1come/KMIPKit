@@ -10,11 +10,11 @@ use kmipkit_protocol::{
     AttributeSet, AttributeSetError, CreateKeyPairRequest, CreateRequest, CreateSplitKeyRequest,
     CryptographicAlgorithm, CryptographicParameters, DecryptRequest, DestroyRequest,
     EncryptRequest, GetAttributeListRequest, GetAttributesRequest, GetRequest, HashRequest,
-    LocateRequest, MacRequest, MacVerifyRequest, ManagedObject, ObjectGroupMember, ObjectType,
-    OpaqueObjectContext, OperationData, RecertifyRequest, RecoverRequest, RegisterRequest,
-    RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest, SecretBytes, SignRequest,
-    SignatureVerifyRequest, SplitKeyMethod, StorageStatusMask, UniqueIdentifier,
-    ValidateKmipRequest,
+    LocateRequest, MacRequest, MacVerifyRequest, ManagedObject, NewAttribute, ObjectGroupMember,
+    ObjectType, OpaqueObjectContext, OperationData, RecertifyRequest, RecoverRequest,
+    RegisterRequest, RekeyKeyPairRequest, RekeyRequest, RevocationReason, RevokeRequest,
+    SecretBytes, SetAttributeRequest, SignRequest, SignatureVerifyRequest, SplitKeyMethod,
+    StorageStatusMask, UniqueIdentifier, ValidateKmipRequest,
 };
 use kmipkit_transport::{RequestDeliveryState, RequestOptions};
 use kmipkit_ttlv::{Item, RawTag, Structure, Tag, Value, ValueView};
@@ -106,6 +106,8 @@ pub enum FluentBuildError {
     MissingRegisterObject,
     /// Register's object or context is invalid.
     InvalidRegisterObject,
+    /// Set Attribute is missing its required New Attribute.
+    MissingSetAttributeAttribute,
     /// A catalogued attribute has an invalid TTLV type or structure.
     InvalidAttributeValue,
     /// Legacy compatibility error; explicit extension Items are retained as
@@ -148,6 +150,7 @@ impl fmt::Display for FluentBuildError {
             }
             Self::MissingRegisterObject => "Register requires an object",
             Self::InvalidRegisterObject => "Register object or context is invalid",
+            Self::MissingSetAttributeAttribute => "Set Attribute requires one New Attribute",
             Self::InvalidAttributeValue => "fluent Object Attribute value is invalid",
             Self::MessageExtensionTagNotObjectAttribute => {
                 "KMIP message extension tags are not Object Attributes"
@@ -221,6 +224,13 @@ impl<'a> RequestBuilder<'a> {
             options: None,
             asynchronous_indicator: None,
         }
+    }
+
+    /// Begins a typed Set Attribute request with its optional identifier
+    /// omitted.
+    #[must_use]
+    pub fn set_attribute(self) -> SetAttributeBuilder<'a> {
+        SetAttributeBuilder::new(self.client)
     }
 
     /// Begins a typed Get Attributes request with no Attribute References.
@@ -2870,6 +2880,163 @@ pub struct DestroyBuilder<'a> {
     request: DestroyRequest,
     options: Option<RequestOptions>,
     asynchronous_indicator: Option<u32>,
+}
+
+/// A fluent builder for the existing typed Set Attribute request.
+pub struct SetAttributeBuilder<'a> {
+    client: &'a mut Client,
+    unique_identifier: Option<String>,
+    new_attribute: Option<Item>,
+    attribute_error: Option<FluentBuildError>,
+    options: Option<RequestOptions>,
+    asynchronous_indicator: Option<u32>,
+}
+
+impl<'a> SetAttributeBuilder<'a> {
+    fn new(client: &'a mut Client) -> Self {
+        Self {
+            client,
+            unique_identifier: None,
+            new_attribute: None,
+            attribute_error: None,
+            options: None,
+            asynchronous_indicator: None,
+        }
+    }
+
+    /// Selects an optional exact text Unique Identifier.
+    #[must_use]
+    pub fn unique_identifier(mut self, value: &str) -> Self {
+        self.unique_identifier = Some(value.to_owned());
+        self
+    }
+
+    /// Sets one catalogued attribute using its typed value representation.
+    #[must_use]
+    pub fn attribute<D: AttributeDefinition>(self, attribute: Attribute<D>) -> Self {
+        self.attribute_item(attribute.into_item())
+    }
+
+    /// Sets one explicitly typed TTLV attribute Item.
+    ///
+    /// Unknown extension tags remain generic Items; reserved or unassigned
+    /// standard tags and a second New Attribute are rejected during validation.
+    #[must_use]
+    pub fn attribute_item(mut self, item: Item) -> Self {
+        if self.new_attribute.is_some() || self.attribute_error.is_some() {
+            self.attribute_error
+                .get_or_insert(FluentBuildError::InvalidAttributeValue);
+            return self;
+        }
+        if let Err(error) = validate_object_attribute_tag(&item) {
+            self.attribute_error = Some(error);
+            return self;
+        }
+        self.new_attribute = Some(item);
+        self
+    }
+
+    /// Constructs the KMIP Vendor Attribute Structure for one direct value.
+    #[must_use]
+    pub fn vendor_attribute(
+        mut self,
+        vendor_identification: &str,
+        attribute_name: &str,
+        attribute_value: &Item,
+    ) -> Self {
+        match make_vendor_attribute(vendor_identification, attribute_name, attribute_value) {
+            Ok(item) => self.attribute_item(item),
+            Err(error) => {
+                self.attribute_error.get_or_insert(error);
+                self
+            }
+        }
+    }
+
+    /// Sets exchange-local transport options.
+    #[must_use]
+    pub fn with_options(mut self, options: RequestOptions) -> Self {
+        self.options = Some(options);
+        self
+    }
+
+    /// Sets the Request Header Asynchronous Indicator for this exchange.
+    #[must_use]
+    pub const fn with_asynchronous_indicator(mut self, value: u32) -> Self {
+        self.asynchronous_indicator = Some(value);
+        self
+    }
+
+    fn construct_request(&self) -> Result<SetAttributeRequest, FluentBuildError> {
+        if let Some(error) = self.attribute_error {
+            return Err(error);
+        }
+        let item = self
+            .new_attribute
+            .as_ref()
+            .ok_or(FluentBuildError::MissingSetAttributeAttribute)?
+            .try_clone()
+            .map_err(|_| FluentBuildError::InvalidTtlvValue)?;
+        let request =
+            SetAttributeRequest::new(self.unique_identifier.clone(), NewAttribute::new(item));
+        validate_fluent_request(&request)?;
+        Ok(request)
+    }
+
+    /// Validates the complete typed request without transport or consumption.
+    ///
+    /// # Errors
+    /// Returns an error if the required attribute or typed request is invalid.
+    pub fn validate(&self) -> Result<(), FluentBuildError> {
+        self.construct_request().map(|_| ())
+    }
+
+    /// Builds the existing typed Set Attribute request.
+    ///
+    /// # Errors
+    /// Returns an error if the required attribute or typed request is invalid.
+    pub fn build_request(&self) -> Result<SetAttributeRequest, FluentBuildError> {
+        self.construct_request()
+    }
+
+    /// Builds the existing typed Set Attribute request without sending it.
+    ///
+    /// # Errors
+    /// Returns an error if the required attribute or typed request is invalid.
+    pub fn build(self) -> Result<SetAttributeRequest, FluentBuildError> {
+        self.construct_request()
+    }
+
+    /// Converts the request to the existing typed batch item.
+    ///
+    /// # Errors
+    /// Returns an error if the required attribute or typed request is invalid.
+    pub fn to_batch_item(self) -> Result<ClientBatchItem, FluentBuildError> {
+        Ok(ClientBatchItem::new(ClientRequest::SetAttribute(
+            self.construct_request()?,
+        )))
+    }
+
+    /// Executes one typed Set Attribute exchange.
+    ///
+    /// # Errors
+    /// Returns a payload-free local validation error with `NotSent`, or the
+    /// existing protocol or transport error with its delivery state.
+    pub fn execute(
+        self,
+        limits: &kmipkit_ttlv::codec::CodecLimits,
+    ) -> Result<ClientBatchItemResponse, ClientError> {
+        let request = self
+            .construct_request()
+            .map_err(fluent_client_validation_error)?;
+        execute_fluent_request(
+            self.client,
+            ClientRequest::SetAttribute(request),
+            self.asynchronous_indicator,
+            self.options,
+            limits,
+        )
+    }
 }
 
 /// A fluent builder for the existing typed Get Attributes request.
