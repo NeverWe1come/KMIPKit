@@ -77,6 +77,7 @@
         "batch_operation_sequence": { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 1 },
         "peer_observed_operation_sequence": { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 1 },
         "batch_item_count": { "type": "integer", "minimum": 1 },
+
         "client_observed_batch_response_count": { "type": "integer", "minimum": 1 },
         "client_observed_result_status_codes": {
           "type": "array", "items": { "type": "integer", "minimum": 0, "maximum": 4294967295 }, "minItems": 1

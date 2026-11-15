@@ -275,9 +275,14 @@ def add_execution_contract(test_case: dict, elements: list[dict], indexes: dict[
         mode = "server_exchange"
         steps = ["execute_operation", "verify_response"]
         assertions = ["response_matches_operation_contract"]
-        # OASIS KMIP 2.0 §6.1.28 and KMIP 2.1 §6.1.29 append the supplied
-        # message to the server log, so execution requires explicit opt-in.
-        mutation = "mutating" if test_case.get("operation") == "Log" else "read_only"
+        # Logging, authentication/session, and Interop test-control operations
+        # change server-side state, so execution requires explicit opt-in.
+        mutation = (
+            "mutating"
+            if test_case.get("operation")
+            in {"Log", "Login", "Logout", "Delegated Login", "Interop"}
+            else "read_only"
+        )
 
     ref_versions = ("2.1",) if category == "version_boundaries" else versions
     test_case["normative_refs"] = [] if protocol_scenario else [
@@ -431,6 +436,12 @@ def _operation_payload_targets(elements: list[dict], indexes: dict[str, dict[str
                         "description": description,
                         "branch_classes": branch_classes,
                     }
+                    if field_name == "New Attribute" and role == "request":
+                        target["source_encoding"] = "Structure"
+                        target["source_refs"].append({
+                            "section": "5.7",
+                            "table": "148" if version == "2.0" else "163",
+                        })
                     if presence_branches:
                         target["presence_branches"] = presence_branches
                     case_id = f"test-norm-payload-{direction_label.lower()}-{suffix.lower()}-{role}-{version.replace('.', '')}-{ordinal:03d}"
@@ -459,6 +470,8 @@ def _operation_payload_targets(elements: list[dict], indexes: dict[str, dict[str
                             "teardown_steps": [],
                         },
                     })
+                    if target.get("source_encoding"):
+                        cases[-1]["requires"]["source_encoding"] = target["source_encoding"]
                     if presence_branches:
                         cases[-1]["requires"]["presence_branches"] = presence_branches
                     type_variants = []

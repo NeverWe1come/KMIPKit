@@ -38,6 +38,38 @@ class ExecutableContractTests(unittest.TestCase):
             case["normative_refs"],
         )
 
+    def test_session_state_operations_require_explicit_mutation_opt_in(self) -> None:
+        catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
+        cases = {
+            item["operation"]: item
+            for item in catalog["test_cases"]
+            if item.get("category") == "protocol_and_session"
+            and item.get("operation") in {"Login", "Logout", "Delegated Login"}
+        }
+
+        self.assertEqual({"Login", "Logout", "Delegated Login"}, set(cases))
+        for operation, case in cases.items():
+            with self.subTest(operation=operation):
+                self.assertTrue(case["execution"]["protocol_versions"])
+                self.assertEqual("mutating", case["execution"]["mutation"])
+
+    def test_interop_operation_requires_explicit_opt_in_for_both_versions(self) -> None:
+        catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
+        case = next(
+            item for item in catalog["test_cases"]
+            if item["category"] == "protocol_and_session" and item["operation"] == "Interop"
+        )
+
+        self.assertEqual(["2.0", "2.1"], case["execution"]["protocol_versions"])
+        self.assertEqual("mutating", case["execution"]["mutation"])
+        self.assertEqual(
+            [
+                {"document": "OASIS KMIP 2.0 Specification", "section": "6.1.25"},
+                {"document": "OASIS KMIP 2.1 Specification", "section": "6.1.26"},
+            ],
+            case["normative_refs"],
+        )
+
     def test_negative_modify_attribute_case_exercises_current_value_mismatch(self) -> None:
         catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
         case = next(
