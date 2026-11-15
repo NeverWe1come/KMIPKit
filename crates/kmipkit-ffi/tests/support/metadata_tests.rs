@@ -91,6 +91,7 @@ fn capability_query_only_reports_c_mapped_nonblocked_capabilities() {
             "ffi_runtime_metadata",
             "fluent_dx_api",
             "fluent_dx_journeys",
+            "fluent_java_python_lifecycle_facade",
             "generic_ttlv_model",
             "hashed_password_timestamp_sequence",
             "kmip30_draft_routes",
