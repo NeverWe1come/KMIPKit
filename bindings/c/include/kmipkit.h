@@ -3596,6 +3596,7 @@ void kmipkit_server_listener_release(kmipkit_server_listener_t * listener);
 /* REQ-066-003, REQ-066-009 */
 int32_t kmipkit_server_notify_response_create(kmipkit_server_request_item_t * request, kmipkit_server_response_item_t ** out_response_item);
 /* kmipkit_server_put_object_field_read is part of the KMIPKIT-0066 C server-listener route.
+ * out_present is required. read_kind selects the required output slot; output pointers not selected by read_kind are not accessed. A non-null out_item_type receives the KMIP Item Type for a present field.
  */
 /* REQ-066-004, REQ-066-009 */
 int32_t kmipkit_server_put_object_field_read(kmipkit_server_put_object_t * object, uint32_t field_tag, uint32_t read_kind, uint8_t * out_present, uint8_t * out_item_type, uint32_t * out_enumeration, int32_t * out_integer, kmipkit_server_put_object_t ** out_child, kmipkit_secret_bytes_t ** out_secret, kmipkit_secret_text_t ** out_secret_text);

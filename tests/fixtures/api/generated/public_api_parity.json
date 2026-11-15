@@ -1058185,7 +1058185,8 @@
       },
       "cSignature": {
         "documentation": [
-          "kmipkit_server_put_object_field_read is part of the KMIPKIT-0066 C server-listener route."
+          "kmipkit_server_put_object_field_read is part of the KMIPKIT-0066 C server-listener route.",
+          "out_present is required. read_kind selects the required output slot; output pointers not selected by read_kind are not accessed. A non-null out_item_type receives the KMIP Item Type for a present field."
         ],
         "errorCategories": [
           "invalid_input",

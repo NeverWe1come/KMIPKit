@@ -427,7 +427,8 @@ int32_t kmipkit_s2c_consumer_rejects_invalid_handles(void) {
     }
     if (kmipkit_server_put_object_field_read(NULL, 0x00420043u, 5u,
             &present, NULL, NULL, NULL, NULL, &secret, &secret_text) !=
-            KMIPKIT_ERROR_INVALID_INPUT || present != 0u || secret != NULL || secret_text != NULL) {
+            KMIPKIT_ERROR_INVALID_INPUT || present != 0u || secret != NULL ||
+            secret_text != (kmipkit_secret_text_t *)(void *)1) {
         return 26;
     }
     if (kmipkit_server_request_item_unique_identifier(NULL, &identifier) !=

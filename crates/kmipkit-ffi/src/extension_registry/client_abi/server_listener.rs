@@ -651,9 +651,10 @@ fn read_put_object_field_value(
 /// Reads one validated field from a typed incoming Put object.
 ///
 /// # Safety
-/// `out_present` must point to aligned writable `u8` storage. Every non-null
-/// output pointer must point to aligned writable storage of its declared type
-/// for the duration of the call.
+/// `out_present` and every output selected by `read_kind` must point to aligned
+/// writable storage of their declared type for the duration of the call. A
+/// non-null `out_item_type` must also point to writable storage. Output pointers
+/// not selected by `read_kind` are not accessed.
 pub unsafe extern "C" fn kmipkit_server_put_object_field_read(
     object: *mut kmipkit_server_put_object_t,
     field_tag: u32,
@@ -689,22 +690,26 @@ pub unsafe extern "C" fn kmipkit_server_put_object_field_read(
             // SAFETY: Optional non-null output is caller-provided writable storage.
             unsafe { out_item_type.write(0) };
         }
-        if !out_enumeration.is_null() {
-            // SAFETY: Optional non-null output is caller-provided writable storage.
-            unsafe { out_enumeration.write(0) };
-        }
-        if !out_integer.is_null() {
-            // SAFETY: Optional non-null output is caller-provided writable storage.
-            unsafe { out_integer.write(0) };
-        }
-        if !out_child.is_null() {
-            out_slot!(out_child);
-        }
-        if !out_secret.is_null() {
-            out_slot!(out_secret);
-        }
-        if !out_secret_text.is_null() {
-            out_slot!(out_secret_text);
+        match read_kind {
+            SERVER_READ_ENUMERATION => {
+                // SAFETY: The selected enumeration output was checked above.
+                unsafe { out_enumeration.write(0) };
+            }
+            SERVER_READ_INTEGER => {
+                // SAFETY: The selected integer output was checked above.
+                unsafe { out_integer.write(0) };
+            }
+            SERVER_READ_STRUCTURE_VIEW => {
+                out_slot!(out_child);
+            }
+            SERVER_READ_SECRET_BYTES => {
+                out_slot!(out_secret);
+            }
+            SERVER_READ_SECRET_TEXT => {
+                out_slot!(out_secret_text);
+            }
+            SERVER_READ_PRESENT | SERVER_READ_TYPE => {}
+            _ => return record_ffi_error(ERROR_INVALID_INPUT),
         }
         let handle = read_handle!(object, ServerPutObject);
         let HandleValue::ServerPutObject(owner) = &handle.value else {

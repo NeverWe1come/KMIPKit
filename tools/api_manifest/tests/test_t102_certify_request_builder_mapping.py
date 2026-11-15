@@ -169,8 +169,9 @@ KMIPKIT_0096_ATTRIBUTE_POSITION_DECLARATION_IDS = {
 # Rust plus KMIPKIT-0103 C, KMIPKIT-0104 Java, and KMIPKIT-0105 Python fluent
 # cryptographic operation builders; KMIPKIT-0095 adds response rendering and
 # KMIPKIT-0108 adds attribute-read declarations; this inventory also includes
-# the approved KMIPKIT-0093 reconciliation and narrowed T101 mappings.
-DECLARATIONS_SHA256 = "c55de9be3f1aa28b4beedd8208ee92914643bf35559ebb467b8fb4d31a99ac9f"
+# the approved KMIPKIT-0093 reconciliation, KMIPKIT-0106 C listener surface,
+# and narrowed T101 mappings.
+DECLARATIONS_SHA256 = "2d18db1a982d1b917f45e684c287577e489a89b326d12f2f0556d745e35c9a96"
 OPERATIONS_SHA256 = "2a6eb9fb6823b3456b3fb10b6d4af8477be9f1a1f68c06c252bb4873b272f3bc"
 
 
