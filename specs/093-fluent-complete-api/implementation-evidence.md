@@ -190,6 +190,24 @@
   the source-included integration test passed but its helper lines were not
   credited by the workspace coverage report.
 
+### Green
+
+- Commit `77867e943` replaces the source helper with an observable peer-side
+  signal: after sending the surplus body, the HTTPS fixture reports when that
+  connection closes. The client waits for this signal before issuing the third
+  exchange, then proves the third request used a new TLS connection and got its
+  own response. No production Rust lines change.
+- `cargo fmt --all --check` passes;
+  `cargo test -p kmipkit-transport --test https` passes all 122 tests; and
+  `cargo clippy -p kmipkit-transport --all-targets --all-features -- -D warnings`
+  passes.
+
+### Refactor
+
+- The integration test now observes the protocol effect through the peer
+  socket instead of exposing internal connection state solely for a test.
+  The exact-head CI coverage gate is pending on the updated PR head.
+
 ## KMIPKIT-0093 C Create Key Pair builder
 
 ### Red
