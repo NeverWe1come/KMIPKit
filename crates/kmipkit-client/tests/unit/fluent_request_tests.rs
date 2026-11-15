@@ -41,6 +41,31 @@ fn read_enumeration(item: &Item) -> Option<u32> {
     })
 }
 
+#[test]
+fn set_attribute_builder_constructs_the_existing_typed_request() {
+    let mut client = failed_request_client();
+    let request = client
+        .request()
+        .set_attribute()
+        .unique_identifier("key-42")
+        .attribute(
+            Attribute::<typed::Description>::new("managed by fluent".to_owned())
+                .expect("Description uses a catalogued Text String value"),
+        )
+        .build_request()
+        .expect("the fluent Set Attribute request is valid");
+
+    assert_eq!(request.unique_identifier(), Some("key-42"));
+    assert_eq!(
+        request.new_attribute().item().tag().raw(),
+        typed::Description::TAG
+    );
+    assert!(request.new_attribute().item().with_value(|value| matches!(
+        value,
+        ValueView::TextString(text) if text == "managed by fluent"
+    )));
+}
+
 fn response_bytes(operation: u32, status: u32, correlation: Option<&[u8]>) -> Vec<u8> {
     let mut item_fields = vec![
         test_item(0x0042_005C, Value::enumeration(operation)),
