@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 import org.kmipkit.InvalidInputException;
 import org.kmipkit.NativeExtensionRegistry;
@@ -245,53 +246,50 @@ public final class ClientBatchItem implements AutoCloseable {
         return new ClientBatchItem(value, List.of());
     }
 
-    /** Creates an independent Cancel batch item and keeps the request model caller-owned. */
-    public static ClientBatchItem cancel(CancelRequest request) {
+    private static ClientBatchItem fromAsyncRequest(
+            NativeHandle request,
+            String invalidInputMessage,
+            Function<long[], Long> constructor) {
         if (request == null) {
-            throw new InvalidInputException("Cancel request is invalid");
+            throw new InvalidInputException(invalidInputMessage);
         }
         NativeExtensionRegistry.ensureLoaded();
         long value = NativeHandle.withValues(
-                new NativeHandle[] {request.nativeHandleOwner()},
-                handles -> NativeExtensionRegistry.clientBatchItemCancelFromRequest(handles[0]));
+                new NativeHandle[] {request}, constructor);
         return new ClientBatchItem(value, List.of());
+    }
+
+    /** Creates an independent Cancel batch item and keeps the request model caller-owned. */
+    public static ClientBatchItem cancel(CancelRequest request) {
+        return fromAsyncRequest(
+                request == null ? null : request.nativeHandleOwner(),
+                "Cancel request is invalid",
+                handles -> NativeExtensionRegistry.clientBatchItemCancelFromRequest(handles[0]));
     }
 
     /** Creates an independent Poll batch item and keeps the request model caller-owned. */
     public static ClientBatchItem poll(PollRequest request) {
-        if (request == null) {
-            throw new InvalidInputException("Poll request is invalid");
-        }
-        NativeExtensionRegistry.ensureLoaded();
-        long value = NativeHandle.withValues(
-                new NativeHandle[] {request.nativeHandleOwner()},
+        return fromAsyncRequest(
+                request == null ? null : request.nativeHandleOwner(),
+                "Poll request is invalid",
                 handles -> NativeExtensionRegistry.clientBatchItemPollFromRequest(handles[0]));
-        return new ClientBatchItem(value, List.of());
     }
 
     /** Creates an independent Process batch item and keeps the request model caller-owned. */
     public static ClientBatchItem process(ProcessRequest request) {
-        if (request == null) {
-            throw new InvalidInputException("Process request is invalid");
-        }
-        NativeExtensionRegistry.ensureLoaded();
-        long value = NativeHandle.withValues(
-                new NativeHandle[] {request.nativeHandleOwner()},
+        return fromAsyncRequest(
+                request == null ? null : request.nativeHandleOwner(),
+                "Process request is invalid",
                 handles -> NativeExtensionRegistry.clientBatchItemProcessFromRequest(handles[0]));
-        return new ClientBatchItem(value, List.of());
     }
 
     /** Creates an independent Query Asynchronous Requests item and keeps the model caller-owned. */
     public static ClientBatchItem queryAsyncRequests(QueryAsyncRequestsRequest request) {
-        if (request == null) {
-            throw new InvalidInputException("Query Asynchronous Requests model is invalid");
-        }
-        NativeExtensionRegistry.ensureLoaded();
-        long value = NativeHandle.withValues(
-                new NativeHandle[] {request.nativeHandleOwner()},
+        return fromAsyncRequest(
+                request == null ? null : request.nativeHandleOwner(),
+                "Query Asynchronous Requests model is invalid",
                 handles -> NativeExtensionRegistry.clientBatchItemQueryAsyncRequestsFromRequest(
                         handles[0]));
-        return new ClientBatchItem(value, List.of());
     }
 
     /** Creates an opt-in KMIP 3.0 draft Create Group route from ordered generic TTLV. */
