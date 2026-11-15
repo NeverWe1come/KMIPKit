@@ -13,6 +13,7 @@ final class Kmip30SemanticBatchItemTest {
              AttributeSet attributes = AttributeSet.tryNew(empty);
              ClientBatchItem createGroup = ClientBatchItem.createGroup(attributes);
              ClientBatchItem createUser = ClientBatchItem.createUser(attributes)) {
+            attributes.close();
             assertEquals(KmipValues.V3_0_OPERATION_CREATE_GROUP, createGroup.operation());
             assertEquals(KmipValues.V3_0_OPERATION_CREATE_USER, createUser.operation());
         }

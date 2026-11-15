@@ -6,6 +6,7 @@ pub(crate) const C_AVAILABLE_CAPABILITIES: &[&str] = &[
     "client_asynchronous_operations",
     "client_batch_model",
     "client_execution",
+    "client_kmip30_typed_operations",
     "client_operation_identity",
     "client_profile_readiness",
     "client_profile_validation",
@@ -38101,5 +38102,25 @@ pub(crate) const PUBLIC_API_DECLARATIONS: &[(&str, &str, &str)] = &[
         "KMIPKIT-0093:async-batch-item:query_async_requests:rust",
         "rust-kmipkit-client",
         "kmipkit_client::ClientBatchItem::query_async_requests",
+    ),
+    (
+        "KMIPKIT-0093:kmip30:create_group:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItem::create_group",
+    ),
+    (
+        "KMIPKIT-0093:kmip30:create_user:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItem::create_user",
+    ),
+    (
+        "KMIPKIT-0093:kmip30:obliterate:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItem::obliterate",
+    ),
+    (
+        "KMIPKIT-0093:kmip30:deactivate:rust",
+        "rust-kmipkit-client",
+        "kmipkit_client::ClientBatchItem::deactivate",
     ),
 ];

@@ -3388,6 +3388,22 @@ int32_t kmipkit_client_batch_item_process_from_request(kmipkit_process_request_t
  */
 /* KMIPKIT-0009-FR-001, KMIPKIT-0043-FR-004, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-017, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022, KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-011, KMIPKIT-0093-FR-012 */
 int32_t kmipkit_client_batch_item_query_async_requests_from_request(kmipkit_query_async_requests_request_t * request, kmipkit_client_batch_item_t ** out_item);
+/* Creates an operation-specific typed KMIP 3.0 CreateGroup item from semantic fields (§6.1.10, Table 280); inputs are copied and borrowed handles remain caller-owned.
+ */
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_client_batch_item_create_group_from_attributes(kmipkit_attribute_set_t * attributes, kmipkit_client_batch_item_t ** out_item);
+/* Creates an operation-specific typed KMIP 3.0 CreateUser item from semantic fields (§6.1.13, Table 290); inputs are copied and borrowed handles remain caller-owned.
+ */
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_client_batch_item_create_user_from_attributes(kmipkit_attribute_set_t * attributes, kmipkit_client_batch_item_t ** out_item);
+/* Creates an operation-specific typed KMIP 3.0 Obliterate item from semantic fields (§6.1.41, Table 374); inputs are copied and borrowed handles remain caller-owned.
+ */
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_client_batch_item_obliterate_from_identifier(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_client_batch_item_t ** out_item);
+/* Creates an operation-specific typed KMIP 3.0 Deactivate item from semantic fields (§6.1.14, Table 293); inputs are copied and borrowed handles remain caller-owned.
+ */
+/* KMIPKIT-0093-FR-004, KMIPKIT-0093-FR-005, KMIPKIT-0093-FR-011 */
+int32_t kmipkit_client_batch_item_deactivate_from_fields(const kmipkit_unique_identifier_v1_t * unique_identifier, kmipkit_ttlv_structure_t * deactivation_reason, uint8_t has_deactivation_date, int64_t deactivation_date, kmipkit_client_batch_item_t ** out_item);
 /* KMIPKIT-0006-FR-021, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */
 int32_t kmipkit_message_extension_view_ttlv(kmipkit_message_extension_view_t * extension, kmipkit_ttlv_structure_t ** out_structure);
 /* KMIPKIT-0006-FR-017, KMIPKIT-0006-FR-018, KMIPKIT-0006-FR-019, KMIPKIT-0043-FR-005, KMIPKIT-0043-FR-007, KMIPKIT-0043-FR-010, KMIPKIT-0043-FR-011, KMIPKIT-0043-FR-013, KMIPKIT-0043-FR-021, KMIPKIT-0043-FR-022 */

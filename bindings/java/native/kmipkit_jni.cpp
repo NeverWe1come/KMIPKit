@@ -4994,6 +4994,69 @@ JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItem
     });
 }
 
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemCreateGroupFromAttributes(
+        JNIEnv* env, jclass, jlong raw_attributes) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_create_group_from_attributes(
+                    from_java_handle<kmipkit_attribute_set_t>(raw_attributes), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemCreateUserFromAttributes(
+        JNIEnv* env, jclass, jlong raw_attributes) {
+    return guarded<jlong>(env, 0, [&] {
+        return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_create_user_from_attributes(
+                    from_java_handle<kmipkit_attribute_set_t>(raw_attributes), output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemObliterateFromIdentifier(
+        JNIEnv* env, jclass, jint raw_kind, jbyteArray raw_text, jlong raw_number) {
+    return guarded<jlong>(env, 0, [&] {
+        kmipkit_unique_identifier_v1_t identifier{};
+        std::vector<uint8_t> identifier_text;
+        bool identifier_present = false;
+        if (!read_optional_identifier(env, raw_kind, raw_text, raw_number,
+                &identifier, identifier_text, &identifier_present) || !identifier_present) {
+            if (!env->ExceptionCheck()) throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_obliterate_from_identifier(&identifier, output);
+        });
+    });
+}
+
+JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_clientBatchItemDeactivateFromFields(
+        JNIEnv* env, jclass, jint raw_kind, jbyteArray raw_text, jlong raw_number,
+        jlong raw_reason, jboolean has_deactivation_date, jlong deactivation_date) {
+    return guarded<jlong>(env, 0, [&] {
+        kmipkit_unique_identifier_v1_t identifier{};
+        std::vector<uint8_t> identifier_text;
+        bool identifier_present = false;
+        if (!read_optional_identifier(env, raw_kind, raw_text, raw_number,
+                &identifier, identifier_text, &identifier_present) || !identifier_present) {
+            if (!env->ExceptionCheck()) throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        if (has_deactivation_date != JNI_TRUE && has_deactivation_date != JNI_FALSE) {
+            throw_invalid_input(env);
+            return static_cast<jlong>(0);
+        }
+        return return_handle<kmipkit_client_batch_item_t>(env, [&](auto output) {
+            return kmipkit_client_batch_item_deactivate_from_fields(
+                    &identifier,
+                    from_java_handle<kmipkit_ttlv_structure_t>(raw_reason),
+                    static_cast<uint8_t>(has_deactivation_date == JNI_TRUE ? 1 : 0),
+                    static_cast<int64_t>(deactivation_date), output);
+        });
+    });
+}
+
 JNIEXPORT jlong JNICALL Java_org_kmipkit_NativeExtensionRegistry_revocationReasonCreate(
         JNIEnv* env, jclass, jlong raw_code, jbyteArray raw_message) {
     return guarded<jlong>(env, 0, [&] {

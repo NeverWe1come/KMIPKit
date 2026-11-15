@@ -223,19 +223,40 @@ int kmipkit_public_kmip30_semantic_items_probe(void) {
         kmipkit_attribute_set_release(attributes);
         return 3;
     }
+    kmipkit_attribute_set_release(attributes);
+    attributes = NULL;
+    if (kmipkit_client_batch_item_operation(item, &operation) != INT32_C(0) ||
+        operation != KMIPKIT_V3_0_OPERATION_CREATE_GROUP) {
+        kmipkit_client_batch_item_release(item);
+        return 4;
+    }
     kmipkit_client_batch_item_release(item);
     item = NULL;
 
+    status = kmipkit_ttlv_structure_create(&items);
+    if (status != INT32_C(0) || items == NULL ||
+        kmipkit_attribute_set_create(items, &attributes) != INT32_C(0) || attributes == NULL) {
+        kmipkit_ttlv_structure_release(items);
+        return 5;
+    }
+    kmipkit_ttlv_structure_release(items);
     status = kmipkit_client_batch_item_create_user_from_attributes(attributes, &item);
     if (status != INT32_C(0) || item == NULL ||
         kmipkit_client_batch_item_operation(item, &operation) != INT32_C(0) ||
         operation != KMIPKIT_V3_0_OPERATION_CREATE_USER) {
         kmipkit_client_batch_item_release(item);
         kmipkit_attribute_set_release(attributes);
-        return 4;
+        return 6;
+    }
+    kmipkit_attribute_set_release(attributes);
+    attributes = NULL;
+    if (kmipkit_client_batch_item_operation(item, &operation) != INT32_C(0) ||
+        operation != KMIPKIT_V3_0_OPERATION_CREATE_USER) {
+        kmipkit_client_batch_item_release(item);
+        return 7;
     }
     kmipkit_client_batch_item_release(item);
-    kmipkit_attribute_set_release(attributes);
+    item = NULL;
 
     identifier.struct_size = (uint32_t)sizeof(identifier);
     identifier.abi_version = 1;
@@ -247,10 +268,16 @@ int kmipkit_public_kmip30_semantic_items_probe(void) {
         kmipkit_client_batch_item_operation(item, &operation) != INT32_C(0) ||
         operation != KMIPKIT_V3_0_OPERATION_OBLITERATE) {
         kmipkit_client_batch_item_release(item);
-        return 5;
+        return 8;
     }
     kmipkit_client_batch_item_release(item);
     item = NULL;
+
+    status = kmipkit_client_batch_item_obliterate_from_identifier(NULL, &item);
+    if (status != KMIPKIT_ERROR_INVALID_INPUT || item != NULL) {
+        kmipkit_client_batch_item_release(item);
+        return 9;
+    }
 
     status = kmipkit_client_batch_item_deactivate_from_fields(
         &identifier, NULL, UINT8_C(0), INT64_C(0), &item);
@@ -258,9 +285,16 @@ int kmipkit_public_kmip30_semantic_items_probe(void) {
         kmipkit_client_batch_item_operation(item, &operation) != INT32_C(0) ||
         operation != KMIPKIT_V3_0_OPERATION_DEACTIVATE) {
         kmipkit_client_batch_item_release(item);
-        return 6;
+        return 10;
     }
     kmipkit_client_batch_item_release(item);
+    item = NULL;
+    status = kmipkit_client_batch_item_deactivate_from_fields(
+        &identifier, NULL, UINT8_C(2), INT64_C(0), &item);
+    if (status != KMIPKIT_ERROR_INVALID_INPUT || item != NULL) {
+        kmipkit_client_batch_item_release(item);
+        return 11;
+    }
     return 0;
 }
 

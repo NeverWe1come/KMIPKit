@@ -26,6 +26,24 @@ fn batch_response_item_from_handle(
     response.get(*index).ok_or(ERROR_INTERNAL)
 }
 
+fn copy_attribute_set_model(
+    attributes: *mut crate::kmipkit_attribute_set_t,
+) -> FfiResult<AttributeSet> {
+    let handle = reference_handle(attributes, Kind::AttributeSet)?;
+    let HandleValue::AttributeSet(source) = &handle.value else {
+        return Err(ERROR_INVALID_INPUT);
+    };
+    let source = source.lock().map_err(|_| ERROR_INTERNAL)?;
+    let mut items = Vec::new();
+    items
+        .try_reserve_exact(source.len())
+        .map_err(|_| ERROR_RESOURCE_LIMIT)?;
+    for item in source.as_items() {
+        items.push(item.try_clone().map_err(model_status)?);
+    }
+    AttributeSet::try_new(items).map_err(|_| ERROR_INVALID_INPUT)
+}
+
 fn require_success_response_ttlv<T>(response_ttlv: Option<FfiResult<T>>) -> FfiResult<T> {
     match response_ttlv {
         Some(response_ttlv) => response_ttlv,
@@ -2806,6 +2824,83 @@ pub extern "C" fn kmipkit_client_batch_item_query_async_requests_from_request(
         *out = try_ffi!(batch_item_handle(ClientRequest::query_async_requests(
             request.as_ref().clone(),
         )));
+        SUCCESS
+    })
+}
+
+/// Creates a typed KMIP 3.0 Create Group batch item from a borrowed `AttributeSet`.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_create_group_from_attributes(
+    attributes: *mut crate::kmipkit_attribute_set_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let attributes = try_ffi!(copy_attribute_set_model(attributes));
+        let request = CreateGroupRequest::new(attributes);
+        *out = try_ffi!(batch_item_handle(ClientRequest::create_group(request)));
+        SUCCESS
+    })
+}
+
+/// Creates a typed KMIP 3.0 Create User batch item from a borrowed `AttributeSet`.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_create_user_from_attributes(
+    attributes: *mut crate::kmipkit_attribute_set_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let attributes = try_ffi!(copy_attribute_set_model(attributes));
+        let request = CreateUserRequest::new(attributes);
+        *out = try_ffi!(batch_item_handle(ClientRequest::create_user(request)));
+        SUCCESS
+    })
+}
+
+/// Creates a typed KMIP 3.0 Obliterate item from a copied Unique Identifier.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_obliterate_from_identifier(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        let identifier =
+            try_ffi!(copy_unique_identifier(unique_identifier)).ok_or(ERROR_INVALID_INPUT);
+        let identifier = try_ffi!(identifier);
+        let request = ObliterateRequest::new(identifier);
+        *out = try_ffi!(batch_item_handle(ClientRequest::obliterate(request)));
+        SUCCESS
+    })
+}
+
+/// Creates a typed KMIP 3.0 Deactivate item from semantic fields and copied inputs.
+#[unsafe(no_mangle)]
+pub extern "C" fn kmipkit_client_batch_item_deactivate_from_fields(
+    unique_identifier: *const kmipkit_unique_identifier_v1_t,
+    deactivation_reason: *mut kmipkit_ttlv_structure_t,
+    has_deactivation_date: u8,
+    deactivation_date: i64,
+    out_item: *mut *mut kmipkit_client_batch_item_t,
+) -> i32 {
+    ffi_entrypoint(|| {
+        let out = out_slot!(out_item);
+        if has_deactivation_date > 1 || (has_deactivation_date == 0 && deactivation_date != 0) {
+            return record_ffi_error(ERROR_INVALID_INPUT);
+        }
+        let identifier =
+            try_ffi!(copy_unique_identifier(unique_identifier)).ok_or(ERROR_INVALID_INPUT);
+        let identifier = try_ffi!(identifier);
+        let reason = try_ffi!(copy_structure_handle(deactivation_reason, false));
+        let mut request = DeactivateRequest::new(identifier);
+        if let Some(reason) = reason {
+            request = request.with_deactivation_reason(reason);
+        }
+        if has_deactivation_date == 1 {
+            request = request.with_deactivation_date(deactivation_date);
+        }
+        *out = try_ffi!(batch_item_handle(ClientRequest::deactivate(request)));
         SUCCESS
     })
 }

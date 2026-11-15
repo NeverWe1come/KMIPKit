@@ -1456,6 +1456,21 @@ ffi.cdef(
     int32_t kmipkit_client_batch_item_decapsulate(
         kmipkit_ttlv_structure_t *payload,
         kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_create_group_from_attributes(
+        kmipkit_attribute_set_t *attributes,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_create_user_from_attributes(
+        kmipkit_attribute_set_t *attributes,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_obliterate_from_identifier(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
+        kmipkit_client_batch_item_t **out_item);
+    int32_t kmipkit_client_batch_item_deactivate_from_fields(
+        const kmipkit_unique_identifier_v1_t *unique_identifier,
+        kmipkit_ttlv_structure_t *deactivation_reason,
+        uint8_t has_deactivation_date,
+        int64_t deactivation_date,
+        kmipkit_client_batch_item_t **out_item);
     int32_t kmipkit_client_batch_item_query(
         const uint32_t *functions,
         uint64_t function_count,

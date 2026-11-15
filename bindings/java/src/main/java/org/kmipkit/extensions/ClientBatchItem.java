@@ -292,6 +292,73 @@ public final class ClientBatchItem implements AutoCloseable {
                         handles[0]));
     }
 
+    /** Creates a typed KMIP 3.0 Create Group item from copied semantic Attributes. */
+    public static ClientBatchItem createGroup(AttributeSet attributes) {
+        if (attributes == null) {
+            throw new InvalidInputException("Create Group Attributes are required");
+        }
+        NativeExtensionRegistry.ensureLoaded();
+        long value = NativeHandle.withNativeHandles(() -> NativeHandle.withValues(
+                new NativeHandle[] {attributes.nativeHandleOwner()},
+                handles -> NativeExtensionRegistry.clientBatchItemCreateGroupFromAttributes(
+                        handles[0])));
+        return new ClientBatchItem(value, List.of());
+    }
+
+    /** Creates a typed KMIP 3.0 Create User item from copied semantic Attributes. */
+    public static ClientBatchItem createUser(AttributeSet attributes) {
+        if (attributes == null) {
+            throw new InvalidInputException("Create User Attributes are required");
+        }
+        NativeExtensionRegistry.ensureLoaded();
+        long value = NativeHandle.withNativeHandles(() -> NativeHandle.withValues(
+                new NativeHandle[] {attributes.nativeHandleOwner()},
+                handles -> NativeExtensionRegistry.clientBatchItemCreateUserFromAttributes(
+                        handles[0])));
+        return new ClientBatchItem(value, List.of());
+    }
+
+    /** Creates a typed KMIP 3.0 Obliterate item from its required Unique Identifier. */
+    public static ClientBatchItem obliterate(UniqueIdentifier uniqueIdentifier) {
+        if (uniqueIdentifier == null) {
+            throw new InvalidInputException("Obliterate Unique Identifier is required");
+        }
+        byte[] identifierText = uniqueIdentifier.nativeText();
+        try {
+            NativeExtensionRegistry.ensureLoaded();
+            return new ClientBatchItem(
+                    NativeExtensionRegistry.clientBatchItemObliterateFromIdentifier(
+                            uniqueIdentifier.nativeKind(), identifierText,
+                            uniqueIdentifier.nativeNumber()),
+                    List.of());
+        } finally {
+            clearNativeCopies(identifierText);
+        }
+    }
+
+    /** Creates a typed KMIP 3.0 Deactivate item with explicit optional fields. */
+    public static ClientBatchItem deactivate(
+            UniqueIdentifier uniqueIdentifier,
+            @Nullable TtlvStructure deactivationReason,
+            @Nullable Long deactivationDate) {
+        if (uniqueIdentifier == null) {
+            throw new InvalidInputException("Deactivate Unique Identifier is required");
+        }
+        byte[] identifierText = uniqueIdentifier.nativeText();
+        try {
+            NativeExtensionRegistry.ensureLoaded();
+            long value = NativeHandle.withNativeHandles(() ->
+                    NativeExtensionRegistry.clientBatchItemDeactivateFromFields(
+                            uniqueIdentifier.nativeKind(), identifierText,
+                            uniqueIdentifier.nativeNumber(), handleOrNull(deactivationReason),
+                            deactivationDate != null,
+                            deactivationDate == null ? 0 : deactivationDate));
+            return new ClientBatchItem(value, List.of());
+        } finally {
+            clearNativeCopies(identifierText);
+        }
+    }
+
     /** Creates an opt-in KMIP 3.0 draft Create Group route from ordered generic TTLV. */
     public static ClientBatchItem createGroup(TtlvStructure payload) {
         return kmip30Draft(payload, NativeExtensionRegistry::clientBatchItemCreateGroup);

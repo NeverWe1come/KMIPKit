@@ -18,7 +18,7 @@ from collections.abc import Iterable, Iterator, Sequence, Sized
 from contextlib import contextmanager
 from dataclasses import dataclass
 from enum import IntEnum
-from typing import Any, overload
+from typing import TYPE_CHECKING, Any, overload
 
 from . import errors, ttlv
 from ._ffi import ffi, lib
@@ -44,6 +44,9 @@ from .async_operations import (
     ProcessRequest,
     QueryAsyncRequestsRequest,
 )
+
+if TYPE_CHECKING:
+    from .attribute_operations import AttributeSet
 
 
 @dataclass(frozen=True, slots=True)
@@ -153,6 +156,10 @@ _CLIENT_ABI_HANDLE_FUNCTIONS = frozenset(
         "kmipkit_client_batch_item_poll_from_request",
         "kmipkit_client_batch_item_process_from_request",
         "kmipkit_client_batch_item_query_async_requests_from_request",
+        "kmipkit_client_batch_item_create_group_from_attributes",
+        "kmipkit_client_batch_item_create_user_from_attributes",
+        "kmipkit_client_batch_item_obliterate_from_identifier",
+        "kmipkit_client_batch_item_deactivate_from_fields",
     }
 )
 
@@ -1852,6 +1859,82 @@ def client_batch_item_encapsulate(payload: ttlv.Structure) -> ClientBatchItem:
 def client_batch_item_decapsulate(payload: ttlv.Structure) -> ClientBatchItem:
     """Create the opt-in KMIP 3.0 draft Decapsulate route from ordered generic TTLV."""
     return _client_batch_item_kmip30_draft("decapsulate", payload)
+
+
+def client_batch_item_create_group_from_attributes(attributes: AttributeSet) -> ClientBatchItem:
+    """Create a typed KMIP 3.0 Create Group item from a copied AttributeSet."""
+    from .attribute_operations import AttributeSet
+
+    if not isinstance(attributes, AttributeSet):
+        errors.raise_for_status(4)
+    with _NATIVE_CALL_LOCK:
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_create_group_from_attributes",
+            (attributes._native_attribute_set(),),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_create_user_from_attributes(attributes: AttributeSet) -> ClientBatchItem:
+    """Create a typed KMIP 3.0 Create User item from a copied AttributeSet."""
+    from .attribute_operations import AttributeSet
+
+    if not isinstance(attributes, AttributeSet):
+        errors.raise_for_status(4)
+    with _NATIVE_CALL_LOCK:
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_create_user_from_attributes",
+            (attributes._native_attribute_set(),),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_obliterate_from_identifier(
+    unique_identifier: UniqueIdentifier,
+) -> ClientBatchItem:
+    """Create a typed KMIP 3.0 Obliterate item from its required identifier."""
+    if not isinstance(unique_identifier, UniqueIdentifier):
+        errors.raise_for_status(4)
+    with _staging_buffer_scope() as staging_buffers:
+        identifier = _client_native_unique_identifier(unique_identifier, staging_buffers)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_obliterate_from_identifier",
+            (identifier,),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
+
+
+def client_batch_item_deactivate_from_fields(
+    unique_identifier: UniqueIdentifier,
+    deactivation_reason: ttlv.Structure | None = None,
+    deactivation_date: int | None = None,
+) -> ClientBatchItem:
+    """Create a typed KMIP 3.0 Deactivate item from explicit semantic fields."""
+    if not isinstance(unique_identifier, UniqueIdentifier):
+        errors.raise_for_status(4)
+    date = (
+        None
+        if deactivation_date is None
+        else _integer_range(deactivation_date, -(1 << 63), (1 << 63) - 1)
+    )
+    if deactivation_reason is not None and not isinstance(deactivation_reason, ttlv.Structure):
+        errors.raise_for_status(4)
+    with _staging_buffer_scope() as staging_buffers:
+        identifier = _client_native_unique_identifier(unique_identifier, staging_buffers)
+        handle = _make_handle(
+            "kmipkit_client_batch_item_t",
+            "kmipkit_client_batch_item_deactivate_from_fields",
+            (
+                identifier,
+                _client_native_structure(deactivation_reason),
+                1 if date is not None else 0,
+                0 if date is None else date,
+            ),
+        )
+    return _wrap_owned_handle(ClientBatchItem, handle)
 
 
 def client_batch_item_logout(ticket: ttlv.Structure) -> ClientBatchItem:
@@ -3887,6 +3970,10 @@ __all__ = [
     "client_batch_item_poll_from_request",
     "client_batch_item_process_from_request",
     "client_batch_item_query_async_requests_from_request",
+    "client_batch_item_create_group_from_attributes",
+    "client_batch_item_create_user_from_attributes",
+    "client_batch_item_obliterate_from_identifier",
+    "client_batch_item_deactivate_from_fields",
     "client_batch_item_create",
     "client_batch_item_create_key_pair",
     "client_batch_item_create_split_key",
